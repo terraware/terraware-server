@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -9,12 +8,10 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
-import org.springframework.security.core.GrantedAuthority
 
 /**
  * Details about the terraware user who is making the current request and the permissions they have.
@@ -87,132 +84,4 @@ data class IndividualUser(
     _facilityRoles.reset()
     _globalRoles.reset()
   }
-
-  /** Returns true if the user is an admin, owner or Terraformation Contact of any organizations. */
-  override fun hasAnyAdminRole() =
-      organizationRoles.values.any {
-        it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
-      }
-
-  override fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
-    return organizationId?.let {
-      recordPermissionCheck(RolePermissionCheck(Role.Admin, organizationId))
-      when (organizationRoles[organizationId]) {
-        Role.Admin,
-        Role.Owner,
-        Role.TerraformationContact -> true
-        else -> false
-      }
-    } ?: false
-  }
-
-  override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-    return if (isSuperAdmin()) {
-      mutableSetOf(SuperAdminAuthority)
-    } else {
-      mutableSetOf()
-    }
-  }
-
-  // Capabilities
-
-  override fun isAcceleratorAdmin(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
-    return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
-  }
-
-  override fun isTFExpertOrHigher(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.TFExpert))
-    return setOf(GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any {
-      it in globalRoles
-    }
-  }
-
-  override fun isReadOnlyOrHigher(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.ReadOnly))
-    return setOf(
-            GlobalRole.ReadOnly,
-            GlobalRole.TFExpert,
-            GlobalRole.AcceleratorAdmin,
-            GlobalRole.SuperAdmin)
-        .any { it in globalRoles }
-  }
-
-  override fun isSuperAdmin(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
-    return GlobalRole.SuperAdmin in globalRoles
-  }
-
-  override fun isOwner(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
-        organizationRoles[organizationId] == Role.Owner
-      } ?: false
-
-  override fun isAdminOrHigher(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Admin, facilityId))
-        when (facilityRoles[facilityId]) {
-          Role.Admin,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  override fun isManagerOrHigher(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, organizationId))
-        when (organizationRoles[organizationId]) {
-          Role.Admin,
-          Role.Manager,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  override fun isManagerOrHigher(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, facilityId))
-        when (facilityRoles[facilityId]) {
-          Role.Admin,
-          Role.Manager,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  override fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
-      plantingSiteId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, plantingSiteId))
-        isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
-      } ?: false
-
-  override fun isMember(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
-        facilityId in facilityRoles
-      } ?: false
-
-  override fun isMember(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
-        organizationId in organizationRoles
-      } ?: false
-
-  /** Returns true if one of the user's global roles allows them to read an organization. */
-  override fun isGlobalReader(organizationId: OrganizationId) =
-      GlobalRole.SuperAdmin in globalRoles ||
-          (isReadOnlyOrHigher() &&
-              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
-                  parentStore.hasApplications(organizationId)))
-
-  /** Returns true if one of the user's global roles allows them to write to an organization. */
-  override fun isGlobalWriter(organizationId: OrganizationId) =
-      GlobalRole.SuperAdmin in globalRoles ||
-          (isTFExpertOrHigher() &&
-              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
-                  parentStore.hasApplications(organizationId)))
 }
