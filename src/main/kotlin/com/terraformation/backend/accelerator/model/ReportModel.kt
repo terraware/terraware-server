@@ -39,6 +39,15 @@ data class ReportModel(
           "Report $id not in Not Submitted status. Status is ${status.name}")
     }
 
+    val incompleteProjectMetrics =
+        projectMetrics.filter { it.entry.target == null || it.entry.value == null }
+    if (incompleteProjectMetrics.isNotEmpty()) {
+      val metricNames =
+          incompleteProjectMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
+      throw IllegalStateException(
+          "Report $id is missing targets or values for project metrics: $metricNames")
+    }
+
     val incompleteStandardMetrics =
         standardMetrics.filter { it.entry.target == null || it.entry.value == null }
     if (incompleteStandardMetrics.isNotEmpty()) {
@@ -48,13 +57,11 @@ data class ReportModel(
           "Report $id is missing targets or values for standard metrics: $metricNames")
     }
 
-    val incompleteProjectMetrics =
-        projectMetrics.filter { it.entry.target == null || it.entry.value == null }
-    if (incompleteProjectMetrics.isNotEmpty()) {
+    val incompleteSystemMetrics = systemMetrics.filter { it.entry.target == null }
+    if (incompleteSystemMetrics.isNotEmpty()) {
       val metricNames =
-          incompleteProjectMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
-      throw IllegalStateException(
-          "Report $id is missing targets or values for project metrics: $metricNames")
+          incompleteSystemMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
+      throw IllegalStateException("Report $id is missing targets for system metrics: $metricNames")
     }
   }
 
