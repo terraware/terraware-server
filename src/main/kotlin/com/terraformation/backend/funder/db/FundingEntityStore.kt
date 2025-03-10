@@ -39,6 +39,6 @@ class FundingEntityStore(
         .from(FUNDING_ENTITIES)
         .apply { condition?.let { where(it) } }
         .orderBy(FUNDING_ENTITIES.ID)
-        .fetch { FundingEntityModel(it, projectsMultiset) }
+        .fetch { FundingEntityModel.of(it, projectsMultiset) }
   }
 }

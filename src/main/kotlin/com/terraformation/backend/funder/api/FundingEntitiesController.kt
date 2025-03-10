@@ -7,10 +7,13 @@ import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.funder.FundingEntityService
+import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -28,7 +31,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class FundingEntitiesController(
     private val fundingEntityService: FundingEntityService,
-    private val fundingEntityStore: FundingEntityStore
+    private val fundingEntityStore: FundingEntityStore,
+    private val fundingEntityUserStore: FundingEntityUserStore,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -72,6 +76,15 @@ class FundingEntitiesController(
   ): SimpleSuccessResponsePayload {
     fundingEntityService.deleteFundingEntity(fundingEntityId)
     return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Gets the Funding Entity that a specific user belongs to")
+  @GetMapping("/users/{userId}")
+  fun getFundingEntity(@PathVariable userId: UserId): GetFundingEntityResponsePayload {
+    val model =
+        fundingEntityUserStore.fetchEntityByUserId(userId)
+            ?: throw FundingEntityNotFoundException(userId)
+    return GetFundingEntityResponsePayload(fundingEntity = FundingEntityPayload(model))
   }
 }
 
