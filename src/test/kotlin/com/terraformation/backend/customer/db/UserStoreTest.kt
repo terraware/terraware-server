@@ -981,7 +981,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val funderUser = userStore.createFunderUser(email)
 
       assertEquals(
-          FunderUser(Instant.EPOCH, funderUser.userId, null, email.lowercase()), funderUser)
+          FunderUser(
+              Instant.EPOCH,
+              funderUser.userId,
+              email = email.lowercase(),
+              parentStore = parentStore,
+              permissionStore = permissionStore),
+          funderUser)
 
       assertEquals(UserType.Funder, funderUser.userType)
     }
