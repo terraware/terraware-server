@@ -1,3 +1,5 @@
+b5024f4a748 Update database dependencies (#2903)
+f1695023b28 Update dependency com.squarespace.cldr-engine:cldr-engine to v1.10.2 (#2902)
 545fa3c44bc Added project and system metrics to report fetch endpoints (#2898)
 0200a077c67 SW-6520 Implemented mortality rate metrics (#2896)
 1598915e102 SW-6520 Implemented species planted metric (#2895)
