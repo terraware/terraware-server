@@ -63,6 +63,7 @@ import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -83,6 +84,9 @@ import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.model.ObservationNotScheduled
+import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
+import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
@@ -149,6 +153,7 @@ internal class EmailNotificationServiceTest {
   private val deviceStore: DeviceStore = mockk()
   private val documentStore: DocumentStore = mockk()
   private val facilityStore: FacilityStore = mockk()
+  private val fundingEntityStore: FundingEntityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
   private val participantStore: ParticipantStore = mockk()
@@ -185,6 +190,7 @@ internal class EmailNotificationServiceTest {
           documentStore,
           emailService,
           facilityStore,
+          fundingEntityStore,
           organizationStore,
           parentStore,
           participantStore,
@@ -357,6 +363,14 @@ internal class EmailNotificationServiceTest {
           ),
           renderHeading = false)
 
+  private val fundingEntity =
+      FundingEntityModel(
+          id = FundingEntityId(1),
+          name = "My Funding Entity",
+          createdTime = Instant.EPOCH,
+          modifiedTime = Instant.EPOCH,
+      )
+
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val tfContactUserId = UserId(5)
@@ -403,6 +417,7 @@ internal class EmailNotificationServiceTest {
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { documentStore.fetchOneById(document.id) } returns document
     every { facilityStore.fetchOneById(facility.id) } returns facility
+    every { fundingEntityStore.fetchOneById(fundingEntity.id) } returns fundingEntity
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { organizationStore.fetchOneById(nonAcceleratorOrganization.id) } returns
         nonAcceleratorOrganization
@@ -525,6 +540,17 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
     assertSubjectContains("You've")
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun funderInvitedToFundingEntity() {
+    service.on(FunderInvitedToFundingEntityEvent(user.email, fundingEntity.id))
+
+    assertBodyContains("My Funding Entity", "Funding Entity name", false)
+    assertBodyContains(
+        webAppUrls.funderPortalRegistrationUrl(user.email), "Registration URL", false)
+    assertSubjectContains("You've been added to My Funding Entity's Funder Portal!")
     assertRecipientsEqual(setOf(user.email))
   }
 

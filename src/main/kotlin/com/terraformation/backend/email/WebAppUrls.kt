@@ -45,17 +45,11 @@ class WebAppUrls(
   }
 
   fun terrawareRegistrationUrl(organizationId: OrganizationId, email: String): URI {
-    val orgHome = fullOrganizationHome(organizationId)
-    return UriBuilder.fromUri(keycloakInfo.issuerUri)
-        .path("/protocol")
-        .path("openid-connect")
-        .path("registrations")
-        .queryParam("client_id", keycloakInfo.clientId)
-        .queryParam("email", URLEncoder.encode(email, "UTF-8"))
-        .queryParam("redirect_uri", orgHome)
-        .queryParam("response_type", "code")
-        .queryParam("scope", "openid")
-        .build()
+    return buildRegistrationUrl(fullOrganizationHome(organizationId), email)
+  }
+
+  fun funderPortalRegistrationUrl(email: String): URI {
+    return buildRegistrationUrl(fullFunderPortalHome(), email, mapOf("funderLogin" to "true"))
   }
 
   fun fullAccession(accessionId: AccessionId, organizationId: OrganizationId): URI {
@@ -268,5 +262,30 @@ class WebAppUrls(
           ViabilityTestType.Lab -> "lab"
           ViabilityTestType.Nursery -> "nursery"
         }
+  }
+
+  private fun buildRegistrationUrl(
+      redirectUri: URI,
+      email: String,
+      additionalParams: Map<String, String> = emptyMap()
+  ): URI {
+    val builder =
+        UriBuilder.fromUri(keycloakInfo.issuerUri)
+            .path("/protocol")
+            .path("openid-connect")
+            .path("registrations")
+            .queryParam("client_id", keycloakInfo.clientId)
+            .queryParam("email", URLEncoder.encode(email, "UTF-8"))
+            .queryParam("redirect_uri", redirectUri)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+
+    additionalParams.forEach { (key, value) -> builder.queryParam(key, value) }
+
+    return builder.build()
+  }
+
+  private fun fullFunderPortalHome(): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/funderHome").build()
   }
 }

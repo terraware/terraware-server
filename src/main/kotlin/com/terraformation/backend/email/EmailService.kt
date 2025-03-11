@@ -104,8 +104,7 @@ class EmailService(
     if (requireOptIn && !user.emailNotificationsEnabled) {
       log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
     } else {
-      val locale = user.locale ?: Locale.ENGLISH
-      locale.use { send(model, listOf(user.email)) }
+      sendLocaleEmails(model, listOf(user.email), user.locale)
     }
   }
 
@@ -124,8 +123,7 @@ class EmailService(
     val allUsers = userStore.fetchUsers(requireOptIn)
     allUsers.forEach { user ->
       try {
-        val locale = user.locale ?: Locale.ENGLISH
-        locale.use { send(model, listOf(user.email)) }
+        sendLocaleEmails(model, listOf(user.email), user.locale)
       } catch (e: Exception) {
         log.error("Failed to send email to user ${user.userId}: ${e.message}")
       }
@@ -138,9 +136,23 @@ class EmailService(
    * @param [model] Model object containing values that can be referenced by the template.
    */
   fun sendSupportNotification(model: EmailTemplateModel) {
-    config.support.email?.let { supportEmail ->
-      Locale.ENGLISH.use { send(model, listOf(supportEmail)) }
-    }
+    config.support.email?.let { supportEmail -> sendLocaleEmails(model, listOf(supportEmail)) }
+  }
+
+  /**
+   * Sends an email notification to a specific list of emails, using the specified Locale.
+   *
+   * @param [recipients] Email addresses to send the message to.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [initialLocale] Optional Locale object; uses ENGLISH if unspecified.
+   */
+  fun sendLocaleEmails(
+      model: EmailTemplateModel,
+      recipients: List<String>,
+      initialLocale: Locale? = null,
+  ) {
+    val finalLocale = initialLocale ?: Locale.ENGLISH
+    finalLocale.use { send(model, recipients) }
   }
 
   /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */

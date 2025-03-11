@@ -65,6 +65,9 @@ class SystemUser(
   override val authId: String?
     get() = null
 
+  override val email: String?
+    get() = null
+
   /*
    * The system user has no roles per se; it always has access to everything. Reject any attempts to
    * walk the current user's list of roles.

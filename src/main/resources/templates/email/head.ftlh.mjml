@@ -1,163 +1,173 @@
 <mj-head>
     <mj-attributes>
         <mj-class
-            name="logo-wrapper"
-            width="650px"
-            padding="0px"
-            background-color="#F9F8F7"
+                name="logo-wrapper"
+                width="650px"
+                padding="0px"
+                background-color="#F9F8F7"
         />
 
         <mj-class
-            name="body-gray"
-            background-color="#F9F8F7"
+                name="body-gray"
+                background-color="#F9F8F7"
         />
         <mj-class
-            name="logo-img"
-            align="center"
-            width="204px"
+                name="logo-img"
+                align="center"
+                width="204px"
         />
 
         <mj-class
-            name="body-wrapper"
-            width="600px"
-            padding="1px"
-            inner-padding="24px"
-            background-color="#B2AB93"
-            inner-background-color="#FFFFFF"
-            border-radius="8px"
-            inner-border-radius="7px"
+                name="body-wrapper"
+                width="600px"
+                padding="1px"
+                inner-padding="24px"
+                background-color="#B2AB93"
+                inner-background-color="#FFFFFF"
+                border-radius="8px"
+                inner-border-radius="7px"
         />
         <mj-class
-            name="body-wrapper-welcome"
-            padding="32px"
-            background-color="#FFFFFF"
-            border-top="1px solid #B2AB93"
-            border-bottom="1px solid #B2AB93"
+                name="body-wrapper-welcome"
+                padding="32px"
+                background-color="#FFFFFF"
+                border-top="1px solid #B2AB93"
+                border-bottom="1px solid #B2AB93"
         />
         <mj-class
-            name="secondary-wrapper"
-            padding="32px"
-            background-color="#FFFFFF"
+                name="secondary-wrapper"
+                padding="32px"
+                background-color="#FFFFFF"
         />
         <mj-class
-            name="text-header01"
-            font-family="Inter, sans-serif"
-            font-weight="500"
-            font-size="14px"
-            line-height="20px"
-            color="#7F775B"
-            align="center"
+                name="text-header01"
+                font-family="Inter, sans-serif"
+                font-weight="500"
+                font-size="14px"
+                line-height="20px"
+                color="#7F775B"
+                align="center"
         />
         <mj-class
-            name="org-image-container"
-            align="center"
-            background-color="#8AC656"
+                name="org-image-container"
+                align="center"
+                background-color="#8AC656"
         />
         <mj-class
-            name="settings-container"
-            align="center"
-            width="650px"
+                name="funder-image-container"
+                align="center"
+                background-color="#7473BA"
         />
         <mj-class
-            name="text-headline06-bold-green"
-            font-family="Inter, sans-serif"
-            font-weight="600"
-            font-size="20px"
-            line-height="28px"
-            color="#000000"
-            align="center"
-            padding="24px 24px 0px 24px"
+                name="settings-container"
+                align="center"
+                width="650px"
         />
         <mj-class
-            name="text-headline06-bold"
-            font-family="Inter, sans-serif"
-            font-weight="600"
-            font-size="20px"
-            line-height="28px"
-            color="#000000"
-            align="center"
-            padding="24px 24px 32px 24px"
+                name="text-headline06-bold-green"
+                font-family="Inter, sans-serif"
+                font-weight="600"
+                font-size="20px"
+                line-height="28px"
+                color="#000000"
+                align="center"
+                padding="24px 24px 0px 24px"
         />
         <mj-class
-            name="text-body03"
-            font-family="Inter, sans-serif"
-            font-weight="400"
-            font-size="16px"
-            line-height="24px"
+                name="text-headline06-bold"
+                font-family="Inter, sans-serif"
+                font-weight="600"
+                font-size="20px"
+                line-height="28px"
+                color="#000000"
+                align="center"
+                padding="24px 24px 32px 24px"
         />
         <mj-class
-            name="text-body-footer"
-            font-family="Inter, sans-serif"
-            font-weight="500"
-            font-size="14px"
-            line-height="20px"
-            color="#7F775B"
-            align="center"
-            padding="0"
-            background-color="#F9F8F7"
+                name="text-body03"
+                font-family="Inter, sans-serif"
+                font-weight="400"
+                font-size="16px"
+                line-height="24px"
         />
         <mj-class
-            name="text-body03-secondary"
-            font-family="Inter, sans-serif"
-            font-weight="400"
-            font-size="14px"
-            line-height="20px"
-            color="#7F775B"
-            padding="0px 32px 24px 32px"
+                name="text-body-footer"
+                font-family="Inter, sans-serif"
+                font-weight="500"
+                font-size="14px"
+                line-height="20px"
+                color="#7F775B"
+                align="center"
+                padding="0"
+                background-color="#F9F8F7"
         />
         <mj-class
-            name="btn-productive-primary-md"
-            background-color="#2C8658"
-            color="#FFFFFF"
-            height="40px"
-            padding="32px 0px 32px 0px"
-            border-radius="1024px"
-            font-family="Inter, sans-serif"
-            font-weight="600"
-            font-size="16px"
-            line-height="24px"
+                name="text-body03-secondary"
+                font-family="Inter, sans-serif"
+                font-weight="400"
+                font-size="14px"
+                line-height="20px"
+                color="#7F775B"
+                padding="0px 32px 24px 32px"
         />
         <mj-class
-            name="footer-wrapper"
-            width="650px"
-            padding="0px"
-            align="center"
-            background-color="#F9F8F7"
+                name="btn-productive-primary-md"
+                background-color="#2C8658"
+                color="#FFFFFF"
+                height="40px"
+                padding="32px 0px 32px 0px"
+                border-radius="1024px"
+                font-family="Inter, sans-serif"
+                font-weight="600"
+                font-size="16px"
+                line-height="24px"
         />
         <mj-class
-            name="text-footer"
-            font-family="Inter, sans-serif"
-            font-weight="500"
-            font-size="14px"
-            line-height="20px"
-            color="#7F775B"
-            align="center"
-            padding="0"
-            background-color="#F9F8F7"
+                name="footer-wrapper"
+                width="650px"
+                padding="0px"
+                align="center"
+                background-color="#F9F8F7"
         />
         <mj-class
-            name="text-body02"
-            font-family="Inter, sans-serif"
-            font-weight="400"
-            font-size="12px"
-            line-height="auto"
-            color="#333025"
-            align="center"
-            padding="0px"
+                name="text-footer"
+                font-family="Inter, sans-serif"
+                font-weight="500"
+                font-size="14px"
+                line-height="20px"
+                color="#7F775B"
+                align="center"
+                padding="0"
+                background-color="#F9F8F7"
         />
-        <mj-class name="text-bold" font-weight="600" />
         <mj-class
-            name="social-wrapper"
-            font-size="15px"
-            icon-size="24px"
-            mode="horizontal"
-            padding="32px 0px 0px 0px"
+                name="text-body02"
+                font-family="Inter, sans-serif"
+                font-weight="400"
+                font-size="12px"
+                line-height="auto"
+                color="#333025"
+                align="center"
+                padding="0px"
         />
-        <mj-class name="social-icons" padding="0px 8px 0px 8px" />
+        <mj-class name="text-bold" font-weight="600"/>
+        <mj-class
+                name="social-wrapper"
+                font-size="15px"
+                icon-size="24px"
+                mode="horizontal"
+                padding="32px 0px 0px 0px"
+        />
+        <mj-class name="social-icons" padding="0px 8px 0px 8px"/>
     </mj-attributes>
     <mj-style>
-        .text-link { color: #2C8658; }
-        .text-link:visited { color: #2C8658; }
+        .text-link {
+            color: #2C8658;
+        }
+
+        .text-link:visited {
+            color: #2C8658;
+        }
     </mj-style>
     <mj-style inline>
         .text-footer div {
@@ -165,6 +175,7 @@
             padding: 8px 0 24px 0;
             border-radius: 0 0 7px 7px;
         }
+
         .text-body-footer div {
             background: #F9F8F7;
             padding: 24px 0 0 0;
