@@ -612,10 +612,85 @@ interface TerrawareUser : Principal, UserDetails {
 
   // Capabilities
 
-  private fun isSuperAdmin(): Boolean {
+  fun isSuperAdmin(): Boolean {
     recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
     return GlobalRole.SuperAdmin in globalRoles
   }
+
+  fun isAcceleratorAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
+    return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
+  }
+
+  fun isTFExpertOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.TFExpert))
+    return setOf(GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any {
+      it in globalRoles
+    }
+  }
+
+  fun isReadOnlyOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.ReadOnly))
+    return setOf(
+            GlobalRole.ReadOnly,
+            GlobalRole.TFExpert,
+            GlobalRole.AcceleratorAdmin,
+            GlobalRole.SuperAdmin)
+        .any { it in globalRoles }
+  }
+
+  fun isOwner(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
+        organizationRoles[organizationId] == Role.Owner
+      } ?: false
+
+  fun isAdminOrHigher(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Admin, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  fun isManagerOrHigher(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, organizationId))
+        when (organizationRoles[organizationId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  fun isManagerOrHigher(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  fun isMember(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
+        facilityId in facilityRoles
+      } ?: false
+
+  fun isMember(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
+        organizationId in organizationRoles
+      } ?: false
 
   /** History of permission checks performed in the current request or job. */
   val permissionChecks: MutableList<PermissionCheck>

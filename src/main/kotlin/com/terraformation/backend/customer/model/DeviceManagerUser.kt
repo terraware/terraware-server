@@ -50,8 +50,6 @@ data class DeviceManagerUser(
   override val defaultPermission: Boolean
     get() = false
 
-  override fun hasAnyAdminRole(): Boolean = false
-
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return mutableSetOf()
   }
