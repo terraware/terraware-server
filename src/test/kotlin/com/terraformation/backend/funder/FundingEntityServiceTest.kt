@@ -329,6 +329,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `user deletion removes row from funding_entity_users table`() {
+    every { user.canReadUser(any()) } returns true
+
     val fundingEntityId = insertFundingEntity()
 
     insertFundingEntityUser(fundingEntityId, currentUser().userId)
@@ -345,6 +347,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canUpdateFundingEntityUsers(any()) } returns true
+      every { user.canReadUser(any()) } returns true
     }
 
     @Test

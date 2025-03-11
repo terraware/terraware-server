@@ -542,7 +542,7 @@ data class IndividualUser(
 
   override fun canReadUpload(uploadId: UploadId) = userId == parentStore.getUserId(uploadId)
 
-  override fun canReadUser(userId: UserId) = isReadOnlyOrHigher()
+  override fun canReadUser(userId: UserId) = this.userId == userId || isReadOnlyOrHigher()
 
   override fun canReadUserInternalInterests(userId: UserId) = isTFExpertOrHigher()
 

@@ -17,14 +17,14 @@ data class FundingEntityModel(
   companion object {
     fun of(
         record: Record,
-        projectsField: Field<List<ProjectId>>,
+        projectsField: Field<List<ProjectId>>? = null,
     ): FundingEntityModel {
       return FundingEntityModel(
           id = record[FUNDING_ENTITIES.ID]!!,
           name = record[FUNDING_ENTITIES.NAME]!!,
           createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
           modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
-          projects = record[projectsField]!!,
+          projects = projectsField?.let { record[it] } ?: emptyList(),
       )
     }
   }
