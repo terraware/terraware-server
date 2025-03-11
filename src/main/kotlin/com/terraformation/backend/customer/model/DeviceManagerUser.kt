@@ -55,10 +55,6 @@ data class DeviceManagerUser(
     return mutableSetOf()
   }
 
-  override fun getName(): String = authId
-
-  override fun getUsername(): String = authId
-
   private val deviceManagerId: DeviceManagerId by lazy {
     parentStore.getDeviceManagerId(userId)
         ?: throw IllegalStateException("No device manager ID found for user $userId")

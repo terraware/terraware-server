@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
-import com.terraformation.backend.customer.model.TerrawareUser.Companion.log
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -44,6 +43,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
 import java.time.ZoneId
@@ -98,6 +98,9 @@ data class IndividualUser(
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
+  companion object {
+    val log = perClassLogger()
+  }
 
   private val _organizationRoles = ResettableLazy { permissionStore.fetchOrganizationRoles(userId) }
   override val organizationRoles: Map<OrganizationId, Role> by _organizationRoles
@@ -114,18 +117,11 @@ data class IndividualUser(
     _globalRoles.reset()
   }
 
-  val fullName: String?
-    get() = TerrawareUser.makeFullName(firstName, lastName)
-
   /** Returns true if the user is an admin, owner or Terraformation Contact of any organizations. */
   override fun hasAnyAdminRole() =
       organizationRoles.values.any {
         it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
       }
-
-  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
-
-  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (isSuperAdmin()) {
@@ -682,8 +678,6 @@ data class IndividualUser(
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
-  // When adding new permissions, put them in alphabetical order.
-
   private fun isSuperAdmin(): Boolean {
     recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
     return GlobalRole.SuperAdmin in globalRoles
@@ -841,4 +835,6 @@ data class IndividualUser(
       isRecordingChecks = oldHardPermission
     }
   }
+
+  // When adding new permissions, put them in alphabetical order.
 }

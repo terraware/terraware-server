@@ -24,10 +24,6 @@ data class FunderUser(
   override val userType: UserType
     get() = UserType.Funder
 
-  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
-
-  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
-
   override val defaultPermission: Boolean
     get() = false
 }

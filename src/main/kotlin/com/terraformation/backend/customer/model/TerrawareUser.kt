@@ -117,6 +117,13 @@ interface TerrawareUser : Principal, UserDetails {
    */
   val authId: String?
 
+  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
+
+  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
+
+  val fullName: String?
+    get() = makeFullName(firstName, lastName)
+
   /** The user's role in each organization they belong to. */
   val organizationRoles: Map<OrganizationId, Role>
     get() = emptyMap()
