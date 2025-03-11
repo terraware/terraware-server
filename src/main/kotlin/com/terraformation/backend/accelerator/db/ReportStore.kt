@@ -194,6 +194,7 @@ class ReportStore(
   fun reviewReportMetrics(
       reportId: ReportId,
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
@@ -208,6 +209,7 @@ class ReportStore(
     dslContext.transaction { _ ->
       val rowsUpdated =
           upsertReportStandardMetrics(reportId, standardMetricEntries, true) +
+              upsertReportSystemMetrics(reportId, systemMetricEntries, true) +
               upsertReportProjectMetrics(reportId, projectMetricEntries, true)
       if (rowsUpdated > 0) {
         updateReportModifiedTime(reportId)
@@ -248,6 +250,7 @@ class ReportStore(
   fun updateReportMetrics(
       reportId: ReportId,
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
@@ -267,6 +270,7 @@ class ReportStore(
     dslContext.transaction { _ ->
       val rowsUpdated =
           upsertReportStandardMetrics(reportId, standardMetricEntries, false) +
+              upsertReportSystemMetrics(reportId, systemMetricEntries, false) +
               upsertReportProjectMetrics(reportId, projectMetricEntries, false)
       if (rowsUpdated > 0) {
         updateReportModifiedTime(reportId)
@@ -464,6 +468,48 @@ class ReportStore(
           metricIdField = REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
           entries = entries,
           updateInternalComment = updateInternalComment)
+
+  private fun upsertReportSystemMetrics(
+      reportId: ReportId,
+      entries: Map<SystemMetric, ReportMetricEntryModel>,
+      updateInternalComment: Boolean,
+  ): Int {
+    var insertQuery = dslContext.insertInto(REPORT_SYSTEM_METRICS).set()
+
+    val iterator = entries.iterator()
+
+    while (iterator.hasNext()) {
+      val (metricId, entry) = iterator.next()
+      insertQuery =
+          insertQuery
+              .set(REPORT_SYSTEM_METRICS.REPORT_ID, reportId)
+              .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
+              .set(REPORT_SYSTEM_METRICS.TARGET, entry.target)
+              .set(REPORT_SYSTEM_METRICS.NOTES, entry.notes)
+              .set(REPORT_SYSTEM_METRICS.MODIFIED_BY, currentUser().userId)
+              .set(REPORT_SYSTEM_METRICS.MODIFIED_TIME, clock.instant())
+              .apply {
+                if (updateInternalComment) {
+                  this.set(REPORT_SYSTEM_METRICS.OVERRIDE_VALUE, entry.value)
+                  this.set(REPORT_SYSTEM_METRICS.INTERNAL_COMMENT, entry.internalComment)
+                }
+              }
+              .apply {
+                if (iterator.hasNext()) {
+                  this.newRecord()
+                }
+              }
+    }
+
+    val rowsUpdated =
+        insertQuery
+            .onConflict(REPORT_SYSTEM_METRICS.REPORT_ID, REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+            .doUpdate()
+            .setAllToExcluded()
+            .execute()
+
+    return rowsUpdated
+  }
 
   private fun upsertReportProjectMetrics(
       reportId: ReportId,

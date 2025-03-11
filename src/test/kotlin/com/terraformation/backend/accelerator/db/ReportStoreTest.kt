@@ -824,6 +824,31 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          target = 1000,
+          systemValue = 1200,
+          systemTime = Instant.ofEpochSecond(4000),
+          notes = "Existing seeds collected metric notes",
+          internalComment = "Existing seeds collected metric internal comments",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SpeciesPlanted,
+          target = 10,
+          overrideValue = 15,
+          systemValue = 12,
+          systemTime = Instant.ofEpochSecond(5000),
+          notes = "Existing species collected metric notes",
+          internalComment = "Existing species collected metric internal comments",
+          modifiedTime = Instant.ofEpochSecond(5000),
+          modifiedBy = user.userId,
+      )
+
       // At this point, the report has entries for metric 1 and 2, no entry for metric 3 and 4
       clock.instant = Instant.ofEpochSecond(9000)
 
@@ -849,6 +874,23 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = 45,
                           notes = "New metric 3 notes",
                           internalComment = "New metric 3 internal comment",
+                      ),
+              ),
+          systemMetricEntries =
+              mapOf(
+                  SystemMetric.SpeciesPlanted to
+                      ReportMetricEntryModel(
+                          target = 5,
+                          value = 4,
+                          notes = "New species planted metric notes",
+                          internalComment = "New species planted metric internal comment",
+                      ),
+                  SystemMetric.TreesPlanted to
+                      ReportMetricEntryModel(
+                          target = 250,
+                          value = 45,
+                          notes = "New trees planted metric notes",
+                          internalComment = "New trees planted metric internal comment",
                       ),
               ),
           projectMetricEntries =
@@ -897,6 +939,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               // Standard metric 4 is not inserted since there was no updates
           ),
           "Reports standard metrics table")
+
+      assertTableEquals(
+          listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 1000,
+                  systemValue = 1200,
+                  systemTime = Instant.ofEpochSecond(4000),
+                  notes = "Existing seeds collected metric notes",
+                  internalComment = "Existing seeds collected metric internal comments",
+                  modifiedTime = Instant.ofEpochSecond(3000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  target = 5,
+                  systemValue = 12,
+                  systemTime = Instant.ofEpochSecond(5000),
+                  overrideValue = 4,
+                  notes = "New species planted metric notes",
+                  internalComment = "New species planted metric internal comment",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  target = 250,
+                  overrideValue = 45,
+                  notes = "New trees planted metric notes",
+                  internalComment = "New trees planted metric internal comment",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+          ))
 
       assertTableEquals(
           listOf(
