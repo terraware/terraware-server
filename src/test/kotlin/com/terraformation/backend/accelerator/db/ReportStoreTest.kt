@@ -819,7 +819,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 30,
           value = null,
           notes = "Existing metric 2 notes",
-          internalComment = "Existing metric 2 internal comments",
+          internalComment = "Existing metric 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -831,7 +831,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
           notes = "Existing seeds collected metric notes",
-          internalComment = "Existing seeds collected metric internal comments",
+          internalComment = "Existing seeds collected metric internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -843,8 +843,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
-          notes = "Existing species collected metric notes",
-          internalComment = "Existing species collected metric internal comments",
+          notes = "Existing species planted metric notes",
+          internalComment = "Existing species planted metric internal comment",
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -949,7 +949,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
                   notes = "Existing seeds collected metric notes",
-                  internalComment = "Existing seeds collected metric internal comments",
+                  internalComment = "Existing seeds collected metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
@@ -975,7 +975,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-          ))
+          ),
+          "Reports system metrics table")
 
       assertTableEquals(
           listOf(
@@ -988,7 +989,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   internalComment = "Project metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )))
+              )),
+          "Reports project metrics table")
 
       assertTableEquals(
           ReportsRecord(
@@ -1118,10 +1120,36 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 30,
           value = null,
           notes = "Existing metric 2 notes",
-          internalComment = "Existing metric 2 internal comments",
+          internalComment = "Existing metric 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          target = 1000,
+          systemValue = 1200,
+          systemTime = Instant.ofEpochSecond(4000),
+          notes = "Existing seeds collected metric notes",
+          internalComment = "Existing seeds collected metric internal comment",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SpeciesPlanted,
+          target = 10,
+          overrideValue = 15,
+          systemValue = 12,
+          systemTime = Instant.ofEpochSecond(5000),
+          notes = "Existing species planted metric notes",
+          internalComment = "Existing species planted metric internal comment",
+          modifiedTime = Instant.ofEpochSecond(5000),
+          modifiedBy = user.userId,
+      )
+
       // At this point, the report has entries for standard metric 1 and 2, and no entry for
       // standard metric 3 and 4
 
@@ -1149,6 +1177,31 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           target = 50,
                           value = null,
                           notes = "New metric 3 notes",
+                      ),
+              ),
+          systemMetricEntries =
+              mapOf(
+                  SystemMetric.SpeciesPlanted to
+                      ReportMetricEntryModel(
+                          target = 5,
+                          notes = "New species planted metric notes",
+
+                          // These fields are ignored
+                          value = 4,
+                          internalComment = "New species planted metric internal comment",
+                          modifiedTime = Instant.EPOCH,
+                          modifiedBy = UserId(99),
+                      ),
+                  SystemMetric.TreesPlanted to
+                      ReportMetricEntryModel(
+                          target = 250,
+                          notes = "New trees planted metric notes",
+
+                          // These fields are ignored
+                          value = 45,
+                          internalComment = "New trees planted metric internal comment",
+                          modifiedTime = Instant.EPOCH,
+                          modifiedBy = UserId(99),
                       ),
               ),
           projectMetricEntries =
@@ -1179,7 +1232,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 99,
                   value = 88,
                   notes = "New metric 2 notes",
-                  internalComment = "Existing metric 2 internal comments",
+                  internalComment = "Existing metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -1197,6 +1250,42 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 1000,
+                  systemValue = 1200,
+                  systemTime = Instant.ofEpochSecond(4000),
+                  notes = "Existing seeds collected metric notes",
+                  internalComment = "Existing seeds collected metric internal comment",
+                  modifiedTime = Instant.ofEpochSecond(3000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  target = 5,
+                  systemValue = 12,
+                  systemTime = Instant.ofEpochSecond(5000),
+                  overrideValue = 15,
+                  notes = "New species planted metric notes",
+                  internalComment = "Existing species planted metric internal comment",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  target = 250,
+                  notes = "New trees planted metric notes",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+          ),
+          "Reports system metrics table")
+
+      assertTableEquals(
+          listOf(
               ReportProjectMetricsRecord(
                   reportId = reportId,
                   projectMetricId = projectMetricId,
@@ -1205,7 +1294,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   notes = "Project metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )))
+              )),
+          "Reports project metrics table")
 
       assertTableEquals(
           ReportsRecord(
