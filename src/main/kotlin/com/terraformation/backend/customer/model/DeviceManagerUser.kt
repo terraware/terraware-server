@@ -37,6 +37,9 @@ data class DeviceManagerUser(
   override val userType: UserType
     get() = UserType.DeviceManager
 
+  override val email: String?
+    get() = null
+
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     mapOf(organizationId to Role.Contributor)
   }

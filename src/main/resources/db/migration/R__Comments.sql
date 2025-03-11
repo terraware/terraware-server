@@ -520,6 +520,8 @@ COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental n
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
+COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
+
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
 COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';
@@ -616,6 +618,11 @@ COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targe
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_system_metrics IS 'Report entries of targets and values for system metrics.';
+COMMENT ON COLUMN accelerator.report_system_metrics.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
+COMMENT ON COLUMN accelerator.report_system_metrics.system_time IS 'System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be used instead.';
+COMMENT ON COLUMN accelerator.report_system_metrics.system_value IS 'Value collected via Terraware data. Null before value is submitted.';
+
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
@@ -633,7 +640,7 @@ COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissi
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
 
-COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
+COMMENT ON TABLE accelerator.system_metrics IS '(Enum) Accelerator report metrics, for which data are collected from Terraware.';
 
 COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
 

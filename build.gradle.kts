@@ -21,7 +21,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "7.0.1"
+  id("dev.monosoul.jooq-docker") version "7.0.2"
   id("com.diffplug.spotless") version "7.0.2"
   id("org.springframework.boot") version "3.4.3"
   id("io.spring.dependency-management") version "1.1.7"
@@ -97,7 +97,7 @@ dependencies {
   implementation("com.google.auth:google-auth-library-oauth2-http:1.33.1")
   implementation("com.google.apis:google-api-services-drive:v3-rev20250216-2.0.0")
   implementation("com.opencsv:opencsv:5.10")
-  implementation("com.squarespace.cldr-engine:cldr-engine:1.10.1")
+  implementation("com.squarespace.cldr-engine:cldr-engine:1.10.2")
   implementation("commons-codec:commons-codec:1.18.0")
   implementation("commons-validator:commons-validator:1.9.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.0")
@@ -142,7 +142,7 @@ dependencies {
   testImplementation("org.junit.platform:junit-platform-launcher")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.5"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.6"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 

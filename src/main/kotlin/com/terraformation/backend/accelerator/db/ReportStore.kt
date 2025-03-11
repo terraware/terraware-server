@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
@@ -25,11 +27,26 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPOR
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
@@ -295,13 +312,6 @@ class ReportStore(
       condition: Condition,
       includeMetrics: Boolean = false
   ): List<ReportModel> {
-    val standardMetricsField =
-        if (includeMetrics) {
-          standardMetricsMultiset
-        } else {
-          null
-        }
-
     val projectMetricsField =
         if (includeMetrics) {
           projectMetricsMultiset
@@ -309,11 +319,32 @@ class ReportStore(
           null
         }
 
+    val standardMetricsField =
+        if (includeMetrics) {
+          standardMetricsMultiset
+        } else {
+          null
+        }
+
+    val systemMetricsField =
+        if (includeMetrics) {
+          systemMetricsMultiset
+        } else {
+          null
+        }
+
     return dslContext
-        .select(REPORTS.asterisk(), standardMetricsField, projectMetricsField)
+        .select(REPORTS.asterisk(), projectMetricsField, standardMetricsField, systemMetricsField)
         .from(REPORTS)
         .where(condition)
-        .fetch { ReportModel.of(it, standardMetricsField, projectMetricsField) }
+        .fetch {
+          ReportModel.of(
+              record = it,
+              projectMetricsField = projectMetricsField,
+              standardMetricsField = standardMetricsField,
+              systemMetricsField = systemMetricsField,
+          )
+        }
         .filter { currentUser().canReadReport(it.id) }
   }
 
@@ -432,4 +463,143 @@ class ReportStore(
                   .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
+
+  private val mortalityRateDenominatorField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
+
+  private val mortalityRateNumeratorField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) }
+
+  // Fetch the latest observations per planting site from the reporting period, and calculate the
+  // mortality rate
+  private val mortalityRateField =
+      DSL.field(
+              DSL.select(
+                      DSL.if_(
+                          mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
+                          (mortalityRateNumeratorField * 100.0) / mortalityRateDenominatorField,
+                          BigDecimal.ZERO))
+                  .from(OBSERVED_SITE_SPECIES_TOTALS)
+                  .where(
+                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(
+                          DSL.select(OBSERVATIONS.ID)
+                              .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
+                              .from(OBSERVATIONS)
+                              .join(PLANTING_SITES)
+                              .on(PLANTING_SITES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+                              .where(
+                                  OBSERVATIONS.COMPLETED_TIME.lessThan(
+                                      REPORTS.END_DATE.convertFrom {
+                                        it!!.plusDays(1).toInstant(ZoneId.systemDefault())
+                                      }))
+                              .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+                              .orderBy(
+                                  OBSERVATIONS.PLANTING_SITE_ID,
+                                  OBSERVATIONS.COMPLETED_TIME.desc())))
+                  .and(
+                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
+                          RecordedSpeciesCertainty.Unknown)))
+          .convertFrom { it.toInt() }
+
+  private val seedsCollectedField =
+      with(ACCESSIONS) {
+        DSL.field(
+                DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
+                    .from(this)
+                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
+            .convertFrom { it.toInt() }
+      }
+
+  private val withdrawnSeedlingsField =
+      with(BATCH_WITHDRAWALS) {
+        DSL.field(
+            DSL.select(
+                    DSL.sum(READY_QUANTITY_WITHDRAWN) +
+                        DSL.sum(GERMINATING_QUANTITY_WITHDRAWN) +
+                        DSL.sum(NOT_READY_QUANTITY_WITHDRAWN))
+                .from(this)
+                .where(BATCH_ID.eq(BATCHES.ID))
+                .and(withdrawals.PURPOSE_ID.notEqual(WithdrawalPurpose.NurseryTransfer)))
+      }
+
+  private val seedlingsField =
+      with(BATCHES) {
+        DSL.field(
+                DSL.select(
+                        DSL.sum(READY_QUANTITY) +
+                            DSL.sum(GERMINATING_QUANTITY) +
+                            DSL.sum(NOT_READY_QUANTITY) +
+                            DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0))
+                    .from(this)
+                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
+            .convertFrom { it.toInt() }
+      }
+
+  // For species, we total up the number of trees planted per species, and take only ones that are
+  // greater than zero, to correctly take account of "Undone" plantings.
+  private val speciesPlantedField =
+      with(PLANTINGS) {
+        DSL.field(
+            DSL.select(DSL.count())
+                .from(
+                    DSL.select(SPECIES_ID)
+                        .from(this)
+                        .join(DELIVERIES)
+                        .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                        .join(WITHDRAWALS)
+                        .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                        .join(PLANTING_SITES)
+                        .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                        .where(
+                            WITHDRAWALS.WITHDRAWN_DATE.between(
+                                REPORTS.START_DATE, REPORTS.END_DATE))
+                        .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .groupBy(SPECIES_ID)
+                        .having(DSL.sum(NUM_PLANTS).ge(BigDecimal.ZERO))))
+      }
+
+  private val treesPlantedField =
+      with(PLANTINGS) {
+        DSL.field(
+                DSL.select(DSL.sum(NUM_PLANTS))
+                    .from(this)
+                    .join(DELIVERIES)
+                    .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                    .join(WITHDRAWALS)
+                    .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                    .join(PLANTING_SITES)
+                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                    .where(WITHDRAWALS.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+            .convertFrom { it.toInt() }
+      }
+
+  private val systemValueField =
+      DSL.coalesce(
+          REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
+          DSL.case_()
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
+              .else_(0),
+          DSL.value(0))
+
+  private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
+      DSL.multiset(
+              DSL.select(
+                      SYSTEM_METRICS.ID,
+                      REPORT_SYSTEM_METRICS.asterisk(),
+                      systemValueField,
+                  )
+                  .from(SYSTEM_METRICS)
+                  .leftJoin(REPORT_SYSTEM_METRICS)
+                  .on(SYSTEM_METRICS.ID.eq(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID))
+                  .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
+                  .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID))
+          .convertFrom { result -> result.map { ReportSystemMetricModel.of(it, systemValueField) } }
 }
