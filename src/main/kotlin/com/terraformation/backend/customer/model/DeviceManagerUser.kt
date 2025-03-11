@@ -45,8 +45,6 @@ data class DeviceManagerUser(
     mapOf(facilityId to Role.Contributor)
   }
 
-  override var isRecordingChecks = false
-
   override val defaultPermission: Boolean
     get() = false
 

@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.CurrentUserHolder
-import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
@@ -59,7 +58,7 @@ import org.springframework.security.core.userdetails.UserDetails
  */
 interface TerrawareUser : Principal, UserDetails {
   companion object {
-    private val log = perClassLogger()
+    val log = perClassLogger()
 
     /**
      * Constructs a user's full name, if available. Currently this is just the first and last name
@@ -134,13 +133,7 @@ interface TerrawareUser : Principal, UserDetails {
   val globalRoles: Set<GlobalRole>
     get() = emptySet()
 
-  override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-    return if (isSuperAdmin()) {
-      mutableSetOf(SuperAdminAuthority)
-    } else {
-      mutableSetOf()
-    }
-  }
+  override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf()
 
   override fun getPassword(): String {
     log.warn("Something is trying to get the password of an OAuth2 user")
@@ -204,6 +197,10 @@ interface TerrawareUser : Principal, UserDetails {
    * changes to the current user's permission-related data, e.g., joining a new organization.
    */
   fun clearCachedPermissions() {}
+
+  fun <T> recordPermissionChecks(func: () -> T): T {
+    return func()
+  }
 
   /*
    * Permission checks. Each of these returns true if the user has permission to perform the action.
@@ -609,133 +606,4 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUploadPhoto(accessionId: AccessionId): Boolean = defaultPermission
 
   // When adding new permissions, put them in alphabetical order in the above block.
-
-  // Capabilities
-
-  fun isSuperAdmin(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
-    return GlobalRole.SuperAdmin in globalRoles
-  }
-
-  fun isAcceleratorAdmin(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
-    return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
-  }
-
-  fun isTFExpertOrHigher(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.TFExpert))
-    return setOf(GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any {
-      it in globalRoles
-    }
-  }
-
-  fun isReadOnlyOrHigher(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.ReadOnly))
-    return setOf(
-            GlobalRole.ReadOnly,
-            GlobalRole.TFExpert,
-            GlobalRole.AcceleratorAdmin,
-            GlobalRole.SuperAdmin)
-        .any { it in globalRoles }
-  }
-
-  fun isOwner(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
-        organizationRoles[organizationId] == Role.Owner
-      } ?: false
-
-  fun isAdminOrHigher(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Admin, facilityId))
-        when (facilityRoles[facilityId]) {
-          Role.Admin,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  fun isManagerOrHigher(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, organizationId))
-        when (organizationRoles[organizationId]) {
-          Role.Admin,
-          Role.Manager,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  fun isManagerOrHigher(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, facilityId))
-        when (facilityRoles[facilityId]) {
-          Role.Admin,
-          Role.Manager,
-          Role.Owner,
-          Role.TerraformationContact -> true
-          else -> false
-        }
-      } ?: false
-
-  fun isMember(facilityId: FacilityId?) =
-      facilityId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
-        facilityId in facilityRoles
-      } ?: false
-
-  fun isMember(organizationId: OrganizationId?) =
-      organizationId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
-        organizationId in organizationRoles
-      } ?: false
-
-  /** History of permission checks performed in the current request or job. */
-  val permissionChecks: MutableList<PermissionCheck>
-    get() = mutableListOf()
-
-  fun recordPermissionCheck(check: PermissionCheck) {
-    if (isRecordingChecks) {
-      var checkIsAlreadyImplied = false
-
-      check.populateCallStack()
-
-      permissionChecks
-          .filter { check.isGuardedBy(it) }
-          .forEach { previousCheck ->
-            if (check.isStricterThan(previousCheck)) {
-              log.warn(
-                  "Permission check $check guarded by $previousCheck" +
-                      "\nPrevious:" +
-                      "\n${previousCheck.prettyPrintStack()}" +
-                      "\nCurrent:" +
-                      "\n${check.prettyPrintStack()}")
-            } else if (check.isImpliedBy(previousCheck)) {
-              checkIsAlreadyImplied = true
-            }
-          }
-
-      // If a check is already implied by another check that guards it, don't record it; if, later,
-      // there is a stricter check, we don't want to erroneously flag it as guarded by this
-      // less-strict one.
-      if (!checkIsAlreadyImplied) {
-        permissionChecks.add(check)
-      }
-    }
-  }
-
-  var isRecordingChecks: Boolean
-
-  fun <T> recordPermissionChecks(func: () -> T): T {
-    val oldHardPermission = isRecordingChecks
-    isRecordingChecks = true
-
-    return try {
-      func()
-    } finally {
-      isRecordingChecks = oldHardPermission
-    }
-  }
 }

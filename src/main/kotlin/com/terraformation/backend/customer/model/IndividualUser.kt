@@ -1,8 +1,10 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.customer.model.TerrawareUser.Companion.log
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -46,6 +48,7 @@ import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
+import org.springframework.security.core.GrantedAuthority
 
 /**
  * Details about the user who is making the current request and the permissions they have. This
@@ -120,11 +123,19 @@ data class IndividualUser(
         it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
       }
 
-  override var isRecordingChecks = false
-
   override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
 
   override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
+
+  override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
+    return if (isSuperAdmin()) {
+      mutableSetOf(SuperAdminAuthority)
+    } else {
+      mutableSetOf()
+    }
+  }
+
+  // Permissions
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
@@ -671,6 +682,100 @@ data class IndividualUser(
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
+  // When adding new permissions, put them in alphabetical order.
+
+  private fun isSuperAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
+    return GlobalRole.SuperAdmin in globalRoles
+  }
+
+  private fun isAcceleratorAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
+    return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
+  }
+
+  private fun isTFExpertOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.TFExpert))
+    return setOf(GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any {
+      it in globalRoles
+    }
+  }
+
+  private fun isReadOnlyOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.ReadOnly))
+    return setOf(
+            GlobalRole.ReadOnly,
+            GlobalRole.TFExpert,
+            GlobalRole.AcceleratorAdmin,
+            GlobalRole.SuperAdmin)
+        .any { it in globalRoles }
+  }
+
+  private fun isOwner(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
+        organizationRoles[organizationId] == Role.Owner
+      } ?: false
+
+  override fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
+    return organizationId?.let {
+      recordPermissionCheck(RolePermissionCheck(Role.Admin, organizationId))
+      when (organizationRoles[organizationId]) {
+        Role.Admin,
+        Role.Owner,
+        Role.TerraformationContact -> true
+        else -> false
+      }
+    } ?: false
+  }
+
+  private fun isAdminOrHigher(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Admin, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  private fun isManagerOrHigher(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, organizationId))
+        when (organizationRoles[organizationId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  private fun isManagerOrHigher(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
+
+  private fun isMember(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
+        facilityId in facilityRoles
+      } ?: false
+
+  private fun isMember(organizationId: OrganizationId?) =
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
+        organizationId in organizationRoles
+      } ?: false
+
   private fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
       plantingSiteId?.let {
         recordPermissionCheck(RolePermissionCheck(Role.Manager, plantingSiteId))
@@ -691,5 +796,50 @@ data class IndividualUser(
               (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
                   parentStore.hasApplications(organizationId)))
 
-  // When adding new permissions, put them in alphabetical order.
+  /** History of permission checks performed in the current request or job. */
+  val permissionChecks: MutableList<PermissionCheck>
+    get() = mutableListOf()
+
+  private var isRecordingChecks: Boolean = false
+
+  private fun recordPermissionCheck(check: PermissionCheck) {
+    if (isRecordingChecks) {
+      var checkIsAlreadyImplied = false
+
+      check.populateCallStack()
+
+      permissionChecks
+          .filter { check.isGuardedBy(it) }
+          .forEach { previousCheck ->
+            if (check.isStricterThan(previousCheck)) {
+              log.warn(
+                  "Permission check $check guarded by $previousCheck" +
+                      "\nPrevious:" +
+                      "\n${previousCheck.prettyPrintStack()}" +
+                      "\nCurrent:" +
+                      "\n${check.prettyPrintStack()}")
+            } else if (check.isImpliedBy(previousCheck)) {
+              checkIsAlreadyImplied = true
+            }
+          }
+
+      // If a check is already implied by another check that guards it, don't record it; if, later,
+      // there is a stricter check, we don't want to erroneously flag it as guarded by this
+      // less-strict one.
+      if (!checkIsAlreadyImplied) {
+        permissionChecks.add(check)
+      }
+    }
+  }
+
+  override fun <T> recordPermissionChecks(func: () -> T): T {
+    val oldHardPermission = isRecordingChecks
+    isRecordingChecks = true
+
+    return try {
+      func()
+    } finally {
+      isRecordingChecks = oldHardPermission
+    }
+  }
 }
