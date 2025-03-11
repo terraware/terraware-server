@@ -1,3 +1,4 @@
+056ebfaeeeb SW-6615 Send Funder Invite Email from Funding Entity (#2894)
 b5024f4a748 Update database dependencies (#2903)
 f1695023b28 Update dependency com.squarespace.cldr-engine:cldr-engine to v1.10.2 (#2902)
 545fa3c44bc Added project and system metrics to report fetch endpoints (#2898)
