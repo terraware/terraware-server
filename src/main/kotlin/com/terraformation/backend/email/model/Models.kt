@@ -487,3 +487,12 @@ class CompletedSectionVariableUpdated(
   override val templateDir: String
     get() = "document/completedSectionVariableUpdated"
 }
+
+class FunderAddedToFundingEntity(
+    config: TerrawareServerConfig,
+    val fundingEntityName: String,
+    val funderPortalRegistrationUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "funder/addedToFundingEntity"
+}

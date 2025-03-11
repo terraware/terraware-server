@@ -17,6 +17,8 @@ import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import jakarta.ws.rs.BadRequestException
+import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -34,6 +36,8 @@ class FundingEntitiesController(
     private val fundingEntityStore: FundingEntityStore,
     private val fundingEntityUserStore: FundingEntityUserStore,
 ) {
+  private val emailValidator = EmailValidator.getInstance()
+
   @ApiResponse200
   @ApiResponse404
   @GetMapping("/{fundingEntityId}")
@@ -78,6 +82,21 @@ class FundingEntitiesController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Invites a funder via email to a Funding Entity")
+  @PostMapping("/{fundingEntityId}/users")
+  fun inviteFunder(
+      @PathVariable fundingEntityId: FundingEntityId,
+      @RequestBody payload: InviteFundingEntityFunderRequestPayload,
+  ): InviteFundingEntityFunderResponsePayload {
+    if (!emailValidator.isValid(payload.email)) {
+      throw BadRequestException("Field value has incorrect format: email")
+    }
+
+    fundingEntityService.inviteFunder(fundingEntityId, payload.email)
+
+    return InviteFundingEntityFunderResponsePayload(payload.email)
+  }
+
   @Operation(summary = "Gets the Funding Entity that a specific user belongs to")
   @GetMapping("/users/{userId}")
   fun getFundingEntity(@PathVariable userId: UserId): GetFundingEntityResponsePayload {
@@ -112,3 +131,7 @@ data class UpdateFundingEntityRequestPayload(
     return FundingEntitiesRow(name = name)
   }
 }
+
+data class InviteFundingEntityFunderRequestPayload(val email: String)
+
+data class InviteFundingEntityFunderResponsePayload(val email: String) : SuccessResponsePayload
