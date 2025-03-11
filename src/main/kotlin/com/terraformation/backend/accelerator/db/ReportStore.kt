@@ -136,6 +136,45 @@ class ReportStore(
         projectId?.let { PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(it) } ?: DSL.trueCondition())
   }
 
+  fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<SystemMetric>) {
+    requirePermissions { reviewReports() }
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(REPORT_SYSTEM_METRICS) {
+            dslContext
+                .insertInto(
+                    this,
+                    REPORT_ID,
+                    SYSTEM_METRIC_ID,
+                    SYSTEM_VALUE,
+                    SYSTEM_TIME,
+                    MODIFIED_BY,
+                    MODIFIED_TIME)
+                .select(
+                    DSL.select(
+                            REPORTS.ID,
+                            SYSTEM_METRICS.ID,
+                            systemTerrawareValueField,
+                            DSL.value(clock.instant()),
+                            DSL.value(currentUser().userId),
+                            DSL.value(clock.instant()))
+                        .from(SYSTEM_METRICS)
+                        .join(REPORTS)
+                        .on(REPORTS.ID.eq(reportId))
+                        .where(SYSTEM_METRICS.ID.`in`(metrics)))
+                .onConflict(REPORT_ID, SYSTEM_METRIC_ID)
+                .doUpdate()
+                .setAllToExcluded()
+                .execute()
+          }
+
+      if (rowsUpdated > 0) {
+        updateReportModifiedTime(reportId)
+      }
+    }
+  }
+
   fun reviewReport(
       reportId: ReportId,
       status: ReportStatus,
@@ -577,9 +616,8 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
-  private val systemValueField =
+  private val systemTerrawareValueField =
       DSL.coalesce(
-          REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
           DSL.case_()
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
@@ -588,6 +626,9 @@ class ReportStore(
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
               .else_(0),
           DSL.value(0))
+
+  private val systemValueField =
+      DSL.coalesce(REPORT_SYSTEM_METRICS.SYSTEM_VALUE, systemTerrawareValueField)
 
   private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
       DSL.multiset(
