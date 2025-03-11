@@ -1,3 +1,4 @@
+2e19e27319a SW-6524 Added feature to set system values on report submission (#2905)
 3b3c29b6c35 SW-6524 Store method to refresh system metric values (#2901)
 056ebfaeeeb SW-6615 Send Funder Invite Email from Funding Entity (#2894)
 b5024f4a748 Update database dependencies (#2903)
