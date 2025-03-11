@@ -381,6 +381,10 @@ class ReportStore(
       entries: Map<ID, ReportMetricEntryModel>,
       updateInternalComment: Boolean,
   ): Int {
+    if (entries.isEmpty()) {
+      return 0
+    }
+
     val table = metricIdField.table!!
     val reportIdField =
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
@@ -429,6 +433,10 @@ class ReportStore(
       reportId: ReportId,
       metrics: Collection<SystemMetric>
   ): Int {
+    if (metrics.isEmpty()) {
+      return 0
+    }
+
     return with(REPORT_SYSTEM_METRICS) {
       dslContext
           .insertInto(
@@ -474,6 +482,10 @@ class ReportStore(
       entries: Map<SystemMetric, ReportMetricEntryModel>,
       updateInternalComment: Boolean,
   ): Int {
+    if (entries.isEmpty()) {
+      return 0
+    }
+
     var insertQuery = dslContext.insertInto(REPORT_SYSTEM_METRICS).set()
 
     val iterator = entries.iterator()
