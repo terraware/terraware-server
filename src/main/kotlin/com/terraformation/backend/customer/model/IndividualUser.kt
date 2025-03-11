@@ -764,6 +764,12 @@ data class IndividualUser(
         }
       } ?: false
 
+  private fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
+      plantingSiteId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, plantingSiteId))
+        isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
+      } ?: false
+
   private fun isMember(facilityId: FacilityId?) =
       facilityId?.let {
         recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
@@ -774,12 +780,6 @@ data class IndividualUser(
       organizationId?.let {
         recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
         organizationId in organizationRoles
-      } ?: false
-
-  private fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
-      plantingSiteId?.let {
-        recordPermissionCheck(RolePermissionCheck(Role.Manager, plantingSiteId))
-        isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
       } ?: false
 
   /** Returns true if one of the user's global roles allows them to read an organization. */
