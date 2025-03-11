@@ -797,8 +797,7 @@ data class IndividualUser(
                   parentStore.hasApplications(organizationId)))
 
   /** History of permission checks performed in the current request or job. */
-  val permissionChecks: MutableList<PermissionCheck>
-    get() = mutableListOf()
+  val permissionChecks: MutableList<PermissionCheck> = mutableListOf()
 
   private var isRecordingChecks: Boolean = false
 
