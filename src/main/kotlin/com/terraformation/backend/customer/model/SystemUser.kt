@@ -68,6 +68,8 @@ class SystemUser(
   override val email: String?
     get() = null
 
+  override var isRecordingChecks = false
+
   /*
    * The system user has no roles per se; it always has access to everything. Reject any attempts to
    * walk the current user's list of roles.
@@ -99,6 +101,8 @@ class SystemUser(
   }
 
   override fun hasAnyAdminRole(): Boolean = true
+
+  override fun getUsername(): String = USERNAME
 
   override fun getName(): String = USERNAME
 

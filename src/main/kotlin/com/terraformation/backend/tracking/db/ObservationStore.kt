@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -183,7 +183,7 @@ class ObservationStore(
     // Calculated field that turns a users row into a String? with the user's full name.
     val fullNameField =
         DSL.row(USERS.FIRST_NAME, USERS.LAST_NAME).convertFrom { record ->
-          record?.let { IndividualUser.makeFullName(it.value1(), it.value2()) }
+          record?.let { TerrawareUser.makeFullName(it.value1(), it.value2()) }
         }
     val claimedByNameField =
         DSL.field(

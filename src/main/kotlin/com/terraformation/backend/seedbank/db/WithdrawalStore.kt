@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.WithdrawalNotFoundException
@@ -46,7 +46,7 @@ class WithdrawalStore(
     requirePermissions { readAccession(record[WITHDRAWALS.ACCESSION_ID]!!) }
 
     return WithdrawalModel(
-        record, IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+        record, TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
   }
 
   fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
@@ -62,8 +62,7 @@ class WithdrawalStore(
         .fetch()
         .map { record ->
           WithdrawalModel(
-              record,
-              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+              record, TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
         }
   }
 
@@ -105,7 +104,7 @@ class WithdrawalStore(
                 date = record[DATE]!!,
                 description = description,
                 fullName =
-                    IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+                    TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
                         ?: record[STAFF_RESPONSIBLE],
                 notes = record[NOTES],
                 type = type,
@@ -129,7 +128,7 @@ class WithdrawalStore(
           result.map { record ->
             WithdrawalModel(
                 record,
-                IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+                TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
           }
         }
   }
