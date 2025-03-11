@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import java.time.Instant
@@ -26,4 +27,8 @@ data class FunderUser(
 
   override val defaultPermission: Boolean
     get() = false
+
+  override fun canReadUser(userId: UserId) = userId == this.userId
+
+  override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
 }

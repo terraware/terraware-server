@@ -286,6 +286,6 @@ class WebAppUrls(
   }
 
   private fun fullFunderPortalHome(): URI {
-    return UriBuilder.fromUri(config.webAppUrl).path("/funderHome").build()
+    return UriBuilder.fromUri(config.webAppUrl).path("/funder/home").build()
   }
 }
