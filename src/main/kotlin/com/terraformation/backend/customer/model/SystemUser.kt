@@ -100,6 +100,8 @@ class SystemUser(
 
   override fun hasAnyAdminRole(): Boolean = true
 
+  override fun getUsername(): String = USERNAME
+
   override fun getName(): String = USERNAME
 
   /*

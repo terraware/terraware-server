@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
@@ -40,24 +41,75 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.log.perClassLogger
 import java.security.Principal
+import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
 
 /**
  * An entity on whose behalf the system can do work.
  *
- * The vast majority of the time, this will be a [IndividualUser], which represents an individual
- * user or a device manager. However, it can also be the [SystemUser], which isn't associated with a
- * particular person or a particular organization.
+ * The vast majority of the time, this will be a [IndividualUser] or [FunderUser], which represent a
+ * human user. However, it can also be a [DeviceManagerUser] or the [SystemUser], which isn't
+ * associated with a particular person or a particular organization.
  */
-interface TerrawareUser : Principal {
+interface TerrawareUser : Principal, UserDetails {
+  companion object {
+    val log = perClassLogger()
+
+    /**
+     * Constructs a user's full name, if available. Currently this is just the first and last name
+     * if both are set. Eventually this will need logic to deal with users in locales where names
+     * aren't rendered the same way they are in English.
+     *
+     * It's possible for users to not have first or last names, e.g., if they were created by being
+     * added to an organization and haven't gone through the registration flow yet; returns null in
+     * that case. If the user has only a first name or only a last name, returns whichever name
+     * exists.
+     */
+    fun makeFullName(firstName: String?, lastName: String?): String? =
+        if (firstName != null && lastName != null) {
+          "$firstName $lastName"
+        } else {
+          lastName ?: firstName
+        }
+  }
+
   val userId: UserId
   val userType: UserType
+
+  val createdTime: Instant?
+    get() = null
+
+  val firstName: String?
+    get() = null
+
+  val lastName: String?
+    get() = null
+
+  val timeZone: ZoneId?
+    get() = null
+
+  val email: String?
+    get() = null
+
+  val countryCode: String?
+    get() = null
+
+  val cookiesConsented: Boolean?
+    get() = null
+
+  val cookiesConsentedTime: Instant?
+    get() = null
+
   val locale: Locale?
     get() = Locale.ENGLISH
 
-  val timeZone: ZoneId?
+  val emailNotificationsEnabled: Boolean
+    get() = true
 
   /**
    * The user's Keycloak ID, if any. Null if this is an internal pseudo-user or if this user has
@@ -65,10 +117,16 @@ interface TerrawareUser : Principal {
    */
   val authId: String?
 
-  val email: String?
+  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
+
+  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
+
+  val fullName: String?
+    get() = makeFullName(firstName, lastName)
 
   /** The user's role in each organization they belong to. */
   val organizationRoles: Map<OrganizationId, Role>
+    get() = emptyMap()
 
   /**
    * The user's role in each facility they have access to. Currently, roles are assigned
@@ -76,9 +134,26 @@ interface TerrawareUser : Principal {
    * and site of each facility.
    */
   val facilityRoles: Map<FacilityId, Role>
+    get() = emptyMap()
 
   /** The user's global roles. These are not tied to organizations. */
   val globalRoles: Set<GlobalRole>
+    get() = emptySet()
+
+  override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf()
+
+  override fun getPassword(): String {
+    log.warn("Something is trying to get the password of an OAuth2 user")
+    return ""
+  }
+
+  override fun isAccountNonExpired(): Boolean = true
+
+  override fun isAccountNonLocked(): Boolean = true
+
+  override fun isCredentialsNonExpired(): Boolean = true
+
+  override fun isEnabled(): Boolean = true
 
   /**
    * Runs some code as this user.
@@ -91,10 +166,10 @@ interface TerrawareUser : Principal {
    * with this user for the duration of the function, and then the current user will be restored
    * afterwards.
    */
-  fun <T> run(func: () -> T): T
+  fun <T> run(func: () -> T): T = CurrentUserHolder.runAs(this, func, authorities)
 
   /** Returns true if the user is an admin or owner of any organizations. */
-  fun hasAnyAdminRole(): Boolean
+  fun hasAnyAdminRole(): Boolean = false
 
   /**
    * Returns the default permission value for this user. This is to support the system and device

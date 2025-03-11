@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
@@ -50,7 +49,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.userdetails.UserDetails
 
 /**
  * Details about the user who is making the current request and the permissions they have. This
@@ -84,41 +82,24 @@ import org.springframework.security.core.userdetails.UserDetails
  * will be cached afterwards.
  */
 data class IndividualUser(
-    val createdTime: Instant,
+    override val createdTime: Instant,
     override val userId: UserId,
     override val authId: String?,
     override val email: String,
-    val emailNotificationsEnabled: Boolean,
-    val firstName: String?,
-    val lastName: String?,
-    val countryCode: String?,
-    val cookiesConsented: Boolean?,
-    val cookiesConsentedTime: Instant?,
+    override val emailNotificationsEnabled: Boolean,
+    override val firstName: String?,
+    override val lastName: String?,
+    override val countryCode: String?,
+    override val cookiesConsented: Boolean?,
+    override val cookiesConsentedTime: Instant?,
     override val locale: Locale?,
     override val timeZone: ZoneId?,
     override val userType: UserType,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
-) : TerrawareUser, UserDetails {
+) : TerrawareUser {
   companion object {
-    private val log = perClassLogger()
-
-    /**
-     * Constructs a user's full name, if available. Currently this is just the first and last name
-     * if both are set. Eventually this will need logic to deal with users in locales where names
-     * aren't rendered the same way they are in English.
-     *
-     * It's possible for users to not have first or last names, e.g., if they were created by being
-     * added to an organization and haven't gone through the registration flow yet; returns null in
-     * that case. If the user has only a first name or only a last name, returns whichever name
-     * exists.
-     */
-    fun makeFullName(firstName: String?, lastName: String?): String? =
-        if (firstName != null && lastName != null) {
-          "$firstName $lastName"
-        } else {
-          lastName ?: firstName
-        }
+    val log = perClassLogger()
   }
 
   private val _organizationRoles = ResettableLazy { permissionStore.fetchOrganizationRoles(userId) }
@@ -130,20 +111,10 @@ data class IndividualUser(
   private val _globalRoles = ResettableLazy { permissionStore.fetchGlobalRoles(userId) }
   override val globalRoles: Set<GlobalRole> by _globalRoles
 
-  /** History of permission checks performed in the current request or job. */
-  val permissionChecks: MutableList<PermissionCheck> = mutableListOf()
-
   override fun clearCachedPermissions() {
     _organizationRoles.reset()
     _facilityRoles.reset()
     _globalRoles.reset()
-  }
-
-  val fullName: String?
-    get() = makeFullName(firstName, lastName)
-
-  override fun <T> run(func: () -> T): T {
-    return CurrentUserHolder.runAs(this, func, authorities)
   }
 
   /** Returns true if the user is an admin, owner or Terraformation Contact of any organizations. */
@@ -151,18 +122,6 @@ data class IndividualUser(
       organizationRoles.values.any {
         it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
       }
-
-  override fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
-    return organizationId?.let {
-      recordPermissionCheck(RolePermissionCheck(Role.Admin, organizationId))
-      when (organizationRoles[organizationId]) {
-        Role.Admin,
-        Role.Owner,
-        Role.TerraformationContact -> true
-        else -> false
-      }
-    } ?: false
-  }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (isSuperAdmin()) {
@@ -172,22 +131,7 @@ data class IndividualUser(
     }
   }
 
-  override fun getPassword(): String {
-    log.warn("Something is trying to get the password of an OAuth2 user")
-    return ""
-  }
-
-  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
-
-  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
-
-  override fun isAccountNonExpired() = true
-
-  override fun isAccountNonLocked() = true
-
-  override fun isCredentialsNonExpired() = true
-
-  override fun isEnabled() = true
+  // Permissions
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
@@ -734,6 +678,11 @@ data class IndividualUser(
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
+  private fun isSuperAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
+    return GlobalRole.SuperAdmin in globalRoles
+  }
+
   private fun isAcceleratorAdmin(): Boolean {
     recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
     return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
@@ -756,16 +705,23 @@ data class IndividualUser(
         .any { it in globalRoles }
   }
 
-  private fun isSuperAdmin(): Boolean {
-    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
-    return GlobalRole.SuperAdmin in globalRoles
-  }
-
   private fun isOwner(organizationId: OrganizationId?) =
       organizationId?.let {
         recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
         organizationRoles[organizationId] == Role.Owner
       } ?: false
+
+  override fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
+    return organizationId?.let {
+      recordPermissionCheck(RolePermissionCheck(Role.Admin, organizationId))
+      when (organizationRoles[organizationId]) {
+        Role.Admin,
+        Role.Owner,
+        Role.TerraformationContact -> true
+        else -> false
+      }
+    } ?: false
+  }
 
   private fun isAdminOrHigher(facilityId: FacilityId?) =
       facilityId?.let {
@@ -833,6 +789,9 @@ data class IndividualUser(
           (isTFExpertOrHigher() &&
               (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
                   parentStore.hasApplications(organizationId)))
+
+  /** History of permission checks performed in the current request or job. */
+  val permissionChecks: MutableList<PermissionCheck> = mutableListOf()
 
   private var isRecordingChecks: Boolean = false
 

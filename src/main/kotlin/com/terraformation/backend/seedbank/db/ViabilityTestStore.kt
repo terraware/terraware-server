@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.default_schema.tables.references.USERS
@@ -114,7 +114,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           treatment = record[TREATMENT_ID],
           viabilityPercent = record[TOTAL_PERCENT_GERMINATED],
           withdrawnByName =
-              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+              TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
           withdrawnByUserId = record[USERS.ID],
       )
     }

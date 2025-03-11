@@ -1,13 +1,11 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
@@ -16,7 +14,6 @@ import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
 import java.time.ZoneOffset
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.userdetails.UserDetails
 
 /**
  * Details about the user who is making the current request and the permissions they have. This
@@ -33,7 +30,7 @@ data class DeviceManagerUser(
     override val authId: String,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
-) : TerrawareUser, UserDetails {
+) : TerrawareUser {
   override val timeZone: ZoneId
     get() = ZoneOffset.UTC
 
@@ -51,36 +48,12 @@ data class DeviceManagerUser(
     mapOf(facilityId to Role.Contributor)
   }
 
-  override val globalRoles: Set<GlobalRole>
-    get() = emptySet()
-
   override val defaultPermission: Boolean
     get() = false
-
-  override fun hasAnyAdminRole(): Boolean = false
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return mutableSetOf()
   }
-
-  override fun getPassword(): String {
-    log.warn("Something is trying to get the password of a device manager user")
-    return ""
-  }
-
-  override fun getName(): String = authId
-
-  override fun getUsername(): String = authId
-
-  override fun isAccountNonExpired(): Boolean = true
-
-  override fun isAccountNonLocked(): Boolean = true
-
-  override fun isCredentialsNonExpired(): Boolean = true
-
-  override fun isEnabled(): Boolean = true
-
-  override fun <T> run(func: () -> T): T = CurrentUserHolder.runAs(this, func, authorities)
 
   private val deviceManagerId: DeviceManagerId by lazy {
     parentStore.getDeviceManagerId(userId)
