@@ -2161,10 +2161,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private fun insertSystemMetricTargetsForReport(reportId: ReportId) {
-    SystemMetric.entries.forEach {
+    SystemMetric.entries.forEach { metric ->
       insertReportSystemMetric(
           reportId = reportId,
-          metric = it,
+          metric = metric,
           target = 0,
       )
     }
