@@ -12,7 +12,7 @@ data class FundingEntityModel(
     val name: String,
     val createdTime: Instant,
     val modifiedTime: Instant,
-    var projects: List<ProjectId> = emptyList(),
+    val projects: List<ProjectId> = emptyList(),
 ) {
   companion object {
     fun of(
@@ -20,12 +20,12 @@ data class FundingEntityModel(
         projectsField: Field<List<ProjectId>>? = null,
     ): FundingEntityModel {
       return FundingEntityModel(
-              id = record[FUNDING_ENTITIES.ID]!!,
-              name = record[FUNDING_ENTITIES.NAME]!!,
-              createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
-              modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
-          )
-          .apply { projectsField?.let { this.projects = record[it]!! } }
+          id = record[FUNDING_ENTITIES.ID]!!,
+          name = record[FUNDING_ENTITIES.NAME]!!,
+          createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
+          modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
+          projects = projectsField?.let { record[it] } ?: emptyList(),
+      )
     }
   }
 }
