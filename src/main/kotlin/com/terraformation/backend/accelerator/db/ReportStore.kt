@@ -140,34 +140,7 @@ class ReportStore(
     requirePermissions { reviewReports() }
 
     dslContext.transaction { _ ->
-      val rowsUpdated =
-          with(REPORT_SYSTEM_METRICS) {
-            dslContext
-                .insertInto(
-                    this,
-                    REPORT_ID,
-                    SYSTEM_METRIC_ID,
-                    SYSTEM_VALUE,
-                    SYSTEM_TIME,
-                    MODIFIED_BY,
-                    MODIFIED_TIME)
-                .select(
-                    DSL.select(
-                            REPORTS.ID,
-                            SYSTEM_METRICS.ID,
-                            systemTerrawareValueField,
-                            DSL.value(clock.instant()),
-                            DSL.value(currentUser().userId),
-                            DSL.value(clock.instant()))
-                        .from(SYSTEM_METRICS)
-                        .join(REPORTS)
-                        .on(REPORTS.ID.eq(reportId))
-                        .where(SYSTEM_METRICS.ID.`in`(metrics)))
-                .onConflict(REPORT_ID, SYSTEM_METRIC_ID)
-                .doUpdate()
-                .setAllToExcluded()
-                .execute()
-          }
+      val rowsUpdated = updateReportSystemMetricWithTerrawareData(reportId, metrics)
 
       if (rowsUpdated > 0) {
         updateReportModifiedTime(reportId)
@@ -265,6 +238,9 @@ class ReportStore(
     if (rowsUpdated < 1) {
       throw IllegalStateException("Failed to submit report $reportId")
     }
+
+    // Update all system metrics values at submission time
+    updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
 
     eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
   }
@@ -443,6 +419,39 @@ class ReportStore(
         insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
 
     return rowsUpdated
+  }
+
+  private fun updateReportSystemMetricWithTerrawareData(
+      reportId: ReportId,
+      metrics: Collection<SystemMetric>
+  ): Int {
+    return with(REPORT_SYSTEM_METRICS) {
+      dslContext
+          .insertInto(
+              this,
+              REPORT_ID,
+              SYSTEM_METRIC_ID,
+              SYSTEM_VALUE,
+              SYSTEM_TIME,
+              MODIFIED_BY,
+              MODIFIED_TIME)
+          .select(
+              DSL.select(
+                      REPORTS.ID,
+                      SYSTEM_METRICS.ID,
+                      systemTerrawareValueField,
+                      DSL.value(clock.instant()),
+                      DSL.value(currentUser().userId),
+                      DSL.value(clock.instant()))
+                  .from(SYSTEM_METRICS)
+                  .join(REPORTS)
+                  .on(REPORTS.ID.eq(reportId))
+                  .where(SYSTEM_METRICS.ID.`in`(metrics)))
+          .onConflict(REPORT_ID, SYSTEM_METRIC_ID)
+          .doUpdate()
+          .setAllToExcluded()
+          .execute()
+    }
   }
 
   private fun upsertReportStandardMetrics(

@@ -21,6 +21,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
@@ -1284,7 +1285,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception for reports missing metric values or targets`() {
+    fun `throws exception for reports missing standard metric values or targets`() {
       val metricId = insertStandardMetric()
 
       insertProjectReportConfig()
@@ -1304,13 +1305,61 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 25,
       )
 
+      insertSystemMetricTargetsForReport(missingBothReportId)
+      insertSystemMetricTargetsForReport(missingTargetReportId)
+      insertSystemMetricTargetsForReport(missingValueReportId)
+
       assertThrows<IllegalStateException> { store.submitReport(missingBothReportId) }
       assertThrows<IllegalStateException> { store.submitReport(missingTargetReportId) }
       assertThrows<IllegalStateException> { store.submitReport(missingValueReportId) }
     }
 
     @Test
-    fun `sets report to submitted status and publishes event`() {
+    fun `throws exception for reports missing project metric values or targets`() {
+      val metricId = insertProjectMetric()
+
+      insertProjectReportConfig()
+      val missingBothReportId = insertReport()
+      val missingTargetReportId = insertReport()
+      val missingValueReportId = insertReport()
+
+      insertReportProjectMetric(
+          reportId = missingTargetReportId,
+          metricId = metricId,
+          value = 25,
+      )
+
+      insertReportProjectMetric(
+          reportId = missingValueReportId,
+          metricId = metricId,
+          target = 25,
+      )
+
+      insertSystemMetricTargetsForReport(missingBothReportId)
+      insertSystemMetricTargetsForReport(missingTargetReportId)
+      insertSystemMetricTargetsForReport(missingValueReportId)
+
+      assertThrows<IllegalStateException> { store.submitReport(missingBothReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(missingTargetReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(missingValueReportId) }
+    }
+
+    @Test
+    fun `throws exception for reports missing system metric targets`() {
+      insertProjectReportConfig()
+      val reportId = insertReport()
+
+      // Insert all targets first
+      insertSystemMetricTargetsForReport(reportId)
+
+      val row = reportSystemMetricsDao.fetchByReportId(reportId).first()
+      reportSystemMetricsDao.update(row.copy(target = null))
+
+      assertThrows<IllegalStateException> { store.submitReport(reportId) }
+    }
+
+    @Test
+    fun `sets report to submitted status, writes all system values, and publishes event`() {
       val configId = insertProjectReportConfig()
       val otherUserId = insertUser()
       val reportId =
@@ -1320,9 +1369,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, Month.DECEMBER, 31),
               createdBy = otherUserId,
               modifiedBy = otherUserId)
+      insertSystemMetricTargetsForReport(reportId)
+      insertDataForSystemMetrics(
+          reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
+          reportEndDate = LocalDate.of(2025, Month.DECEMBER, 31),
+      )
 
       clock.instant = Instant.ofEpochSecond(6000)
-
       store.submitReport(reportId)
 
       assertTableEquals(
@@ -1340,7 +1393,57 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedBy = currentUser().userId,
               submittedTime = clock.instant,
           ),
-      )
+          "Reports table")
+
+      assertTableEquals(
+          listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 0,
+                  systemValue = 98,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.Seedlings,
+                  target = 0,
+                  systemValue = 83,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  target = 0,
+                  systemValue = 27,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  target = 0,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  systemValue = 1,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  target = 0,
+                  systemMetricId = SystemMetric.MortalityRate,
+                  systemValue = 40,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+          ),
+          "Report system metrics")
 
       eventPublisher.assertEventPublished(ReportSubmittedEvent(reportId))
     }
@@ -2055,5 +2158,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     // Total plants: 50
     // Dead plants: 20
+  }
+
+  private fun insertSystemMetricTargetsForReport(reportId: ReportId) {
+    SystemMetric.entries.forEach { metric ->
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = metric,
+          target = 0,
+      )
+    }
   }
 }
