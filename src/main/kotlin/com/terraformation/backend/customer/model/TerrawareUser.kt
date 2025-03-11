@@ -53,9 +53,9 @@ import org.springframework.security.core.userdetails.UserDetails
 /**
  * An entity on whose behalf the system can do work.
  *
- * The vast majority of the time, this will be a [IndividualUser], which represents an individual
- * user or a device manager. However, it can also be the [SystemUser], which isn't associated with a
- * particular person or a particular organization.
+ * The vast majority of the time, this will be a [IndividualUser] or [FunderUser], which represent a
+ * human user. However, it can also be a [DeviceManagerUser] or the [SystemUser], which isn't
+ * associated with a particular person or a particular organization.
  */
 interface TerrawareUser : Principal, UserDetails {
   companion object {

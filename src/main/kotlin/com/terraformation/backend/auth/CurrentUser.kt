@@ -1,6 +1,7 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.customer.model.DeviceManagerUser
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -11,7 +12,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 /**
  * Returns the details for the user on whose behalf the current thread is doing work. For code
- * that's handling an API request, this is the [IndividualUser] for the individual user or
+ * that's handling an API request, this is the [IndividualUser]/[FunderUser] for the human user or
  * [DeviceManagerUser] for the API client that made the request. For automated or background jobs,
  * it may also be the [SystemUser].
  *
@@ -28,9 +29,9 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * variables. If you're using suspending functions with a thread pool, make sure you understand
  * whether and when the code can resume on a different thread than its initial one.
  *
- * Design note: This is a top-level function rather than a method on [IndividualUser] purely to keep
- * the calling code less cluttered, because getting the current user is a very common operation and
- * it reads from global state anyway.
+ * Design note: This is a top-level function rather than a method on [IndividualUser]/[FunderUser]
+ * purely to keep the calling code less cluttered, because getting the current user is a very common
+ * operation and it reads from global state anyway.
  */
 fun currentUser(): TerrawareUser {
   return CurrentUserHolder.getCurrentUser()
