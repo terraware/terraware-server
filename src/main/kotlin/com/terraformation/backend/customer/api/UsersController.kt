@@ -9,12 +9,14 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpSession
@@ -40,11 +42,7 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   @Operation(summary = "Gets information about the current user.")
   fun getMyself(): GetUserResponsePayload {
     val user = currentUser()
-    if (user is IndividualUser) {
-      return GetUserResponsePayload(UserProfilePayload(user))
-    } else {
-      throw ForbiddenException("Only ordinary users can request their information")
-    }
+    return GetUserResponsePayload(UserProfilePayload(user))
   }
 
   @PutMapping("/me")
@@ -52,6 +50,19 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   fun updateMyself(@RequestBody payload: UpdateUserRequestPayload): SimpleSuccessResponsePayload {
     val user = currentUser()
     if (user is IndividualUser) {
+      val model =
+          user.copy(
+              countryCode = payload.countryCode,
+              emailNotificationsEnabled =
+                  payload.emailNotificationsEnabled ?: user.emailNotificationsEnabled,
+              firstName = payload.firstName,
+              lastName = payload.lastName,
+              locale = payload.locale?.let { Locale.forLanguageTag(it) },
+              timeZone = payload.timeZone,
+          )
+      userStore.updateUser(model)
+      return SimpleSuccessResponsePayload()
+    } else if (user is FunderUser) {
       val model =
           user.copy(
               countryCode = payload.countryCode,
@@ -86,6 +97,15 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   ): SimpleSuccessResponsePayload {
     val user = currentUser()
     if (user is IndividualUser) {
+      val model =
+          user.copy(
+              cookiesConsented = payload.cookiesConsented,
+              cookiesConsentedTime = clock.instant(),
+          )
+
+      userStore.updateUser(model)
+      return SimpleSuccessResponsePayload()
+    } else if (user is FunderUser) {
       val model =
           user.copy(
               cookiesConsented = payload.cookiesConsented,
@@ -142,16 +162,12 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   @ApiResponse200
   @ApiResponse404
   @GetMapping("/{userId}")
-  @Operation(summary = "Get a user by ID, if they exist, only ordinary users are supported.")
+  @Operation(summary = "Get a user by ID, if they exist.")
   fun getUser(
       @PathVariable("userId") userId: UserId,
   ): GetUserResponsePayload {
     val user = userStore.fetchOneByIdAccelerator(userId)
-    if (user is IndividualUser) {
-      return GetUserResponsePayload(UserProfilePayload(user))
-    }
-
-    throw UserNotFoundException(userId)
+    return GetUserResponsePayload(UserProfilePayload(user))
   }
 }
 
@@ -186,21 +202,25 @@ data class UserProfilePayload(
     @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
     val locale: String?,
     val timeZone: ZoneId?,
+    @Schema(description = "Type of User. Could be Individual, Funder or DeviceManager")
+    val userType: UserType,
 ) {
   constructor(
-      user: IndividualUser
+      user: TerrawareUser
   ) : this(
       user.cookiesConsented,
       user.cookiesConsentedTime,
       user.countryCode,
       user.userId,
-      user.email,
+      user.email!!,
       user.emailNotificationsEnabled,
       user.firstName,
       user.globalRoles,
       user.lastName,
       user.locale?.toLanguageTag(),
-      user.timeZone)
+      user.timeZone,
+      user.userType,
+  )
 }
 
 data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessResponsePayload

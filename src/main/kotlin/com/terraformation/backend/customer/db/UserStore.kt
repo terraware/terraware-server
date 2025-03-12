@@ -335,7 +335,7 @@ class UserStore(
    * Updates a user's profile information. Applies changes to the `users` table as well as Keycloak.
    * Currently, only the first and last name can be modified.
    */
-  fun updateUser(model: IndividualUser) {
+  fun updateUser(model: TerrawareUser) {
     if (currentUser().userId != model.userId) {
       throw AccessDeniedException("Cannot modify another user's profile information")
     }
