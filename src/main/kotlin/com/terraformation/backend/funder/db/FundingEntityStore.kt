@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
-import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
+import com.terraformation.backend.funder.model.FundingEntityModel
 import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -15,7 +15,7 @@ import org.jooq.DSLContext
 class FundingEntityStore(
     private val dslContext: DSLContext,
 ) {
-  fun fetchAll(): List<FundingEntityWithProjectsModel> {
+  fun fetchAll(): List<FundingEntityModel> {
     requirePermissions { readFundingEntities() }
 
     return fetchWithCondition()
@@ -23,16 +23,14 @@ class FundingEntityStore(
 
   fun fetchOneById(
       fundingEntityId: FundingEntityId,
-  ): FundingEntityWithProjectsModel {
+  ): FundingEntityModel {
     requirePermissions { readFundingEntities() }
 
     return fetchWithCondition(FUNDING_ENTITIES.ID.eq(fundingEntityId)).firstOrNull()
         ?: throw FundingEntityNotFoundException(fundingEntityId)
   }
 
-  private fun fetchWithCondition(
-      condition: Condition? = null
-  ): List<FundingEntityWithProjectsModel> {
+  private fun fetchWithCondition(condition: Condition? = null): List<FundingEntityModel> {
     val records =
         dslContext
             .select(
@@ -56,7 +54,7 @@ class FundingEntityStore(
         .map { (entityId, groupRecords) ->
           val entity = groupRecords.first()
 
-          FundingEntityWithProjectsModel(
+          FundingEntityModel(
               id = entityId!!,
               name = entity[FUNDING_ENTITIES.NAME]!!,
               createdTime = entity[FUNDING_ENTITIES.CREATED_TIME]!!,

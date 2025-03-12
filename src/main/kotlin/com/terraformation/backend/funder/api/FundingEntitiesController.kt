@@ -15,7 +15,7 @@ import com.terraformation.backend.funder.FundingEntityService
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
-import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
+import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.ws.rs.BadRequestException
@@ -121,7 +121,7 @@ data class FundingEntityPayload(
     val id: FundingEntityId,
     val name: String,
 ) {
-  constructor(model: FundingEntityWithProjectsModel) : this(id = model.id, name = model.name)
+  constructor(model: FundingEntityModel) : this(id = model.id, name = model.name)
 }
 
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :
@@ -152,7 +152,7 @@ data class FundingEntityWithProjectsPayload(
     val projects: List<SimpleProjectModel>,
 ) {
   constructor(
-      model: FundingEntityWithProjectsModel
+      model: FundingEntityModel
   ) : this(id = model.id, name = model.name, projects = model.projects)
 }
 
