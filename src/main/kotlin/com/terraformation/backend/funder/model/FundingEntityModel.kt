@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.model
 
+import com.terraformation.backend.customer.model.SimpleProjectModel
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
@@ -29,3 +30,11 @@ data class FundingEntityModel(
     }
   }
 }
+
+data class FundingEntityWithProjectsModel(
+    val id: FundingEntityId,
+    val name: String,
+    val createdTime: Instant,
+    val modifiedTime: Instant,
+    val projects: List<SimpleProjectModel> = emptyList(),
+)

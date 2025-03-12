@@ -6,6 +6,7 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.model.SimpleProjectModel
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -15,6 +16,7 @@ import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.ws.rs.BadRequestException
@@ -37,6 +39,15 @@ class FundingEntitiesController(
     private val fundingEntityUserStore: FundingEntityUserStore,
 ) {
   private val emailValidator = EmailValidator.getInstance()
+
+  @ApiResponse200
+  @GetMapping
+  @Operation(summary = "Lists all funding entities.")
+  fun listFundingEntities(): ListFundingEntitiesPayload {
+    val elements =
+        fundingEntityStore.fetchAll().map { model -> FundingEntityWithProjectsPayload(model) }
+    return ListFundingEntitiesPayload(elements)
+  }
 
   @ApiResponse200
   @ApiResponse404
@@ -135,3 +146,16 @@ data class UpdateFundingEntityRequestPayload(
 data class InviteFundingEntityFunderRequestPayload(val email: String)
 
 data class InviteFundingEntityFunderResponsePayload(val email: String) : SuccessResponsePayload
+
+data class FundingEntityWithProjectsPayload(
+    val id: FundingEntityId,
+    val name: String,
+    val projects: List<SimpleProjectModel>,
+) {
+  constructor(
+      model: FundingEntityWithProjectsModel
+  ) : this(id = model.id, name = model.name, projects = model.projects)
+}
+
+data class ListFundingEntitiesPayload(val fundingEntities: List<FundingEntityWithProjectsPayload>) :
+    SuccessResponsePayload

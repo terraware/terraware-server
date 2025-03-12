@@ -1,11 +1,14 @@
 package com.terraformation.backend.funder.db
 
+import com.terraformation.backend.customer.model.SimpleProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -15,6 +18,46 @@ import org.jooq.impl.DSL
 class FundingEntityStore(
     private val dslContext: DSLContext,
 ) {
+  fun fetchAll(): List<FundingEntityWithProjectsModel> {
+    requirePermissions { readFundingEntities() }
+
+    val records =
+        dslContext
+            .select(
+                FUNDING_ENTITIES.ID,
+                FUNDING_ENTITIES.NAME,
+                FUNDING_ENTITIES.CREATED_TIME,
+                FUNDING_ENTITIES.MODIFIED_TIME,
+                PROJECTS.ID,
+                PROJECTS.NAME)
+            .from(FUNDING_ENTITIES)
+            .leftJoin(FUNDING_ENTITY_PROJECTS)
+            .on(FUNDING_ENTITIES.ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
+            .leftJoin(PROJECTS)
+            .on(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
+            .orderBy(FUNDING_ENTITIES.ID, PROJECTS.NAME)
+            .fetch()
+
+    return records
+        .groupBy { it.get(FUNDING_ENTITIES.ID) }
+        .map { (entityId, groupRecords) ->
+          val entity = groupRecords.first()
+
+          FundingEntityWithProjectsModel(
+              id = entityId!!,
+              name = entity[FUNDING_ENTITIES.NAME]!!,
+              createdTime = entity[FUNDING_ENTITIES.CREATED_TIME]!!,
+              modifiedTime = entity[FUNDING_ENTITIES.MODIFIED_TIME]!!,
+              projects =
+                  groupRecords
+                      .filter { it[PROJECTS.ID] != null }
+                      .map { record ->
+                        SimpleProjectModel(
+                            id = record[PROJECTS.ID]!!, name = record[PROJECTS.NAME]!!)
+                      })
+        }
+  }
+
   fun fetchOneById(
       fundingEntityId: FundingEntityId,
   ): FundingEntityModel {
