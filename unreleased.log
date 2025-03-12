@@ -1,3 +1,4 @@
+9ea3b9b1054 SW-6621 Make UsersController general and finalizations for home page (#2911)
 91ad29699d5 Refactor Terraware User to contain more from Individual (#2908)
 06847be4249 SW-6621 Retrieve user's funding entity (#2906)
 f599cf5d077 SW-6524 Added feature to review and update system metric entries (#2907)
