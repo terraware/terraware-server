@@ -2,17 +2,14 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.customer.model.SimpleProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
-import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 
 @Named
 class FundingEntityStore(
@@ -21,6 +18,21 @@ class FundingEntityStore(
   fun fetchAll(): List<FundingEntityWithProjectsModel> {
     requirePermissions { readFundingEntities() }
 
+    return fetchWithCondition()
+  }
+
+  fun fetchOneById(
+      fundingEntityId: FundingEntityId,
+  ): FundingEntityWithProjectsModel {
+    requirePermissions { readFundingEntities() }
+
+    return fetchWithCondition(FUNDING_ENTITIES.ID.eq(fundingEntityId)).firstOrNull()
+        ?: throw FundingEntityNotFoundException(fundingEntityId)
+  }
+
+  private fun fetchWithCondition(
+      condition: Condition? = null
+  ): List<FundingEntityWithProjectsModel> {
     val records =
         dslContext
             .select(
@@ -35,6 +47,7 @@ class FundingEntityStore(
             .on(FUNDING_ENTITIES.ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
             .leftJoin(PROJECTS)
             .on(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
+            .apply { condition?.let { where(it) } }
             .orderBy(FUNDING_ENTITIES.ID, PROJECTS.NAME)
             .fetch()
 
@@ -56,32 +69,5 @@ class FundingEntityStore(
                             id = record[PROJECTS.ID]!!, name = record[PROJECTS.NAME]!!)
                       })
         }
-  }
-
-  fun fetchOneById(
-      fundingEntityId: FundingEntityId,
-  ): FundingEntityModel {
-    requirePermissions { readFundingEntities() }
-
-    return fetchWithCondition(FUNDING_ENTITIES.ID.eq(fundingEntityId)).firstOrNull()
-        ?: throw FundingEntityNotFoundException(fundingEntityId)
-  }
-
-  private fun fetchWithCondition(condition: Condition? = null): List<FundingEntityModel> {
-    val projectsMultiset =
-        DSL.multiset(
-                DSL.select(FUNDING_ENTITY_PROJECTS.PROJECT_ID)
-                    .from(FUNDING_ENTITY_PROJECTS)
-                    .where(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID.eq(FUNDING_ENTITIES.ID)))
-            .convertFrom { result ->
-              result.map { it[FUNDING_ENTITY_PROJECTS.PROJECT_ID.asNonNullable()] }
-            }
-
-    return dslContext
-        .select(FUNDING_ENTITIES.asterisk(), projectsMultiset)
-        .from(FUNDING_ENTITIES)
-        .apply { condition?.let { where(it) } }
-        .orderBy(FUNDING_ENTITIES.ID)
-        .fetch { FundingEntityModel.of(it, projectsMultiset) }
   }
 }

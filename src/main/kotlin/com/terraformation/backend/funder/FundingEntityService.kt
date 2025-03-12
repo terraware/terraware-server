@@ -18,7 +18,7 @@ import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
-import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -38,7 +38,7 @@ class FundingEntityService(
 ) {
   private val log = perClassLogger()
 
-  fun create(name: String, projects: Set<ProjectId>? = null): FundingEntityModel {
+  fun create(name: String, projects: Set<ProjectId>? = null): FundingEntityWithProjectsModel {
     requirePermissions { createFundingEntities() }
 
     val userId = currentUser().userId

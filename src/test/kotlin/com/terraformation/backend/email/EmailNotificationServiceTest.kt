@@ -86,7 +86,7 @@ import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
-import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
@@ -364,7 +364,7 @@ internal class EmailNotificationServiceTest {
           renderHeading = false)
 
   private val fundingEntity =
-      FundingEntityModel(
+      FundingEntityWithProjectsModel(
           id = FundingEntityId(1),
           name = "My Funding Entity",
           createdTime = Instant.EPOCH,

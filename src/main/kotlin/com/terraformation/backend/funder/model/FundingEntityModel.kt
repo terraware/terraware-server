@@ -37,4 +37,19 @@ data class FundingEntityWithProjectsModel(
     val createdTime: Instant,
     val modifiedTime: Instant,
     val projects: List<SimpleProjectModel> = emptyList(),
-)
+) {
+  companion object {
+    fun of(
+        record: Record,
+        projectsField: Field<List<SimpleProjectModel>>? = null,
+    ): FundingEntityWithProjectsModel {
+      return FundingEntityWithProjectsModel(
+          id = record[FUNDING_ENTITIES.ID]!!,
+          name = record[FUNDING_ENTITIES.NAME]!!,
+          createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
+          modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
+          projects = projectsField?.let { record[it] } ?: emptyList(),
+      )
+    }
+  }
+}

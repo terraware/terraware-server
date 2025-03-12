@@ -46,10 +46,11 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchOneById retrieves projectIds`() {
+  fun `fetchOneById retrieves entity with projects`() {
     insertOrganization()
-    val projectId1 = insertProject()
-    val projectId2 = insertProject()
+    val namePrefix = "FetchOneEntityProject"
+    val projectId1 = insertProject(name = "${namePrefix}1")
+    val projectId2 = insertProject(name = "${namePrefix}2")
 
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
@@ -68,7 +69,11 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
             ),
         ))
 
-    assertEquals(listOf(projectId1, projectId2), store.fetchOneById(fundingEntityId).projects)
+    assertEquals(
+        listOf(
+            SimpleProjectModel(projectId1, "${namePrefix}1"),
+            SimpleProjectModel(projectId2, "${namePrefix}2")),
+        store.fetchOneById(fundingEntityId).projects)
   }
 
   @Test

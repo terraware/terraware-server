@@ -5,7 +5,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
-import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingEntityWithProjectsModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -17,9 +17,9 @@ class FundingEntityUserStore(private val dslContext: DSLContext) {
     return findFundingEntityByUserId(userId) { record -> record.get(FUNDING_ENTITIES.ID) }
   }
 
-  fun fetchEntityByUserId(userId: UserId): FundingEntityModel? {
+  fun fetchEntityByUserId(userId: UserId): FundingEntityWithProjectsModel? {
     requirePermissions { readUser(userId) }
-    return findFundingEntityByUserId(userId) { record -> FundingEntityModel.of(record) }
+    return findFundingEntityByUserId(userId) { record -> FundingEntityWithProjectsModel.of(record) }
   }
 
   private fun <T> findFundingEntityByUserId(userId: UserId, mapper: (Record) -> T): T? {
