@@ -12,7 +12,6 @@ import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
@@ -130,30 +129,23 @@ class ReportStore(
   }
 
   fun updateProjectReportConfig(
-      configId: ProjectReportConfigId,
-      updateFunc: (ExistingProjectReportConfigModel) -> ExistingProjectReportConfigModel
+      projectId: ProjectId,
+      reportingStartDate: LocalDate,
+      reportingEndDate: LocalDate,
   ) {
     requirePermissions { manageProjectReportConfigs() }
+    updateConfigDatesByCondition(
+        PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(projectId), reportingStartDate, reportingEndDate)
+  }
 
-    val existing =
-        fetchConfigsByCondition(PROJECT_REPORT_CONFIGS.ID.eq(configId)).firstOrNull()
-            ?: throw ReportConfigNotFoundException(configId)
-
-    val updated =
-        updateFunc(existing)
-            .copy(id = existing.id, projectId = existing.projectId, frequency = existing.frequency)
-
-    dslContext.transaction { _ ->
-      with(PROJECT_REPORT_CONFIGS) {
-        dslContext
-            .update(this)
-            .set(REPORTING_START_DATE, updated.reportingStartDate)
-            .set(REPORTING_END_DATE, updated.reportingEndDate)
-            .execute()
-      }
-
-      updateReportRows(updated)
-    }
+  fun updateProjectReportConfig(
+      configId: ProjectReportConfigId,
+      reportingStartDate: LocalDate,
+      reportingEndDate: LocalDate,
+  ) {
+    requirePermissions { manageProjectReportConfigs() }
+    updateConfigDatesByCondition(
+        PROJECT_REPORT_CONFIGS.ID.eq(configId), reportingStartDate, reportingEndDate)
   }
 
   fun fetchProjectReportConfigs(
@@ -521,8 +513,15 @@ class ReportStore(
         }
 
     return dslContext
-        .select(REPORTS.asterisk(), projectMetricsField, standardMetricsField, systemMetricsField)
+        .select(
+            REPORTS.asterisk(),
+            PROJECT_REPORT_CONFIGS.REPORT_FREQUENCY_ID,
+            projectMetricsField,
+            standardMetricsField,
+            systemMetricsField)
         .from(REPORTS)
+        .join(PROJECT_REPORT_CONFIGS)
+        .on(PROJECT_REPORT_CONFIGS.ID.eq(REPORTS.CONFIG_ID))
         .where(condition)
         .orderBy(REPORTS.START_DATE)
         .fetch {
@@ -541,6 +540,27 @@ class ReportStore(
   ): List<ExistingProjectReportConfigModel> {
     return with(PROJECT_REPORT_CONFIGS) {
       dslContext.selectFrom(this).where(condition).fetch { ProjectReportConfigModel.of(it) }
+    }
+  }
+
+  private fun updateConfigDatesByCondition(
+      condition: Condition,
+      startDate: LocalDate,
+      endDate: LocalDate,
+  ) {
+    dslContext.transaction { _ ->
+      with(PROJECT_REPORT_CONFIGS) {
+        dslContext
+            .update(this)
+            .set(REPORTING_START_DATE, startDate)
+            .set(REPORTING_END_DATE, endDate)
+            .where(condition)
+            .execute()
+      }
+
+      val updated = fetchConfigsByCondition(condition)
+
+      updated.forEach { updateReportRows(it) }
     }
   }
 
