@@ -450,7 +450,7 @@ class ReportStore(
       }
     }
 
-    // Mark any unmatched existing reports to be removed. These are past the last desiured report
+    // Mark any unmatched existing reports to be removed. These are past the last desired report
     reportRowsToUpdate.addAll(
         existingReportIterator
             .asSequence()
