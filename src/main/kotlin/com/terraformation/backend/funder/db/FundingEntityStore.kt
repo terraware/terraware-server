@@ -1,6 +1,6 @@
 package com.terraformation.backend.funder.db
 
-import com.terraformation.backend.customer.model.ProjectModel
+import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -64,7 +64,7 @@ class FundingEntityStore(
                   groupRecords
                       .filter { it[PROJECTS.ID] != null }
                       .map { record ->
-                        ProjectModel(
+                        ExistingProjectModel(
                             id = record[PROJECTS.ID]!!,
                             name = record[PROJECTS.NAME]!!,
                             organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
