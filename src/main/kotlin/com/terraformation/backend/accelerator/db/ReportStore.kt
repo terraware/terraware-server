@@ -168,6 +168,15 @@ class ReportStore(
   fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<SystemMetric>) {
     requirePermissions { reviewReports() }
 
+    val report =
+        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+            ?: throw ReportNotFoundException(reportId)
+
+    if (report.status !in ReportModel.submittedStatuses) {
+      throw IllegalStateException(
+          "Cannot refresh the status of report $reportId with status ${report.status.name}")
+    }
+
     dslContext.transaction { _ ->
       val rowsUpdated = updateReportSystemMetricWithTerrawareData(reportId, metrics)
 
