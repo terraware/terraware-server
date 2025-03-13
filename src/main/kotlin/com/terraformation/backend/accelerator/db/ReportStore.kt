@@ -366,6 +366,26 @@ class ReportStore(
     val existingReports = fetchByCondition(REPORTS.CONFIG_ID.eq(config.id))
     val newReportRows = createReportRows(config)
 
+    if (existingReports.isEmpty()) {
+      reportsDao.insert(newReportRows)
+      return
+    }
+
+    if (newReportRows.isEmpty()) {
+      reportsDao.update(
+          existingReports.map {
+            it.toRow()
+                .copy(
+                    statusId = ReportStatus.NotNeeded,
+                    modifiedBy = systemUser.userId,
+                    modifiedTime = clock.instant(),
+                    submittedBy = null,
+                    submittedTime = null,
+                )
+          })
+      return
+    }
+
     // These are the types of updates that may be required
     // 1) Determine the existing reports that need to be archived
     // 2) Determine the existing reports that need to be un-archived
