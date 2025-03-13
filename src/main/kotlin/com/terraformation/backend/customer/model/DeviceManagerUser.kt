@@ -40,7 +40,8 @@ data class DeviceManagerUser(
   override val userType: UserType
     get() = UserType.DeviceManager
 
-  override val email = EMAIL
+  override val email
+    get() = EMAIL
 
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     mapOf(organizationId to Role.Contributor)
