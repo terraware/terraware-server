@@ -1,6 +1,6 @@
 package com.terraformation.backend.funder.db
 
-import com.terraformation.backend.customer.model.SimpleProjectModel
+import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -39,7 +39,8 @@ class FundingEntityStore(
                 FUNDING_ENTITIES.CREATED_TIME,
                 FUNDING_ENTITIES.MODIFIED_TIME,
                 PROJECTS.ID,
-                PROJECTS.NAME)
+                PROJECTS.NAME,
+                PROJECTS.ORGANIZATION_ID)
             .from(FUNDING_ENTITIES)
             .leftJoin(FUNDING_ENTITY_PROJECTS)
             .on(FUNDING_ENTITIES.ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
@@ -63,8 +64,11 @@ class FundingEntityStore(
                   groupRecords
                       .filter { it[PROJECTS.ID] != null }
                       .map { record ->
-                        SimpleProjectModel(
-                            id = record[PROJECTS.ID]!!, name = record[PROJECTS.NAME]!!)
+                        ProjectModel(
+                            id = record[PROJECTS.ID]!!,
+                            name = record[PROJECTS.NAME]!!,
+                            organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
+                        )
                       })
         }
   }

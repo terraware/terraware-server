@@ -56,8 +56,3 @@ data class ProjectModel<ID : ProjectId?>(
 typealias NewProjectModel = ProjectModel<Nothing?>
 
 typealias ExistingProjectModel = ProjectModel<ProjectId>
-
-data class SimpleProjectModel(
-    val id: ProjectId,
-    val name: String,
-)

@@ -6,7 +6,7 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.model.SimpleProjectModel
+import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -43,8 +43,7 @@ class FundingEntitiesController(
   @GetMapping
   @Operation(summary = "Lists all funding entities.")
   fun listFundingEntities(): ListFundingEntitiesPayload {
-    val elements =
-        fundingEntityStore.fetchAll().map { model -> FundingEntityWithProjectsPayload(model) }
+    val elements = fundingEntityStore.fetchAll().map { model -> FundingEntityPayload(model) }
     return ListFundingEntitiesPayload(elements)
   }
 
@@ -120,8 +119,11 @@ class FundingEntitiesController(
 data class FundingEntityPayload(
     val id: FundingEntityId,
     val name: String,
+    val projects: List<ProjectPayload>,
 ) {
-  constructor(model: FundingEntityModel) : this(id = model.id, name = model.name)
+  constructor(
+      model: FundingEntityModel
+  ) : this(id = model.id, name = model.name, projects = model.projects.map { ProjectPayload(it) })
 }
 
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :
@@ -146,15 +148,5 @@ data class InviteFundingEntityFunderRequestPayload(val email: String)
 
 data class InviteFundingEntityFunderResponsePayload(val email: String) : SuccessResponsePayload
 
-data class FundingEntityWithProjectsPayload(
-    val id: FundingEntityId,
-    val name: String,
-    val projects: List<SimpleProjectModel>,
-) {
-  constructor(
-      model: FundingEntityModel
-  ) : this(id = model.id, name = model.name, projects = model.projects)
-}
-
-data class ListFundingEntitiesPayload(val fundingEntities: List<FundingEntityWithProjectsPayload>) :
+data class ListFundingEntitiesPayload(val fundingEntities: List<FundingEntityPayload>) :
     SuccessResponsePayload
