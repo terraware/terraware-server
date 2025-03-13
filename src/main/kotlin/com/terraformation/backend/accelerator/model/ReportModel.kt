@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -92,6 +93,25 @@ data class ReportModel(
               invalidStandardMetricIds.joinToString(", "),
       )
     }
+  }
+
+  fun toRow(): ReportsRow {
+    return ReportsRow(
+        id = id,
+        configId = configId,
+        projectId = projectId,
+        statusId = status,
+        startDate = startDate,
+        endDate = endDate,
+        internalComment = internalComment,
+        feedback = feedback,
+        createdBy = createdBy,
+        createdTime = createdTime,
+        modifiedBy = modifiedBy,
+        modifiedTime = modifiedTime,
+        submittedBy = submittedBy,
+        submittedTime = submittedTime,
+    )
   }
 
   companion object {

@@ -20,6 +20,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
@@ -1886,6 +1887,311 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               )),
           "Reports table",
       )
+    }
+  }
+
+  @Nested
+  inner class UpdateProjectReportConfig {
+    @Test
+    fun `throws exception for non accelerator admin users`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val configId = insertProjectReportConfig()
+
+      assertThrows<AccessDeniedException> { store.updateProjectReportConfig(configId) { it } }
+    }
+
+    @Test
+    fun `updates the dates of the first and last report`() {
+      // In this scenario, a user adjusts the reporting period minimally, so no new reports are
+      // required, and no existing reports need to be archived
+
+      val config =
+          NewProjectReportConfigModel(
+              id = null,
+              projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
+              reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+              reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+          )
+
+      store.insertProjectReportConfig(config)
+      val configId = projectReportConfigsDao.fetchByProjectId(projectId).single().id!!
+
+      store.updateProjectReportConfig(configId) {
+        it.copy(
+            reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
+            reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+
+            // These fields are ignored
+            id = ProjectReportConfigId(-10),
+            projectId = ProjectId(-10),
+            frequency = ReportFrequency.Annual,
+        )
+      }
+
+      assertTableEquals(
+          ProjectReportConfigsRecord(
+              id = configId,
+              projectId = projectId,
+              reportFrequencyId = ReportFrequency.Quarterly,
+              reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
+              reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+          ),
+          "Project report config tables")
+
+      assertTableEquals(
+          listOf(
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2025, Month.APRIL, 4),
+                  endDate = LocalDate.of(2025, Month.JUNE, 30),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2025, Month.JULY, 1),
+                  endDate = LocalDate.of(2025, Month.SEPTEMBER, 30),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2025, Month.OCTOBER, 1),
+                  endDate = LocalDate.of(2025, Month.DECEMBER, 31),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2026, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              )),
+          "Reports table",
+      )
+    }
+
+    @Test
+    fun `archives reports outside of date range, and creates reports for new date range`() {
+      val configId =
+          insertProjectReportConfig(
+              projectId = projectId,
+              frequency = ReportFrequency.Annual,
+              reportingStartDate = LocalDate.of(2021, Month.MARCH, 13),
+              reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
+          )
+
+      val year1ReportId =
+          insertReport(
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.Submitted,
+              startDate = LocalDate.of(2021, Month.MARCH, 13),
+              endDate = LocalDate.of(2021, Month.DECEMBER, 31),
+          )
+
+      // year 2 is missing, which can happen if report dates were changed before
+      val year3ReportId =
+          insertReport(
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.Approved,
+              startDate = LocalDate.of(2023, Month.JANUARY, 1),
+              endDate = LocalDate.of(2023, Month.DECEMBER, 31),
+          )
+
+      val year4ReportId =
+          insertReport(
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.NotNeeded,
+              startDate = LocalDate.of(2024, Month.JANUARY, 1),
+              endDate = LocalDate.of(2024, Month.JULY, 9),
+          )
+
+      clock.instant = Instant.ofEpochSecond(9000)
+
+      store.updateProjectReportConfig(configId) {
+        it.copy(
+            reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
+            reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
+        )
+      }
+
+      val reportIdsByYear =
+          reportsDao.fetchByConfigId(configId).associate { it.startDate!!.year to it.id }
+
+      assertTableEquals(
+          ProjectReportConfigsRecord(
+              id = configId,
+              projectId = projectId,
+              reportFrequencyId = ReportFrequency.Annual,
+              reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
+              reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
+          ),
+          "Project report config tables")
+
+      assertTableEquals(
+          listOf(
+              ReportsRecord(
+                  id = year1ReportId,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotNeeded,
+                  startDate = LocalDate.of(2021, Month.MARCH, 13),
+                  endDate = LocalDate.of(2021, Month.DECEMBER, 31),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportsRecord(
+                  id = reportIdsByYear[2022]!!,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2022, Month.FEBRUARY, 14),
+                  endDate = LocalDate.of(2022, Month.DECEMBER, 31),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              // This one is unmodified
+              ReportsRecord(
+                  id = year3ReportId,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.Approved,
+                  startDate = LocalDate.of(2023, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2023, Month.DECEMBER, 31),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  submittedBy = user.userId,
+                  submittedTime = Instant.EPOCH,
+              ),
+              ReportsRecord(
+                  id = year4ReportId,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2024, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportsRecord(
+                  id = reportIdsByYear[2025]!!,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 17),
+                  createdBy = systemUser.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant,
+              ),
+          ),
+          "Reports table",
+      )
+    }
+
+    @Test
+    fun `archives all existing reports and creates new reports if dates do not overlap`() {
+      val config =
+          NewProjectReportConfigModel(
+              id = null,
+              projectId = projectId,
+              frequency = ReportFrequency.Annual,
+              reportingStartDate = LocalDate.of(2021, Month.MARCH, 13),
+              reportingEndDate = LocalDate.of(2022, Month.JULY, 9),
+          )
+
+      clock.instant = Instant.ofEpochSecond(300)
+
+      store.insertProjectReportConfig(config)
+      val configId = projectReportConfigsDao.fetchByProjectId(projectId).single().id!!
+
+      clock.instant = Instant.ofEpochSecond(900)
+
+      store.updateProjectReportConfig(configId) {
+        it.copy(
+            reportingStartDate = LocalDate.of(2023, Month.MARCH, 13),
+            reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
+        )
+      }
+
+      assertTableEquals(
+          listOf(
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotNeeded,
+                  startDate = LocalDate.of(2021, Month.MARCH, 13),
+                  endDate = LocalDate.of(2021, Month.DECEMBER, 31),
+                  createdBy = systemUser.userId,
+                  createdTime = Instant.ofEpochSecond(300),
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = Instant.ofEpochSecond(900),
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotNeeded,
+                  startDate = LocalDate.of(2022, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2022, Month.JULY, 9),
+                  createdBy = systemUser.userId,
+                  createdTime = Instant.ofEpochSecond(300),
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = Instant.ofEpochSecond(900),
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2023, Month.MARCH, 13),
+                  endDate = LocalDate.of(2023, Month.DECEMBER, 31),
+                  createdBy = systemUser.userId,
+                  createdTime = Instant.ofEpochSecond(900),
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = Instant.ofEpochSecond(900),
+              ),
+              ReportsRecord(
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = LocalDate.of(2024, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2024, Month.JULY, 9),
+                  createdBy = systemUser.userId,
+                  createdTime = Instant.ofEpochSecond(900),
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = Instant.ofEpochSecond(900),
+              ),
+          ))
     }
   }
 

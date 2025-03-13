@@ -2,6 +2,7 @@ package com.terraformation.backend.db
 
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -157,6 +158,9 @@ class ProjectInDifferentOrganizationException :
 
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
+
+class ReportConfigNotFoundException(val configId: ProjectReportConfigId) :
+    EntityNotFoundException("Report config $configId not found")
 
 class ReportNotFoundException(val reportId: ReportId) :
     EntityNotFoundException("Report $reportId not found")
