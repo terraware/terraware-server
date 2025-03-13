@@ -207,6 +207,24 @@ class ProjectReportsController(
   }
 
   @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/configs/{configId}")
+  @Operation(summary = "Update accelerator report configuration.")
+  fun updateAcceleratorReportConfig(
+      @PathVariable configId: ProjectReportConfigId,
+      @RequestBody payload: UpdateAcceleratorReportConfigRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateProjectReportConfig(configId) {
+      it.copy(
+          reportingStartDate = payload.config.reportingStartDate,
+          reportingEndDate = payload.config.reportingEndDate,
+      )
+    }
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
   @GetMapping("/metrics")
   @Operation(summary = "List all project metrics for one project.")
   fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
@@ -255,6 +273,11 @@ data class ExistingAcceleratorReportConfigPayload(
       reportingEndDate = model.reportingEndDate,
   )
 }
+
+data class UpdateAcceleratorReportConfigPayload(
+    val reportingStartDate: LocalDate,
+    val reportingEndDate: LocalDate,
+)
 
 data class NewAcceleratorReportConfigPayload(
     val frequency: ReportFrequency,
@@ -415,6 +438,10 @@ data class ReportProjectMetricEntriesPayload(
 
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
+)
+
+data class UpdateAcceleratorReportConfigRequestPayload(
+    val config: UpdateAcceleratorReportConfigPayload
 )
 
 data class ReviewAcceleratorReportRequestPayload(

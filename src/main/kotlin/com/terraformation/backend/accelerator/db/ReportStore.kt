@@ -12,8 +12,10 @@ import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
@@ -124,6 +126,33 @@ class ReportStore(
           }
       val reportRows = createReportRows(config)
       reportsDao.insert(reportRows)
+    }
+  }
+
+  fun updateProjectReportConfig(
+      configId: ProjectReportConfigId,
+      updateFunc: (ExistingProjectReportConfigModel) -> ExistingProjectReportConfigModel
+  ) {
+    requirePermissions { manageProjectReportConfigs() }
+
+    val existing =
+        fetchConfigsByCondition(PROJECT_REPORT_CONFIGS.ID.eq(configId)).firstOrNull()
+            ?: throw ReportConfigNotFoundException(configId)
+
+    val updated =
+        updateFunc(existing)
+            .copy(id = existing.id, projectId = existing.projectId, frequency = existing.frequency)
+
+    dslContext.transaction { _ ->
+      with(PROJECT_REPORT_CONFIGS) {
+        dslContext
+            .update(this)
+            .set(REPORTING_START_DATE, updated.reportingStartDate)
+            .set(REPORTING_END_DATE, updated.reportingEndDate)
+            .execute()
+      }
+
+      updateReportRows(updated)
     }
   }
 
@@ -278,6 +307,17 @@ class ReportStore(
     }
   }
 
+  private fun getStartOfReportingPeriod(date: LocalDate, frequency: ReportFrequency): LocalDate {
+    val startYear = date.year
+    val startMonth =
+        when (frequency) {
+          ReportFrequency.Quarterly -> date.month.firstMonthOfQuarter()
+          ReportFrequency.Annual -> Month.JANUARY
+        }
+
+    return LocalDate.of(startYear, startMonth, 1)
+  }
+
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
     if (!config.reportingEndDate.isAfter(config.reportingStartDate)) {
       throw IllegalArgumentException("Reporting end date must be after reporting start date.")
@@ -289,14 +329,7 @@ class ReportStore(
           ReportFrequency.Annual -> 12L
         }
 
-    val startYear = config.reportingStartDate.year
-    val startMonth =
-        when (config.frequency) {
-          ReportFrequency.Quarterly -> config.reportingStartDate.month.firstMonthOfQuarter()
-          ReportFrequency.Annual -> Month.JANUARY
-        }
-
-    var startDate = LocalDate.of(startYear, startMonth, 1)
+    var startDate = getStartOfReportingPeriod(config.reportingStartDate, config.frequency)
 
     val now = clock.instant()
 
@@ -325,6 +358,132 @@ class ReportStore(
     rows[rows.lastIndex] = rows[rows.lastIndex].copy(endDate = config.reportingEndDate)
 
     return rows
+  }
+
+  private fun updateReportRows(
+      config: ExistingProjectReportConfigModel,
+  ) {
+    val existingReports = fetchByCondition(REPORTS.CONFIG_ID.eq(config.id))
+    val newReportRows = createReportRows(config)
+
+    if (existingReports.isEmpty()) {
+      reportsDao.insert(newReportRows)
+      return
+    }
+
+    if (newReportRows.isEmpty()) {
+      reportsDao.update(
+          existingReports.map {
+            it.toRow()
+                .copy(
+                    statusId = ReportStatus.NotNeeded,
+                    modifiedBy = systemUser.userId,
+                    modifiedTime = clock.instant(),
+                    submittedBy = null,
+                    submittedTime = null,
+                )
+          })
+      return
+    }
+
+    // These are the types of updates that may be required
+    // 1) Determine the existing reports that need to be archived
+    // 2) Determine the existing reports that need to be un-archived
+    // 3) Determine report rows that need to be added
+    // 4) Determine reports that need dates to be updated
+
+    val existingReportIterator = existingReports.iterator()
+    val desiredReportIterator = newReportRows.iterator()
+
+    val reportRowsToAdd = mutableListOf<ReportsRow>()
+    val reportRowsToUpdate = mutableListOf<ReportsRow>()
+
+    // Use two pointers to iterate existing reports and the desired reports
+    // Both iterators should already be sorted by reporting dates
+    var existingReport = existingReportIterator.next()
+    var desiredReportRow = desiredReportIterator.next()
+
+    while (true) {
+      if (existingReport.endDate.isBefore(desiredReportRow.startDate!!)) {
+        // If existing report date is before the new report date, archive it
+        if (existingReport.status != ReportStatus.NotNeeded) {
+          reportRowsToUpdate.add(
+              existingReport
+                  .toRow()
+                  .copy(
+                      statusId = ReportStatus.NotNeeded,
+                      modifiedBy = systemUser.userId,
+                      modifiedTime = clock.instant(),
+                      submittedBy = null,
+                      submittedTime = null,
+                  ))
+          if (existingReportIterator.hasNext()) {
+            existingReport = existingReportIterator.next()
+          } else {
+            reportRowsToAdd.add(desiredReportRow)
+            break
+          }
+        }
+      } else if (desiredReportRow.endDate!!.isBefore(existingReport.startDate)) {
+        // If the new report date is before the existing report date, this report needs to be added
+        reportRowsToAdd.add(desiredReportRow)
+        if (desiredReportIterator.hasNext()) {
+          desiredReportRow = desiredReportIterator.next()
+        } else {
+          reportRowsToUpdate.add(
+              existingReport
+                  .toRow()
+                  .copy(
+                      statusId = ReportStatus.NotNeeded,
+                      modifiedBy = systemUser.userId,
+                      modifiedTime = clock.instant(),
+                      submittedBy = null,
+                      submittedTime = null,
+                  ))
+          break
+        }
+      } else {
+        // If the report dates overlap, they point to the same reporting period. Update the
+        // existing report dates to match the desired report dates, and un-archive
+        if (existingReport.startDate != desiredReportRow.startDate!! ||
+            existingReport.endDate != desiredReportRow.endDate!!) {
+          reportRowsToUpdate.add(
+              existingReport
+                  .toRow()
+                  .copy(
+                      statusId = ReportStatus.NotSubmitted,
+                      startDate = desiredReportRow.startDate!!,
+                      endDate = desiredReportRow.endDate!!,
+                      modifiedBy = systemUser.userId,
+                      modifiedTime = clock.instant(),
+                      submittedBy = null,
+                      submittedTime = null,
+                  ))
+        }
+
+        if (existingReportIterator.hasNext() && desiredReportIterator.hasNext()) {
+          existingReport = existingReportIterator.next()
+          desiredReportRow = desiredReportIterator.next()
+        } else {
+          break
+        }
+      }
+    }
+
+    // Mark any unmatched existing reports to be removed. These are past the last desired report
+    reportRowsToUpdate.addAll(
+        existingReportIterator
+            .asSequence()
+            .filter { it.status != ReportStatus.NotNeeded }
+            .map { it.toRow().copy(statusId = ReportStatus.NotNeeded) })
+
+    // Mark any unmatched new reports to be added
+    reportRowsToAdd.addAll(desiredReportIterator.asSequence())
+
+    dslContext.transaction { _ ->
+      reportsDao.insert(reportRowsToAdd)
+      reportsDao.update(reportRowsToUpdate)
+    }
   }
 
   private fun fetchByCondition(
@@ -356,6 +515,7 @@ class ReportStore(
         .select(REPORTS.asterisk(), projectMetricsField, standardMetricsField, systemMetricsField)
         .from(REPORTS)
         .where(condition)
+        .orderBy(REPORTS.START_DATE)
         .fetch {
           ReportModel.of(
               record = it,
