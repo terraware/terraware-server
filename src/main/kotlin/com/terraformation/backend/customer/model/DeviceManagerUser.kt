@@ -10,7 +10,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.log.perClassLogger
 import java.time.ZoneId
 import java.time.ZoneOffset
 import org.springframework.security.core.GrantedAuthority
@@ -31,14 +30,18 @@ data class DeviceManagerUser(
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
+  companion object {
+    private const val EMAIL = "deviceManagerUser@terraformation.com"
+  }
+
   override val timeZone: ZoneId
     get() = ZoneOffset.UTC
 
   override val userType: UserType
     get() = UserType.DeviceManager
 
-  override val email: String?
-    get() = null
+  override val email
+    get() = EMAIL
 
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     mapOf(organizationId to Role.Contributor)
@@ -138,9 +141,5 @@ data class DeviceManagerUser(
   ): Boolean {
     return canAccessOrganization(organizationId) &&
         organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
-  }
-
-  companion object {
-    private val log = perClassLogger()
   }
 }

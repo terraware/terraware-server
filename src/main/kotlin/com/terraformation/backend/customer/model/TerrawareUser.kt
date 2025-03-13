@@ -80,6 +80,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   val userId: UserId
   val userType: UserType
+  val email: String
 
   val createdTime: Instant?
     get() = null
@@ -91,9 +92,6 @@ interface TerrawareUser : Principal, UserDetails {
     get() = null
 
   val timeZone: ZoneId?
-    get() = null
-
-  val email: String?
     get() = null
 
   val countryCode: String?
