@@ -446,12 +446,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>submitted_status</td>
-                                    <td>((((status_id = 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id = 2) OR (status_id = 3) OR (status_id = 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id = 5)))</td>
-                                </tr>
-                                <tr>
                                     <td>reports_check</td>
                                     <td>((end_date &gt; start_date))</td>
+                                </tr>
+                                <tr>
+                                    <td>submitted_status</td>
+                                    <td>((((status_id = 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id = 2) OR (status_id = 3) OR (status_id = 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id = 5)))</td>
                                 </tr>
                                 </tbody>
                             </table>
