@@ -212,7 +212,7 @@ data class UserProfilePayload(
       user.cookiesConsentedTime,
       user.countryCode,
       user.userId,
-      user.email!!,
+      user.email,
       user.emailNotificationsEnabled,
       user.firstName,
       user.globalRoles,
