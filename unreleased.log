@@ -1,2 +1,3 @@
+84c99121025 SW-6625 Support annual reporting targets (#2915)
 20d95edd67d SW-6561 Fix docs, CI builds (#2918)
 679aabcd3ec Added API endpoint for reviewing system metrics and refreshing the data (#2914)

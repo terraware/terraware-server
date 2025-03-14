@@ -781,6 +781,7 @@
 <polygon fill="none" stroke="black" points="988,-1971 988,-1993 1165,-1993 1165,-1971 988,-1971"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="993" y="-1988"/>
 <text text-anchor="start" x="1020" y="-1979.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="988,-1949 988,-1971 1165,-1971 1165,-1949 988,-1949"/>
 <polygon fill="none" stroke="black" points="988,-1949 988,-1971 1165,-1971 1165,-1949 988,-1949"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="993" y="-1966"/>
 <text text-anchor="start" x="1020" y="-1957.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_frequency_id</text>
