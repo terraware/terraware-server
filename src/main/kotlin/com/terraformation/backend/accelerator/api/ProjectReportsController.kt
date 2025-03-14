@@ -82,20 +82,32 @@ class ProjectReportsController(
       @RequestBody payload: UpdateAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
 
-    val standardMetricUpdates =
-        payload.standardMetrics.associate {
-          it.id to ReportMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
-        }
+    val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
 
-    val projectMetricUpdates =
-        payload.projectMetrics.associate {
-          it.id to ReportMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
-        }
+    val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
+
+    val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.updateReportMetrics(
         reportId = reportId,
         standardMetricEntries = standardMetricUpdates,
+        systemMetricEntries = systemMetricUpdates,
         projectMetricEntries = projectMetricUpdates)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/{reportId}/metrics/refresh")
+  @Operation(summary = "Refresh system metric entries value for a report")
+  fun refreshAcceleratorReportSystemMetrics(
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+      @RequestParam metrics: List<SystemMetric>,
+  ): SimpleSuccessResponsePayload {
+    reportStore.refreshSystemMetricValues(reportId, metrics)
 
     return SimpleSuccessResponsePayload()
   }
@@ -125,37 +137,22 @@ class ProjectReportsController(
   @ApiResponse404
   @PostMapping("/{reportId}/metrics/review")
   @Operation(summary = "Review metric entries for a report")
-  fun reviewAcceleratorReport(
+  fun reviewAcceleratorReportMetrics(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
 
-    val standardMetricUpdates =
-        payload.standardMetrics.associate {
-          it.id to
-              ReportMetricEntryModel(
-                  target = it.target,
-                  value = it.value,
-                  notes = it.notes,
-                  internalComment = it.internalComment,
-              )
-        }
+    val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
 
-    val projectMetricUpdates =
-        payload.projectMetrics.associate {
-          it.id to
-              ReportMetricEntryModel(
-                  target = it.target,
-                  value = it.value,
-                  notes = it.notes,
-                  internalComment = it.internalComment,
-              )
-        }
+    val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
+
+    val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.reviewReportMetrics(
         reportId = reportId,
         standardMetricEntries = standardMetricUpdates,
+        systemMetricEntries = systemMetricUpdates,
         projectMetricEntries = projectMetricUpdates,
     )
 
@@ -370,7 +367,15 @@ data class ReportStandardMetricEntriesPayload(
     val value: Int?,
     val notes: String?,
     val internalComment: String?,
-)
+) {
+  fun toModel() =
+      ReportMetricEntryModel(
+          target = target,
+          value = value,
+          notes = notes,
+          internalComment = internalComment,
+      )
+}
 
 data class ReportSystemMetricPayload(
     val metric: SystemMetric,
@@ -399,6 +404,23 @@ data class ReportSystemMetricPayload(
       overrideValue = model.entry.overrideValue,
       notes = model.entry.notes,
       internalComment = model.entry.internalComment)
+}
+
+data class ReportSystemMetricEntriesPayload(
+    val metric: SystemMetric,
+    val target: Int?,
+    @Schema(description = "If set to null, system metric entry will use Terraware data value.")
+    val overrideValue: Int?,
+    val notes: String?,
+    val internalComment: String?,
+) {
+  fun toModel() =
+      ReportMetricEntryModel(
+          target = target,
+          value = overrideValue,
+          notes = notes,
+          internalComment = internalComment,
+      )
 }
 
 data class ReportProjectMetricPayload(
@@ -434,7 +456,15 @@ data class ReportProjectMetricEntriesPayload(
     val value: Int?,
     val notes: String?,
     val internalComment: String?,
-)
+) {
+  fun toModel() =
+      ReportMetricEntryModel(
+          target = target,
+          value = value,
+          notes = notes,
+          internalComment = internalComment,
+      )
+}
 
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
@@ -450,11 +480,13 @@ data class ReviewAcceleratorReportRequestPayload(
 
 data class ReviewAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
+    val systemMetrics: List<ReportSystemMetricEntriesPayload>,
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
+    val systemMetrics: List<ReportSystemMetricEntriesPayload>,
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 

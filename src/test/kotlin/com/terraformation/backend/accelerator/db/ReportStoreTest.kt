@@ -1335,12 +1335,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws Illegal State Exception if report is not yet submitted`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+
+      assertThrows<IllegalStateException> { store.refreshSystemMetricValues(reportId, emptySet()) }
+    }
+
+    @Test
     fun `inserts into or updates report system metrics table`() {
       val otherUserId = insertUser()
       insertProjectReportConfig()
       val reportId =
           insertReport(
-              status = ReportStatus.NotSubmitted,
+              status = ReportStatus.Submitted,
               startDate = LocalDate.of(2025, Month.JANUARY, 1),
               endDate = LocalDate.of(2025, Month.MARCH, 31))
 
