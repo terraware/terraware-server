@@ -20,7 +20,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
@@ -104,6 +103,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NeedsUpdate,
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
@@ -343,6 +343,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
@@ -416,6 +417,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotNeeded,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
@@ -442,6 +444,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = today,
               endDate = today.plusDays(31),
@@ -467,6 +470,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
@@ -503,6 +507,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId1,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
@@ -576,6 +581,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
@@ -1906,7 +1912,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val configId = insertProjectReportConfig()
 
-      assertThrows<AccessDeniedException> { store.updateProjectReportConfig(configId) { it } }
+      assertThrows<AccessDeniedException> {
+        store.updateProjectReportConfig(
+            configId = configId,
+            reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+            reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+        )
+      }
+
+      assertThrows<AccessDeniedException> {
+        store.updateProjectReportConfig(
+            projectId = projectId,
+            reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+            reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+        )
+      }
     }
 
     @Test
@@ -1926,25 +1946,37 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.insertProjectReportConfig(config)
       val configId = projectReportConfigsDao.fetchByProjectId(projectId).single().id!!
 
-      store.updateProjectReportConfig(configId) {
-        it.copy(
-            reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
-            reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+      // This should be unchanged
+      val otherConfigId =
+          insertProjectReportConfig(
+              projectId = projectId,
+              frequency = ReportFrequency.Annual,
+              reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+              reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+          )
 
-            // These fields are ignored
-            id = ProjectReportConfigId(-10),
-            projectId = ProjectId(-10),
-            frequency = ReportFrequency.Annual,
-        )
-      }
+      store.updateProjectReportConfig(
+          configId = configId,
+          reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
+          reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+      )
 
       assertTableEquals(
-          ProjectReportConfigsRecord(
-              id = configId,
-              projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
-              reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
-              reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+          listOf(
+              ProjectReportConfigsRecord(
+                  id = configId,
+                  projectId = projectId,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
+                  reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+              ),
+              ProjectReportConfigsRecord(
+                  id = otherConfigId,
+                  projectId = projectId,
+                  reportFrequencyId = ReportFrequency.Annual,
+                  reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+                  reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+              ),
           ),
           "Project report config tables")
 
@@ -2038,12 +2070,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = Instant.ofEpochSecond(9000)
 
-      store.updateProjectReportConfig(configId) {
-        it.copy(
-            reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
-            reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
-        )
-      }
+      store.updateProjectReportConfig(
+          configId = configId,
+          reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
+          reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
+      )
 
       val reportIdsByYear =
           reportsDao.fetchByConfigId(configId).associate { it.startDate!!.year to it.id }
@@ -2146,12 +2177,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = Instant.ofEpochSecond(900)
 
-      store.updateProjectReportConfig(configId) {
-        it.copy(
-            reportingStartDate = LocalDate.of(2023, Month.MARCH, 13),
-            reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
-        )
-      }
+      store.updateProjectReportConfig(
+          configId = configId,
+          reportingStartDate = LocalDate.of(2023, Month.MARCH, 13),
+          reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
+      )
 
       assertTableEquals(
           listOf(
@@ -2200,6 +2230,50 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(900),
               ),
           ))
+    }
+
+    @Test
+    fun `updates all configs by projectId`() {
+      val quarterlyConfigId =
+          insertProjectReportConfig(
+              projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
+              reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
+              reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+          )
+
+      val annualConfigId =
+          insertProjectReportConfig(
+              projectId = projectId,
+              frequency = ReportFrequency.Annual,
+              reportingStartDate = LocalDate.of(2034, Month.MAY, 5),
+              reportingEndDate = LocalDate.of(2038, Month.MARCH, 29),
+          )
+
+      store.updateProjectReportConfig(
+          projectId = projectId,
+          reportingStartDate = LocalDate.of(2044, Month.MARCH, 13),
+          reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
+      )
+
+      assertTableEquals(
+          listOf(
+              ProjectReportConfigsRecord(
+                  id = quarterlyConfigId,
+                  projectId = projectId,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportingStartDate = LocalDate.of(2044, Month.MARCH, 13),
+                  reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
+              ),
+              ProjectReportConfigsRecord(
+                  id = annualConfigId,
+                  projectId = projectId,
+                  reportFrequencyId = ReportFrequency.Annual,
+                  reportingStartDate = LocalDate.of(2044, Month.MARCH, 13),
+                  reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
+              ),
+          ),
+          "Project report config tables")
     }
   }
 

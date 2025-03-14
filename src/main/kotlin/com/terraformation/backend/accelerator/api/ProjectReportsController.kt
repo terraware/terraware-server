@@ -186,7 +186,10 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: CreateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.insertProjectReportConfig(payload.config.toModel(projectId))
+    reportStore.insertProjectReportConfig(
+        payload.config.toModel(projectId, ReportFrequency.Quarterly))
+    reportStore.insertProjectReportConfig(payload.config.toModel(projectId, ReportFrequency.Annual))
+
     return SimpleSuccessResponsePayload()
   }
 
@@ -206,18 +209,28 @@ class ProjectReportsController(
   @ApiResponse200
   @ApiResponse400
   @ApiResponse404
+  @PostMapping("/configs")
+  @Operation(summary = "Update all accelerator report configurations for a project.")
+  fun updateProjectAcceleratorReportConfig(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateProjectAcceleratorReportConfigRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateProjectReportConfig(
+        projectId, payload.config.reportingStartDate, payload.config.reportingEndDate)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
   @PostMapping("/configs/{configId}")
   @Operation(summary = "Update accelerator report configuration.")
   fun updateAcceleratorReportConfig(
       @PathVariable configId: ProjectReportConfigId,
       @RequestBody payload: UpdateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.updateProjectReportConfig(configId) {
-      it.copy(
-          reportingStartDate = payload.config.reportingStartDate,
-          reportingEndDate = payload.config.reportingEndDate,
-      )
-    }
+    reportStore.updateProjectReportConfig(
+        configId, payload.config.reportingStartDate, payload.config.reportingEndDate)
     return SimpleSuccessResponsePayload()
   }
 
@@ -277,11 +290,10 @@ data class UpdateAcceleratorReportConfigPayload(
 )
 
 data class NewAcceleratorReportConfigPayload(
-    val frequency: ReportFrequency,
     val reportingStartDate: LocalDate,
     val reportingEndDate: LocalDate,
 ) {
-  fun toModel(projectId: ProjectId): NewProjectReportConfigModel =
+  fun toModel(projectId: ProjectId, frequency: ReportFrequency): NewProjectReportConfigModel =
       NewProjectReportConfigModel(
           id = null,
           projectId = projectId,
@@ -294,6 +306,7 @@ data class NewAcceleratorReportConfigPayload(
 data class AcceleratorReportPayload(
     val id: ReportId,
     val projectId: ProjectId,
+    val frequency: ReportFrequency,
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -312,6 +325,7 @@ data class AcceleratorReportPayload(
   ) : this(
       id = model.id,
       projectId = model.projectId,
+      frequency = model.frequency,
       status = model.status,
       startDate = model.startDate,
       endDate = model.endDate,
@@ -471,6 +485,10 @@ data class CreateAcceleratorReportConfigRequestPayload(
 )
 
 data class UpdateAcceleratorReportConfigRequestPayload(
+    val config: UpdateAcceleratorReportConfigPayload
+)
+
+data class UpdateProjectAcceleratorReportConfigRequestPayload(
     val config: UpdateAcceleratorReportConfigPayload
 )
 

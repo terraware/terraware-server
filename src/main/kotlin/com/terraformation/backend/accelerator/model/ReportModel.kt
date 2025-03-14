@@ -3,10 +3,12 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
+import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -19,6 +21,7 @@ data class ReportModel(
     val id: ReportId,
     val configId: ProjectReportConfigId,
     val projectId: ProjectId,
+    val frequency: ReportFrequency,
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -133,6 +136,7 @@ data class ReportModel(
             id = record[ID]!!,
             configId = record[CONFIG_ID]!!,
             projectId = record[PROJECT_ID]!!,
+            frequency = record[PROJECT_REPORT_CONFIGS.REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
