@@ -45,11 +45,6 @@ jobs:
         # Use the same cache key as in main.yml to pick up cached dependencies
         key: 4-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'yarn.lock') }}
 
-    - name: Download Docker images
-      run: |
-        docker pull postgis/postgis:13-3.0
-        docker pull schemaspy/schemaspy:6.1.0
-
     - name: Compile
       run: ./gradlew testClasses
 

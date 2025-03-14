@@ -78,7 +78,7 @@ import org.testcontainers.utility.DockerImageName
  */
 class SchemaDocsGenerator : DatabaseTest() {
   /** Docker image to use to generate docs. */
-  private val schemaSpyDockerImage = DockerImageName.parse("schemaspy/schemaspy:6.1.0")
+  private val schemaSpyDockerImage = DockerImageName.parse("schemaspy/schemaspy:6.2.4")
 
   /**
    * Name of environment variable specifying where the schema subdirectories should live. If not

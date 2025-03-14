@@ -70,7 +70,6 @@ jobs:
 
     - name: Download dependencies
       run: |
-        docker pull postgres:13
         ./gradlew downloadDependencies yarn
 
     - name: Generate jOOQ classes
