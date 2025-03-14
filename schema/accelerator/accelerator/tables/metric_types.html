@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>metric_types - terraware Database</title>
+        <title>metric_types - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>metric_types</h1><p><span id="recordNumber">4</span> rows</p><br />
+                    <h1>metric_types</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -126,15 +132,18 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_metrics.type_id references metric_types.id via project_metrics_type_id_fkey"><a href='project_metrics.html'>project_metrics</a><span class='relatedKey'>.type_id</span></td>
-                                                <td class="constraint detail">project_metrics_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_metrics_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="standard_metrics.type_id references metric_types.id via standard_metrics_type_id_fkey"><a href='standard_metrics.html'>standard_metrics</a><span class='relatedKey'>.type_id</span></td>
-                                                <td class="constraint detail">standard_metrics_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">standard_metrics_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="system_metrics.type_id references metric_types.id via system_metrics_type_id_fkey"><a href='system_metrics.html'>system_metrics</a><span class='relatedKey'>.type_id</span></td>
-                                                <td class="constraint detail">system_metrics_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">system_metrics_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -175,7 +184,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -219,26 +234,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="347,5,552,211">
-<area shape="rect" id="node2" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,255,296,383">
-<area shape="rect" id="node3" href="../../tables/standard_metrics.html" target="_top" title="standard_metrics" alt="" coords="340,228,559,404">
-<area shape="rect" id="node4" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="347,421,551,597">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/metric_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="347,5,552,211">
-<area shape="rect" id="node2" href="../../tables/metric_components.html" target="_top" title="metric_components" alt="" coords="32,345,269,433">
-<area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="51,37,251,125">
-<area shape="rect" id="node4" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,200,296,328">
-<area shape="rect" id="node5" href="../../tables/report_project_metrics.html" target="_top" title="report_project_metrics" alt="" coords="610,8,870,96">
-<area shape="rect" id="node6" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="603,424,877,512">
-<area shape="rect" id="node7" href="../../tables/standard_metrics.html" target="_top" title="standard_metrics" alt="" coords="340,421,559,597">
-<area shape="rect" id="node8" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="611,231,869,319">
-<area shape="rect" id="node9" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="347,228,551,404">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/metric_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -259,7 +259,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

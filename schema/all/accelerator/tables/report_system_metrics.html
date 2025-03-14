@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>report_system_metrics - terraware Database</title>
+        <title>report_system_metrics - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>report_system_metrics</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>report_system_metrics</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="report_system_metrics.report_id references reports.id via report_system_metrics_report_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">report_system_metrics_report_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">report_system_metrics_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="report_system_metrics.system_metric_id references system_metrics.id via report_system_metrics_system_metric_id_fkey"><a href='system_metrics.html'>system_metrics</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">report_system_metrics_system_metric_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">report_system_metrics_system_metric_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -274,7 +282,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="report_system_metrics.modified_by references public.users.id via report_system_metrics_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">report_system_metrics_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">report_system_metrics_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -311,7 +320,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -347,7 +362,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -357,7 +378,7 @@
                                 <tbody>
                                 <tr>
                                     <td>system_time</td>
-                                    <td>((((system_value IS NULL) AND (system_time IS NULL)) OR ((system_value IS NOT NULL) AND (system_time IS NOT NULL))))</td>
+                                    <td>(((system_value IS NULL) AND (system_time IS NULL)) OR ((system_value IS NOT NULL) AND (system_time IS NOT NULL)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -381,43 +402,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="476,261,848,624">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,201,184,289">
-<area shape="rect" id="node3" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="232,5,428,328">
-<area shape="rect" id="node4" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="228,345,432,521">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/report_system_metrics.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/application_histories.html" target="_top" title="application_histories" alt="" coords="1349,76,1594,164">
-<area shape="rect" id="node2" href="../../tables/applications.html" target="_top" title="applications" alt="" coords="1059,41,1239,129">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,928,184,1016">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="757,532,957,620">
-<area shape="rect" id="node11" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="533,528,713,616">
-<area shape="rect" id="node5" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="287,607,430,695">
-<area shape="rect" id="node6" href="../../tables/default_voters.html" target="_top" title="default_voters" alt="" coords="261,1397,457,1485">
-<area shape="rect" id="node7" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="533,1199,713,1287">
-<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="283,1240,434,1328">
-<area shape="rect" id="node9" href="../../tables/events.html" target="_top" title="events" alt="" coords="554,1316,693,1404">
-<area shape="rect" id="node10" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="1001,183,1296,271">
-<area shape="rect" id="node12" href="../../tables/project_overall_scores.html" target="_top" title="project_overall_scores" alt="" coords="1022,288,1275,376">
-<area shape="rect" id="node13" href="../../tables/project_report_configs.html" target="_top" title="project_report_configs" alt="" coords="1021,465,1276,553">
-<area shape="rect" id="node14" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1051,1139,1246,1227">
-<area shape="rect" id="node15" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1055,1244,1243,1332">
-<area shape="rect" id="node16" href="../../tables/report_project_metrics.html" target="_top" title="report_project_metrics" alt="" coords="1703,359,1963,447">
-<area shape="rect" id="node17" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1373,475,1569,797">
-<area shape="rect" id="node21" href="../../tables/report_statuses.html" target="_top" title="report_statuses" alt="" coords="1047,607,1251,695">
-<area shape="rect" id="node18" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="1695,473,1970,561">
-<area shape="rect" id="node19" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="1647,787,2019,1149">
-<area shape="rect" id="node20" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="1369,819,1573,995">
-<area shape="rect" id="node24" href="../../tables/metric_components.html" target="_top" title="metric_components" alt="" coords="1030,925,1267,1013">
-<area shape="rect" id="node25" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="1056,820,1241,908">
-<area shape="rect" id="node22" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1340,1103,1603,1191">
-<area shape="rect" id="node23" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1059,1349,1238,1437">
-<area shape="rect" id="node26" href="../../tables/user_internal_interests.html" target="_top" title="user_internal_interests" alt="" coords="228,1503,489,1591">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/report_system_metrics.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -438,7 +427,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

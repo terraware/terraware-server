@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>planting_zones - terraware Database</title>
+        <title>planting_zones - terraware.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>planting_zones</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>planting_zones</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,25 +126,29 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observed_zone_species_totals.planting_zone_id references planting_zones.id via observed_zone_species_totals_planting_zone_id_fkey"><a href='observed_zone_species_totals.html'>observed_zone_species_totals</a><span class='relatedKey'>.planting_zone_id</span></td>
-                                                <td class="constraint detail">observed_zone_species_totals_planting_zone_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_zone_species_totals_planting_zone_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_subzones.planting_zone_id references planting_zones.id via plots_planting_zone_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_zone_id</span></td>
-                                                <td class="constraint detail">plots_planting_zone_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">plots_planting_zone_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_zone_histories.planting_zone_id references planting_zones.id via planting_zone_histories_planting_zone_id_fkey"><a href='planting_zone_histories.html'>planting_zone_histories</a><span class='relatedKey'>.planting_zone_id</span></td>
-                                                <td class="constraint detail">planting_zone_histories_planting_zone_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">planting_zone_histories_planting_zone_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_zone_populations.planting_zone_id references planting_zones.id via planting_zone_populations_planting_zone_id_fkey"><a href='planting_zone_populations.html'>planting_zone_populations</a><span class='relatedKey'>.planting_zone_id</span></td>
-                                                <td class="constraint detail">planting_zone_populations_planting_zone_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">planting_zone_populations_planting_zone_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -159,7 +169,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="planting_subzones.[planting_site_id, planting_zone_id] references planting_zones.[planting_site_id, id] via plots_planting_site_id_planting_zone_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">plots_planting_site_id_planting_zone_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">plots_planting_site_id_planting_zone_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -167,7 +178,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="planting_zones.planting_site_id references planting_sites.id via planting_zones_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">planting_zones_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">planting_zones_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -222,7 +234,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="planting_zones.created_by references public.users.id via planting_zones_created_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">planting_zones_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">planting_zones_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -260,7 +273,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="planting_zones.modified_by references public.users.id via planting_zones_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">planting_zones_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">planting_zones_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -286,7 +300,7 @@
                                 <tr>
                                     <td><span id="variance">variance</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -303,7 +317,7 @@
                                 <tr>
                                     <td><span id="students_t">students_t</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -320,7 +334,7 @@
                                 <tr>
                                     <td><span id="error_margin">error_margin</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -371,7 +385,7 @@
                                 <tr>
                                     <td><span id="area_ha">area_ha</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -388,7 +402,7 @@
                                 <tr>
                                     <td><span id="target_planting_density">target_planting_density</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>1500</td>
@@ -434,7 +448,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="planting_zones.boundary_modified_by references public.users.id via planting_zones_boundary_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">planting_zones_boundary_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">planting_zones_boundary_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -471,7 +486,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -513,7 +534,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -522,20 +549,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>must_have_temporary_plots</td>
-                                    <td>((num_temporary_plots &gt; 0))</td>
-                                </tr>
-                                <tr>
-                                    <td>area_positive</td>
-                                    <td>((area_ha &gt; (0)::numeric))</td>
-                                </tr>
-                                <tr>
                                     <td>positive_target_density</td>
-                                    <td>((target_planting_density &gt; (0)::numeric))</td>
+                                    <td>(target_planting_density &gt; (0)::numeric)</td>
+                                </tr>
+                                <tr>
+                                    <td>must_have_temporary_plots</td>
+                                    <td>(num_temporary_plots &gt; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>must_have_permanent_clusters</td>
-                                    <td>((num_permanent_clusters &gt; 0))</td>
+                                    <td>(num_permanent_clusters &gt; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -559,49 +586,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="944,5,1252,240">
-<area shape="rect" id="node2" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="463,313,900,911">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="228,552,419,875">
-<area shape="rect" id="node4" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,675,184,763">
-<area shape="rect" id="node5" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="973,777,1223,1041">
-<area shape="rect" id="node6" href="../../tables/planting_zone_histories.html" target="_top" title="planting_zone_histories" alt="" coords="967,257,1229,433">
-<area shape="rect" id="node7" href="../../tables/planting_zone_populations.html" target="_top" title="planting_zone_populations" alt="" coords="954,451,1242,597">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/planting_zones.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="1123,767,1284,855">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,857,215,945">
-<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="312,412,503,735">
-<area shape="rect" id="node5" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,463,245,551">
-<area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="25,357,225,445">
-<area shape="rect" id="node7" href="../../../public/tables/time_zones.html" target="_top" title="public.time_zones" alt="" coords="14,252,237,340">
-<area shape="rect" id="node25" href="../../../public/tables/countries.html" target="_top" title="public.countries" alt="" coords="20,620,231,708">
-<area shape="rect" id="node4" href="../../tables/draft_planting_sites.html" target="_top" title="draft_planting_sites" alt="" coords="289,271,525,359">
-<area shape="rect" id="node8" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1780,1248,2060,1336">
-<area shape="rect" id="node9" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1461,1577,1675,1665">
-<area shape="rect" id="node10" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="660,683,916,771">
-<area shape="rect" id="node11" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="1423,1321,1713,1409">
-<area shape="rect" id="node12" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="1078,908,1329,1172">
-<area shape="rect" id="node26" href="../../tables/planting_zone_histories.html" target="_top" title="planting_zone_histories" alt="" coords="1072,1189,1335,1365">
-<area shape="rect" id="node21" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="569,964,1007,1561">
-<area shape="rect" id="node13" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="2104,1689,2325,1777">
-<area shape="rect" id="node14" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="1111,379,1295,467">
-<area shape="rect" id="node15" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1400,805,1736,893">
-<area shape="rect" id="node16" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1417,343,1719,431">
-<area shape="rect" id="node17" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="1051,520,1356,608">
-<area shape="rect" id="node18" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="1107,625,1300,713">
-<area shape="rect" id="node19" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1401,700,1735,788">
-<area shape="rect" id="node20" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1414,448,1722,683">
-<area shape="rect" id="node22" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="681,201,895,289">
-<area shape="rect" id="node23" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="645,307,931,395">
-<area shape="rect" id="node24" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="1427,201,1709,289">
-<area shape="rect" id="node27" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="1411,911,1725,999">
-<area shape="rect" id="node28" href="../../tables/planting_zone_populations.html" target="_top" title="planting_zone_populations" alt="" coords="1424,1121,1712,1268">
-<area shape="rect" id="node29" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1489,1016,1647,1104">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/planting_zones.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -622,7 +611,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

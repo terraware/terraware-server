@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>project_land_use_model_types - terraware Database</title>
+        <title>project_land_use_model_types - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>project_land_use_model_types</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>project_land_use_model_types</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_land_use_model_types.project_id references projects.id via project_land_use_model_types_project_id_fkey"><a href='projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_land_use_model_types_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_land_use_model_types_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_land_use_model_types.land_use_model_type_id references land_use_model_types.id via project_land_use_model_types_land_use_model_type_id_fkey"><a href='land_use_model_types.html'>land_use_model_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_land_use_model_types_land_use_model_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_land_use_model_types_land_use_model_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -171,7 +179,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -209,49 +223,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="304,144,661,272">
-<area shape="rect" id="node2" href="../../tables/land_use_model_types.html" target="_top" title="land_use_model_types" alt="" coords="5,316,260,439">
-<area shape="rect" id="node3" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="47,5,218,299">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/project_land_use_model_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1085,5,1355,93">
-<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,1928,164,2016">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="208,1717,359,1805">
-<area shape="rect" id="node4" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="759,1369,930,1663">
-<area shape="rect" id="node8" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="403,1575,673,1663">
-<area shape="rect" id="node26" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="444,2468,632,2556">
-<area shape="rect" id="node5" href="../../../accelerator/tables/deliverable_project_due_dates.html" target="_top" title="accelerator.deliverable_project_due_dates" alt="" coords="1016,637,1424,725">
-<area shape="rect" id="node6" href="../../../accelerator/tables/event_projects.html" target="_top" title="accelerator.event_projects" alt="" coords="1075,743,1365,831">
-<area shape="rect" id="node7" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1027,111,1413,199">
-<area shape="rect" id="node9" href="../../../accelerator/tables/project_accelerator_details.html" target="_top" title="accelerator.project_accelerator_details" alt="" coords="1029,848,1411,936">
-<area shape="rect" id="node10" href="../../../accelerator/tables/project_metrics.html" target="_top" title="accelerator.project_metrics" alt="" coords="1072,953,1368,1041">
-<area shape="rect" id="node11" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1048,216,1392,304">
-<area shape="rect" id="node12" href="../../../accelerator/tables/project_report_configs.html" target="_top" title="accelerator.project_report_configs" alt="" coords="1047,1059,1393,1147">
-<area shape="rect" id="node13" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1077,321,1363,409">
-<area shape="rect" id="node14" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1046,1164,1394,1252">
-<area shape="rect" id="node15" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1081,427,1359,515">
-<area shape="rect" id="node16" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1103,532,1337,620">
-<area shape="rect" id="node17" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1043,1480,1397,1568">
-<area shape="rect" id="node18" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1085,1585,1355,1673">
-<area shape="rect" id="node19" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1101,1691,1339,1779">
-<area shape="rect" id="node20" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1081,1796,1359,1884">
-<area shape="rect" id="node21" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1085,1901,1355,1989">
-<area shape="rect" id="node22" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1044,2007,1396,2095">
-<area shape="rect" id="node23" href="../../../funder/tables/funding_entity_projects.html" target="_top" title="funder.funding_entity_projects" alt="" coords="1059,1269,1381,1357">
-<area shape="rect" id="node24" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1065,2112,1375,2200">
-<area shape="rect" id="node25" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1115,2217,1325,2305">
-<area shape="rect" id="node27" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="1041,2323,1399,2451">
-<area shape="rect" id="node28" href="../../tables/land_use_model_types.html" target="_top" title="land_use_model_types" alt="" coords="717,2276,972,2399">
-<area shape="rect" id="node29" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1089,1375,1351,1463">
-<area shape="rect" id="node30" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1107,2468,1333,2556">
-<area shape="rect" id="node31" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1099,2679,1341,2767">
-<area shape="rect" id="node32" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1069,2573,1371,2661">
-<area shape="rect" id="node33" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1091,2784,1349,2872">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/project_land_use_model_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -272,7 +248,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>variable_section_default_values - terraware Database</title>
+        <title>variable_section_default_values - terraware.docprod</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.docprod</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>variable_section_default_values</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>variable_section_default_values</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,7 +126,7 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
@@ -147,7 +153,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_section_default_values.variable_id references variables.id via variable_section_default_values_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_default_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -167,12 +174,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_section_default_values.variable_type_id references variable_types.id via variable_section_default_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_section_default_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_section_default_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_section_default_values.variable_type_id references variable_types.id via variable_section_default_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_section_default_values_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -193,7 +202,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_section_default_values.variable_manifest_id references variable_manifests.id via variable_section_default_values_variable_manifest_id_fkey"><a href='variable_manifests.html'>variable_manifests</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_variable_manifest_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_default_values_variable_manifest_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -248,7 +258,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_section_default_values.used_variable_id references variables.id via variable_section_default_values_used_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_used_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_default_values_used_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -268,12 +279,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_section_default_values.used_variable_type_id references variable_types.id via variable_section_default_values_used_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_used_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_section_default_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_used_variable_id_used_variab_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_section_default_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_used_variable_id_used_variab_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_section_default_values.used_variable_type_id references variable_types.id via variable_section_default_values_used_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_section_default_values_used_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -294,7 +307,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_section_default_values.usage_type_id references variable_usage_types.id via variable_section_default_values_usage_type_id_fkey"><a href='variable_usage_types.html'>variable_usage_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_usage_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_default_values_usage_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -315,7 +329,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_section_default_values.display_style_id references variable_injection_display_styles.id via variable_section_default_values_display_style_id_fkey"><a href='variable_injection_display_styles.html'>variable_injection_display_styles</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_display_style_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_default_values_display_style_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -335,7 +350,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -377,7 +398,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -386,20 +413,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>cannot_have_both_text_and_reference</td>
-                                    <td>(((text_value IS NULL) OR (used_variable_id IS NULL)))</td>
+                                    <td>variable_section_default_values_variable_type_id_check</td>
+                                    <td>(variable_type_id &#61; 8)</td>
                                 </tr>
                                 <tr>
-                                    <td>variable_section_default_values_variable_type_id_check</td>
-                                    <td>((variable_type_id = 8))</td>
+                                    <td>cannot_have_both_text_and_reference</td>
+                                    <td>((text_value IS NULL) OR (used_variable_id IS NULL))</td>
                                 </tr>
                                 <tr>
                                     <td>must_have_text_or_reference</td>
-                                    <td>(((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL)))</td>
+                                    <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
                                 </tr>
                                 <tr>
                                     <td>cannot_reference_other_sections</td>
-                                    <td>(((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8)))</td>
+                                    <td>((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -423,46 +450,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="625,182,1067,544">
-<area shape="rect" id="node2" href="../../tables/variable_injection_display_styles.html" target="_top" title="variable_injection_display_styles" alt="" coords="247,612,581,735">
-<area shape="rect" id="node3" href="../../tables/variable_usage_types.html" target="_top" title="variable_usage_types" alt="" coords="291,472,537,595">
-<area shape="rect" id="node4" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="267,214,561,419">
-<area shape="rect" id="node5" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="5,243,203,366">
-<area shape="rect" id="node6" href="../../tables/variable_manifests.html" target="_top" title="variable_manifests" alt="" coords="298,50,530,196">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/variable_section_default_values.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/deliverable_variables.html" target="_top" title="accelerator.deliverable_variables" alt="" coords="745,161,1085,249">
-<area shape="rect" id="node2" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="336,712,631,917">
-<area shape="rect" id="node9" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="40,996,237,1118">
-<area shape="rect" id="node27" href="../../tables/dependency_conditions.html" target="_top" title="dependency_conditions" alt="" coords="5,802,272,890">
-<area shape="rect" id="node3" href="../../tables/document_saved_versions.html" target="_top" title="document_saved_versions" alt="" coords="1181,2025,1464,2113">
-<area shape="rect" id="node4" href="../../tables/documents.html" target="_top" title="documents" alt="" coords="830,2061,1001,2149">
-<area shape="rect" id="node5" href="../../tables/variable_manifests.html" target="_top" title="variable_manifests" alt="" coords="367,1966,599,2113">
-<area shape="rect" id="node6" href="../../tables/document_templates.html" target="_top" title="document_templates" alt="" coords="15,2045,263,2133">
-<area shape="rect" id="node7" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="1195,218,1451,306">
-<area shape="rect" id="node8" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="813,302,1017,390">
-<area shape="rect" id="node10" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="1203,392,1442,480">
-<area shape="rect" id="node11" href="../../tables/variable_manifest_entries.html" target="_top" title="variable_manifest_entries" alt="" coords="774,1884,1057,1972">
-<area shape="rect" id="node12" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="804,922,1027,1010">
-<area shape="rect" id="node13" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="810,588,1021,676">
-<area shape="rect" id="node14" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="695,1290,1136,1653">
-<area shape="rect" id="node15" href="../../tables/variable_injection_display_styles.html" target="_top" title="variable_injection_display_styles" alt="" coords="316,1602,651,1725">
-<area shape="rect" id="node16" href="../../tables/variable_usage_types.html" target="_top" title="variable_usage_types" alt="" coords="360,1462,607,1585">
-<area shape="rect" id="node17" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="738,1185,1093,1273">
-<area shape="rect" id="node18" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="1190,673,1455,761">
-<area shape="rect" id="node19" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="807,56,1024,144">
-<area shape="rect" id="node20" href="../../tables/variable_select_option_values.html" target="_top" title="variable_select_option_values" alt="" coords="1509,1710,1820,1798">
-<area shape="rect" id="node21" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="1191,1710,1454,1798">
-<area shape="rect" id="node22" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="812,1778,1019,1866">
-<area shape="rect" id="node23" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="1190,1080,1455,1168">
-<area shape="rect" id="node24" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="814,1080,1017,1168">
-<area shape="rect" id="node25" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="818,817,1013,905">
-<area shape="rect" id="node26" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="1180,497,1465,585">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/variable_section_default_values.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -483,7 +475,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

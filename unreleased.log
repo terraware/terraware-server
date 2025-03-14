@@ -1,1 +1,2 @@
-ba4af651650 SW-6641 Create fetchAll entities endpoint (#2912)
+20d95edd67d SW-6561 Fix docs, CI builds (#2918)
+679aabcd3ec Added API endpoint for reviewing system metrics and refreshing the data (#2914)

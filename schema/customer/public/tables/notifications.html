@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>notifications - terraware Database</title>
+        <title>notifications - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>notifications</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>notifications</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,7 +126,7 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
@@ -147,7 +153,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="notifications.notification_type_id references notification_types.id via notifications_notification_type_id_fkey"><a href='notification_types.html'>notification_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">notifications_notification_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">notifications_notification_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -168,7 +175,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="notifications.user_id references users.id via notifications_user_id_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">notifications_user_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">notifications_user_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -189,7 +197,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="notifications.organization_id references organizations.id via notifications_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">notifications_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">notifications_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -294,7 +303,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -332,86 +347,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="619,68,965,401">
-<area shape="rect" id="node2" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="325,5,571,152">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="321,205,575,469">
-<area shape="rect" id="node4" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,293,277,528">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/notifications.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/application_histories.html" target="_top" title="accelerator.application_histories" alt="" coords="548,2854,884,2942">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,3203,488,3438">
-<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,1046,168,1134">
-<area shape="rect" id="node54" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,3294,172,3382">
-<area shape="rect" id="node3" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1419,283,1690,371">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1057,4016,1205,4104">
-<area shape="rect" id="node37" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="589,962,843,1226">
-<area shape="rect" id="node6" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="599,4886,833,4974">
-<area shape="rect" id="node7" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="573,4991,859,5079">
-<area shape="rect" id="node8" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="581,5096,851,5184">
-<area shape="rect" id="node9" href="../../../accelerator/tables/events.html" target="_top" title="accelerator.events" alt="" coords="602,5202,830,5290">
-<area shape="rect" id="node10" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="595,647,837,735">
-<area shape="rect" id="node11" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1361,3598,1748,3686">
-<area shape="rect" id="node12" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="581,752,851,840">
-<area shape="rect" id="node13" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1383,3703,1727,3791">
-<area shape="rect" id="node14" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1412,3859,1697,3947">
-<area shape="rect" id="node15" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1415,4178,1694,4266">
-<area shape="rect" id="node16" href="../../../accelerator/tables/report_project_metrics.html" target="_top" title="accelerator.report_project_metrics" alt="" coords="541,1435,891,1523">
-<area shape="rect" id="node17" href="../../../accelerator/tables/report_standard_metrics.html" target="_top" title="accelerator.report_standard_metrics" alt="" coords="533,1540,899,1628">
-<area shape="rect" id="node18" href="../../../accelerator/tables/report_system_metrics.html" target="_top" title="accelerator.report_system_metrics" alt="" coords="541,1960,891,2048">
-<area shape="rect" id="node19" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1438,4283,1671,4371">
-<area shape="rect" id="node20" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1378,4388,1731,4476">
-<area shape="rect" id="node21" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1420,4494,1689,4582">
-<area shape="rect" id="node22" href="../../../accelerator/tables/user_internal_interests.html" target="_top" title="accelerator.user_internal_interests" alt="" coords="540,4308,892,4396">
-<area shape="rect" id="node23" href="../../../docprod/tables/document_saved_versions.html" target="_top" title="docprod.document_saved_versions" alt="" coords="541,1646,891,1734">
-<area shape="rect" id="node24" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1435,4599,1674,4687">
-<area shape="rect" id="node25" href="../../../docprod/tables/variable_manifests.html" target="_top" title="docprod.variable_manifests" alt="" coords="567,1751,865,1839">
-<area shape="rect" id="node26" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1416,4704,1693,4792">
-<area shape="rect" id="node27" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1419,4810,1690,4898">
-<area shape="rect" id="node28" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1379,4915,1731,5003">
-<area shape="rect" id="node29" href="../../../funder/tables/funding_entities.html" target="_top" title="funder.funding_entities" alt="" coords="583,2066,849,2154">
-<area shape="rect" id="node30" href="../../../funder/tables/funding_entity_users.html" target="_top" title="funder.funding_entity_users" alt="" coords="566,2171,866,2259">
-<area shape="rect" id="node31" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1399,5020,1710,5108">
-<area shape="rect" id="node32" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1005,3731,1256,3819">
-<area shape="rect" id="node33" href="../../tables/files.html" target="_top" title="files" alt="" coords="647,3783,785,3871">
-<area shape="rect" id="node34" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="553,2276,879,2364">
-<area shape="rect" id="node35" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1450,704,1659,792">
-<area shape="rect" id="node36" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1055,891,1207,979">
-<area shape="rect" id="node39" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="229,1046,475,1134">
-<area shape="rect" id="node49" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="237,1151,467,1239">
-<area shape="rect" id="node38" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1433,1063,1677,1151">
-<area shape="rect" id="node40" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1447,1210,1663,1298">
-<area shape="rect" id="node41" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="623,3206,809,3294">
-<area shape="rect" id="node42" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="593,112,839,259">
-<area shape="rect" id="node43" href="../../tables/notification_criticalities.html" target="_top" title="notification_criticalities" alt="" coords="218,144,486,232">
-<area shape="rect" id="node44" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="957,416,1304,750">
-<area shape="rect" id="node45" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="987,3027,1274,3115">
-<area shape="rect" id="node46" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="944,1032,1317,1120">
-<area shape="rect" id="node47" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="979,1138,1282,1226">
-<area shape="rect" id="node48" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1017,1808,1244,1896">
-<area shape="rect" id="node50" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1442,1454,1667,1542">
-<area shape="rect" id="node51" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1481,915,1628,1003">
-<area shape="rect" id="node52" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="609,2382,823,2470">
-<area shape="rect" id="node53" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1023,1914,1239,2002">
-<area shape="rect" id="node55" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="532,2643,900,2731">
-<area shape="rect" id="node56" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="546,2748,886,2836">
-<area shape="rect" id="node57" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1433,810,1676,898">
-<area shape="rect" id="node58" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="587,3100,845,3188">
-<area shape="rect" id="node59" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="602,4098,830,4186">
-<area shape="rect" id="node60" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1403,2586,1706,2674">
-<area shape="rect" id="node61" href="../../../tracking/tables/monitoring_plot_histories.html" target="_top" title="tracking.monitoring_plot_histories" alt="" coords="543,2959,889,3047">
-<area shape="rect" id="node62" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="989,2510,1272,2598">
-<area shape="rect" id="node63" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="572,3311,860,3399">
-<area shape="rect" id="node64" href="../../../tracking/tables/planting_site_histories.html" target="_top" title="tracking.planting_site_histories" alt="" coords="555,3416,877,3504">
-<area shape="rect" id="node65" href="../../../tracking/tables/planting_site_notifications.html" target="_top" title="tracking.planting_site_notifications" alt="" coords="954,115,1307,203">
-<area shape="rect" id="node66" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1425,2428,1684,2516">
-<area shape="rect" id="node67" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="570,3522,862,3610">
-<area shape="rect" id="node68" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="583,3940,849,4028">
-<area shape="rect" id="node69" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="604,4203,828,4291">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/notifications.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -432,7 +372,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

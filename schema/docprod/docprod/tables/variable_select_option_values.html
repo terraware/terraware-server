@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>variable_select_option_values - terraware Database</title>
+        <title>variable_select_option_values - terraware.docprod</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.docprod</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>variable_select_option_values</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>variable_select_option_values</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -150,16 +157,19 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_select_option_values.variable_id references variable_selects.variable_id via variable_select_option_values_variable_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_select_option_values.[option_id, variable_id] references variable_select_options.[id, variable_id] via variable_select_option_values_option_id_variable_id_fkey"><a href='variable_select_options.html'>variable_select_options</a><span class='relatedKey'>.variable_id</span></td>
+                                                <td class="constraint detail">variable_select_option_values_option_id_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_select_option_values.[option_id, variable_id] references variable_select_options.[id, variable_id] via variable_select_option_values_option_id_variable_id_fkey"><a href='variable_select_options.html'>variable_select_options</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_option_id_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="variable_select_option_values.variable_id references variable_selects.variable_id via variable_select_option_values_variable_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_id</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -180,11 +190,13 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_select_option_values.variable_type_id references variable_types.id via variable_select_option_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -205,7 +217,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_select_option_values.[option_id, variable_id] references variable_select_options.[id, variable_id] via variable_select_option_values_option_id_variable_id_fkey"><a href='variable_select_options.html'>variable_select_options</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_option_id_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_select_option_values_option_id_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -225,7 +238,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -255,7 +274,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -265,7 +290,7 @@
                                 <tbody>
                                 <tr>
                                     <td>variable_select_option_values_variable_type_id_check</td>
-                                    <td>((variable_type_id = 5))</td>
+                                    <td>(variable_type_id &#61; 5)</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -289,36 +314,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/variable_select_option_values.html" target="_top" title="variable_select_option_values" alt="" coords="804,156,1157,343">
-<area shape="rect" id="node2" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="497,300,760,476">
-<area shape="rect" id="node3" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="247,300,453,447">
-<area shape="rect" id="node4" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="527,5,731,211">
-<area shape="rect" id="node5" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="5,277,203,400">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/variable_select_option_values.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="860,531,1116,619">
-<area shape="rect" id="node2" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="522,481,726,686">
-<area shape="rect" id="node3" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="247,754,403,842">
-<area shape="rect" id="node4" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="5,1018,203,1141">
-<area shape="rect" id="node5" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="869,285,1107,373">
-<area shape="rect" id="node6" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="513,129,735,217">
-<area shape="rect" id="node7" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="461,234,787,322">
-<area shape="rect" id="node8" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="447,339,801,427">
-<area shape="rect" id="node9" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="855,814,1121,902">
-<area shape="rect" id="node10" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="515,1095,733,1183">
-<area shape="rect" id="node11" href="../../tables/variable_select_option_values.html" target="_top" title="variable_select_option_values" alt="" coords="1175,847,1528,1034">
-<area shape="rect" id="node12" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="857,955,1119,1131">
-<area shape="rect" id="node13" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="521,879,727,1026">
-<area shape="rect" id="node14" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="855,1394,1121,1482">
-<area shape="rect" id="node15" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="523,1394,725,1482">
-<area shape="rect" id="node16" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="527,1201,721,1289">
-<area shape="rect" id="node17" href="../../tables/variable_value_table_rows.html" target="_top" title="variable_value_table_rows" alt="" coords="845,426,1131,514">
-<area shape="rect" id="node18" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="845,637,1131,725">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/variable_select_option_values.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -339,7 +339,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

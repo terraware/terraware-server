@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>events - terraware Database</title>
+        <title>events - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>events</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>events</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,13 +126,14 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="event_projects.event_id references events.id via event_projects_event_id_fkey"><a href='event_projects.html'>event_projects</a><span class='relatedKey'>.event_id</span></td>
-                                                <td class="constraint detail">event_projects_event_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">event_projects_event_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="events.module_id references modules.id via events_module_id_fkey"><a href='modules.html'>modules</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">events_module_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">events_module_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -172,7 +180,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="events.event_type_id references event_types.id via events_event_type_id_fkey"><a href='event_types.html'>event_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">events_event_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">events_event_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -363,7 +372,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="events.event_status_id references event_statuses.id via events_event_status_id_fkey"><a href='event_statuses.html'>event_statuses</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">events_event_status_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">events_event_status_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -383,7 +393,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -413,7 +429,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -423,7 +445,7 @@
                                 <tbody>
                                 <tr>
                                     <td>times_start_before_end</td>
-                                    <td>((start_time &lt;= end_time))</td>
+                                    <td>(start_time &lt;&#61; end_time)</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -447,28 +469,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="711,43,909,165">
-<area shape="rect" id="node2" href="../../tables/events.html" target="_top" title="events" alt="" coords="353,40,667,520">
-<area shape="rect" id="node3" href="../../tables/event_statuses.html" target="_top" title="event_statuses" alt="" coords="58,424,257,547">
-<area shape="rect" id="node4" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="68,169,247,292">
-<area shape="rect" id="node5" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="5,5,309,152">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/events.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/application_modules.html" target="_top" title="application_modules" alt="" coords="627,5,871,93">
-<area shape="rect" id="node2" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="244,161,548,308">
-<area shape="rect" id="node10" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,193,200,281">
-<area shape="rect" id="node3" href="../../tables/cohort_modules.html" target="_top" title="cohort_modules" alt="" coords="645,111,852,199">
-<area shape="rect" id="node4" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="659,216,839,304">
-<area shape="rect" id="node5" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="949,556,1148,679">
-<area shape="rect" id="node6" href="../../tables/events.html" target="_top" title="events" alt="" coords="592,321,905,801">
-<area shape="rect" id="node7" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="649,819,849,907">
-<area shape="rect" id="node8" href="../../tables/event_statuses.html" target="_top" title="event_statuses" alt="" coords="297,705,495,828">
-<area shape="rect" id="node9" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="307,383,485,505">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/events.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -489,7 +494,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

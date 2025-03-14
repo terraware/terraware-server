@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>species_problems - terraware Database</title>
+        <title>species_problems - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>species_problems</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>species_problems</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,7 +126,7 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
@@ -147,7 +153,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species_problems.species_id references species.id via species_problems_species_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_problems_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_problems_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -168,7 +175,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species_problems.field_id references species_problem_fields.id via species_problems_field_id_fkey"><a href='species_problem_fields.html'>species_problem_fields</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_problems_field_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_problems_field_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -189,7 +197,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species_problems.type_id references species_problem_types.id via species_problems_type_id_fkey"><a href='species_problem_types.html'>species_problem_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_problems_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_problems_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -243,7 +252,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -279,7 +294,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -289,7 +310,7 @@
                                 <tbody>
                                 <tr>
                                     <td>species_problems_suggested_value_check</td>
-                                    <td>((suggested_value !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>(suggested_value !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -313,43 +334,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="311,343,641,588">
-<area shape="rect" id="node2" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="7,404,265,521">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="5,5,267,387">
-<area shape="rect" id="node4" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="6,539,266,656">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species_problems.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="827,5,1213,93">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,813,156,901">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="513,793,775,1175">
-<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="241,727,429,815">
-<area shape="rect" id="node6" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="200,1045,469,1133">
-<area shape="rect" id="node7" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="203,832,467,920">
-<area shape="rect" id="node8" href="../../tables/wood_density_levels.html" target="_top" title="wood_density_levels" alt="" coords="215,1151,455,1239">
-<area shape="rect" id="node4" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="915,111,1125,199">
-<area shape="rect" id="node9" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="883,216,1157,304">
-<area shape="rect" id="node10" href="../../tables/species_growth_forms.html" target="_top" title="species_growth_forms" alt="" coords="895,321,1145,409">
-<area shape="rect" id="node11" href="../../tables/species_plant_material_sourcing_methods.html" target="_top" title="species_plant_material_sourcing_methods" alt="" coords="819,427,1221,515">
-<area shape="rect" id="node12" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="855,1585,1185,1831">
-<area shape="rect" id="node13" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="515,1557,773,1675">
-<area shape="rect" id="node14" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="514,1692,774,1809">
-<area shape="rect" id="node15" href="../../tables/species_successional_groups.html" target="_top" title="species_successional_groups" alt="" coords="871,532,1169,620">
-<area shape="rect" id="node16" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="899,1848,1141,1936">
-<area shape="rect" id="node17" href="../../../tracking/tables/observation_biomass_species.html" target="_top" title="tracking.observation_biomass_species" alt="" coords="833,637,1207,725">
-<area shape="rect" id="node18" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="835,743,1205,831">
-<area shape="rect" id="node19" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="836,848,1204,936">
-<area shape="rect" id="node20" href="../../../tracking/tables/observed_subzone_species_totals.html" target="_top" title="tracking.observed_subzone_species_totals" alt="" coords="819,953,1221,1041">
-<area shape="rect" id="node21" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="833,1059,1207,1147">
-<area shape="rect" id="node22" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="846,1164,1194,1252">
-<area shape="rect" id="node23" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="829,1269,1211,1357">
-<area shape="rect" id="node24" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="843,1375,1197,1463">
-<area shape="rect" id="node25" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="908,1953,1132,2041">
-<area shape="rect" id="node26" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="882,1480,1158,1568">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species_problems.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -370,7 +359,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

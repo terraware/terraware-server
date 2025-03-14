@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>wood_density_levels - terraware Database</title>
+        <title>wood_density_levels - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>wood_density_levels</h1><p><span id="recordNumber">3</span> rows</p><br />
+                    <h1>wood_density_levels</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -126,7 +132,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.wood_density_level_id references wood_density_levels.id via species_wood_density_level_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.wood_density_level_id</span></td>
-                                                <td class="constraint detail">species_wood_density_level_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_wood_density_level_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -167,7 +174,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -205,37 +218,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="400,5,661,269">
-<area shape="rect" id="node2" href="../../tables/wood_density_levels.html" target="_top" title="wood_density_levels" alt="" coords="5,149,356,277">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/wood_density_levels.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="713,111,1100,199">
-<area shape="rect" id="node2" href="../../tables/species.html" target="_top" title="species" alt="" coords="400,845,661,1109">
-<area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="87,624,275,712">
-<area shape="rect" id="node5" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="46,924,315,1012">
-<area shape="rect" id="node6" href="../../tables/wood_density_levels.html" target="_top" title="wood_density_levels" alt="" coords="5,1029,356,1157">
-<area shape="rect" id="node3" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="802,5,1011,93">
-<area shape="rect" id="node7" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="769,216,1044,304">
-<area shape="rect" id="node8" href="../../tables/species_growth_forms.html" target="_top" title="species_growth_forms" alt="" coords="781,321,1032,409">
-<area shape="rect" id="node9" href="../../tables/species_plant_material_sourcing_methods.html" target="_top" title="species_plant_material_sourcing_methods" alt="" coords="705,427,1108,515">
-<area shape="rect" id="node10" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="797,532,1016,620">
-<area shape="rect" id="node11" href="../../tables/species_successional_groups.html" target="_top" title="species_successional_groups" alt="" coords="757,637,1056,725">
-<area shape="rect" id="node12" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="785,743,1028,831">
-<area shape="rect" id="node13" href="../../../tracking/tables/observation_biomass_species.html" target="_top" title="tracking.observation_biomass_species" alt="" coords="720,848,1093,936">
-<area shape="rect" id="node14" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="721,953,1092,1041">
-<area shape="rect" id="node15" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="723,1059,1091,1147">
-<area shape="rect" id="node16" href="../../../tracking/tables/observed_subzone_species_totals.html" target="_top" title="tracking.observed_subzone_species_totals" alt="" coords="705,1164,1108,1252">
-<area shape="rect" id="node17" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="719,1269,1094,1357">
-<area shape="rect" id="node18" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="733,1375,1081,1463">
-<area shape="rect" id="node19" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="715,1480,1098,1568">
-<area shape="rect" id="node20" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="729,1585,1084,1673">
-<area shape="rect" id="node21" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="795,1691,1019,1779">
-<area shape="rect" id="node22" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="769,1796,1045,1884">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/wood_density_levels.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -256,7 +243,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

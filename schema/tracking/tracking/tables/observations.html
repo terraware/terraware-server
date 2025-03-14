@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>observations - terraware Database</title>
+        <title>observations - terraware.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.tracking</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>observations</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>observations</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,69 +126,84 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observation_biomass_details.observation_id references observations.id via observation_biomass_details_observation_id_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_details_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_biomass_details_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_biomass_quadrat_details.observation_id references observations.id via observation_biomass_quadrat_details_observation_id_fkey"><a href='observation_biomass_quadrat_details.html'>observation_biomass_quadrat_details</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_quadrat_details_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_biomass_quadrat_details_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_biomass_quadrat_species.observation_id references observations.id via observation_biomass_quadrat_species_observation_id_fkey"><a href='observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_quadrat_species_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_biomass_quadrat_species_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_biomass_species.observation_id references observations.id via observation_biomass_species_observation_id_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_biomass_species_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_photos.observation_id references observations.id via observation_photos_observation_id_fkey"><a href='observation_photos.html'>observation_photos</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_photos_observation_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observation_photos_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_plot_conditions.observation_id references observations.id via observation_plot_conditions_observation_id_fkey"><a href='observation_plot_conditions.html'>observation_plot_conditions</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_plot_conditions_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_plot_conditions_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_plots.observation_id references observations.id via observation_plots_observation_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_plots_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_plots_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_requested_subzones.observation_id references observations.id via observation_requested_subzones_observation_id_fkey"><a href='observation_requested_subzones.html'>observation_requested_subzones</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observation_requested_subzones_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observation_requested_subzones_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_plot_coordinates.observation_id references observations.id via observed_plot_coordinates_observation_id_fkey"><a href='observed_plot_coordinates.html'>observed_plot_coordinates</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_plot_coordinates_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_plot_coordinates_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_plot_species_totals.observation_id references observations.id via observed_plot_species_totals_observation_id_fkey"><a href='observed_plot_species_totals.html'>observed_plot_species_totals</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_plot_species_totals_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_plot_species_totals_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_site_species_totals.observation_id references observations.id via observed_site_species_totals_observation_id_fkey"><a href='observed_site_species_totals.html'>observed_site_species_totals</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_site_species_totals_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_site_species_totals_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_subzone_species_totals.observation_id references observations.id via observed_subzone_species_totals_observation_id_fkey"><a href='observed_subzone_species_totals.html'>observed_subzone_species_totals</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_subzone_species_totals_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_subzone_species_totals_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_zone_species_totals.observation_id references observations.id via observed_zone_species_totals_observation_id_fkey"><a href='observed_zone_species_totals.html'>observed_zone_species_totals</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_zone_species_totals_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observed_zone_species_totals_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="recorded_plants.observation_id references observations.id via recorded_plants_observation_id_fkey"><a href='recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">recorded_plants_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">recorded_plants_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -207,7 +228,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observations.planting_site_id references planting_sites.id via observations_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observations_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observations_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -296,7 +318,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observations.state_id references observation_states.id via observations_state_id_fkey"><a href='observation_states.html'>observation_states</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observations_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observations_state_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -334,7 +357,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observations.planting_site_history_id references planting_site_histories.id via observations_planting_site_history_id_fkey"><a href='planting_site_histories.html'>planting_site_histories</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observations_planting_site_history_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">observations_planting_site_history_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -355,7 +379,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="observations.observation_type_id references observation_types.id via observations_observation_type_id_fkey"><a href='observation_types.html'>observation_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observations_observation_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observations_observation_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -392,7 +417,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -434,7 +465,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -443,16 +480,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>end_after_start</td>
-                                    <td>((start_date &lt;= end_date))</td>
+                                    <td>history_id_required_at_start</td>
+                                    <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
                                 </tr>
                                 <tr>
-                                    <td>history_id_required_at_start</td>
-                                    <td>((((state_id = 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL))))</td>
+                                    <td>end_after_start</td>
+                                    <td>(start_date &lt;&#61; end_date)</td>
                                 </tr>
                                 <tr>
                                     <td>completed_time_and_state</td>
-                                    <td>((((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id = ANY (ARRAY[3, 5])))))</td>
+                                    <td>(((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id &#61; ANY (ARRAY[3, 5]))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -476,72 +513,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1417,329,1720,535">
-<area shape="rect" id="node2" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1075,704,1336,909">
-<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="540,939,993,1331">
-<area shape="rect" id="node10" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="255,1351,481,1473">
-<area shape="rect" id="node11" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="240,1187,496,1333">
-<area shape="rect" id="node12" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1216,196,1421">
-<area shape="rect" id="node13" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="253,1047,483,1169">
-<area shape="rect" id="node4" href="../../tables/observation_biomass_quadrat_details.html" target="_top" title="observation_biomass_quadrat_details" alt="" coords="1764,552,2135,728">
-<area shape="rect" id="node5" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="2179,215,2553,420">
-<area shape="rect" id="node6" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="1796,300,2103,535">
-<area shape="rect" id="node7" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1451,552,1686,787">
-<area shape="rect" id="node8" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1055,1035,1355,1187">
-<area shape="rect" id="node9" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1037,1204,1373,1327">
-<area shape="rect" id="node14" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1424,804,1713,1009">
-<area shape="rect" id="node15" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1053,1380,1357,1615">
-<area shape="rect" id="node16" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1055,1884,1356,2119">
-<area shape="rect" id="node17" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1038,1632,1373,1867">
-<area shape="rect" id="node18" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1051,5,1359,240">
-<area shape="rect" id="node19" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1464,1027,1673,1291">
-<area shape="rect" id="node20" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2220,437,2512,731">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="603,773,764,861">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1339,196,1545">
-<area shape="rect" id="node3" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1227,1126,1507,1214">
-<area shape="rect" id="node4" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="861,805,1075,893">
-<area shape="rect" id="node5" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="840,1411,1096,1558">
-<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="571,1299,796,1387">
-<area shape="rect" id="node30" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="284,1793,483,1881">
-<area shape="rect" id="node7" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="2017,1311,2320,1517">
-<area shape="rect" id="node8" href="../../tables/biomass_forest_types.html" target="_top" title="biomass_forest_types" alt="" coords="1682,1491,1929,1579">
-<area shape="rect" id="node9" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1675,659,1936,865">
-<area shape="rect" id="node10" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="1140,1306,1593,1698">
-<area shape="rect" id="node11" href="../../tables/mangrove_tides.html" target="_top" title="mangrove_tides" alt="" coords="1702,1597,1909,1685">
-<area shape="rect" id="node20" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="1225,765,1508,853">
-<area shape="rect" id="node22" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="855,1575,1081,1698">
-<area shape="rect" id="node23" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="853,1271,1083,1394">
-<area shape="rect" id="node12" href="../../tables/observation_biomass_quadrat_details.html" target="_top" title="observation_biomass_quadrat_details" alt="" coords="2364,1089,2735,1265">
-<area shape="rect" id="node13" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="1661,269,1950,357">
-<area shape="rect" id="node14" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="2779,561,3153,766">
-<area shape="rect" id="node15" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="2396,1282,2703,1517">
-<area shape="rect" id="node16" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="2051,378,2286,613">
-<area shape="rect" id="node17" href="../../tables/observation_photo_types.html" target="_top" title="observation_photo_types" alt="" coords="1667,482,1943,570">
-<area shape="rect" id="node18" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1655,27,1955,179">
-<area shape="rect" id="node19" href="../../tables/observable_conditions.html" target="_top" title="observable_conditions" alt="" coords="1239,91,1495,179">
-<area shape="rect" id="node21" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1637,2026,1973,2149">
-<area shape="rect" id="node24" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="2024,630,2313,835">
-<area shape="rect" id="node25" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1653,990,1957,1225">
-<area shape="rect" id="node26" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="1214,1751,1519,1839">
-<area shape="rect" id="node27" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1655,2166,1956,2401">
-<area shape="rect" id="node28" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1638,1774,1973,2009">
-<area shape="rect" id="node29" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1651,2418,1959,2653">
-<area shape="rect" id="node31" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="276,1477,491,1565">
-<area shape="rect" id="node32" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="240,1582,527,1670">
-<area shape="rect" id="node33" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="243,1687,524,1775">
-<area shape="rect" id="node34" href="../../tables/planting_zone_histories.html" target="_top" title="planting_zone_histories" alt="" coords="1235,1857,1498,1945">
-<area shape="rect" id="node35" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="889,699,1047,787">
-<area shape="rect" id="node36" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="2064,853,2273,1117">
-<area shape="rect" id="node37" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1670,1278,1941,1366">
-<area shape="rect" id="node38" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2820,1282,3112,1575">
-<area shape="rect" id="node39" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="2435,1774,2663,1862">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/observations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -562,7 +538,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

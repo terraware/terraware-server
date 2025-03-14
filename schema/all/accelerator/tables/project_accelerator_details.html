@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>project_accelerator_details - terraware Database</title>
+        <title>project_accelerator_details - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>project_accelerator_details</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>project_accelerator_details</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_accelerator_details.project_id references public.projects.id via project_accelerator_details_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_accelerator_details_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_accelerator_details_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_accelerator_details.pipeline_id references pipelines.id via project_accelerator_details_pipeline_id_fkey"><a href='pipelines.html'>pipelines</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_accelerator_details_pipeline_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_accelerator_details_pipeline_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -172,7 +180,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_accelerator_details.deal_stage_id references deal_stages.id via project_accelerator_details_deal_stage_id_fkey"><a href='deal_stages.html'>deal_stages</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_accelerator_details_deal_stage_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_accelerator_details_deal_stage_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -181,7 +190,7 @@
                                 <tr>
                                     <td><span id="application_reforestable_land">application_reforestable_land</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -198,7 +207,7 @@
                                 <tr>
                                     <td><span id="confirmed_reforestable_land">confirmed_reforestable_land</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -215,7 +224,7 @@
                                 <tr>
                                     <td><span id="total_expansion_potential">total_expansion_potential</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -249,7 +258,7 @@
                                 <tr>
                                     <td><span id="min_carbon_accumulation">min_carbon_accumulation</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -266,7 +275,7 @@
                                 <tr>
                                     <td><span id="max_carbon_accumulation">max_carbon_accumulation</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -283,7 +292,7 @@
                                 <tr>
                                     <td><span id="per_hectare_budget">per_hectare_budget</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -453,7 +462,7 @@
                                 <tr>
                                     <td><span id="carbon_capacity">carbon_capacity</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -470,7 +479,7 @@
                                 <tr>
                                     <td><span id="annual_carbon">annual_carbon</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -487,7 +496,7 @@
                                 <tr>
                                     <td><span id="total_carbon">total_carbon</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -532,7 +541,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -570,35 +585,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deal_stages.html" target="_top" title="deal_stages" alt="" coords="219,176,391,328">
-<area shape="rect" id="node2" href="../../tables/pipelines.html" target="_top" title="pipelines" alt="" coords="5,168,161,291">
-<area shape="rect" id="node3" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="449,68,875,812">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="205,5,405,123">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/project_accelerator_details.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/applications.html" target="_top" title="applications" alt="" coords="596,1013,776,1101">
-<area shape="rect" id="node2" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="229,1265,429,1383">
-<area shape="rect" id="node18" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="5,1268,185,1356">
-<area shape="rect" id="node3" href="../../tables/deal_stages.html" target="_top" title="deal_stages" alt="" coords="243,91,415,243">
-<area shape="rect" id="node4" href="../../tables/pipelines.html" target="_top" title="pipelines" alt="" coords="17,83,173,205">
-<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="527,1119,845,1207">
-<area shape="rect" id="node6" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="587,1224,785,1312">
-<area shape="rect" id="node7" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="539,1329,833,1417">
-<area shape="rect" id="node8" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="473,5,899,749">
-<area shape="rect" id="node9" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="583,1435,789,1523">
-<area shape="rect" id="node10" href="../../tables/project_overall_scores.html" target="_top" title="project_overall_scores" alt="" coords="559,1540,813,1628">
-<area shape="rect" id="node11" href="../../tables/project_report_configs.html" target="_top" title="project_report_configs" alt="" coords="559,767,813,855">
-<area shape="rect" id="node12" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="589,1681,783,1769">
-<area shape="rect" id="node13" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="557,1787,815,1875">
-<area shape="rect" id="node14" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="592,1892,780,1980">
-<area shape="rect" id="node15" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1003,767,1145,855">
-<area shape="rect" id="node16" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="943,1257,1205,1345">
-<area shape="rect" id="node17" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="597,908,775,996">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/project_accelerator_details.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -619,7 +610,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

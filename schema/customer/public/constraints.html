@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>terraware Database</title>
+        <title>terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -87,7 +87,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="fk_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="fk_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="50"
+                                    data-length-change="false">
                                 <thead align='left'>
                                     <tr>
                                         <th>Constraint Name</th>
@@ -1245,7 +1251,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                     <tr>
                                         <th>Table</th>
@@ -1257,132 +1269,132 @@
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>cannot_submit_while_locked</td>
-                                        <td>(((locked_time IS NULL) OR (submitted_time IS NULL)))</td>
+                                        <td>((locked_time IS NULL) OR (submitted_time IS NULL))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>locked_by_and_time_both_set</td>
-                                        <td>((((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL))))</td>
+                                        <td>(((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>quarter_in_range</td>
-                                        <td>(((quarter &gt;= 1) AND (quarter &lt;= 4)))</td>
+                                        <td>((quarter &gt;&#61; 1) AND (quarter &lt;&#61; 4))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>status_reflects_locked</td>
-                                        <td>((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))</td>
+                                        <td>(((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id &#61; 3)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>status_reflects_submitted</td>
-                                        <td>((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))</td>
+                                        <td>(((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id &#61; 4)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/seed_fund_reports.html'>seed_fund_reports</a></td>
                                         <td>submitted_by_and_time_both_set</td>
-                                        <td>((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))</td>
+                                        <td>(((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>country_code_matches_subdivision</td>
-                                        <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                        <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>organizations_country_code_check</td>
-                                        <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>organizations_country_subdivision_code_check</td>
-                                        <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>organizations_description_check</td>
-                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>other_type_details_null_or_not_empty</td>
-                                        <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
+                                        <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>other_type_details_only_for_other</td>
-                                        <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
+                                        <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/countries.html'>countries</a></td>
                                         <td>countries_code_caps</td>
-                                        <td>((code = upper(code)))</td>
+                                        <td>(code &#61; upper(code))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/countries.html'>countries</a></td>
                                         <td>countries_code_length</td>
-                                        <td>((length(code) = 2))</td>
+                                        <td>(length(code) &#61; 2)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/facilities.html'>facilities</a></td>
                                         <td>facilities_description_check</td>
-                                        <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/device_managers.html'>device_managers</a></td>
                                         <td>device_managers_user_iff_facility</td>
-                                        <td>((((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL))))</td>
+                                        <td>(((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/files.html'>files</a></td>
                                         <td>content_type_cannot_be_empty_string</td>
-                                        <td>((length(content_type) &gt; 0))</td>
+                                        <td>(length(content_type) &gt; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/files.html'>files</a></td>
                                         <td>file_name_cannot_be_empty_string</td>
-                                        <td>((length(file_name) &gt; 0))</td>
+                                        <td>(length(file_name) &gt; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
                                         <td>country_subdivisions_code_length</td>
-                                        <td>(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))</td>
+                                        <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
                                         <td>country_subdivisions_code_matches_country</td>
-                                        <td>((substr(code, 1, 2) = country_code))</td>
+                                        <td>(substr(code, 1, 2) &#61; country_code)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/upload_problems.html'>upload_problems</a></td>
                                         <td>upload_problems_field_check</td>
-                                        <td>((field !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(field !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/upload_problems.html'>upload_problems</a></td>
                                         <td>upload_problems_message_check</td>
-                                        <td>((message !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(message !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/upload_problems.html'>upload_problems</a></td>
                                         <td>upload_problems_value_check</td>
-                                        <td>((value !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(value !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/users.html'>users</a></td>
                                         <td>users_auth_id_check</td>
-                                        <td>((auth_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/users.html'>users</a></td>
                                         <td>users_first_name_check</td>
-                                        <td>((first_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/users.html'>users</a></td>
                                         <td>users_last_name_check</td>
-                                        <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1402,7 +1414,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

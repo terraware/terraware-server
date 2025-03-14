@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>country_subdivisions - terraware Database</title>
+        <title>country_subdivisions - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -126,7 +132,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="organizations.country_subdivision_code references country_subdivisions.code via organizations_country_subdivision_code_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.country_subdivision_code</span></td>
-                                                <td class="constraint detail">organizations_country_subdivision_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">organizations_country_subdivision_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="country_subdivisions.country_code references countries.code via country_subdivisions_country_code_fkey"><a href='countries.html'>countries</a><span class='relatedKey'>.code</span></td>
-                                                <td class="constraint detail">country_subdivisions_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">country_subdivisions_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -188,7 +196,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -224,7 +238,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -234,11 +254,11 @@
                                 <tbody>
                                 <tr>
                                     <td>country_subdivisions_code_matches_country</td>
-                                    <td>((substr(code, 1, 2) = country_code))</td>
+                                    <td>(substr(code, 1, 2) &#61; country_code)</td>
                                 </tr>
                                 <tr>
                                     <td>country_subdivisions_code_length</td>
-                                    <td>(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))</td>
+                                    <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -262,41 +282,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="208,85,564,243">
-<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,63,164,268">
-<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="608,5,861,299">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/country_subdivisions.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1536,8,1807,96">
-<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="197,627,355,832">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="508,629,659,717">
-<area shape="rect" id="node4" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1215,545,1363,633">
-<area shape="rect" id="node9" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,688,147,776">
-<area shape="rect" id="node11" href="../../tables/time_zones.html" target="_top" title="time_zones" alt="" coords="191,1047,361,1135">
-<area shape="rect" id="node7" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="805,920,1059,1213">
-<area shape="rect" id="node5" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1567,400,1776,488">
-<area shape="rect" id="node6" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1213,440,1365,528">
-<area shape="rect" id="node8" href="../../tables/species.html" target="_top" title="species" alt="" coords="1215,283,1363,371">
-<area shape="rect" id="node10" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="405,848,761,1005">
-<area shape="rect" id="node18" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="469,1120,698,1208">
-<area shape="rect" id="node12" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="1168,1143,1411,1231">
-<area shape="rect" id="node13" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1198,719,1381,807">
-<area shape="rect" id="node14" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1146,824,1433,912">
-<area shape="rect" id="node15" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="1103,1248,1476,1336">
-<area shape="rect" id="node16" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="1138,1353,1441,1441">
-<area shape="rect" id="node17" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1176,929,1403,1017">
-<area shape="rect" id="node19" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1559,629,1784,717">
-<area shape="rect" id="node20" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1598,1421,1745,1509">
-<area shape="rect" id="node21" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1181,1531,1397,1619">
-<area shape="rect" id="node22" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1550,243,1793,331">
-<area shape="rect" id="node23" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1520,1576,1823,1664">
-<area shape="rect" id="node24" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="1148,125,1431,213">
-<area shape="rect" id="node25" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1542,1731,1801,1819">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/country_subdivisions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -317,7 +307,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

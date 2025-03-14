@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database name="terraware" schema="nursery" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware" schema="nursery" type="PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)">
    <tables>
-      <table name="batch_details_history" numRows="0" remarks="Record of changes of user-editable attributes of each nursery batch." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="batch_details_history" remarks="Record of changes of user-editable attributes of each nursery batch." schema="nursery" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="batch_details_history_id" foreignKey="batch_details_history_sub_locatio_batch_details_history_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_details_history_sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="batch_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -42,7 +41,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="batch_details_history_sub_locations" numRows="0" remarks="Record of changes to sub-locations of each nursery batch." schema="nursery" type="TABLE">
+      <table name="batch_details_history_sub_locations" remarks="Record of changes to sub-locations of each nursery batch." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_details_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_details_history_sub_locatio_batch_details_history_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_details_history"/>
          </column>
@@ -60,8 +59,8 @@
             <column ascending="true" name="sub_location_id"/>
          </index>
       </table>
-      <table name="batch_photos" numRows="0" remarks="Information about photos of batches." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="batch_photos" remarks="Information about photos of batches." schema="nursery" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="batch_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_photos_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
@@ -87,8 +86,8 @@
             <column ascending="true" name="file_id"/>
          </index>
       </table>
-      <table name="batch_quantity_history" numRows="0" remarks="Record of changes of seedling quantities in each nursery batch." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="batch_quantity_history" remarks="Record of changes of seedling quantities in each nursery batch." schema="nursery" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="batch_id" nullable="false" remarks="Which batch's quantities were changed." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_quantity_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
          </column>
@@ -117,11 +116,11 @@
             <column ascending="true" name="batch_id"/>
             <column ascending="true" name="version"/>
          </index>
-         <checkConstraint constraint="((germinating_quantity &gt;= 0))" name="batch_quantity_history_germinating_quantity_check"/>
-         <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batch_quantity_history_not_ready_quantity_check"/>
-         <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batch_quantity_history_ready_quantity_check"/>
+         <checkConstraint constraint="(germinating_quantity &gt;= 0)" name="batch_quantity_history_germinating_quantity_check"/>
+         <checkConstraint constraint="(not_ready_quantity &gt;= 0)" name="batch_quantity_history_not_ready_quantity_check"/>
+         <checkConstraint constraint="(ready_quantity &gt;= 0)" name="batch_quantity_history_ready_quantity_check"/>
       </table>
-      <table name="batch_quantity_history_types" numRows="3" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
+      <table name="batch_quantity_history_types" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="history_type_id" foreignKey="batch_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_quantity_history"/>
          </column>
@@ -131,7 +130,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="batch_sub_locations" numRows="0" remarks="Which batches are stored in which sub-locations." schema="nursery" type="TABLE">
+      <table name="batch_sub_locations" remarks="Which batches are stored in which sub-locations." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
@@ -139,9 +138,9 @@
             <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -153,7 +152,7 @@
             <column ascending="true" name="sub_location_id"/>
          </index>
       </table>
-      <table name="batch_substrates" numRows="6" remarks="(Enum) Substrates in which seedlings can be planted in a nursery." schema="nursery" type="TABLE">
+      <table name="batch_substrates" remarks="(Enum) Substrates in which seedlings can be planted in a nursery." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="substrate_id" foreignKey="batch_details_history_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="substrate_id" foreignKey="batches_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
@@ -167,7 +166,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="batch_withdrawals" numRows="0" remarks="Number of seedlings withdrawn from each originating batch as part of a withdrawal." schema="nursery" type="TABLE">
+      <table name="batch_withdrawals" remarks="Number of seedlings withdrawn from each originating batch as part of a withdrawal." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="batch_id" nullable="false" remarks="The batch from which the seedlings were withdrawn, also referred to as the originating batch." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_withdrawals_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>
          </column>
@@ -192,10 +191,10 @@
          <index name="batch_withdrawals_withdrawal_id_idx" unique="false">
             <column ascending="true" name="withdrawal_id"/>
          </index>
-         <checkConstraint constraint="((((germinating_quantity_withdrawn &lt;= 0) AND (not_ready_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (not_ready_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0))))" name="quantity_signs_consistent"/>
+         <checkConstraint constraint="(((germinating_quantity_withdrawn &lt;= 0) AND (not_ready_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (not_ready_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0)))" name="quantity_signs_consistent"/>
       </table>
-      <table name="batches" numRows="0" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
+      <table name="batches" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
             <child column="batch_id" foreignKey="batch_details_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_details_history"/>
             <child column="batch_id" foreignKey="batch_photos_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="batch_id" foreignKey="batch_quantity_history_batch_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
@@ -283,16 +282,16 @@
          <index name="batches_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="((germinating_quantity &gt;= 0))" name="batches_germinating_quantity_check"/>
-         <checkConstraint constraint="((latest_observed_germinating_quantity &gt;= 0))" name="batches_latest_observed_germinating_quantity_check"/>
-         <checkConstraint constraint="((latest_observed_not_ready_quantity &gt;= 0))" name="batches_latest_observed_not_ready_quantity_check"/>
-         <checkConstraint constraint="((latest_observed_ready_quantity &gt;= 0))" name="batches_latest_observed_ready_quantity_check"/>
-         <checkConstraint constraint="((not_ready_quantity &gt;= 0))" name="batches_not_ready_quantity_check"/>
-         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="batches_notes_check"/>
-         <checkConstraint constraint="((ready_quantity &gt;= 0))" name="batches_ready_quantity_check"/>
-         <checkConstraint constraint="((version &gt; 0))" name="batches_version_check"/>
+         <checkConstraint constraint="(germinating_quantity &gt;= 0)" name="batches_germinating_quantity_check"/>
+         <checkConstraint constraint="(latest_observed_germinating_quantity &gt;= 0)" name="batches_latest_observed_germinating_quantity_check"/>
+         <checkConstraint constraint="(latest_observed_not_ready_quantity &gt;= 0)" name="batches_latest_observed_not_ready_quantity_check"/>
+         <checkConstraint constraint="(latest_observed_ready_quantity &gt;= 0)" name="batches_latest_observed_ready_quantity_check"/>
+         <checkConstraint constraint="(not_ready_quantity &gt;= 0)" name="batches_not_ready_quantity_check"/>
+         <checkConstraint constraint="(notes !~ similar_to_escape(' *'::text))" name="batches_notes_check"/>
+         <checkConstraint constraint="(ready_quantity &gt;= 0)" name="batches_ready_quantity_check"/>
+         <checkConstraint constraint="(version &gt; 0)" name="batches_version_check"/>
       </table>
-      <table name="withdrawal_photos" numRows="0" remarks="Linking table between `withdrawals` and `files`." schema="nursery" type="TABLE">
+      <table name="withdrawal_photos" remarks="Linking table between `withdrawals` and `files`." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
@@ -307,7 +306,7 @@
             <column ascending="true" name="withdrawal_id"/>
          </index>
       </table>
-      <table name="withdrawal_purposes" numRows="5" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
+      <table name="withdrawal_purposes" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
          </column>
@@ -317,8 +316,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="withdrawals" numRows="0" remarks="Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table." schema="nursery" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="withdrawals" remarks="Top-level information about a withdrawal from a nursery. Does not contain withdrawal quantities; those are in the `batch_withdrawals` table." schema="nursery" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="withdrawal_id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
             <child column="withdrawal_id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
             <child column="withdrawal_id" foreignKey="withdrawal_photos_withdrawal_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
@@ -360,9 +359,9 @@
          <index name="withdrawals_undoes_withdrawal_id_key" unique="true">
             <column ascending="true" name="undoes_withdrawal_id"/>
          </index>
-         <checkConstraint constraint="((((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL))))" name="undo_requires_withdrawal_id"/>
-         <checkConstraint constraint="(((destination_facility_id IS NULL) OR (purpose_id = 1)))" name="withdrawals_destination_only_for_transfers"/>
-         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
+         <checkConstraint constraint="(((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL)))" name="undo_requires_withdrawal_id"/>
+         <checkConstraint constraint="((destination_facility_id IS NULL) OR (purpose_id = 1))" name="withdrawals_destination_only_for_transfers"/>
+         <checkConstraint constraint="(notes !~ similar_to_escape(' *'::text))" name="withdrawals_notes_check"/>
       </table>
    </tables>
 </database>

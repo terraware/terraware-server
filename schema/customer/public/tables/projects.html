@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>projects - terraware Database</title>
+        <title>projects - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>projects</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>projects</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,117 +126,144 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="applications.project_id references projects.id via applications_project_id_fkey"><a href='../../accelerator/tables/applications.html'>applications</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">applications_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">applications_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="deliverable_project_due_dates.project_id references projects.id via deliverable_project_due_dates_project_id_fkey"><a href='../../accelerator/tables/deliverable_project_due_dates.html'>deliverable_project_due_dates</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">deliverable_project_due_dates_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">deliverable_project_due_dates_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="event_projects.project_id references projects.id via event_projects_project_id_fkey"><a href='../../accelerator/tables/event_projects.html'>event_projects</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">event_projects_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">event_projects_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="participant_project_species.project_id references projects.id via participant_project_species_project_id_fkey"><a href='../../accelerator/tables/participant_project_species.html'>participant_project_species</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">participant_project_species_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">participant_project_species_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_accelerator_details.project_id references projects.id via project_accelerator_details_project_id_fkey"><a href='../../accelerator/tables/project_accelerator_details.html'>project_accelerator_details</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_accelerator_details_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_accelerator_details_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_metrics.project_id references projects.id via project_metrics_project_id_fkey"><a href='../../accelerator/tables/project_metrics.html'>project_metrics</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_metrics_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_metrics_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_overall_scores.project_id references projects.id via project_overall_scores_project_id_fkey"><a href='../../accelerator/tables/project_overall_scores.html'>project_overall_scores</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_overall_scores_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_overall_scores_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_report_configs.project_id references projects.id via project_report_configs_project_id_fkey"><a href='../../accelerator/tables/project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_report_configs_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_report_configs_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_scores.project_id references projects.id via project_scores_project_id_fkey"><a href='../../accelerator/tables/project_scores.html'>project_scores</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_scores_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_scores_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_vote_decisions.project_id references projects.id via project_vote_decisions_project_id_fkey"><a href='../../accelerator/tables/project_vote_decisions.html'>project_vote_decisions</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_vote_decisions_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_vote_decisions_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_votes.project_id references projects.id via project_votes_project_id_fkey"><a href='../../accelerator/tables/project_votes.html'>project_votes</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_votes_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_votes_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="reports.project_id references projects.id via reports_project_id_fkey"><a href='../../accelerator/tables/reports.html'>reports</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">reports_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">reports_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="submission_documents.project_id references projects.id via submission_documents_project_id_fkey"><a href='../../accelerator/tables/submission_documents.html'>submission_documents</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">submission_documents_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">submission_documents_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="submissions.project_id references projects.id via submissions_project_id_fkey"><a href='../../accelerator/tables/submissions.html'>submissions</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">submissions_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">submissions_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="documents.project_id references projects.id via documents_project_id_fkey"><a href='../../docprod/tables/documents.html'>documents</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">documents_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">documents_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_owners.project_id references projects.id via variable_owners_project_id_fkey"><a href='../../docprod/tables/variable_owners.html'>variable_owners</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">variable_owners_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_owners_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_values.project_id references projects.id via variable_values_project_id_fkey"><a href='../../docprod/tables/variable_values.html'>variable_values</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">variable_values_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_values_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_workflow_history.project_id references projects.id via variable_workflow_history_project_id_fkey"><a href='../../docprod/tables/variable_workflow_history.html'>variable_workflow_history</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">variable_workflow_history_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_workflow_history_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="funding_entity_projects.project_id references projects.id via funding_entity_projects_project_id_fkey"><a href='../../funder/tables/funding_entity_projects.html'>funding_entity_projects</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">funding_entity_projects_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">funding_entity_projects_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batch_details_history.project_id references projects.id via batch_details_history_project_id_fkey"><a href='../../nursery/tables/batch_details_history.html'>batch_details_history</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">batch_details_history_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">batch_details_history_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batches.project_id references projects.id via batches_project_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">batches_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">batches_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_land_use_model_types.project_id references projects.id via project_land_use_model_types_project_id_fkey"><a href='project_land_use_model_types.html'>project_land_use_model_types</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_land_use_model_types_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_land_use_model_types_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_report_settings.project_id references projects.id via project_report_settings_project_id_fkey"><a href='project_report_settings.html'>project_report_settings</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_report_settings_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_report_settings_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="seed_fund_reports.project_id references projects.id via reports_project_id_fkey"><a href='seed_fund_reports.html'>seed_fund_reports</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">reports_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">reports_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="accessions.project_id references projects.id via accessions_project_id_fkey"><a href='../../seedbank/tables/accessions.html'>accessions</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">accessions_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">accessions_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="draft_planting_sites.project_id references projects.id via draft_planting_sites_project_id_fkey"><a href='../../tracking/tables/draft_planting_sites.html'>draft_planting_sites</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">draft_planting_sites_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">draft_planting_sites_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_sites.project_id references projects.id via planting_sites_project_id_fkey"><a href='../../tracking/tables/planting_sites.html'>planting_sites</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">planting_sites_project_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">planting_sites_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -255,7 +288,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="projects.created_by references users.id via projects_created_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">projects_created_by_fkey<span title=''></span></td>
+                                                <td class="constraint detail">projects_created_by_fkey</td>
+                                                <td class="constraint detail"><span title=''></span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -293,7 +327,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="projects.modified_by references users.id via projects_modified_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">projects_modified_by_fkey<span title=''></span></td>
+                                                <td class="constraint detail">projects_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title=''></span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -327,7 +362,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="draft_planting_sites.[organization_id, project_id] references projects.[organization_id, id] via draft_planting_sites_organization_id_project_id_fkey"><a href='../../tracking/tables/draft_planting_sites.html'>draft_planting_sites</a><span class='relatedKey'>.organization_id</span></td>
-                                                <td class="constraint detail">draft_planting_sites_organization_id_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">draft_planting_sites_organization_id_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -335,7 +371,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="projects.organization_id references organizations.id via projects_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">projects_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">projects_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -407,7 +444,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="projects.country_code references countries.code via projects_country_code_fkey"><a href='countries.html'>countries</a><span class='relatedKey'>.code</span></td>
-                                                <td class="constraint detail">projects_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">projects_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -427,7 +465,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -495,124 +539,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1246,5,1517,211">
-<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,3097,164,3303">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="208,2872,480,3107">
-<area shape="rect" id="node4" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="821,2299,1133,2661">
-<area shape="rect" id="node25" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="524,3671,777,3935">
-<area shape="rect" id="node5" href="../../../accelerator/tables/deliverable_project_due_dates.html" target="_top" title="accelerator.deliverable_project_due_dates" alt="" coords="1177,1031,1585,1148">
-<area shape="rect" id="node6" href="../../../accelerator/tables/event_projects.html" target="_top" title="accelerator.event_projects" alt="" coords="1237,1165,1526,1283">
-<area shape="rect" id="node7" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1188,228,1575,404">
-<area shape="rect" id="node8" href="../../../accelerator/tables/project_accelerator_details.html" target="_top" title="accelerator.project_accelerator_details" alt="" coords="1190,1300,1573,1417">
-<area shape="rect" id="node9" href="../../../accelerator/tables/project_metrics.html" target="_top" title="accelerator.project_metrics" alt="" coords="1233,1435,1529,1552">
-<area shape="rect" id="node10" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1209,421,1553,597">
-<area shape="rect" id="node11" href="../../../accelerator/tables/project_report_configs.html" target="_top" title="accelerator.project_report_configs" alt="" coords="1209,1569,1554,1687">
-<area shape="rect" id="node12" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1239,615,1524,791">
-<area shape="rect" id="node13" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1207,1704,1555,1821">
-<area shape="rect" id="node14" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1242,808,1521,1013">
-<area shape="rect" id="node15" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1265,2248,1498,2453">
-<area shape="rect" id="node16" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1205,2471,1558,2617">
-<area shape="rect" id="node17" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1247,2635,1516,2811">
-<area shape="rect" id="node18" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1262,2828,1501,3033">
-<area shape="rect" id="node19" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1243,3051,1520,3197">
-<area shape="rect" id="node20" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1246,3215,1517,3361">
-<area shape="rect" id="node21" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1205,3379,1557,3525">
-<area shape="rect" id="node22" href="../../../funder/tables/funding_entity_projects.html" target="_top" title="funder.funding_entity_projects" alt="" coords="1220,1839,1543,1956">
-<area shape="rect" id="node23" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1226,3543,1537,3689">
-<area shape="rect" id="node24" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1204,3707,1559,3941">
-<area shape="rect" id="node26" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="1224,1973,1539,2096">
-<area shape="rect" id="node27" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1250,2113,1513,2231">
-<area shape="rect" id="node28" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1269,3959,1494,4311">
-<area shape="rect" id="node29" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1217,4551,1546,4785">
-<area shape="rect" id="node30" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1230,4328,1533,4533">
-<area shape="rect" id="node31" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1252,4803,1511,5037">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/projects.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/application_histories.html" target="_top" title="accelerator.application_histories" alt="" coords="733,492,1069,580">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="401,2756,673,2991">
-<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="195,4255,353,4460">
-<area shape="rect" id="node66" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="191,2847,357,2935">
-<area shape="rect" id="node3" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1615,124,1886,329">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1160,2749,1472,3112">
-<area shape="rect" id="node46" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,4316,147,4404">
-<area shape="rect" id="node44" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="775,4331,1028,4595">
-<area shape="rect" id="node6" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="784,669,1019,757">
-<area shape="rect" id="node7" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="758,775,1045,863">
-<area shape="rect" id="node8" href="../../../accelerator/tables/deliverable_project_due_dates.html" target="_top" title="accelerator.deliverable_project_due_dates" alt="" coords="1547,2608,1955,2725">
-<area shape="rect" id="node9" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="766,880,1037,968">
-<area shape="rect" id="node10" href="../../../accelerator/tables/event_projects.html" target="_top" title="accelerator.event_projects" alt="" coords="1606,2743,1895,2860">
-<area shape="rect" id="node11" href="../../../accelerator/tables/events.html" target="_top" title="accelerator.events" alt="" coords="787,985,1015,1073">
-<area shape="rect" id="node12" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="780,1091,1023,1179">
-<area shape="rect" id="node13" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1557,347,1944,523">
-<area shape="rect" id="node14" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="766,1268,1037,1356">
-<area shape="rect" id="node15" href="../../../accelerator/tables/project_accelerator_details.html" target="_top" title="accelerator.project_accelerator_details" alt="" coords="1559,2877,1942,2995">
-<area shape="rect" id="node16" href="../../../accelerator/tables/project_metrics.html" target="_top" title="accelerator.project_metrics" alt="" coords="1603,3012,1899,3129">
-<area shape="rect" id="node17" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1579,540,1923,716">
-<area shape="rect" id="node18" href="../../../accelerator/tables/project_report_configs.html" target="_top" title="accelerator.project_report_configs" alt="" coords="1578,3147,1923,3264">
-<area shape="rect" id="node19" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1608,733,1893,909">
-<area shape="rect" id="node20" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1577,3281,1925,3399">
-<area shape="rect" id="node21" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1611,927,1890,1132">
-<area shape="rect" id="node22" href="../../../accelerator/tables/report_project_metrics.html" target="_top" title="accelerator.report_project_metrics" alt="" coords="726,1625,1077,1713">
-<area shape="rect" id="node23" href="../../../accelerator/tables/report_standard_metrics.html" target="_top" title="accelerator.report_standard_metrics" alt="" coords="719,1731,1084,1819">
-<area shape="rect" id="node24" href="../../../accelerator/tables/report_system_metrics.html" target="_top" title="accelerator.report_system_metrics" alt="" coords="726,1836,1077,1924">
-<area shape="rect" id="node25" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1634,1149,1867,1355">
-<area shape="rect" id="node26" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1574,1372,1927,1519">
-<area shape="rect" id="node27" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1616,1536,1885,1712">
-<area shape="rect" id="node28" href="../../../accelerator/tables/user_internal_interests.html" target="_top" title="accelerator.user_internal_interests" alt="" coords="725,2121,1077,2209">
-<area shape="rect" id="node29" href="../../../docprod/tables/document_saved_versions.html" target="_top" title="docprod.document_saved_versions" alt="" coords="726,2227,1077,2315">
-<area shape="rect" id="node30" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1631,1729,1870,1935">
-<area shape="rect" id="node31" href="../../../docprod/tables/variable_manifests.html" target="_top" title="docprod.variable_manifests" alt="" coords="753,2440,1050,2528">
-<area shape="rect" id="node32" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1612,1952,1889,2099">
-<area shape="rect" id="node33" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1615,2116,1886,2263">
-<area shape="rect" id="node34" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1575,2280,1927,2427">
-<area shape="rect" id="node35" href="../../../funder/tables/funding_entities.html" target="_top" title="funder.funding_entities" alt="" coords="768,2653,1035,2741">
-<area shape="rect" id="node36" href="../../../funder/tables/funding_entity_projects.html" target="_top" title="funder.funding_entity_projects" alt="" coords="1589,3416,1912,3533">
-<area shape="rect" id="node37" href="../../../funder/tables/funding_entity_users.html" target="_top" title="funder.funding_entity_users" alt="" coords="751,2759,1051,2847">
-<area shape="rect" id="node38" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1595,2444,1906,2591">
-<area shape="rect" id="node39" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1191,2644,1441,2732">
-<area shape="rect" id="node40" href="../../tables/files.html" target="_top" title="files" alt="" coords="832,3093,971,3181">
-<area shape="rect" id="node41" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="738,2988,1065,3076">
-<area shape="rect" id="node42" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1573,4519,1928,4753">
-<area shape="rect" id="node43" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1240,5075,1392,5163">
-<area shape="rect" id="node47" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="414,4373,661,4461">
-<area shape="rect" id="node55" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="423,4480,652,4568">
-<area shape="rect" id="node45" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1629,4993,1873,5081">
-<area shape="rect" id="node48" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1643,5099,1859,5187">
-<area shape="rect" id="node49" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="809,3343,994,3431">
-<area shape="rect" id="node50" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1225,3805,1407,3893">
-<area shape="rect" id="node51" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1173,3379,1459,3467">
-<area shape="rect" id="node52" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="1129,4415,1503,4503">
-<area shape="rect" id="node53" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="1165,4520,1467,4608">
-<area shape="rect" id="node54" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1203,3911,1429,3999">
-<area shape="rect" id="node56" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="1593,3685,1908,3808">
-<area shape="rect" id="node57" href="../../tables/land_use_model_types.html" target="_top" title="land_use_model_types" alt="" coords="1189,3129,1443,3217">
-<area shape="rect" id="node58" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1619,3551,1882,3668">
-<area shape="rect" id="node59" href="../../tables/seed_fund_report_files.html" target="_top" title="seed_fund_report_files" alt="" coords="2009,3827,2264,3915">
-<area shape="rect" id="node60" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1638,3861,1863,4213">
-<area shape="rect" id="node62" href="../../tables/seed_fund_report_statuses.html" target="_top" title="seed_fund_report_statuses" alt="" coords="1173,3520,1459,3608">
-<area shape="rect" id="node61" href="../../tables/seed_fund_report_photos.html" target="_top" title="seed_fund_report_photos" alt="" coords="1999,4044,2275,4132">
-<area shape="rect" id="node63" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1677,5204,1824,5292">
-<area shape="rect" id="node64" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="794,3628,1009,3716">
-<area shape="rect" id="node65" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1208,4096,1424,4184">
-<area shape="rect" id="node67" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="717,3837,1085,3925">
-<area shape="rect" id="node68" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="731,3943,1071,4031">
-<area shape="rect" id="node69" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1586,5309,1915,5544">
-<area shape="rect" id="node70" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="772,4084,1031,4172">
-<area shape="rect" id="node71" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="787,4189,1015,4277">
-<area shape="rect" id="node72" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1599,4771,1902,4976">
-<area shape="rect" id="node73" href="../../../tracking/tables/monitoring_plot_histories.html" target="_top" title="tracking.monitoring_plot_histories" alt="" coords="728,4700,1075,4788">
-<area shape="rect" id="node74" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="1175,4625,1457,4713">
-<area shape="rect" id="node75" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="757,4841,1045,4929">
-<area shape="rect" id="node76" href="../../../tracking/tables/planting_site_histories.html" target="_top" title="tracking.planting_site_histories" alt="" coords="740,4947,1063,5035">
-<area shape="rect" id="node77" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1621,4267,1880,4501">
-<area shape="rect" id="node78" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="755,104,1047,192">
-<area shape="rect" id="node79" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="769,209,1034,297">
-<area shape="rect" id="node80" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="789,315,1013,403">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/projects.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -633,7 +564,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

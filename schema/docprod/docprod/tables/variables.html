@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>variables - terraware Database</title>
+        <title>variables - terraware.docprod</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.docprod</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>variables</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>variables</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,101 +126,124 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="deliverable_variables.variable_id references variables.id via deliverable_variables_variable_id_fkey"><a href='../../accelerator/tables/deliverable_variables.html'>deliverable_variables</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">deliverable_variables_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">deliverable_variables_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_image_values.variable_id references variables.id via variable_image_values_variable_id_fkey"><a href='variable_image_values.html'>variable_image_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_image_values_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_image_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_link_values.variable_id references variables.id via variable_link_values_variable_id_fkey"><a href='variable_link_values.html'>variable_link_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_manifest_entries.variable_id references variables.id via variable_manifest_entries_variable_id_fkey"><a href='variable_manifest_entries.html'>variable_manifest_entries</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_manifest_entries_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_manifest_entries_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_numbers.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_numbers_variable_id_variable_type_id_fkey"><a href='variable_numbers.html'>variable_numbers</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_numbers_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_numbers_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_owners.variable_id references variables.id via variable_owners_variable_id_fkey"><a href='variable_owners.html'>variable_owners</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_owners_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_owners_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_default_values.used_variable_id references variables.id via variable_section_default_values_used_variable_id_fkey"><a href='variable_section_default_values.html'>variable_section_default_values</a><span class='relatedKey'>.used_variable_id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_used_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_default_values_used_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_default_values.variable_id references variables.id via variable_section_default_values_variable_id_fkey"><a href='variable_section_default_values.html'>variable_section_default_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_default_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_recommendations.recommended_variable_id references variables.id via variable_section_recommendations_recommended_variable_id_fkey"><a href='variable_section_recommendations.html'>variable_section_recommendations</a><span class='relatedKey'>.recommended_variable_id</span></td>
-                                                <td class="constraint detail">variable_section_recommendations_recommended_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_recommendations_recommended_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_recommendations.section_variable_id references variables.id via variable_section_recommendations_section_variable_id_fkey"><a href='variable_section_recommendations.html'>variable_section_recommendations</a><span class='relatedKey'>.section_variable_id</span></td>
-                                                <td class="constraint detail">variable_section_recommendations_section_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_section_recommendations_section_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_values_used_variable_id_used_variable_typ_fkey"><a href='variable_section_values.html'>variable_section_values</a><span class='relatedKey'>.used_variable_id</span></td>
-                                                <td class="constraint detail">variable_section_values_used_variable_id_used_variable_typ_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_values_used_variable_id_used_variable_typ_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_values.variable_id references variables.id via variable_section_values_variable_id_fkey"><a href='variable_section_values.html'>variable_section_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_section_values_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_sections.[parent_variable_id, parent_variable_type_id] references variables.[id, variable_type_id] via variable_sections_parent_variable_id_parent_variable_type__fkey"><a href='variable_sections.html'>variable_sections</a><span class='relatedKey'>.parent_variable_id</span></td>
-                                                <td class="constraint detail">variable_sections_parent_variable_id_parent_variable_type__fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_sections_parent_variable_id_parent_variable_type__fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_sections.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_sections_variable_id_variable_type_id_fkey"><a href='variable_sections.html'>variable_sections</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_sections_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_sections_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_select_options.variable_id references variables.id via variable_select_options_variable_id_fkey"><a href='variable_select_options.html'>variable_select_options</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_select_options_variable_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_select_options_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_selects.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_selects_variable_id_variable_type_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_selects_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_selects_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_table_columns.table_variable_id references variables.id via variable_table_columns_table_variable_id_fkey"><a href='variable_table_columns.html'>variable_table_columns</a><span class='relatedKey'>.table_variable_id</span></td>
-                                                <td class="constraint detail">variable_table_columns_table_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_table_columns_table_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_table_columns.variable_id references variables.id via variable_table_columns_variable_id_fkey"><a href='variable_table_columns.html'>variable_table_columns</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_table_columns_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_table_columns_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_tables.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_tables_variable_id_variable_type_id_fkey"><a href='variable_tables.html'>variable_tables</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_tables_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_tables_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_texts.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_texts_variable_id_variable_type_id_fkey"><a href='variable_texts.html'>variable_texts</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_texts_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_texts_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_values_variable_id_variable_type_id_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_workflow_history.variable_id references variables.id via variable_workflow_history_variable_id_fkey"><a href='variable_workflow_history.html'>variable_workflow_history</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_workflow_history_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_workflow_history_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variables.replaces_variable_id references variables.id via variables_replaces_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.replaces_variable_id</span></td>
-                                                <td class="constraint detail">variables_replaces_variable_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">variables_replaces_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -235,43 +264,53 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_numbers.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_numbers_variable_id_variable_type_id_fkey"><a href='variable_numbers.html'>variable_numbers</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_numbers_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_numbers_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_default_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_used_variable_id_used_variab_fkey"><a href='variable_section_default_values.html'>variable_section_default_values</a><span class='relatedKey'>.used_variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_default_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_variable_id_variable_type_id_fkey"><a href='variable_section_default_values.html'>variable_section_default_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_section_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_values_used_variable_id_used_variable_typ_fkey"><a href='variable_section_values.html'>variable_section_values</a><span class='relatedKey'>.used_variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_values_used_variable_id_used_variable_typ_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_section_values_used_variable_id_used_variable_typ_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_sections.[parent_variable_id, parent_variable_type_id] references variables.[id, variable_type_id] via variable_sections_parent_variable_id_parent_variable_type__fkey"><a href='variable_sections.html'>variable_sections</a><span class='relatedKey'>.parent_variable_type_id</span></td>
-                                                <td class="constraint detail">variable_sections_parent_variable_id_parent_variable_type__fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_sections_parent_variable_id_parent_variable_type__fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_sections.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_sections_variable_id_variable_type_id_fkey"><a href='variable_sections.html'>variable_sections</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_sections_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_sections_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_selects.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_selects_variable_id_variable_type_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_selects_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_selects_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_tables.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_tables_variable_id_variable_type_id_fkey"><a href='variable_tables.html'>variable_tables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_tables_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_tables_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_texts.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_texts_variable_id_variable_type_id_fkey"><a href='variable_texts.html'>variable_texts</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_texts_variable_id_variable_type_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_texts_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_values_variable_id_variable_type_id_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_values_variable_id_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -279,7 +318,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variables.variable_type_id references variable_types.id via variables_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variables_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variables_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -300,7 +340,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variables.replaces_variable_id references variables.id via variables_replaces_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variables_replaces_variable_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">variables_replaces_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -423,7 +464,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variables.dependency_condition_id references dependency_conditions.id via variables_dependency_condition_id_fkey"><a href='dependency_conditions.html'>dependency_conditions</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variables_dependency_condition_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variables_dependency_condition_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -494,7 +536,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -544,61 +592,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/deliverable_variables.html" target="_top" title="accelerator.deliverable_variables" alt="" coords="802,809,1142,927">
-<area shape="rect" id="node2" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="316,1284,751,1735">
-<area shape="rect" id="node5" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="40,1803,237,1925">
-<area shape="rect" id="node20" href="../../tables/dependency_conditions.html" target="_top" title="dependency_conditions" alt="" coords="5,1551,272,1673">
-<area shape="rect" id="node3" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="1208,393,1464,599">
-<area shape="rect" id="node4" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="870,587,1074,792">
-<area shape="rect" id="node6" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="1217,616,1455,792">
-<area shape="rect" id="node7" href="../../tables/variable_manifest_entries.html" target="_top" title="variable_manifest_entries" alt="" coords="831,1257,1113,1409">
-<area shape="rect" id="node8" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="861,1463,1083,1609">
-<area shape="rect" id="node9" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="867,1016,1077,1168">
-<area shape="rect" id="node10" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="809,1627,1135,1979">
-<area shape="rect" id="node11" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="795,316,1149,497">
-<area shape="rect" id="node12" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="1203,1091,1469,1384">
-<area shape="rect" id="node13" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="853,1996,1091,2201">
-<area shape="rect" id="node14" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="1205,2297,1467,2473">
-<area shape="rect" id="node15" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="869,2327,1075,2473">
-<area shape="rect" id="node16" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="1203,5,1469,211">
-<area shape="rect" id="node17" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="871,111,1073,263">
-<area shape="rect" id="node18" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="863,2491,1081,2643">
-<area shape="rect" id="node19" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="1193,809,1479,1073">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/variables.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/deliverable_variables.html" target="_top" title="accelerator.deliverable_variables" alt="" coords="802,712,1142,829">
-<area shape="rect" id="node2" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="316,1411,751,1861">
-<area shape="rect" id="node5" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="40,1945,237,2068">
-<area shape="rect" id="node28" href="../../tables/dependency_conditions.html" target="_top" title="dependency_conditions" alt="" coords="5,1677,272,1800">
-<area shape="rect" id="node3" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="1208,323,1464,528">
-<area shape="rect" id="node4" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="870,417,1074,623">
-<area shape="rect" id="node6" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="1217,687,1455,863">
-<area shape="rect" id="node7" href="../../tables/variable_manifest_entries.html" target="_top" title="variable_manifest_entries" alt="" coords="831,1781,1113,1933">
-<area shape="rect" id="node8" href="../../tables/variable_manifests.html" target="_top" title="variable_manifests" alt="" coords="418,1951,649,2039">
-<area shape="rect" id="node9" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="861,1419,1083,1565">
-<area shape="rect" id="node10" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="867,1177,1077,1329">
-<area shape="rect" id="node11" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="809,1951,1135,2303">
-<area shape="rect" id="node12" href="../../tables/variable_injection_display_styles.html" target="_top" title="variable_injection_display_styles" alt="" coords="366,2272,701,2360">
-<area shape="rect" id="node13" href="../../tables/variable_usage_types.html" target="_top" title="variable_usage_types" alt="" coords="410,2161,657,2249">
-<area shape="rect" id="node14" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="795,1583,1149,1764">
-<area shape="rect" id="node15" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="1203,975,1469,1268">
-<area shape="rect" id="node16" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="853,919,1091,1124">
-<area shape="rect" id="node17" href="../../tables/variable_select_option_values.html" target="_top" title="variable_select_option_values" alt="" coords="1523,2495,1833,2583">
-<area shape="rect" id="node18" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="1205,2568,1467,2744">
-<area shape="rect" id="node19" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="869,2597,1075,2744">
-<area shape="rect" id="node20" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="1203,2840,1469,3045">
-<area shape="rect" id="node21" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="871,2869,1073,3021">
-<area shape="rect" id="node22" href="../../tables/variable_table_styles.html" target="_top" title="variable_table_styles" alt="" coords="411,2931,656,3019">
-<area shape="rect" id="node23" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="863,2356,1081,2508">
-<area shape="rect" id="node24" href="../../tables/variable_text_types.html" target="_top" title="variable_text_types" alt="" coords="416,2417,651,2505">
-<area shape="rect" id="node25" href="../../tables/variable_value_table_rows.html" target="_top" title="variable_value_table_rows" alt="" coords="1193,545,1479,633">
-<area shape="rect" id="node26" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="1193,5,1479,269">
-<area shape="rect" id="node27" href="../../tables/variable_workflow_statuses.html" target="_top" title="variable_workflow_statuses" alt="" coords="825,155,1119,243">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/variables.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -619,7 +617,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

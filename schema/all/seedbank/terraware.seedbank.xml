@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database name="terraware" schema="seedbank" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware" schema="seedbank" type="PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)">
    <tables>
-      <table name="accession_collectors" numRows="0" remarks="Names of people who collected each accession." schema="seedbank" type="TABLE">
+      <table name="accession_collectors" remarks="Names of people who collected each accession." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_collectors_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -13,10 +12,10 @@
             <column ascending="true" name="accession_id"/>
             <column ascending="true" name="position"/>
          </index>
-         <checkConstraint constraint="((name !~ similar_to_escape('\s*'::text)))" name="accession_collectors_name_check"/>
-         <checkConstraint constraint="((&quot;position&quot; &gt;= 0))" name="accession_collectors_position_check"/>
+         <checkConstraint constraint="(name !~ similar_to_escape('\s*'::text))" name="accession_collectors_name_check"/>
+         <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="accession_collectors_position_check"/>
       </table>
-      <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `files`." schema="seedbank" type="TABLE">
+      <table name="accession_photos" remarks="Linking table between `accessions` and `files`." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
@@ -28,8 +27,8 @@
             <column ascending="true" name="file_id"/>
          </index>
       </table>
-      <table name="accession_quantity_history" numRows="0" remarks="Historical record of changes to remaining quantities of accessions." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="accession_quantity_history" remarks="Historical record of changes to remaining quantities of accessions." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_quantity_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -40,7 +39,7 @@
             <parent column="id" foreignKey="accession_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="remaining_quantity" nullable="false" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
@@ -53,7 +52,7 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="accession_quantity_history_types" numRows="2" remarks="(Enum) Types of operations that can result in changes to remaining quantities of accessions." schema="seedbank" type="TABLE">
+      <table name="accession_quantity_history_types" remarks="(Enum) Types of operations that can result in changes to remaining quantities of accessions." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="history_type_id" foreignKey="accession_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>
          </column>
@@ -63,7 +62,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="accession_state_history" numRows="0" remarks="Historical record of when accessions moved to different states. A row is inserted here for every state transition." schema="seedbank" type="TABLE">
+      <table name="accession_state_history" remarks="Historical record of when accessions moved to different states. A row is inserted here for every state transition." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_state_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -86,7 +85,7 @@
             <column ascending="true" name="updated_time"/>
          </index>
       </table>
-      <table name="accession_states" numRows="11" remarks="(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow." schema="seedbank" type="TABLE">
+      <table name="accession_states" remarks="(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="new_state_id" foreignKey="accession_state_history_new_state_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_state_history"/>
             <child column="old_state_id" foreignKey="accession_state_history_old_state_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_state_history"/>
@@ -99,8 +98,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="accessions" numRows="0" remarks="Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="accessions" remarks="Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="accession_id" foreignKey="batches_accession_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="accession_id" foreignKey="accession_collectors_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accession_collectors"/>
             <child column="accession_id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
@@ -122,7 +121,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="founder_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="trees_collected_from" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="subset_weight" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="subset_weight" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="subset_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="est_seed_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="drying_end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
@@ -134,13 +133,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="collection_site_landowner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="remaining_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="remaining_grams" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="remaining_quantity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="remaining_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="subset_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="subset_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="subset_weight_grams" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="subset_weight_quantity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="subset_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
@@ -166,19 +165,19 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="data_source_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="data_sources"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="latest_observed_quantity" nullable="true" remarks="Most recent remaining quantity as observed by the user." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="latest_observed_quantity" nullable="true" remarks="Most recent remaining quantity as observed by the user." size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="latest_observed_units_id" nullable="true" remarks="Measurement units of `observed_quantity`." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="36" name="latest_observed_time" nullable="true" remarks="Time of most recent change to observed quantity." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="est_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="est_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="est_weight_grams" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="est_weight_quantity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="est_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="total_withdrawn_count" nullable="true" remarks="Total number of seeds withdrawn. May be an estimate if withdrawals were measured by weight." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="total_withdrawn_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="total_withdrawn_weight_quantity" nullable="true" remarks="Total weight of seeds withdrawn. May be an estimate if withdrawals were measured by seed count." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="total_withdrawn_weight_grams" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="total_withdrawn_weight_quantity" nullable="true" remarks="Total weight of seeds withdrawn. May be an estimate if withdrawals were measured by seed count." size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="total_withdrawn_weight_units_id" nullable="true" remarks="Measurement units of `total_withdrawn_weight_quantity`." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_total_withdrawn_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
@@ -211,23 +210,23 @@
          <index name="accessions_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="((collection_site_city !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_city_check"/>
-         <checkConstraint constraint="((collection_site_country_code !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_country_code_check"/>
-         <checkConstraint constraint="((collection_site_country_subdivision !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_country_subdivision_check"/>
-         <checkConstraint constraint="((collection_site_landowner !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_landowner_check"/>
-         <checkConstraint constraint="((collection_site_name !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_name_check"/>
-         <checkConstraint constraint="((collection_site_notes !~ similar_to_escape(' *'::text)))" name="accessions_collection_site_notes_check"/>
-         <checkConstraint constraint="((founder_id !~ similar_to_escape(' *'::text)))" name="accessions_founder_id_check"/>
-         <checkConstraint constraint="((number !~ similar_to_escape(' *'::text)))" name="accessions_number_check"/>
-         <checkConstraint constraint="((processing_notes !~ similar_to_escape(' *'::text)))" name="accessions_processing_notes_check"/>
-         <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))" name="observed_quantity_must_have_time"/>
-         <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))" name="observed_quantity_must_have_units"/>
-         <checkConstraint constraint="((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))" name="remaining_quantity_must_have_units"/>
-         <checkConstraint constraint="((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))" name="subset_weight_quantity_must_have_units"/>
-         <checkConstraint constraint="(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))" name="subset_weight_units_must_not_be_seeds"/>
+         <checkConstraint constraint="(collection_site_city !~ similar_to_escape(' *'::text))" name="accessions_collection_site_city_check"/>
+         <checkConstraint constraint="(collection_site_country_code !~ similar_to_escape(' *'::text))" name="accessions_collection_site_country_code_check"/>
+         <checkConstraint constraint="(collection_site_country_subdivision !~ similar_to_escape(' *'::text))" name="accessions_collection_site_country_subdivision_check"/>
+         <checkConstraint constraint="(collection_site_landowner !~ similar_to_escape(' *'::text))" name="accessions_collection_site_landowner_check"/>
+         <checkConstraint constraint="(collection_site_name !~ similar_to_escape(' *'::text))" name="accessions_collection_site_name_check"/>
+         <checkConstraint constraint="(collection_site_notes !~ similar_to_escape(' *'::text))" name="accessions_collection_site_notes_check"/>
+         <checkConstraint constraint="(founder_id !~ similar_to_escape(' *'::text))" name="accessions_founder_id_check"/>
+         <checkConstraint constraint="(number !~ similar_to_escape(' *'::text))" name="accessions_number_check"/>
+         <checkConstraint constraint="(processing_notes !~ similar_to_escape(' *'::text))" name="accessions_processing_notes_check"/>
+         <checkConstraint constraint="(((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL)))" name="observed_quantity_must_have_time"/>
+         <checkConstraint constraint="(((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL)))" name="observed_quantity_must_have_units"/>
+         <checkConstraint constraint="(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))" name="remaining_quantity_must_have_units"/>
+         <checkConstraint constraint="(((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL)))" name="subset_weight_quantity_must_have_units"/>
+         <checkConstraint constraint="((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL))" name="subset_weight_units_must_not_be_seeds"/>
       </table>
-      <table name="bags" numRows="0" remarks="Individual bags of seeds that are part of an accession. An accession can consist of multiple bags." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="bags" remarks="Individual bags of seeds that are part of an accession. An accession can consist of multiple bags." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="bags_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -236,9 +235,9 @@
          <index name="bag_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <checkConstraint constraint="((bag_number !~ similar_to_escape(' *'::text)))" name="bags_bag_number_check"/>
+         <checkConstraint constraint="(bag_number !~ similar_to_escape(' *'::text))" name="bags_bag_number_check"/>
       </table>
-      <table name="collection_sources" numRows="4" remarks="(Enum) Types of source plants that seeds can be collected from." schema="seedbank" type="TABLE">
+      <table name="collection_sources" remarks="(Enum) Types of source plants that seeds can be collected from." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="collection_source_id" foreignKey="accessions_collection_source_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
@@ -248,7 +247,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="data_sources" numRows="3" remarks="(Enum) Original sources of data, e.g., manual entry via web app." schema="seedbank" type="TABLE">
+      <table name="data_sources" remarks="(Enum) Original sources of data, e.g., manual entry via web app." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="data_source_id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
          </column>
@@ -258,8 +257,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="geolocations" numRows="0" remarks="Locations where seeds were collected." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="geolocations" remarks="Locations where seeds were collected." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="geolocations_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -275,7 +274,7 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="seed_quantity_units" numRows="6" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="seedbank" type="TABLE">
+      <table name="seed_quantity_units" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="remaining_units_id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>
             <child column="est_weight_units_id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
@@ -292,8 +291,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_results" numRows="0" remarks="Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="viability_test_results" remarks="Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="viability_test_results_test_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="viability_tests"/>
          </column>
@@ -307,8 +306,8 @@
             <column ascending="true" name="test_id"/>
          </index>
       </table>
-      <table name="viability_test_seed_types" numRows="2" remarks="(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+      <table name="viability_test_seed_types" remarks="(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="seed_type_id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -317,8 +316,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_substrates" numRows="10" remarks="(Enum) Types of substrate that can be used to test seeds for viability." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+      <table name="viability_test_substrates" remarks="(Enum) Types of substrate that can be used to test seeds for viability." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="substrate_id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -327,7 +326,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_types" numRows="3" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="seedbank" type="TABLE">
+      <table name="viability_test_types" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="seedbank" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="viability_tests"/>
          </column>
@@ -340,8 +339,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="viability_tests" numRows="0" remarks="Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="viability_tests" remarks="Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="test_id" foreignKey="viability_test_results_test_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="viability_test_results"/>
             <child column="viability_test_id" foreignKey="withdrawals_viability_test_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="withdrawals"/>
          </column>
@@ -377,11 +376,11 @@
          <index name="viability_test__accession_id_ix" unique="false">
             <column ascending="true" name="accession_id"/>
          </index>
-         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="viability_tests_notes_check"/>
-         <checkConstraint constraint="((staff_responsible !~ similar_to_escape(' *'::text)))" name="viability_tests_staff_responsible_check"/>
+         <checkConstraint constraint="(notes !~ similar_to_escape(' *'::text))" name="viability_tests_notes_check"/>
+         <checkConstraint constraint="(staff_responsible !~ similar_to_escape(' *'::text))" name="viability_tests_staff_responsible_check"/>
       </table>
-      <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+      <table name="withdrawal_purposes" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawal_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -390,8 +389,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="withdrawals" numRows="0" remarks="Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here." schema="seedbank" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="withdrawals" remarks="Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here." schema="seedbank" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawals_accession_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="accessions"/>
          </column>
@@ -407,13 +406,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="viability_test_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawals_viability_test_id_fkey" implied="false" onDeleteCascade="true" schema="seedbank" table="viability_tests"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="withdrawn_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="withdrawn_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="withdrawn_grams" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="withdrawn_quantity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="withdrawn_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="estimated_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="estimated_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="estimated_weight_quantity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="estimated_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="seed_quantity_units"/>
          </column>
@@ -442,12 +441,12 @@
          <index name="withdrawals_viability_test_id_unique" unique="true">
             <column ascending="true" name="viability_test_id"/>
          </index>
-         <checkConstraint constraint="((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))" name="estimated_weight_must_have_units"/>
-         <checkConstraint constraint="((destination !~ similar_to_escape(' *'::text)))" name="withdrawals_destination_check"/>
-         <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
-         <checkConstraint constraint="((staff_responsible !~ similar_to_escape(' *'::text)))" name="withdrawals_staff_responsible_check"/>
-         <checkConstraint constraint="((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))" name="withdrawals_test_id_requires_purpose"/>
-         <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))" name="withdrawals_viability_testing_has_test_id"/>
+         <checkConstraint constraint="(((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL)))" name="estimated_weight_must_have_units"/>
+         <checkConstraint constraint="(destination !~ similar_to_escape(' *'::text))" name="withdrawals_destination_check"/>
+         <checkConstraint constraint="(notes !~ similar_to_escape(' *'::text))" name="withdrawals_notes_check"/>
+         <checkConstraint constraint="(staff_responsible !~ similar_to_escape(' *'::text))" name="withdrawals_staff_responsible_check"/>
+         <checkConstraint constraint="(((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7)))" name="withdrawals_test_id_requires_purpose"/>
+         <checkConstraint constraint="(((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL)))" name="withdrawals_viability_testing_has_test_id"/>
       </table>
    </tables>
 </database>

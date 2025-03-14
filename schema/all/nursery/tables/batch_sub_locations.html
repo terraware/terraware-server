@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>batch_sub_locations - terraware Database</title>
+        <title>batch_sub_locations - terraware.nursery</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.nursery</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>batch_sub_locations</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>batch_sub_locations</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="batch_sub_locations.sub_location_id references public.sub_locations.id via batch_sub_locations_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_sub_location_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">batch_sub_locations_sub_location_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -171,16 +179,19 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="batch_sub_locations.[facility_id, sub_location_id] references public.sub_locations.[facility_id, id] via batch_sub_locations_facility_id_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_sub_location_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batch_sub_locations.facility_id references public.facilities.id via batch_sub_locations_facility_id_fkey"><a href='../../public/tables/facilities.html'>facilities</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="batch_sub_locations.[facility_id, sub_location_id] references public.sub_locations.[facility_id, id] via batch_sub_locations_facility_id_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_sub_location_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -200,7 +211,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -244,35 +261,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="652,396,931,553">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="253,5,608,445">
-<area shape="rect" id="node3" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="5,301,209,389">
-<area shape="rect" id="node4" href="../../../public/tables/sub_locations.html" target="_top" title="public.sub_locations" alt="" coords="311,463,551,551">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/batch_sub_locations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="730,825,978,913">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="316,228,671,668">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,81,228,169">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="39,617,239,705">
-<area shape="rect" id="node5" href="../../tables/batch_substrates.html" target="_top" title="batch_substrates" alt="" coords="31,743,247,831">
-<area shape="rect" id="node6" href="../../../public/tables/seed_treatments.html" target="_top" title="public.seed_treatments" alt="" coords="5,887,272,975">
-<area shape="rect" id="node13" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="37,292,241,380">
-<area shape="rect" id="node15" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="17,503,260,591">
-<area shape="rect" id="node16" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="19,187,259,275">
-<area shape="rect" id="node17" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="42,397,235,485">
-<area shape="rect" id="node7" href="../../tables/batch_details_history_sub_locations.html" target="_top" title="batch_details_history_sub_locations" alt="" coords="1037,789,1393,877">
-<area shape="rect" id="node8" href="../../../public/tables/sub_locations.html" target="_top" title="public.sub_locations" alt="" coords="373,685,613,773">
-<area shape="rect" id="node9" href="../../tables/batch_photos.html" target="_top" title="batch_photos" alt="" coords="760,5,948,93">
-<area shape="rect" id="node10" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="723,123,985,211">
-<area shape="rect" id="node11" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="403,123,584,211">
-<area shape="rect" id="node12" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="715,615,993,772">
-<area shape="rect" id="node14" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="739,229,969,317">
-<area shape="rect" id="node18" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="725,335,983,423">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/batch_sub_locations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -293,7 +286,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

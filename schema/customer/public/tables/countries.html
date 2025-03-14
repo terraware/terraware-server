@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>countries - terraware Database</title>
+        <title>countries - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>countries</h1><p><span id="recordNumber">249</span> rows</p><br />
+                    <h1>countries</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -126,31 +132,38 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="applications.country_code references countries.code via applications_country_code_fkey"><a href='../../accelerator/tables/applications.html'>applications</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">applications_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">applications_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="country_subdivisions.country_code references countries.code via country_subdivisions_country_code_fkey"><a href='country_subdivisions.html'>country_subdivisions</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">country_subdivisions_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">country_subdivisions_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="organizations.country_code references countries.code via organizations_country_code_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">organizations_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">organizations_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="projects.country_code references countries.code via projects_country_code_fkey"><a href='projects.html'>projects</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">projects_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">projects_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="users.country_code references countries.code via users_country_code_fkey"><a href='users.html'>users</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">users_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">users_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="accessions.collection_site_country_code references countries.code via accessions_collection_site_country_code_fkey"><a href='../../seedbank/tables/accessions.html'>accessions</a><span class='relatedKey'>.collection_site_country_code</span></td>
-                                                <td class="constraint detail">accessions_collection_site_country_code_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">accessions_collection_site_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_sites.country_code references countries.code via planting_sites_country_code_fkey"><a href='../../tracking/tables/planting_sites.html'>planting_sites</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">planting_sites_country_code_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                                <td class="constraint detail">planting_sites_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -192,7 +205,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="countries.region_id references regions.id via countries_region_id_fkey"><a href='regions.html'>regions</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">countries_region_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">countries_region_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -246,7 +260,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -288,7 +308,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -298,11 +324,11 @@
                                 <tbody>
                                 <tr>
                                     <td>countries_code_length</td>
-                                    <td>((length(code) = 2))</td>
+                                    <td>(length(code) &#61; 2)</td>
                                 </tr>
                                 <tr>
                                     <td>countries_code_caps</td>
-                                    <td>((code = upper(code)))</td>
+                                    <td>(code &#61; upper(code))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -326,99 +352,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1379,5,1649,211">
-<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="191,555,477,771">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="521,440,793,675">
-<area shape="rect" id="node4" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1135,475,1305,768">
-<area shape="rect" id="node5" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,616,147,739">
-<area shape="rect" id="node7" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="837,172,1091,436">
-<area shape="rect" id="node6" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="534,276,781,423">
-<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1349,755,1679,989">
-<area shape="rect" id="node9" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1385,340,1643,575">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/countries.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/application_histories.html" target="_top" title="accelerator.application_histories" alt="" coords="907,464,1243,552">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="575,2528,847,2763">
-<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="217,3964,504,4180">
-<area shape="rect" id="node63" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="277,2619,444,2707">
-<area shape="rect" id="node3" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1789,320,2059,526">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1404,2654,1575,2947">
-<area shape="rect" id="node8" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,4111,147,4234">
-<area shape="rect" id="node46" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="948,4043,1201,4307">
-<area shape="rect" id="node6" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="957,674,1192,762">
-<area shape="rect" id="node7" href="../../../accelerator/tables/default_project_leads.html" target="_top" title="accelerator.default_project_leads" alt="" coords="191,4198,531,4286">
-<area shape="rect" id="node9" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="931,779,1218,867">
-<area shape="rect" id="node10" href="../../../accelerator/tables/deliverable_project_due_dates.html" target="_top" title="accelerator.deliverable_project_due_dates" alt="" coords="1720,3246,2128,3334">
-<area shape="rect" id="node11" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="939,884,1210,972">
-<area shape="rect" id="node12" href="../../../accelerator/tables/event_projects.html" target="_top" title="accelerator.event_projects" alt="" coords="1779,2403,2069,2491">
-<area shape="rect" id="node13" href="../../../accelerator/tables/events.html" target="_top" title="accelerator.events" alt="" coords="961,990,1189,1078">
-<area shape="rect" id="node14" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="953,1095,1196,1183">
-<area shape="rect" id="node15" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1731,543,2117,631">
-<area shape="rect" id="node16" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="939,1252,1210,1340">
-<area shape="rect" id="node17" href="../../../accelerator/tables/project_accelerator_details.html" target="_top" title="accelerator.project_accelerator_details" alt="" coords="1733,2508,2115,2596">
-<area shape="rect" id="node18" href="../../../accelerator/tables/project_metrics.html" target="_top" title="accelerator.project_metrics" alt="" coords="1776,2614,2072,2702">
-<area shape="rect" id="node19" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1752,648,2096,736">
-<area shape="rect" id="node20" href="../../../accelerator/tables/project_report_configs.html" target="_top" title="accelerator.project_report_configs" alt="" coords="1751,2719,2097,2807">
-<area shape="rect" id="node21" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1781,1171,2067,1259">
-<area shape="rect" id="node22" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1750,2824,2098,2912">
-<area shape="rect" id="node23" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1785,1336,2063,1424">
-<area shape="rect" id="node24" href="../../../accelerator/tables/report_project_metrics.html" target="_top" title="accelerator.report_project_metrics" alt="" coords="899,1530,1250,1618">
-<area shape="rect" id="node25" href="../../../accelerator/tables/report_standard_metrics.html" target="_top" title="accelerator.report_standard_metrics" alt="" coords="892,1635,1257,1723">
-<area shape="rect" id="node26" href="../../../accelerator/tables/report_system_metrics.html" target="_top" title="accelerator.report_system_metrics" alt="" coords="899,1740,1250,1828">
-<area shape="rect" id="node27" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1807,1442,2041,1530">
-<area shape="rect" id="node28" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1747,1606,2101,1694">
-<area shape="rect" id="node29" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1789,1771,2059,1859">
-<area shape="rect" id="node30" href="../../../accelerator/tables/user_internal_interests.html" target="_top" title="accelerator.user_internal_interests" alt="" coords="899,1966,1251,2054">
-<area shape="rect" id="node31" href="../../../docprod/tables/document_saved_versions.html" target="_top" title="docprod.document_saved_versions" alt="" coords="899,2071,1250,2159">
-<area shape="rect" id="node32" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1805,1876,2043,1964">
-<area shape="rect" id="node33" href="../../../docprod/tables/variable_manifests.html" target="_top" title="docprod.variable_manifests" alt="" coords="926,2212,1223,2300">
-<area shape="rect" id="node34" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1785,1982,2063,2070">
-<area shape="rect" id="node35" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1789,2087,2059,2175">
-<area shape="rect" id="node36" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1748,2192,2100,2280">
-<area shape="rect" id="node37" href="../../../funder/tables/funding_entities.html" target="_top" title="funder.funding_entities" alt="" coords="941,2426,1208,2514">
-<area shape="rect" id="node38" href="../../../funder/tables/funding_entity_projects.html" target="_top" title="funder.funding_entity_projects" alt="" coords="1763,2930,2085,3018">
-<area shape="rect" id="node39" href="../../../funder/tables/funding_entity_users.html" target="_top" title="funder.funding_entity_users" alt="" coords="925,2531,1225,2619">
-<area shape="rect" id="node40" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1769,2298,2079,2386">
-<area shape="rect" id="node41" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1364,2548,1615,2636">
-<area shape="rect" id="node42" href="../../tables/files.html" target="_top" title="files" alt="" coords="1005,2636,1144,2724">
-<area shape="rect" id="node43" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="911,2846,1238,2934">
-<area shape="rect" id="node44" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1819,4295,2029,4383">
-<area shape="rect" id="node45" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1413,4743,1565,4831">
-<area shape="rect" id="node48" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="587,4079,834,4226">
-<area shape="rect" id="node56" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="596,4243,825,4331">
-<area shape="rect" id="node47" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1802,4636,2046,4724">
-<area shape="rect" id="node49" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1816,4742,2032,4830">
-<area shape="rect" id="node50" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="982,3059,1167,3147">
-<area shape="rect" id="node51" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1398,3236,1581,3324">
-<area shape="rect" id="node52" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1346,3059,1633,3147">
-<area shape="rect" id="node53" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="1303,4104,1676,4192">
-<area shape="rect" id="node54" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="1338,4210,1641,4298">
-<area shape="rect" id="node55" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1376,3342,1603,3430">
-<area shape="rect" id="node57" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="1767,3035,2081,3123">
-<area shape="rect" id="node58" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1793,3140,2055,3228">
-<area shape="rect" id="node59" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1811,3708,2037,3796">
-<area shape="rect" id="node60" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1851,4847,1997,4935">
-<area shape="rect" id="node61" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="967,3340,1182,3428">
-<area shape="rect" id="node62" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1381,3758,1597,3846">
-<area shape="rect" id="node64" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="891,3514,1259,3602">
-<area shape="rect" id="node65" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="905,3619,1245,3707">
-<area shape="rect" id="node66" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1759,4952,2089,5187">
-<area shape="rect" id="node67" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="945,3760,1204,3848">
-<area shape="rect" id="node68" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="961,3866,1189,3954">
-<area shape="rect" id="node69" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1773,3351,2075,3439">
-<area shape="rect" id="node70" href="../../../tracking/tables/monitoring_plot_histories.html" target="_top" title="tracking.monitoring_plot_histories" alt="" coords="901,4376,1248,4464">
-<area shape="rect" id="node71" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="1348,4452,1631,4540">
-<area shape="rect" id="node72" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="931,4534,1219,4622">
-<area shape="rect" id="node73" href="../../../tracking/tables/planting_site_histories.html" target="_top" title="tracking.planting_site_histories" alt="" coords="913,4639,1236,4727">
-<area shape="rect" id="node74" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1795,3456,2053,3691">
-<area shape="rect" id="node75" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="929,76,1221,164">
-<area shape="rect" id="node76" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="942,182,1207,270">
-<area shape="rect" id="node77" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="963,287,1187,375">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/countries.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -439,7 +377,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

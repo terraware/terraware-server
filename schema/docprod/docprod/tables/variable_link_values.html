@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>variable_link_values - terraware Database</title>
+        <title>variable_link_values - terraware.docprod</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.docprod</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>variable_link_values</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>variable_link_values</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_link_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_link_values_variable_value_id_variable_id_variabl_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,11 +158,13 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_link_values.variable_id references variables.id via variable_link_values_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_link_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_link_values_variable_value_id_variable_id_variabl_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -176,11 +185,13 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_link_values.variable_type_id references variable_types.id via variable_link_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_type_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="variable_link_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_link_values_variable_value_id_variable_id_variabl_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_link_values_variable_value_id_variable_id_variabl_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -234,7 +245,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -264,7 +281,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -274,7 +297,7 @@
                                 <tbody>
                                 <tr>
                                     <td>variable_link_values_variable_type_id_check</td>
-                                    <td>((variable_type_id = 7))</td>
+                                    <td>(variable_type_id &#61; 7)</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -298,39 +321,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="833,68,1181,284">
-<area shape="rect" id="node2" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="585,41,789,247">
-<area shape="rect" id="node3" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="247,5,541,211">
-<area shape="rect" id="node4" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="5,188,203,311">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/variable_link_values.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/deliverable_variables.html" target="_top" title="accelerator.deliverable_variables" alt="" coords="662,759,1002,847">
-<area shape="rect" id="node2" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="316,1115,611,1320">
-<area shape="rect" id="node5" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="40,1342,237,1464">
-<area shape="rect" id="node22" href="../../tables/dependency_conditions.html" target="_top" title="dependency_conditions" alt="" coords="5,1206,272,1294">
-<area shape="rect" id="node3" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="1099,251,1355,339">
-<area shape="rect" id="node4" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="730,464,934,670">
-<area shape="rect" id="node6" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="1053,675,1401,891">
-<area shape="rect" id="node7" href="../../tables/variable_manifest_entries.html" target="_top" title="variable_manifest_entries" alt="" coords="691,900,973,988">
-<area shape="rect" id="node8" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="721,1199,943,1287">
-<area shape="rect" id="node9" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="727,1006,937,1094">
-<area shape="rect" id="node10" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="669,1340,995,1428">
-<area shape="rect" id="node11" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="655,287,1009,375">
-<area shape="rect" id="node12" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="1095,908,1360,996">
-<area shape="rect" id="node13" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="723,1446,941,1534">
-<area shape="rect" id="node14" href="../../tables/variable_select_option_values.html" target="_top" title="variable_select_option_values" alt="" coords="1445,178,1756,266">
-<area shape="rect" id="node15" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="1096,110,1359,198">
-<area shape="rect" id="node16" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="729,146,935,234">
-<area shape="rect" id="node17" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="1095,1744,1360,1832">
-<area shape="rect" id="node18" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="731,1744,933,1832">
-<area shape="rect" id="node19" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="735,1551,929,1639">
-<area shape="rect" id="node20" href="../../tables/variable_value_table_rows.html" target="_top" title="variable_value_table_rows" alt="" coords="1085,356,1370,444">
-<area shape="rect" id="node21" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="1085,498,1370,586">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/variable_link_values.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -351,7 +346,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>terraware Database</title>
+        <title>terraware.seedbank</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.seedbank</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -87,7 +87,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="fk_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="fk_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="50"
+                                    data-length-change="false">
                                 <thead align='left'>
                                     <tr>
                                         <th>Constraint Name</th>
@@ -705,7 +711,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                     <tr>
                                         <th>Table</th>
@@ -717,127 +729,127 @@
                                     <tr>
                                         <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
                                         <td>accession_collectors_name_check</td>
-                                        <td>((name !~ similar_to_escape(&#39;\s*&#39;::text)))</td>
+                                        <td>(name !~ similar_to_escape(&#39;\s*&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
                                         <td>accession_collectors_position_check</td>
-                                        <td>((&quot;position&quot; &gt;= 0))</td>
+                                        <td>(&quot;position&quot; &gt;&#61; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_city_check</td>
-                                        <td>((collection_site_city !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_city !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_country_code_check</td>
-                                        <td>((collection_site_country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_country_subdivision_check</td>
-                                        <td>((collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_landowner_check</td>
-                                        <td>((collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_name_check</td>
-                                        <td>((collection_site_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_collection_site_notes_check</td>
-                                        <td>((collection_site_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(collection_site_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_founder_id_check</td>
-                                        <td>((founder_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(founder_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_number_check</td>
-                                        <td>((number !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(number !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>accessions_processing_notes_check</td>
-                                        <td>((processing_notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(processing_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>observed_quantity_must_have_time</td>
-                                        <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))</td>
+                                        <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>observed_quantity_must_have_units</td>
-                                        <td>((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))</td>
+                                        <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>remaining_quantity_must_have_units</td>
-                                        <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
+                                        <td>(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>subset_weight_quantity_must_have_units</td>
-                                        <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
+                                        <td>(((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/accessions.html'>accessions</a></td>
                                         <td>subset_weight_units_must_not_be_seeds</td>
-                                        <td>(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))</td>
+                                        <td>((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/viability_tests.html'>viability_tests</a></td>
                                         <td>viability_tests_notes_check</td>
-                                        <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/viability_tests.html'>viability_tests</a></td>
                                         <td>viability_tests_staff_responsible_check</td>
-                                        <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(staff_responsible !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/bags.html'>bags</a></td>
                                         <td>bags_bag_number_check</td>
-                                        <td>((bag_number !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(bag_number !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>estimated_weight_must_have_units</td>
-                                        <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
+                                        <td>(((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_destination_check</td>
-                                        <td>((destination !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(destination !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_notes_check</td>
-                                        <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_staff_responsible_check</td>
-                                        <td>((staff_responsible !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                        <td>(staff_responsible !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_test_id_requires_purpose</td>
-                                        <td>((((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id = 7))))</td>
+                                        <td>(((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id &#61; 7)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_viability_testing_has_test_id</td>
-                                        <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
+                                        <td>(((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id &#61; 7) AND (viability_test_id IS NOT NULL)))</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -857,7 +869,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

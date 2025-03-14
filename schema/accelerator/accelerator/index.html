@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>terraware Database</title>
+        <title>terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -77,8 +77,8 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="callout callout-info">
-                                <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Mar 13 22:41 GMT 2025</p>
+                                <h4>SchemaSpy Analysis of terraware.accelerator</h4>
+                                <p>Generated on Fri Mar 14 16:05 GMT 2025</p>
                             </div>
                         </div>
                     </div>
@@ -168,7 +168,7 @@
                             <span class="label label-primary pull-right"><i class="fa fa-cog fa-2x"></i></span>
                         </div><!-- /.box-header -->
                         <div class="box-body">
-                            <p>Database Type: PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)</p>
+                            <p>Database Type: PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)</p>
                         </div><!-- /.box-body -->
                     </div>
                     <div class="box box-primary">
@@ -177,7 +177,13 @@
                             <span class="label label-primary pull-right"><i class="fa fa-database fa-2x"></i></span>
                         </div><!-- /.box-header -->
                         <div class="box-body">
-                            <table id="database_objects" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="database_objects"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="50"
+                                    data-length-change="false">
                                 <thead>
                                     <tr>
                                         <th valign="bottom">Table / View</th>
@@ -195,7 +201,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Events with meeting links and time within an acclerator module.</p></td>
                                     </tr>
@@ -204,7 +210,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available vote options.</p></td>
                                     </tr>
@@ -213,7 +219,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Which variables are associated with which deliverables. Note that this includes variables that have been replaced by newer versions, and the newer versions might be associated with different deliverables.</p></td>
                                     </tr>
@@ -222,34 +228,34 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for project metrics.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/deliverable_cohort_due_dates.html">deliverable_cohort_due_dates</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Deliverable due dates overrides for cohorts. Can be overridden at the project level.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/cohort_phases.html">cohort_phases</a></td>
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available cohort phases</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/deliverable_cohort_due_dates.html">deliverable_cohort_due_dates</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Deliverable due dates overrides for cohorts. Can be overridden at the project level.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/modules.html">modules</a></td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">15</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Possible steps in the workflow of a cohort phase.</p></td>
                                     </tr>
@@ -258,7 +264,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Scores assigned to project by scorers.</p></td>
                                     </tr>
@@ -267,7 +273,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens.</p></td>
                                     </tr>
@@ -276,7 +282,7 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Accelerator project reports.</p></td>
                                     </tr>
@@ -285,7 +291,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of accelerator project reports.</p></td>
                                     </tr>
@@ -294,34 +300,34 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of events for an accelerator module</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/score_categories.html">score_categories</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Project score categories.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_accelerator_details.html">project_accelerator_details</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">23</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/score_categories.html">score_categories</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Project score categories.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/cohort_modules.html">cohort_modules</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Which modules are assigned to which cohorts.</p></td>
                                     </tr>
@@ -330,7 +336,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for system metrics.</p></td>
                                     </tr>
@@ -339,7 +345,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about expected deliverables of type Document that isn&rsquo;t relevant for other deliverable types.</p></td>
                                     </tr>
@@ -348,7 +354,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">13</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible statuses for an application to the accelerator program.</p></td>
                                     </tr>
@@ -357,7 +363,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Overall scores assigned to project by scorers.</p></td>
                                     </tr>
@@ -366,7 +372,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Snapshot files associated to submissions</p></td>
                                     </tr>
@@ -375,7 +381,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible statuses of individual modules in an application.</p></td>
                                     </tr>
@@ -384,7 +390,7 @@
                                         <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">13</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in <code>project_deliverables</code> and its child tables.</p></td>
                                     </tr>
@@ -393,7 +399,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Users to automatically be assigned as voters on accelerator projects.</p></td>
                                     </tr>
@@ -402,7 +408,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.</p></td>
                                     </tr>
@@ -411,7 +417,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for standard metrics.</p></td>
                                     </tr>
@@ -420,7 +426,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of submissions of deliverables by specific projects.</p></td>
                                     </tr>
@@ -429,7 +435,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Accelerator participant details.</p></td>
                                     </tr>
@@ -438,7 +444,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Deliverable due dates overrides for projects.</p></td>
                                     </tr>
@@ -447,7 +453,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notification categories for internal users.</p></td>
                                     </tr>
@@ -456,7 +462,7 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Configurations for accelerator project reports, including reporting dates and reporting frequencies.</p></td>
                                     </tr>
@@ -465,7 +471,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Frequencies of accelerator project reports.</p></td>
                                     </tr>
@@ -474,7 +480,7 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Accelerator cohort details.</p></td>
                                     </tr>
@@ -483,7 +489,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Metrics specific to one project to report on.</p></td>
                                     </tr>
@@ -492,7 +498,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about projects that are applying for the accelerator program.</p></td>
                                     </tr>
@@ -501,7 +507,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.</p></td>
                                     </tr>
@@ -510,7 +516,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) High-level groups for organizing deliverables.</p></td>
                                     </tr>
@@ -519,7 +525,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of events for an accelerator module</p></td>
                                     </tr>
@@ -528,7 +534,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Accelerator report metrics, for which data are collected from Terraware.</p></td>
                                     </tr>
@@ -537,7 +543,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about the current states of the information supplied by specific projects in response to deliverables.</p></td>
                                     </tr>
@@ -546,7 +552,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.</p></td>
                                     </tr>
@@ -555,7 +561,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Projects that are participants of an event.</p></td>
                                     </tr>
@@ -564,7 +570,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Species that are associated to a participant project</p></td>
                                     </tr>
@@ -573,7 +579,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of deliverables for an accelerator module.</p></td>
                                     </tr>
@@ -582,7 +588,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Deal pipelines for accelerator projects.</p></td>
                                     </tr>
@@ -591,7 +597,7 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Components of metrics for reports.</p></td>
                                     </tr>
@@ -600,7 +606,7 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Standard non-system metrics for every project to measure in accelerator reports.</p></td>
                                     </tr>
@@ -609,7 +615,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Default project leads to use at application submission time based on project region.</p></td>
                                     </tr>
@@ -618,7 +624,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Vote selected by voters.</p></td>
                                     </tr>
@@ -627,7 +633,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Calculated vote decisions for project.</p></td>
                                     </tr>
@@ -636,34 +642,34 @@
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">16</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Stages in the deal workflow that a project progresses through.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/metric_types.html">metric_types</a></td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of metrics for reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/document_stores.html">document_stores</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Locations where uploaded documents are stored.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/metric_types.html">metric_types</a></td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of metrics for reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/application_modules.html">application_modules</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Current states of the modules for individual applications.</p></td>
                                     </tr>
@@ -685,7 +691,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

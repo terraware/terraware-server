@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>species - terraware Database</title>
+        <title>species - terraware.public</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.public</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>species</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>species</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,81 +126,99 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.species_id references species.id via participant_project_species_species_id_fkey"><a href='../../accelerator/tables/participant_project_species.html'>participant_project_species</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">participant_project_species_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">participant_project_species_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batches.species_id references species.id via batches_species_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">batches_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">batches_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="species_ecosystem_types.species_id references species.id via species_ecosystem_types_species_id_fkey"><a href='species_ecosystem_types.html'>species_ecosystem_types</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">species_ecosystem_types_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_ecosystem_types_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="species_growth_forms.species_id references species.id via species_growth_forms_species_id_fkey"><a href='species_growth_forms.html'>species_growth_forms</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">species_growth_forms_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_growth_forms_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="species_plant_material_sourcing_methods.species_id references species.id via species_plant_material_sourcing_methods_species_id_fkey"><a href='species_plant_material_sourcing_methods.html'>species_plant_material_sourcing_methods</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">species_plant_material_sourcing_methods_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_plant_material_sourcing_methods_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="species_problems.species_id references species.id via species_problems_species_id_fkey"><a href='species_problems.html'>species_problems</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">species_problems_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_problems_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="species_successional_groups.species_id references species.id via species_successional_groups_species_id_fkey"><a href='species_successional_groups.html'>species_successional_groups</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">species_successional_groups_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_successional_groups_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="accessions.species_id references species.id via accessions_species_id_fkey"><a href='../../seedbank/tables/accessions.html'>accessions</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">accessions_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">accessions_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observation_biomass_species.species_id references species.id via observation_biomass_species_species_id_fkey"><a href='../../tracking/tables/observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observation_biomass_species_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_plot_species_totals.species_id references species.id via observed_plot_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_plot_species_totals.html'>observed_plot_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_plot_species_totals_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observed_plot_species_totals_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_site_species_totals.species_id references species.id via observed_site_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_site_species_totals.html'>observed_site_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_site_species_totals_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observed_site_species_totals_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_subzone_species_totals.species_id references species.id via observed_subzone_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_subzone_species_totals.html'>observed_subzone_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_subzone_species_totals_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observed_subzone_species_totals_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="observed_zone_species_totals.species_id references species.id via observed_zone_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_zone_species_totals.html'>observed_zone_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_zone_species_totals_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">observed_zone_species_totals_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_site_populations.species_id references species.id via planting_site_populations_species_id_fkey"><a href='../../tracking/tables/planting_site_populations.html'>planting_site_populations</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_site_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">planting_site_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_subzone_populations.species_id references species.id via planting_subzone_populations_species_id_fkey"><a href='../../tracking/tables/planting_subzone_populations.html'>planting_subzone_populations</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_subzone_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">planting_subzone_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_zone_populations.species_id references species.id via planting_zone_populations_species_id_fkey"><a href='../../tracking/tables/planting_zone_populations.html'>planting_zone_populations</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_zone_populations_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">planting_zone_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="plantings.species_id references species.id via plantings_species_id_fkey"><a href='../../tracking/tables/plantings.html'>plantings</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">plantings_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">plantings_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="recorded_plants.species_id references species.id via recorded_plants_species_id_fkey"><a href='../../tracking/tables/recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">recorded_plants_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">recorded_plants_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -219,7 +243,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.organization_id references organizations.id via species_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">species_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -308,7 +333,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.seed_storage_behavior_id references seed_storage_behaviors.id via species_seed_storage_behavior_id_fkey"><a href='seed_storage_behaviors.html'>seed_storage_behaviors</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_seed_storage_behavior_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_seed_storage_behavior_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -329,7 +355,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.created_by references users.id via species_created_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -367,7 +394,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.modified_by references users.id via species_modified_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -405,7 +433,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.deleted_by references users.id via species_deleted_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_deleted_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_deleted_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -477,7 +506,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.conservation_category_id references conservation_categories.id via species_conservation_category_id_fkey"><a href='conservation_categories.html'>conservation_categories</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_conservation_category_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_conservation_category_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -588,7 +618,7 @@
                                 <tr>
                                     <td><span id="average_wood_density">average_wood_density</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -605,7 +635,7 @@
                                 <tr>
                                     <td><span id="height_at_maturity_value">height_at_maturity_value</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -622,7 +652,7 @@
                                 <tr>
                                     <td><span id="dbh_value">dbh_value</span></td>
                                     <td>numeric</td>
-                                    <td>131089</td>
+                                    <td>0</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -651,7 +681,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="species.wood_density_level_id references wood_density_levels.id via species_wood_density_level_id_fkey"><a href='wood_density_levels.html'>wood_density_levels</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">species_wood_density_level_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">species_wood_density_level_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -671,7 +702,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -719,7 +756,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="check_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -728,12 +771,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_family_name_check</td>
-                                    <td>((family_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>species_common_name_check</td>
+                                    <td>(common_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>species_common_name_check</td>
-                                    <td>((common_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>species_family_name_check</td>
+                                    <td>(family_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -757,135 +800,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1089,5,1476,240">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,1517,277,1781">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="635,1451,1037,2283">
-<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="329,1104,583,1397">
-<area shape="rect" id="node6" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="321,1893,591,2016">
-<area shape="rect" id="node7" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="324,1564,588,1681">
-<area shape="rect" id="node8" href="../../tables/wood_density_levels.html" target="_top" title="wood_density_levels" alt="" coords="336,2187,576,2304">
-<area shape="rect" id="node4" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1105,257,1460,551">
-<area shape="rect" id="node9" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1145,568,1420,691">
-<area shape="rect" id="node10" href="../../tables/species_growth_forms.html" target="_top" title="species_growth_forms" alt="" coords="1157,708,1408,831">
-<area shape="rect" id="node11" href="../../tables/species_plant_material_sourcing_methods.html" target="_top" title="species_plant_material_sourcing_methods" alt="" coords="1081,848,1484,971">
-<area shape="rect" id="node12" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1173,988,1392,1193">
-<area shape="rect" id="node13" href="../../tables/species_successional_groups.html" target="_top" title="species_successional_groups" alt="" coords="1133,1211,1432,1333">
-<area shape="rect" id="node14" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1118,2563,1447,2856">
-<area shape="rect" id="node15" href="../../../tracking/tables/observation_biomass_species.html" target="_top" title="tracking.observation_biomass_species" alt="" coords="1096,1351,1469,1468">
-<area shape="rect" id="node16" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1097,1485,1468,1603">
-<area shape="rect" id="node17" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1099,1620,1467,1737">
-<area shape="rect" id="node18" href="../../../tracking/tables/observed_subzone_species_totals.html" target="_top" title="tracking.observed_subzone_species_totals" alt="" coords="1081,1755,1484,1872">
-<area shape="rect" id="node19" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1095,1889,1470,2007">
-<area shape="rect" id="node20" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1109,2024,1457,2141">
-<area shape="rect" id="node21" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1091,2159,1474,2276">
-<area shape="rect" id="node22" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1105,2293,1460,2411">
-<area shape="rect" id="node23" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1171,2873,1395,3020">
-<area shape="rect" id="node24" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1145,2428,1421,2545">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/application_histories.html" target="_top" title="accelerator.application_histories" alt="" coords="552,2750,888,2838">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="220,2156,492,2420">
-<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="11,4654,170,4742">
-<area shape="rect" id="node46" href="../../tables/time_zones.html" target="_top" title="time_zones" alt="" coords="5,4804,176,4892">
-<area shape="rect" id="node75" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="7,2247,174,2335">
-<area shape="rect" id="node3" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1461,1531,1731,1619">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1075,1247,1223,1335">
-<area shape="rect" id="node14" href="../../../accelerator/tables/participants.html" target="_top" title="accelerator.participants" alt="" coords="585,1331,855,1419">
-<area shape="rect" id="node40" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="593,4666,847,4959">
-<area shape="rect" id="node6" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="603,2855,837,2943">
-<area shape="rect" id="node7" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="577,2960,863,3048">
-<area shape="rect" id="node8" href="../../../accelerator/tables/deliverables.html" target="_top" title="accelerator.deliverables" alt="" coords="585,3066,855,3154">
-<area shape="rect" id="node9" href="../../../accelerator/tables/events.html" target="_top" title="accelerator.events" alt="" coords="606,3171,834,3259">
-<area shape="rect" id="node10" href="../../../accelerator/tables/modules.html" target="_top" title="accelerator.modules" alt="" coords="599,3276,841,3364">
-<area shape="rect" id="node11" href="../../../accelerator/tables/participant_project_species.html" target="_top" title="accelerator.participant_project_species" alt="" coords="1403,506,1789,740">
-<area shape="rect" id="node12" href="../../tables/species.html" target="_top" title="species" alt="" coords="948,5031,1351,5863">
-<area shape="rect" id="node13" href="../../tables/species_native_categories.html" target="_top" title="species_native_categories" alt="" coords="1009,562,1289,650">
-<area shape="rect" id="node56" href="../../tables/conservation_categories.html" target="_top" title="conservation_categories" alt="" coords="585,5474,855,5596">
-<area shape="rect" id="node57" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="588,5144,852,5262">
-<area shape="rect" id="node58" href="../../tables/wood_density_levels.html" target="_top" title="wood_density_levels" alt="" coords="600,5767,840,5884">
-<area shape="rect" id="node15" href="../../../accelerator/tables/project_overall_scores.html" target="_top" title="accelerator.project_overall_scores" alt="" coords="1424,190,1768,278">
-<area shape="rect" id="node16" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1453,295,1739,383">
-<area shape="rect" id="node17" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1457,400,1735,488">
-<area shape="rect" id="node18" href="../../../accelerator/tables/report_project_metrics.html" target="_top" title="accelerator.report_project_metrics" alt="" coords="545,3578,895,3666">
-<area shape="rect" id="node19" href="../../../accelerator/tables/report_standard_metrics.html" target="_top" title="accelerator.report_standard_metrics" alt="" coords="537,3683,903,3771">
-<area shape="rect" id="node20" href="../../../accelerator/tables/report_system_metrics.html" target="_top" title="accelerator.report_system_metrics" alt="" coords="545,3788,895,3876">
-<area shape="rect" id="node21" href="../../../accelerator/tables/reports.html" target="_top" title="accelerator.reports" alt="" coords="1479,758,1713,846">
-<area shape="rect" id="node22" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1419,863,1773,951">
-<area shape="rect" id="node23" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1461,968,1731,1056">
-<area shape="rect" id="node24" href="../../../accelerator/tables/user_internal_interests.html" target="_top" title="accelerator.user_internal_interests" alt="" coords="544,3930,896,4018">
-<area shape="rect" id="node25" href="../../../docprod/tables/document_saved_versions.html" target="_top" title="docprod.document_saved_versions" alt="" coords="545,4035,895,4123">
-<area shape="rect" id="node26" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1477,1074,1715,1162">
-<area shape="rect" id="node27" href="../../../docprod/tables/variable_manifests.html" target="_top" title="docprod.variable_manifests" alt="" coords="571,4176,869,4264">
-<area shape="rect" id="node28" href="../../../docprod/tables/variable_owners.html" target="_top" title="docprod.variable_owners" alt="" coords="1457,1179,1735,1267">
-<area shape="rect" id="node29" href="../../../docprod/tables/variable_values.html" target="_top" title="docprod.variable_values" alt="" coords="1461,1320,1731,1408">
-<area shape="rect" id="node30" href="../../../docprod/tables/variable_workflow_history.html" target="_top" title="docprod.variable_workflow_history" alt="" coords="1420,1426,1772,1514">
-<area shape="rect" id="node31" href="../../../funder/tables/funding_entities.html" target="_top" title="funder.funding_entities" alt="" coords="587,4350,853,4438">
-<area shape="rect" id="node32" href="../../../funder/tables/funding_entity_users.html" target="_top" title="funder.funding_entity_users" alt="" coords="570,4455,870,4543">
-<area shape="rect" id="node33" href="../../../nursery/tables/batch_details_history.html" target="_top" title="nursery.batch_details_history" alt="" coords="1441,2075,1751,2163">
-<area shape="rect" id="node34" href="../../tables/seed_treatments.html" target="_top" title="seed_treatments" alt="" coords="1042,2242,1257,2330">
-<area shape="rect" id="node35" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="1024,2527,1275,2615">
-<area shape="rect" id="node36" href="../../tables/files.html" target="_top" title="files" alt="" coords="651,2240,789,2328">
-<area shape="rect" id="node37" href="../../../nursery/tables/batch_quantity_history.html" target="_top" title="nursery.batch_quantity_history" alt="" coords="557,4560,883,4648">
-<area shape="rect" id="node38" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1419,3254,1773,3547">
-<area shape="rect" id="node39" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1073,2136,1225,2224">
-<area shape="rect" id="node44" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="233,4727,479,4815">
-<area shape="rect" id="node54" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="241,4878,471,4966">
-<area shape="rect" id="node41" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1474,1636,1718,1724">
-<area shape="rect" id="node42" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1915,911,2097,999">
-<area shape="rect" id="node43" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1525,1742,1667,1830">
-<area shape="rect" id="node45" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1488,2803,1704,2891">
-<area shape="rect" id="node47" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="1028,4660,1271,4748">
-<area shape="rect" id="node48" href="../../tables/internal_tags.html" target="_top" title="internal_tags" alt="" coords="627,2644,813,2732">
-<area shape="rect" id="node49" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1058,4130,1241,4218">
-<area shape="rect" id="node50" href="../../tables/organization_internal_tags.html" target="_top" title="organization_internal_tags" alt="" coords="1006,2644,1293,2732">
-<area shape="rect" id="node51" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="963,4766,1336,4854">
-<area shape="rect" id="node52" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="998,4555,1301,4643">
-<area shape="rect" id="node53" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1036,4260,1263,4348">
-<area shape="rect" id="node55" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1483,1970,1709,2058">
-<area shape="rect" id="node59" href="../../tables/species_ecosystem_types.html" target="_top" title="species_ecosystem_types" alt="" coords="1459,5960,1733,6083">
-<area shape="rect" id="node60" href="../../tables/ecosystem_types.html" target="_top" title="ecosystem_types" alt="" coords="1042,6040,1257,6128">
-<area shape="rect" id="node61" href="../../tables/species_growth_forms.html" target="_top" title="species_growth_forms" alt="" coords="1471,6100,1721,6223">
-<area shape="rect" id="node62" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="1054,6146,1245,6234">
-<area shape="rect" id="node63" href="../../tables/species_plant_material_sourcing_methods.html" target="_top" title="species_plant_material_sourcing_methods" alt="" coords="1395,6240,1797,6363">
-<area shape="rect" id="node64" href="../../tables/plant_material_sourcing_methods.html" target="_top" title="plant_material_sourcing_methods" alt="" coords="978,6272,1321,6360">
-<area shape="rect" id="node65" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="1487,6556,1705,6762">
-<area shape="rect" id="node66" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="1020,6587,1279,6675">
-<area shape="rect" id="node67" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="1019,6692,1279,6780">
-<area shape="rect" id="node68" href="../../tables/species_successional_groups.html" target="_top" title="species_successional_groups" alt="" coords="1447,6380,1745,6503">
-<area shape="rect" id="node69" href="../../tables/successional_groups.html" target="_top" title="successional_groups" alt="" coords="1031,6412,1268,6500">
-<area shape="rect" id="node70" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="1502,2354,1690,2442">
-<area shape="rect" id="node71" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1923,1818,2089,1906">
-<area shape="rect" id="node72" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1523,4302,1669,4390">
-<area shape="rect" id="node73" href="../../tables/user_global_roles.html" target="_top" title="user_global_roles" alt="" coords="613,160,827,248">
-<area shape="rect" id="node74" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1041,3454,1257,3542">
-<area shape="rect" id="node76" href="../../../seedbank/tables/accession_quantity_history.html" target="_top" title="seedbank.accession_quantity_history" alt="" coords="536,822,904,910">
-<area shape="rect" id="node77" href="../../../seedbank/tables/accession_state_history.html" target="_top" title="seedbank.accession_state_history" alt="" coords="550,927,890,1015">
-<area shape="rect" id="node78" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1841,3795,2171,4088">
-<area shape="rect" id="node79" href="../../../seedbank/tables/withdrawals.html" target="_top" title="seedbank.withdrawals" alt="" coords="591,1068,849,1156">
-<area shape="rect" id="node80" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="606,1174,834,1262">
-<area shape="rect" id="node81" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1445,4196,1747,4284">
-<area shape="rect" id="node82" href="../../../tracking/tables/monitoring_plot_histories.html" target="_top" title="tracking.monitoring_plot_histories" alt="" coords="547,1664,893,1752">
-<area shape="rect" id="node83" href="../../../tracking/tables/monitoring_plots.html" target="_top" title="tracking.monitoring_plots" alt="" coords="1008,3559,1291,3647">
-<area shape="rect" id="node84" href="../../../tracking/tables/observation_biomass_species.html" target="_top" title="tracking.observation_biomass_species" alt="" coords="1409,4607,1783,4724">
-<area shape="rect" id="node85" href="../../../tracking/tables/observation_plots.html" target="_top" title="tracking.observation_plots" alt="" coords="576,1770,864,1858">
-<area shape="rect" id="node86" href="../../../tracking/tables/observed_plot_species_totals.html" target="_top" title="tracking.observed_plot_species_totals" alt="" coords="1411,4876,1781,4994">
-<area shape="rect" id="node87" href="../../../tracking/tables/observed_site_species_totals.html" target="_top" title="tracking.observed_site_species_totals" alt="" coords="1412,4742,1780,4859">
-<area shape="rect" id="node88" href="../../../tracking/tables/observed_subzone_species_totals.html" target="_top" title="tracking.observed_subzone_species_totals" alt="" coords="1395,5011,1797,5128">
-<area shape="rect" id="node89" href="../../../tracking/tables/observed_zone_species_totals.html" target="_top" title="tracking.observed_zone_species_totals" alt="" coords="1409,5146,1783,5263">
-<area shape="rect" id="node90" href="../../../tracking/tables/planting_site_histories.html" target="_top" title="tracking.planting_site_histories" alt="" coords="559,1875,881,1963">
-<area shape="rect" id="node91" href="../../../tracking/tables/planting_site_populations.html" target="_top" title="tracking.planting_site_populations" alt="" coords="1422,5280,1770,5398">
-<area shape="rect" id="node92" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="1467,5855,1725,5943">
-<area shape="rect" id="node93" href="../../../tracking/tables/planting_subzone_populations.html" target="_top" title="tracking.planting_subzone_populations" alt="" coords="1405,5415,1787,5532">
-<area shape="rect" id="node94" href="../../../tracking/tables/planting_subzones.html" target="_top" title="tracking.planting_subzones" alt="" coords="574,2346,866,2434">
-<area shape="rect" id="node95" href="../../../tracking/tables/planting_zone_populations.html" target="_top" title="tracking.planting_zone_populations" alt="" coords="1419,5550,1773,5667">
-<area shape="rect" id="node96" href="../../../tracking/tables/planting_zones.html" target="_top" title="tracking.planting_zones" alt="" coords="587,2451,853,2539">
-<area shape="rect" id="node97" href="../../../tracking/tables/plantings.html" target="_top" title="tracking.plantings" alt="" coords="1484,4407,1708,4554">
-<area shape="rect" id="node98" href="../../../tracking/tables/recorded_plants.html" target="_top" title="tracking.recorded_plants" alt="" coords="1458,5684,1734,5802">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -906,7 +825,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

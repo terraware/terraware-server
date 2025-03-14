@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database name="terraware" schema="accelerator" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+<?xml version="1.0" encoding="UTF-8"?><database name="terraware" schema="accelerator" type="PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)">
    <tables>
-      <table name="application_histories" numRows="0" remarks="Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="application_histories" remarks="Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="application_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="application_histories_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
          </column>
@@ -25,7 +24,7 @@
             <column ascending="true" name="modified_by"/>
          </index>
       </table>
-      <table name="application_module_statuses" numRows="2" remarks="(Enum) Possible statuses of individual modules in an application." schema="accelerator" type="TABLE">
+      <table name="application_module_statuses" remarks="(Enum) Possible statuses of individual modules in an application." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="application_module_status_id" foreignKey="application_modules_application_module_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_modules"/>
          </column>
@@ -38,7 +37,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="application_modules" numRows="0" remarks="Current states of the modules for individual applications." schema="accelerator" type="TABLE">
+      <table name="application_modules" remarks="Current states of the modules for individual applications." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="application_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="application_modules_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
          </column>
@@ -58,7 +57,7 @@
             <column ascending="true" name="application_id"/>
          </index>
       </table>
-      <table name="application_statuses" numRows="13" remarks="(Enum) Possible statuses for an application to the accelerator program." schema="accelerator" type="TABLE">
+      <table name="application_statuses" remarks="(Enum) Possible statuses for an application to the accelerator program." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="application_status_id" foreignKey="application_histories_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_histories"/>
             <child column="application_status_id" foreignKey="applications_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
@@ -72,8 +71,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="applications" numRows="0" remarks="Information about projects that are applying for the accelerator program." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="applications" remarks="Information about projects that are applying for the accelerator program." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="application_id" foreignKey="application_histories_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="application_histories"/>
             <child column="application_id" foreignKey="application_modules_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="application_modules"/>
          </column>
@@ -109,7 +108,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="cohort_modules" numRows="0" remarks="Which modules are assigned to which cohorts." schema="accelerator" type="TABLE">
+      <table name="cohort_modules" remarks="Which modules are assigned to which cohorts." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="cohort_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
          </column>
@@ -135,9 +134,9 @@
          <index name="cohort_modules_module_id_idx" unique="false">
             <column ascending="true" name="module_id"/>
          </index>
-         <checkConstraint constraint="((start_date &lt; end_date))" name="dates_start_before_end"/>
+         <checkConstraint constraint="(start_date &lt; end_date)" name="dates_start_before_end"/>
       </table>
-      <table name="cohort_phases" numRows="6" remarks="(Enum) Available cohort phases" schema="accelerator" type="TABLE">
+      <table name="cohort_phases" remarks="(Enum) Available cohort phases" schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="phase_id" foreignKey="cohorts_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
             <child column="phase_id" foreignKey="modules_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
@@ -154,8 +153,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="cohorts" numRows="0" remarks="Accelerator cohort details." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="cohorts" remarks="Accelerator cohort details." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="cohort_id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
             <child column="cohort_id" foreignKey="deliverable_cohort_due_dates_cohort_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_cohort_due_dates"/>
             <child column="cohort_id" foreignKey="participants_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
@@ -182,7 +181,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="deal_stages" numRows="16" remarks="(Enum) Stages in the deal workflow that a project progresses through." schema="accelerator" type="TABLE">
+      <table name="deal_stages" remarks="(Enum) Stages in the deal workflow that a project progresses through." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="deal_stage_id" foreignKey="project_accelerator_details_deal_stage_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
          </column>
@@ -198,7 +197,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="default_project_leads" numRows="0" remarks="Default project leads to use at application submission time based on project region." schema="accelerator" type="TABLE">
+      <table name="default_project_leads" remarks="Default project leads to use at application submission time based on project region." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="region_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_lead" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="region_id" sequenceNumberInPK="1"/>
@@ -206,14 +205,14 @@
             <column ascending="true" name="region_id"/>
          </index>
       </table>
-      <table name="default_voters" numRows="0" remarks="Users to automatically be assigned as voters on accelerator projects." schema="accelerator" type="TABLE">
+      <table name="default_voters" remarks="Users to automatically be assigned as voters on accelerator projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
          <index name="default_voters_pkey" unique="true">
             <column ascending="true" name="user_id"/>
          </index>
       </table>
-      <table name="deliverable_categories" numRows="8" remarks="(Enum) High-level groups for organizing deliverables." schema="accelerator" type="TABLE">
+      <table name="deliverable_categories" remarks="(Enum) High-level groups for organizing deliverables." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="deliverable_category_id" foreignKey="deliverables_deliverable_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
@@ -229,7 +228,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="deliverable_cohort_due_dates" numRows="0" remarks="Deliverable due dates overrides for cohorts. Can be overridden at the project level." schema="accelerator" type="TABLE">
+      <table name="deliverable_cohort_due_dates" remarks="Deliverable due dates overrides for cohorts. Can be overridden at the project level." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_cohort_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverables"/>
          </column>
@@ -244,7 +243,7 @@
             <column ascending="true" name="cohort_id"/>
          </index>
       </table>
-      <table name="deliverable_documents" numRows="0" remarks="Information about expected deliverables of type Document that isn't relevant for other deliverable types." schema="accelerator" type="TABLE">
+      <table name="deliverable_documents" remarks="Information about expected deliverables of type Document that isn't relevant for other deliverable types." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
@@ -257,9 +256,9 @@
          <index name="deliverable_documents_pkey" unique="true">
             <column ascending="true" name="deliverable_id"/>
          </index>
-         <checkConstraint constraint="((deliverable_type_id = 1))" name="deliverable_is_document"/>
+         <checkConstraint constraint="(deliverable_type_id = 1)" name="deliverable_is_document"/>
       </table>
-      <table name="deliverable_project_due_dates" numRows="0" remarks="Deliverable due dates overrides for projects." schema="accelerator" type="TABLE">
+      <table name="deliverable_project_due_dates" remarks="Deliverable due dates overrides for projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_project_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverables"/>
          </column>
@@ -274,7 +273,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="deliverable_types" numRows="3" remarks="(Enum) Types of deliverables for an accelerator module." schema="accelerator" type="TABLE">
+      <table name="deliverable_types" remarks="(Enum) Types of deliverables for an accelerator module." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
             <child column="deliverable_type_id" foreignKey="deliverables_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
@@ -288,7 +287,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="deliverable_variables" numRows="0" remarks="Which variables are associated with which deliverables. Note that this includes variables that have been replaced by newer versions, and the newer versions might be associated with different deliverables." schema="accelerator" type="TABLE">
+      <table name="deliverable_variables" remarks="Which variables are associated with which deliverables. Note that this includes variables that have been replaced by newer versions, and the newer versions might be associated with different deliverables." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_variables_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverables"/>
          </column>
@@ -301,8 +300,8 @@
             <column ascending="true" name="deliverable_id"/>
          </index>
       </table>
-      <table name="deliverables" numRows="0" remarks="Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="deliverables" remarks="Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="deliverable_id" foreignKey="deliverable_cohort_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_cohort_due_dates"/>
             <child column="deliverable_id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
             <child column="deliverable_id" foreignKey="deliverable_project_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
@@ -341,7 +340,7 @@
             <column ascending="true" name="position"/>
          </index>
       </table>
-      <table name="document_stores" numRows="3" remarks="(Enum) Locations where uploaded documents are stored." schema="accelerator" type="TABLE">
+      <table name="document_stores" remarks="(Enum) Locations where uploaded documents are stored." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="document_store_id" foreignKey="submission_documents_document_store_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
          </column>
@@ -354,7 +353,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="event_projects" numRows="0" remarks="Projects that are participants of an event." schema="accelerator" type="TABLE">
+      <table name="event_projects" remarks="Projects that are participants of an event." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="event_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="event_projects_event_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="events"/>
          </column>
@@ -368,7 +367,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="event_statuses" numRows="4" remarks="(Enum) Statuses of events for an accelerator module" schema="accelerator" type="TABLE">
+      <table name="event_statuses" remarks="(Enum) Statuses of events for an accelerator module" schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="event_status_id" foreignKey="events_event_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
          </column>
@@ -381,7 +380,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="event_types" numRows="4" remarks="(Enum) Types of events for an accelerator module" schema="accelerator" type="TABLE">
+      <table name="event_types" remarks="(Enum) Types of events for an accelerator module" schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="event_type_id" foreignKey="events_event_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
          </column>
@@ -394,8 +393,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="events" numRows="0" remarks="Events with meeting links and time within an acclerator module." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="events" remarks="Events with meeting links and time within an acclerator module." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="event_id" foreignKey="event_projects_event_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="module_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -421,13 +420,13 @@
          <index name="events_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <checkConstraint constraint="((start_time &lt;= end_time))" name="times_start_before_end"/>
+         <checkConstraint constraint="(start_time &lt;= end_time)" name="times_start_before_end"/>
       </table>
-      <table name="hubspot_token" numRows="0" remarks="If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens." schema="accelerator" type="TABLE">
+      <table name="hubspot_token" remarks="If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="refresh_token" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <index name="hubspot_token_expr_idx" unique="true"/>
       </table>
-      <table name="internal_interests" numRows="9" remarks="(Enum) Types of notification categories for internal users." schema="accelerator" type="TABLE">
+      <table name="internal_interests" remarks="(Enum) Types of notification categories for internal users." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="internal_interest_id" foreignKey="deliverable_categories_internal_interest_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_categories"/>
             <child column="internal_interest_id" foreignKey="user_internal_interests_internal_interest_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="user_internal_interests"/>
@@ -441,7 +440,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="metric_components" numRows="4" remarks="(Enum) Components of metrics for reports." schema="accelerator" type="TABLE">
+      <table name="metric_components" remarks="(Enum) Components of metrics for reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="component_id" foreignKey="project_metrics_component_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_metrics"/>
             <child column="component_id" foreignKey="standard_metrics_component_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_metrics"/>
@@ -456,7 +455,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="metric_types" numRows="4" remarks="(Enum) Types of metrics for reports." schema="accelerator" type="TABLE">
+      <table name="metric_types" remarks="(Enum) Types of metrics for reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="project_metrics_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_metrics"/>
             <child column="type_id" foreignKey="standard_metrics_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_metrics"/>
@@ -471,8 +470,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="modules" numRows="0" remarks="Possible steps in the workflow of a cohort phase." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="modules" remarks="Possible steps in the workflow of a cohort phase." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="module_id" foreignKey="application_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_modules"/>
             <child column="module_id" foreignKey="cohort_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
             <child column="module_id" foreignKey="deliverables_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
@@ -499,8 +498,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="participant_project_species" numRows="0" remarks="Species that are associated to a participant project" schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="participant_project_species" remarks="Species that are associated to a participant project" schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
@@ -528,8 +527,8 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
-      <table name="participants" numRows="0" remarks="Accelerator participant details." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="participants" remarks="Accelerator participant details." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="participant_id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -557,7 +556,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="pipelines" numRows="3" remarks="(Enum) Deal pipelines for accelerator projects." schema="accelerator" type="TABLE">
+      <table name="pipelines" remarks="(Enum) Deal pipelines for accelerator projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="pipeline_id" foreignKey="deal_stages_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deal_stages"/>
             <child column="pipeline_id" foreignKey="project_accelerator_details_pipeline_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
@@ -571,7 +570,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_accelerator_details" numRows="0" remarks="Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users." schema="accelerator" type="TABLE">
+      <table name="project_accelerator_details" remarks="Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
@@ -581,13 +580,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="deal_stage_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="project_accelerator_details_deal_stage_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deal_stages"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="application_reforestable_land" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="confirmed_reforestable_land" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_expansion_potential" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="application_reforestable_land" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="confirmed_reforestable_land" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_expansion_potential" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="num_native_species" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="min_carbon_accumulation" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="max_carbon_accumulation" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="per_hectare_budget" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="min_carbon_accumulation" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="max_carbon_accumulation" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="per_hectare_budget" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="num_communities" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="investment_thesis" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="failure_risk" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -597,17 +596,17 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="file_naming" nullable="true" remarks="Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="dropbox_folder_path" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="google_folder_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="carbon_capacity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="annual_carbon" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="total_carbon" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="carbon_capacity" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="annual_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="total_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="hubspot_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <index name="project_accelerator_details_pkey" unique="true">
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="project_metrics" numRows="0" remarks="Metrics specific to one project to report on." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="project_metrics" remarks="Metrics specific to one project to report on." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_metric_id" foreignKey="report_project_metrics_project_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -630,7 +629,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="project_overall_scores" numRows="0" remarks="Overall scores assigned to project by scorers." schema="accelerator" type="TABLE">
+      <table name="project_overall_scores" remarks="Overall scores assigned to project by scorers." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
@@ -646,8 +645,8 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="project_report_configs" numRows="0" remarks="Configurations for accelerator project reports, including reporting dates and reporting frequencies." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="project_report_configs" remarks="Configurations for accelerator project reports, including reporting dates and reporting frequencies." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="config_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -670,9 +669,9 @@
          <index name="project_report_configs_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="((reporting_end_date &gt; reporting_start_date))" name="project_report_configs_check"/>
+         <checkConstraint constraint="(reporting_end_date &gt; reporting_start_date)" name="project_report_configs_check"/>
       </table>
-      <table name="project_scores" numRows="0" remarks="Scores assigned to project by scorers." schema="accelerator" type="TABLE">
+      <table name="project_scores" remarks="Scores assigned to project by scorers." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
@@ -699,9 +698,9 @@
          <index name="project_scores_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="(((score &gt;= '-2'::integer) AND (score &lt;= 2)))" name="project_scores_score_check"/>
+         <checkConstraint constraint="((score &gt;= '-2'::integer) AND (score &lt;= 2))" name="project_scores_score_check"/>
       </table>
-      <table name="project_vote_decisions" numRows="0" remarks="Calculated vote decisions for project." schema="accelerator" type="TABLE">
+      <table name="project_vote_decisions" remarks="Calculated vote decisions for project." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
@@ -722,7 +721,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="project_votes" numRows="0" remarks="Vote selected by voters." schema="accelerator" type="TABLE">
+      <table name="project_votes" remarks="Vote selected by voters." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
@@ -750,7 +749,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="report_frequencies" numRows="2" remarks="(Enum) Frequencies of accelerator project reports." schema="accelerator" type="TABLE">
+      <table name="report_frequencies" remarks="(Enum) Frequencies of accelerator project reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="report_frequency_id" foreignKey="project_report_configs_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
@@ -763,7 +762,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="report_project_metrics" numRows="0" remarks="Report entries of targets and values for project metrics." schema="accelerator" type="TABLE">
+      <table name="report_project_metrics" remarks="Report entries of targets and values for project metrics." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_project_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
          </column>
@@ -790,7 +789,7 @@
             <column ascending="true" name="project_metric_id"/>
          </index>
       </table>
-      <table name="report_standard_metrics" numRows="0" remarks="Report entries of targets and values for standard metrics." schema="accelerator" type="TABLE">
+      <table name="report_standard_metrics" remarks="Report entries of targets and values for standard metrics." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_standard_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
          </column>
@@ -817,7 +816,7 @@
             <column ascending="true" name="standard_metric_id"/>
          </index>
       </table>
-      <table name="report_statuses" numRows="5" remarks="(Enum) Statuses of accelerator project reports." schema="accelerator" type="TABLE">
+      <table name="report_statuses" remarks="(Enum) Statuses of accelerator project reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
          </column>
@@ -830,7 +829,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="report_system_metrics" numRows="0" remarks="Report entries of targets and values for system metrics." schema="accelerator" type="TABLE">
+      <table name="report_system_metrics" remarks="Report entries of targets and values for system metrics." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_system_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
          </column>
@@ -854,10 +853,10 @@
          <index name="report_system_metrics_system_metric_id_idx" unique="false">
             <column ascending="true" name="system_metric_id"/>
          </index>
-         <checkConstraint constraint="((((system_value IS NULL) AND (system_time IS NULL)) OR ((system_value IS NOT NULL) AND (system_time IS NOT NULL))))" name="system_time"/>
+         <checkConstraint constraint="(((system_value IS NULL) AND (system_time IS NULL)) OR ((system_value IS NOT NULL) AND (system_time IS NOT NULL)))" name="system_time"/>
       </table>
-      <table name="reports" numRows="0" remarks="Accelerator project reports." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="reports" remarks="Accelerator project reports." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="report_id" foreignKey="report_project_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_metrics"/>
             <child column="report_id" foreignKey="report_standard_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_metrics"/>
             <child column="report_id" foreignKey="report_system_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_system_metrics"/>
@@ -866,8 +865,8 @@
             <parent column="id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
             <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
+            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_statuses"/>
@@ -892,10 +891,10 @@
          <index name="reports_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="((end_date &gt; start_date))" name="reports_check"/>
-         <checkConstraint constraint="((((status_id = 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id = 2) OR (status_id = 3) OR (status_id = 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id = 5)))" name="submitted_status"/>
+         <checkConstraint constraint="(end_date &gt; start_date)" name="reports_check"/>
+         <checkConstraint constraint="(((status_id = 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id = 2) OR (status_id = 3) OR (status_id = 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id = 5))" name="submitted_status"/>
       </table>
-      <table name="score_categories" numRows="12" remarks="(Enum) Project score categories." schema="accelerator" type="TABLE">
+      <table name="score_categories" remarks="(Enum) Project score categories." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="score_category_id" foreignKey="project_scores_score_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>
          </column>
@@ -908,8 +907,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="standard_metrics" numRows="0" remarks="Standard non-system metrics for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="standard_metrics" remarks="Standard non-system metrics for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="standard_metric_id" foreignKey="report_standard_metrics_standard_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -926,8 +925,8 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="submission_documents" numRows="0" remarks="Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="submission_documents" remarks="Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="submission_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="submission_documents_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
          </column>
@@ -955,8 +954,8 @@
             <column ascending="true" name="submission_id"/>
          </index>
       </table>
-      <table name="submission_snapshots" numRows="0" remarks="Snapshot files associated to submissions" schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+      <table name="submission_snapshots" remarks="Snapshot files associated to submissions" schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="submission_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="submission_snapshots_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
@@ -972,7 +971,7 @@
             <column ascending="true" name="submission_id"/>
          </index>
       </table>
-      <table name="submission_statuses" numRows="7" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
+      <table name="submission_statuses" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="submission_status_id" foreignKey="participant_project_species_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
             <child column="submission_status_id" foreignKey="submissions_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
@@ -986,8 +985,8 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="submissions" numRows="0" remarks="Information about the current states of the information supplied by specific projects in response to deliverables." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+      <table name="submissions" remarks="Information about the current states of the information supplied by specific projects in response to deliverables." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="submission_id" foreignKey="submission_documents_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="submission_id" foreignKey="submission_snapshots_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_snapshots"/>
          </column>
@@ -1021,8 +1020,8 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="system_metrics" numRows="5" remarks="(Enum) Accelerator report metrics, for which data are collected from Terraware." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+      <table name="system_metrics" remarks="(Enum) Accelerator report metrics, for which data are collected from Terraware." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="system_metric_id" foreignKey="report_system_metrics_system_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_system_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -1039,7 +1038,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="user_internal_interests" numRows="0" remarks="Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified." schema="accelerator" type="TABLE">
+      <table name="user_internal_interests" remarks="Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="internal_interest_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="user_internal_interests_internal_interest_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="internal_interests"/>
@@ -1053,7 +1052,7 @@
             <column ascending="true" name="internal_interest_id"/>
          </index>
       </table>
-      <table name="vote_options" numRows="3" remarks="(Enum) Available vote options." schema="accelerator" type="TABLE">
+      <table name="vote_options" remarks="(Enum) Available vote options." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="vote_option_id" foreignKey="project_vote_decisions_vote_option_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_vote_decisions"/>
             <child column="vote_option_id" foreignKey="project_votes_vote_option_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>

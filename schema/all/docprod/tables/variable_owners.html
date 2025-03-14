@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>variable_owners - terraware Database</title>
+        <title>variable_owners - terraware.docprod</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.docprod</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>variable_owners</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>variable_owners</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_owners.project_id references public.projects.id via variable_owners_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_owners_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_owners_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_owners.variable_id references variables.id via variable_owners_variable_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_owners_variable_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">variable_owners_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -172,7 +180,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="variable_owners.owned_by references public.users.id via variable_owners_owned_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_owners_owned_by_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">variable_owners_owned_by_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -192,7 +201,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -242,42 +257,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="344,79,592,236">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="63,333,242,421">
-<area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="53,5,253,93">
-<area shape="rect" id="node4" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="5,111,300,316">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/variable_owners.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../../accelerator/tables/deliverable_variables.html" target="_top" title="accelerator.deliverable_variables" alt="" coords="662,1186,1002,1274">
-<area shape="rect" id="node2" href="../../tables/variables.html" target="_top" title="variables" alt="" coords="316,1191,611,1396">
-<area shape="rect" id="node10" href="../../tables/variable_types.html" target="_top" title="variable_types" alt="" coords="40,1200,237,1288">
-<area shape="rect" id="node25" href="../../tables/dependency_conditions.html" target="_top" title="dependency_conditions" alt="" coords="5,1306,272,1394">
-<area shape="rect" id="node3" href="../../tables/document_saved_versions.html" target="_top" title="document_saved_versions" alt="" coords="1055,72,1337,160">
-<area shape="rect" id="node4" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="49,114,228,202">
-<area shape="rect" id="node5" href="../../tables/documents.html" target="_top" title="documents" alt="" coords="747,72,917,160">
-<area shape="rect" id="node6" href="../../tables/variable_manifests.html" target="_top" title="variable_manifests" alt="" coords="348,396,579,484">
-<area shape="rect" id="node7" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="363,230,563,318">
-<area shape="rect" id="node8" href="../../tables/variable_image_values.html" target="_top" title="variable_image_values" alt="" coords="1068,588,1324,676">
-<area shape="rect" id="node9" href="../../tables/variable_values.html" target="_top" title="variable_values" alt="" coords="730,674,934,762">
-<area shape="rect" id="node11" href="../../tables/variable_link_values.html" target="_top" title="variable_link_values" alt="" coords="1077,694,1315,782">
-<area shape="rect" id="node12" href="../../tables/variable_manifest_entries.html" target="_top" title="variable_manifest_entries" alt="" coords="691,460,973,548">
-<area shape="rect" id="node13" href="../../tables/variable_numbers.html" target="_top" title="variable_numbers" alt="" coords="721,1415,943,1503">
-<area shape="rect" id="node14" href="../../tables/variable_owners.html" target="_top" title="variable_owners" alt="" coords="708,250,956,407">
-<area shape="rect" id="node15" href="../../tables/variable_section_default_values.html" target="_top" title="variable_section_default_values" alt="" coords="669,972,995,1060">
-<area shape="rect" id="node16" href="../../tables/variable_section_recommendations.html" target="_top" title="variable_section_recommendations" alt="" coords="655,867,1009,955">
-<area shape="rect" id="node17" href="../../tables/variable_section_values.html" target="_top" title="variable_section_values" alt="" coords="1063,799,1329,887">
-<area shape="rect" id="node18" href="../../tables/variable_sections.html" target="_top" title="variable_sections" alt="" coords="723,1626,941,1714">
-<area shape="rect" id="node19" href="../../tables/variable_select_options.html" target="_top" title="variable_select_options" alt="" coords="1065,1520,1327,1608">
-<area shape="rect" id="node20" href="../../tables/variable_selects.html" target="_top" title="variable_selects" alt="" coords="729,1520,935,1608">
-<area shape="rect" id="node21" href="../../tables/variable_table_columns.html" target="_top" title="variable_table_columns" alt="" coords="1063,1872,1329,1960">
-<area shape="rect" id="node22" href="../../tables/variable_tables.html" target="_top" title="variable_tables" alt="" coords="731,1872,933,1960">
-<area shape="rect" id="node23" href="../../tables/variable_texts.html" target="_top" title="variable_texts" alt="" coords="735,1731,929,1819">
-<area shape="rect" id="node24" href="../../tables/variable_workflow_history.html" target="_top" title="variable_workflow_history" alt="" coords="1053,336,1339,424">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/variable_owners.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -298,7 +282,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

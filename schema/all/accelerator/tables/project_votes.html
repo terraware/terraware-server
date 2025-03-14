@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>project_votes - terraware Database</title>
+        <title>project_votes - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>project_votes</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>project_votes</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -130,7 +136,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.user_id references public.users.id via project_votes_user_id_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_user_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_votes_user_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -151,7 +158,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.project_id references public.projects.id via project_votes_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">project_votes_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -172,7 +180,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.phase_id references cohort_phases.id via project_votes_phase_id_fkey"><a href='cohort_phases.html'>cohort_phases</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_phase_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_votes_phase_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -193,7 +202,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.vote_option_id references vote_options.id via project_votes_vote_option_id_fkey"><a href='vote_options.html'>vote_options</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_vote_option_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_votes_vote_option_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -231,7 +241,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.created_by references public.users.id via project_votes_created_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_votes_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -269,7 +280,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="project_votes.modified_by references public.users.id via project_votes_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">project_votes_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">project_votes_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -306,7 +318,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -350,47 +368,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="249,199,568,532">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="16,420,195,508">
-<area shape="rect" id="node3" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="8,140,203,263">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="5,5,205,123">
-<area shape="rect" id="node5" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="14,280,197,403">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/project_votes.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/application_histories.html" target="_top" title="application_histories" alt="" coords="1389,287,1634,375">
-<area shape="rect" id="node2" href="../../tables/applications.html" target="_top" title="applications" alt="" coords="1087,323,1267,411">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="13,704,192,792">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="773,804,973,921">
-<area shape="rect" id="node14" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="549,807,729,895">
-<area shape="rect" id="node5" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="303,1243,446,1331">
-<area shape="rect" id="node6" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,1344,200,1467">
-<area shape="rect" id="node7" href="../../tables/default_voters.html" target="_top" title="default_voters" alt="" coords="277,508,473,596">
-<area shape="rect" id="node8" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1018,993,1335,1081">
-<area shape="rect" id="node9" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="549,964,729,1052">
-<area shape="rect" id="node10" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="299,977,450,1065">
-<area shape="rect" id="node11" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="1077,675,1276,763">
-<area shape="rect" id="node12" href="../../tables/events.html" target="_top" title="events" alt="" coords="570,701,709,789">
-<area shape="rect" id="node13" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="1029,428,1324,516">
-<area shape="rect" id="node15" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="1031,816,1323,904">
-<area shape="rect" id="node16" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="1409,779,1614,867">
-<area shape="rect" id="node17" href="../../tables/project_overall_scores.html" target="_top" title="project_overall_scores" alt="" coords="1050,533,1303,621">
-<area shape="rect" id="node18" href="../../tables/project_report_configs.html" target="_top" title="project_report_configs" alt="" coords="1049,181,1304,269">
-<area shape="rect" id="node19" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1079,1099,1274,1187">
-<area shape="rect" id="node20" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="1048,1696,1305,1784">
-<area shape="rect" id="node21" href="../../tables/vote_options.html" target="_top" title="vote_options" alt="" coords="782,1551,965,1673">
-<area shape="rect" id="node22" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1017,1345,1336,1679">
-<area shape="rect" id="node23" href="../../tables/report_project_metrics.html" target="_top" title="report_project_metrics" alt="" coords="1694,601,1954,689">
-<area shape="rect" id="node24" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1440,113,1583,201">
-<area shape="rect" id="node25" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="1687,5,1961,93">
-<area shape="rect" id="node26" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="1695,112,1953,200">
-<area shape="rect" id="node27" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1380,1204,1643,1292">
-<area shape="rect" id="node28" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1087,1204,1266,1292">
-<area shape="rect" id="node29" href="../../tables/user_internal_interests.html" target="_top" title="user_internal_interests" alt="" coords="244,113,505,201">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/project_votes.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -411,7 +393,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>

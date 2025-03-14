@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>participant_project_species - terraware Database</title>
+        <title>participant_project_species - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -46,7 +46,7 @@
                 <nav class="navbar navbar-static-top">
                     <div class="container">
                         <div class="navbar-header">
-                            <a href="../../index.html" class="navbar-brand"><b>terraware</b> Database</a>
+                            <a href="../../index.html" class="navbar-brand"><b>terraware</b></a><span class="navbar-brand" style="padding-left: 0">.accelerator</span>
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
                         </div>
 
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>participant_project_species</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>participant_project_species</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -100,7 +100,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead align='left'>
                                 <tr>
                                     <th>Column</th>
@@ -120,7 +126,7 @@
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
-                                    <td title=''></td>
+                                    <td title='Automatically updated by the database'>√</td>
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
@@ -147,7 +153,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.project_id references public.projects.id via participant_project_species_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_project_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">participant_project_species_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -168,7 +175,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.species_id references public.species.id via participant_project_species_species_id_fkey"><a href='../../public/tables/species.html'>species</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_species_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail">participant_project_species_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -189,7 +197,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.submission_status_id references submission_statuses.id via participant_project_species_submission_status_id_fkey"><a href='submission_statuses.html'>submission_statuses</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_submission_status_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">participant_project_species_submission_status_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -244,7 +253,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.created_by references public.users.id via participant_project_species_created_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">participant_project_species_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -265,7 +275,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.modified_by references public.users.id via participant_project_species_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">participant_project_species_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -337,7 +348,8 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="participant_project_species.species_native_category_id references public.species_native_categories.id via participant_project_species_species_native_category_id_fkey"><a href='../../public/tables/species_native_categories.html'>species_native_categories</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">participant_project_species_species_native_category_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">participant_project_species_species_native_category_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -357,7 +369,13 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
                                 <thead>
                                 <tr>
                                     <th>Constraint Name</th>
@@ -407,49 +425,11 @@
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="381,157,788,579">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="82,385,261,473">
-<area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="71,5,271,123">
-<area shape="rect" id="node4" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="75,140,268,228">
-<area shape="rect" id="node5" href="../../../public/tables/species_native_categories.html" target="_top" title="public.species_native_categories" alt="" coords="5,491,337,579">
-<area shape="rect" id="node6" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="51,245,291,368">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/participant_project_species.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/application_histories.html" target="_top" title="application_histories" alt="" coords="1593,94,1838,182">
-<area shape="rect" id="node2" href="../../tables/applications.html" target="_top" title="applications" alt="" coords="1247,112,1427,200">
-<area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,944,184,1032">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="823,744,1023,861">
-<area shape="rect" id="node16" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="533,784,713,872">
-<area shape="rect" id="node5" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="287,865,430,953">
-<area shape="rect" id="node6" href="../../tables/default_voters.html" target="_top" title="default_voters" alt="" coords="261,193,457,281">
-<area shape="rect" id="node7" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1178,888,1495,976">
-<area shape="rect" id="node8" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="533,889,713,977">
-<area shape="rect" id="node9" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="283,708,434,796">
-<area shape="rect" id="node10" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="1237,253,1436,341">
-<area shape="rect" id="node11" href="../../tables/events.html" target="_top" title="events" alt="" coords="554,550,693,638">
-<area shape="rect" id="node12" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="1133,1204,1540,1625">
-<area shape="rect" id="node13" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="827,1170,1020,1258">
-<area shape="rect" id="node14" href="../../../public/tables/species_native_categories.html" target="_top" title="public.species_native_categories" alt="" coords="757,1534,1089,1622">
-<area shape="rect" id="node15" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="803,1276,1043,1398">
-<area shape="rect" id="node17" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="1191,500,1483,588">
-<area shape="rect" id="node18" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="1613,445,1818,533">
-<area shape="rect" id="node19" href="../../tables/project_overall_scores.html" target="_top" title="project_overall_scores" alt="" coords="1210,993,1463,1081">
-<area shape="rect" id="node20" href="../../tables/project_report_configs.html" target="_top" title="project_report_configs" alt="" coords="1209,746,1464,834">
-<area shape="rect" id="node21" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1239,1098,1434,1186">
-<area shape="rect" id="node22" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="1208,641,1465,729">
-<area shape="rect" id="node23" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1243,1642,1431,1730">
-<area shape="rect" id="node24" href="../../tables/report_project_metrics.html" target="_top" title="report_project_metrics" alt="" coords="1898,445,2158,533">
-<area shape="rect" id="node25" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1644,1709,1787,1797">
-<area shape="rect" id="node26" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="1891,1709,2165,1797">
-<area shape="rect" id="node27" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="1899,1814,2157,1902">
-<area shape="rect" id="node28" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1584,340,1847,428">
-<area shape="rect" id="node29" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1247,358,1426,446">
-<area shape="rect" id="node30" href="../../tables/user_internal_interests.html" target="_top" title="user_internal_interests" alt="" coords="228,1888,489,1976">
-</map>
+                                        
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/participant_project_species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
@@ -470,7 +450,7 @@
                         <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
                         <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
                     </div>
-                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
                 </div>
                 <!-- /.container -->
             </footer>
