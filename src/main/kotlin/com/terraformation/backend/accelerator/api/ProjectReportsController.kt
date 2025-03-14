@@ -210,7 +210,7 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/configs")
-  @Operation(summary = "Update accelerator report configuration.")
+  @Operation(summary = "Update all accelerator report configurations for a project.")
   fun updateProjectAcceleratorReportConfig(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateProjectAcceleratorReportConfigRequestPayload,
