@@ -1,3 +1,11 @@
+-- Delete affected reports first
+DELETE FROM accelerator.reports
+WHERE config_id NOT IN (
+    SELECT DISTINCT ON (project_id, report_frequency_id) id
+    FROM accelerator.project_report_configs
+    ORDER BY project_id, report_frequency_id, id
+);
+
 -- Keep only one row per (project_id, frequency)
 DELETE FROM accelerator.project_report_configs
 WHERE id NOT IN (
