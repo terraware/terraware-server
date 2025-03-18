@@ -3,14 +3,14 @@ default_voters
 default_project_leads
 deliverable_documents
 submission_documents
+report_system_metrics
+report_standard_metrics
+report_project_metrics
 project_votes
 project_vote_decisions
 project_scores
 project_accelerator_details
 application_modules
-report_system_metrics
-report_standard_metrics
-report_project_metrics
 participant_project_species
 event_projects
 deliverable_project_due_dates
@@ -48,6 +48,7 @@ pipelines
 internal_interests
 deliverable_types
 application_statuses
+report_metric_statuses
 metric_types
 metric_components
 cohort_phases

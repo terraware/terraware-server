@@ -200,7 +200,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="notes">notes</span></td>
+                                    <td><span id="underperformance_justification">underperformance_justification</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -217,7 +217,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="internal_comment">internal_comment</span></td>
+                                    <td><span id="progress_notes">progress_notes</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -263,6 +263,28 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="status_id">status_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="report_project_metrics.status_id references report_metric_statuses.id via report_project_metrics_status_id_fkey"><a href='report_metric_statuses.html'>report_metric_statuses</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">report_project_metrics_status_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>

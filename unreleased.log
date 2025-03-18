@@ -1,3 +1,5 @@
+78c4c0aa95c Renamed report metric columns (#2924)
+da81a3c48b9 Added report metric status (#2923)
 56fbe9acd64 Updated translations from Phrase (#2910)
 f200ad60ef3 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.29 (#2922)
 b259ca14c82 Update dependency com.google.apis:google-api-services-drive to v3-rev20250220-2.0.0 (#2921)

@@ -3,11 +3,11 @@ project_votes
 participant_project_species
 project_scores
 submission_documents
-deliverable_documents
-user_internal_interests
 report_system_metrics
 report_standard_metrics
 report_project_metrics
+deliverable_documents
+user_internal_interests
 project_vote_decisions
 project_overall_scores
 project_accelerator_details
@@ -48,6 +48,7 @@ pipelines
 internal_interests
 deliverable_types
 application_statuses
+report_metric_statuses
 metric_types
 metric_components
 cohort_phases
