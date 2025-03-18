@@ -126,6 +126,7 @@ class ProjectReportsController(
     reportStore.reviewReport(
         reportId = reportId,
         status = payload.review.status,
+        highlight = payload.review.highlight,
         feedback = payload.review.feedback,
         internalComment = payload.review.internalComment,
     )
@@ -311,8 +312,9 @@ data class AcceleratorReportPayload(
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val internalComment: String? = null,
-    val feedback: String? = null,
+    val highlight: String?,
+    val internalComment: String?,
+    val feedback: String?,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val submittedBy: UserId?,
@@ -330,6 +332,7 @@ data class AcceleratorReportPayload(
       status = model.status,
       startDate = model.startDate,
       endDate = model.endDate,
+      highlight = model.highlight,
       internalComment = model.internalComment,
       feedback = model.feedback,
       modifiedBy = model.modifiedBy,
@@ -345,6 +348,7 @@ data class AcceleratorReportPayload(
 data class ReportReviewPayload(
     @Schema(description = "Must be unchanged if a report has not been submitted yet.")
     val status: ReportStatus,
+    val highlight: String?,
     val feedback: String?,
     val internalComment: String?,
 )

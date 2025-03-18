@@ -89,6 +89,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = ReportStatus.NeedsUpdate,
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
+              highlight = "highlight",
               internalComment = "internal comment",
               feedback = "feedback",
               createdBy = systemUser.userId,
@@ -108,6 +109,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = ReportStatus.NeedsUpdate,
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
+              highlight = "highlight",
               internalComment = "internal comment",
               feedback = "feedback",
               createdBy = systemUser.userId,
@@ -648,6 +650,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReport(
             reportId = reportId,
             status = ReportStatus.Approved,
+            highlight = "highlight",
             feedback = "feedback",
             internalComment = "internal comment",
         )
@@ -660,6 +663,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReport(
             reportId = reportId,
             status = ReportStatus.Approved,
+            highlight = "highlight",
             feedback = "feedback",
             internalComment = "internal comment",
         )
@@ -676,6 +680,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReport(
             reportId = notSubmittedReportId,
             status = ReportStatus.Approved,
+            highlight = "highlight",
             feedback = "feedback",
             internalComment = "internal comment",
         )
@@ -684,6 +689,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReport(
             reportId = notNeededReportId,
             status = ReportStatus.Approved,
+            highlight = "highlight",
             feedback = "feedback",
             internalComment = "internal comment",
         )
@@ -698,6 +704,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReport(
             reportId = notNeededReportId,
             status = ReportStatus.NotNeeded,
+            highlight = "highlight",
             feedback = "feedback",
             internalComment = "internal comment",
         )
@@ -712,6 +719,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val reportId =
           insertReport(
               status = ReportStatus.Submitted,
+              highlight = "existing highlight",
+              feedback = "existing feedback",
+              internalComment = "existing internal comment",
               modifiedBy = otherUserId,
               modifiedTime = Instant.ofEpochSecond(3000),
           )
@@ -723,15 +733,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.reviewReport(
           reportId = reportId,
           status = ReportStatus.NeedsUpdate,
-          feedback = "feedback",
-          internalComment = "internal comment",
+          highlight = "new highlight",
+          feedback = "new feedback",
+          internalComment = "new internal comment",
       )
 
       val updatedReport =
           existingReport.copy(
               statusId = ReportStatus.NeedsUpdate,
-              feedback = "feedback",
-              internalComment = "internal comment",
+              highlight = "new highlight",
+              feedback = "new feedback",
+              internalComment = "new internal comment",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           )
