@@ -37,6 +37,7 @@ import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.StandardMetricId
@@ -2819,6 +2820,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       notes: String? = row.notes,
       internalComment: String? = row.internalComment,
+      status: ReportMetricStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -2830,6 +2832,7 @@ abstract class DatabaseBackedTest {
             value = value,
             notes = notes,
             internalComment = internalComment,
+            statusId = status,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
@@ -2845,6 +2848,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       notes: String? = row.notes,
       internalComment: String? = row.internalComment,
+      status: ReportMetricStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -2856,6 +2860,7 @@ abstract class DatabaseBackedTest {
             value = value,
             notes = notes,
             internalComment = internalComment,
+            statusId = status,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
@@ -2873,6 +2878,7 @@ abstract class DatabaseBackedTest {
       overrideValue: Int? = row.overrideValue,
       notes: String? = row.notes,
       internalComment: String? = row.internalComment,
+      status: ReportMetricStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -2886,6 +2892,7 @@ abstract class DatabaseBackedTest {
             overrideValue = overrideValue,
             notes = notes,
             internalComment = internalComment,
+            statusId = status,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )

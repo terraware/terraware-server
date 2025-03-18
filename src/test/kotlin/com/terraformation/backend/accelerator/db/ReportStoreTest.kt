@@ -22,6 +22,7 @@ import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
@@ -139,6 +140,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           metricId = projectMetricId,
           target = 100,
+          status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -159,6 +161,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 100,
+                          status = ReportMetricStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       )),
@@ -206,6 +209,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           metricId = standardMetricId2,
           target = 25,
+          status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -257,6 +261,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 25,
+                          status = ReportMetricStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       )),
@@ -286,7 +291,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 600,
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
-          overrideValue = 250,
+          overrideValue = 800,
+          status = ReportMetricStatus.Achieved,
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
       )
@@ -320,7 +326,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           target = 600,
                           systemValue = 300,
                           systemTime = Instant.ofEpochSecond(7000),
-                          overrideValue = 250,
+                          overrideValue = 800,
+                          status = ReportMetricStatus.Achieved,
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       )),
@@ -816,6 +823,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 55,
           value = 45,
           notes = "Existing metric 1 notes",
+          status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -852,6 +860,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           notes = "Existing species planted metric notes",
           internalComment = "Existing species planted metric internal comment",
+          status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -870,6 +879,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = 88,
                           notes = "New metric 2 notes",
                           internalComment = "New metric 2 internal comment",
+                          status = ReportMetricStatus.OnTrack,
 
                           // These fields are ignored
                           modifiedTime = Instant.EPOCH,
@@ -889,6 +899,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 5,
                           value = 4,
+                          status = null,
                           notes = "New species planted metric notes",
                           internalComment = "New species planted metric internal comment",
                       ),
@@ -896,6 +907,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 250,
                           value = 45,
+                          status = ReportMetricStatus.Unlikely,
                           notes = "New trees planted metric notes",
                           internalComment = "New trees planted metric internal comment",
                       ),
@@ -919,6 +931,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetricId = standardMetricId1,
                   target = 55,
                   value = 45,
+                  statusId = ReportMetricStatus.OnTrack,
                   notes = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
@@ -928,6 +941,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetricId = standardMetricId2,
                   target = 99,
                   value = 88,
+                  statusId = ReportMetricStatus.OnTrack,
                   notes = "New metric 2 notes",
                   internalComment = "New metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -967,6 +981,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
                   overrideValue = 4,
+                  statusId = null,
                   notes = "New species planted metric notes",
                   internalComment = "New species planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -977,6 +992,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemMetricId = SystemMetric.TreesPlanted,
                   target = 250,
                   overrideValue = 45,
+                  statusId = ReportMetricStatus.Unlikely,
                   notes = "New trees planted metric notes",
                   internalComment = "New trees planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -1062,7 +1078,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `upserts values and targets for existing and non-existing report metric rows`() {
       val otherUserId = insertUser()
-
       val standardMetricId1 =
           insertStandardMetric(
               component = MetricComponent.Climate,
@@ -1117,6 +1132,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 55,
           value = 45,
           notes = "Existing metric 1 notes",
+          status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -1153,6 +1169,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           notes = "Existing species planted metric notes",
           internalComment = "Existing species planted metric internal comment",
+          status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -1173,6 +1190,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           target = 99,
                           value = 88,
                           notes = "New metric 2 notes",
+                          status = ReportMetricStatus.OnTrack,
 
                           // These fields are ignored
                           internalComment = "Not permitted to write internal comment",
@@ -1192,6 +1210,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 5,
                           notes = "New species planted metric notes",
+                          status = null,
 
                           // These fields are ignored
                           value = 4,
@@ -1203,6 +1222,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 250,
                           notes = "New trees planted metric notes",
+                          status = ReportMetricStatus.Unlikely,
 
                           // These fields are ignored
                           value = 45,
@@ -1229,6 +1249,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetricId = standardMetricId1,
                   target = 55,
                   value = 45,
+                  statusId = ReportMetricStatus.OnTrack,
                   notes = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
@@ -1238,6 +1259,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetricId = standardMetricId2,
                   target = 99,
                   value = 88,
+                  statusId = ReportMetricStatus.OnTrack,
                   notes = "New metric 2 notes",
                   internalComment = "Existing metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -1274,6 +1296,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 5,
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
+                  statusId = null,
                   overrideValue = 15,
                   notes = "New species planted metric notes",
                   internalComment = "Existing species planted metric internal comment",
@@ -1284,6 +1307,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   systemMetricId = SystemMetric.TreesPlanted,
                   target = 250,
+                  statusId = ReportMetricStatus.Unlikely,
                   notes = "New trees planted metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,

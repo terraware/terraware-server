@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
@@ -19,6 +20,7 @@ data class ReportMetricEntryModel(
     val modifiedTime: Instant? = null,
     val notes: String? = null,
     val internalComment: String? = null,
+    val status: ReportMetricStatus? = null,
 )
 
 data class ReportStandardMetricModel(
@@ -47,6 +49,7 @@ data class ReportStandardMetricModel(
                 } else {
                   null
                 },
+            status = record[STATUS_ID],
         )
       }
     }
@@ -79,6 +82,7 @@ data class ReportProjectMetricModel(
                 } else {
                   null
                 },
+            status = record[STATUS_ID],
         )
       }
     }
@@ -95,6 +99,7 @@ data class ReportSystemMetricEntryModel(
     val modifiedTime: Instant? = null,
     val notes: String? = null,
     val internalComment: String? = null,
+    val status: ReportMetricStatus? = null,
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
@@ -113,6 +118,7 @@ data class ReportSystemMetricEntryModel(
                 } else {
                   null
                 },
+            status = record[STATUS_ID],
         )
       }
     }
