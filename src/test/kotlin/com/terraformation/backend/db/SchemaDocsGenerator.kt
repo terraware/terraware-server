@@ -245,6 +245,9 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
                   "automations" to setOf(ALL, DEVICE),
+                  "chat_memory_conversations" to setOf(ALL, ACCELERATOR),
+                  "chat_memory_message_types" to setOf(ALL, ACCELERATOR),
+                  "chat_memory_messages" to setOf(ALL, ACCELERATOR),
                   "conservation_categories" to setOf(ALL, SPECIES),
                   "countries" to setOf(ALL, CUSTOMER),
                   "country_subdivisions" to setOf(ALL, CUSTOMER),
@@ -316,6 +319,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "user_preferences" to setOf(ALL, CUSTOMER),
                   "user_types" to setOf(ALL, CUSTOMER),
                   "users" to setOf(ALL, CUSTOMER),
+                  "vector_store" to setOf(ALL, ACCELERATOR),
                   "wood_density_levels" to setOf(ALL, SPECIES),
               ),
           "seedbank" to

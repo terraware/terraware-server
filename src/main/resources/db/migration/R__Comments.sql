@@ -37,6 +37,12 @@ COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the
 
 COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
 
+COMMENT ON TABLE chat_memory_conversations IS 'Information about Ask Terraware conversations.';
+
+COMMENT ON TABLE chat_memory_message_types IS '(Enum) Message types that can be stored as part of the memory of an LLM chat conversation.';
+
+COMMENT ON TABLE chat_memory_messages IS 'Messages from Ask Terraware conversations. Both questions (prompts to the LLM) and answers (responses from the LLM) are recorded.';
+
 COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
 
 COMMENT ON TABLE conservation_categories IS '(Enum) IUCN conservation category codes.';
@@ -234,6 +240,8 @@ COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants 
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
 COMMENT ON TABLE wood_density_levels IS 'The taxonomic level in the at which a wood density measurement is known';
+
+COMMENT ON TABLE vector_store IS 'Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects.';
 
 COMMENT ON TABLE seedbank.viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 

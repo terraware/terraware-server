@@ -59,6 +59,13 @@ VALUES (1, 'Terrestrial'),
        (2, 'Mangrove')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO chat_memory_message_types (id, name)
+VALUES (1, 'Assistant'),
+       (2, 'System'),
+       (3, 'ToolResponse'),
+       (4, 'User')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.cohort_phases (id, name)
 VALUES (0, 'Phase 0 - Due Diligence'),
        (1, 'Phase 1 - Feasibility Study'),
