@@ -612,6 +612,8 @@ COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decision
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accelerator project report metrics.';
+
 COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
 COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
