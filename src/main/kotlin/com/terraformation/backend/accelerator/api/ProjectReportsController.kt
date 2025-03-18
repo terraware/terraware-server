@@ -21,6 +21,7 @@ import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -357,6 +358,7 @@ data class ReportStandardMetricPayload(
     val reference: String,
     val target: Int?,
     val value: Int?,
+    val status: ReportMetricStatus?,
     val notes: String?,
     val internalComment: String?
 ) {
@@ -371,6 +373,7 @@ data class ReportStandardMetricPayload(
       reference = model.metric.reference,
       target = model.entry.target,
       value = model.entry.value,
+      status = model.entry.status,
       notes = model.entry.notes,
       internalComment = model.entry.internalComment)
 }
@@ -379,6 +382,7 @@ data class ReportStandardMetricEntriesPayload(
     val id: StandardMetricId,
     val target: Int?,
     val value: Int?,
+    val status: ReportMetricStatus?,
     val notes: String?,
     val internalComment: String?,
 ) {
@@ -388,6 +392,7 @@ data class ReportStandardMetricEntriesPayload(
           value = value,
           notes = notes,
           internalComment = internalComment,
+          status = status,
       )
 }
 
@@ -401,6 +406,7 @@ data class ReportSystemMetricPayload(
     val systemValue: Int,
     val systemTime: Instant?,
     val overrideValue: Int?,
+    val status: ReportMetricStatus?,
     val notes: String?,
     val internalComment: String?
 ) {
@@ -416,6 +422,7 @@ data class ReportSystemMetricPayload(
       systemValue = model.entry.systemValue,
       systemTime = model.entry.systemTime,
       overrideValue = model.entry.overrideValue,
+      status = model.entry.status,
       notes = model.entry.notes,
       internalComment = model.entry.internalComment)
 }
@@ -425,6 +432,7 @@ data class ReportSystemMetricEntriesPayload(
     val target: Int?,
     @Schema(description = "If set to null, system metric entry will use Terraware data value.")
     val overrideValue: Int?,
+    val status: ReportMetricStatus?,
     val notes: String?,
     val internalComment: String?,
 ) {
@@ -434,6 +442,7 @@ data class ReportSystemMetricEntriesPayload(
           value = overrideValue,
           notes = notes,
           internalComment = internalComment,
+          status = status,
       )
 }
 
@@ -446,6 +455,7 @@ data class ReportProjectMetricPayload(
     val reference: String,
     val target: Int?,
     val value: Int?,
+    val status: ReportMetricStatus?,
     val notes: String?,
     val internalComment: String?
 ) {
@@ -460,6 +470,7 @@ data class ReportProjectMetricPayload(
       reference = model.metric.reference,
       target = model.entry.target,
       value = model.entry.value,
+      status = model.entry.status,
       notes = model.entry.notes,
       internalComment = model.entry.internalComment)
 }
@@ -470,6 +481,7 @@ data class ReportProjectMetricEntriesPayload(
     val value: Int?,
     val notes: String?,
     val internalComment: String?,
+    val status: ReportMetricStatus?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
@@ -477,6 +489,7 @@ data class ReportProjectMetricEntriesPayload(
           value = value,
           notes = notes,
           internalComment = internalComment,
+          status = status,
       )
 }
 

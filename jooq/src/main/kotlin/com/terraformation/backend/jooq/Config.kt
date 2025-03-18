@@ -43,6 +43,13 @@ val ENUM_TABLES =
                 EnumTable("metric_types", listOf("[a-z_]+_metrics\\.type_id")),
                 EnumTable("pipelines", isLocalizable = false),
                 EnumTable("report_frequencies"),
+                EnumTable(
+                    "report_metric_statuses",
+                    listOf(
+                        "report_project_metrics\\.status_id",
+                        "report_standard_metrics\\.status_id",
+                        "report_system_metrics\\.status_id",
+                    )),
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),

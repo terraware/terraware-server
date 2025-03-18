@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
+import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -581,6 +582,9 @@ class ReportStore(
     val valueField = table.field("value", Int::class.java)!!
     val notesField = table.field("notes", String::class.java)!!
     val internalCommentField = table.field("internal_comment", String::class.java)!!
+    val statusField =
+        table.field(
+            "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
     val modifiedByField =
         table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))!!
     val modifiedTimeField = table.field("modified_time", Instant::class.java)!!
@@ -598,6 +602,7 @@ class ReportStore(
               .set(targetField, entry.target)
               .set(valueField, entry.value)
               .set(notesField, entry.notes)
+              .set(statusField, entry.status)
               .set(modifiedByField, currentUser().userId)
               .set(modifiedTimeField, clock.instant())
               .apply {
@@ -687,6 +692,7 @@ class ReportStore(
               .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
               .set(REPORT_SYSTEM_METRICS.TARGET, entry.target)
               .set(REPORT_SYSTEM_METRICS.NOTES, entry.notes)
+              .set(REPORT_SYSTEM_METRICS.STATUS_ID, entry.status)
               .set(REPORT_SYSTEM_METRICS.MODIFIED_BY, currentUser().userId)
               .set(REPORT_SYSTEM_METRICS.MODIFIED_TIME, clock.instant())
               .apply {

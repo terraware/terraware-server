@@ -427,6 +427,12 @@ VALUES (1, 'Quarterly'),
        (2, 'Annual')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.report_metric_statuses (id, name)
+VALUES (1, 'Achieved'),
+       (2, 'On-Track'),
+       (3, 'Unlikely')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.report_statuses (id, name)
 VALUES (1, 'Not Submitted'),
        (2, 'Submitted'),
