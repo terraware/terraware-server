@@ -18,8 +18,8 @@ data class ReportMetricEntryModel(
     val value: Int? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
-    val notes: String? = null,
-    val internalComment: String? = null,
+    val underperformanceJustification: String? = null,
+    val progressNotes: String? = null,
     val status: ReportMetricStatus? = null,
 )
 
@@ -42,10 +42,10 @@ data class ReportStandardMetricModel(
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            notes = record[NOTES],
-            internalComment =
+            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
+            progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
-                  record[INTERNAL_COMMENT]
+                  record[PROGRESS_NOTES]
                 } else {
                   null
                 },
@@ -75,10 +75,10 @@ data class ReportProjectMetricModel(
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            notes = record[NOTES],
-            internalComment =
+            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
+            progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
-                  record[INTERNAL_COMMENT]
+                  record[PROGRESS_NOTES]
                 } else {
                   null
                 },
@@ -97,8 +97,8 @@ data class ReportSystemMetricEntryModel(
     val overrideValue: Int? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
-    val notes: String? = null,
-    val internalComment: String? = null,
+    val underperformanceJustification: String? = null,
+    val progressNotes: String? = null,
     val status: ReportMetricStatus? = null,
 ) {
   companion object {
@@ -111,10 +111,10 @@ data class ReportSystemMetricEntryModel(
             overrideValue = record[OVERRIDE_VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            notes = record[NOTES],
-            internalComment =
+            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
+            progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
-                  record[INTERNAL_COMMENT]
+                  record[PROGRESS_NOTES]
                 } else {
                   null
                 },

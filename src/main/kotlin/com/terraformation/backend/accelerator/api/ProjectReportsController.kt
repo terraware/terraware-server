@@ -359,8 +359,8 @@ data class ReportStandardMetricPayload(
     val target: Int?,
     val value: Int?,
     val status: ReportMetricStatus?,
-    val notes: String?,
-    val internalComment: String?
+    val underperformanceJustification: String?,
+    val progressNotes: String?
 ) {
   constructor(
       model: ReportStandardMetricModel
@@ -374,8 +374,8 @@ data class ReportStandardMetricPayload(
       target = model.entry.target,
       value = model.entry.value,
       status = model.entry.status,
-      notes = model.entry.notes,
-      internalComment = model.entry.internalComment)
+      underperformanceJustification = model.entry.underperformanceJustification,
+      progressNotes = model.entry.progressNotes)
 }
 
 data class ReportStandardMetricEntriesPayload(
@@ -383,15 +383,15 @@ data class ReportStandardMetricEntriesPayload(
     val target: Int?,
     val value: Int?,
     val status: ReportMetricStatus?,
-    val notes: String?,
-    val internalComment: String?,
+    val underperformanceJustification: String?,
+    val progressNotes: String?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           target = target,
           value = value,
-          notes = notes,
-          internalComment = internalComment,
+          underperformanceJustification = underperformanceJustification,
+          progressNotes = progressNotes,
           status = status,
       )
 }
@@ -407,8 +407,8 @@ data class ReportSystemMetricPayload(
     val systemTime: Instant?,
     val overrideValue: Int?,
     val status: ReportMetricStatus?,
-    val notes: String?,
-    val internalComment: String?
+    val underperformanceJustification: String?,
+    val progressNotes: String?
 ) {
   constructor(
       model: ReportSystemMetricModel
@@ -423,8 +423,8 @@ data class ReportSystemMetricPayload(
       systemTime = model.entry.systemTime,
       overrideValue = model.entry.overrideValue,
       status = model.entry.status,
-      notes = model.entry.notes,
-      internalComment = model.entry.internalComment)
+      underperformanceJustification = model.entry.underperformanceJustification,
+      progressNotes = model.entry.progressNotes)
 }
 
 data class ReportSystemMetricEntriesPayload(
@@ -433,15 +433,15 @@ data class ReportSystemMetricEntriesPayload(
     @Schema(description = "If set to null, system metric entry will use Terraware data value.")
     val overrideValue: Int?,
     val status: ReportMetricStatus?,
-    val notes: String?,
-    val internalComment: String?,
+    val underperformanceJustification: String?,
+    val progressNotes: String?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           target = target,
           value = overrideValue,
-          notes = notes,
-          internalComment = internalComment,
+          underperformanceJustification = underperformanceJustification,
+          progressNotes = progressNotes,
           status = status,
       )
 }
@@ -456,8 +456,8 @@ data class ReportProjectMetricPayload(
     val target: Int?,
     val value: Int?,
     val status: ReportMetricStatus?,
-    val notes: String?,
-    val internalComment: String?
+    val underperformanceJustification: String?,
+    val progressNotes: String?
 ) {
   constructor(
       model: ReportProjectMetricModel
@@ -471,24 +471,24 @@ data class ReportProjectMetricPayload(
       target = model.entry.target,
       value = model.entry.value,
       status = model.entry.status,
-      notes = model.entry.notes,
-      internalComment = model.entry.internalComment)
+      underperformanceJustification = model.entry.underperformanceJustification,
+      progressNotes = model.entry.progressNotes)
 }
 
 data class ReportProjectMetricEntriesPayload(
     val id: ProjectMetricId,
     val target: Int?,
     val value: Int?,
-    val notes: String?,
-    val internalComment: String?,
+    val underperformanceJustification: String?,
+    val progressNotes: String?,
     val status: ReportMetricStatus?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           target = target,
           value = value,
-          notes = notes,
-          internalComment = internalComment,
+          underperformanceJustification = underperformanceJustification,
+          progressNotes = progressNotes,
           status = status,
       )
 }

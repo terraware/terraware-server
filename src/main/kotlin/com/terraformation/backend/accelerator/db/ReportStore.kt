@@ -569,7 +569,7 @@ class ReportStore(
       reportId: ReportId,
       metricIdField: TableField<*, ID?>,
       entries: Map<ID, ReportMetricEntryModel>,
-      updateInternalComment: Boolean,
+      updateProgressNotes: Boolean,
   ): Int {
     if (entries.isEmpty()) {
       return 0
@@ -580,8 +580,9 @@ class ReportStore(
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
     val targetField = table.field("target", Int::class.java)!!
     val valueField = table.field("value", Int::class.java)!!
-    val notesField = table.field("notes", String::class.java)!!
-    val internalCommentField = table.field("internal_comment", String::class.java)!!
+    val underperformanceJustificationField =
+        table.field("underperformance_justification", String::class.java)!!
+    val progressNotesField = table.field("progress_notes", String::class.java)!!
     val statusField =
         table.field(
             "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
@@ -601,13 +602,13 @@ class ReportStore(
               .set(metricIdField, metricId)
               .set(targetField, entry.target)
               .set(valueField, entry.value)
-              .set(notesField, entry.notes)
+              .set(underperformanceJustificationField, entry.underperformanceJustification)
               .set(statusField, entry.status)
               .set(modifiedByField, currentUser().userId)
               .set(modifiedTimeField, clock.instant())
               .apply {
-                if (updateInternalComment) {
-                  this.set(internalCommentField, entry.internalComment)
+                if (updateProgressNotes) {
+                  this.set(progressNotesField, entry.progressNotes)
                 }
               }
               .apply {
@@ -663,18 +664,18 @@ class ReportStore(
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
       entries: Map<StandardMetricId, ReportMetricEntryModel>,
-      updateInternalComment: Boolean,
+      updateProgressNotes: Boolean,
   ) =
       upsertReportMetrics(
           reportId = reportId,
           metricIdField = REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
           entries = entries,
-          updateInternalComment = updateInternalComment)
+          updateProgressNotes = updateProgressNotes)
 
   private fun upsertReportSystemMetrics(
       reportId: ReportId,
       entries: Map<SystemMetric, ReportMetricEntryModel>,
-      updateInternalComment: Boolean,
+      updateProgressNotes: Boolean,
   ): Int {
     if (entries.isEmpty()) {
       return 0
@@ -691,14 +692,16 @@ class ReportStore(
               .set(REPORT_SYSTEM_METRICS.REPORT_ID, reportId)
               .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
               .set(REPORT_SYSTEM_METRICS.TARGET, entry.target)
-              .set(REPORT_SYSTEM_METRICS.NOTES, entry.notes)
+              .set(
+                  REPORT_SYSTEM_METRICS.UNDERPERFORMANCE_JUSTIFICATION,
+                  entry.underperformanceJustification)
               .set(REPORT_SYSTEM_METRICS.STATUS_ID, entry.status)
               .set(REPORT_SYSTEM_METRICS.MODIFIED_BY, currentUser().userId)
               .set(REPORT_SYSTEM_METRICS.MODIFIED_TIME, clock.instant())
               .apply {
-                if (updateInternalComment) {
+                if (updateProgressNotes) {
                   this.set(REPORT_SYSTEM_METRICS.OVERRIDE_VALUE, entry.value)
-                  this.set(REPORT_SYSTEM_METRICS.INTERNAL_COMMENT, entry.internalComment)
+                  this.set(REPORT_SYSTEM_METRICS.PROGRESS_NOTES, entry.progressNotes)
                 }
               }
               .apply {
@@ -721,13 +724,13 @@ class ReportStore(
   private fun upsertReportProjectMetrics(
       reportId: ReportId,
       entries: Map<ProjectMetricId, ReportMetricEntryModel>,
-      updateInternalComment: Boolean,
+      updateProgressNotes: Boolean,
   ) =
       upsertReportMetrics(
           reportId = reportId,
           metricIdField = REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
           entries = entries,
-          updateInternalComment = updateInternalComment)
+          updateProgressNotes = updateProgressNotes)
 
   private fun updateReportModifiedTime(reportId: ReportId) {
     dslContext
