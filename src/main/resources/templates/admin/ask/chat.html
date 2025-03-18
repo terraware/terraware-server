@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        .question {
+            color: darkgreen;
+            white-space: preserve-breaks;
+        }
+        .answer {
+            color: blue;
+            margin-left: 10em;
+        }
+    </style>
+
+    <th:block th:fragment="additionalScript">
+        <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
+        <script>
+            function submitOnEnter(event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    htmx.trigger("#queryForm", "submit");
+                    event.preventDefault();
+                }
+            }
+        </script>
+    </th:block>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin">Home</a> -
+<a href="/admin/ask/">Ask Terraware (select project)</a>
+
+<h3 th:text="|Ask Terraware: ${project.name} (${project.id})|"></h3>
+
+<th:block th:replace="~{/admin/ask/exchange}"/>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin">Home</a>
+
+<h2>Ask Terraware</h2>
+
+<h3>Chat</h3>
+
+<p>
+    Choose a project to chat about.
+    Only projects that have been prepared are available for chat.
+</p>
+
+<form method="POST" action="/admin/ask/select">
+    <label>
+        Project:
+        <select name="projectId">
+            <option th:each="project : ${projects}" th:value="${project.id}" th:text="|${project.name} (${project.id})|"/>
+        </select>
+    </label>
+    <br/>
+    <input type="submit" value="Ask Terraware"/>
+</form>
+
+<p>
+    Or enter a project ID.
+</p>
+
+<form method="POST" action="/admin/ask/select">
+    <label>
+        Project ID:
+        <input name="projectId" required/>
+    </label>
+    <input type="submit" value="Ask Terraware"/>
+</form>
+
+<h3>Prepare Project</h3>
+
+<p>
+    Walks through a project's data and prepares it for use by the chat system.
+    Preparing a project that was already prepared will update the chat system
+    with any changes to the project's data since the last time it was prepared.
+</p>
+
+<p>
+    <b>Preparing a project that has a lot of documents can take time.</b>
+    If you get a request timeout, don't try again! Come back in 5 minutes and see if the
+    project appears in the chat menu.
+</p>
+
+<form method="POST" action="/admin/ask/prepare">
+    <label>
+        Project ID:
+        <input name="projectId" required/>
+    </label>
+    <input type="submit" value="Prepare Project"/>
+</form>
+
+</body>
+</html>

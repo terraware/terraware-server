@@ -1,6 +1,6 @@
 spring:
   ai:
-    openapi:
+    openai:
       api-key:
 
   security:
