@@ -25,7 +25,7 @@ data class ReportModel(
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val highlight: String? = null,
+    val highlights: String? = null,
     val internalComment: String? = null,
     val feedback: String? = null,
     val createdBy: UserId,
@@ -141,7 +141,7 @@ data class ReportModel(
             status = record[STATUS_ID]!!,
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
-            highlight = record[HIGHLIGHT],
+            highlights = record[HIGHLIGHTS],
             internalComment =
                 if (currentUser().canReadReportInternalComments()) {
                   record[INTERNAL_COMMENT]

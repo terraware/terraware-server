@@ -1,2 +1,2 @@
 ALTER TABLE accelerator.reports
-    ADD COLUMN highlight TEXT;
+    ADD COLUMN highlights TEXT;

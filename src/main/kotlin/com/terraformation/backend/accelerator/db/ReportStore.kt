@@ -182,7 +182,7 @@ class ReportStore(
   fun reviewReport(
       reportId: ReportId,
       status: ReportStatus,
-      highlight: String? = null,
+      highlights: String? = null,
       feedback: String? = null,
       internalComment: String? = null,
   ) {
@@ -210,7 +210,7 @@ class ReportStore(
           dslContext
               .update(this)
               .set(STATUS_ID, status)
-              .set(HIGHLIGHT, highlight)
+              .set(HIGHLIGHTS, highlights)
               .set(FEEDBACK, feedback)
               .set(INTERNAL_COMMENT, internalComment)
               .set(MODIFIED_BY, currentUser().userId)
