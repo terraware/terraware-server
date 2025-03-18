@@ -1,3 +1,6 @@
+f200ad60ef3 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.29 (#2922)
+b259ca14c82 Update dependency com.google.apis:google-api-services-drive to v3-rev20250220-2.0.0 (#2921)
+22aa9f719b9 Update database dependencies (#2920)
 e04c5305e10 Added delete reports step to migration (#2919)
 84c99121025 SW-6625 Support annual reporting targets (#2915)
 20d95edd67d SW-6561 Fix docs, CI builds (#2918)
