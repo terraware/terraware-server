@@ -753,6 +753,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(3000),
           )
 
+      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
+      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
+      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+
       val existingReport = reportsDao.fetchOneById(reportId)!!
 
       clock.instant = Instant.ofEpochSecond(20000)
@@ -761,6 +776,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           status = ReportStatus.NeedsUpdate,
           highlights = "new highlights",
+          achievements =
+              listOf(
+                  "New Achievement Z",
+                  "New Achievement Y",
+              ),
+          challenges =
+              listOf(
+                  ReportChallengeModel(
+                      challenge = "New Challenge Z",
+                      mitigationPlan = "New Plan Z",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge X",
+                      mitigationPlan = "New Plan X",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge Y",
+                      mitigationPlan = "New Plan Y",
+                  ),
+              ),
           feedback = "new feedback",
           internalComment = "new internal comment",
       )
@@ -775,7 +810,47 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = clock.instant,
           )
 
-      assertTableEquals(ReportsRecord(updatedReport))
+      assertTableEquals(ReportsRecord(updatedReport), "Reports table")
+
+      assertTableEquals(
+          listOf(
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 0,
+                  achievement = "New Achievement Z",
+              ),
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 1,
+                  achievement = "New Achievement Y",
+              ),
+          ),
+          "Report achievements table",
+      )
+
+      assertTableEquals(
+          listOf(
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 0,
+                  challenge = "New Challenge Z",
+                  mitigationPlan = "New Plan Z",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 1,
+                  challenge = "New Challenge X",
+                  mitigationPlan = "New Plan X",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 2,
+                  challenge = "New Challenge Y",
+                  mitigationPlan = "New Plan Y",
+              ),
+          ),
+          "Report achievements table",
+      )
     }
   }
 

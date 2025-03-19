@@ -186,6 +186,8 @@ class ReportStore(
       reportId: ReportId,
       status: ReportStatus,
       highlights: String? = null,
+      achievements: List<String>? = null,
+      challenges: List<ReportChallengeModel>? = null,
       feedback: String? = null,
       internalComment: String? = null,
   ) {
@@ -208,22 +210,27 @@ class ReportStore(
       }
     }
 
-    val rowsUpdated =
-        with(REPORTS) {
-          dslContext
-              .update(this)
-              .set(STATUS_ID, status)
-              .set(HIGHLIGHTS, highlights)
-              .set(FEEDBACK, feedback)
-              .set(INTERNAL_COMMENT, internalComment)
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .where(ID.eq(reportId))
-              .execute()
-        }
+    dslContext.transaction { _ ->
+      achievements?.let { mergeReportAchievements(reportId, it) }
+      challenges?.let { mergeReportChallenges(reportId, it) }
 
-    if (rowsUpdated == 0) {
-      throw IllegalStateException("Failed to update report $reportId")
+      val rowsUpdated =
+          with(REPORTS) {
+            dslContext
+                .update(this)
+                .set(STATUS_ID, status)
+                .set(HIGHLIGHTS, highlights)
+                .set(FEEDBACK, feedback)
+                .set(INTERNAL_COMMENT, internalComment)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(reportId))
+                .execute()
+          }
+
+      if (rowsUpdated == 0) {
+        throw IllegalStateException("Failed to update report $reportId")
+      }
     }
   }
 

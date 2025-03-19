@@ -145,6 +145,8 @@ class ProjectReportsController(
         reportId = reportId,
         status = payload.review.status,
         highlights = payload.review.highlights,
+        achievements = payload.review.achievements,
+        challenges = payload.review.challenges.map { it.toModel() },
         feedback = payload.review.feedback,
         internalComment = payload.review.internalComment,
     )
@@ -377,6 +379,8 @@ data class ReportReviewPayload(
     @Schema(description = "Must be unchanged if a report has not been submitted yet.")
     val status: ReportStatus,
     val highlights: String?,
+    val achievements: List<String>,
+    val challenges: List<ReportChallengePayload>,
     val feedback: String?,
     val internalComment: String?,
 )
