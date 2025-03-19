@@ -106,6 +106,10 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
+                EnumTable(
+                    "chat_memory_message_types",
+                    listOf("chat_memory_messages\\.message_type_id"),
+                    isLocalizable = false),
                 EnumTable("conservation_categories", useIdAsJsonValue = true),
                 EnumTable(
                     "device_template_categories",
@@ -315,6 +319,7 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
+                IdWrapper("ChatMemoryMessageId", listOf("chat_memory_messages\\.id")),
                 IdWrapper(
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
