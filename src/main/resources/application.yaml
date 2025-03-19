@@ -33,6 +33,11 @@ terraware:
     api-client-id: "api"
 
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+      - org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
+
   datasource:
     url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/terraware}"
     username: "${DATABASE_USER:${USER:postgres}}"
