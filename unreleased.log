@@ -1,3 +1,4 @@
+b21cc0cd039 SW-6587 Include location in SubmissionDocumentModel (#2927)
 cd3875cb568 Added report highlight column (#2925)
 78c4c0aa95c Renamed report metric columns (#2924)
 da81a3c48b9 Added report metric status (#2923)
