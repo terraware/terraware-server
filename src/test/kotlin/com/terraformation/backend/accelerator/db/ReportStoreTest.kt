@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectMetricModel
+import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
@@ -100,6 +101,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(6000),
           )
 
+      // These are sorted by positions regardless of insert order
+      insertReportAchievement(position = 2, achievement = "Achievement C")
+      insertReportAchievement(position = 0, achievement = "Achievement A")
+      insertReportAchievement(position = 1, achievement = "Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Challenge B",
+          mitigationPlan = "Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Challenge A",
+          mitigationPlan = "Plan A",
+      )
+
       val reportModel =
           ReportModel(
               id = reportId,
@@ -110,6 +127,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
               highlights = "highlights",
+              achievements = listOf("Achievement A", "Achievement B", "Achievement C"),
+              challenges =
+                  listOf(
+                      ReportChallengeModel(challenge = "Challenge A", mitigationPlan = "Plan A"),
+                      ReportChallengeModel(challenge = "Challenge B", mitigationPlan = "Plan B"),
+                  ),
               internalComment = "internal comment",
               feedback = "feedback",
               createdBy = systemUser.userId,
