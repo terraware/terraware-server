@@ -51,6 +51,51 @@
          <checkConstraint constraint="(description !~ similar_to_escape(' *'::text))" name="automations_description_check"/>
          <checkConstraint constraint="(timeseries_name !~ similar_to_escape(' *'::text))" name="automations_timeseries_name_check"/>
       </table>
+      <table name="chat_memory_conversations" remarks="Information about Ask Terraware conversations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
+            <child column="conversation_id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_messages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="chat_memory_conversations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_conversations_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="chat_memory_message_types" remarks="(Enum) Message types that can be stored as part of the memory of an LLM chat conversation." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="message_type_id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_messages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_message_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="chat_memory_message_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="chat_memory_messages" remarks="Messages from Ask Terraware conversations. Both questions (prompts to the LLM) and answers (responses from the LLM) are recorded." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="conversation_id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
+            <parent column="id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_conversations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="message_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="chat_memory_messages_message_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_message_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="content" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="chat_memory_messages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="chat_memory_messages_conversation_id_idx" unique="false">
+            <column ascending="true" name="conversation_id"/>
+         </index>
+      </table>
       <table name="conservation_categories" remarks="(Enum) IUCN conservation category codes." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
             <child column="conservation_category_id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -1416,6 +1461,7 @@
             <child column="modified_by" foreignKey="withdrawals_modified_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
             <child column="created_by" foreignKey="automations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
             <child column="modified_by" foreignKey="automations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
+            <child column="created_by" foreignKey="chat_memory_conversations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="chat_memory_conversations"/>
             <child column="user_id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="created_by" foreignKey="devices_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
@@ -1509,6 +1555,20 @@
          <checkConstraint constraint="(auth_id !~ similar_to_escape(' *'::text))" name="users_auth_id_check"/>
          <checkConstraint constraint="(first_name !~ similar_to_escape(' *'::text))" name="users_first_name_check"/>
          <checkConstraint constraint="(last_name !~ similar_to_escape(' *'::text))" name="users_last_name_check"/>
+      </table>
+      <table name="vector_store" remarks="Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="uuid_generate_v4()" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metadata" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="embedding" nullable="true" remarks="" size="2147483647" type="vector" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="vector_store_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="vector_store_embedding_idx" unique="false">
+            <column ascending="true" name="embedding"/>
+         </index>
+         <index name="vector_store_expr_idx" unique="false"/>
       </table>
       <table name="wood_density_levels" remarks="The taxonomic level in the at which a wood density measurement is known" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -2194,6 +2254,156 @@ END;]]></definition>
             <parameter mode="IN" name="use_typmod" type="boolean"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="akeys(hstore)" returnType="text[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_akeys]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_halfvec(double precision[], integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_halfvec(integer[], integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="integer[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_halfvec(numeric[], integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="numeric[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_halfvec(real[], integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="real[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_sparsevec(double precision[], integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_sparsevec(integer[], integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="integer[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_sparsevec(numeric[], integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="numeric[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_sparsevec(real[], integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="real[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_vector(double precision[], integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_vector(integer[], integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="integer[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_vector(numeric[], integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="numeric[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="array_to_vector(real[], integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[array_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="real[]"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="avals(hstore)" returnType="text[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_avals]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="avg(halfvec)" returnType="halfvec" securityType="INVOKER" type="AGGREGATE">
+         <comment/>
+         <definition language="internal"><![CDATA[aggregate_dummy]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="avg(vector)" returnType="vector" securityType="INVOKER" type="AGGREGATE">
+         <comment/>
+         <definition language="internal"><![CDATA[aggregate_dummy]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="binary_quantize(halfvec)" returnType="bit" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_binary_quantize]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="binary_quantize(vector)" returnType="bit" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[binary_quantize]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box(box3d)" returnType="box" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[BOX3D_to_BOX]]></definition>
@@ -2345,6 +2555,30 @@ SELECT EXISTS
             <parameter mode="IN" type="box2df"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="cosine_distance(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_cosine_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="cosine_distance(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_cosine_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="cosine_distance(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[cosine_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="daitch_mokotoff(text)" returnType="text[]" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[daitch_mokotoff]]></definition>
@@ -2358,6 +2592,38 @@ SELECT EXISTS
          <parameters>
             <parameter mode="IN" type="date"/>
             <parameter mode="IN" type="date"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="defined(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_defined]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="delete(hstore, hstore)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_delete_hstore]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="delete(hstore, text)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_delete]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="delete(hstore, text[])" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_delete_array]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text[]"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="difference(text, text)" returnType="integer" securityType="INVOKER" type="FUNCTION">
@@ -2506,12 +2772,53 @@ END;]]></definition>
             <parameter mode="IN" name="table_name" type="character varying"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="each(hs hstore, OUT key text, OUT value text)" returnType="SETOF record" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_each]]></definition>
+         <parameters>
+            <parameter mode="IN" name="hs" type="hstore"/>
+            <parameter mode="OUT" name="key" type="text"/>
+            <parameter mode="OUT" name="value" type="text"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="equals(geom1 geometry, geom2 geometry)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[ST_Equals]]></definition>
          <parameters>
             <parameter mode="IN" name="geom1" type="geometry"/>
             <parameter mode="IN" name="geom2" type="geometry"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="exist(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_exists]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="exists_all(hstore, text[])" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_exists_all]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="exists_any(hstore, text[])" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_exists_any]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="fetchval(hstore, text)" returnType="text" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_fetchval]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="find_srid(character varying, character varying, character varying)" returnType="integer" securityType="INVOKER" type="FUNCTION">
@@ -5077,6 +5384,86 @@ END;]]></definition>
             <parameter mode="IN" type="integer"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_compress(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_compress]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_consistent(internal, hstore, smallint, oid, internal)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_consistent]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="smallint"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_decompress(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_decompress]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_in(cstring)" returnType="ghstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_options(internal)" returnType="void" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_options]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_out(ghstore)" returnType="cstring" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_out]]></definition>
+         <parameters>
+            <parameter mode="IN" type="ghstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_penalty(internal, internal, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_penalty]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_picksplit(internal, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_picksplit]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_same(ghstore, ghstore, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_same]]></definition>
+         <parameters>
+            <parameter mode="IN" type="ghstore"/>
+            <parameter mode="IN" type="ghstore"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="ghstore_union(internal, internal)" returnType="ghstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ghstore_union]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="gidx_in(cstring)" returnType="gidx" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[gidx_in]]></definition>
@@ -5089,6 +5476,37 @@ END;]]></definition>
          <definition language="c"><![CDATA[gidx_out]]></definition>
          <parameters>
             <parameter mode="IN" type="gidx"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="gin_consistent_hstore(internal, smallint, hstore, integer, internal, internal)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[gin_consistent_hstore]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="smallint"/>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="gin_extract_hstore(hstore, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[gin_extract_hstore]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="gin_extract_hstore_query(hstore, internal, smallint, internal, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[gin_extract_hstore_query]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="smallint"/>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="internal"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="gin_extract_query_trgm(text, internal, smallint, internal, internal, internal, internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
@@ -5270,6 +5688,485 @@ END;]]></definition>
             <parameter mode="IN" type="internal"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec(halfvec, integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_accum(double precision[], halfvec)" returnType="double precision[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_accum]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_add(halfvec, halfvec)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_add]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_avg(double precision[])" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_avg]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_cmp(halfvec, halfvec)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_cmp]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_combine(double precision[], double precision[])" returnType="double precision[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_combine]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="double precision[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_concat(halfvec, halfvec)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_concat]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_eq(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_eq]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_ge(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_ge]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_gt(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_gt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_in(cstring, oid, integer)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_l2_squared_distance(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_l2_squared_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_le(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_le]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_lt(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_lt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_mul(halfvec, halfvec)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_mul]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_ne(halfvec, halfvec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_ne]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_negative_inner_product(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_negative_inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_out(halfvec)" returnType="cstring" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_out]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_recv(internal, oid, integer)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_recv]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_send(halfvec)" returnType="bytea" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_send]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_spherical_distance(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_spherical_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_sub(halfvec, halfvec)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_sub]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_to_float4(halfvec, integer, boolean)" returnType="real[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_to_float4]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_to_sparsevec(halfvec, integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_to_vector(halfvec, integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="halfvec_typmod_in(cstring[])" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_typmod_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hamming_distance(bit, bit)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hamming_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="bit"/>
+            <parameter mode="IN" type="bit"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="hnsw_bit_support(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hnsw_bit_support]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="hnsw_halfvec_support(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hnsw_halfvec_support]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="hnsw_sparsevec_support(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hnsw_sparsevec_support]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="hnswhandler(internal)" returnType="index_am_handler" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hnswhandler]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hs_concat(hstore, hstore)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_concat]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hs_contained(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_contained]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hs_contains(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_contains]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore(record)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_from_record]]></definition>
+         <parameters>
+            <parameter mode="IN" type="record"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore(text, text)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_from_text]]></definition>
+         <parameters>
+            <parameter mode="IN" type="text"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore(text[])" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_from_array]]></definition>
+         <parameters>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore(text[], text[])" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_from_arrays]]></definition>
+         <parameters>
+            <parameter mode="IN" type="text[]"/>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_cmp(hstore, hstore)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_cmp]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_eq(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_eq]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_ge(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_ge]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_gt(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_gt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_hash(hstore)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_hash]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_hash_extended(hstore, bigint)" returnType="bigint" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_hash_extended]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="bigint"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_in(cstring)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_le(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_le]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_lt(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_lt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_ne(hstore, hstore)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_ne]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_out(hstore)" returnType="cstring" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_out]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_recv(internal)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_recv]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_send(hstore)" returnType="bytea" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_send]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_subscript_handler(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_subscript_handler]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_array(hstore)" returnType="text[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_array]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_json(hstore)" returnType="json" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_json]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_json_loose(hstore)" returnType="json" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_json_loose]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_jsonb(hstore)" returnType="jsonb" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_jsonb]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_jsonb_loose(hstore)" returnType="jsonb" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_jsonb_loose]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_to_matrix(hstore)" returnType="text[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_to_matrix]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="hstore_version_diag(hstore)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_version_diag]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="inner_product(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="inner_product(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="inner_product(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="int2_dist(smallint, smallint)" returnType="smallint" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[int2_dist]]></definition>
@@ -5326,6 +6223,51 @@ END;]]></definition>
             <parameter mode="IN" type="box2df"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="isdefined(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_defined]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="isexists(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_exists]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="ivfflat_bit_support(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ivfflat_bit_support]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="ivfflat_halfvec_support(internal)" returnType="internal" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ivfflat_halfvec_support]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="ivfflathandler(internal)" returnType="index_am_handler" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[ivfflathandler]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="jaccard_distance(bit, bit)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[jaccard_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="bit"/>
+            <parameter mode="IN" type="bit"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="json(geometry)" returnType="json" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[geometry_to_json]]></definition>
@@ -5338,6 +6280,89 @@ END;]]></definition>
          <definition language="c"><![CDATA[geometry_to_jsonb]]></definition>
          <parameters>
             <parameter mode="IN" type="geometry"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l1_distance(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_l1_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l1_distance(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_l1_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l1_distance(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[l1_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_distance(halfvec, halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_l2_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_distance(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_l2_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_distance(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[l2_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_norm(halfvec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_l2_norm]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_norm(sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_l2_norm]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_normalize(halfvec)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_l2_normalize]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_normalize(sparsevec)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_l2_normalize]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="l2_normalize(vector)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[l2_normalize]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="levenshtein(text, text)" returnType="integer" securityType="INVOKER" type="FUNCTION">
@@ -5934,6 +6959,14 @@ BEGIN
 END]]></definition>
          <parameters>
             <parameter mode="IN" name="use_typmod" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="populate_record(anyelement, hstore)" returnType="anyelement" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_populate_record]]></definition>
+         <parameters>
+            <parameter mode="IN" type="anyelement"/>
+            <parameter mode="IN" type="hstore"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_addbbox(geometry)" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -6728,11 +7761,172 @@ END]]></definition>
             <parameter mode="IN" type="text"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="skeys(hstore)" returnType="SETOF text" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_skeys]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="slice(hstore, text[])" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_slice_to_hstore]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="slice_array(hstore, text[])" returnType="text[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_slice_to_array]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+            <parameter mode="IN" type="text[]"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="soundex(text)" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[soundex]]></definition>
          <parameters>
             <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec(sparsevec, integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_cmp(sparsevec, sparsevec)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_cmp]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_eq(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_eq]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_ge(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_ge]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_gt(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_gt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_in(cstring, oid, integer)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_l2_squared_distance(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_l2_squared_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_le(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_le]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_lt(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_lt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_ne(sparsevec, sparsevec)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_ne]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_negative_inner_product(sparsevec, sparsevec)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_negative_inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_out(sparsevec)" returnType="cstring" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_out]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_recv(internal, oid, integer)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_recv]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_send(sparsevec)" returnType="bytea" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_send]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_to_halfvec(sparsevec, integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_to_vector(sparsevec, integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_to_vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="sparsevec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sparsevec_typmod_in(cstring[])" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[sparsevec_typmod_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring[]"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="spheroid_in(cstring)" returnType="spheroid" securityType="INVOKER" type="FUNCTION">
@@ -11028,6 +12222,53 @@ END;]]></definition>
             <parameter mode="IN" type="text"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="subvector(halfvec, integer, integer)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_subvector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="subvector(vector, integer, integer)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[subvector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sum(halfvec)" returnType="halfvec" securityType="INVOKER" type="AGGREGATE">
+         <comment/>
+         <definition language="internal"><![CDATA[aggregate_dummy]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="sum(vector)" returnType="vector" securityType="INVOKER" type="AGGREGATE">
+         <comment/>
+         <definition language="internal"><![CDATA[aggregate_dummy]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="svals(hstore)" returnType="SETOF text" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_svals]]></definition>
+         <parameters>
+            <parameter mode="IN" type="hstore"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="tconvert(text, text)" returnType="hstore" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[hstore_from_text]]></definition>
+         <parameters>
+            <parameter mode="IN" type="text"/>
+            <parameter mode="IN" type="text"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="text(geometry)" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[LWGEOM_to_text]]></definition>
@@ -11220,6 +12461,309 @@ END;]]></definition>
             <parameter mode="IN" type="character varying"/>
             <parameter mode="IN" type="character varying"/>
             <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="uuid_generate_v1()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_generate_v1]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="uuid_generate_v1mc()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_generate_v1mc]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_generate_v3(namespace uuid, name text)" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_generate_v3]]></definition>
+         <parameters>
+            <parameter mode="IN" name="namespace" type="uuid"/>
+            <parameter mode="IN" name="name" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="uuid_generate_v4()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_generate_v4]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_generate_v5(namespace uuid, name text)" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_generate_v5]]></definition>
+         <parameters>
+            <parameter mode="IN" name="namespace" type="uuid"/>
+            <parameter mode="IN" name="name" type="text"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_nil()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_nil]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_ns_dns()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_ns_dns]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_ns_oid()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_ns_oid]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_ns_url()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_ns_url]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="uuid_ns_x500()" returnType="uuid" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[uuid_ns_x500]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector(vector, integer, boolean)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_accum(double precision[], vector)" returnType="double precision[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_accum]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_add(vector, vector)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_add]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_avg(double precision[])" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_avg]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_cmp(vector, vector)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_cmp]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_combine(double precision[], double precision[])" returnType="double precision[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_combine]]></definition>
+         <parameters>
+            <parameter mode="IN" type="double precision[]"/>
+            <parameter mode="IN" type="double precision[]"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_concat(vector, vector)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_concat]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_dims(halfvec)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[halfvec_vector_dims]]></definition>
+         <parameters>
+            <parameter mode="IN" type="halfvec"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_dims(vector)" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_dims]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_eq(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_eq]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_ge(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_ge]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_gt(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_gt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_in(cstring, oid, integer)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_l2_squared_distance(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_l2_squared_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_le(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_le]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_lt(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_lt]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_mul(vector, vector)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_mul]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_ne(vector, vector)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_ne]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_negative_inner_product(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_negative_inner_product]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_norm(vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_norm]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_out(vector)" returnType="cstring" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_out]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_recv(internal, oid, integer)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_recv]]></definition>
+         <parameters>
+            <parameter mode="IN" type="internal"/>
+            <parameter mode="IN" type="oid"/>
+            <parameter mode="IN" type="integer"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_send(vector)" returnType="bytea" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_send]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_spherical_distance(vector, vector)" returnType="double precision" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_spherical_distance]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_sub(vector, vector)" returnType="vector" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_sub]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="vector"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_to_float4(vector, integer, boolean)" returnType="real[]" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_to_float4]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_to_halfvec(vector, integer, boolean)" returnType="halfvec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_to_halfvec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_to_sparsevec(vector, integer, boolean)" returnType="sparsevec" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_to_sparsevec]]></definition>
+         <parameters>
+            <parameter mode="IN" type="vector"/>
+            <parameter mode="IN" type="integer"/>
+            <parameter mode="IN" type="boolean"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="true" name="vector_typmod_in(cstring[])" returnType="integer" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="c"><![CDATA[vector_typmod_in]]></definition>
+         <parameters>
+            <parameter mode="IN" type="cstring[]"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="word_similarity(text, text)" returnType="real" securityType="INVOKER" type="FUNCTION">

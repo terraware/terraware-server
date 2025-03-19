@@ -6,6 +6,7 @@
 * Java version 20 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
 * PostgreSQL (version 13 or higher recommended)
 * PostGIS (version 3.1 or higher recommended)
+* PGVector (version 0.8.0 or higher)
 
 ## Initial setup
 

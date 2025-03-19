@@ -406,6 +406,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="chat_memory_conversations.created_by references users.id via chat_memory_conversations_created_by_fkey"><a href='chat_memory_conversations.html'>chat_memory_conversations</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">chat_memory_conversations_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="device_managers.user_id references users.id via device_managers_user_id_fkey"><a href='device_managers.html'>device_managers</a><span class='relatedKey'>.user_id</span></td>
                                                 <td class="constraint detail">device_managers_user_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1054,12 +1059,12 @@
                                     <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>users_auth_id_check</td>
-                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_auth_id_check</td>
+                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

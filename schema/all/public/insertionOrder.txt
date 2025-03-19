@@ -1,6 +1,7 @@
 time_zones
 seed_treatments
 regions
+chat_memory_message_types
 conservation_categories
 device_template_categories
 ecosystem_types
@@ -38,6 +39,7 @@ sub_locations
 projects
 devices
 seed_fund_reports
+chat_memory_conversations
 internal_tags
 timeseries
 uploads
@@ -47,6 +49,7 @@ organization_report_settings
 project_report_settings
 thumbnails
 timeseries_values
+chat_memory_messages
 device_managers
 organization_managed_location_types
 project_land_use_model_types
@@ -67,3 +70,4 @@ organization_users
 app_versions
 rate_limited_events
 test_clock
+vector_store
