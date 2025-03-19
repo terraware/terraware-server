@@ -68,8 +68,7 @@ class FundingEntityService(
 
   fun update(
       row: FundingEntitiesRow,
-      addProjects: Set<ProjectId>? = null,
-      removeProjects: Set<ProjectId>? = null,
+      projects: Set<ProjectId>? = null,
   ) {
     val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
 
@@ -98,8 +97,10 @@ class FundingEntityService(
         throw FundingEntityExistsException(row.name!!)
       }
 
-      removeProjectsFromEntity(fundingEntityId, removeProjects.orEmpty())
-      addProjectsToEntity(fundingEntityId, addProjects.orEmpty())
+      if (projects != null) {
+        removeProjectsFromEntity(fundingEntityId, projects)
+        addProjectsToEntity(fundingEntityId, projects)
+      }
     }
   }
 
@@ -193,7 +194,7 @@ class FundingEntityService(
       dslContext
           .deleteFrom(FUNDING_ENTITY_PROJECTS)
           .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
-          .and(PROJECT_ID.`in`(projectIds))
+          .and(PROJECT_ID.notIn(projectIds))
           .execute()
     }
   }

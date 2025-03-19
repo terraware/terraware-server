@@ -74,8 +74,7 @@ class FundingEntitiesController(
       @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId,
       @RequestBody @Valid payload: UpdateFundingEntityRequestPayload
   ): SimpleSuccessResponsePayload {
-    fundingEntityService.update(
-        payload.toRow().copy(id = fundingEntityId), payload.addProjects, payload.removeProjects)
+    fundingEntityService.update(payload.toRow().copy(id = fundingEntityId), payload.projects)
     return SimpleSuccessResponsePayload()
   }
 
@@ -136,8 +135,7 @@ data class CreateFundingEntityRequestPayload(
 
 data class UpdateFundingEntityRequestPayload(
     val name: String,
-    val addProjects: Set<ProjectId>? = null,
-    val removeProjects: Set<ProjectId>? = null,
+    val projects: Set<ProjectId>? = null,
 ) {
   fun toRow(): FundingEntitiesRow {
     return FundingEntitiesRow(name = name)

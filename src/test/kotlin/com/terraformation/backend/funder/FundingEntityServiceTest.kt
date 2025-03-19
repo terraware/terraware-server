@@ -249,7 +249,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
             ),
         ))
 
-    service.update(row, emptySet(), setOf(projectId1))
+    service.update(row, setOf(projectId2))
 
     assertTableEquals(
         FundingEntityProjectsRecord(
@@ -283,7 +283,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
             ),
         ))
 
-    service.update(row, setOf(projectId3), setOf(projectId1))
+    service.update(row, setOf(projectId3, projectId2))
 
     assertTableEquals(
         listOf(
