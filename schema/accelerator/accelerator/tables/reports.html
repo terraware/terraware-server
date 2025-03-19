@@ -131,6 +131,16 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="report_achievements.report_id references reports.id via report_achievements_report_id_fkey"><a href='report_achievements.html'>report_achievements</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_achievements_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="report_challenges.report_id references reports.id via report_challenges_report_id_fkey"><a href='report_challenges.html'>report_challenges</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_challenges_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_project_metrics.report_id references reports.id via report_project_metrics_report_id_fkey"><a href='report_project_metrics.html'>report_project_metrics</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">report_project_metrics_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -488,12 +498,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>submitted_status</td>
-                                    <td>(((status_id &#61; 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id &#61; 2) OR (status_id &#61; 3) OR (status_id &#61; 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id &#61; 5))</td>
-                                </tr>
-                                <tr>
                                     <td>reports_check</td>
                                     <td>(end_date &gt; start_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>submitted_status</td>
+                                    <td>(((status_id &#61; 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id &#61; 2) OR (status_id &#61; 3) OR (status_id &#61; 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id &#61; 5))</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -31,6 +31,8 @@ events
 project_metrics
 deliverable_variables
 project_overall_scores
+report_achievements
+report_challenges
 submission_snapshots
 user_internal_interests
 application_histories

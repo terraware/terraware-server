@@ -19,6 +19,8 @@ cohort_modules
 application_histories
 user_internal_interests
 submission_snapshots
+report_challenges
+report_achievements
 project_overall_scores
 deliverable_variables
 project_metrics

@@ -19,6 +19,8 @@ deliverable_variables
 deliverable_project_due_dates
 deliverable_cohort_due_dates
 cohort_modules
+report_challenges
+report_achievements
 default_voters
 default_project_leads
 events
