@@ -10,12 +10,27 @@ import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
 import org.jooq.Record
+
+data class ReportChallengeModel(
+    val challenge: String,
+    val mitigationPlan: String,
+) {
+  companion object {
+    fun of(record: Record): ReportChallengeModel {
+      return ReportChallengeModel(
+          challenge = record[REPORT_CHALLENGES.CHALLENGE]!!,
+          mitigationPlan = record[REPORT_CHALLENGES.MITIGATION_PLAN]!!,
+      )
+    }
+  }
+}
 
 data class ReportModel(
     val id: ReportId,
@@ -26,6 +41,8 @@ data class ReportModel(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val highlights: String? = null,
+    val achievements: List<String> = emptyList(),
+    val challenges: List<ReportChallengeModel> = emptyList(),
     val internalComment: String? = null,
     val feedback: String? = null,
     val createdBy: UserId,
@@ -131,6 +148,8 @@ data class ReportModel(
         projectMetricsField: Field<List<ReportProjectMetricModel>>?,
         standardMetricsField: Field<List<ReportStandardMetricModel>>?,
         systemMetricsField: Field<List<ReportSystemMetricModel>>?,
+        achievementsField: Field<List<String>>?,
+        challengesField: Field<List<ReportChallengeModel>>?,
     ): ReportModel {
       return with(REPORTS) {
         ReportModel(
@@ -142,6 +161,8 @@ data class ReportModel(
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
             highlights = record[HIGHLIGHTS],
+            achievements = achievementsField?.let { record[it] } ?: emptyList(),
+            challenges = challengesField?.let { record[it] } ?: emptyList(),
             internalComment =
                 if (currentUser().canReadReportInternalComments()) {
                   record[INTERNAL_COMMENT]

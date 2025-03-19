@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
@@ -27,6 +28,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
@@ -521,7 +524,10 @@ class ReportStore(
             PROJECT_REPORT_CONFIGS.REPORT_FREQUENCY_ID,
             projectMetricsField,
             standardMetricsField,
-            systemMetricsField)
+            systemMetricsField,
+            achievementsMultiset,
+            challengesMultiset,
+        )
         .from(REPORTS)
         .join(PROJECT_REPORT_CONFIGS)
         .on(PROJECT_REPORT_CONFIGS.ID.eq(REPORTS.CONFIG_ID))
@@ -533,6 +539,8 @@ class ReportStore(
               projectMetricsField = projectMetricsField,
               standardMetricsField = standardMetricsField,
               systemMetricsField = systemMetricsField,
+              achievementsField = achievementsMultiset,
+              challengesField = challengesMultiset,
           )
         }
         .filter { currentUser().canReadReport(it.id) }
@@ -742,6 +750,24 @@ class ReportStore(
         .where(REPORTS.ID.eq(reportId))
         .execute()
   }
+
+  private val achievementsMultiset: Field<List<String>> =
+      DSL.multiset(
+              DSL.select(REPORT_ACHIEVEMENTS.ACHIEVEMENT)
+                  .from(REPORT_ACHIEVEMENTS)
+                  .where(REPORT_ACHIEVEMENTS.REPORT_ID.eq(REPORTS.ID))
+                  .orderBy(REPORT_ACHIEVEMENTS.POSITION))
+          .convertFrom { result ->
+            result.map { it[REPORT_ACHIEVEMENTS.ACHIEVEMENT.asNonNullable()] }
+          }
+
+  private val challengesMultiset: Field<List<ReportChallengeModel>> =
+      DSL.multiset(
+              DSL.select(REPORT_CHALLENGES.CHALLENGE, REPORT_CHALLENGES.MITIGATION_PLAN)
+                  .from(REPORT_CHALLENGES)
+                  .where(REPORT_CHALLENGES.REPORT_ID.eq(REPORTS.ID))
+                  .orderBy(REPORT_CHALLENGES.POSITION))
+          .convertFrom { result -> result.map { ReportChallengeModel.of(it) } }
 
   private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
       DSL.multiset(

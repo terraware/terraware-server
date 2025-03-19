@@ -72,6 +72,8 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfig
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportAchievementsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportChallengesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportSystemMetricsDao
@@ -105,6 +107,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfi
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportAchievementsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportChallengesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportSystemMetricsRow
@@ -617,6 +621,8 @@ abstract class DatabaseBackedTest {
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
+  protected val reportAchievementsDao: ReportAchievementsDao by lazyDao()
+  protected val reportChallengesDao: ReportChallengesDao by lazyDao()
   protected val reportProjectMetricsDao: ReportProjectMetricsDao by lazyDao()
   protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
   protected val reportSystemMetricsDao: ReportSystemMetricsDao by lazyDao()
@@ -2812,6 +2818,94 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
+  protected fun insertReport(
+      row: ReportsRow = ReportsRow(),
+      configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
+      startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
+      endDate: LocalDate = row.endDate ?: LocalDate.EPOCH.plusDays(1),
+      highlights: String? = row.highlights,
+      internalComment: String? = row.internalComment,
+      feedback: String? = row.feedback,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      submittedBy: UserId? =
+          row.submittedBy
+              ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
+                inserted.userId
+              } else {
+                null
+              },
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH }
+  ): ReportId {
+    val rowWithDefaults =
+        row.copy(
+            configId = configId,
+            projectId = projectId,
+            statusId = status,
+            startDate = startDate,
+            endDate = endDate,
+            highlights = highlights,
+            internalComment = internalComment,
+            feedback = feedback,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            submittedBy = submittedBy,
+            submittedTime = submittedTime,
+        )
+
+    reportsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
+  }
+
+  private val nextReportAchievementPositon = mutableMapOf<ReportId, Int>()
+
+  protected fun insertReportAchievement(
+      row: ReportAchievementsRow = ReportAchievementsRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      position: Int = row.position ?: nextReportAchievementPositon.getOrDefault(reportId, 0),
+      achievement: String = row.achievement ?: "Achievement $position",
+  ) {
+    val rowWihDefaults =
+        row.copy(
+            reportId = reportId,
+            position = position,
+            achievement = achievement,
+        )
+
+    reportAchievementsDao.insert(rowWihDefaults)
+
+    nextReportAchievementPositon[reportId] = position + 1
+  }
+
+  private val nextReportChallengePositon = mutableMapOf<ReportId, Int>()
+
+  protected fun insertReportChallenge(
+      row: ReportChallengesRow = ReportChallengesRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      position: Int = row.position ?: nextReportChallengePositon.getOrDefault(reportId, 0),
+      challenge: String = row.challenge ?: "Challenge $position",
+      mitigationPlan: String = row.mitigationPlan ?: "Mitigation Plan $position",
+  ) {
+    val rowWihDefaults =
+        row.copy(
+            reportId = reportId,
+            position = position,
+            challenge = challenge,
+            mitigationPlan = mitigationPlan,
+        )
+
+    reportChallengesDao.insert(rowWihDefaults)
+
+    nextReportChallengePositon[reportId] = position + 1
+  }
+
   protected fun insertReportProjectMetric(
       row: ReportProjectMetricsRow = ReportProjectMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
@@ -2898,52 +2992,6 @@ abstract class DatabaseBackedTest {
         )
 
     reportSystemMetricsDao.insert(rowWithDefaults)
-  }
-
-  protected fun insertReport(
-      row: ReportsRow = ReportsRow(),
-      configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
-      projectId: ProjectId = row.projectId ?: inserted.projectId,
-      status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
-      startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
-      endDate: LocalDate = row.endDate ?: LocalDate.EPOCH.plusDays(1),
-      highlights: String? = row.highlights,
-      internalComment: String? = row.internalComment,
-      feedback: String? = row.feedback,
-      createdBy: UserId = row.createdBy ?: inserted.userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
-      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
-      submittedBy: UserId? =
-          row.submittedBy
-              ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
-                inserted.userId
-              } else {
-                null
-              },
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH }
-  ): ReportId {
-    val rowWithDefaults =
-        row.copy(
-            configId = configId,
-            projectId = projectId,
-            statusId = status,
-            startDate = startDate,
-            endDate = endDate,
-            highlights = highlights,
-            internalComment = internalComment,
-            feedback = feedback,
-            createdBy = createdBy,
-            createdTime = createdTime,
-            modifiedBy = modifiedBy,
-            modifiedTime = modifiedTime,
-            submittedBy = submittedBy,
-            submittedTime = submittedTime,
-        )
-
-    reportsDao.insert(rowWithDefaults)
-
-    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
   }
 
   private var nextInternalTagNumber = 1
