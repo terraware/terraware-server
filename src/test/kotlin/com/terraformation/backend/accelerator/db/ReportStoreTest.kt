@@ -27,10 +27,14 @@ import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportChallengesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportStandardMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportSystemMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -1378,6 +1382,185 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
           "Reports table")
+    }
+  }
+
+  @Nested
+  inner class UpdateReportQualitatives {
+    @Test
+    fun `throws exception for non-organization users`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+      deleteOrganizationUser()
+      assertThrows<AccessDeniedException> {
+        store.updateReportQualitatives(
+            reportId = reportId,
+            highlights = "Highlights",
+            achievements = emptyList(),
+            challenges = emptyList(),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports not in NotSubmitted`() {
+      insertProjectReportConfig()
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+
+      listOf(notNeededReportId, submittedReportId, needsUpdateReportId, approvedReportId).forEach {
+        assertThrows<IllegalStateException> {
+          store.updateReportQualitatives(
+              reportId = it,
+              highlights = "Highlights",
+              achievements = emptyList(),
+              challenges = emptyList(),
+          )
+        }
+      }
+    }
+
+    @Test
+    fun `updates highlights, merges new achievements and challenges rows`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(highlights = "Existing Highlights")
+      val existingReportRow = reportsDao.fetchOneById(reportId)!!
+
+      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
+      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
+      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+
+      clock.instant = Instant.ofEpochSecond(30000)
+
+      store.updateReportQualitatives(
+          reportId = reportId,
+          highlights = "New Highlights",
+          achievements =
+              listOf(
+                  "New Achievement Z",
+                  "New Achievement Y",
+              ),
+          challenges =
+              listOf(
+                  ReportChallengeModel(
+                      challenge = "New Challenge Z",
+                      mitigationPlan = "New Plan Z",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge X",
+                      mitigationPlan = "New Plan X",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge Y",
+                      mitigationPlan = "New Plan Y",
+                  ),
+              ),
+      )
+
+      assertTableEquals(
+          listOf(
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 0,
+                  achievement = "New Achievement Z",
+              ),
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 1,
+                  achievement = "New Achievement Y",
+              ),
+          ),
+          "Report achievements table",
+      )
+
+      assertTableEquals(
+          listOf(
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 0,
+                  challenge = "New Challenge Z",
+                  mitigationPlan = "New Plan Z",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 1,
+                  challenge = "New Challenge X",
+                  mitigationPlan = "New Plan X",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 2,
+                  challenge = "New Challenge Y",
+                  mitigationPlan = "New Plan Y",
+              ),
+          ),
+          "Report achievements table",
+      )
+
+      assertTableEquals(
+          ReportsRecord(
+              existingReportRow.copy(
+                  highlights = "New Highlights",
+                  modifiedTime = clock.instant,
+                  modifiedBy = user.userId,
+              )),
+          "Report table")
+    }
+
+    @Test
+    fun `sets null and deletes achievements and challenges rows for empty params`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(highlights = "Existing Highlights")
+      val existingReportRow = reportsDao.fetchOneById(reportId)!!
+
+      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
+      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
+      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+
+      clock.instant = Instant.ofEpochSecond(30000)
+
+      store.updateReportQualitatives(
+          reportId = reportId,
+          highlights = null,
+          achievements = emptyList(),
+          challenges = emptyList(),
+      )
+
+      assertTableEmpty(REPORT_ACHIEVEMENTS, "Report achievements table")
+      assertTableEmpty(REPORT_CHALLENGES, "Report challenges table")
+
+      assertTableEquals(
+          ReportsRecord(
+              existingReportRow.copy(
+                  highlights = null,
+                  modifiedTime = clock.instant,
+                  modifiedBy = user.userId,
+              )),
+          "Report table")
     }
   }
 
