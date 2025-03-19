@@ -2864,36 +2864,36 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
   }
 
-  private val nextReportAchievementPositon = mutableMapOf<ReportId, Int>()
+  private val nextReportAchievementPosition = mutableMapOf<ReportId, Int>()
 
   protected fun insertReportAchievement(
       row: ReportAchievementsRow = ReportAchievementsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      position: Int = row.position ?: nextReportAchievementPositon.getOrDefault(reportId, 0),
+      position: Int = row.position ?: nextReportAchievementPosition.getOrDefault(reportId, 0),
       achievement: String = row.achievement ?: "Achievement $position",
   ) {
-    val rowWihDefaults =
+    val rowWithDefaults =
         row.copy(
             reportId = reportId,
             position = position,
             achievement = achievement,
         )
 
-    reportAchievementsDao.insert(rowWihDefaults)
+    reportAchievementsDao.insert(rowWithDefaults)
 
-    nextReportAchievementPositon[reportId] = position + 1
+    nextReportAchievementPosition[reportId] = position + 1
   }
 
-  private val nextReportChallengePositon = mutableMapOf<ReportId, Int>()
+  private val nextReportChallengePosition = mutableMapOf<ReportId, Int>()
 
   protected fun insertReportChallenge(
       row: ReportChallengesRow = ReportChallengesRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      position: Int = row.position ?: nextReportChallengePositon.getOrDefault(reportId, 0),
+      position: Int = row.position ?: nextReportChallengePosition.getOrDefault(reportId, 0),
       challenge: String = row.challenge ?: "Challenge $position",
       mitigationPlan: String = row.mitigationPlan ?: "Mitigation Plan $position",
   ) {
-    val rowWihDefaults =
+    val rowWithDefaults =
         row.copy(
             reportId = reportId,
             position = position,
@@ -2901,9 +2901,9 @@ abstract class DatabaseBackedTest {
             mitigationPlan = mitigationPlan,
         )
 
-    reportChallengesDao.insert(rowWihDefaults)
+    reportChallengesDao.insert(rowWithDefaults)
 
-    nextReportChallengePositon[reportId] = position + 1
+    nextReportChallengePosition[reportId] = position + 1
   }
 
   protected fun insertReportProjectMetric(

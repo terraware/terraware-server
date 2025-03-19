@@ -618,9 +618,9 @@ COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can b
 
 COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decisions for project.';
 
-COMMENT ON TABLE accelerator.report_achievements IS 'List of achievements for an accelerator project reports.';
+COMMENT ON TABLE accelerator.report_achievements IS 'List of achievements for accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for an accelerator project reports.';
+COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for accelerator project reports.';
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
 
