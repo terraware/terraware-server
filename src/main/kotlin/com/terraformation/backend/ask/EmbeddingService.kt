@@ -103,7 +103,10 @@ class EmbeddingService(
   fun embedProjectData(projectId: ProjectId) {
     val project = projectStore.fetchOneById(projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
-    val valuesByVariableId = variableValueStore.listValues(projectId).groupBy { it.variableId }
+    val valuesByVariableId =
+        variableValueStore.listValues(projectId, includeReplacedVariables = false).groupBy {
+          it.variableId
+        }
     val projectDetails =
         projectAcceleratorDetailsStore.fetchOneById(
             projectId, acceleratorProjectVariableValuesService.fetchValues(projectId))
