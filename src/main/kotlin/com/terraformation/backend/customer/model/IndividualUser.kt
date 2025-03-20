@@ -243,6 +243,8 @@ data class IndividualUser(
       userId == parentStore.getUserId(draftPlantingSiteId) &&
           isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
+  override fun canDeleteFunder(userId: UserId) = isAcceleratorAdmin()
+
   override fun canDeleteFundingEntities() = isAcceleratorAdmin()
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)

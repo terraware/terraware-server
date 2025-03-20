@@ -820,6 +820,41 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class DeleteFunderById {
+    // Most of this method coverage overlaps with deleteFunderById() above
+    @BeforeEach
+    fun setUp() {
+      val funderId = insertUser(type = UserType.Funder)
+
+      every { user.authId } returns authId
+      every { user.canDeleteFunder(funderId) } returns true
+    }
+
+    @Test
+    fun `publishes UserDeletedEvent`() {
+      userStore.deleteFunderById(inserted.userId)
+
+      publisher.assertEventPublished(UserDeletionStartedEvent(inserted.userId))
+    }
+
+    @Test
+    fun `throws exception if no permission to delete funders`() {
+      every { user.canDeleteFunder(inserted.userId) } returns false
+
+      assertThrows<AccessDeniedException> { userStore.deleteFunderById(inserted.userId) }
+    }
+
+    @Test
+    fun `throws exception if attempting to delete non-funder users`() {
+      val deviceManagerUser = insertUser(type = UserType.DeviceManager)
+      val systemUser = insertUser(type = UserType.System)
+
+      assertThrows<AccessDeniedException> { userStore.deleteFunderById(deviceManagerUser) }
+      assertThrows<AccessDeniedException> { userStore.deleteFunderById(systemUser) }
+    }
+  }
+
+  @Nested
   inner class FetchByOrganizationId {
     @BeforeEach
     fun setUp() {

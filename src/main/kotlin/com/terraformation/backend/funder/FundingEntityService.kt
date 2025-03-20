@@ -109,6 +109,14 @@ class FundingEntityService(
     log.info("Deleting funding entity $fundingEntityId")
 
     dslContext.transaction { _ ->
+      val funders = userStore.fetchByFundingEntityId(fundingEntityId)
+      for (funder in funders) {
+        userStore.deleteFunderById(funder.userId)
+      }
+
+      // no need to remove users from funding_entity_users table because funding_entities performs
+      // cascade deletes
+
       val deletedRows =
           dslContext
               .deleteFrom(FUNDING_ENTITIES)
@@ -118,8 +126,6 @@ class FundingEntityService(
       if (deletedRows == 0) {
         throw FundingEntityNotFoundException(fundingEntityId)
       }
-
-      // delete associated Funders here in SW-6655
     }
   }
 

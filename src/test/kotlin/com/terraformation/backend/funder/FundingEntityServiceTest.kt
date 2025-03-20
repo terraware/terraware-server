@@ -86,6 +86,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFundingEntities() } returns true
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
+    every { user.canDeleteFunder(any()) } returns true
   }
 
   @Test
@@ -314,12 +315,22 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete successfully removes funding entity`() {
+  fun `delete successfully removes funding entity and deletes associated funders`() {
     val fundingEntityId = insertFundingEntity()
+    val funderId1 = insertUser(type = UserType.Funder)
+    val funderId2 = insertUser(type = UserType.Funder)
+    insertFundingEntityUser(fundingEntityId, funderId1)
+    insertFundingEntityUser(fundingEntityId, funderId2)
 
     service.deleteFundingEntity(fundingEntityId)
 
+    val deletedFunder1 = usersDao.fetchOneById(funderId1)!!
+    val deletedFunder2 = usersDao.fetchOneById(funderId2)!!
+
     assertTableEmpty(FUNDING_ENTITIES)
+    assertTableEmpty(FUNDING_ENTITY_USERS)
+    assertEquals("deleted:${funderId1}", deletedFunder1.email)
+    assertEquals("deleted:${funderId2}", deletedFunder2.email)
   }
 
   @Test

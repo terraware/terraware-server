@@ -141,6 +141,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
+  private val funderId: UserId by readableId(AccessDeniedException::class) { canReadUser(it) }
   private val fundingEntityId: FundingEntityId by
       readableId(FundingEntityNotFoundException::class) { canReadFundingEntities() }
   private val moduleId: ModuleId by readableId(ModuleNotFoundException::class) { canReadModule(it) }
@@ -468,6 +469,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canDeleteDraftPlantingSite(draftPlantingSiteId)
           }
+
+  @Test fun deleteFunder() = allow { deleteFunder(funderId) } ifUser { canDeleteFunder(funderId) }
 
   @Test
   fun deleteFundingEntities() =

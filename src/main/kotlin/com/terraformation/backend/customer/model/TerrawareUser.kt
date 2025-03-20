@@ -298,6 +298,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean =
       defaultPermission
 
+  fun canDeleteFunder(userId: UserId): Boolean = defaultPermission
+
   fun canDeleteFundingEntities(): Boolean = defaultPermission
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean = defaultPermission
