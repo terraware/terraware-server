@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
@@ -23,17 +24,20 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlantingSubzonesController(
+    private val parentStore: ParentStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val speciesStore: SpeciesStore,
 ) {
   @GetMapping("/{id}/species")
   @Operation(
-      summary = "Gets a list of the species that have been planted in a specific planting subzone.",
-      description = "The list is based on nursery withdrawals.")
+      summary = "Gets a list of the species that may have been planted in a planting subzone.",
+      description =
+          "The list is based on nursery withdrawals to the planting site as well as past " +
+              "observations.")
   fun listPlantingSubzoneSpecies(
       @PathVariable id: PlantingSubzoneId,
   ): ListPlantingSubzoneSpeciesResponsePayload {
-    val species = speciesStore.fetchSpeciesByPlantingSubzoneId(id)
+    val species = speciesStore.fetchSiteSpeciesByPlantingSubzoneId(id)
 
     return ListPlantingSubzoneSpeciesResponsePayload(
         species.map { PlantingSubzoneSpeciesPayload(it) })

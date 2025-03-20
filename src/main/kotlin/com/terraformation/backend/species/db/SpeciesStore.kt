@@ -167,7 +167,15 @@ class SpeciesStore(
         }
   }
 
-  fun fetchSpeciesByPlantingSubzoneId(
+  /**
+   * Returns a list of species that may be present in a given planting subzone.
+   *
+   * This is a combined list of all the species that have been planted and observed across the
+   * entire planting site. We can't limit the search to the specific subzone because subzone
+   * boundaries can change over time; a plant that was in subzone 1 in the past may be in subzone 2
+   * now due to a subsequent map edit.
+   */
+  fun fetchSiteSpeciesByPlantingSubzoneId(
       plantingSubzoneId: PlantingSubzoneId
   ): List<ExistingSpeciesModel> {
     requirePermissions { readPlantingSubzone(plantingSubzoneId) }
@@ -184,7 +192,9 @@ class SpeciesStore(
             SPECIES.ID.`in`(
                 DSL.select(PLANTINGS.SPECIES_ID)
                     .from(PLANTINGS)
-                    .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+                    .join(PLANTING_SUBZONES)
+                    .on(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SUBZONES.PLANTING_SITE_ID))
+                    .where(PLANTING_SUBZONES.ID.eq(plantingSubzoneId))
                     .union(
                         DSL.select(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
                             .from(OBSERVED_SITE_SPECIES_TOTALS)

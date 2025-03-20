@@ -507,14 +507,15 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchSpeciesByPlantingSubzoneId {
+  inner class FetchSiteSpeciesByPlantingSubzoneId {
     @Test
-    fun `returns species for requested subzone`() {
+    fun `returns species planted across entire site, not just requested subzone`() {
       val speciesId1 = insertSpecies(scientificName = "Species 1")
       val speciesId2 = insertSpecies(scientificName = "Species 2", commonName = "Common 2")
       val speciesId3 = insertSpecies(scientificName = "Species 3")
       val speciesId4 = insertSpecies(scientificName = "Species 4", deletedTime = Instant.EPOCH)
-      insertSpecies(scientificName = "Species 5")
+      val speciesId5 = insertSpecies(scientificName = "Species 5")
+      insertSpecies(scientificName = "Species 6")
 
       insertFacility(type = FacilityType.Nursery)
       insertPlantingSite()
@@ -528,6 +529,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
+      // Deleted species should not be included
       insertPlanting(speciesId = speciesId4)
 
       insertPlantingSubzone()
@@ -535,6 +537,14 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertDelivery()
       insertPlanting(speciesId = speciesId2)
       insertPlanting(speciesId = speciesId3)
+
+      // Species at other planting sites should not be included
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(speciesId = speciesId5)
 
       every { user.canReadPlantingSubzone(subzoneId) } returns true
 
@@ -557,9 +567,17 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   organizationId = organizationId,
                   scientificName = "Species 2",
               ),
+              ExistingSpeciesModel(
+                  createdTime = Instant.EPOCH,
+                  id = speciesId3,
+                  initialScientificName = "Species 3",
+                  modifiedTime = Instant.EPOCH,
+                  organizationId = organizationId,
+                  scientificName = "Species 3",
+              ),
           )
 
-      val actual = store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+      val actual = store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
 
       assertEquals(expected, actual)
     }
@@ -628,7 +646,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+      val actual = store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
 
       assertEquals(expected, actual)
     }
@@ -642,7 +660,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadPlantingSubzone(subzoneId) } returns false
 
       assertThrows<PlantingSubzoneNotFoundException> {
-        store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+        store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
       }
     }
   }
