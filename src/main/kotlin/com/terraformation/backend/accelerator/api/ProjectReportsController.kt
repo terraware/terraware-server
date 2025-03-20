@@ -77,7 +77,7 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}")
-  @Operation(summary = "Update qualitative data a report")
+  @Operation(summary = "Update qualitative data for a report")
   fun updateAcceleratorReportQualitatives(
       @PathVariable reportId: ReportId,
       @RequestBody payload: UpdateAcceleratorReportQualitativesRequestPayload,
