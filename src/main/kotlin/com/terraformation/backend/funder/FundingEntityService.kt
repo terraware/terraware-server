@@ -60,7 +60,7 @@ class FundingEntityService(
                 .fetchOne(ID) ?: throw FundingEntityExistsException(name)
           }
 
-      addProjectsToEntity(fundingEntityId, projects.orEmpty())
+      setProjectsForEntity(fundingEntityId, projects.orEmpty())
 
       fundingEntityStore.fetchOneById(fundingEntityId)
     }
@@ -68,8 +68,7 @@ class FundingEntityService(
 
   fun update(
       row: FundingEntitiesRow,
-      addProjects: Set<ProjectId>? = null,
-      removeProjects: Set<ProjectId>? = null,
+      projects: Set<ProjectId>? = null,
   ) {
     val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
 
@@ -98,8 +97,9 @@ class FundingEntityService(
         throw FundingEntityExistsException(row.name!!)
       }
 
-      removeProjectsFromEntity(fundingEntityId, removeProjects.orEmpty())
-      addProjectsToEntity(fundingEntityId, addProjects.orEmpty())
+      if (projects != null) {
+        setProjectsForEntity(fundingEntityId, projects)
+      }
     }
   }
 
@@ -167,10 +167,18 @@ class FundingEntityService(
     }
   }
 
-  private fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  private fun setProjectsForEntity(fundingEntityId: FundingEntityId, projectIds: Set<ProjectId>) {
     requirePermissions { updateFundingEntityProjects() }
 
-    for (projectId in projects) {
+    with(FUNDING_ENTITY_PROJECTS) {
+      dslContext
+          .deleteFrom(FUNDING_ENTITY_PROJECTS)
+          .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(PROJECT_ID.notIn(projectIds))
+          .execute()
+    }
+
+    for (projectId in projectIds) {
       with(FUNDING_ENTITY_PROJECTS) {
         dslContext
             .insertInto(FUNDING_ENTITY_PROJECTS)
@@ -180,21 +188,6 @@ class FundingEntityService(
             .doNothing()
             .execute()
       }
-    }
-  }
-
-  private fun removeProjectsFromEntity(
-      fundingEntityId: FundingEntityId,
-      projectIds: Set<ProjectId>
-  ) {
-    requirePermissions { updateFundingEntityProjects() }
-
-    with(FUNDING_ENTITY_PROJECTS) {
-      dslContext
-          .deleteFrom(FUNDING_ENTITY_PROJECTS)
-          .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
-          .and(PROJECT_ID.`in`(projectIds))
-          .execute()
     }
   }
 
