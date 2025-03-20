@@ -1,3 +1,5 @@
+257ecafbb03 SW-6696 Make subzone species list include entire site (#2934)
+47c7e33954e SW-6587 Exclude outdated variable values from prompt (#2936)
 ad09008f58a SW-6587 Include project context in every prompt (#2935)
 1d556a7b118 Added feature to update and review report qualitatives (#2933)
 e07c3c2e089 SW-6608 Modify Funding Entity Update endpoint (#2931)
