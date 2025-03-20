@@ -110,9 +110,7 @@ class FundingEntityService(
 
     dslContext.transaction { _ ->
       val funders = userStore.fetchByFundingEntityId(fundingEntityId)
-      for (funder in funders) {
-        userStore.deleteFunderById(funder.userId)
-      }
+      funders.forEach { userStore.deleteFunderById(it.userId) }
 
       // no need to remove users from funding_entity_users table because funding_entities performs
       // cascade deletes
