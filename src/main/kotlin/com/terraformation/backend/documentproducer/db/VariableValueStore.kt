@@ -162,7 +162,18 @@ class VariableValueStore(
       maxValueId: VariableValueId? = null,
       variableIds: Collection<VariableId>? = null,
       includeDeletedValues: Boolean = minValueId != null,
+      includeReplacedVariables: Boolean = true,
   ): List<ExistingValue> {
+    val excludeReplacedCondition =
+        if (includeReplacedVariables) {
+          null
+        } else {
+          DSL.notExists(
+              DSL.selectOne()
+                  .from(VARIABLES)
+                  .where(VARIABLES.REPLACES_VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID)))
+        }
+
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
@@ -176,6 +187,7 @@ class VariableValueStore(
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
             variableIds?.let { VARIABLE_VALUES.VARIABLE_ID.`in`(it) },
+            excludeReplacedCondition,
         )
 
     return fetchByConditions(conditions, includeDeletedValues)
