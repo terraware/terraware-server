@@ -1,3 +1,5 @@
+ad09008f58a SW-6587 Include project context in every prompt (#2935)
+1d556a7b118 Added feature to update and review report qualitatives (#2933)
 e07c3c2e089 SW-6608 Modify Funding Entity Update endpoint (#2931)
 fdd5acb9c0e SW-6587 Ask Terraware implementation (#2932)
 28f447c9c65 SW-6587 Add Spring AI libraries (#2929)
