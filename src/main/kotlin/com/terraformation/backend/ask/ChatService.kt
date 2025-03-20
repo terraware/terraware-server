@@ -1,7 +1,11 @@
 package com.terraformation.backend.ask
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.ask.db.TerrawareChatMemory
+import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import jakarta.inject.Named
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor
@@ -15,10 +19,14 @@ import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder
 @ConditionalOnSpringAi
 @Named
 class ChatService(
-    private val chatClientBuilder: ChatClient.Builder,
-    private val chatMemory: TerrawareChatMemory,
+    chatClientBuilder: ChatClient.Builder,
+    chatMemory: TerrawareChatMemory,
+    private val countriesDao: CountriesDao,
     private val injectMetadataAdvisor: InjectMetadataAdvisor,
     private val vectorStore: VectorStore,
+    private val projectStore: ProjectStore,
+    private val organizationStore: OrganizationStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
 ) {
   /**
    * Number of items to include in context. Items are always sorted in decreasing order of
@@ -38,6 +46,8 @@ class ChatService(
       Context information is below, surrounded by ---------------------
 
       ---------------------
+      {project_context}
+      
       {question_answer_context}
       ---------------------
 
@@ -67,6 +77,9 @@ class ChatService(
           { response -> response.result.output.text },
           100)
 
+  private val chatClient: ChatClient = chatClientBuilder.build()
+  private val chatMemoryAdvisor = MessageChatMemoryAdvisor(chatMemory)
+
   /**
    * Asks an LLM a question and returns the answer. Automatically includes contextual information in
    * the prompt based on the project ID and the previous questions and answers in the conversation.
@@ -91,6 +104,7 @@ class ChatService(
                 if (showVariables) includeVariablesAndDocumentsPrompt else null,
             )
             .joinToString("\n")
+            .replace("{project_context}", renderProjectContext(projectId))
 
     val questionAnswerAdvisor =
         QuestionAnswerAdvisor(
@@ -105,16 +119,15 @@ class ChatService(
                 .build(),
             template)
 
-    return chatClientBuilder
-        .build()
+    return chatClient
         .prompt()
+        .user(question)
         .advisors(
             questionAnswerAdvisor,
             injectMetadataAdvisor,
-            MessageChatMemoryAdvisor(chatMemory),
+            chatMemoryAdvisor,
             loggerAdvisor,
         )
-        .user(question)
         .advisors { a ->
           if (conversationId != null) {
             a.param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
@@ -122,5 +135,34 @@ class ChatService(
         }
         .call()
         .content()
+  }
+
+  private fun renderProjectContext(projectId: ProjectId?): String {
+    if (projectId == null) {
+      return "The user comment does not refer to a specific project."
+    }
+
+    val project = projectStore.fetchOneById(projectId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
+    val projectAcceleratorDetails = projectAcceleratorDetailsService.fetchOneById(projectId)
+    val countryCode = project.countryCode ?: organization.countryCode
+    val countryName = countryCode?.let { countriesDao.fetchOneByCode(it)?.name }
+    val projectName =
+        if (projectAcceleratorDetails.dealName != null &&
+            projectAcceleratorDetails.dealName.length > 3) {
+          projectAcceleratorDetails.dealName.substring(3)
+        } else {
+          project.name
+        }
+
+    return listOfNotNull(
+            "Project name: $projectName",
+            "Name of organization that runs project: ${organization.name}",
+            countryName?.let { "Project country: $it" },
+            projectAcceleratorDetails.dealName?.let { "Accelerator deal name: ${it.substring(3)}" },
+            projectAcceleratorDetails.dealStage?.let { "Deal stage: $it" },
+            projectAcceleratorDetails.dealDescription?.let { "Deal description: $it" },
+        )
+        .joinToString("\n")
   }
 }

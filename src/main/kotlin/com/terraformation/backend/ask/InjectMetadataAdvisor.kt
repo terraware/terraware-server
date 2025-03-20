@@ -13,6 +13,8 @@ class InjectMetadataAdvisor(private val order: Int = 1) : CallAroundAdvisor {
   private val ignoredKeys =
       setOf(
           "distance",
+          "organizationName",
+          "projectName",
       )
 
   override fun getOrder(): Int = order
