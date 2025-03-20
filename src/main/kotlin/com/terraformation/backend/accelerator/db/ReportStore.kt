@@ -186,6 +186,8 @@ class ReportStore(
       reportId: ReportId,
       status: ReportStatus,
       highlights: String? = null,
+      achievements: List<String>? = null,
+      challenges: List<ReportChallengeModel>? = null,
       feedback: String? = null,
       internalComment: String? = null,
   ) {
@@ -208,22 +210,27 @@ class ReportStore(
       }
     }
 
-    val rowsUpdated =
-        with(REPORTS) {
-          dslContext
-              .update(this)
-              .set(STATUS_ID, status)
-              .set(HIGHLIGHTS, highlights)
-              .set(FEEDBACK, feedback)
-              .set(INTERNAL_COMMENT, internalComment)
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, clock.instant())
-              .where(ID.eq(reportId))
-              .execute()
-        }
+    dslContext.transaction { _ ->
+      achievements?.let { mergeReportAchievements(reportId, it) }
+      challenges?.let { mergeReportChallenges(reportId, it) }
 
-    if (rowsUpdated == 0) {
-      throw IllegalStateException("Failed to update report $reportId")
+      val rowsUpdated =
+          with(REPORTS) {
+            dslContext
+                .update(this)
+                .set(STATUS_ID, status)
+                .set(HIGHLIGHTS, highlights)
+                .set(FEEDBACK, feedback)
+                .set(INTERNAL_COMMENT, internalComment)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(reportId))
+                .execute()
+          }
+
+      if (rowsUpdated == 0) {
+        throw IllegalStateException("Failed to update report $reportId")
+      }
     }
   }
 
@@ -281,6 +288,37 @@ class ReportStore(
     updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
 
     eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
+  }
+
+  fun updateReportQualitatives(
+      reportId: ReportId,
+      highlights: String?,
+      achievements: List<String>,
+      challenges: List<ReportChallengeModel>,
+  ) {
+    requirePermissions { updateReport(reportId) }
+
+    val report =
+        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
+            ?: throw ReportNotFoundException(reportId)
+
+    if (report.status != ReportStatus.NotSubmitted) {
+      throw IllegalStateException(
+          "Cannot update qualitatives data for report $reportId of status ${report.status.name}")
+    }
+
+    dslContext.transaction { _ ->
+      mergeReportAchievements(reportId, achievements)
+      mergeReportChallenges(reportId, challenges)
+
+      dslContext
+          .update(REPORTS)
+          .set(REPORTS.HIGHLIGHTS, highlights)
+          .set(REPORTS.MODIFIED_BY, currentUser().userId)
+          .set(REPORTS.MODIFIED_TIME, clock.instant())
+          .where(REPORTS.ID.eq(reportId))
+          .execute()
+    }
   }
 
   fun updateReportMetrics(
@@ -572,6 +610,57 @@ class ReportStore(
       val updated = fetchConfigsByCondition(condition)
 
       updated.forEach { updateReportRows(it) }
+    }
+  }
+
+  private fun mergeReportAchievements(
+      reportId: ReportId,
+      achievements: List<String>,
+  ) {
+    dslContext.transaction { _ ->
+      with(REPORT_ACHIEVEMENTS) {
+        if (achievements.isNotEmpty()) {
+          var insertQuery = dslContext.insertInto(this, REPORT_ID, POSITION, ACHIEVEMENT)
+
+          achievements.forEachIndexed { index, achievement ->
+            insertQuery = insertQuery.values(reportId, index, achievement)
+          }
+
+          insertQuery.onConflict(REPORT_ID, POSITION).doUpdate().setAllToExcluded().execute()
+        }
+
+        dslContext
+            .deleteFrom(this)
+            .where(REPORT_ID.eq(reportId))
+            .and(POSITION.ge(achievements.size))
+            .execute()
+      }
+    }
+  }
+
+  private fun mergeReportChallenges(
+      reportId: ReportId,
+      challenges: List<ReportChallengeModel>,
+  ) {
+    dslContext.transaction { _ ->
+      with(REPORT_CHALLENGES) {
+        if (challenges.isNotEmpty()) {
+          var insertQuery =
+              dslContext.insertInto(this, REPORT_ID, POSITION, CHALLENGE, MITIGATION_PLAN)
+
+          challenges.forEachIndexed { index, model ->
+            insertQuery = insertQuery.values(reportId, index, model.challenge, model.mitigationPlan)
+          }
+
+          insertQuery.onConflict(REPORT_ID, POSITION).doUpdate().setAllToExcluded().execute()
+        }
+
+        dslContext
+            .deleteFrom(this)
+            .where(REPORT_ID.eq(reportId))
+            .and(POSITION.ge(challenges.size))
+            .execute()
+      }
     }
   }
 

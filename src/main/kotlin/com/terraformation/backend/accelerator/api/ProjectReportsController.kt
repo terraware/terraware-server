@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.ReportMetricStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
@@ -75,6 +76,26 @@ class ProjectReportsController(
   @ApiResponse200
   @ApiResponse400
   @ApiResponse404
+  @PostMapping("/{reportId}")
+  @Operation(summary = "Update qualitative data for a report")
+  fun updateAcceleratorReportQualitatives(
+      @PathVariable reportId: ReportId,
+      @RequestBody payload: UpdateAcceleratorReportQualitativesRequestPayload,
+  ): SimpleSuccessResponsePayload {
+
+    reportStore.updateReportQualitatives(
+        reportId = reportId,
+        highlights = payload.highlights,
+        achievements = payload.achievements,
+        challenges = payload.challenges.map { it.toModel() },
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
   @PostMapping("/{reportId}/metrics")
   @Operation(summary = "Update metric entries for a report")
   fun updateAcceleratorReportMetrics(
@@ -82,11 +103,8 @@ class ProjectReportsController(
       @PathVariable reportId: ReportId,
       @RequestBody payload: UpdateAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
-
     val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
-
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
-
     val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.updateReportMetrics(
@@ -127,6 +145,8 @@ class ProjectReportsController(
         reportId = reportId,
         status = payload.review.status,
         highlights = payload.review.highlights,
+        achievements = payload.review.achievements,
+        challenges = payload.review.challenges.map { it.toModel() },
         feedback = payload.review.feedback,
         internalComment = payload.review.internalComment,
     )
@@ -144,11 +164,8 @@ class ProjectReportsController(
       @PathVariable reportId: ReportId,
       @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
-
     val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
-
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
-
     val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.reviewReportMetrics(
@@ -313,6 +330,8 @@ data class AcceleratorReportPayload(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val highlights: String?,
+    val achievements: List<String>,
+    val challenges: List<ReportChallengePayload>,
     val internalComment: String?,
     val feedback: String?,
     val modifiedBy: UserId,
@@ -333,6 +352,8 @@ data class AcceleratorReportPayload(
       startDate = model.startDate,
       endDate = model.endDate,
       highlights = model.highlights,
+      achievements = model.achievements,
+      challenges = model.challenges.map { ReportChallengePayload(it) },
       internalComment = model.internalComment,
       feedback = model.feedback,
       modifiedBy = model.modifiedBy,
@@ -345,10 +366,21 @@ data class AcceleratorReportPayload(
   )
 }
 
+data class ReportChallengePayload(
+    val challenge: String,
+    val mitigationPlan: String,
+) {
+  constructor(model: ReportChallengeModel) : this(model.challenge, model.mitigationPlan)
+
+  fun toModel() = ReportChallengeModel(challenge = challenge, mitigationPlan = mitigationPlan)
+}
+
 data class ReportReviewPayload(
     @Schema(description = "Must be unchanged if a report has not been submitted yet.")
     val status: ReportStatus,
     val highlights: String?,
+    val achievements: List<String>,
+    val challenges: List<ReportChallengePayload>,
     val feedback: String?,
     val internalComment: String?,
 )
@@ -517,6 +549,12 @@ data class ReviewAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
+)
+
+data class UpdateAcceleratorReportQualitativesRequestPayload(
+    val highlights: String?,
+    val achievements: List<String>,
+    val challenges: List<ReportChallengePayload>,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
