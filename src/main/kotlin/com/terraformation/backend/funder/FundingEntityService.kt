@@ -60,7 +60,7 @@ class FundingEntityService(
                 .fetchOne(ID) ?: throw FundingEntityExistsException(name)
           }
 
-      addProjectsToEntity(fundingEntityId, projects.orEmpty())
+      setProjectsForEntity(fundingEntityId, projects.orEmpty())
 
       fundingEntityStore.fetchOneById(fundingEntityId)
     }
@@ -98,8 +98,7 @@ class FundingEntityService(
       }
 
       if (projects != null) {
-        removeProjectsFromEntity(fundingEntityId, projects)
-        addProjectsToEntity(fundingEntityId, projects)
+        setProjectsForEntity(fundingEntityId, projects)
       }
     }
   }
@@ -168,10 +167,18 @@ class FundingEntityService(
     }
   }
 
-  private fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  private fun setProjectsForEntity(fundingEntityId: FundingEntityId, projectIds: Set<ProjectId>) {
     requirePermissions { updateFundingEntityProjects() }
 
-    for (projectId in projects) {
+    with(FUNDING_ENTITY_PROJECTS) {
+      dslContext
+          .deleteFrom(FUNDING_ENTITY_PROJECTS)
+          .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(PROJECT_ID.notIn(projectIds))
+          .execute()
+    }
+
+    for (projectId in projectIds) {
       with(FUNDING_ENTITY_PROJECTS) {
         dslContext
             .insertInto(FUNDING_ENTITY_PROJECTS)
@@ -181,21 +188,6 @@ class FundingEntityService(
             .doNothing()
             .execute()
       }
-    }
-  }
-
-  private fun removeProjectsFromEntity(
-      fundingEntityId: FundingEntityId,
-      projectIds: Set<ProjectId>
-  ) {
-    requirePermissions { updateFundingEntityProjects() }
-
-    with(FUNDING_ENTITY_PROJECTS) {
-      dslContext
-          .deleteFrom(FUNDING_ENTITY_PROJECTS)
-          .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
-          .and(PROJECT_ID.notIn(projectIds))
-          .execute()
     }
   }
 
