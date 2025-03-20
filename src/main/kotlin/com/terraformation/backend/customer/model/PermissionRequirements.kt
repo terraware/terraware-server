@@ -487,6 +487,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteFunder(userId: UserId) {
+    user.recordPermissionChecks {
+      if (!user.canDeleteFunder(userId)) {
+        throw AccessDeniedException("No permission to delete funder $userId")
+      }
+    }
+  }
+
   fun deleteFundingEntities() {
     user.recordPermissionChecks {
       if (!user.canDeleteFundingEntities()) {

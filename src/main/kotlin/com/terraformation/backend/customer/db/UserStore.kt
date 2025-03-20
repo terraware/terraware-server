@@ -28,6 +28,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
+import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.log.perClassLogger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -236,6 +238,18 @@ class UserStore(
         .apply { if (requireOptIn) and(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue) }
         .fetchInto(UsersRow::class.java)
         .map { rowToIndividualUser(it) }
+  }
+
+  /** Returns the funders of a funding entity. */
+  fun fetchByFundingEntityId(fundingEntityId: FundingEntityId): List<FunderUser> {
+    return dslContext
+        .select(USERS.asterisk())
+        .from(USERS)
+        .join(FUNDING_ENTITY_USERS)
+        .on(USERS.ID.eq(FUNDING_ENTITY_USERS.USER_ID))
+        .where(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
+        .fetchInto(UsersRow::class.java)
+        .map { rowToFunderUser(it) }
   }
 
   /**
@@ -648,6 +662,17 @@ class UserStore(
     val user = fetchOneById(userId)
     if (user.userType != UserType.Individual && user.userType != UserType.Funder) {
       throw AccessDeniedException("Not allowed to delete non-individual and non-funder users")
+    }
+
+    deleteUser(user)
+  }
+
+  fun deleteFunderById(userId: UserId) {
+    requirePermissions { deleteFunder(userId) }
+
+    val user = fetchOneById(userId)
+    if (user.userType != UserType.Funder) {
+      throw AccessDeniedException("Not allowed to non-funder users")
     }
 
     deleteUser(user)
