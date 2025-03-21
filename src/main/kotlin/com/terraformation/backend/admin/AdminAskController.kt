@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.log.perClassLogger
 import java.util.UUID
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
@@ -34,6 +35,8 @@ class AdminAskController(
     private val projectStore: ProjectStore,
     private val systemUser: SystemUser,
 ) {
+  private val log = perClassLogger()
+
   @GetMapping fun askIndexRedirect() = "redirect:/admin/ask/"
 
   @GetMapping("/")
@@ -110,6 +113,7 @@ class AdminAskController(
       redirectAttributes.successMessage = "Project $projectId processed."
       return askProjectRedirect(projectId)
     } catch (e: Exception) {
+      log.error("Error while preparing project $projectId", e)
       redirectAttributes.failureMessage = e.message
       return askIndexRedirect()
     }
