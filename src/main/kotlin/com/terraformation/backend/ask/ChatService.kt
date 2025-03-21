@@ -104,7 +104,6 @@ class ChatService(
                 if (showVariables) includeVariablesAndDocumentsPrompt else null,
             )
             .joinToString("\n")
-            .replace("{project_context}", renderProjectContext(projectId))
 
     val questionAnswerAdvisor =
         QuestionAnswerAdvisor(
@@ -122,6 +121,7 @@ class ChatService(
     return chatClient
         .prompt()
         .user(question)
+        .user { promptSpec -> promptSpec.param("project_context", renderProjectContext(projectId)) }
         .advisors(
             questionAnswerAdvisor,
             injectMetadataAdvisor,
