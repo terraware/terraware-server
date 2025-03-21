@@ -236,7 +236,7 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
           if (values[VARIABLE_CSV_COLUMN_INDEX_OPTIONS].isNullOrEmpty()) {
             addError(dataTypeField, "", messages.variablesCsvDataTypeRequiresOptions())
           }
-      else -> Unit
+      else -> {}
     }
 
     // Add this as a path because it may be a parent one day!

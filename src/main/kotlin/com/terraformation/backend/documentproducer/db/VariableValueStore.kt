@@ -887,9 +887,7 @@ class VariableValueStore(
       is TextValue,
       is DateValue,
       is EmailValue,
-      is TableValue ->
-          // Some values don't require any rows in child tables.
-          Unit
+      is TableValue -> {} // Some values don't require any rows in child tables.
       is ImageValue -> insertImageValue(valueId, value)
       is LinkValue -> insertLinkValue(valueId, value)
       is SectionValue -> insertSectionValue(valueId, value)
