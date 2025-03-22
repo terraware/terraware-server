@@ -2357,6 +2357,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
           )
 
+      // This one remains unchanged, but will help catch any looping issues
+      val year0ReportId =
+          insertReport(
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.NotNeeded,
+              startDate = LocalDate.of(2020, Month.MARCH, 13),
+              endDate = LocalDate.of(2020, Month.MAY, 31),
+          )
+
       val year1ReportId =
           insertReport(
               configId = configId,
@@ -2408,6 +2418,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
+              ReportsRecord(
+                  id = year0ReportId,
+                  configId = configId,
+                  projectId = projectId,
+                  statusId = ReportStatus.NotNeeded,
+                  startDate = LocalDate.of(2020, Month.MARCH, 13),
+                  endDate = LocalDate.of(2020, Month.MAY, 31),
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+              ),
               ReportsRecord(
                   id = year1ReportId,
                   configId = configId,

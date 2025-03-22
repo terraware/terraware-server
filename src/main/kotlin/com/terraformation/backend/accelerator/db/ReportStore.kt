@@ -462,12 +462,13 @@ class ReportStore(
                       submittedBy = null,
                       submittedTime = null,
                   ))
-          if (existingReportIterator.hasNext()) {
-            existingReport = existingReportIterator.next()
-          } else {
-            reportRowsToAdd.add(desiredReportRow)
-            break
-          }
+        }
+
+        if (existingReportIterator.hasNext()) {
+          existingReport = existingReportIterator.next()
+        } else {
+          reportRowsToAdd.add(desiredReportRow)
+          break
         }
       } else if (desiredReportRow.endDate!!.isBefore(existingReport.startDate)) {
         // If the new report date is before the existing report date, this report needs to be added
@@ -491,7 +492,8 @@ class ReportStore(
         // If the report dates overlap, they point to the same reporting period. Update the
         // existing report dates to match the desired report dates, and un-archive
         if (existingReport.startDate != desiredReportRow.startDate!! ||
-            existingReport.endDate != desiredReportRow.endDate!!) {
+            existingReport.endDate != desiredReportRow.endDate!! ||
+            existingReport.status == ReportStatus.NotNeeded) {
           reportRowsToUpdate.add(
               existingReport
                   .toRow()
