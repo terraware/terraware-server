@@ -5,7 +5,10 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -47,11 +50,30 @@ class ReportsController(private val metricStore: ReportMetricStore) {
     metricStore.updateStandardMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @GetMapping("/systemMetrics")
+  @Operation(summary = "List all system metrics.")
+  fun listSystemMetrics(): ListSystemMetricsResponsePayload {
+    return ListSystemMetricsResponsePayload(SystemMetric.entries.map { SystemMetricPayload(it) })
+  }
 }
+
+data class SystemMetricPayload(
+    val metric: SystemMetric,
+    val name: String = metric.name,
+    val description: String = metric.description,
+    val component: MetricComponent = metric.componentId,
+    val type: MetricType = metric.typeId,
+    val reference: String = metric.reference,
+)
 
 data class CreateStandardMetricRequestPayload(val metric: NewMetricPayload)
 
 data class ListStandardMetricsResponsePayload(val metrics: List<ExistingStandardMetricPayload>) :
+    SuccessResponsePayload
+
+data class ListSystemMetricsResponsePayload(val metrics: List<SystemMetricPayload>) :
     SuccessResponsePayload
 
 data class UpdateStandardMetricRequestPayload(val metric: ExistingStandardMetricPayload)
