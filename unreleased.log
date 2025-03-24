@@ -1,3 +1,4 @@
+1755bb53b0a SW-6699 Added biomass description limit (#2946)
 4dc146348ab Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.2.+ (#2943)
 1bd2d3f1e8c Update database dependencies (#2942)
 452d11fde0b Update plugin org.springframework.boot to v3.4.4 (#2940)

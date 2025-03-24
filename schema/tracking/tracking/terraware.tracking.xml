@@ -215,7 +215,7 @@
             <parent column="id" foreignKey="observation_biomass_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="true" remarks="" size="25" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="forest_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observation_biomass_details_forest_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="biomass_forest_types"/>
          </column>

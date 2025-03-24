@@ -240,7 +240,7 @@
 <polygon fill="none" stroke="black" points="1155,-757.07 1155,-779.07 1347,-779.07 1347,-757.07 1155,-757.07"/>
 <text text-anchor="start" x="1175" y="-765.27" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
 <polygon fill="none" stroke="black" points="1347,-757.07 1347,-779.07 1447,-779.07 1447,-757.07 1347,-757.07"/>
-<text text-anchor="start" x="1350" y="-765.27" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<text text-anchor="start" x="1350" y="-765.27" font-family="Helvetica,sans-Serif" font-size="11.00">varchar[25]</text>
 <polygon fill="none" stroke="black" points="1155,-735.07 1155,-757.07 1347,-757.07 1347,-735.07 1155,-735.07"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1160" y="-752.074"/>
 <text text-anchor="start" x="1175" y="-743.27" font-family="Helvetica,sans-Serif" font-size="11.00">forest_type_id</text>
