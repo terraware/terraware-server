@@ -766,6 +766,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readProjectReportConfigs() =
+      allow { readProjectReportConfigs() } ifUser { canReadProjectReportConfigs() }
+
+  @Test
   fun readProjectScores() {
     assertThrows<ProjectNotFoundException> { requirements.readProjectScores(projectId) }
 

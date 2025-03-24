@@ -457,6 +457,8 @@ data class IndividualUser(
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
 
+  override fun canReadProjectReportConfigs() = isReadOnlyOrHigher()
+
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()

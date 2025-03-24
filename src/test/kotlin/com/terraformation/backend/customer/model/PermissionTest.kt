@@ -1429,6 +1429,7 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readProjectReportConfigs = true,
         readReportInternalComments = true,
         reviewReports = true,
         setTestClock = true,
@@ -1824,6 +1825,7 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags = true,
         readModuleEventParticipants = true,
         readParticipant = true,
+        readProjectReportConfigs = true,
         readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = true,
         reviewReports = true,
@@ -2070,6 +2072,7 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags = true,
         readModuleEventParticipants = true,
         readParticipant = true,
+        readProjectReportConfigs = true,
         readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
         reviewReports = true,
@@ -2300,6 +2303,7 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readProjectReportConfigs = true,
         readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
         reviewReports = true,
@@ -2469,6 +2473,7 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readProjectReportConfigs = true,
         readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -2977,6 +2982,7 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags: Boolean = false,
         readModuleEventParticipants: Boolean = false,
         readParticipant: Boolean = false,
+        readProjectReportConfigs: Boolean = false,
         readReportInternalComments: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         reviewReports: Boolean = false,
@@ -3059,6 +3065,10 @@ internal class PermissionTest : DatabaseTest() {
           user.canReadModuleEventParticipants(),
           "Can read module event participants")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
+      assertEquals(
+          readProjectReportConfigs,
+          user.canReadProjectReportConfigs(),
+          "Can read project report configs")
       assertEquals(
           readReportInternalComments,
           user.canReadReportInternalComments(),
