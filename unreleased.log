@@ -1,3 +1,7 @@
+4dc146348ab Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.2.+ (#2943)
+1bd2d3f1e8c Update database dependencies (#2942)
+452d11fde0b Update plugin org.springframework.boot to v3.4.4 (#2940)
+fa04ad15989 Upgrade to Kotlin 2.1.20 (#2938)
 f87c86beb5a SW-6703 Fixed archive report infinite loop (#2941)
 bc06df60c53 Added endpoint to return system metrics (#2939)
 a5f1a029ef8 SW-6655 Delete Funders when deleting entity (#2937)
