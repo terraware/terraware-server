@@ -28,7 +28,9 @@ data class FunderUser(
   override val defaultPermission: Boolean
     get() = false
 
-  override fun canReadUser(userId: UserId) = userId == this.userId
+  override fun canDeleteSelf() = true
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
+
+  override fun canReadUser(userId: UserId) = userId == this.userId
 }
