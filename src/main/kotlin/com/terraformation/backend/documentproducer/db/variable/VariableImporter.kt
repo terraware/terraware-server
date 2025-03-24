@@ -232,7 +232,7 @@ class VariableImporter(
         AllVariableCsvVariableType.Number -> importNumberVariable(csvVariable)
         AllVariableCsvVariableType.SingleLine,
         AllVariableCsvVariableType.MultiLine -> importTextVariable(csvVariable)
-        else -> Unit
+        else -> {}
       }
 
       if (csvVariableByPath[csvVariable.parentPath]?.dataType == AllVariableCsvVariableType.Table) {
