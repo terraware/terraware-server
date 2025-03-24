@@ -13,10 +13,12 @@ import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.StandardMetricsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -70,7 +72,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-accelerator admin`() {
+      fun `throws access denied exception for non-global role users`() {
         val metricId =
             insertStandardMetric(
                 component = MetricComponent.Climate,
@@ -81,8 +83,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchOneStandardMetric(metricId) }
+
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+        assertDoesNotThrow { store.fetchOneStandardMetric(metricId) }
       }
     }
 
@@ -172,10 +176,12 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-accelerator admin`() {
+      fun `throws access denied exception for non-global role users`() {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchAllStandardMetrics() }
+
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+        assertDoesNotThrow { store.fetchAllStandardMetrics() }
       }
     }
 
@@ -242,7 +248,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-accelerator admin`() {
+      fun `throws access denied exception for non-global role users`() {
         insertOrganization()
         val projectId = insertProject()
         val metricId =
@@ -256,8 +262,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchOneProjectMetric(metricId) }
+
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+        assertDoesNotThrow { store.fetchOneProjectMetric(metricId) }
       }
     }
 
@@ -336,12 +344,47 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-accelerator admin`() {
+      fun `throws access denied exception for non-global role users`() {
         insertOrganization()
         val projectId = insertProject()
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchProjectMetricsForProject(projectId) }
+
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+        assertDoesNotThrow { store.fetchProjectMetricsForProject(projectId) }
+      }
+    }
+
+    @Nested
+    inner class FetchSystemMetrics {
+      @Test
+      fun `returns all system metrics, ordered by reference`() {
+        val sortedSystemMetrics =
+            SystemMetric.entries.sortedWith { metric1, metric2 ->
+              val metric1Parts = metric1.reference.split(".").map { it.toInt() }
+              val metric2Parts = metric2.reference.split(".").map { it.toInt() }
+
+              val size = maxOf(metric1Parts.size, metric2Parts.size)
+              for (i in 0 until size) {
+                val part1 = metric1Parts.getOrElse(i) { 0 }
+                val part2 = metric2Parts.getOrElse(i) { 0 }
+                if (part1 != part2) {
+                  return@sortedWith part1.compareTo(part2)
+                }
+              }
+              return@sortedWith 0
+            }
+
+        assertEquals(sortedSystemMetrics, store.fetchSystemMetrics())
+      }
+
+      @Test
+      fun `throws access denied exception for non-global role users`() {
+        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        assertThrows<AccessDeniedException> { store.fetchSystemMetrics() }
+
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+        assertDoesNotThrow { store.fetchSystemMetrics() }
       }
     }
   }

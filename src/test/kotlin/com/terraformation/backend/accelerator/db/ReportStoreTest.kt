@@ -1953,11 +1953,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class FetchProjectReportConfigs {
     @Test
-    fun `throws exception for non accelerator admin users`() {
+    fun `throws exception for non global role users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-      insertUserGlobalRole(role = GlobalRole.TFExpert)
-
       assertThrows<AccessDeniedException> { store.fetchProjectReportConfigs() }
+
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+      assertDoesNotThrow { store.fetchProjectReportConfigs() }
     }
 
     @Test

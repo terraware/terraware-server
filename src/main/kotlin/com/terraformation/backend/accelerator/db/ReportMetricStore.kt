@@ -11,8 +11,11 @@ import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import org.jooq.Condition
@@ -24,14 +27,14 @@ class ReportMetricStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchOneStandardMetric(metricId: StandardMetricId): ExistingStandardMetricModel {
-    requirePermissions { manageProjectReportConfigs() }
+    requirePermissions { readProjectReportConfigs() }
 
     return fetchStandardMetrics(STANDARD_METRICS.ID.eq(metricId)).firstOrNull()
         ?: throw StandardMetricNotFoundException(metricId)
   }
 
   fun fetchAllStandardMetrics(): List<ExistingStandardMetricModel> {
-    requirePermissions { manageProjectReportConfigs() }
+    requirePermissions { readProjectReportConfigs() }
 
     return fetchStandardMetrics(DSL.trueCondition())
   }
@@ -83,14 +86,14 @@ class ReportMetricStore(
   }
 
   fun fetchOneProjectMetric(metricId: ProjectMetricId): ExistingProjectMetricModel {
-    requirePermissions { manageProjectReportConfigs() }
+    requirePermissions { readProjectReportConfigs() }
 
     return fetchProjectMetrics(PROJECT_METRICS.ID.eq(metricId)).firstOrNull()
         ?: throw ProjectMetricNotFoundException(metricId)
   }
 
   fun fetchProjectMetricsForProject(projectId: ProjectId): List<ExistingProjectMetricModel> {
-    requirePermissions { manageProjectReportConfigs() }
+    requirePermissions { readProjectReportConfigs() }
 
     return fetchProjectMetrics(PROJECT_METRICS.PROJECT_ID.eq(projectId))
   }
@@ -141,5 +144,13 @@ class ReportMetricStore(
         .where(condition)
         .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
         .fetch { ProjectMetricModel.of(it) }
+  }
+
+  fun fetchSystemMetrics(): List<SystemMetric> {
+    requirePermissions { readProjectReportConfigs() }
+
+    return with(SYSTEM_METRICS) {
+      dslContext.select(ID).from(SYSTEM_METRICS).orderBy(REFERENCE).fetch { it[ID.asNonNullable()] }
+    }
   }
 }

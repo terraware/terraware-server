@@ -1078,10 +1078,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readReport(reportId: ReportId) {
+  fun readProjectReportConfigs() {
     user.recordPermissionChecks {
-      if (!user.canReadReport(reportId)) {
-        throw ReportNotFoundException(reportId)
+      if (!user.canReadProjectReportConfigs()) {
+        throw AccessDeniedException("No permission to read project report configurations")
       }
     }
   }
@@ -1110,6 +1110,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadProjectVotes(projectId)) {
         readProject(projectId)
         throw AccessDeniedException("No permission to view votes for project $projectId")
+      }
+    }
+  }
+
+  fun readReport(reportId: ReportId) {
+    user.recordPermissionChecks {
+      if (!user.canReadReport(reportId)) {
+        throw ReportNotFoundException(reportId)
       }
     }
   }
@@ -1146,6 +1154,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readSubmissionDocument(documentId: SubmissionDocumentId) {
+    user.recordPermissionChecks {
+      if (!user.canReadSubmissionDocument(documentId)) {
+        throw SubmissionDocumentNotFoundException(documentId)
+      }
+    }
+  }
+
   fun readTimeseries(deviceId: DeviceId) {
     user.recordPermissionChecks {
       if (!user.canReadTimeseries(deviceId)) {
@@ -1158,14 +1174,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadUpload(uploadId)) {
         throw UploadNotFoundException(uploadId)
-      }
-    }
-  }
-
-  fun readSubmissionDocument(documentId: SubmissionDocumentId) {
-    user.recordPermissionChecks {
-      if (!user.canReadSubmissionDocument(documentId)) {
-        throw SubmissionDocumentNotFoundException(documentId)
       }
     }
   }

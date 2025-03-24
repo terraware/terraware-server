@@ -451,6 +451,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadProjectModules(projectId: ProjectId): Boolean = defaultPermission
 
+  fun canReadProjectReportConfigs(): Boolean = defaultPermission
+
   fun canReadProjectScores(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean = defaultPermission

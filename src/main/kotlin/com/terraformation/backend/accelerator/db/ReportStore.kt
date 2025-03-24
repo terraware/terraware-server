@@ -155,7 +155,7 @@ class ReportStore(
   fun fetchProjectReportConfigs(
       projectId: ProjectId? = null
   ): List<ExistingProjectReportConfigModel> {
-    requirePermissions { manageProjectReportConfigs() }
+    requirePermissions { readProjectReportConfigs() }
 
     return fetchConfigsByCondition(
         projectId?.let { PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(it) } ?: DSL.trueCondition())
