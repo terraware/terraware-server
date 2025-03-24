@@ -129,6 +129,10 @@ data class BiomassDetailsModel<
       }
     }
 
+    if (description != null && description.length > 25) {
+      throw IllegalStateException("Description must not be longer than 25 characters.")
+    }
+
     // Map of tree number to list of trunk numbers
     val treesByNumbers = trees.groupBy { it.treeNumber }
 
