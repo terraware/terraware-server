@@ -1,3 +1,5 @@
+db3460bfd4a SW-6587 Use Spring AI template feature for prompt (#2945)
+10720723224 SW-6587 Skip embeddings for missing Google Drive files (#2944)
 f233926605a SW-6699 Updated biomass description to 50 chars (#2950)
 53548a81b65 SW-6701 Updated permissions for read project configs and metrics (#2948)
 8a43d711154 SW-6604 Allow funders to delete themselves (#2947)
