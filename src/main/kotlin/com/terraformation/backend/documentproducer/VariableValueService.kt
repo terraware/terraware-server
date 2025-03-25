@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.asNonNullable
@@ -23,9 +24,10 @@ import org.jooq.DSLContext
 @Named
 class VariableValueService(
     private val dslContext: DSLContext,
+    private val systemUser: SystemUser,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
-    private val variableWorkflowStore: VariableWorkflowStore
+    private val variableWorkflowStore: VariableWorkflowStore,
 ) {
   /**
    * Service method to validate, write values, and update workflows.
@@ -37,7 +39,9 @@ class VariableValueService(
   fun updateValues(operations: List<ValueOperation>, triggerWorkflows: Boolean = true) {
     validate(operations)
     val values = variableValueStore.updateValues(operations, triggerWorkflows)
-    updateWorkflowHistory(values, triggerWorkflows)
+    if (triggerWorkflows) {
+      systemUser.run { updateWorkflowHistory(values) }
+    }
   }
 
   /**
@@ -46,7 +50,7 @@ class VariableValueService(
    * @param values list of updated values
    * @param updateStatus if set to true, will set status to In Review, and feedback to null
    */
-  private fun updateWorkflowHistory(values: List<ExistingValue>, updateStatus: Boolean = true) {
+  private fun updateWorkflowHistory(values: List<ExistingValue>) {
     val projectId = values.firstOrNull()?.projectId ?: return
 
     val variableIdsInDeliverables: Set<VariableId> =
@@ -62,25 +66,10 @@ class VariableValueService(
         values.filter { it.variableId in variableIdsInDeliverables }.groupBy { it.variableId }
 
     valuesByVariables.keys.forEach { variableId ->
-      variableWorkflowStore.update(
-          projectId,
-          variableId,
-      ) {
-        val status =
-            if (updateStatus) {
-              VariableWorkflowStatus.InReview
-            } else {
-              it.status
-            }
-        val feedback =
-            if (updateStatus) {
-              null
-            } else {
-              it.feedback
-            }
+      variableWorkflowStore.update(projectId, variableId) {
         it.copy(
-            status = status,
-            feedback = feedback,
+            status = VariableWorkflowStatus.InReview,
+            feedback = null,
         )
       }
     }

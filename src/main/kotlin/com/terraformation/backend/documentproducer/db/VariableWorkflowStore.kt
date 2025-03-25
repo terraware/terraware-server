@@ -93,18 +93,6 @@ class VariableWorkflowStore(
     }
 
     return dslContext.transactionResult { _ ->
-      // Block all workflow rows regarding this project variables. This is to prevent overwriting
-      // with stale results when multiple updates are called.
-      with(VARIABLE_WORKFLOW_HISTORY) {
-        dslContext
-            .select(asterisk())
-            .from(this)
-            .where(PROJECT_ID.eq(projectId))
-            .and(VARIABLE_ID.eq(variableId))
-            .forUpdate()
-            .execute()
-      }
-
       val existing =
           with(VARIABLE_WORKFLOW_HISTORY) {
             fetchCurrentByCondition(
