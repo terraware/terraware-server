@@ -129,8 +129,8 @@ data class BiomassDetailsModel<
       }
     }
 
-    if (description != null && description.length > 25) {
-      throw IllegalStateException("Description must not be longer than 25 characters.")
+    if (description != null && description.length > 50) {
+      throw IllegalStateException("Description must not be longer than 50 characters.")
     }
 
     // Map of tree number to list of trunk numbers
