@@ -59,8 +59,13 @@ class VariableWorkflowController(
       @PathVariable variableId: VariableId,
       @RequestBody payload: UpdateVariableWorkflowDetailsRequestPayload
   ): SimpleSuccessResponsePayload {
-    variableWorkflowStore.update(
-        projectId, variableId, payload.status, payload.feedback, payload.internalComment)
+    variableWorkflowStore.update(projectId, variableId) {
+      it.copy(
+          status = payload.status,
+          feedback = payload.feedback,
+          internalComment = payload.internalComment,
+      )
+    }
 
     return SimpleSuccessResponsePayload()
   }
