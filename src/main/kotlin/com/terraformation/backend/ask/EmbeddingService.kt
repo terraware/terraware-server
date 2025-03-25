@@ -1,5 +1,6 @@
 package com.terraformation.backend.ask
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
@@ -261,6 +262,16 @@ class EmbeddingService(
               .flatMap { document -> TokenTextSplitter().split(document) }
 
       vectorStore.add(chunks)
+    } catch (e: GoogleJsonResponseException) {
+      if (e.details.errors.firstOrNull()?.reason == "notFound") {
+        log.error(
+            "Project $projectId deliverable ${deliverable.id} submission document " +
+                "${submissionDocument.id} ${submissionDocument.name} is referenced in Terraware " +
+                "but does not appear to exist in Google Drive.")
+        // Don't throw the exception; we want the embedding process to continue with other files.
+      } else {
+        throw e
+      }
     } catch (e: Exception) {
       if (e.cause is UnsupportedFormatException) {
         log.info(
