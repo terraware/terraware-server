@@ -60,31 +60,29 @@ class VariableValueService(
 
     val valuesByVariables =
         values.filter { it.variableId in variableIdsInDeliverables }.groupBy { it.variableId }
-    val currentWorkflow = variableWorkflowStore.fetchCurrentForProject(projectId)
 
     valuesByVariables.keys.forEach { variableId ->
-      val existing = currentWorkflow[variableId]
-      val status =
-          if (updateStatus || existing == null) {
-            VariableWorkflowStatus.InReview
-          } else {
-            existing.status
-          }
-
-      val feedback =
-          if (updateStatus) {
-            null
-          } else {
-            existing?.feedback
-          }
-
       variableWorkflowStore.update(
           projectId,
           variableId,
-          status,
-          feedback,
-          existing?.internalComment,
-      )
+      ) {
+        val status =
+            if (updateStatus) {
+              VariableWorkflowStatus.InReview
+            } else {
+              it.status
+            }
+        val feedback =
+            if (updateStatus) {
+              null
+            } else {
+              it.feedback
+            }
+        it.copy(
+            status = status,
+            feedback = feedback,
+        )
+      }
     }
   }
 

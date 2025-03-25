@@ -14,6 +14,7 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
+import com.terraformation.backend.documentproducer.model.VariableWorkflowModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -79,19 +80,9 @@ class VariableWorkflowStore(
   fun update(
       projectId: ProjectId,
       variableId: VariableId,
-      status: VariableWorkflowStatus,
-      feedback: String?,
-      internalComment: String?,
+      updateFunc: (VariableWorkflowModel) -> VariableWorkflowModel,
   ): ExistingVariableWorkflowHistoryModel {
-    requirePermissions {
-      if (status == VariableWorkflowStatus.InReview) {
-        // Non-admins editing a variable causes its status to reset to In Review.
-        updateProject(projectId)
-      } else {
-        // Other statuses can only be set by admins.
-        updateInternalVariableWorkflowDetails(projectId)
-      }
-    }
+    requirePermissions { updateInternalVariableWorkflowDetails(projectId) }
 
     if (!dslContext.fetchExists(PROJECTS, PROJECTS.ID.eq(projectId))) {
       throw ProjectNotFoundException(projectId)
@@ -101,35 +92,61 @@ class VariableWorkflowStore(
       throw VariableNotFoundException(variableId)
     }
 
-    with(VARIABLE_WORKFLOW_HISTORY) {
+    return dslContext.transactionResult { _ ->
+      // Block all workflow rows regarding this project variables. This is to prevent overwriting
+      // with stale results when multiple updates are called.
+      with(VARIABLE_WORKFLOW_HISTORY) {
+        dslContext
+            .select(asterisk())
+            .from(this)
+            .where(PROJECT_ID.eq(projectId))
+            .and(VARIABLE_ID.eq(variableId))
+            .forUpdate()
+            .execute()
+      }
+
       val existing =
-          fetchCurrentByCondition(
-                  DSL.and(
-                      PROJECT_ID.eq(projectId),
-                      VARIABLES.STABLE_ID.eq(
-                          DSL.select(VARIABLES.STABLE_ID)
-                              .from(VARIABLES)
-                              .where(VARIABLES.ID.eq(variableId))),
-                  ))
-              .firstOrNull()
+          with(VARIABLE_WORKFLOW_HISTORY) {
+            fetchCurrentByCondition(
+                    DSL.and(
+                        PROJECT_ID.eq(projectId),
+                        VARIABLES.STABLE_ID.eq(
+                            DSL.select(VARIABLES.STABLE_ID)
+                                .from(VARIABLES)
+                                .where(VARIABLES.ID.eq(variableId))),
+                    ))
+                .firstOrNull()
+          }
+
+      val updated =
+          updateFunc(
+              VariableWorkflowModel(
+                  status = existing?.status ?: VariableWorkflowStatus.NotSubmitted,
+                  feedback = existing?.feedback,
+                  internalComment = existing?.internalComment,
+              ))
 
       val newModel =
-          dslContext
-              .insertInto(VARIABLE_WORKFLOW_HISTORY)
-              .set(CREATED_BY, currentUser().userId)
-              .set(CREATED_TIME, clock.instant())
-              .set(FEEDBACK, feedback)
-              .set(INTERNAL_COMMENT, internalComment)
-              .set(
-                  MAX_VARIABLE_VALUE_ID,
-                  DSL.field(DSL.select(DSL.max(VARIABLE_VALUES.ID)).from(VARIABLE_VALUES)))
-              .set(PROJECT_ID, projectId)
-              .set(VARIABLE_ID, variableId)
-              .set(VARIABLE_WORKFLOW_STATUS_ID, status)
-              .returningResult()
-              .fetchOne { ExistingVariableWorkflowHistoryModel.of(it) }
+          with(VARIABLE_WORKFLOW_HISTORY) {
+            dslContext
+                .insertInto(VARIABLE_WORKFLOW_HISTORY)
+                .set(CREATED_BY, currentUser().userId)
+                .set(CREATED_TIME, clock.instant())
+                .set(FEEDBACK, updated.feedback)
+                .set(INTERNAL_COMMENT, updated.internalComment)
+                .set(
+                    MAX_VARIABLE_VALUE_ID,
+                    DSL.field(DSL.select(DSL.max(VARIABLE_VALUES.ID)).from(VARIABLE_VALUES)))
+                .set(PROJECT_ID, projectId)
+                .set(VARIABLE_ID, variableId)
+                .set(VARIABLE_WORKFLOW_STATUS_ID, updated.status)
+                .returningResult()
+                .fetchOne { ExistingVariableWorkflowHistoryModel.of(it) }
+          }
 
-      if (existing == null || status != existing.status || feedback != existing.feedback) {
+      if (existing == null ||
+          updated.status != existing.status ||
+          updated.feedback != existing.feedback) {
         // Notify a reviewable event, if changed
         val deliverableIds =
             with(DELIVERABLE_VARIABLES) {
@@ -145,7 +162,7 @@ class VariableWorkflowStore(
         }
       }
 
-      return newModel!!
+      newModel!!
     }
   }
 
