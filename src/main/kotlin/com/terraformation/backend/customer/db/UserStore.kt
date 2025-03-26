@@ -790,7 +790,7 @@ class UserStore(
         usersRow.cookiesConsentedTime,
         usersRow.locale,
         usersRow.timeZone,
-    )
+        permissionStore)
   }
 
   private fun insertKeycloakUser(

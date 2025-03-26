@@ -2,8 +2,8 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
-import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
@@ -17,23 +17,25 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user = mockUser()
 
   private val store by lazy { FundingEntityStore(dslContext) }
 
-  private val fundingEntityId by lazy { insertFundingEntity() }
-  private val organizationId by lazy { insertOrganization() }
+  private lateinit var fundingEntityId: FundingEntityId
+  private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
+    organizationId = insertOrganization()
+    fundingEntityId = insertFundingEntity()
+    every { user.canReadFundingEntity(fundingEntityId) } returns true
     every { user.canReadFundingEntities() } returns true
   }
 
   @Test
   fun `fetchOneById requires user to be able to read funding entities`() {
-    every { user.canReadFundingEntities() } returns false
-
-    assertThrows<AccessDeniedException> { store.fetchOneById(fundingEntityId) }
+    every { user.canReadFundingEntity(fundingEntityId) } returns false
+    assertThrows<FundingEntityNotFoundException> { store.fetchOneById(fundingEntityId) }
   }
 
   @Test

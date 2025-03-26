@@ -83,6 +83,7 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.cookiesConsentedTime,
                     record.locale,
                     record.timeZone,
+                    PermissionStore(dslContext),
                 )
           }
 

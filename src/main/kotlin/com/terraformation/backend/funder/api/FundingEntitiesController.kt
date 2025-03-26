@@ -15,10 +15,12 @@ import com.terraformation.backend.funder.FundingEntityService
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
+import com.terraformation.backend.funder.model.FunderUserModel
 import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.ws.rs.BadRequestException
+import java.time.Instant
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -90,6 +92,16 @@ class FundingEntitiesController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "List funders for a Funding Entity")
+  @GetMapping("/{fundingEntityId}/users")
+  fun getFunders(
+      @PathVariable fundingEntityId: FundingEntityId,
+  ): GetFundersResponsePayload {
+    val funders = fundingEntityUserStore.fetchFundersForEntity(fundingEntityId)
+
+    return GetFundersResponsePayload(funders.map { FunderPayload(it) })
+  }
+
   @Operation(summary = "Invites a funder via email to a Funding Entity")
   @PostMapping("/{fundingEntityId}/users")
   fun inviteFunder(
@@ -142,7 +154,29 @@ data class UpdateFundingEntityRequestPayload(
   }
 }
 
+data class FunderPayload(
+    val userId: UserId,
+    val accountCreated: Boolean,
+    val createdTime: Instant,
+    val email: String,
+    val firstName: String?,
+    val lastName: String?,
+) {
+  constructor(
+      user: FunderUserModel
+  ) : this(
+      userId = user.userId,
+      accountCreated = user.accountCreated,
+      createdTime = user.createdTime,
+      email = user.email,
+      firstName = user.firstName,
+      lastName = user.lastName,
+  )
+}
+
 data class InviteFundingEntityFunderRequestPayload(val email: String)
+
+data class GetFundersResponsePayload(val funders: List<FunderPayload>) : SuccessResponsePayload
 
 data class InviteFundingEntityFunderResponsePayload(val email: String) : SuccessResponsePayload
 

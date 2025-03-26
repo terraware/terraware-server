@@ -143,7 +143,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
   private val funderId: UserId by readableId(AccessDeniedException::class) { canReadUser(it) }
   private val fundingEntityId: FundingEntityId by
-      readableId(FundingEntityNotFoundException::class) { canReadFundingEntities() }
+      readableId(FundingEntityNotFoundException::class) { canReadFundingEntity(it) }
   private val moduleId: ModuleId by readableId(ModuleNotFoundException::class) { canReadModule(it) }
   private val monitoringPlotId: MonitoringPlotId by
       readableId(PlotNotFoundException::class) { canReadMonitoringPlot(it) }
@@ -536,6 +536,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { listAutomations(facilityId) } ifUser { canListAutomations(facilityId) }
 
   @Test
+  fun listFundingEntityUsers() {
+    assertThrows<FundingEntityNotFoundException> {
+      requirements.listFundingEntityUsers(fundingEntityId)
+    }
+
+    grant { user.canReadFundingEntity(fundingEntityId) }
+    assertThrows<AccessDeniedException> { requirements.listFundingEntityUsers(fundingEntityId) }
+
+    grant { user.canListFundingEntityUsers(fundingEntityId) }
+    requirements.listFundingEntityUsers(fundingEntityId)
+  }
+
+  @Test
   fun listGlobalNotifications() =
       allow { listNotifications(null) } ifUser { canListNotifications(null) }
 
@@ -645,6 +658,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun readFundingEntities() = allow { readFundingEntities() } ifUser { canReadFundingEntities() }
+
+  @Test fun readFundingEntity() = testRead { readFundingEntity(fundingEntityId) }
 
   @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
 
