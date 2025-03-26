@@ -1,3 +1,4 @@
+4376a3daa8a SW-6643 Updated workflow service to not copy unchanged workflow row (#2949)
 db3460bfd4a SW-6587 Use Spring AI template feature for prompt (#2945)
 10720723224 SW-6587 Skip embeddings for missing Google Drive files (#2944)
 f233926605a SW-6699 Updated biomass description to 50 chars (#2950)
