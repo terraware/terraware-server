@@ -1,6 +1,7 @@
 package com.terraformation.backend.funder.db
 
-import com.terraformation.backend.customer.model.ExistingProjectModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -14,6 +15,7 @@ import org.jooq.DSLContext
 @Named
 class FundingEntityStore(
     private val dslContext: DSLContext,
+    private val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService,
 ) {
   fun fetchAll(): List<FundingEntityModel> {
     requirePermissions { readFundingEntities() }
@@ -39,8 +41,7 @@ class FundingEntityStore(
                 FUNDING_ENTITIES.CREATED_TIME,
                 FUNDING_ENTITIES.MODIFIED_TIME,
                 PROJECTS.ID,
-                PROJECTS.NAME,
-                PROJECTS.ORGANIZATION_ID)
+            )
             .from(FUNDING_ENTITIES)
             .leftJoin(FUNDING_ENTITY_PROJECTS)
             .on(FUNDING_ENTITIES.ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
@@ -64,10 +65,12 @@ class FundingEntityStore(
                   groupRecords
                       .filter { it[PROJECTS.ID] != null }
                       .map { record ->
-                        ExistingProjectModel(
-                            id = record[PROJECTS.ID]!!,
-                            name = record[PROJECTS.NAME]!!,
-                            organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
+                        val projectId = record[PROJECTS.ID]!!
+                        val variableValues =
+                            acceleratorProjectVariableValuesService.fetchValues(projectId)
+                        ProjectAcceleratorDetailsModel(
+                            projectId = projectId,
+                            dealName = variableValues.dealName,
                         )
                       })
         }
