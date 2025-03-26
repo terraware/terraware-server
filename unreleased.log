@@ -1,3 +1,5 @@
+4f27b981bcc Return participant projects for species in order (#2954)
+cf1253ef28b SW-6617 Added permission tests for Funder User, and list funders endpoint (#2951)
 8ef3070771a Script to withdraw plants to all subzones of a site (#2953)
 b20e81c4b87 Update dependency python to 3.13 (#2909)
 ffca0901959 SW-6717 Don't double-count dead plants in moved plots (#2952)
