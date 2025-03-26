@@ -1,3 +1,6 @@
+8ef3070771a Script to withdraw plants to all subzones of a site (#2953)
+b20e81c4b87 Update dependency python to 3.13 (#2909)
+ffca0901959 SW-6717 Don't double-count dead plants in moved plots (#2952)
 4376a3daa8a SW-6643 Updated workflow service to not copy unchanged workflow row (#2949)
 db3460bfd4a SW-6587 Use Spring AI template feature for prompt (#2945)
 10720723224 SW-6587 Skip embeddings for missing Google Drive files (#2944)
