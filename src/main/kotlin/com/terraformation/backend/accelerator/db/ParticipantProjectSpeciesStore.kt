@@ -165,6 +165,7 @@ class ParticipantProjectSpeciesStore(
             DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
         .where(SPECIES.ID.eq(speciesId))
         .groupBy(PROJECTS.ID, PARTICIPANT_PROJECT_SPECIES.ID, SPECIES.ID)
+        .orderBy(PROJECTS.ID, PARTICIPANT_PROJECT_SPECIES.ID, SPECIES.ID)
         .fetch { record ->
           if (user.canReadProjectDeliverables(record[PROJECTS.ID]!!)) {
             ParticipantProjectsForSpecies.of(record)
