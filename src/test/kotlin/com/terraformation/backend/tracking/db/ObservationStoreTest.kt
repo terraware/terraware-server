@@ -83,7 +83,11 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -1363,6 +1367,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val observationId2 = insertObservation()
       insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+      store.populateCumulativeDead(observationId2)
 
       store.completePlot(
           observationId2,
@@ -2428,7 +2433,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates cumulative dead across observations`() {
+    fun `updates cumulative dead from initial values inserted by populateCumulativeDead`() {
       val speciesId = insertSpecies()
       insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
@@ -2443,6 +2448,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val observationId2 = insertObservation()
       insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+      store.populateCumulativeDead(observationId2)
 
       store.completePlot(
           observationId2, plotId, emptySet(), null, Instant.EPOCH, listOf(deadPlantsRow))
@@ -2469,6 +2475,75 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           "Zone cumulative dead for second observation")
       assertEquals(
           2,
+          with(OBSERVED_SITE_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Site cumulative dead for second observation")
+    }
+
+    // SW-6717: This can happen if all of a subzone's monitoring plots move to a new subzone
+    //          thanks to a map edit; the original subzone will have subzone-level species totals
+    //          but we don't want to use them as a starting point for a new observation since
+    //          there are no monitoring plots in common.
+    @Test
+    fun `does not use cumulative dead from past observations if current observation has no total for a species`() {
+      val speciesId = insertSpecies()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      val deadPlantsRow =
+          RecordedPlantsRow(
+              certaintyId = Known,
+              gpsCoordinates = point(1),
+              speciesId = speciesId,
+              statusId = Dead)
+      store.completePlot(
+          observationId, plotId, emptySet(), null, Instant.EPOCH, listOf(deadPlantsRow))
+
+      val observationId2 = insertObservation()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      // We do not call populateCumulativeDead here, so there is no observed subzone species
+      // total for this observation even though there's one for the previous observation.
+
+      store.completePlot(
+          observationId2, plotId, emptySet(), null, Instant.EPOCH, listOf(deadPlantsRow))
+
+      assertEquals(
+          2,
+          with(OBSERVED_PLOT_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Plot cumulative dead for second observation")
+      assertEquals(
+          1,
+          with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Subzone cumulative dead for second observation")
+      assertEquals(
+          1,
+          with(OBSERVED_ZONE_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Zone cumulative dead for second observation")
+      assertEquals(
+          1,
           with(OBSERVED_SITE_SPECIES_TOTALS) {
             dslContext
                 .select(CUMULATIVE_DEAD)

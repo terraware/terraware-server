@@ -78,7 +78,13 @@ class ObservationTestHelper(
             claimedBy = effectiveUserId,
             isPermanent = plot.isPermanent,
             monitoringPlotId = plot.plotId)
+      }
+    }
 
+    observationStore.populateCumulativeDead(test.inserted.observationId)
+
+    zones.forEach { zone ->
+      zone.plots.forEach { plot ->
         val recordedPlantsRows =
             plot.plants.flatMap { plant ->
               (List(plant.live) { RecordedPlantStatus.Live } +
