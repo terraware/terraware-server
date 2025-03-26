@@ -2543,8 +2543,8 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(userId, readUser = true)
-
     permissions.expect(deleteSelf = true)
+    permissions.andNothingElse()
   }
 
   @Test
