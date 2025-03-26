@@ -186,6 +186,12 @@ class TerrawareClient:
     def create_seedling_batch(self, payload):
         return self.post("/api/v1/nursery/batches", json=payload)["batch"]
 
+    def get_seedling_batch(self, batch_id):
+        return self.get(f"/api/v1/nursery/batches/{batch_id}")["batch"]
+
+    def withdraw_seedling_batch(self, payload):
+        return self.post("/api/v1/nursery/withdrawals", json=payload)
+
     def get_planting_site(self, planting_site_id, depth="Site"):
         return self.get(f"/api/v1/tracking/sites/{planting_site_id}?depth={depth}")[
             "site"
