@@ -25,8 +25,8 @@ data class FunderUser(
     override val timeZone: ZoneId? = null,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
-  private val _fundingEntity = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
-  override val fundingEntity: FundingEntityId? by _fundingEntity
+  private val _fundingEntityId = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
+  override val fundingEntityId: FundingEntityId? by _fundingEntityId
 
   override val userType: UserType
     get() = UserType.Funder
@@ -38,9 +38,9 @@ data class FunderUser(
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
 
-  override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntity == entityId
+  override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canReadUser(userId: UserId) = userId == this.userId
 
-  override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntity == entityId
+  override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 }

@@ -3,7 +3,6 @@ package com.terraformation.backend.funder.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
@@ -21,19 +20,18 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   private val store by lazy { FundingEntityStore(dslContext) }
 
-  private lateinit var fundingEntityId: FundingEntityId
-  private lateinit var organizationId: OrganizationId
+  private val otherUserId by lazy { insertUser() }
+  private val organizationId by lazy { insertOrganization(createdBy = otherUserId) }
 
   @BeforeEach
   fun setUp() {
-    organizationId = insertOrganization()
-    fundingEntityId = insertFundingEntity()
-    every { user.canReadFundingEntity(fundingEntityId) } returns true
+    every { user.canReadFundingEntity(any()) } returns true
     every { user.canReadFundingEntities() } returns true
   }
 
   @Test
   fun `fetchOneById requires user to be able to read funding entities`() {
+    val fundingEntityId = insertFundingEntity()
     every { user.canReadFundingEntity(fundingEntityId) } returns false
     assertThrows<FundingEntityNotFoundException> { store.fetchOneById(fundingEntityId) }
   }
@@ -45,6 +43,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOneById returns correct funding entity`() {
+    val fundingEntityId = insertFundingEntity()
     assertTrue(store.fetchOneById(fundingEntityId).name.startsWith("TestFundingEntity"))
   }
 
@@ -56,6 +55,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
+    val fundingEntityId = insertFundingEntity()
     insertFundingEntityProject(fundingEntityId, projectId1)
     insertFundingEntityProject(fundingEntityId, projectId2)
 
@@ -89,6 +89,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchAll returns funding entities with and without projects, sorted correctly`() {
+    val organizationId = insertOrganization()
     val namePrefix = "FetchAllEntitiesProject"
     val projectId1 = insertProject(name = "${namePrefix}1", organizationId = organizationId)
     val projectId2 = insertProject(name = "${namePrefix}2", organizationId = organizationId)

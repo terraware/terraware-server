@@ -135,7 +135,7 @@ interface TerrawareUser : Principal, UserDetails {
     get() = emptyMap()
 
   /** The user's funder entity. */
-  val fundingEntity: FundingEntityId?
+  val fundingEntityId: FundingEntityId?
     get() = null
 
   /** The user's global roles. These are not tied to organizations. */

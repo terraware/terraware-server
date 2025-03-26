@@ -3919,8 +3919,8 @@ abstract class DatabaseBackedTest {
       name: String = "TestFundingEntity ${UUID.randomUUID()}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      modifiedBy: UserId = currentUser().userId,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
   ): FundingEntityId {
     val row =
         FundingEntitiesRow(
