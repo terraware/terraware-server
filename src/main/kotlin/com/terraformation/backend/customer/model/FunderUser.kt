@@ -1,8 +1,11 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
@@ -20,7 +23,10 @@ data class FunderUser(
     override val cookiesConsentedTime: Instant? = null,
     override val locale: Locale? = null,
     override val timeZone: ZoneId? = null,
+    private val permissionStore: PermissionStore,
 ) : TerrawareUser {
+  private val _fundingEntityId = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
+  override val fundingEntityId: FundingEntityId? by _fundingEntityId
 
   override val userType: UserType
     get() = UserType.Funder
@@ -32,5 +38,9 @@ data class FunderUser(
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
 
+  override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntityId == entityId
+
   override fun canReadUser(userId: UserId) = userId == this.userId
+
+  override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 }

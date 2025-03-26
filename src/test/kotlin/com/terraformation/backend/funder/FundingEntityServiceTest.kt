@@ -81,9 +81,11 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
 
+    every { user.canReadFundingEntity(any()) } returns true
     every { user.canReadFundingEntities() } returns true
     every { user.canCreateFundingEntities() } returns true
     every { user.canDeleteFundingEntities() } returns true
+    every { user.canListFundingEntityUsers(any()) } returns true
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
     every { user.canDeleteFunder(any()) } returns true

@@ -134,6 +134,10 @@ interface TerrawareUser : Principal, UserDetails {
   val facilityRoles: Map<FacilityId, Role>
     get() = emptyMap()
 
+  /** The user's funder entity. */
+  val fundingEntityId: FundingEntityId?
+    get() = null
+
   /** The user's global roles. These are not tied to organizations. */
   val globalRoles: Set<GlobalRole>
     get() = emptySet()
@@ -337,6 +341,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canListFacilities(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canListFundingEntityUsers(entityId: FundingEntityId): Boolean = defaultPermission
+
   fun canListNotifications(organizationId: OrganizationId?): Boolean = defaultPermission
 
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = defaultPermission
@@ -399,6 +405,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canReadFacility(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canReadFundingEntities(): Boolean = defaultPermission
+
+  fun canReadFundingEntity(entityId: FundingEntityId): Boolean = defaultPermission
 
   fun canReadGlobalRoles(): Boolean = defaultPermission
 

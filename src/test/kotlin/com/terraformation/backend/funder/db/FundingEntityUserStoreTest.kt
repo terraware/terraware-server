@@ -5,13 +5,16 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.funder.tables.records.FundingEntityUsersRecord
+import com.terraformation.backend.funder.model.FunderUserModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -24,6 +27,8 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { user.canReadUser(testUserId) } returns true
+    every { user.canReadFundingEntity(any()) } returns true
+    every { user.canListFundingEntityUsers(any()) } returns true
   }
 
   @Test
@@ -62,5 +67,87 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
     insertFundingEntityUser(fundingEntityId, testUserId)
 
     assertEquals(fundingEntityId, store.fetchEntityByUserId(testUserId)!!.id)
+  }
+
+  @Test
+  fun `fetchFundersForEntity throws exception if missing permissions`() {
+    insertFundingEntityUser(fundingEntityId, testUserId)
+
+    every { user.canListFundingEntityUsers(fundingEntityId) } returns false
+    assertThrows<AccessDeniedException> { store.fetchFundersForEntity(fundingEntityId) }
+
+    every { user.canReadFundingEntity(fundingEntityId) } returns false
+    assertThrows<FundingEntityNotFoundException> { store.fetchFundersForEntity(fundingEntityId) }
+  }
+
+  @Test
+  fun `fetchFundersForEntity returns list of non-deleted users belonging to the funder entity`() {
+    val userId1 =
+        insertUser(
+            firstName = "Bruce",
+            lastName = "Wayne",
+            email = "batman@justice.league",
+            createdTime = Instant.ofEpochSecond(6000),
+            authId = "BATMAN")
+    val userId2 =
+        insertUser(
+            firstName = "Clark",
+            lastName = "Kent",
+            email = "superman@justice.league",
+            createdTime = Instant.ofEpochSecond(3000),
+            authId = null,
+        )
+    val userId3 =
+        insertUser(
+            firstName = null,
+            lastName = null,
+            email = "harleyquinn@justice.league",
+            createdTime = Instant.ofEpochSecond(9000),
+            authId = null,
+        )
+
+    val deletedUserId =
+        insertUser(
+            firstName = "Barry",
+            lastName = "Allen",
+            email = "flash@justice.league",
+            createdTime = Instant.ofEpochSecond(1000),
+            deletedTime = Instant.ofEpochSecond(12000),
+            authId = "FLASH",
+        )
+
+    insertFundingEntityUser(fundingEntityId, userId1)
+    insertFundingEntityUser(fundingEntityId, userId2)
+    insertFundingEntityUser(fundingEntityId, userId3)
+    insertFundingEntityUser(fundingEntityId, deletedUserId)
+
+    assertEquals(
+        listOf(
+            FunderUserModel(
+                userId = userId1,
+                firstName = "Bruce",
+                lastName = "Wayne",
+                email = "batman@justice.league",
+                createdTime = Instant.ofEpochSecond(6000),
+                accountCreated = true,
+            ),
+            FunderUserModel(
+                userId = userId2,
+                firstName = "Clark",
+                lastName = "Kent",
+                email = "superman@justice.league",
+                createdTime = Instant.ofEpochSecond(3000),
+                accountCreated = false,
+            ),
+            FunderUserModel(
+                userId = userId3,
+                firstName = null,
+                lastName = null,
+                email = "harleyquinn@justice.league",
+                createdTime = Instant.ofEpochSecond(9000),
+                accountCreated = false,
+            ),
+        ),
+        store.fetchFundersForEntity(fundingEntityId))
   }
 }

@@ -64,6 +64,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
+import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
@@ -637,6 +638,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun listFundingEntityUsers(entityId: FundingEntityId) {
+    user.recordPermissionChecks {
+      if (!user.canListFundingEntityUsers(entityId)) {
+        readFundingEntity(entityId)
+        throw AccessDeniedException("No permission to list funders in funding entity $entityId")
+      }
+    }
+  }
+
   fun listNotifications(organizationId: OrganizationId?) {
     user.recordPermissionChecks {
       if (!user.canListNotifications(organizationId)) {
@@ -882,6 +892,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadFundingEntities()) {
         throw AccessDeniedException("No permission to read funding entities")
+      }
+    }
+  }
+
+  fun readFundingEntity(entityId: FundingEntityId) {
+    user.recordPermissionChecks {
+      if (!user.canReadFundingEntity(entityId)) {
+        throw FundingEntityNotFoundException(entityId)
       }
     }
   }

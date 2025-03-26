@@ -289,6 +289,8 @@ data class IndividualUser(
 
   override fun canListFacilities(organizationId: OrganizationId) = isMember(organizationId)
 
+  override fun canListFundingEntityUsers(entityId: FundingEntityId) = isReadOnlyOrHigher()
+
   override fun canListNotifications(organizationId: OrganizationId?): Boolean {
     return if (organizationId == null) {
       // user can list global notifications relevant to user
@@ -374,6 +376,8 @@ data class IndividualUser(
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
+
+  override fun canReadFundingEntity(entityId: FundingEntityId) = canReadFundingEntities()
 
   override fun canReadFundingEntities() = isReadOnlyOrHigher()
 

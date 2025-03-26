@@ -80,6 +80,15 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
         permissionStore.fetchGlobalRoles(user.userId))
   }
 
+  @Test
+  fun `fetchFundingEntity returns funding entity`() {
+    assertEquals(null, permissionStore.fetchFundingEntity(user.userId))
+    val fundingEntityId = insertFundingEntity()
+    insertFundingEntityUser(fundingEntityId, user.userId)
+
+    assertEquals(fundingEntityId, permissionStore.fetchFundingEntity(user.userId))
+  }
+
   /**
    * Inserts some test data to exercise the fetch methods. The data set:
    * ```

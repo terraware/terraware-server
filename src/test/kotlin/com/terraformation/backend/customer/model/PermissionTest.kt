@@ -44,7 +44,9 @@ import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -171,6 +173,10 @@ internal class PermissionTest : DatabaseTest() {
   private val deliveryIds = plantingSiteIds.map { DeliveryId(it.value) }
   private val plantingIds = plantingSiteIds.map { PlantingId(it.value) }
 
+  private val userFundingEntityId = FundingEntityId(1000)
+  private val otherFundingEntityId = FundingEntityId(2000)
+  private val fundingEntityIds = listOf(userFundingEntityId, otherFundingEntityId)
+
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
 
@@ -221,6 +227,10 @@ internal class PermissionTest : DatabaseTest() {
 
     userId = insertUser()
     sameOrgUserId = insertUser()
+
+    fundingEntityIds.forEach { entityId ->
+      putDatabaseId(entityId, insertFundingEntity(createdBy = userId, modifiedBy = userId))
+    }
 
     organizationIds.forEach { organizationId ->
       putDatabaseId(organizationId, insertOrganization(createdBy = userId))
@@ -1577,6 +1587,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *fundingEntityIds.toTypedArray(),
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
+    )
+
+    permissions.expect(
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
         readUser = true,
@@ -1793,6 +1809,12 @@ internal class PermissionTest : DatabaseTest() {
         readUser = true,
         readUserInternalInterests = true,
         updateUserInternalInterests = true,
+    )
+
+    permissions.expect(
+        *fundingEntityIds.toTypedArray(),
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
     )
 
     permissions.expect(
@@ -2044,6 +2066,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *fundingEntityIds.toTypedArray(),
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = true,
         addParticipantProject = true,
@@ -2177,6 +2205,12 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *fundingEntityIds.toTypedArray(),
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
     )
 
     // Not an admin of this org but can still access accelerator-related functions.
@@ -2450,6 +2484,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *fundingEntityIds.toTypedArray(),
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
+    )
+
+    permissions.expect(
         addAnyOrganizationUser = false,
         addCohortParticipant = false,
         addParticipantProject = false,
@@ -2489,6 +2529,22 @@ internal class PermissionTest : DatabaseTest() {
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
+  }
+
+  @Test
+  fun `funder user has correct privileges`() {
+    val permissions = PermissionsTracker()
+    givenFunder(userFundingEntityId)
+
+    permissions.expect(
+        userFundingEntityId,
+        readFundingEntity = true,
+        listFundingEntityUsers = true,
+    )
+
+    permissions.expect(userId, readUser = true)
+    permissions.expect(deleteSelf = true)
+    permissions.andNothingElse()
   }
 
   @Test
@@ -2549,6 +2605,16 @@ internal class PermissionTest : DatabaseTest() {
     }
   }
 
+  private fun givenFunder(fundingEntityId: FundingEntityId) {
+    dslContext
+        .update(USERS)
+        .set(USERS.USER_TYPE_ID, UserType.Funder)
+        .where(USERS.ID.eq(userId))
+        .execute()
+
+    insertFundingEntityUser(getDatabaseId(fundingEntityId), userId)
+  }
+
   private fun fetchUser(): TerrawareUser {
     val user = userStore.fetchOneById(userId)
     return if (user.userType == UserType.System) {
@@ -2601,6 +2667,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDocuments = documentIds.toMutableSet()
     private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
+    private val uncheckedFundingEntities = fundingEntityIds.toMutableSet()
     private val uncheckedModuleEvents = moduleEventIds.toMutableSet()
     private val uncheckedModules = moduleIds.toMutableSet()
     private val uncheckedMonitoringPlots = monitoringPlotIds.toMutableSet()
@@ -3669,6 +3736,29 @@ internal class PermissionTest : DatabaseTest() {
           }
     }
 
+    fun expect(
+        vararg fundingEntityIds: FundingEntityId,
+        readFundingEntity: Boolean = false,
+        listFundingEntityUsers: Boolean = false,
+    ) {
+      fundingEntityIds
+          .filter { it in uncheckedFundingEntities }
+          .forEach { entityId ->
+            val idInDatabase = getDatabaseId(entityId)
+
+            assertEquals(
+                readFundingEntity,
+                user.canReadFundingEntity(idInDatabase),
+                "Can read funding entity $entityId")
+            assertEquals(
+                listFundingEntityUsers,
+                user.canListFundingEntityUsers(idInDatabase),
+                "Can list users for funding entity $entityId")
+
+            uncheckedFundingEntities.remove(entityId)
+          }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedApplications.toTypedArray())
@@ -3680,6 +3770,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDocuments.toTypedArray())
       expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedFundingEntities.toTypedArray())
       expect(*uncheckedModuleEvents.toTypedArray())
       expect(*uncheckedModules.toTypedArray())
       expect(*uncheckedMonitoringPlots.toTypedArray())

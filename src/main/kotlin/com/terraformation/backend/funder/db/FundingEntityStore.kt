@@ -24,7 +24,7 @@ class FundingEntityStore(
   fun fetchOneById(
       fundingEntityId: FundingEntityId,
   ): FundingEntityModel {
-    requirePermissions { readFundingEntities() }
+    requirePermissions { readFundingEntity(fundingEntityId) }
 
     return fetchWithCondition(FUNDING_ENTITIES.ID.eq(fundingEntityId)).firstOrNull()
         ?: throw FundingEntityNotFoundException(fundingEntityId)

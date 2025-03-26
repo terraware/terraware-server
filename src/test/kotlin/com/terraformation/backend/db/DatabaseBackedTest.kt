@@ -1284,6 +1284,8 @@ abstract class DatabaseBackedTest {
       locale: Locale? = null,
       cookiesConsented: Boolean? = null,
       cookiesConsentedTime: Instant? = if (cookiesConsented != null) Instant.EPOCH else null,
+      createdTime: Instant = Instant.EPOCH,
+      deletedTime: Instant? = null,
   ): UserId {
     val insertedId =
         with(USERS) {
@@ -1292,13 +1294,14 @@ abstract class DatabaseBackedTest {
               .set(AUTH_ID, authId)
               .set(COOKIES_CONSENTED, cookiesConsented)
               .set(COOKIES_CONSENTED_TIME, cookiesConsentedTime)
-              .set(CREATED_TIME, Instant.EPOCH)
+              .set(CREATED_TIME, createdTime)
+              .set(DELETED_TIME, deletedTime)
               .set(EMAIL, email)
               .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
               .set(FIRST_NAME, firstName)
               .set(LAST_NAME, lastName)
               .set(LOCALE, locale)
-              .set(MODIFIED_TIME, Instant.EPOCH)
+              .set(MODIFIED_TIME, createdTime)
               .set(TIME_ZONE, timeZone)
               .set(USER_TYPE_ID, type)
               .returning(ID)
@@ -3916,8 +3919,8 @@ abstract class DatabaseBackedTest {
       name: String = "TestFundingEntity ${UUID.randomUUID()}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      modifiedBy: UserId = currentUser().userId,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
   ): FundingEntityId {
     val row =
         FundingEntitiesRow(

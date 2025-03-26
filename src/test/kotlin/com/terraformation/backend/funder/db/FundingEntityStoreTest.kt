@@ -2,7 +2,6 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
-import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
@@ -17,23 +16,24 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user = mockUser()
 
   private val store by lazy { FundingEntityStore(dslContext) }
 
-  private val fundingEntityId by lazy { insertFundingEntity() }
-  private val organizationId by lazy { insertOrganization() }
+  private val otherUserId by lazy { insertUser() }
+  private val organizationId by lazy { insertOrganization(createdBy = otherUserId) }
 
   @BeforeEach
   fun setUp() {
+    every { user.canReadFundingEntity(any()) } returns true
     every { user.canReadFundingEntities() } returns true
   }
 
   @Test
   fun `fetchOneById requires user to be able to read funding entities`() {
-    every { user.canReadFundingEntities() } returns false
-
-    assertThrows<AccessDeniedException> { store.fetchOneById(fundingEntityId) }
+    val fundingEntityId = insertFundingEntity()
+    every { user.canReadFundingEntity(fundingEntityId) } returns false
+    assertThrows<FundingEntityNotFoundException> { store.fetchOneById(fundingEntityId) }
   }
 
   @Test
@@ -43,6 +43,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOneById returns correct funding entity`() {
+    val fundingEntityId = insertFundingEntity()
     assertTrue(store.fetchOneById(fundingEntityId).name.startsWith("TestFundingEntity"))
   }
 
@@ -54,6 +55,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
+    val fundingEntityId = insertFundingEntity()
     insertFundingEntityProject(fundingEntityId, projectId1)
     insertFundingEntityProject(fundingEntityId, projectId2)
 
@@ -87,6 +89,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchAll returns funding entities with and without projects, sorted correctly`() {
+    val organizationId = insertOrganization()
     val namePrefix = "FetchAllEntitiesProject"
     val projectId1 = insertProject(name = "${namePrefix}1", organizationId = organizationId)
     val projectId2 = insertProject(name = "${namePrefix}2", organizationId = organizationId)

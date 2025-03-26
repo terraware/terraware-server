@@ -11,6 +11,8 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
+import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -38,6 +40,15 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(FACILITIES.ORGANIZATION_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
         .fetchMap(FACILITIES.ID.asNonNullable(), ORGANIZATION_USERS.ROLE_ID.asNonNullable())
+  }
+
+  /** Returns a user's funding entity */
+  fun fetchFundingEntity(userId: UserId): FundingEntityId? {
+    return dslContext
+        .select(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID)
+        .from(FUNDING_ENTITY_USERS)
+        .where(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
+        .fetchOne { it[FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID] }
   }
 
   /** Returns a user's global roles. These roles are not tied to organizations. */
