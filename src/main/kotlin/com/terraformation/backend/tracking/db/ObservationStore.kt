@@ -852,7 +852,8 @@ class ObservationStore(
           monitoringPlotId,
           isAdHoc,
           observationPlotsRow.isPermanent!!,
-          plantCountsBySpecies)
+          plantCountsBySpecies,
+          cumulativeDeadFromCurrentObservation = true)
 
       observationPlotsDao.update(
           observationPlotsRow.copy(
@@ -1822,7 +1823,14 @@ class ObservationStore(
     }
   }
 
-  /** Updates the tables that hold the aggregated per-species plant totals from observations. */
+  /**
+   * Updates the tables that hold the aggregated per-species plant totals from observations.
+   *
+   * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
+   *   starting point for the cumulative dead count at the subzone, zone, and site level. If false,
+   *   use the most recently-created observation of the subzone, zone, or site, up to and including
+   *   [observationId].
+   */
   private fun updateSpeciesTotals(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
@@ -1831,7 +1839,8 @@ class ObservationStore(
       monitoringPlotId: MonitoringPlotId?,
       isAdHoc: Boolean,
       isPermanent: Boolean,
-      plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>
+      plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+      cumulativeDeadFromCurrentObservation: Boolean = false,
   ) {
     if (plantCountsBySpecies.isNotEmpty()) {
       if (monitoringPlotId != null) {
@@ -1852,6 +1861,7 @@ class ObservationStore(
               plantingSubzoneId,
               isPermanent,
               plantCountsBySpecies,
+              cumulativeDeadFromCurrentObservation,
           )
         }
 
@@ -1862,6 +1872,7 @@ class ObservationStore(
               plantingZoneId,
               isPermanent,
               plantCountsBySpecies,
+              cumulativeDeadFromCurrentObservation,
           )
         }
 
@@ -1871,6 +1882,7 @@ class ObservationStore(
             plantingSiteId,
             isPermanent,
             plantCountsBySpecies,
+            cumulativeDeadFromCurrentObservation,
         )
       }
     }
@@ -1881,6 +1893,10 @@ class ObservationStore(
    *
    * These tables are all identical with the exception of one column that identifies the scope of
    * aggregation (monitoring plot, planting zone, or planting site).
+   *
+   * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
+   *   starting point for the cumulative dead count. If false, use the most recently-created
+   *   observation of the area, up to and including [observationId].
    */
   private fun <ID : Any> updateSpeciesTotalsTable(
       scopeIdField: TableField<*, ID?>,
@@ -1888,6 +1904,7 @@ class ObservationStore(
       scopeId: ID,
       isPermanent: Boolean,
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+      cumulativeDeadFromCurrentObservation: Boolean = false,
   ) {
     val table = scopeIdField.table!!
     val observationIdField =
@@ -1907,6 +1924,13 @@ class ObservationStore(
     val cumulativeDeadField = table.field("cumulative_dead", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
 
+    val observationIdCondition =
+        if (cumulativeDeadFromCurrentObservation) {
+          observationIdField.eq(observationId)
+        } else {
+          observationIdField.le(observationId)
+        }
+
     dslContext.transaction { _ ->
       totals.forEach { (speciesKey, statusCounts) ->
         val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
@@ -1925,7 +1949,7 @@ class ObservationStore(
                   .select(cumulativeDeadField)
                   .from(table)
                   .where(scopeIdField.eq(scopeId))
-                  .and(observationIdField.le(observationId))
+                  .and(observationIdCondition)
                   .and(certaintyField.eq(speciesKey.certainty))
                   .and(
                       if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
