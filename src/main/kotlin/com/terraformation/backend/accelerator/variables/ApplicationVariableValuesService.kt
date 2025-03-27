@@ -43,10 +43,7 @@ class ApplicationVariableValuesService(
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     applicationVariablesStableIds
-        .map {
-          variableStore.fetchByStableId(it.value)
-              ?: throw IllegalStateException("No variable with stable ID ${it.value}")
-        }
+        .mapNotNull { variableStore.fetchByStableId(it.value) }
         .associateBy { it.id }
   }
 

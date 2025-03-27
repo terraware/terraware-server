@@ -55,10 +55,7 @@ class AcceleratorProjectVariableValuesService(
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     projectAcceleratorVariablesStableIds
-        .map {
-          variableStore.fetchByStableId(it.value)
-              ?: throw IllegalStateException("No variable with stable ID ${it.value}")
-        }
+        .mapNotNull { variableStore.fetchByStableId(it.value) }
         .associateBy { it.id }
   }
 
