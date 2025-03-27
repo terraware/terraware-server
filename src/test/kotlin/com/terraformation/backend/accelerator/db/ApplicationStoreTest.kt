@@ -211,7 +211,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
                 internalComment = "internal comment",
-                internalName = "internalName",
+                internalName = "Internal Name 1",
                 modifiedTime = clock.instant.plusSeconds(600),
                 organizationId = organizationId,
                 organizationName = organizationName,
@@ -247,7 +247,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "applicationId attribute")
         assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
         assertEquals(
-            "internalName", simpleFeature.getAttribute("internalName"), "internalName attribute")
+            "Internal Name 1", simpleFeature.getAttribute("internalName"), "internalName attribute")
         assertEquals(
             organizationId.value,
             simpleFeature.getAttribute("organizationId"),
@@ -292,7 +292,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -337,7 +337,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -350,7 +350,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
-                    internalName = "internalName2",
+                    internalName = "Internal Name 2",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -384,7 +384,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -397,7 +397,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
-                    internalName = "internalName2",
+                    internalName = "Internal Name 2",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -408,7 +408,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     countryCode = "US",
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
-                    internalName = "internalName3",
+                    internalName = "Internal Name 3",
                     modifiedTime = null,
                     organizationId = organizationId2,
                     organizationName = "Organization 2",
