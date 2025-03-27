@@ -9,7 +9,6 @@ import com.terraformation.backend.accelerator.db.DeliverablesImporter
 import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
-import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -105,11 +104,7 @@ class DeliverablesController(
         deliverableStore.fetchDeliverableSubmissions(
             organizationId, participantId, projectId, moduleId = moduleId)
 
-    val projectIds = models.map { it.projectId }.toSet()
-    val acceleratorDetails = projectAcceleratorDetailsService.fetchForProjectIds(projectIds)
-
-    return ListDeliverablesResponsePayload(
-        models.map { ListDeliverablesElement(it, acceleratorDetails[it.projectId]) })
+    return ListDeliverablesResponsePayload(models.map { ListDeliverablesElement(it) })
   }
 
   @ApiResponse200
@@ -125,8 +120,7 @@ class DeliverablesController(
         deliverableStore
             .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
             .firstOrNull() ?: throw DeliverableNotFoundException(deliverableId)
-    return GetDeliverableResponsePayload(
-        DeliverablePayload(model, projectAcceleratorDetailsService.fetchOneOrNull(model.projectId)))
+    return GetDeliverableResponsePayload(DeliverablePayload(model))
   }
 
   @ApiResponse(
@@ -287,7 +281,6 @@ data class ListDeliverablesElement(
 ) {
   constructor(
       model: DeliverableSubmissionModel,
-      detail: ProjectAcceleratorDetailsModel?,
   ) : this(
       model.category,
       model.cohortId,
@@ -305,7 +298,7 @@ data class ListDeliverablesElement(
       model.participantId,
       model.participantName,
       model.position,
-      detail?.dealName,
+      model.projectDealName,
       model.projectId,
       model.projectName,
       model.required,
@@ -367,7 +360,6 @@ data class DeliverablePayload(
 ) {
   constructor(
       model: DeliverableSubmissionModel,
-      detail: ProjectAcceleratorDetailsModel?,
   ) : this(
       model.category,
       model.descriptionHtml,
@@ -382,7 +374,7 @@ data class DeliverablePayload(
       model.participantId,
       model.participantName,
       model.position,
-      detail?.dealName,
+      model.projectDealName,
       model.projectId,
       model.projectName,
       model.required,

@@ -39,7 +39,7 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization(name = "Org name")
     insertProject(name = "Project name")
-    insertApplication()
+    insertApplication(internalName = "XXX_internalName")
     insertModule(name = "Pre-screen module", phase = CohortPhase.PreScreen)
     insertApplicationModule()
 
@@ -71,6 +71,7 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
             participantId = null,
             participantName = null,
             position = 1,
+            projectDealName = "XXX_internalName",
             projectId = inserted.projectId,
             projectName = "Project name",
             required = false,
