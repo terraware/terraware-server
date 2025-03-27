@@ -15,6 +15,8 @@ import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.Variable
@@ -55,12 +57,18 @@ class AcceleratorProjectVariableValuesService(
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     projectAcceleratorVariablesStableIds
-        .mapNotNull { variableStore.fetchByStableId(it.value) }
+        .mapNotNull {
+          val variable = variableStore.fetchByStableId(it)
+          if (variable == null) {
+            log.warn("Variable with stableId=${it.value} not found")
+          }
+          variable
+        }
         .associateBy { it.id }
   }
 
   private val variablesByStableId: Map<StableId, Variable> by lazy {
-    variablesById.values.associateBy { StableId(it.stableId) }
+    variablesById.values.associateBy { it.stableId }
   }
 
   fun fetchValues(projectId: ProjectId): ProjectAcceleratorVariableValuesModel {
@@ -70,7 +78,7 @@ class AcceleratorProjectVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId) }
+              val stableId = variablesById[value.variableId]?.stableId
               if (stableId != null) {
                 stableId to value
               } else {
@@ -152,7 +160,7 @@ class AcceleratorProjectVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.stableId?.let { StableId(it) }
+              val stableId = variablesById[value.variableId]?.stableId
               if (stableId != null) {
                 stableId to value
               } else {

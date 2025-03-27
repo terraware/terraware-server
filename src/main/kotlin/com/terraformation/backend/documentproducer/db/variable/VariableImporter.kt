@@ -20,6 +20,7 @@ import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
@@ -70,7 +71,7 @@ class VariableImporter(
 
   private inner class ImportContext {
     lateinit var csvVariables: List<AllVariableCsvVariable>
-    lateinit var csvVariableByStableId: Map<String, AllVariableCsvVariable>
+    lateinit var csvVariableByStableId: Map<StableId, AllVariableCsvVariable>
 
     /**
      * Map of full variable paths to CSV variables. This is the full "path" to the variable within

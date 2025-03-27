@@ -48,6 +48,7 @@ import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectOption
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableColumn
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
@@ -115,12 +116,12 @@ class VariableStore(
         ?: throw VariableNotFoundException(variableId)
   }
 
-  fun fetchByStableId(stableId: String): Variable? =
+  fun fetchByStableId(stableId: StableId): Variable? =
       with(VARIABLES) {
         dslContext
             .select(ID)
             .from(VARIABLES)
-            .where(STABLE_ID.eq(stableId))
+            .where(STABLE_ID.eq(stableId.value))
             .orderBy(ID.desc())
             .limit(1)
             .fetchOne(VARIABLES.ID)
@@ -418,7 +419,8 @@ class VariableStore(
                 deliverableQuestion = variablesRow.deliverableQuestion,
                 dependencyCondition = variablesRow.dependencyConditionId,
                 dependencyValue = variablesRow.dependencyValue,
-                dependencyVariableStableId = variablesRow.dependencyVariableStableId,
+                dependencyVariableStableId =
+                    variablesRow.dependencyVariableStableId?.let { StableId(it) },
                 description = variablesRow.description,
                 id = variableId,
                 internalOnly = variablesRow.internalOnly!!,
@@ -430,7 +432,7 @@ class VariableStore(
                 position = manifestRecord?.position ?: 0,
                 recommendedBy = recommendedBy,
                 replacesVariableId = variablesRow.replacesVariableId,
-                stableId = variablesRow.stableId!!,
+                stableId = StableId(variablesRow.stableId!!),
             )
 
         val variable =

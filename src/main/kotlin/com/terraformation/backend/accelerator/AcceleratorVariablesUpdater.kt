@@ -4,11 +4,10 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
-import com.terraformation.backend.accelerator.variables.StableId
-import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.model.StableIds
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
@@ -28,13 +27,13 @@ class AcceleratorVariablesUpdater(
       val variable = variableStore.fetchOneVariable(event.variableId)
       val values = acceleratorProjectVariableValuesService.fetchValues(event.projectId)
 
-      if (StableId(variable.stableId) == StableIds.country) {
+      if (variable.stableId == StableIds.country) {
         // Update application country when project country variable is updated
         val application = applicationStore.fetchByProjectId(event.projectId).singleOrNull()
         if (application != null) {
           values.countryCode?.let { applicationStore.updateCountryCode(application.id, it) }
         }
-      } else if (StableId(variable.stableId) == StableIds.dealName) {
+      } else if (variable.stableId == StableIds.dealName) {
         // Update accelerator details deal name when project deal name variable is updated
         dslContext
             .insertInto(PROJECT_ACCELERATOR_DETAILS)

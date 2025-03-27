@@ -4,13 +4,14 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.documentproducer.model.StableId
 
 // In the header order in the CSV
 data class CsvSectionVariable(
     /** Column 1/A - Name */
     val name: String,
     /** Column 2/B - Identifier that stays stable across settings changes. */
-    val stableId: String,
+    val stableId: StableId,
     /** Column 3/C - Description (optional) */
     val description: String?,
     /** Column 4/D - Recommended variables (one name per line, optionally prefixed with a hyphen) */
@@ -46,7 +47,7 @@ data class CsvSectionVariable(
           isRequired = false,
           name = name,
           replacesVariableId = replacesVariableId,
-          stableId = stableId,
+          stableId = stableId.value,
           variableTypeId = VariableType.Section,
       )
 }

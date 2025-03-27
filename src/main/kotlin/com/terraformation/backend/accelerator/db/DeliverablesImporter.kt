@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.importer.CsvImportFailedException
 import com.terraformation.backend.importer.processCsvFile
@@ -110,7 +111,7 @@ class DeliverablesImporter(
                 ?.split("\n", ",")
                 ?.mapNotNull { it.trim().ifBlank { null } }
                 ?.mapNotNull { stableId ->
-                  val variable = variableStore.fetchByStableId(stableId)
+                  val variable = variableStore.fetchByStableId(StableId(stableId))
                   if (variable == null) {
                     addError(
                         "Deliverable $deliverableId references variable $stableId which doesn't exist")

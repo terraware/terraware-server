@@ -3,8 +3,6 @@ package com.terraformation.backend.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.accelerator.variables.StableId
-import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
@@ -411,6 +409,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon

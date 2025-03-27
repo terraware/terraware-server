@@ -13,6 +13,7 @@ import com.terraformation.backend.documentproducer.VariableValueService
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
+import com.terraformation.backend.documentproducer.model.StableId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -81,7 +82,8 @@ class ValuesController(
     val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
 
-    val variableIds = variableId ?: stableId?.mapNotNull { variableStore.fetchByStableId(it)?.id }
+    val variableIds =
+        variableId ?: stableId?.mapNotNull { variableStore.fetchByStableId(StableId(it))?.id }
 
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
     // than the nextValueId we'll be returning, in case new values are inserted by another user at

@@ -5,6 +5,7 @@ import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
+import com.terraformation.backend.documentproducer.model.StableId
 import java.io.InputStreamReader
 import java.math.BigDecimal
 
@@ -33,7 +34,7 @@ class CsvVariableNormalizer {
 
       AllVariableCsvVariable(
           name = name,
-          stableId = rawValues[VARIABLE_CSV_COLUMN_INDEX_STABLE_ID],
+          stableId = StableId(rawValues[VARIABLE_CSV_COLUMN_INDEX_STABLE_ID]),
           description = values[VARIABLE_CSV_COLUMN_INDEX_DESCRIPTION],
           dataType = dataType,
           isList = isList,
@@ -55,7 +56,7 @@ class CsvVariableNormalizer {
           notes = values[VARIABLE_CSV_COLUMN_INDEX_NOTES],
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
           dependencyVariableStableId =
-              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID],
+              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID]?.let { StableId(it) },
           dependencyCondition =
               values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION]?.let {
                 when (it.lowercase()) {

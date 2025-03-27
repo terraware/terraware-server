@@ -15,6 +15,7 @@ import com.terraformation.backend.documentproducer.db.VariableManifestStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
@@ -65,7 +66,7 @@ class ManifestImporter(
 
   private inner class ImportContext {
     lateinit var csvVariables: List<CsvSectionVariable>
-    lateinit var csvVariableByStableId: Map<String, CsvSectionVariable>
+    lateinit var csvVariableByStableId: Map<StableId, CsvSectionVariable>
     lateinit var variableManifestId: VariableManifestId
 
     /**
@@ -252,7 +253,7 @@ class ManifestImporter(
                       if (variableStableId.isNotEmpty()) {
                         val referencedVariable =
                             defaultTextVariableByStableId.computeIfAbsent(variableStableId) {
-                              variableStore.fetchByStableId(variableStableId)
+                              variableStore.fetchByStableId(StableId(variableStableId))
                             }
 
                         if (referencedVariable != null) {

@@ -14,6 +14,7 @@ import com.terraformation.backend.documentproducer.model.NewSelectValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation

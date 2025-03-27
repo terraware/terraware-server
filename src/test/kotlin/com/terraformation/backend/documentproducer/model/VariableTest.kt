@@ -698,6 +698,6 @@ class VariableTest {
           manifestId = VariableManifestId(2),
           name = "Test",
           position = 0,
-          stableId = "A",
+          stableId = StableId("A"),
       )
 }

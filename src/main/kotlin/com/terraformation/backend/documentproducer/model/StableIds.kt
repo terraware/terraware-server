@@ -1,4 +1,4 @@
-package com.terraformation.backend.accelerator.variables
+package com.terraformation.backend.documentproducer.model
 
 import com.terraformation.backend.db.default_schema.LandUseModelType
 
