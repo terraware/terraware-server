@@ -50,6 +50,7 @@ val ENUM_TABLES =
                         "report_standard_metrics\\.status_id",
                         "report_system_metrics\\.status_id",
                     )),
+                EnumTable("report_quarters", listOf("reports\\.report_quarter_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),

@@ -36,6 +36,7 @@ import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.StandardMetricId
@@ -2827,6 +2828,8 @@ abstract class DatabaseBackedTest {
       row: ReportsRow = ReportsRow(),
       configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
       projectId: ProjectId = row.projectId ?: inserted.projectId,
+      frequency: ReportFrequency = row.reportFrequencyId ?: ReportFrequency.Quarterly,
+      quarter: ReportQuarter? = row.reportQuarterId ?: ReportQuarter.Q1,
       status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
       startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
       endDate: LocalDate = row.endDate ?: LocalDate.EPOCH.plusDays(1),
@@ -2850,6 +2853,8 @@ abstract class DatabaseBackedTest {
         row.copy(
             configId = configId,
             projectId = projectId,
+            reportFrequencyId = frequency,
+            reportQuarterId = quarter,
             statusId = status,
             startDate = startDate,
             endDate = endDate,

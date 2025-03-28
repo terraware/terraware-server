@@ -5,10 +5,10 @@ import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -37,6 +37,7 @@ data class ReportModel(
     val configId: ProjectReportConfigId,
     val projectId: ProjectId,
     val frequency: ReportFrequency,
+    val quarter: ReportQuarter?,
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -121,6 +122,8 @@ data class ReportModel(
         id = id,
         configId = configId,
         projectId = projectId,
+        reportFrequencyId = frequency,
+        reportQuarterId = quarter,
         statusId = status,
         startDate = startDate,
         endDate = endDate,
@@ -156,7 +159,8 @@ data class ReportModel(
             id = record[ID]!!,
             configId = record[CONFIG_ID]!!,
             projectId = record[PROJECT_ID]!!,
-            frequency = record[PROJECT_REPORT_CONFIGS.REPORT_FREQUENCY_ID]!!,
+            quarter = record[REPORT_QUARTER_ID],
+            frequency = record[REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
