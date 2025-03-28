@@ -39,13 +39,14 @@ cohorts
 deliverable_categories
 score_categories
 report_statuses
-report_frequencies
+report_quarters
 event_types
 event_statuses
 document_stores
 application_module_statuses
 vote_options
 submission_statuses
+report_frequencies
 pipelines
 internal_interests
 deliverable_types

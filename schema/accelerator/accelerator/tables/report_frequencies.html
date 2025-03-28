@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>(Enum) Frequencies of accelerator project reports.</p>
+                            <p>(Enum) Frequencies of accelerator project reports. Acts as the report type as well.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -133,6 +133,11 @@
                                             <tr>
                                                 <td title="project_report_configs.report_frequency_id references report_frequencies.id via project_report_configs_report_frequency_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.report_frequency_id</span></td>
                                                 <td class="constraint detail">project_report_configs_report_frequency_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="reports.report_frequency_id references report_frequencies.id via reports_report_frequency_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.report_frequency_id</span></td>
+                                                <td class="constraint detail">reports_report_frequency_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>

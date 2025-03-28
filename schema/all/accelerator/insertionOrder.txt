@@ -6,13 +6,14 @@ application_statuses
 deliverable_types
 internal_interests
 pipelines
+report_frequencies
 submission_statuses
 vote_options
 application_module_statuses
 document_stores
 event_statuses
 event_types
-report_frequencies
+report_quarters
 report_statuses
 score_categories
 deliverable_categories

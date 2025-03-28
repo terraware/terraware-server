@@ -131,8 +131,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reports.[config_id, project_id] references project_report_configs.[id, project_id] via reports_config_id_project_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.config_id</span></td>
-                                                <td class="constraint detail">reports_config_id_project_id_fkey</td>
+                                                <td title="reports.[config_id, report_frequency_id] references project_report_configs.[id, report_frequency_id] via reports_config_id_report_frequency_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.config_id</span></td>
+                                                <td class="constraint detail">reports_config_id_report_frequency_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -179,6 +179,11 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="reports.[config_id, report_frequency_id] references project_report_configs.[id, report_frequency_id] via reports_config_id_report_frequency_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.report_frequency_id</span></td>
+                                                <td class="constraint detail">reports_config_id_report_frequency_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -267,6 +272,12 @@
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>id + project_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> project_report_configs_id_report_frequency_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>id + report_frequency_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>project_report_configs_project_id_idx</td>
