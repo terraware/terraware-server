@@ -1,5 +1,5 @@
 UPDATE accelerator.project_accelerator_details as details
-SET details.deal_name = (
+SET deal_name = (
     SELECT values.text_value
     FROM docprod.variable_values as values
     WHERE values.is_deleted = false
