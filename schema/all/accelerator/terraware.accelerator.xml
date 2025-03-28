@@ -642,6 +642,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="annual_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="total_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="hubspot_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="deal_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <index name="project_accelerator_details_pkey" unique="true">
             <column ascending="true" name="project_id"/>
