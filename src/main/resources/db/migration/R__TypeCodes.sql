@@ -440,6 +440,13 @@ VALUES (1, 'Achieved'),
        (3, 'Unlikely')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.report_quarters (id, name)
+VALUES (1, 'Q1'),
+       (2, 'Q2'),
+       (3, 'Q3'),
+       (4, 'Q4')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.report_statuses (id, name)
 VALUES (1, 'Not Submitted'),
        (2, 'Submitted'),

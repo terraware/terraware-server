@@ -23,6 +23,7 @@ import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -326,6 +327,7 @@ data class AcceleratorReportPayload(
     val id: ReportId,
     val projectId: ProjectId,
     val frequency: ReportFrequency,
+    val quarter: ReportQuarter?,
     val status: ReportStatus,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -348,6 +350,7 @@ data class AcceleratorReportPayload(
       id = model.id,
       projectId = model.projectId,
       frequency = model.frequency,
+      quarter = model.quarter,
       status = model.status,
       startDate = model.startDate,
       endDate = model.endDate,

@@ -20,6 +20,7 @@ import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -384,10 +385,33 @@ class ReportStore(
       startDate = startDate.plusMonths(durationMonths)
       val reportEndDate = startDate.minusDays(1)
 
+      val quarter =
+          if (config.frequency == ReportFrequency.Quarterly) {
+            when (reportStartDate.month) {
+              Month.JANUARY,
+              Month.FEBRUARY,
+              Month.MARCH -> ReportQuarter.Q1
+              Month.APRIL,
+              Month.MAY,
+              Month.JUNE -> ReportQuarter.Q2
+              Month.JULY,
+              Month.AUGUST,
+              Month.SEPTEMBER -> ReportQuarter.Q3
+              Month.OCTOBER,
+              Month.NOVEMBER,
+              Month.DECEMBER -> ReportQuarter.Q4
+              else -> null
+            }
+          } else {
+            null
+          }
+
       rows.add(
           ReportsRow(
               configId = config.id,
               projectId = config.projectId,
+              reportFrequencyId = config.frequency,
+              reportQuarterId = quarter,
               statusId = ReportStatus.NotSubmitted,
               startDate = reportStartDate,
               endDate = reportEndDate,
@@ -561,7 +585,6 @@ class ReportStore(
     return dslContext
         .select(
             REPORTS.asterisk(),
-            PROJECT_REPORT_CONFIGS.REPORT_FREQUENCY_ID,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
@@ -569,8 +592,6 @@ class ReportStore(
             challengesMultiset,
         )
         .from(REPORTS)
-        .join(PROJECT_REPORT_CONFIGS)
-        .on(PROJECT_REPORT_CONFIGS.ID.eq(REPORTS.CONFIG_ID))
         .where(condition)
         .orderBy(REPORTS.START_DATE)
         .fetch {

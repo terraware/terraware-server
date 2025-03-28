@@ -628,6 +628,8 @@ COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accel
 
 COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
+COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
+
 COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
