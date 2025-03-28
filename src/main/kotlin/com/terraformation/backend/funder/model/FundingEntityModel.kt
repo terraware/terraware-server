@@ -1,6 +1,6 @@
 package com.terraformation.backend.funder.model
 
-import com.terraformation.backend.customer.model.ExistingProjectModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import java.time.Instant
@@ -11,7 +11,7 @@ data class FundingEntityModel(
     val name: String,
     val createdTime: Instant,
     val modifiedTime: Instant,
-    val projects: List<ExistingProjectModel> = emptyList(),
+    val projects: List<ProjectAcceleratorDetailsModel> = emptyList(),
 ) {
   companion object {
     fun of(

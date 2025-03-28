@@ -1,12 +1,12 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.ProjectAcceleratorDetailsPayload
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -130,11 +130,14 @@ class FundingEntitiesController(
 data class FundingEntityPayload(
     val id: FundingEntityId,
     val name: String,
-    val projects: List<ProjectPayload>,
+    val projects: List<ProjectAcceleratorDetailsPayload>,
 ) {
   constructor(
       model: FundingEntityModel
-  ) : this(id = model.id, name = model.name, projects = model.projects.map { ProjectPayload(it) })
+  ) : this(
+      id = model.id,
+      name = model.name,
+      projects = model.projects.map { ProjectAcceleratorDetailsPayload(it) })
 }
 
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :
