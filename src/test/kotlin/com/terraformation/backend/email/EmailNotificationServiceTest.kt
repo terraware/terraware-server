@@ -82,6 +82,7 @@ import com.terraformation.backend.documentproducer.event.CompletedSectionVariabl
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.funder.db.FundingEntityStore
@@ -359,7 +360,7 @@ internal class EmailNotificationServiceTest {
               name = "Overview",
               manifestId = VariableManifestId(1),
               position = 0,
-              stableId = "stable",
+              stableId = StableId("stable"),
           ),
           renderHeading = false)
 

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.documentproducer.model.StableId
 import java.math.BigDecimal
 
 private const val LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE = "variablesCsvDataTypeUnknown"
@@ -15,7 +16,7 @@ data class AllVariableCsvVariable(
     /** Column 1/A - Name */
     val name: String,
     /** Column 2/B - Identifier that stays stable across settings changes. */
-    val stableId: String,
+    val stableId: StableId,
     /** Column 3/C - Description (optional) */
     val description: String?,
     /** Column 4/D - Data Type */
@@ -45,7 +46,7 @@ data class AllVariableCsvVariable(
     /** Column 14/N - Deliverable Question */
     val deliverableQuestion: String?,
     /** Column 15/O - Dependency - Variable Stable ID */
-    val dependencyVariableStableId: String?,
+    val dependencyVariableStableId: StableId?,
     /** Column 16/P - Dependency - Condition */
     val dependencyCondition: DependencyCondition?,
     /** Column 17/Q - Dependency - Value */
@@ -70,7 +71,7 @@ data class AllVariableCsvVariable(
   fun mapToVariablesRow() =
       VariablesRow(
           deliverableQuestion = deliverableQuestion,
-          dependencyVariableStableId = dependencyVariableStableId,
+          dependencyVariableStableId = dependencyVariableStableId?.value,
           dependencyConditionId = dependencyCondition,
           dependencyValue = dependencyValue,
           description = description,
@@ -80,7 +81,7 @@ data class AllVariableCsvVariable(
           isRequired = isRequired,
           name = name,
           replacesVariableId = replacesVariableId,
-          stableId = stableId,
+          stableId = stableId.value,
           variableTypeId = dataType.variableType,
       )
 }

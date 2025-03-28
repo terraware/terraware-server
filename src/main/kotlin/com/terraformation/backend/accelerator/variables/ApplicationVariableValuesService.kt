@@ -13,6 +13,8 @@ import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
@@ -43,15 +45,18 @@ class ApplicationVariableValuesService(
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     applicationVariablesStableIds
-        .map {
-          variableStore.fetchByStableId(it.value)
-              ?: throw IllegalStateException("No variable with stable ID ${it.value}")
+        .mapNotNull {
+          val variable = variableStore.fetchByStableId(it)
+          if (variable == null) {
+            log.warn("Variable with stableId=${it.value} not found")
+          }
+          variable
         }
         .associateBy { it.id }
   }
 
   private val variablesByStableId: Map<StableId, Variable> by lazy {
-    variablesById.values.associateBy { StableId(it.stableId) }
+    variablesById.values.associateBy { it.stableId }
   }
 
   fun fetchValues(projectId: ProjectId): ApplicationVariableValues {
@@ -61,7 +66,7 @@ class ApplicationVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.stableId?.let { StableId(it) }
+              val stableId = variablesById[value.variableId]?.stableId
               if (stableId != null) {
                 stableId to value
               } else {

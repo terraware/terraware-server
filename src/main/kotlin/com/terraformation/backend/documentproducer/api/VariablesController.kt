@@ -20,6 +20,7 @@ import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectOption
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableColumn
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
@@ -73,7 +74,7 @@ class VariablesController(
         if (!variableId.isNullOrEmpty()) {
           variableId.distinct().mapNotNull { variableStore.fetchVariableOrNull(it) }
         } else if (!stableId.isNullOrEmpty()) {
-          stableId.distinct().mapNotNull { variableStore.fetchByStableId(it) }
+          stableId.distinct().mapNotNull { variableStore.fetchByStableId(StableId(it)) }
         } else if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (documentId != null) {
@@ -128,7 +129,7 @@ interface VariablePayload {
     get() = model.dependencyValue
 
   val dependencyVariableStableId: String?
-    get() = model.dependencyVariableStableId
+    get() = model.dependencyVariableStableId?.value
 
   val description: String?
     get() = model.description
@@ -157,8 +158,8 @@ interface VariablePayload {
         arraySchema = Schema(description = "IDs of sections that recommend this variable."))
     get() = model.recommendedBy.toSet()
 
-  val stableId
-    get() = model.stableId
+  val stableId: String
+    get() = model.stableId.value
 
   val type
     get() = model.type

@@ -8,6 +8,7 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableColumn
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
@@ -84,13 +85,13 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       name = variableName,
                       position = 0,
                       replacesVariableId = variableId2,
-                      stableId = stableId,
+                      stableId = StableId(stableId),
                   ),
               decimalPlaces = null,
               minValue = null,
               maxValue = null)
 
-      val actual = store.fetchByStableId(stableId)
+      val actual = store.fetchByStableId(StableId(stableId))
 
       assertEquals(expected, actual)
     }
@@ -132,7 +133,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       manifestId = inserted.variableManifestId,
                       name = "1",
                       position = 0,
-                      stableId = "A",
+                      stableId = StableId("A"),
                   ),
               renderHeading = true,
               children =
@@ -144,7 +145,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                               manifestId = inserted.variableManifestId,
                               name = "1.1",
                               position = 1,
-                              stableId = "B",
+                              stableId = StableId("B"),
                           ),
                           renderHeading = true,
                           children =
@@ -156,7 +157,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                           manifestId = inserted.variableManifestId,
                                           name = "1.1.1",
                                           position = 2,
-                                          stableId = "C",
+                                          stableId = StableId("C"),
                                       ),
                                       renderHeading = false,
                                   ),
@@ -167,7 +168,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                           manifestId = inserted.variableManifestId,
                                           name = "1.1.2",
                                           position = 3,
-                                          stableId = "D",
+                                          stableId = StableId("D"),
                                       ),
                                       renderHeading = false)))))
 
@@ -258,7 +259,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           manifestId = null,
                           name = "Variable 2",
                           position = 0,
-                          stableId = "2",
+                          stableId = StableId("2"),
                           replacesVariableId = variableId2),
                   decimalPlaces = null,
                   minValue = null,
@@ -273,7 +274,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           manifestId = null,
                           name = "Variable 1",
                           position = 0,
-                          stableId = "1",
+                          stableId = StableId("1"),
                       ),
                   decimalPlaces = null,
                   minValue = null,
@@ -313,7 +314,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           manifestId = null,
                           name = "Table",
                           position = 0,
-                          stableId = "1",
+                          stableId = StableId("1"),
                       ),
                   tableStyle = VariableTableStyle.Horizontal,
                   columns =
@@ -330,7 +331,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                               manifestId = null,
                                               name = "Variable 2",
                                               position = 0,
-                                              stableId = "2",
+                                              stableId = StableId("2"),
                                           ),
                                       textType = VariableTextType.SingleLine)))))
 
@@ -388,7 +389,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       manifestId = null,
                       name = "Variable 1",
                       position = 0,
-                      stableId = "$stableId-1",
+                      stableId = StableId("$stableId-1"),
                   ),
               decimalPlaces = null,
               minValue = null,
@@ -404,7 +405,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       manifestId = null,
                       name = "Variable 2",
                       position = 0,
-                      stableId = "$stableId-2",
+                      stableId = StableId("$stableId-2"),
                   ),
               decimalPlaces = null,
               minValue = null,
@@ -561,7 +562,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           manifestId = null,
                           name = "Number Variable",
                           position = 0,
-                          stableId = "1"),
+                          stableId = StableId("1")),
                   decimalPlaces = null,
                   minValue = null,
                   maxValue = BigDecimal(10)))

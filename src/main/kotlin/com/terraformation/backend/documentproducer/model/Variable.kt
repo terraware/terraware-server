@@ -42,7 +42,7 @@ interface BaseVariable {
   val dependencyValue: String?
 
   /** The ID of the variable this variable depends on, if applicable * */
-  val dependencyVariableStableId: String?
+  val dependencyVariableStableId: StableId?
 
   /** Optional description if the variable's name isn't sufficient. Can vary between manifests. */
   val description: String?
@@ -80,7 +80,7 @@ interface BaseVariable {
    */
   val replacesVariableId: VariableId?
 
-  val stableId: String
+  val stableId: StableId
 }
 
 /**
@@ -95,7 +95,7 @@ data class BaseVariableProperties(
     override val deliverableQuestion: String? = null,
     override val dependencyCondition: DependencyCondition? = null,
     override val dependencyValue: String? = null,
-    override val dependencyVariableStableId: String? = null,
+    override val dependencyVariableStableId: StableId? = null,
     override val description: String? = null,
     override val id: VariableId,
     override val internalOnly: Boolean = false,
@@ -106,7 +106,7 @@ data class BaseVariableProperties(
     override val position: Int,
     override val recommendedBy: Collection<VariableId> = emptyList(),
     override val replacesVariableId: VariableId? = null,
-    override val stableId: String,
+    override val stableId: StableId,
 ) : BaseVariable
 
 /**

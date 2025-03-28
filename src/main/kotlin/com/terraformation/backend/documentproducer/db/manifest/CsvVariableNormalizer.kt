@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
 import com.opencsv.CSVReader
+import com.terraformation.backend.documentproducer.model.StableId
 import java.io.InputStreamReader
 
 class CsvVariableNormalizer {
@@ -30,7 +31,7 @@ class CsvVariableNormalizer {
               splitAndTrimNewline(values[MANIFEST_CSV_COLUMN_INDEX_RECOMMENDED_VARIABLES]).map {
                 scrubHyphenPrefix(it)
               },
-          stableId = rawValues[MANIFEST_CSV_COLUMN_INDEX_STABLE_ID],
+          stableId = StableId(rawValues[MANIFEST_CSV_COLUMN_INDEX_STABLE_ID]),
           variablePath = getVariablePath(name, parent))
     }
   }
