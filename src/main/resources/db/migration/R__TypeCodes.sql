@@ -440,6 +440,7 @@ VALUES (1, 'Achieved'),
        (3, 'Unlikely')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+-- The id must match the quarter number for constraint checking
 INSERT INTO accelerator.report_quarters (id, name)
 VALUES (1, 'Q1'),
        (2, 'Q2'),

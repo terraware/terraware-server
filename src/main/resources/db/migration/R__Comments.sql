@@ -622,7 +622,7 @@ COMMENT ON TABLE accelerator.report_achievements IS 'List of achievements for ac
 
 COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
+COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports. Acts as the report type as well.';
 
 COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accelerator project report metrics.';
 
@@ -640,6 +640,8 @@ COMMENT ON COLUMN accelerator.report_system_metrics.system_time IS 'System value
 COMMENT ON COLUMN accelerator.report_system_metrics.system_value IS 'Value collected via Terraware data. Null before value is submitted.';
 
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
+COMMENT ON COLUMN accelerator.reports.report_frequency_id IS 'Frequency of the report, that can determine report data. Must match with frequency of the configuration.';
+COMMENT ON COLUMN accelerator.reports.report_quarter_id IS 'Quarter of the report. Must be non-null for quarterly reports and null otherwise.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
