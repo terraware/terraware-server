@@ -6,7 +6,6 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -17,6 +16,7 @@ import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FunderUserModel
 import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingProjectModel
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.ws.rs.BadRequestException
@@ -130,11 +130,12 @@ class FundingEntitiesController(
 data class FundingEntityPayload(
     val id: FundingEntityId,
     val name: String,
-    val projects: List<ProjectPayload>,
+    val projects: List<FundingProjectPayload>,
 ) {
   constructor(
       model: FundingEntityModel
-  ) : this(id = model.id, name = model.name, projects = model.projects.map { ProjectPayload(it) })
+  ) : this(
+      id = model.id, name = model.name, projects = model.projects.map { FundingProjectPayload(it) })
 }
 
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :
@@ -171,6 +172,18 @@ data class FunderPayload(
       email = user.email,
       firstName = user.firstName,
       lastName = user.lastName,
+  )
+}
+
+data class FundingProjectPayload(
+    val projectId: ProjectId,
+    val dealName: String,
+) {
+  constructor(
+      model: FundingProjectModel
+  ) : this(
+      projectId = model.projectId,
+      dealName = model.dealName,
   )
 }
 

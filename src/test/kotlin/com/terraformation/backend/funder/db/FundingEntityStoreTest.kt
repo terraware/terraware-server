@@ -1,11 +1,11 @@
 package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.funder.model.FundingProjectModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,8 +50,11 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchOneById retrieves entity with projects`() {
     val namePrefix = "FetchOneEntityProject"
+    val dealNamePrefix = "${namePrefix}Deal"
     val projectId1 = insertProject(name = "${namePrefix}1", organizationId = organizationId)
     val projectId2 = insertProject(name = "${namePrefix}2", organizationId = organizationId)
+    insertProjectAcceleratorDetails(dealName = "${dealNamePrefix}1", projectId = projectId1)
+    insertProjectAcceleratorDetails(dealName = "${dealNamePrefix}2", projectId = projectId2)
 
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
@@ -73,10 +76,8 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         listOf(
-            ExistingProjectModel(
-                id = projectId1, name = "${namePrefix}1", organizationId = organizationId),
-            ExistingProjectModel(
-                id = projectId2, name = "${namePrefix}2", organizationId = organizationId)),
+            FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1"),
+            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2")),
         store.fetchOneById(fundingEntityId).projects)
   }
 
@@ -91,8 +92,11 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchAll returns funding entities with and without projects, sorted correctly`() {
     val organizationId = insertOrganization()
     val namePrefix = "FetchAllEntitiesProject"
+    val dealNamePrefix = "${namePrefix}Deal"
     val projectId1 = insertProject(name = "${namePrefix}1", organizationId = organizationId)
     val projectId2 = insertProject(name = "${namePrefix}2", organizationId = organizationId)
+    insertProjectAcceleratorDetails(dealName = "${dealNamePrefix}1", projectId = projectId1)
+    insertProjectAcceleratorDetails(dealName = "${dealNamePrefix}2", projectId = projectId2)
 
     insertFundingEntity() // noProjectsEntity
     val oneProjectEntity = insertFundingEntity()
@@ -105,21 +109,17 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
     val actualEntities = store.fetchAll()
     assertEquals(3, actualEntities.size, "Should have fetched 3 entities")
     assertEquals(
-        emptyList<ExistingProjectModel>(),
+        emptyList<FundingProjectModel>(),
         actualEntities[0].projects,
         "First entity should have no projects")
     assertEquals(
-        listOf(
-            ExistingProjectModel(
-                id = projectId1, name = "${namePrefix}1", organizationId = organizationId)),
+        listOf(FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1")),
         actualEntities[1].projects,
         "Second entity should have one project")
     assertEquals(
         listOf(
-            ExistingProjectModel(
-                id = projectId1, name = "${namePrefix}1", organizationId = organizationId),
-            ExistingProjectModel(
-                id = projectId2, name = "${namePrefix}2", organizationId = organizationId)),
+            FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1"),
+            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2")),
         actualEntities[2].projects,
         "Third entity should have both projects")
   }

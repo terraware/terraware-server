@@ -1,12 +1,12 @@
 package com.terraformation.backend.funder.db
 
-import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingProjectModel
 import jakarta.inject.Named
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -38,16 +38,16 @@ class FundingEntityStore(
                 FUNDING_ENTITIES.NAME,
                 FUNDING_ENTITIES.CREATED_TIME,
                 FUNDING_ENTITIES.MODIFIED_TIME,
-                PROJECTS.ID,
-                PROJECTS.NAME,
-                PROJECTS.ORGANIZATION_ID)
+                FUNDING_ENTITY_PROJECTS.PROJECT_ID,
+                PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+            )
             .from(FUNDING_ENTITIES)
             .leftJoin(FUNDING_ENTITY_PROJECTS)
             .on(FUNDING_ENTITIES.ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
-            .leftJoin(PROJECTS)
-            .on(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
+            .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+            .on(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
             .apply { condition?.let { where(it) } }
-            .orderBy(FUNDING_ENTITIES.ID, PROJECTS.NAME)
+            .orderBy(FUNDING_ENTITIES.ID, PROJECT_ACCELERATOR_DETAILS.DEAL_NAME)
             .fetch()
 
     return records
@@ -62,12 +62,11 @@ class FundingEntityStore(
               modifiedTime = entity[FUNDING_ENTITIES.MODIFIED_TIME]!!,
               projects =
                   groupRecords
-                      .filter { it[PROJECTS.ID] != null }
+                      .filter { it[FUNDING_ENTITY_PROJECTS.PROJECT_ID] != null }
                       .map { record ->
-                        ExistingProjectModel(
-                            id = record[PROJECTS.ID]!!,
-                            name = record[PROJECTS.NAME]!!,
-                            organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
+                        FundingProjectModel(
+                            projectId = record[FUNDING_ENTITY_PROJECTS.PROJECT_ID]!!,
+                            dealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME].orEmpty(),
                         )
                       })
         }
