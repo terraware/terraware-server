@@ -840,6 +840,7 @@ data class ObservationPlantingSubzoneResultsPayload(
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
+    val name: String,
     @Schema(
         description =
             "Estimated planting density for the subzone based on the observed planting densities " +
@@ -869,6 +870,7 @@ data class ObservationPlantingSubzoneResultsPayload(
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
       mortalityRate = model.mortalityRate,
       mortalityRateStdDev = model.mortalityRateStdDev,
+      name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzoneId = model.plantingSubzoneId,
@@ -897,6 +899,7 @@ data class ObservationPlantingZoneResultsPayload(
                 "monitoring plots.")
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
+    val name: String,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
@@ -926,6 +929,7 @@ data class ObservationPlantingZoneResultsPayload(
       estimatedPlants = model.estimatedPlants,
       mortalityRate = model.mortalityRate,
       mortalityRateStdDev = model.mortalityRateStdDev,
+      name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzones =

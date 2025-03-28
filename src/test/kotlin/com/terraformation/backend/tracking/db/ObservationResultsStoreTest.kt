@@ -213,6 +213,47 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns zone and subzone names`() {
+      insertObservation(completedTime = Instant.EPOCH)
+      insertPlantingZone(name = "Zone 1")
+      insertPlantingSubzone(name = "Subzone 1")
+      insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
+      insertPlantingZone(name = "Zone 2")
+      insertPlantingSubzone(name = "Subzone 2")
+      insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservationPlotCondition(condition = ObservableCondition.Pests)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      val zone1Result =
+          results[0].plantingZones.single { zone ->
+            zone.plantingSubzones.any { subzone ->
+              subzone.monitoringPlots.any { ObservableCondition.AnimalDamage in it.conditions }
+            }
+          }
+      val zone2Result =
+          results[0].plantingZones.single { zone ->
+            zone.plantingSubzones.any { subzone ->
+              subzone.monitoringPlots.any { ObservableCondition.Pests in it.conditions }
+            }
+          }
+
+      assertEquals("Zone 1", zone1Result.name)
+      assertEquals("Zone 2", zone2Result.name)
+      assertEquals(
+          listOf("Subzone 1"),
+          zone1Result.plantingSubzones.map { it.name },
+          "Names of all subzones in zone 1")
+      assertEquals(
+          listOf("Subzone 2"),
+          zone2Result.plantingSubzones.map { it.name },
+          "Names of all subzones in zone 2")
+    }
+
+    @Test
     fun `returns plot information`() {
       // Ad-hoc observations are not returned
       insertMonitoringPlot(isAdHoc = true)
