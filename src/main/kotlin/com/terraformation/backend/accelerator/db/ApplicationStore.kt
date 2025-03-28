@@ -215,6 +215,7 @@ class ApplicationStore(
 
     return dslContext
         .select(
+            APPLICATIONS.INTERNAL_NAME,
             DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
             DELIVERABLES.DELIVERABLE_CATEGORY_ID,
             DELIVERABLES.DELIVERABLE_TYPE_ID,
@@ -276,6 +277,7 @@ class ApplicationStore(
               participantId = null,
               participantName = null,
               position = record[DELIVERABLES.POSITION]!!,
+              projectDealName = record[APPLICATIONS.INTERNAL_NAME],
               projectId = record[PROJECTS.ID]!!,
               projectName = record[PROJECTS.NAME]!!,
               required = record[DELIVERABLES.IS_REQUIRED]!!,

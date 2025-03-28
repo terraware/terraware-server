@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsR
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_TEMPLATES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFESTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.model.EditHistoryModel
@@ -243,13 +245,22 @@ class DocumentStore(
         }
 
     return dslContext
-        .select(DOCUMENTS.asterisk(), PROJECTS.NAME, lastSavedVersionIdField)
+        .select(
+            DOCUMENTS.asterisk(),
+            DOCUMENT_TEMPLATES.NAME,
+            PROJECTS.NAME,
+            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+            lastSavedVersionIdField)
         .from(DOCUMENTS)
+        .join(DOCUMENT_TEMPLATES)
+        .on(DOCUMENTS.DOCUMENT_TEMPLATE_ID.eq(DOCUMENT_TEMPLATES.ID))
         .join(PROJECTS)
         .on(DOCUMENTS.PROJECT_ID.eq(PROJECTS.ID))
+        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+        .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
         .where(condition)
         .fetch()
         .filter { currentUser().canReadDocument(it[DOCUMENTS.ID]!!) }
-        .map { ExistingDocumentModel.of(it, it[PROJECTS.NAME]!!, it[lastSavedVersionIdField]) }
+        .map { ExistingDocumentModel.of(it, lastSavedVersionIdField) }
   }
 }

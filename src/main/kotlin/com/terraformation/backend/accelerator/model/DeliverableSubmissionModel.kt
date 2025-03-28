@@ -37,6 +37,7 @@ data class DeliverableSubmissionModel(
     val participantId: ParticipantId?,
     val participantName: String?,
     val position: Int,
+    val projectDealName: String?,
     val projectId: ProjectId,
     val projectName: String,
     val required: Boolean,

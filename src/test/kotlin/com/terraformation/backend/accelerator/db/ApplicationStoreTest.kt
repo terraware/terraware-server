@@ -170,7 +170,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               countryCode = "FR",
               feedback = "feedback",
               internalComment = "internal comment",
-              internalName = "internalName",
+              internalName = "Internal Name 1",
               status = ApplicationStatus.ExpertReview,
           )
 
@@ -181,7 +181,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               boundary = rectangle(2),
               feedback = "feedback 2",
               internalComment = "internal comment 2",
-              internalName = "internalName2",
+              internalName = "Internal Name 2",
               status = ApplicationStatus.SourcingTeamReview,
           )
 
@@ -189,7 +189,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
           insertApplication(
-              projectId = org2ProjectId1, countryCode = "US", internalName = "internalName3")
+              projectId = org2ProjectId1, countryCode = "US", internalName = "Internal Name 3")
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
@@ -211,7 +211,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
                 internalComment = "internal comment",
-                internalName = "internalName",
+                internalName = "Internal Name 1",
                 modifiedTime = clock.instant.plusSeconds(600),
                 organizationId = organizationId,
                 organizationName = organizationName,
@@ -247,7 +247,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "applicationId attribute")
         assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
         assertEquals(
-            "internalName", simpleFeature.getAttribute("internalName"), "internalName attribute")
+            "Internal Name 1", simpleFeature.getAttribute("internalName"), "internalName attribute")
         assertEquals(
             organizationId.value,
             simpleFeature.getAttribute("organizationId"),
@@ -292,7 +292,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -337,7 +337,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -350,7 +350,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
-                    internalName = "internalName2",
+                    internalName = "Internal Name 2",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -384,7 +384,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
-                    internalName = "internalName",
+                    internalName = "Internal Name 1",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -397,7 +397,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
-                    internalName = "internalName2",
+                    internalName = "Internal Name 2",
                     modifiedTime = null,
                     organizationId = organizationId,
                     organizationName = organizationName,
@@ -408,7 +408,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     countryCode = "US",
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
-                    internalName = "internalName3",
+                    internalName = "Internal Name 3",
                     modifiedTime = null,
                     organizationId = organizationId2,
                     organizationName = "Organization 2",
@@ -725,6 +725,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 participantId = null,
                 participantName = null,
                 position = 1,
+                projectDealName = "Internal Name 1",
                 projectId = org1ProjectId1,
                 projectName = "Project A",
                 required = false,
@@ -753,6 +754,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             org1Project1PrescreenModel.copy(
                 feedback = "feedback 3",
                 internalComment = "comment 3",
+                projectDealName = "Internal Name 2",
                 projectId = org1ProjectId2,
                 projectName = "Project B",
                 submissionId = org1Project2PrescreenSubmission,
@@ -763,6 +765,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 feedback = null,
                 modifiedTime = null,
                 internalComment = null,
+                projectDealName = "Internal Name 2",
                 projectId = org1ProjectId2,
                 projectName = "Project B",
                 submissionId = null,
@@ -775,6 +778,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 internalComment = "comment 5",
                 organizationId = organizationId2,
                 organizationName = "Organization 2",
+                projectDealName = "Internal Name 3",
                 projectId = org2ProjectId1,
                 projectName = "Project C",
                 submissionId = org2Project1PrescreenSubmission,
@@ -786,6 +790,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 internalComment = "comment 6",
                 organizationId = organizationId2,
                 organizationName = "Organization 2",
+                projectDealName = "Internal Name 3",
                 projectId = org2ProjectId1,
                 projectName = "Project C",
                 submissionId = org2Project1ApplicationSubmission,
@@ -988,7 +993,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates status and creates history entry`() {
       val otherUserId = insertUser()
       val applicationId =
-          insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
+          insertApplication(
+              createdBy = otherUserId,
+              status = ApplicationStatus.PassedPreScreen,
+              internalName = "XXX_internalName")
       val initial = applicationsDao.findAll().single()
 
       clock.instant = Instant.ofEpochSecond(30)

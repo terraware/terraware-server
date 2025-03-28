@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_D
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -158,6 +159,7 @@ class DeliverableStore(
             PARTICIPANTS.NAME,
             projectIdField,
             PROJECTS.NAME,
+            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
             SUBMISSIONS.FEEDBACK,
             SUBMISSIONS.ID,
             SUBMISSIONS.INTERNAL_COMMENT,
@@ -177,6 +179,8 @@ class DeliverableStore(
               .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
               .join(PROJECTS)
               .on(PROJECTS.ID.eq(projectId))
+              .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+              .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
               .join(ORGANIZATIONS)
               .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
               .leftJoin(PARTICIPANTS)
@@ -214,6 +218,8 @@ class DeliverableStore(
               .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
               .join(PROJECTS)
               .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+              .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+              .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
               .join(ORGANIZATIONS)
               .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
               .leftJoin(DELIVERABLE_DOCUMENTS)
@@ -242,6 +248,8 @@ class DeliverableStore(
                       .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
                       .join(PROJECTS)
                       .on(SUBMISSIONS.PROJECT_ID.eq(PROJECTS.ID))
+                      .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+                      .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
                       .join(ORGANIZATIONS)
                       .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                       .leftJoin(PARTICIPANTS)
@@ -283,6 +291,7 @@ class DeliverableStore(
           participantId = record[PARTICIPANTS.ID],
           participantName = record[PARTICIPANTS.NAME],
           position = record[DELIVERABLES.POSITION]!!,
+          projectDealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME],
           projectId = record[projectIdField]!!,
           projectName = record[PROJECTS.NAME]!!,
           required = record[DELIVERABLES.IS_REQUIRED]!!,

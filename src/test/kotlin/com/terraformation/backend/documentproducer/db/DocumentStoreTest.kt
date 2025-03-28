@@ -41,8 +41,8 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
 
-    documentTemplateId1 = insertDocumentTemplate()
-    documentTemplateId2 = insertDocumentTemplate()
+    documentTemplateId1 = insertDocumentTemplate(name = "Template 1")
+    documentTemplateId2 = insertDocumentTemplate(name = "Template 2")
 
     projectId1 = insertProject(name = "Project 1")
     projectId2 = insertProject(name = "Project 2")
@@ -99,6 +99,7 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = userId,
               createdTime = now,
               documentTemplateId = documentTemplateId1,
+              documentTemplateName = "Template 1",
               id = documentId1,
               internalComment = "A comment",
               lastSavedVersionId = null,
@@ -106,6 +107,7 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = now,
               name = "Project $projectId1 Feasibility Study",
               ownedBy = userId,
+              projectDealName = null,
               projectId = projectId1,
               projectName = "Project 1",
               status = DocumentStatus.Draft,
@@ -115,12 +117,14 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = userId,
               createdTime = now,
               documentTemplateId = documentTemplateId2,
+              documentTemplateName = "Template 2",
               id = documentId2,
               lastSavedVersionId = savedVersionId2,
               modifiedBy = userId,
               modifiedTime = now,
               name = "Project $projectId1 Project Summary",
               ownedBy = userId,
+              projectDealName = null,
               projectId = projectId1,
               projectName = "Project 1",
               status = DocumentStatus.Draft,
@@ -130,12 +134,14 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = userId,
               createdTime = now,
               documentTemplateId = documentTemplateId1,
+              documentTemplateName = "Template 1",
               id = documentId3,
               lastSavedVersionId = null,
               modifiedBy = userId,
               modifiedTime = now,
               name = "Project $projectId2 Feasibility Study",
               ownedBy = userId,
+              projectDealName = null,
               projectId = projectId2,
               projectName = "Project 2",
               status = DocumentStatus.Draft,
