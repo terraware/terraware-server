@@ -1,3 +1,4 @@
+730c52c7110 Added migration to copy variable values correctly (#2960)
 7e3e472e778 Added quarter to reports (#2958)
 4d6d95593c5 Query deal name with joins for documents and delierables (#2957)
 afe0ed62672 Added deal name column and update the column with variable values (#2956)
