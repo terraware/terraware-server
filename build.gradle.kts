@@ -106,7 +106,7 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.10.2")
   implementation("commons-codec:commons-codec:1.18.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.0")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.1")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
