@@ -331,13 +331,14 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSiteHistoriesRow(
-                  model.historyId,
-                  model.id,
-                  user.userId,
-                  clock.instant,
-                  boundary,
-                  gridOrigin,
-                  exclusion,
+                  areaHa = BigDecimal("2.2"),
+                  boundary = boundary,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  exclusion = exclusion,
+                  gridOrigin = gridOrigin,
+                  id = model.historyId,
+                  plantingSiteId = model.id,
               ),
           ),
           plantingSiteHistoriesDao.findAll())
@@ -376,6 +377,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSiteHistoriesRow(
+                  areaHa = BigDecimal("4.0"),
                   boundary = siteBoundary,
                   createdBy = user.userId,
                   createdTime = clock.instant,
@@ -392,6 +394,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingZoneHistoriesRow(
+                  areaHa = BigDecimal("4.0"),
                   boundary = zoneBoundary,
                   name = "zone",
                   plantingSiteHistoryId = model.historyId,
@@ -404,6 +407,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSubzoneHistoriesRow(
+                  areaHa = BigDecimal("4.0"),
                   boundary = subzoneBoundary,
                   fullName = "zone-subzone",
                   name = "subzone",

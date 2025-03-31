@@ -70,18 +70,20 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           setOf(
               PlantingSiteHistoriesRow(
-                  plantingSiteId = initialModel.id,
+                  areaHa = BigDecimal("1.0"),
+                  boundary = initialModel.boundary,
                   createdBy = user.userId,
                   createdTime = createdTime,
-                  boundary = initialModel.boundary,
                   gridOrigin = initialModel.gridOrigin,
+                  plantingSiteId = initialModel.id,
               ),
               PlantingSiteHistoriesRow(
-                  plantingSiteId = initialModel.id,
+                  areaHa = BigDecimal("4.0"),
+                  boundary = newBoundary,
                   createdBy = user.userId,
                   createdTime = clock.instant,
-                  boundary = newBoundary,
                   gridOrigin = initialModel.gridOrigin,
+                  plantingSiteId = initialModel.id,
               ),
           ),
           plantingSiteHistoriesDao.findAll().map { it.copy(id = null) }.toSet(),
