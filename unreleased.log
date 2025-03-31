@@ -1,3 +1,4 @@
+62243eded27 SW-6613 Add deal name to entity projects (#2959)
 05db554ba4a Update database dependencies to v11.5.0 (#2965)
 b1f7257a64f Update ktor monorepo to v3.1.2 (#2963)
 7e1825d9e3a SW-2727 Remove obsolete migration (#2967)
