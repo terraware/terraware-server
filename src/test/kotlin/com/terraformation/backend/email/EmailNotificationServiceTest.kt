@@ -554,7 +554,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("My Funding Entity", "Funding Entity name", false)
     assertBodyContains(
         webAppUrls.funderPortalRegistrationUrl(user.email), "Registration URL", false)
-    assertSubjectContains("You've been added to My Funding Entity's Funder Portal!")
+    assertSubjectContains("You've been invited to the Funder Portal under My Funding Entity")
     assertRecipientsEqual(setOf(user.email))
   }
 
