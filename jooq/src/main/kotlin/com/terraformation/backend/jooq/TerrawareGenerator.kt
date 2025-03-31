@@ -32,6 +32,7 @@ class TerrawareGenerator : KotlinGenerator() {
       import com.fasterxml.jackson.annotation.JsonValue
       import com.terraformation.backend.db.EnumFromReferenceTable
       import com.terraformation.backend.db.LocalizableEnum
+      import com.terraformation.backend.db.ParameterizedEnum
       import com.terraformation.backend.i18n.currentLocale
       import java.util.Locale
       import java.util.concurrent.ConcurrentHashMap
@@ -141,6 +142,8 @@ class TerrawareGenerator : KotlinGenerator() {
           ""
         }
 
+    val parameterizedExtendSnippet = ", ParameterizedEnum"
+
     val localizableMethodsSnippet =
         if (table.isLocalizable) {
           """          
@@ -178,7 +181,7 @@ class TerrawareGenerator : KotlinGenerator() {
         """
       enum class $enumName(
           $properties
-      ) : EnumFromReferenceTable<$idType, $enumName>$localizableExtendsSnippet {
+      ) : EnumFromReferenceTable<$idType, $enumName>$localizableExtendsSnippet$parameterizedExtendSnippet {
           $valuesCodeSnippet;
           $localizableMethodsSnippet          
 

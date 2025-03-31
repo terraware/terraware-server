@@ -1,6 +1,7 @@
 package com.terraformation.backend.api
 
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.support.DefaultFormattingConversionService
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -11,7 +12,10 @@ import org.springframework.web.util.pattern.PathPatternParser
  * options require programmatic configuration.
  */
 @Configuration
-class SpringMvcConfig(private val globalRoleInterceptor: GlobalRoleInterceptor) : WebMvcConfigurer {
+class SpringMvcConfig(
+    private val globalRoleInterceptor: GlobalRoleInterceptor,
+    private val jacksonEnumConverter: JacksonEnumConverter,
+) : WebMvcConfigurer {
   /**
    * Matches URLs to controller paths using a newer matcher. The default matcher doesn't have good
    * support for controllers with parameterized paths that can contain multiple path elements, e.g.,
@@ -26,5 +30,12 @@ class SpringMvcConfig(private val globalRoleInterceptor: GlobalRoleInterceptor) 
 
   override fun addInterceptors(registry: InterceptorRegistry) {
     registry.addInterceptor(globalRoleInterceptor)
+  }
+
+  // Register the enum converter
+  override fun addFormatters(registry: org.springframework.format.FormatterRegistry) {
+    val conversionService = DefaultFormattingConversionService()
+    conversionService.addConverter(jacksonEnumConverter)
+    registry.addConverter(jacksonEnumConverter)
   }
 }
