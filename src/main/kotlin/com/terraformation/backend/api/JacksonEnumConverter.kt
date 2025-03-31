@@ -8,6 +8,7 @@ import org.springframework.core.convert.converter.GenericConverter
 import org.springframework.lang.Nullable
 import org.springframework.stereotype.Component
 
+/** Customizes how request params are parsed to an enum, matching our JSON serializer. */
 @Component
 class JacksonEnumConverter(private val objectMapper: ObjectMapper) : GenericConverter {
 
