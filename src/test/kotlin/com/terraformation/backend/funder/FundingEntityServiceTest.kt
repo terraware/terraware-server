@@ -89,6 +89,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
     every { user.canDeleteFunder(any()) } returns true
+    every { user.canUpdateFundingEntityUsers(any()) } returns true
   }
 
   @Test
@@ -355,11 +356,36 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     assertTableEmpty(FUNDING_ENTITY_USERS)
   }
 
+  @Test
+  fun `deleteFunders throws exception if user cannot update entity users`() {
+    every { user.canUpdateFundingEntityUsers(any()) } returns false
+    val funderId = insertUser(type = UserType.Funder)
+    val fundingEntityId = insertFundingEntity()
+    insertFundingEntityUser(fundingEntityId, funderId)
+
+    assertThrows<AccessDeniedException> {
+      service.deleteFunders(fundingEntityId, userIds = setOf(funderId))
+    }
+  }
+
+  @Test
+  fun `deleteFunders publishes deleted events`() {
+    val funderId1 = insertUser(type = UserType.Funder)
+    val funderId2 = insertUser(type = UserType.Funder)
+    val fundingEntityId = insertFundingEntity()
+    insertFundingEntityUser(fundingEntityId, funderId1)
+    insertFundingEntityUser(fundingEntityId, funderId2)
+
+    service.deleteFunders(fundingEntityId, userIds = setOf(funderId1, funderId2))
+
+    publisher.assertExactEventsPublished(
+        setOf(UserDeletionStartedEvent(funderId1), UserDeletionStartedEvent(funderId2)))
+  }
+
   @Nested
   inner class InviteFunder {
     @BeforeEach
     fun setUp() {
-      every { user.canUpdateFundingEntityUsers(any()) } returns true
       every { user.canReadUser(any()) } returns true
     }
 

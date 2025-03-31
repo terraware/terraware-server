@@ -11,6 +11,10 @@ class FundingEntityNotFoundException : EntityNotFoundException {
   constructor(userId: UserId) : super("User with id $userId had no funding entity")
 }
 
+class RemoveFunderNotFoundException(fundingEntityId: FundingEntityId, userId: UserId) :
+    EntityNotFoundException(
+        "Funding entity $fundingEntityId or user $userId not found, or no association between each other") {}
+
 class FundingEntityExistsException(name: String) :
     MismatchedStateException("Funding entity $name already exists")
 
