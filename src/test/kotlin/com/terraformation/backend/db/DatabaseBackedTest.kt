@@ -2125,7 +2125,7 @@ abstract class DatabaseBackedTest {
     inserted.monitoringPlotIds.add(monitoringPlotId)
 
     if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
-      insertMonitoringPlotHistory()
+      insertMonitoringPlotHistory(plantingSubzoneId = plantingSubzoneId)
     }
 
     return monitoringPlotId

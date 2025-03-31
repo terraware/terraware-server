@@ -847,7 +847,9 @@ data class ObservationPlantingSubzoneResultsPayload(
                 "of monitoring plots.")
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
-    val plantingSubzoneId: PlantingSubzoneId,
+    @Schema(
+        description = "ID of the subzone. Absent if the subzone was deleted after the observation.")
+    val plantingSubzoneId: PlantingSubzoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
@@ -907,7 +909,8 @@ data class ObservationPlantingZoneResultsPayload(
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
-    val plantingZoneId: PlantingZoneId,
+    @Schema(description = "ID of the zone. Absent if the zone was deleted after the observation.")
+    val plantingZoneId: PlantingZoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
