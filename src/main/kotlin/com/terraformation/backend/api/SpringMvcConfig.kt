@@ -14,7 +14,7 @@ import org.springframework.web.util.pattern.PathPatternParser
 @Configuration
 class SpringMvcConfig(
     private val globalRoleInterceptor: GlobalRoleInterceptor,
-    private val jacksonEnumConverter: JacksonEnumConverter,
+    private val parameterizedEnumConverter: ParameterizedEnumConverter,
 ) : WebMvcConfigurer {
   /**
    * Matches URLs to controller paths using a newer matcher. The default matcher doesn't have good
@@ -35,7 +35,7 @@ class SpringMvcConfig(
   // Register the enum converter
   override fun addFormatters(registry: org.springframework.format.FormatterRegistry) {
     val conversionService = DefaultFormattingConversionService()
-    conversionService.addConverter(jacksonEnumConverter)
-    registry.addConverter(jacksonEnumConverter)
+    conversionService.addConverter(parameterizedEnumConverter)
+    registry.addConverter(parameterizedEnumConverter)
   }
 }
