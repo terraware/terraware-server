@@ -165,21 +165,12 @@ class ReportStore(
   fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<SystemMetric>) {
     requirePermissions { reviewReports() }
 
-    val report =
-        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
-            ?: throw ReportNotFoundException(reportId)
-
-    if (report.status !in ReportModel.submittedStatuses) {
-      throw IllegalStateException(
-          "Cannot refresh the status of report $reportId with status ${report.status.name}")
-    }
+    fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+        ?: throw ReportNotFoundException(reportId)
 
     dslContext.transaction { _ ->
-      val rowsUpdated = updateReportSystemMetricWithTerrawareData(reportId, metrics)
-
-      if (rowsUpdated > 0) {
-        updateReportModifiedTime(reportId)
-      }
+      updateReportSystemMetricWithTerrawareData(reportId, metrics)
+      updateReportModifiedTime(reportId)
     }
   }
 
@@ -270,23 +261,25 @@ class ReportStore(
 
     report.validateForSubmission()
 
-    val rowsUpdated =
-        with(REPORTS) {
-          dslContext
-              .update(this)
-              .set(STATUS_ID, ReportStatus.Submitted)
-              .set(SUBMITTED_BY, currentUser().userId)
-              .set(SUBMITTED_TIME, clock.instant())
-              .where(ID.eq(reportId))
-              .execute()
-        }
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(REPORTS) {
+            dslContext
+                .update(this)
+                .set(STATUS_ID, ReportStatus.Submitted)
+                .set(SUBMITTED_BY, currentUser().userId)
+                .set(SUBMITTED_TIME, clock.instant())
+                .where(ID.eq(reportId))
+                .execute()
+          }
 
-    if (rowsUpdated < 1) {
-      throw IllegalStateException("Failed to submit report $reportId")
+      if (rowsUpdated < 1) {
+        throw IllegalStateException("Failed to submit report $reportId")
+      }
+
+      // Update all system metrics values at submission time
+      updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
     }
-
-    // Update all system metrics values at submission time
-    updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
 
     eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
   }
@@ -754,6 +747,15 @@ class ReportStore(
       return 0
     }
 
+    // If the report is not submitted, set the system value to null.
+    val systemValueField =
+        DSL.`when`(REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses), systemTerrawareValueField)
+            .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_VALUE))
+    val systemTimeField =
+        DSL.`when`(
+                REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses), DSL.value(clock.instant()))
+            .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_TIME))
+
     return with(REPORT_SYSTEM_METRICS) {
       dslContext
           .insertInto(
@@ -762,14 +764,16 @@ class ReportStore(
               SYSTEM_METRIC_ID,
               SYSTEM_VALUE,
               SYSTEM_TIME,
+              OVERRIDE_VALUE,
               MODIFIED_BY,
               MODIFIED_TIME)
           .select(
               DSL.select(
                       REPORTS.ID,
                       SYSTEM_METRICS.ID,
-                      systemTerrawareValueField,
-                      DSL.value(clock.instant()),
+                      systemValueField,
+                      systemTimeField,
+                      DSL.value(null, OVERRIDE_VALUE),
                       DSL.value(currentUser().userId),
                       DSL.value(clock.instant()))
                   .from(SYSTEM_METRICS)
@@ -929,8 +933,6 @@ class ReportStore(
                           DSL.select(OBSERVATIONS.ID)
                               .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
                               .from(OBSERVATIONS)
-                              .join(PLANTING_SITES)
-                              .on(PLANTING_SITES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
                               .where(
                                   OBSERVATIONS.COMPLETED_TIME.lessThan(
                                       REPORTS.END_DATE.convertFrom {

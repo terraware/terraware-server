@@ -50,6 +50,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.time.toInstant
+import com.terraformation.backend.util.toInstant
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -1690,15 +1692,95 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws Illegal State Exception if report is not yet submitted`() {
+    fun `sets system and override values to null if report is not yet submitted`() {
+      val otherUserId = insertUser()
       insertProjectReportConfig()
-      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+      val reportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31))
 
-      assertThrows<IllegalStateException> { store.refreshSystemMetricValues(reportId, emptySet()) }
+      insertDataForSystemMetrics(
+          reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
+          reportEndDate = LocalDate.of(2025, Month.MARCH, 31))
+
+      insertReportSystemMetric(
+          metric = SystemMetric.SeedsCollected,
+          target = 80,
+          systemValue = 1000,
+          systemTime = Instant.ofEpochSecond(3000),
+          overrideValue = 74,
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      insertReportSystemMetric(
+          metric = SystemMetric.Seedlings,
+          target = 60,
+          systemValue = 2000,
+          systemTime = Instant.ofEpochSecond(3000),
+          overrideValue = 98,
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      insertReportSystemMetric(
+          metric = SystemMetric.TreesPlanted,
+          systemValue = 3000,
+          systemTime = Instant.ofEpochSecond(3000),
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      val existingReport = reportsDao.fetchOneById(reportId)!!
+
+      clock.instant = Instant.ofEpochSecond(9000)
+      store.refreshSystemMetricValues(
+          reportId,
+          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted))
+
+      assertTableEquals(
+          listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 80,
+                  systemValue = 1000,
+                  systemTime = Instant.ofEpochSecond(3000),
+                  overrideValue = 74,
+                  modifiedBy = otherUserId,
+                  modifiedTime = Instant.ofEpochSecond(3000),
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.Seedlings,
+                  target = 60,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+          ))
+
+      val updatedReport =
+          existingReport.copy(
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+
+      assertTableEquals(ReportsRecord(updatedReport))
     }
 
     @Test
-    fun `inserts into or updates report system metrics table`() {
+    fun `inserts into or updates report system metrics table, sets override values to null`() {
       val otherUserId = insertUser()
       insertProjectReportConfig()
       val reportId =
@@ -1761,7 +1843,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 60,
                   systemValue = 83,
                   systemTime = clock.instant,
-                  overrideValue = 98,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
