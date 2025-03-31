@@ -1,3 +1,4 @@
+7e1825d9e3a SW-2727 Remove obsolete migration (#2967)
 730c52c7110 Added migration to copy variable values correctly (#2960)
 7e3e472e778 Added quarter to reports (#2958)
 4d6d95593c5 Query deal name with joins for documents and delierables (#2957)
