@@ -1,3 +1,4 @@
+1d2a2609356 Update dependency types-requests to v2.32.0.20250328 (#2964)
 62243eded27 SW-6613 Add deal name to entity projects (#2959)
 05db554ba4a Update database dependencies to v11.5.0 (#2965)
 b1f7257a64f Update ktor monorepo to v3.1.2 (#2963)
