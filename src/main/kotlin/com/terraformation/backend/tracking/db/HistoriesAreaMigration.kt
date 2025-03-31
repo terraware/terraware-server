@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
@@ -12,9 +13,11 @@ import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.jooq.TableField
 import org.locationtech.jts.geom.Geometry
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @Named
 class HistoriesAreaMigration(private val dslContext: DSLContext) {
   private val log = perClassLogger()
