@@ -1926,17 +1926,17 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingZoneHistory(
-      areaHa: BigDecimal? = null,
-      boundary: Geometry? = null,
-      name: String? = null,
+      areaHa: BigDecimal = lastPlantingZonesRow.areaHa!!,
+      boundary: Geometry = lastPlantingZonesRow.boundary!!,
+      name: String = lastPlantingZonesRow.name!!,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
       plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
   ): PlantingZoneHistoryId {
     val row =
         PlantingZoneHistoriesRow(
-            areaHa = areaHa ?: lastPlantingZonesRow.areaHa,
-            boundary = boundary ?: lastPlantingZonesRow.boundary,
-            name = name ?: lastPlantingZonesRow.name,
+            areaHa = areaHa,
+            boundary = boundary,
+            name = name,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingZoneId = plantingZoneId,
         )
@@ -2005,19 +2005,19 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSubzoneHistory(
-      areaHa: BigDecimal? = null,
-      boundary: Geometry? = null,
-      fullName: String? = null,
-      name: String? = null,
+      areaHa: BigDecimal = lastPlantingSubzonesRow.areaHa!!,
+      boundary: Geometry = lastPlantingSubzonesRow.boundary!!,
+      fullName: String = lastPlantingSubzonesRow.fullName!!,
+      name: String = lastPlantingSubzonesRow.name!!,
       plantingSubzoneId: PlantingSubzoneId? = inserted.plantingSubzoneId,
       plantingZoneHistoryId: PlantingZoneHistoryId = inserted.plantingZoneHistoryId,
   ): PlantingSubzoneHistoryId {
     val row =
         PlantingSubzoneHistoriesRow(
-            areaHa = areaHa ?: lastPlantingSubzonesRow.areaHa,
-            boundary = boundary ?: lastPlantingSubzonesRow.boundary,
-            fullName = fullName ?: lastPlantingSubzonesRow.fullName,
-            name = name ?: lastPlantingSubzonesRow.name,
+            areaHa = areaHa,
+            boundary = boundary,
+            fullName = fullName,
+            name = name,
             plantingZoneHistoryId = plantingZoneHistoryId,
             plantingSubzoneId = plantingSubzoneId,
         )
