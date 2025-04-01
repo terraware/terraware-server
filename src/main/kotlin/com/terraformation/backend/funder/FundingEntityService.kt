@@ -110,7 +110,7 @@ class FundingEntityService(
 
     dslContext.transaction { _ ->
       val funders = userStore.fetchByFundingEntityId(fundingEntityId)
-      funders.forEach { userStore.deleteFunderById(it.userId) }
+      deleteFunders(fundingEntityId, funders.map { it.userId }.toSet())
 
       // no need to remove users from funding_entity_users table because funding_entities performs
       // cascade deletes
@@ -125,6 +125,12 @@ class FundingEntityService(
         throw FundingEntityNotFoundException(fundingEntityId)
       }
     }
+  }
+
+  fun deleteFunders(fundingEntityId: FundingEntityId, userIds: Set<UserId>) {
+    requirePermissions { updateFundingEntityUsers(fundingEntityId) }
+
+    userIds.forEach { userId -> userStore.deleteFunderById(userId) }
   }
 
   fun inviteFunder(fundingEntityId: FundingEntityId, email: String) {

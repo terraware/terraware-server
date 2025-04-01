@@ -117,6 +117,16 @@ class FundingEntitiesController(
     return InviteFundingEntityFunderResponsePayload(payload.email)
   }
 
+  @Operation(summary = "Removes a funder from a Funding Entity")
+  @DeleteMapping("/{fundingEntityId}/users")
+  fun removeFunder(
+      @PathVariable fundingEntityId: FundingEntityId,
+      @RequestBody payload: DeleteFundersRequestPayload
+  ): SimpleSuccessResponsePayload {
+    fundingEntityService.deleteFunders(fundingEntityId, payload.userIds)
+    return SimpleSuccessResponsePayload()
+  }
+
   @Operation(summary = "Gets the Funding Entity that a specific user belongs to")
   @GetMapping("/users/{userId}")
   fun getFundingEntity(@PathVariable userId: UserId): GetFundingEntityResponsePayload {
@@ -188,6 +198,8 @@ data class FundingProjectPayload(
 }
 
 data class InviteFundingEntityFunderRequestPayload(val email: String)
+
+data class DeleteFundersRequestPayload(val userIds: Set<UserId>)
 
 data class GetFundersResponsePayload(val funders: List<FunderPayload>) : SuccessResponsePayload
 
