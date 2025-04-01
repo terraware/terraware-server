@@ -71,7 +71,7 @@ class ValuesController(
                   "specified more than once to return values for multiple variables. Ignored if " +
                   "variableId is specified.")
       @RequestParam
-      stableId: List<String>? = null,
+      stableId: List<StableId>? = null,
       @Parameter(
           description =
               "If specified, return the value of this variable. May be specified more than once " +
@@ -82,8 +82,7 @@ class ValuesController(
     val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
 
-    val variableIds =
-        variableId ?: stableId?.mapNotNull { variableStore.fetchByStableId(StableId(it))?.id }
+    val variableIds = variableId ?: stableId?.mapNotNull { variableStore.fetchByStableId(it)?.id }
 
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
     // than the nextValueId we'll be returning, in case new values are inserted by another user at
