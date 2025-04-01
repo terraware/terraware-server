@@ -240,6 +240,10 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withIncludeExpression("locale")
                 .withConverter("com.terraformation.backend.db.LocaleConverter")
                 .withUserType("java.util.Locale"),
+            ForcedType()
+                .withIncludeExpression(".*stable_id")
+                .withConverter("com.terraformation.backend.documentproducer.db.StableIdConverter")
+                .withUserType("com.terraformation.backend.documentproducer.model.StableId"),
             ForcedType().withIncludeTypes("VECTOR").withUserType("com.pgvector.PGvector"),
         )
 

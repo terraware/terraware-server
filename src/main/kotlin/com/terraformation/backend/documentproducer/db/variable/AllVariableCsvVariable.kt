@@ -71,7 +71,7 @@ data class AllVariableCsvVariable(
   fun mapToVariablesRow() =
       VariablesRow(
           deliverableQuestion = deliverableQuestion,
-          dependencyVariableStableId = dependencyVariableStableId?.value,
+          dependencyVariableStableId = dependencyVariableStableId,
           dependencyConditionId = dependencyCondition,
           dependencyValue = dependencyValue,
           description = description,
@@ -81,7 +81,7 @@ data class AllVariableCsvVariable(
           isRequired = isRequired,
           name = name,
           replacesVariableId = replacesVariableId,
-          stableId = stableId.value,
+          stableId = stableId,
           variableTypeId = dataType.variableType,
       )
 }

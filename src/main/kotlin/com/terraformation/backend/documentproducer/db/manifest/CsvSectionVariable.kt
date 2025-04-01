@@ -47,7 +47,7 @@ data class CsvSectionVariable(
           isRequired = false,
           name = name,
           replacesVariableId = replacesVariableId,
-          stableId = stableId.value,
+          stableId = stableId,
           variableTypeId = VariableType.Section,
       )
 }
