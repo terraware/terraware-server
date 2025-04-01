@@ -1,6 +1,7 @@
 package com.terraformation.backend.api
 
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.FormatterRegistry
 import org.springframework.format.support.DefaultFormattingConversionService
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
@@ -14,7 +15,7 @@ import org.springframework.web.util.pattern.PathPatternParser
 @Configuration
 class SpringMvcConfig(
     private val globalRoleInterceptor: GlobalRoleInterceptor,
-    private val parameterizedEnumConverter: ParameterizedEnumConverter,
+    private val enumFromReferenceTableConverter: EnumFromReferenceTableConverter,
 ) : WebMvcConfigurer {
   /**
    * Matches URLs to controller paths using a newer matcher. The default matcher doesn't have good
@@ -33,9 +34,9 @@ class SpringMvcConfig(
   }
 
   // Register the enum converter
-  override fun addFormatters(registry: org.springframework.format.FormatterRegistry) {
+  override fun addFormatters(registry: FormatterRegistry) {
     val conversionService = DefaultFormattingConversionService()
-    conversionService.addConverter(parameterizedEnumConverter)
-    registry.addConverter(parameterizedEnumConverter)
+    conversionService.addConverter(enumFromReferenceTableConverter)
+    registry.addConverter(enumFromReferenceTableConverter)
   }
 }
