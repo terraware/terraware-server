@@ -169,7 +169,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
-    val plantingSubzoneId: PlantingSubzoneId,
+    val plantingSubzoneId: PlantingSubzoneId?,
     /** List of species result used for this rollup */
     val species: List<ObservationSpeciesResultsModel>,
     /**
@@ -196,7 +196,7 @@ data class ObservationPlantingZoneResultsModel(
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: PlantingZoneId?,
     val species: List<ObservationSpeciesResultsModel>,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or

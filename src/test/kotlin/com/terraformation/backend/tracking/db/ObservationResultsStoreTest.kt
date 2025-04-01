@@ -19,7 +19,9 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -33,6 +35,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -44,14 +47,17 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.util.calculateAreaHectares
 import io.mockk.every
 import java.io.InputStreamReader
 import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import kotlin.math.sqrt
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -59,6 +65,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.MultiPolygon
 
 class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -69,9 +76,6 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
   private val speciesNames: Map<SpeciesId, String> by lazy {
     speciesIds.entries.associate { it.value to it.key }
-  }
-  private val zoneNames: Map<PlantingZoneId, String> by lazy {
-    zoneIds.entries.associate { it.value to it.key }
   }
 
   private val clock = TestClock()
@@ -90,9 +94,6 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
-  private lateinit var plotIds: Map<String, MonitoringPlotId>
-  private lateinit var subzoneIds: Map<String, PlantingSubzoneId>
-  private lateinit var zoneIds: Map<String, PlantingZoneId>
 
   @BeforeEach
   fun setUp() {
@@ -177,6 +178,95 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `associates monitoring plots with the subzones they were in at the time of the observation`() {
+      // Plot starts off in subzone 1
+      insertPlantingZone()
+      val subzoneId1 = insertPlantingSubzone()
+      val plotId = insertMonitoringPlot()
+      insertObservation(completedTime = Instant.ofEpochSecond(1))
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      // Then there's a map edit and the plot moves to subzone 2
+      insertPlantingSiteHistory()
+      insertPlantingZone()
+      val subzoneId2 = insertPlantingSubzone()
+      monitoringPlotsDao.update(
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(plantingSubzoneId = subzoneId2))
+      insertMonitoringPlotHistory()
+
+      insertObservation(completedTime = Instant.ofEpochSecond(2))
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      // Results are in reverse chronological order
+      assertEquals(
+          listOf(subzoneId2),
+          results[0].plantingZones.flatMap { zone ->
+            zone.plantingSubzones
+                .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
+                .map { it.plantingSubzoneId }
+          },
+          "Subzone of monitoring plot in second observation")
+      assertEquals(
+          listOf(subzoneId1),
+          results[1].plantingZones.flatMap { zone ->
+            zone.plantingSubzones
+                .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
+                .map { it.plantingSubzoneId }
+          },
+          "Subzone of monitoring plot in first observation")
+    }
+
+    @Test
+    fun `includes monitoring plots in subzones that have subsequently been deleted`() {
+      insertPlantingZone()
+      val subzoneId = insertPlantingSubzone()
+      val plotId = insertMonitoringPlot()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      plantingSubzonesDao.deleteById(subzoneId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      assertNotEquals(
+          emptyList<ObservationResultsModel>(), results, "Should have returned observation result")
+      assertEquals(
+          listOf(plotId),
+          results[0].plantingZones.flatMap { zone ->
+            zone.plantingSubzones.flatMap { subzone ->
+              subzone.monitoringPlots.map { it.monitoringPlotId }
+            }
+          },
+          "Monitoring plot IDs in observation")
+    }
+
+    @Test
+    fun `includes monitoring plots in zones that have subsequently been deleted`() {
+      val zoneId = insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot()
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      plantingZonesDao.deleteById(zoneId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      assertNotEquals(
+          emptyList<ObservationResultsModel>(), results, "Should have returned observation result")
+      assertEquals(
+          listOf(plotId),
+          results[0].plantingZones.flatMap { zone ->
+            zone.plantingSubzones.flatMap { subzone ->
+              subzone.monitoringPlots.map { it.monitoringPlotId }
+            }
+          },
+          "Monitoring plot IDs in observation")
+    }
+
+    @Test
     fun `returns observed coordinates in counterclockwise position order`() {
       insertPlantingZone()
       insertPlantingSubzone()
@@ -213,18 +303,20 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns zone and subzone names`() {
+    fun `returns zone and subzone names even for zones that have subsequently been deleted`() {
       insertObservation(completedTime = Instant.EPOCH)
       insertPlantingZone(name = "Zone 1")
       insertPlantingSubzone(name = "Subzone 1")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
-      insertPlantingZone(name = "Zone 2")
+      val zoneId2 = insertPlantingZone(name = "Zone 2")
       insertPlantingSubzone(name = "Subzone 2")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.Pests)
+
+      plantingZonesDao.deleteById(zoneId2)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -243,6 +335,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals("Zone 1", zone1Result.name)
       assertEquals("Zone 2", zone2Result.name)
+      assertNull(zone2Result.plantingZoneId, "ID of deleted planting zone")
       assertEquals(
           listOf("Subzone 1"),
           zone1Result.plantingSubzones.map { it.name },
@@ -773,14 +866,14 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       insertPlantingZone()
-      val subzoneId1 = insertPlantingSubzone()
-      val subzoneId2 = insertPlantingSubzone()
-      val subzoneId3 = insertPlantingSubzone()
 
       // Each subzone only has one plot
-      val plotId1 = insertMonitoringPlot(plantingSubzoneId = subzoneId1)
-      val plotId2 = insertMonitoringPlot(plantingSubzoneId = subzoneId2)
-      val plotId3 = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
+      val subzoneId1 = insertPlantingSubzone()
+      val plotId1 = insertMonitoringPlot()
+      val subzoneId2 = insertPlantingSubzone()
+      val plotId2 = insertMonitoringPlot()
+      val subzoneId3 = insertPlantingSubzone()
+      val plotId3 = insertMonitoringPlot()
 
       val neverObservedPlotId = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
 
@@ -910,6 +1003,16 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class Scenarios {
+    private lateinit var plotIds: Map<String, MonitoringPlotId>
+    private lateinit var subzoneHistoryIds: Map<PlantingSubzoneId, PlantingSubzoneHistoryId>
+    private lateinit var subzoneIds: Map<String, PlantingSubzoneId>
+    private lateinit var zoneHistoryIds: Map<PlantingZoneId, PlantingZoneHistoryId>
+    private lateinit var zoneIds: Map<String, PlantingZoneId>
+
+    private val zoneNames: Map<PlantingZoneId, String> by lazy {
+      zoneIds.entries.associate { it.value to it.key }
+    }
+
     @Test
     fun `site with two observations`() {
       runScenario("/tracking/observation/TwoObservations", numObservations = 2, sizeMeters = 30)
@@ -1407,26 +1510,39 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     private fun importSiteFromCsvFile(prefix: String, sizeMeters: Int) {
-      zoneIds = importZonesCsv(prefix)
-      subzoneIds = importSubzonesCsv(prefix)
+      importZonesCsv(prefix)
+      importSubzonesCsv(prefix)
       plotIds = importPlotsCsv(prefix, sizeMeters)
     }
 
-    private fun importZonesCsv(prefix: String): Map<String, PlantingZoneId> {
-      return associateCsv("$prefix/Zones.csv", 2) { cols ->
+    private fun importZonesCsv(prefix: String) {
+      val newZoneIds = mutableMapOf<String, PlantingZoneId>()
+      val newZoneHistoryIds = mutableMapOf<PlantingZoneId, PlantingZoneHistoryId>()
+
+      mapCsv("$prefix/Zones.csv", 2) { cols ->
         val zoneName = cols[1]
         val areaHa = BigDecimal(cols[2])
 
-        zoneName to insertPlantingZone(areaHa = areaHa, name = zoneName)
+        val zoneId =
+            insertPlantingZone(areaHa = areaHa, boundary = squareWithArea(areaHa), name = zoneName)
+        newZoneIds[zoneName] = zoneId
+        newZoneHistoryIds[zoneId] = inserted.plantingZoneHistoryId
       }
+
+      zoneIds = newZoneIds
+      zoneHistoryIds = newZoneHistoryIds
     }
 
-    private fun importSubzonesCsv(prefix: String): Map<String, PlantingSubzoneId> {
-      return associateCsv("$prefix/Subzones.csv", 2) { cols ->
+    private fun importSubzonesCsv(prefix: String) {
+      val newSubzoneIds = mutableMapOf<String, PlantingSubzoneId>()
+      val newSubzoneHistoryIds = mutableMapOf<PlantingSubzoneId, PlantingSubzoneHistoryId>()
+
+      mapCsv("$prefix/Subzones.csv", 2) { cols ->
         val zoneName = cols[0]
         val subzoneName = cols[1]
         val subZoneArea = BigDecimal(cols[2])
         val zoneId = zoneIds[zoneName]!!
+        val zoneHistoryId = zoneHistoryIds[zoneId]!!
 
         // Find the first observation where the subzone is marked as completed planting, if any.
         val plantingCompletedColumn = cols.drop(3).indexOfFirst { it == "Yes" }
@@ -1437,14 +1553,24 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               null
             }
 
-        subzoneName to
+        val subzoneId =
             insertPlantingSubzone(
                 areaHa = subZoneArea,
+                boundary = squareWithArea(subZoneArea),
                 plantingCompletedTime = plantingCompletedTime,
                 fullName = subzoneName,
+                insertHistory = false,
                 name = subzoneName,
-                plantingZoneId = zoneId)
+                plantingZoneId = zoneId,
+            )
+        insertPlantingSubzoneHistory(plantingZoneHistoryId = zoneHistoryId)
+
+        newSubzoneIds[subzoneName] = subzoneId
+        newSubzoneHistoryIds[subzoneId] = inserted.plantingSubzoneHistoryId
       }
+
+      subzoneIds = newSubzoneIds
+      subzoneHistoryIds = newSubzoneHistoryIds
     }
 
     private fun importPlotsCsv(prefix: String, sizeMeters: Int): Map<String, MonitoringPlotId> {
@@ -1452,12 +1578,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         val subzoneName = cols[0]
         val plotNumber = cols[1]
         val subzoneId = subzoneIds[subzoneName]!!
+        val subzoneHistoryId = subzoneHistoryIds[subzoneId]!!
 
         val plotId =
             insertMonitoringPlot(
+                insertHistory = false,
                 plantingSubzoneId = subzoneId,
                 plotNumber = plotNumber.toLong(),
                 sizeMeters = sizeMeters)
+        insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId)
 
         if (cols[2] == "Permanent") {
           permanentPlotNumbers.add(plotNumber)
@@ -1799,5 +1928,38 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         species.speciesName ?: species.speciesId?.let { speciesNames[it] } ?: ""
 
     private fun Int?.toStringOrBlank(suffix: String = "") = this?.let { "$it$suffix" } ?: ""
+
+    /**
+     * Returns a square whose area in hectares (as returned by [calculateAreaHectares]) is exactly a
+     * certain value.
+     *
+     * This isn't a simple matter of using the square root of the desired area as the length of each
+     * edge of the square because the "square" is on a curved surface and is thus distorted by
+     * varying amounts depending on how big it is. So we binary-search a range of edge lengths close
+     * to the square root of the area, looking for a length whose area in hectares equals the target
+     * value.
+     */
+    private fun squareWithArea(areaHa: Number): MultiPolygon {
+      val targetArea = areaHa.toDouble()
+      val areaSquareMeters = targetArea * 10000.0
+      val initialSize = sqrt(areaSquareMeters)
+      var minSize = initialSize * 0.9
+      var maxSize = initialSize * 1.1
+
+      while (minSize < maxSize) {
+        val candidateSize = (minSize + maxSize) / 2.0
+        val candidate = rectangle(candidateSize)
+        val candidateArea = candidate.calculateAreaHectares().toDouble()
+        if (candidateArea < targetArea) {
+          minSize = candidateSize
+        } else if (candidateArea > targetArea) {
+          maxSize = candidateSize
+        } else {
+          return candidate
+        }
+      }
+
+      throw RuntimeException("Unable to generate square with requested area $areaHa")
+    }
   }
 }
