@@ -1,3 +1,5 @@
+fa4534c4f21 Added fetch one report API (#2976)
+9cd41670a69 Move insert*History defaults to parameters (#2975)
 79a6f33f2ef Updated translations from Phrase (#2926)
 33600c27445 SW-6716 Use historical maps in observation results (#2970)
 10d906d071e SW-6716 Add areas to site history tables (#2969)
