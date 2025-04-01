@@ -633,6 +633,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               DSL.select(
                       PLANTING_SUBZONES.ID,
                       PLANTING_SUBZONES.AREA_HA,
+                      PLANTING_SUBZONES.NAME,
                       PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                       plantingSubzoneMonitoringPlotMultiset,
                       plantingSubzoneSpeciesMultiset,
@@ -713,6 +714,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   monitoringPlots = monitoringPlots,
                   mortalityRate = mortalityRate,
                   mortalityRateStdDev = mortalityRateStdDev,
+                  name = record[PLANTING_SUBZONES.NAME.asNonNullable()],
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity.roundToInt(),
                   plantingDensityStdDev = plantingDensityStdDev,
@@ -759,6 +761,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               DSL.select(
                       PLANTING_ZONES.AREA_HA,
                       PLANTING_ZONES.ID,
+                      PLANTING_ZONES.NAME,
                       plantingSubzoneMultiset,
                       plantingZoneSpeciesMultiset,
                       zonePlantingCompletedField,
@@ -842,6 +845,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   estimatedPlants = estimatedPlants?.roundToInt(),
                   mortalityRate = mortalityRate,
                   mortalityRateStdDev = mortalityRateStdDev,
+                  name = record[PLANTING_ZONES.NAME.asNonNullable()],
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity.roundToInt(),
                   plantingDensityStdDev = plantingDensityStdDev,
