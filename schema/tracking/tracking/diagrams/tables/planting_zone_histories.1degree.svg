@@ -48,7 +48,7 @@
 <g id="node2" class="node">
 <title>planting_zone_histories</title>
 <g id="a_node2"><a xlink:href="../../tables/planting_zone_histories.html" xlink:title="planting_zone_histories" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="235,-103 235,-257 523,-257 523,-103 235,-103"/>
+<polygon fill="#ffffff" stroke="transparent" points="235,-81 235,-257 523,-257 523,-81 235,-81"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="237,-233 237,-255 521,-255 521,-233 237,-233"/>
 <polygon fill="none" stroke="black" points="237,-233 237,-255 521,-255 521,-233 237,-233"/>
 <text text-anchor="start" x="242" y="-242.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">planting_zone_histories</text>
@@ -78,16 +78,20 @@
 <text text-anchor="start" x="257" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="398,-123 398,-145 521,-145 521,-123 398,-123"/>
 <text text-anchor="start" x="401" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
-<polygon fill="#ffffff" stroke="transparent" points="237,-105 237,-123 322,-123 322,-105 237,-105"/>
-<polygon fill="none" stroke="black" points="237,-105 237,-123 322,-123 322,-105 237,-105"/>
-<text text-anchor="start" x="240" y="-111.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="322,-105 322,-123 398,-123 398,-105 322,-105"/>
-<polygon fill="none" stroke="black" points="322,-105 322,-123 398,-123 398,-105 322,-105"/>
-<text text-anchor="start" x="388" y="-111.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="398,-105 398,-123 521,-123 521,-105 398,-105"/>
-<polygon fill="none" stroke="black" points="398,-105 398,-123 521,-123 521,-105 398,-105"/>
-<text text-anchor="start" x="502" y="-111.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="236,-104 236,-256 522,-256 522,-104 236,-104"/>
+<polygon fill="none" stroke="black" points="237,-101 237,-123 398,-123 398,-101 237,-101"/>
+<text text-anchor="start" x="257" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">area_ha</text>
+<polygon fill="none" stroke="black" points="398,-101 398,-123 521,-123 521,-101 398,-101"/>
+<text text-anchor="start" x="401" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
+<polygon fill="#ffffff" stroke="transparent" points="237,-83 237,-101 322,-101 322,-83 237,-83"/>
+<polygon fill="none" stroke="black" points="237,-83 237,-101 322,-101 322,-83 237,-83"/>
+<text text-anchor="start" x="240" y="-89.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="322,-83 322,-101 398,-101 398,-83 322,-83"/>
+<polygon fill="none" stroke="black" points="322,-83 322,-101 398,-101 398,-83 322,-83"/>
+<text text-anchor="start" x="388" y="-89.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="398,-83 398,-101 521,-101 521,-83 398,-83"/>
+<polygon fill="none" stroke="black" points="398,-83 398,-101 521,-101 521,-83 398,-83"/>
+<text text-anchor="start" x="502" y="-89.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="236,-82 236,-256 522,-256 522,-82 236,-82"/>
 </a>
 </g>
 </g>
