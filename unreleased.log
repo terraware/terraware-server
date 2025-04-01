@@ -1,3 +1,5 @@
+79a6f33f2ef Updated translations from Phrase (#2926)
+33600c27445 SW-6716 Use historical maps in observation results (#2970)
 10d906d071e SW-6716 Add areas to site history tables (#2969)
 30c5f274112 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v4.5.1 (#2961)
 81ee9f180be Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.6 (#2962)
