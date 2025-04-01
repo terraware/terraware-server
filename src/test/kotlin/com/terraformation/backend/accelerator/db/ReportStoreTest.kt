@@ -63,6 +63,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -708,18 +709,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2030, Month.OCTOBER, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31))
 
-      assertThrows<ReportNotFoundException> { store.fetchOne(reportId) }
+      assertThrows<ReportNotFoundException>(message = "Not organization member or global user") {
+        store.fetchOne(reportId)
+      }
 
       insertOrganizationUser(role = Role.Contributor)
-      assertThrows<ReportNotFoundException> { store.fetchOne(reportId) }
+      assertThrows<ReportNotFoundException>(message = "Organization contributor") {
+        store.fetchOne(reportId)
+      }
 
       deleteOrganizationUser(organizationId = organizationId)
       insertOrganizationUser(role = Role.Manager)
-      assertDoesNotThrow { store.fetchOne(reportId) }
+      assertDoesNotThrow(message = "Organization manager") { store.fetchOne(reportId) }
 
       deleteOrganizationUser(organizationId = organizationId)
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
-      assertDoesNotThrow { store.fetchOne(reportId) }
+      assertDoesNotThrow(message = "Read-only global user") { store.fetchOne(reportId) }
     }
 
     @Test
@@ -987,7 +992,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.Submitted)
 
-      assertThrows<AccessDeniedException> {
+      assertThrows<AccessDeniedException>(message = "Read-only Global Role") {
         store.reviewReport(
             reportId = reportId,
             status = ReportStatus.Approved,
@@ -1000,7 +1005,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertDoesNotThrow {
+      assertDoesNotThrow(message = "TF Expert Global Role") {
         store.reviewReport(
             reportId = reportId,
             status = ReportStatus.Approved,
@@ -1017,7 +1022,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val notSubmittedReportId = insertReport(status = ReportStatus.NotSubmitted)
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
 
-      assertThrows<IllegalStateException> {
+      assertThrows<IllegalStateException>(message = "Not Submitted to Approved") {
         store.reviewReport(
             reportId = notSubmittedReportId,
             status = ReportStatus.Approved,
@@ -1026,7 +1031,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             internalComment = "internal comment",
         )
       }
-      assertThrows<IllegalStateException> {
+      assertThrows<IllegalStateException>(message = "Not Needed to Approved") {
         store.reviewReport(
             reportId = notNeededReportId,
             status = ReportStatus.Approved,
@@ -1035,7 +1040,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             internalComment = "internal comment",
         )
       }
-      assertDoesNotThrow {
+      assertDoesNotThrow(message = "Unchanged statuses") {
         store.reviewReport(
             reportId = notSubmittedReportId,
             status = ReportStatus.NotSubmitted,
@@ -1178,12 +1183,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.Submitted)
 
-      assertThrows<AccessDeniedException> { store.reviewReportMetrics(reportId = reportId) }
+      assertThrows<AccessDeniedException>(message = "Read-only Global Role") {
+        store.reviewReportMetrics(reportId = reportId)
+      }
 
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertDoesNotThrow { store.reviewReportMetrics(reportId = reportId) }
+      assertDoesNotThrow(message = "TF-Expert Global Role") {
+        store.reviewReportMetrics(reportId = reportId)
+      }
     }
 
     @Test
@@ -1967,12 +1976,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.Submitted)
 
-      assertThrows<AccessDeniedException> { store.refreshSystemMetricValues(reportId, emptySet()) }
+      assertThrows<AccessDeniedException>(message = "Read-only Global Role") {
+        store.refreshSystemMetricValues(reportId, emptySet())
+      }
 
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertDoesNotThrow { store.refreshSystemMetricValues(reportId, emptySet()) }
+      assertDoesNotThrow(message = "TF-Expert Global Role") {
+        store.refreshSystemMetricValues(reportId, emptySet())
+      }
     }
 
     @Test
@@ -2354,10 +2367,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for non global role users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-      assertThrows<AccessDeniedException> { store.fetchProjectReportConfigs() }
+      assertThrows<AccessDeniedException>(message = "No Global Role") {
+        store.fetchProjectReportConfigs()
+      }
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
-      assertDoesNotThrow { store.fetchProjectReportConfigs() }
+      assertDoesNotThrow(message = "Read-only Global Role") { store.fetchProjectReportConfigs() }
     }
 
     @Test
