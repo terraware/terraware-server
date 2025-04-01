@@ -1787,6 +1787,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSiteHistory(
+      areaHa: BigDecimal? = lastPlantingSitesRow.areaHa,
       boundary: Geometry = lastPlantingSitesRow.boundary!!,
       createdBy: UserId = lastPlantingSitesRow.createdBy!!,
       createdTime: Instant = lastPlantingSitesRow.createdTime!!,
@@ -1796,6 +1797,7 @@ abstract class DatabaseBackedTest {
   ): PlantingSiteHistoryId {
     val row =
         PlantingSiteHistoriesRow(
+            areaHa = areaHa,
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -1924,6 +1926,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingZoneHistory(
+      areaHa: BigDecimal? = null,
       boundary: Geometry? = null,
       name: String? = null,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
@@ -1931,6 +1934,7 @@ abstract class DatabaseBackedTest {
   ): PlantingZoneHistoryId {
     val row =
         PlantingZoneHistoriesRow(
+            areaHa = areaHa ?: lastPlantingZonesRow.areaHa,
             boundary = boundary ?: lastPlantingZonesRow.boundary,
             name = name ?: lastPlantingZonesRow.name,
             plantingSiteHistoryId = plantingSiteHistoryId,
@@ -2001,6 +2005,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSubzoneHistory(
+      areaHa: BigDecimal? = null,
       boundary: Geometry? = null,
       fullName: String? = null,
       name: String? = null,
@@ -2009,6 +2014,7 @@ abstract class DatabaseBackedTest {
   ): PlantingSubzoneHistoryId {
     val row =
         PlantingSubzoneHistoriesRow(
+            areaHa = areaHa ?: lastPlantingSubzonesRow.areaHa,
             boundary = boundary ?: lastPlantingSubzonesRow.boundary,
             fullName = fullName ?: lastPlantingSubzonesRow.fullName,
             name = name ?: lastPlantingSubzonesRow.name,

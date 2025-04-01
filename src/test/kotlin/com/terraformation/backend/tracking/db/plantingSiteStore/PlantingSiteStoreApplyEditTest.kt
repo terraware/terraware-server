@@ -841,6 +841,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(2, siteHistories.size, "Number of site history entries")
       assertEquals(
           PlantingSiteHistoriesRow(
+              areaHa = existing.areaHa,
               boundary = existing.boundary,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -853,6 +854,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           "Existing site history")
       assertEquals(
           PlantingSiteHistoriesRow(
+              areaHa = edited.areaHa,
               boundary = edited.boundary,
               createdBy = user.userId,
               createdTime = editTime,
@@ -875,10 +877,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           edited.plantingZones
               .map { zone ->
                 PlantingZoneHistoriesRow(
+                    areaHa = zone.areaHa,
+                    boundary = zone.boundary,
+                    name = zone.name,
                     plantingSiteHistoryId = editedSiteHistory.id,
                     plantingZoneId = zone.id,
-                    name = zone.name,
-                    boundary = zone.boundary,
                 )
               }
               .toSet(),
@@ -895,11 +898,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 editedZoneHistories.first { it.plantingZoneId == zone.id }.id
             zone.plantingSubzones.map { subzone ->
               PlantingSubzoneHistoriesRecord(
-                  plantingZoneHistoryId = plantingZoneHistoryId,
-                  plantingSubzoneId = subzone.id,
-                  name = subzone.name,
-                  fullName = subzone.fullName,
+                  areaHa = subzone.areaHa,
                   boundary = subzone.boundary,
+                  fullName = subzone.fullName,
+                  name = subzone.name,
+                  plantingSubzoneId = subzone.id,
+                  plantingZoneHistoryId = plantingZoneHistoryId,
               )
             }
           },

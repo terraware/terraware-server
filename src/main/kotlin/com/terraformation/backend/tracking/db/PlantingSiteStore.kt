@@ -474,6 +474,7 @@ class PlantingSiteStore(
 
     val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
     val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
+    val editedArea = edited.boundary?.calculateAreaHectares()
 
     val now = clock.instant()
 
@@ -490,7 +491,7 @@ class PlantingSiteStore(
             .apply {
               // Boundaries can only be updated on simple planting sites.
               if (initial.plantingZones.isEmpty()) {
-                set(AREA_HA, edited.boundary?.calculateAreaHectares())
+                set(AREA_HA, editedArea)
                 set(BOUNDARY, edited.boundary)
               }
             }
@@ -510,6 +511,7 @@ class PlantingSiteStore(
           !edited.exclusion.equalsOrBothNull(initial.exclusion)) {
         val historiesRecord =
             PlantingSiteHistoriesRecord(
+                    areaHa = editedArea,
                     boundary = edited.boundary,
                     createdBy = currentUser().userId,
                     createdTime = now,
@@ -576,6 +578,7 @@ class PlantingSiteStore(
           with(PLANTING_SITE_HISTORIES) {
             dslContext
                 .insertInto(PLANTING_SITE_HISTORIES)
+                .set(AREA_HA, plantingSiteEdit.desiredModel.areaHa)
                 .set(BOUNDARY, plantingSiteEdit.desiredModel.boundary)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
@@ -2187,6 +2190,7 @@ class PlantingSiteStore(
   ): PlantingSiteHistoryId {
     val historiesRecord =
         PlantingSiteHistoriesRecord(
+                areaHa = newModel.areaHa,
                 boundary = newModel.boundary,
                 createdBy = currentUser().userId,
                 createdTime = now,
@@ -2209,6 +2213,7 @@ class PlantingSiteStore(
   ): PlantingZoneHistoryId {
     val historiesRecord =
         PlantingZoneHistoriesRecord(
+                areaHa = model.areaHa,
                 boundary = model.boundary,
                 name = model.name,
                 plantingSiteHistoryId = plantingSiteHistoryId,
@@ -2229,6 +2234,7 @@ class PlantingSiteStore(
   ): PlantingSubzoneHistoryId {
     val historiesRecord =
         PlantingSubzoneHistoriesRecord(
+                areaHa = model.areaHa,
                 boundary = model.boundary,
                 fullName = model.fullName,
                 name = model.name,
