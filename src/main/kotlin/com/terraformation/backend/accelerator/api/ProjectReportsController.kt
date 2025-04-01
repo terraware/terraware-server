@@ -75,6 +75,21 @@ class ProjectReportsController(
   }
 
   @ApiResponse200
+  @GetMapping("/{reportId}")
+  @Operation(summary = "Get one report.")
+  fun getAcceleratorReport(
+      @PathVariable reportId: ReportId,
+      @RequestParam includeMetrics: Boolean? = null,
+  ): GetAcceleratorReportResponsePayload {
+    val model =
+        reportStore.fetchOne(
+            reportId = reportId,
+            includeMetrics = includeMetrics ?: false,
+        )
+    return GetAcceleratorReportResponsePayload(AcceleratorReportPayload(model))
+  }
+
+  @ApiResponse200
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}")
@@ -567,6 +582,9 @@ data class UpdateAcceleratorReportMetricsRequestPayload(
 )
 
 data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorReportPayload>) :
+    SuccessResponsePayload
+
+data class GetAcceleratorReportResponsePayload(val report: AcceleratorReportPayload) :
     SuccessResponsePayload
 
 data class ListAcceleratorReportConfigResponsePayload(

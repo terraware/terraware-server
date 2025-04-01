@@ -19,6 +19,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -690,6 +691,289 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(reportModel, secondReportModel, otherReportModel),
           store.fetch().toSet(),
           "Read-only admin user can see all project reports")
+    }
+  }
+
+  @Nested
+  inner class FetchOne {
+    @Test
+    fun `throws exception if user is not an organization manager, or global role user`() {
+      deleteOrganizationUser(organizationId = organizationId)
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertProjectReportConfig()
+      val reportId =
+          insertReport(
+              quarter = ReportQuarter.Q4,
+              startDate = LocalDate.of(2030, Month.OCTOBER, 1),
+              endDate = LocalDate.of(2030, Month.DECEMBER, 31))
+
+      assertThrows<ReportNotFoundException> { store.fetchOne(reportId) }
+
+      insertOrganizationUser(role = Role.Contributor)
+      assertThrows<ReportNotFoundException> { store.fetchOne(reportId) }
+
+      deleteOrganizationUser(organizationId = organizationId)
+      insertOrganizationUser(role = Role.Manager)
+      assertDoesNotThrow { store.fetchOne(reportId) }
+
+      deleteOrganizationUser(organizationId = organizationId)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+      assertDoesNotThrow { store.fetchOne(reportId) }
+    }
+
+    @Test
+    fun `returns report, with metrics optionally`() {
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project Metric description",
+              name = "Project Metric Name",
+              reference = "2.0",
+              type = MetricType.Activity,
+          )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId,
+          target = 100,
+          status = ReportMetricStatus.OnTrack,
+          modifiedTime = Instant.ofEpochSecond(1500),
+          modifiedBy = user.userId,
+      )
+
+      val projectMetrics =
+          listOf(
+              ReportProjectMetricModel(
+                  metric =
+                      ProjectMetricModel(
+                          id = projectMetricId,
+                          projectId = projectId,
+                          component = MetricComponent.ProjectObjectives,
+                          description = "Project Metric description",
+                          name = "Project Metric Name",
+                          reference = "2.0",
+                          type = MetricType.Activity,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 100,
+                          status = ReportMetricStatus.OnTrack,
+                          modifiedTime = Instant.ofEpochSecond(1500),
+                          modifiedBy = user.userId,
+                      )),
+          )
+
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Climate standard metric description",
+              name = "Climate Standard Metric",
+              reference = "2.1",
+              type = MetricType.Activity,
+          )
+
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Community,
+              description = "Community metric description",
+              name = "Community Metric",
+              reference = "10.0",
+              type = MetricType.Outcome,
+          )
+
+      val standardMetricId3 =
+          insertStandardMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project objectives metric description",
+              name = "Project Objectives Metric",
+              reference = "2.0",
+              type = MetricType.Impact,
+          )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          target = 55,
+          value = 45,
+          underperformanceJustification = "Almost at target",
+          progressNotes = "Not quite there yet",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          target = 25,
+          status = ReportMetricStatus.Unlikely,
+          modifiedTime = Instant.ofEpochSecond(1500),
+          modifiedBy = user.userId,
+      )
+
+      val standardMetrics =
+          listOf(
+              // ordered by reference
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId3,
+                          component = MetricComponent.ProjectObjectives,
+                          description = "Project objectives metric description",
+                          name = "Project Objectives Metric",
+                          reference = "2.0",
+                          type = MetricType.Impact,
+                      ),
+                  // all fields are null because no target/value have been set yet
+                  entry = ReportMetricEntryModel()),
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId1,
+                          component = MetricComponent.Climate,
+                          description = "Climate standard metric description",
+                          name = "Climate Standard Metric",
+                          reference = "2.1",
+                          type = MetricType.Activity,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 55,
+                          value = 45,
+                          underperformanceJustification = "Almost at target",
+                          progressNotes = "Not quite there yet",
+                          modifiedTime = Instant.ofEpochSecond(3000),
+                          modifiedBy = user.userId,
+                      )),
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId2,
+                          component = MetricComponent.Community,
+                          description = "Community metric description",
+                          name = "Community Metric",
+                          reference = "10.0",
+                          type = MetricType.Outcome,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 25,
+                          status = ReportMetricStatus.Unlikely,
+                          modifiedTime = Instant.ofEpochSecond(1500),
+                          modifiedBy = user.userId,
+                      )),
+          )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.Seedlings,
+          target = 1000,
+          modifiedTime = Instant.ofEpochSecond(2500),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          target = 2000,
+          systemValue = 1800,
+          systemTime = Instant.ofEpochSecond(8000),
+          modifiedTime = Instant.ofEpochSecond(500),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.TreesPlanted,
+          target = 600,
+          systemValue = 300,
+          systemTime = Instant.ofEpochSecond(7000),
+          overrideValue = 800,
+          status = ReportMetricStatus.Achieved,
+          modifiedTime = Instant.ofEpochSecond(700),
+          modifiedBy = user.userId,
+      )
+
+      // These are ordered by reference.
+      val systemMetrics =
+          listOf(
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SeedsCollected,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 2000,
+                          systemValue = 1800,
+                          systemTime = Instant.ofEpochSecond(8000),
+                          modifiedTime = Instant.ofEpochSecond(500),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.Seedlings,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 1000,
+                          systemValue = 0,
+                          modifiedTime = Instant.ofEpochSecond(2500),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.TreesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 600,
+                          systemValue = 300,
+                          systemTime = Instant.ofEpochSecond(7000),
+                          overrideValue = 800,
+                          status = ReportMetricStatus.Achieved,
+                          modifiedTime = Instant.ofEpochSecond(700),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SpeciesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 0,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.MortalityRate,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 0,
+                      )),
+          )
+
+      val reportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              frequency = ReportFrequency.Quarterly,
+              quarter = ReportQuarter.Q1,
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              projectMetrics = projectMetrics,
+              standardMetrics = standardMetrics,
+              systemMetrics = systemMetrics)
+
+      assertEquals(
+          reportModel, store.fetchOne(reportId, includeMetrics = true), "Fetch one with metrics")
+
+      assertEquals(
+          reportModel.copy(
+              projectMetrics = emptyList(),
+              standardMetrics = emptyList(),
+              systemMetrics = emptyList(),
+          ),
+          store.fetchOne(reportId, includeMetrics = false),
+          "Fetch one without metrics")
     }
   }
 

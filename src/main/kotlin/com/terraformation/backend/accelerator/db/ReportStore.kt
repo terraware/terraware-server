@@ -111,6 +111,16 @@ class ReportStore(
         includeMetrics = includeMetrics)
   }
 
+  fun fetchOne(
+      reportId: ReportId,
+      includeMetrics: Boolean = false,
+  ): ReportModel {
+    requirePermissions { readReport(reportId) }
+
+    return fetchByCondition(condition = REPORTS.ID.eq(reportId), includeMetrics = includeMetrics)
+        .firstOrNull() ?: throw ReportNotFoundException(reportId)
+  }
+
   fun insertProjectReportConfig(newModel: NewProjectReportConfigModel) {
     requirePermissions { manageProjectReportConfigs() }
 
@@ -165,8 +175,7 @@ class ReportStore(
   fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<SystemMetric>) {
     requirePermissions { reviewReports() }
 
-    fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
-        ?: throw ReportNotFoundException(reportId)
+    fetchOne(reportId)
 
     dslContext.transaction { _ ->
       updateReportSystemMetricWithTerrawareData(reportId, metrics)
@@ -185,9 +194,7 @@ class ReportStore(
   ) {
     requirePermissions { reviewReports() }
 
-    val report =
-        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
-            ?: throw ReportNotFoundException(reportId)
+    val report = fetchOne(reportId)
 
     if (report.status != status) {
       if (report.status !in ReportModel.submittedStatuses) {
@@ -234,9 +241,7 @@ class ReportStore(
   ) {
     requirePermissions { reviewReports() }
 
-    val report =
-        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
-            ?: throw ReportNotFoundException(reportId)
+    val report = fetchOne(reportId, true)
 
     report.validateMetricEntries(
         standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
@@ -292,9 +297,7 @@ class ReportStore(
   ) {
     requirePermissions { updateReport(reportId) }
 
-    val report =
-        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
-            ?: throw ReportNotFoundException(reportId)
+    val report = fetchOne(reportId, true)
 
     if (report.status != ReportStatus.NotSubmitted) {
       throw IllegalStateException(
@@ -323,9 +326,7 @@ class ReportStore(
   ) {
     requirePermissions { updateReport(reportId) }
 
-    val report =
-        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
-            ?: throw ReportNotFoundException(reportId)
+    val report = fetchOne(reportId, true)
 
     if (report.status != ReportStatus.NotSubmitted) {
       throw IllegalStateException(
