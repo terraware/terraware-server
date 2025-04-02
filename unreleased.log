@@ -1,3 +1,4 @@
+aff30b2adc7 Use StableId wrapper in API endpoints (#2979)
 b962423618e Use StableId wrapper in jOOQ-generated classes (#2978)
 9bc109ea290 Added messages to permission assertions (#2980)
 fa4534c4f21 Added fetch one report API (#2976)
