@@ -299,7 +299,7 @@ class ReportStore(
 
     val report = fetchOne(reportId, true)
 
-    if (report.status != ReportStatus.NotSubmitted) {
+    if (!report.isEditable()) {
       throw IllegalStateException(
           "Cannot update qualitatives data for report $reportId of status ${report.status.name}")
     }
@@ -328,7 +328,7 @@ class ReportStore(
 
     val report = fetchOne(reportId, true)
 
-    if (report.status != ReportStatus.NotSubmitted) {
+    if (!report.isEditable()) {
       throw IllegalStateException(
           "Cannot update metrics for report $reportId of status ${report.status.name}")
     }
