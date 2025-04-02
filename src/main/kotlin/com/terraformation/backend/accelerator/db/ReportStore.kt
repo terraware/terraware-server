@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
@@ -286,7 +286,7 @@ class ReportStore(
       updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
     }
 
-    eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
+    eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId))
   }
 
   fun updateReportQualitatives(

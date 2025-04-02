@@ -3,7 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectMetricModel
@@ -51,8 +51,6 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
-import com.terraformation.backend.time.toInstant
-import com.terraformation.backend.util.toInstant
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -2351,7 +2349,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Report system metrics")
 
-      eventPublisher.assertEventPublished(ReportSubmittedEvent(reportId))
+      eventPublisher.assertEventPublished(AcceleratorReportSubmittedEvent(reportId))
     }
   }
 
