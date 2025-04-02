@@ -3397,7 +3397,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           isDead = false,
                           diameterAtBreastHeightCm = BigDecimal.TEN,
                           pointOfMeasurementM = BigDecimal.valueOf(1.5),
-                          heightM = BigDecimal.TEN, // ignored
+                          heightM = BigDecimal.TEN,
                           speciesId = treeSpeciesId2,
                           treeGrowthForm = TreeGrowthForm.Trunk,
                           treeNumber = 3,
@@ -3598,6 +3598,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   biomassSpeciesId = biomassTreeSpeciesId2,
                   diameterAtBreastHeightCm = BigDecimal.TEN,
                   pointOfMeasurementM = BigDecimal.valueOf(1.5),
+                  heightM = BigDecimal.TEN,
                   isDead = false,
                   treeGrowthFormId = TreeGrowthForm.Trunk,
                   treeNumber = 3,
