@@ -57,9 +57,9 @@ data class ReportModel(
     val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
   fun validateForSubmission() {
-    if (status != ReportStatus.NotSubmitted) {
+    if (status == ReportStatus.Approved || status == ReportStatus.NotSubmitted) {
       throw IllegalStateException(
-          "Report $id not in Not Submitted status. Status is ${status.name}")
+          "Report $id not in a submittable status. Status is ${status.name}")
     }
 
     val incompleteProjectMetrics =

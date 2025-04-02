@@ -1501,16 +1501,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception for reports not in NotSubmitted`() {
+    fun `throws exception for reports not in NotSubmitted or NeedsUpdate`() {
       insertProjectReportConfig()
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
       val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
       assertThrows<IllegalStateException> { store.updateReportMetrics(notNeededReportId) }
       assertThrows<IllegalStateException> { store.updateReportMetrics(submittedReportId) }
-      assertThrows<IllegalStateException> { store.updateReportMetrics(needsUpdateReportId) }
       assertThrows<IllegalStateException> { store.updateReportMetrics(approvedReportId) }
     }
 
@@ -1805,14 +1803,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception for reports not in NotSubmitted`() {
+    fun `throws exception for reports not in NotSubmitted or NeedsUpdate`() {
       insertProjectReportConfig()
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
       val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
-      listOf(notNeededReportId, submittedReportId, needsUpdateReportId, approvedReportId).forEach {
+      listOf(notNeededReportId, submittedReportId, approvedReportId).forEach {
         assertThrows<IllegalStateException> {
           store.updateReportQualitatives(
               reportId = it,
@@ -2182,16 +2179,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception for reports not in NotSubmitted`() {
+    fun `throws exception for reports in Approved or NotNeeded`() {
       insertProjectReportConfig()
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
-      val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
       assertThrows<IllegalStateException> { store.submitReport(notNeededReportId) }
-      assertThrows<IllegalStateException> { store.submitReport(submittedReportId) }
-      assertThrows<IllegalStateException> { store.submitReport(needsUpdateReportId) }
       assertThrows<IllegalStateException> { store.submitReport(approvedReportId) }
     }
 
