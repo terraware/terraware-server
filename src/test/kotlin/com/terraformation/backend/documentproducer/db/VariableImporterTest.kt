@@ -8,20 +8,28 @@ import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.tables.pojos.*
+import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTableColumnsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.docprod.tables.records.VariableTableColumnsRecord
 import com.terraformation.backend.db.docprod.tables.records.VariablesRecord
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
+import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 class VariableImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -105,7 +113,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               isList = false,
               isRequired = false,
               name = "Project Proponent Table",
-              stableId = "1",
+              stableId = StableId("1"),
               variableTypeId = VariableType.Table)
 
       val actualTableRow = variableTablesDao.fetchOneByVariableId(actualTableVariable.id!!)
@@ -471,7 +479,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Original variable",
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Text,
               ),
               VariablesRow(
@@ -482,7 +490,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Updated variable",
                   replacesVariableId = initialVariableId,
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Text,
               ),
           ),
@@ -524,7 +532,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Number variable",
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
@@ -534,7 +542,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Number variable",
                   replacesVariableId = initialVariableId,
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Number,
               )),
           variablesDao.findAll().toSet(),
@@ -582,7 +590,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = true,
                   isRequired = false,
                   name = "Table",
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Table,
               ),
               VariablesRow(
@@ -591,7 +599,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Column A",
-                  stableId = "2",
+                  stableId = StableId("2"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
@@ -600,7 +608,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Column B",
-                  stableId = "3",
+                  stableId = StableId("3"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
@@ -610,7 +618,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Table",
                   replacesVariableId = initialVariables[0].id,
-                  stableId = "1",
+                  stableId = StableId("1"),
                   variableTypeId = VariableType.Table,
               ),
               VariablesRow(
@@ -620,7 +628,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Renamed A",
                   replacesVariableId = initialVariables[1].id,
-                  stableId = "2",
+                  stableId = StableId("2"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
@@ -630,7 +638,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Renamed B",
                   replacesVariableId = initialVariables[2].id,
-                  stableId = "3",
+                  stableId = StableId("3"),
                   variableTypeId = VariableType.Number,
               ),
           ),
@@ -766,20 +774,20 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = true,
                   name = "Number of non-native species",
-                  stableId = "1115",
+                  stableId = StableId("1115"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRecord(
                   deliverableQuestion =
                       "What is the reason these non-native species are being planted?",
                   dependencyConditionId = DependencyCondition.Gte,
-                  dependencyVariableStableId = "1115",
+                  dependencyVariableStableId = StableId("1115"),
                   dependencyValue = "5",
                   internalOnly = true,
                   isList = false,
                   isRequired = false,
                   name = "Reason to use non-native species",
-                  stableId = "1116",
+                  stableId = StableId("1116"),
                   variableTypeId = VariableType.Select,
               ),
               VariablesRecord(
@@ -788,7 +796,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = true,
                   isRequired = true,
                   name = "Table",
-                  stableId = "1117",
+                  stableId = StableId("1117"),
                   variableTypeId = VariableType.Table,
               ),
               VariablesRecord(
@@ -797,7 +805,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = true,
                   name = "Column",
-                  stableId = "1118",
+                  stableId = StableId("1118"),
                   variableTypeId = VariableType.Number,
               ),
           ),
@@ -837,7 +845,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Variable 1",
-                  stableId = "1111",
+                  stableId = StableId("1111"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRecord(
@@ -845,7 +853,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Variable 2",
-                  stableId = "1112",
+                  stableId = StableId("1112"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRecord(
@@ -853,7 +861,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isList = false,
                   isRequired = false,
                   name = "Variable 3",
-                  stableId = "1113",
+                  stableId = StableId("1113"),
                   variableTypeId = VariableType.Number,
               ),
               VariablesRecord(
@@ -862,7 +870,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   isRequired = false,
                   name = "Updated Variable 1",
                   replacesVariableId = variableId1111,
-                  stableId = "1111",
+                  stableId = StableId("1111"),
                   variableTypeId = VariableType.Number,
               ),
           ),
@@ -881,7 +889,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `returns an error if a dependency stable variable ID is referenced that does not exist`() {
       every { user.canReadAllDeliverables() } returns true
 
-      val nonexistentDependencyVariableStableId = "1111"
+      val nonexistentDependencyVariableStableId = StableId("1111")
 
       val csv =
           header +
@@ -902,7 +910,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `returns an error if a dependency stable variable ID is referencing itself`() {
       every { user.canReadAllDeliverables() } returns true
 
-      val stableId = "1116"
+      val stableId = StableId("1116")
 
       val csv =
           header +

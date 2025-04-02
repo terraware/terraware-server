@@ -121,7 +121,7 @@ class VariableStore(
         dslContext
             .select(ID)
             .from(VARIABLES)
-            .where(STABLE_ID.eq(stableId.value))
+            .where(STABLE_ID.eq(stableId))
             .orderBy(ID.desc())
             .limit(1)
             .fetchOne(VARIABLES.ID)
@@ -419,8 +419,7 @@ class VariableStore(
                 deliverableQuestion = variablesRow.deliverableQuestion,
                 dependencyCondition = variablesRow.dependencyConditionId,
                 dependencyValue = variablesRow.dependencyValue,
-                dependencyVariableStableId =
-                    variablesRow.dependencyVariableStableId?.let { StableId(it) },
+                dependencyVariableStableId = variablesRow.dependencyVariableStableId,
                 description = variablesRow.description,
                 id = variableId,
                 internalOnly = variablesRow.internalOnly!!,
@@ -432,7 +431,7 @@ class VariableStore(
                 position = manifestRecord?.position ?: 0,
                 recommendedBy = recommendedBy,
                 replacesVariableId = variablesRow.replacesVariableId,
-                stableId = StableId(variablesRow.stableId!!),
+                stableId = variablesRow.stableId!!,
             )
 
         val variable =

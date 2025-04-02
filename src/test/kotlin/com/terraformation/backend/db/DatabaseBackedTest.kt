@@ -3807,14 +3807,14 @@ abstract class DatabaseBackedTest {
             deliverableQuestion = deliverableQuestion,
             dependencyConditionId = dependencyCondition,
             dependencyValue = dependencyValue,
-            dependencyVariableStableId = dependencyVariableStableId,
+            dependencyVariableStableId = dependencyVariableStableId?.let { StableId(it) },
             description = description,
             internalOnly = internalOnly,
             isList = isList,
             isRequired = isRequired,
             name = name,
             replacesVariableId = replacesVariableId,
-            stableId = stableId,
+            stableId = StableId(stableId),
             variableTypeId = type,
         )
 
