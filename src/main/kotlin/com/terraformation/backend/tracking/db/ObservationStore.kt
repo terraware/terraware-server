@@ -1035,7 +1035,11 @@ class ObservationStore(
                         it.treeGrowthForm == TreeGrowthForm.Trunk)
                         it.pointOfMeasurementM
                     else null,
-                heightM = if (it.treeGrowthForm == TreeGrowthForm.Tree) it.heightM else null,
+                heightM =
+                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
+                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                        it.heightM
+                    else null,
                 shrubDiameterCm =
                     if (it.treeGrowthForm == TreeGrowthForm.Shrub) it.shrubDiameterCm else null,
                 description = it.description,
