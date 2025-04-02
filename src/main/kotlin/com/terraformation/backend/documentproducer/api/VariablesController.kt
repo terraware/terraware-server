@@ -57,7 +57,7 @@ class VariablesController(
                   "May be specified more than once to return multiple variables. deliverableId " +
                   "and documentId are ignored if this is specified.")
       @RequestParam
-      stableId: List<String>?,
+      stableId: List<StableId>?,
       @Parameter(
           description =
               "If specified, return the definition of a specific variable. May be specified more " +
@@ -74,7 +74,7 @@ class VariablesController(
         if (!variableId.isNullOrEmpty()) {
           variableId.distinct().mapNotNull { variableStore.fetchVariableOrNull(it) }
         } else if (!stableId.isNullOrEmpty()) {
-          stableId.distinct().mapNotNull { variableStore.fetchByStableId(StableId(it)) }
+          stableId.distinct().mapNotNull { variableStore.fetchByStableId(it) }
         } else if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (documentId != null) {
@@ -128,8 +128,8 @@ interface VariablePayload {
   val dependencyValue: String?
     get() = model.dependencyValue
 
-  val dependencyVariableStableId: String?
-    get() = model.dependencyVariableStableId?.value
+  val dependencyVariableStableId: StableId?
+    get() = model.dependencyVariableStableId
 
   val description: String?
     get() = model.description
@@ -158,8 +158,8 @@ interface VariablePayload {
         arraySchema = Schema(description = "IDs of sections that recommend this variable."))
     get() = model.recommendedBy.toSet()
 
-  val stableId: String
-    get() = model.stableId.value
+  val stableId: StableId
+    get() = model.stableId
 
   val type
     get() = model.type

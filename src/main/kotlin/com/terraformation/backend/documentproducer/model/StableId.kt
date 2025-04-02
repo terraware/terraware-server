@@ -1,3 +1,6 @@
 package com.terraformation.backend.documentproducer.model
 
-data class StableId(val value: String)
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonValue
+
+data class StableId @JsonCreator constructor(@get:JsonValue val value: String)
