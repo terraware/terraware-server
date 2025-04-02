@@ -56,8 +56,18 @@ data class ReportModel(
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
     val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
+  fun isSubmittable(): Boolean {
+    return status == ReportStatus.NotSubmitted ||
+        status == ReportStatus.NeedsUpdate ||
+        status == ReportStatus.Submitted
+  }
+
+  fun isEditable(): Boolean {
+    return status == ReportStatus.NotSubmitted || status == ReportStatus.NeedsUpdate
+  }
+
   fun validateForSubmission() {
-    if (status == ReportStatus.Approved || status == ReportStatus.NotSubmitted) {
+    if (!isSubmittable()) {
       throw IllegalStateException(
           "Report $id not in a submittable status. Status is ${status.name}")
     }
