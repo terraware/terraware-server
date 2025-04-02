@@ -1,3 +1,4 @@
+b962423618e Use StableId wrapper in jOOQ-generated classes (#2978)
 9bc109ea290 Added messages to permission assertions (#2980)
 fa4534c4f21 Added fetch one report API (#2976)
 9cd41670a69 Move insert*History defaults to parameters (#2975)
