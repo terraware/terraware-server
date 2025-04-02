@@ -1,3 +1,5 @@
+e3f5142f52b Update dependency software.amazon.awssdk:bom to v2.31.12 (#2977)
+e191d4fcb9f Fix intermittent PlantingZoneModelTest failures (#2981)
 aff30b2adc7 Use StableId wrapper in API endpoints (#2979)
 b962423618e Use StableId wrapper in jOOQ-generated classes (#2978)
 9bc109ea290 Added messages to permission assertions (#2980)
