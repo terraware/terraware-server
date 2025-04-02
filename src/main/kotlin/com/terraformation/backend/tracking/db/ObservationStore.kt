@@ -1172,19 +1172,20 @@ class ObservationStore(
 
     withLockedObservation(observationId) { observation ->
       val observationPlotDetails =
-          fetchObservationPlotDetails(observationId).associateBy { it.model.monitoringPlotId }
-      val plantingZoneIds: Map<MonitoringPlotId, PlantingZoneId> =
           dslContext
-              .select(MONITORING_PLOTS.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
-              .from(PLANTING_SUBZONES)
+              .select(
+                  OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+                  OBSERVATION_PLOTS.IS_PERMANENT,
+                  MONITORING_PLOTS.PLANTING_SUBZONE_ID,
+                  PLANTING_SUBZONES.PLANTING_ZONE_ID)
+              .from(OBSERVATION_PLOTS)
               .join(MONITORING_PLOTS)
-              .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
-              .where(
-                  MONITORING_PLOTS.ID.`in`(
-                      observationPlotDetails.values.map { it.model.monitoringPlotId }))
-              .fetchMap(
-                  MONITORING_PLOTS.ID.asNonNullable(),
-                  PLANTING_SUBZONES.PLANTING_ZONE_ID.asNonNullable())
+              .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+              .leftJoin(PLANTING_SUBZONES)
+              .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+              .fetch()
+              .associateBy { it[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!! }
 
       // Make the raw data (individual recorded plants) refer to the target species. This has no
       // impact on statistics; those are adjusted later.
@@ -1220,10 +1221,6 @@ class ObservationStore(
                 ?: throw IllegalStateException(
                     "Monitoring plot $monitoringPlotId has species totals for $otherSpeciesName " +
                         "in observation $observationId but is not in observation")
-        val plantingZoneId =
-            plantingZoneIds[monitoringPlotId]
-                ?: throw IllegalStateException(
-                    "Unable to look up planting zone for monitoring plot $monitoringPlotId")
 
         // Subtract the plot-level live/dead/existing counts from the Other species and add them
         // to the target species. This propagates the changes up to the zone and site totals.
@@ -1237,11 +1234,11 @@ class ObservationStore(
         updateSpeciesTotals(
             observationId,
             observation.plantingSiteId,
-            plantingZoneId,
-            plotDetails.plantingSubzoneId,
+            plotDetails[PLANTING_SUBZONES.PLANTING_ZONE_ID],
+            plotDetails[MONITORING_PLOTS.PLANTING_SUBZONE_ID],
             monitoringPlotId,
             observation.isAdHoc,
-            plotDetails.model.isPermanent,
+            plotDetails[OBSERVATION_PLOTS.IS_PERMANENT]!!,
             mapOf(
                 RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
                     mapOf(

@@ -1481,6 +1481,91 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `does not update zone or site species totals for ad-hoc observation`() {
+      val gpsCoordinates = point(1)
+      val speciesId = insertSpecies()
+
+      monitoringPlotId = insertMonitoringPlot(plantingSubzoneId = null, isAdHoc = true)
+      val observationId1 = insertObservation(isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+
+      store.completePlot(
+          observationId1,
+          monitoringPlotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesId = speciesId,
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Dead),
+          ))
+
+      clock.instant = Instant.ofEpochSecond(1)
+
+      val expectedPlotsBeforeMerge =
+          listOf(
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId1,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId,
+                  speciesName = null,
+                  certaintyId = Known,
+                  totalLive = 1,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = null,
+                  cumulativeDead = 0,
+                  permanentLive = 0,
+              ),
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId1,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = null,
+                  speciesName = "Merge",
+                  certaintyId = Other,
+                  totalLive = 1,
+                  totalDead = 1,
+                  totalExisting = 0,
+                  mortalityRate = null,
+                  cumulativeDead = 0,
+                  permanentLive = 0,
+              ),
+          )
+
+      assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
+      assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
+      assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
+
+      store.mergeOtherSpecies(observationId1, "Merge", speciesId)
+
+      val expectedPlotsAfterMerge =
+          listOf(
+              expectedPlotsBeforeMerge[0].apply {
+                totalLive = 2
+                totalDead = 1
+              },
+              // expectedPlotsBeforeMerge[1] should be deleted
+          )
+
+      assertTableEquals(expectedPlotsAfterMerge, "After merge")
+      assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
+      assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
+    }
+
+    @Test
     fun `throws exception if no permission to update observation`() {
       val observationId = insertObservation()
       val speciesId = insertSpecies()
