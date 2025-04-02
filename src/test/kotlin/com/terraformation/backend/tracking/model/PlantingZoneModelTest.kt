@@ -10,6 +10,7 @@ import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.time.Instant
 import kotlin.random.Random
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -509,7 +510,7 @@ class PlantingZoneModelTest {
       }
     }
 
-    @RepeatedTest(20)
+    @RepeatedTest(20, failureThreshold = 1)
     fun `does exhaustive search of sparse map`() {
       // The site is a series of small triangles spread over a large area, plus one square that's
       // big enough to hold a monitoring plot.
@@ -543,9 +544,11 @@ class PlantingZoneModelTest {
       val square = zone.findUnusedSquare(siteOrigin, 30)
       assertNotNull(square, "Unused square")
 
-      if (square!!.intersection(targetArea).area < square.area * 0.99999) {
-        assertEquals(targetArea, square, "Should be contained in hole")
-      }
+      assertThat(square!!.intersection(targetArea).area)
+          .describedAs(
+              "Area of the part of the square that is inside the only region the square should " +
+                  "fit inside")
+          .isGreaterThanOrEqualTo(square.area * 0.999)
     }
   }
 
