@@ -9,11 +9,11 @@
             <mj-column mj-class="body-wrapper-welcome">
                 <mj-text mj-class="text-headline06-bold-green" padding-left="0px"
                          padding-right="0px">
-                    ${strings("notification.acceleratorReports.submitted.email.body", projectDealName, reportPrefix)}
+                    ${strings("notification.acceleratorReport.submitted.email.body", projectDealName, reportPrefix)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
                            href="${acceleratorReportConsoleUrl?no_esc}">
-                    ${strings("notification.acceleratorReports.submitted.email.buttonLabel")}
+                    ${strings("notification.acceleratorReport.submitted.email.buttonLabel")}
                 </mj-button>
 
                 <mj-include path="../../manageSettings.ftlh.mjml"/>

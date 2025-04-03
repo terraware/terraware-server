@@ -9,6 +9,8 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -39,6 +41,7 @@ import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
+import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -95,6 +98,7 @@ import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -132,6 +136,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectStore: ProjectStore
+  private lateinit var reportStore: ReportStore
   private lateinit var speciesStore: SpeciesStore
   private lateinit var userInternalInterestsStore: UserInternalInterestsStore
   private lateinit var userStore: UserStore
@@ -199,6 +204,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao)
     projectStore = ProjectStore(clock, dslContext, publisher, projectsDao)
+    reportStore = ReportStore(clock, dslContext, publisher, reportsDao, SystemUser(usersDao))
     speciesStore =
         SpeciesStore(
             clock,
@@ -253,6 +259,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             participantStore,
             plantingSiteStore,
             projectStore,
+            reportStore,
             speciesStore,
             SystemUser(usersDao),
             userInternalInterestsStore,
@@ -552,6 +559,29 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "It's time to schedule your next planting season",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
         role = Role.Manager)
+  }
+
+  @Test
+  fun `should store accelerator report submitted notification for global users`() {
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    val projectId = insertProject()
+    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertProjectReportConfig()
+    val reportId =
+        insertReport(
+            projectId = projectId,
+            status = ReportStatus.Submitted,
+            startDate = LocalDate.of(2025, Month.JANUARY, 1),
+            endDate = LocalDate.of(2025, Month.MARCH, 31),
+        )
+
+    testEventNotification(
+        AcceleratorReportReadyForReviewEvent(reportId, projectId),
+        type = NotificationType.AcceleratorReportSubmitted,
+        title = "2025 Q1 Report Submitted for DEAL_name",
+        body = "DEAL_name has submitted their 2025 Q1 Report.",
+        localUrl = webAppUrls.acceleratorConsoleReport(reportId, projectId),
+        organizationId = null)
   }
 
   @Test

@@ -4,6 +4,8 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -24,9 +26,11 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
+import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -82,6 +86,7 @@ class AppNotificationService(
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectStore: ProjectStore,
+    private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
@@ -490,6 +495,43 @@ class AppNotificationService(
             webAppUrls.document(event.documentId, event.referencingSectionVariableId),
             project.organizationId)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportReadyForReviewEvent) {
+    systemUser.run {
+      val project = projectStore.fetchOneById(event.projectId)
+
+      val report =
+          try {
+            reportStore.fetchOne(event.reportId)
+          } catch (e: ReportNotFoundException) {
+            log.error(
+                "Got report ready for review notification for report ${event.reportId} in " +
+                    "project ${event.projectId} but the report is not found")
+            return@run
+          }
+
+      val reportYear = report.endDate.year
+      val reportQuarter = report.quarter?.name ?: "Quarterly"
+
+      val reportPrefix =
+          when (report.frequency) {
+            ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
+            ReportFrequency.Annual -> "$reportYear Annual"
+          }
+
+      val renderMessage = {
+        messages.acceleratorReportSubmitted(
+            projectDealName = report.projectDealName ?: project.name, reportPrefix = reportPrefix)
+      }
+
+      insertAcceleratorNotification(
+          webAppUrls.acceleratorConsoleReport(event.reportId, event.projectId),
+          NotificationType.AcceleratorReportSubmitted,
+          project.organizationId,
+          renderMessage)
     }
   }
 

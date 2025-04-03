@@ -748,7 +748,7 @@ class EmailNotificationService(
           }
 
       val reportYear = report.endDate.year
-      val reportQuarter = report.quarter?.name ?: ""
+      val reportQuarter = report.quarter?.name ?: "Quarterly"
 
       val reportPrefix =
           when (report.frequency) {
