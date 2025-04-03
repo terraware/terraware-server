@@ -1,7 +1,8 @@
 <div class="question" th:text="${query}" th:if="${query} != null" />
 <div class="answer" th:utext="${answer}" th:if="${answer} != null" />
+<div class="error" th:text="${failureMessage}" th:if="${failureMessage} != null" />
 
-<form id="queryForm" th:hx-post="|/admin/ask/projects/${project.id}|" hx-swap="outerHTML"
+<form id="queryForm" th:hx-post="|/admin/ask/projects/${projectId}|" hx-swap="outerHTML"
       hx-disabled-elt="input, textarea">
     <label>
         Question (Enter to submit, Shift-Enter for line break):
@@ -9,7 +10,7 @@
         <textarea id="query" rows=4 cols=80 name="query" autofocus></textarea>
     </label>
     <br/>
-    <input type="hidden" name="projectId" th:value="${project.id}"/>
+    <input type="hidden" name="projectId" th:value="${projectId}"/>
     <input type="hidden" name="conversationId" th:value="${conversationId}"/>
     <input id="submitButton" type="submit" value="Submit"/>
     <br/>
