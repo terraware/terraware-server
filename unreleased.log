@@ -1,3 +1,4 @@
+c6a40a8c38d SW-6707 Fix species merging for ad-hoc observations (#2984)
 7f75c34d5dd Allow reports to be editted and submitted in different statuses (#2982)
 11ded94c65e SW-6748 Do not drop height for trunk growth forms (#2983)
 e3f5142f52b Update dependency software.amazon.awssdk:bom to v2.31.12 (#2977)
