@@ -74,14 +74,14 @@
 <text text-anchor="start" x="73" y="-1551.72" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="12,-1525.52 12,-1543.52 112,-1543.52 112,-1525.52 12,-1525.52"/>
 <text text-anchor="start" x="15" y="-1531.72" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-1507.52 12,-1525.52 36,-1525.52 36,-1507.52 12,-1507.52"/>
-<polygon fill="none" stroke="black" points="12,-1507.52 12,-1525.52 36,-1525.52 36,-1507.52 12,-1507.52"/>
+<polygon fill="#ffffff" stroke="transparent" points="12,-1507.52 12,-1525.52 55,-1525.52 55,-1507.52 12,-1507.52"/>
+<polygon fill="none" stroke="black" points="12,-1507.52 12,-1525.52 55,-1525.52 55,-1507.52 12,-1507.52"/>
 <text text-anchor="start" x="15" y="-1513.72" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="36,-1507.52 36,-1525.52 89,-1525.52 89,-1507.52 36,-1507.52"/>
-<polygon fill="none" stroke="black" points="36,-1507.52 36,-1525.52 89,-1525.52 89,-1507.52 36,-1507.52"/>
-<text text-anchor="start" x="40" y="-1513.72" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="89,-1507.52 89,-1525.52 112,-1525.52 112,-1507.52 89,-1507.52"/>
-<polygon fill="none" stroke="black" points="89,-1507.52 89,-1525.52 112,-1525.52 112,-1507.52 89,-1507.52"/>
+<polygon fill="#ffffff" stroke="transparent" points="55,-1507.52 55,-1525.52 79,-1525.52 79,-1507.52 55,-1507.52"/>
+<polygon fill="none" stroke="black" points="55,-1507.52 55,-1525.52 79,-1525.52 79,-1507.52 55,-1507.52"/>
+<text text-anchor="start" x="69" y="-1513.72" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="79,-1507.52 79,-1525.52 112,-1525.52 112,-1507.52 79,-1507.52"/>
+<polygon fill="none" stroke="black" points="79,-1507.52 79,-1525.52 112,-1525.52 112,-1507.52 79,-1507.52"/>
 <text text-anchor="start" x="93" y="-1513.72" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
