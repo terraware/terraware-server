@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
-import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -11,6 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
+import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -35,7 +35,6 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.InternalInterest
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -733,7 +732,7 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: AcceleratorReportReadyForReviewEvent) {
+  fun on(event: RateLimitedAcceleratorReportSubmittedEvent) {
     systemUser.run {
       val project = projectStore.fetchOneById(event.projectId)
 
@@ -747,21 +746,12 @@ class EmailNotificationService(
             return@run
           }
 
-      val reportYear = report.endDate.year
-      val reportQuarter = report.quarter?.name ?: "Quarterly"
-
-      val reportPrefix =
-          when (report.frequency) {
-            ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
-            ReportFrequency.Annual -> "$reportYear Annual"
-          }
-
       sendToAccelerator(
           project.organizationId,
           AcceleratorReportSubmitted(
               config,
               report.projectDealName ?: project.name,
-              reportPrefix,
+              report.prefix,
               webAppUrls.fullAcceleratorConsoleReport(event.reportId, event.projectId).toString()),
       )
     }

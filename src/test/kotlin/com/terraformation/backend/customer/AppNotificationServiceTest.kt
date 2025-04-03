@@ -10,13 +10,13 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
-import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
+import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
@@ -576,7 +576,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         )
 
     testEventNotification(
-        AcceleratorReportReadyForReviewEvent(reportId, projectId),
+        RateLimitedAcceleratorReportSubmittedEvent(reportId, projectId),
         type = NotificationType.AcceleratorReportSubmitted,
         title = "2025 Q1 Report Submitted for DEAL_name",
         body = "DEAL_name has submitted their 2025 Q1 Report.",

@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
-import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -11,6 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
+import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
@@ -1199,17 +1199,14 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun `acceleratorReportReadyForReviewEvent should notify global role users and TFContact`() {
+  fun `rateLimitedAcceleratorReportSubmittedEvent should notify global role users and TFContact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
-    val event = AcceleratorReportReadyForReviewEvent(acceleratorReportId, project.id)
+    val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId, project.id)
     service.on(event)
     val message = sentMessageWithSubject("Report Submitted for")
-    val reportYear = report.startDate.year
-    val reportQuarter = report.quarter?.name ?: ""
-    val reportPrefix = "$reportYear $reportQuarter"
-    assertSubjectContains(reportPrefix, message = message)
-    assertBodyContains(reportPrefix, message = message)
+    assertSubjectContains(report.prefix, message = message)
+    assertBodyContains(report.prefix, message = message)
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
 

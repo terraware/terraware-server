@@ -58,18 +58,25 @@ data class ReportModel(
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
     val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
-  fun isSubmittable(): Boolean {
-    return status == ReportStatus.NotSubmitted ||
-        status == ReportStatus.NeedsUpdate ||
-        status == ReportStatus.Submitted
-  }
+
+  /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
+  val prefix: String
+    get() {
+      val reportYear = endDate.year
+      val reportQuarter = quarter?.name ?: "Quarterly"
+
+      return when (frequency) {
+        ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
+        ReportFrequency.Annual -> "$reportYear Annual"
+      }
+    }
 
   fun isEditable(): Boolean {
     return status == ReportStatus.NotSubmitted || status == ReportStatus.NeedsUpdate
   }
 
   fun validateForSubmission() {
-    if (!isSubmittable()) {
+    if (!isEditable()) {
       throw IllegalStateException(
           "Report $id not in a submittable status. Status is ${status.name}")
     }

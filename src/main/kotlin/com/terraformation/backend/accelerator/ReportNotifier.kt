@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import jakarta.inject.Named
 import org.springframework.context.event.EventListener
@@ -14,6 +14,6 @@ class ReportNotifier(
   @EventListener
   fun on(event: AcceleratorReportSubmittedEvent) {
     rateLimitedEventPublisher.publishEvent(
-        AcceleratorReportReadyForReviewEvent(event.reportId, event.projectId))
+        RateLimitedAcceleratorReportSubmittedEvent(event.reportId, event.projectId))
   }
 }

@@ -5,11 +5,11 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import java.time.Duration
 
-/** Published when a report is ready for review */
-data class AcceleratorReportReadyForReviewEvent(
+/** Rate-limited event for sending notifications when reports are submitted. */
+data class RateLimitedAcceleratorReportSubmittedEvent(
     val reportId: ReportId,
     val projectId: ProjectId,
-) : RateLimitedEvent<AcceleratorReportReadyForReviewEvent> {
+) : RateLimitedEvent<RateLimitedAcceleratorReportSubmittedEvent> {
   override fun getRateLimitKey() = this
 
   override fun getMinimumInterval(): Duration = Duration.ofMinutes(5)

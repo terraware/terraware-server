@@ -2192,9 +2192,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception for reports in Approved or NotNeeded`() {
       insertProjectReportConfig()
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
       assertThrows<IllegalStateException> { store.submitReport(notNeededReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(submittedReportId) }
       assertThrows<IllegalStateException> { store.submitReport(approvedReportId) }
     }
 
