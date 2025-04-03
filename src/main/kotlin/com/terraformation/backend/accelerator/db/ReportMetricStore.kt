@@ -50,6 +50,7 @@ class ReportMetricStore(
           .set(COMPONENT_ID, model.component)
           .set(TYPE_ID, model.type)
           .set(REFERENCE, model.reference)
+          .set(IS_PUBLISHABLE, model.isPublishable)
           .returning(ID)
           .fetchOne(ID)!!
     }
@@ -72,6 +73,7 @@ class ReportMetricStore(
           .set(COMPONENT_ID, new.component)
           .set(TYPE_ID, new.type)
           .set(REFERENCE, new.reference)
+          .set(IS_PUBLISHABLE, new.isPublishable)
           .where(ID.eq(metricId))
           .execute()
     }
@@ -110,6 +112,7 @@ class ReportMetricStore(
           .set(COMPONENT_ID, model.component)
           .set(TYPE_ID, model.type)
           .set(REFERENCE, model.reference)
+          .set(IS_PUBLISHABLE, model.isPublishable)
           .returning(ID)
           .fetchOne(ID)!!
     }
@@ -133,6 +136,7 @@ class ReportMetricStore(
           .set(COMPONENT_ID, new.component)
           .set(TYPE_ID, new.type)
           .set(REFERENCE, new.reference)
+          .set(IS_PUBLISHABLE, new.isPublishable)
           .where(ID.eq(metricId))
           .execute()
     }

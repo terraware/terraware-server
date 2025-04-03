@@ -77,6 +77,10 @@ val ENUM_TABLES =
                                 "reference",
                                 "String",
                             ),
+                            EnumTableColumnInfo(
+                                "is_publishable",
+                                "Boolean",
+                            ),
                         ),
                     isLocalizable = false),
                 EnumTable("vote_options", isLocalizable = false),

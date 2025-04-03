@@ -18,6 +18,7 @@ data class ExistingProjectMetricPayload(
     val component: MetricComponent,
     val type: MetricType,
     val reference: String,
+    val isPublishable: Boolean,
 ) {
   constructor(
       model: ExistingProjectMetricModel
@@ -28,7 +29,8 @@ data class ExistingProjectMetricPayload(
       description = model.description,
       component = model.component,
       type = model.type,
-      reference = model.reference)
+      reference = model.reference,
+      isPublishable = model.isPublishable)
 
   fun toModel(): ExistingProjectMetricModel {
     return ExistingProjectMetricModel(
@@ -39,6 +41,7 @@ data class ExistingProjectMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        isPublishable = isPublishable,
     )
   }
 }
@@ -50,6 +53,7 @@ data class ExistingStandardMetricPayload(
     val component: MetricComponent,
     val type: MetricType,
     val reference: String,
+    val isPublishable: Boolean,
 ) {
   constructor(
       model: ExistingStandardMetricModel
@@ -59,7 +63,8 @@ data class ExistingStandardMetricPayload(
       description = model.description,
       component = model.component,
       type = model.type,
-      reference = model.reference)
+      reference = model.reference,
+      isPublishable = model.isPublishable)
 
   fun toModel(): ExistingStandardMetricModel {
     return ExistingStandardMetricModel(
@@ -69,6 +74,7 @@ data class ExistingStandardMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        isPublishable = isPublishable,
     )
   }
 }
@@ -79,6 +85,7 @@ data class NewMetricPayload(
     val component: MetricComponent,
     val type: MetricType,
     val reference: String,
+    val isPublishable: Boolean,
 ) {
   fun toProjectMetricModel(projectId: ProjectId): NewProjectMetricModel {
     return NewProjectMetricModel(
@@ -89,6 +96,7 @@ data class NewMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        isPublishable = isPublishable,
     )
   }
 
@@ -100,6 +108,7 @@ data class NewMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        isPublishable = isPublishable,
     )
   }
 }

@@ -15,6 +15,7 @@ data class ProjectMetricModel<ID : ProjectMetricId?>(
     val component: MetricComponent,
     val type: MetricType,
     val reference: String,
+    val isPublishable: Boolean,
 ) {
   companion object {
     fun of(record: Record): ExistingProjectMetricModel {
@@ -27,6 +28,7 @@ data class ProjectMetricModel<ID : ProjectMetricId?>(
             component = record[COMPONENT_ID]!!,
             type = record[TYPE_ID]!!,
             reference = record[REFERENCE]!!,
+            isPublishable = record[IS_PUBLISHABLE]!!,
         )
       }
     }
