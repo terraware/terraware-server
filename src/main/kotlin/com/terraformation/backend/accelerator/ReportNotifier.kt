@@ -13,6 +13,7 @@ class ReportNotifier(
   /** Schedules a "ready for review" notification when a report is submitted. */
   @EventListener
   fun on(event: AcceleratorReportSubmittedEvent) {
-    rateLimitedEventPublisher.publishEvent(AcceleratorReportReadyForReviewEvent(event.reportId))
+    rateLimitedEventPublisher.publishEvent(
+        AcceleratorReportReadyForReviewEvent(event.reportId, event.projectId))
   }
 }

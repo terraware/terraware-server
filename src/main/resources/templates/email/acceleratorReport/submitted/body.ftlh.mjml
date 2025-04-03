@@ -1,0 +1,25 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AcceleratorReportSubmitted" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body mj-class="body-gray">
+        <mj-include path="../../logo-welcome.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper-welcome">
+                <mj-text mj-class="text-headline06-bold-green" padding-left="0px"
+                         padding-right="0px">
+                    ${strings("notification.acceleratorReports.submitted.email.body", projectDealName, reportPrefix)}
+                </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${acceleratorReportConsoleUrl?no_esc}">
+                    ${strings("notification.acceleratorReports.submitted.email.buttonLabel")}
+                </mj-button>
+
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

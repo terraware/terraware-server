@@ -2,6 +2,8 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -31,7 +33,9 @@ import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.InternalInterest
+import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -45,6 +49,7 @@ import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
+import com.terraformation.backend.email.model.AcceleratorReportSubmitted
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.CompletedSectionVariableUpdated
@@ -126,6 +131,7 @@ class EmailNotificationService(
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectStore: ProjectStore,
+    private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
@@ -724,6 +730,41 @@ class EmailNotificationService(
             fundingEntityName = fundingEntity.name,
             funderPortalRegistrationUrl = funderPortalRegistrationUrl),
         listOf(event.email))
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportReadyForReviewEvent) {
+    systemUser.run {
+      val project = projectStore.fetchOneById(event.projectId)
+
+      val report =
+          try {
+            reportStore.fetchOne(event.reportId)
+          } catch (e: ReportNotFoundException) {
+            log.error(
+                "Got report ready for review notification for report ${event.reportId} in " +
+                    "project ${event.projectId} but the report is not found")
+            return@run
+          }
+
+      val reportYear = report.endDate.year
+      val reportQuarter = report.quarter?.name ?: ""
+
+      val reportPrefix =
+          when (report.frequency) {
+            ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
+            ReportFrequency.Annual -> "$reportYear Annual"
+          }
+
+      sendToAccelerator(
+          project.organizationId,
+          AcceleratorReportSubmitted(
+              config,
+              report.projectDealName ?: project.name,
+              reportPrefix,
+              webAppUrls.fullAcceleratorConsoleReport(event.reportId, event.projectId).toString()),
+      )
+    }
   }
 
   @EventListener

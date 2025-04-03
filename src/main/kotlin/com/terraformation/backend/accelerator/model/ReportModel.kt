@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -36,6 +37,7 @@ data class ReportModel(
     val id: ReportId,
     val configId: ProjectReportConfigId,
     val projectId: ProjectId,
+    val projectDealName: String? = null,
     val frequency: ReportFrequency,
     val quarter: ReportQuarter?,
     val status: ReportStatus,
@@ -169,6 +171,7 @@ data class ReportModel(
             id = record[ID]!!,
             configId = record[CONFIG_ID]!!,
             projectId = record[PROJECT_ID]!!,
+            projectDealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME],
             quarter = record[REPORT_QUARTER_ID],
             frequency = record[REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,
