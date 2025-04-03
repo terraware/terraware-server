@@ -80,31 +80,6 @@ data class ReportModel(
       throw IllegalStateException(
           "Report $id not in a submittable status. Status is ${status.name}")
     }
-
-    val incompleteProjectMetrics =
-        projectMetrics.filter { it.entry.target == null || it.entry.value == null }
-    if (incompleteProjectMetrics.isNotEmpty()) {
-      val metricNames =
-          incompleteProjectMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
-      throw IllegalStateException(
-          "Report $id is missing targets or values for project metrics: $metricNames")
-    }
-
-    val incompleteStandardMetrics =
-        standardMetrics.filter { it.entry.target == null || it.entry.value == null }
-    if (incompleteStandardMetrics.isNotEmpty()) {
-      val metricNames =
-          incompleteStandardMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
-      throw IllegalStateException(
-          "Report $id is missing targets or values for standard metrics: $metricNames")
-    }
-
-    val incompleteSystemMetrics = systemMetrics.filter { it.entry.target == null }
-    if (incompleteSystemMetrics.isNotEmpty()) {
-      val metricNames =
-          incompleteSystemMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
-      throw IllegalStateException("Report $id is missing targets for system metrics: $metricNames")
-    }
   }
 
   fun validateMetricEntries(
