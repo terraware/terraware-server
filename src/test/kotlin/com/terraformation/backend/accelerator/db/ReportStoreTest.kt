@@ -3113,10 +3113,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<AccessDeniedException> {
         store.updateProjectLogframeUrl(projectId = projectId, logframeUrl = null)
       }
-
-      assertThrows<AccessDeniedException> {
-        store.updateProjectLogframeUrl(projectId = projectId, logframeUrl = null)
-      }
     }
 
     @Test
