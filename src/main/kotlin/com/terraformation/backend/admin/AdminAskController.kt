@@ -81,9 +81,12 @@ class AdminAskController(
       showVariables: String?,
       model: Model
   ): String {
-    try {
-      val project = projectStore.fetchOneById(projectId)
+    model.addAttribute("conversationId", conversationId)
+    model.addAttribute("projectId", projectId)
+    model.addAttribute("query", query)
+    model.addAttribute("showVariables", showVariables != null)
 
+    try {
       val answer =
           chatService.askQuestion(projectId, query, conversationId, showVariables != null)
               ?: "No answer received from chat service"
@@ -91,11 +94,8 @@ class AdminAskController(
       val htmlAnswer = HtmlRenderer.builder().build().render(markdownAnswer)
 
       model.addAttribute("answer", htmlAnswer)
-      model.addAttribute("conversationId", conversationId)
-      model.addAttribute("project", project)
-      model.addAttribute("query", query)
-      model.addAttribute("showVariables", showVariables != null)
     } catch (e: Exception) {
+      log.error("Failed to generate answer", e)
       model.addAttribute("failureMessage", e.message)
     }
 
