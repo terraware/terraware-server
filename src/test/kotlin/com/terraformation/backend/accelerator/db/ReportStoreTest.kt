@@ -28,6 +28,7 @@ import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportChallengesRecord
@@ -52,6 +53,7 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -2307,8 +2309,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `queries by project`() {
+    fun `queries by project, includes logframe URL`() {
       val otherProjectId = insertProject()
+      insertProjectAcceleratorDetails(
+          projectId = otherProjectId, logframeUrl = "https://terraware.io/logframe")
 
       val projectConfigId1 =
           insertProjectReportConfig(
@@ -2349,6 +2353,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Annual,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2028, Month.MARCH, 2),
+              logframeUrl = null,
           )
 
       val projectConfigModel2 =
@@ -2358,6 +2363,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.JANUARY, 7),
               reportingEndDate = LocalDate.of(2031, Month.MAY, 9),
+              logframeUrl = null,
           )
 
       val otherProjectConfigModel1 =
@@ -2367,6 +2373,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Annual,
               reportingStartDate = LocalDate.of(2027, Month.FEBRUARY, 6),
               reportingEndDate = LocalDate.of(2031, Month.JULY, 9),
+              logframeUrl = URI("https://terraware.io/logframe"),
           )
 
       val otherProjectConfigModel2 =
@@ -2376,6 +2383,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2031, Month.JANUARY, 18),
               reportingEndDate = LocalDate.of(2039, Month.MAY, 31),
+              logframeUrl = URI("https://terraware.io/logframe"),
           )
 
       assertEquals(
@@ -2407,6 +2415,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Annual,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2028, Month.MARCH, 2),
+              logframeUrl = null,
           )
 
       assertThrows<AccessDeniedException> { store.insertProjectReportConfig(config) }
@@ -2416,6 +2425,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts config record and creates reports for annual frequency`() {
       clock.instant = Instant.ofEpochSecond(9000)
 
+      deleteProjectAcceleratorDetails(projectId)
+      insertProjectAcceleratorDetails(
+          projectId = projectId, logframeUrl = URI("https://example.com/existing-logframe"))
+
       val config =
           NewProjectReportConfigModel(
               id = null,
@@ -2423,10 +2436,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Annual,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2028, Month.MARCH, 2),
+              logframeUrl = URI("https://example.com/new-logframe"),
           )
 
       store.insertProjectReportConfig(config)
-
       val configId = projectReportConfigsDao.fetchByProjectId(projectId).single().id
 
       assertTableEquals(
@@ -2491,12 +2504,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               )),
           "Reports table",
       )
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              logframeUrl = URI("https://example.com/new-logframe"),
+          ),
+          "Project accelerator details table")
     }
 
     @Test
     fun `inserts config record and creates reports for quarterly frequency`() {
       clock.instant = Instant.ofEpochSecond(9000)
 
+      deleteProjectAcceleratorDetails(projectId)
       val config =
           NewProjectReportConfigModel(
               id = null,
@@ -2504,6 +2525,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+              logframeUrl = URI("https://example.com"),
           )
 
       store.insertProjectReportConfig(config)
@@ -2576,6 +2598,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               )),
           "Reports table",
       )
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              logframeUrl = URI("https://example.com"),
+          ),
+          "Project accelerator details table")
     }
   }
 
@@ -2608,7 +2637,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates the dates of the first and last report`() {
       // In this scenario, a user adjusts the reporting period minimally, so no new reports are
       // required, and no existing reports need to be archived
-
       val config =
           NewProjectReportConfigModel(
               id = null,
@@ -2616,6 +2644,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+              logframeUrl = null,
           )
 
       store.insertProjectReportConfig(config)
@@ -2887,6 +2916,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               frequency = ReportFrequency.Annual,
               reportingStartDate = LocalDate.of(2021, Month.MARCH, 13),
               reportingEndDate = LocalDate.of(2022, Month.JULY, 9),
+              logframeUrl = null,
           )
 
       clock.instant = Instant.ofEpochSecond(300)
@@ -2997,6 +3027,49 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           "Project report config tables")
+    }
+  }
+
+  @Nested
+  inner class UpdateProjectLogframeUrl {
+    @Test
+    fun `throws exception for non accelerator admin users`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      assertThrows<AccessDeniedException> {
+        store.updateProjectLogframeUrl(projectId = projectId, logframeUrl = null)
+      }
+    }
+
+    @Test
+    fun `updates existing project accelerator detail row`() {
+      deleteProjectAcceleratorDetails(projectId)
+      insertProjectAcceleratorDetails(
+          projectId = projectId,
+          dealName = "Unchanged deal name",
+          logframeUrl = URI("https://example.com/existing"))
+
+      store.updateProjectLogframeUrl(
+          projectId = projectId, logframeUrl = URI("https://example.com/new"))
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              dealName = "Unchanged deal name",
+              logframeUrl = URI("https://example.com/new")))
+    }
+
+    @Test
+    fun `creates new project accelerator detail row`() {
+      deleteProjectAcceleratorDetails(projectId)
+
+      store.updateProjectLogframeUrl(
+          projectId = projectId, logframeUrl = URI("https://example.com/new"))
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId, logframeUrl = URI("https://example.com/new")),
+      )
     }
   }
 

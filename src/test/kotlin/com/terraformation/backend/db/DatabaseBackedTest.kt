@@ -803,6 +803,7 @@ abstract class DatabaseBackedTest {
       googleFolderUrl: Any? = row.googleFolderUrl,
       hubSpotUrl: Any? = row.hubspotUrl,
       investmentThesis: String? = row.investmentThesis,
+      logframeUrl: Any? = row.logframeUrl,
       maxCarbonAccumulation: Number? = row.maxCarbonAccumulation,
       minCarbonAccumulation: Number? = row.minCarbonAccumulation,
       numCommunities: Int? = row.numCommunities,
@@ -830,6 +831,7 @@ abstract class DatabaseBackedTest {
             googleFolderUrl = googleFolderUrl?.let { URI("$it") },
             hubspotUrl = hubSpotUrl?.let { URI("$it") },
             investmentThesis = investmentThesis,
+            logframeUrl = logframeUrl?.let { URI("$it") },
             maxCarbonAccumulation = maxCarbonAccumulation?.toBigDecimal(),
             minCarbonAccumulation = minCarbonAccumulation?.toBigDecimal(),
             numCommunities = numCommunities,
@@ -846,6 +848,10 @@ abstract class DatabaseBackedTest {
     projectAcceleratorDetailsDao.insert(rowWithDefaults)
 
     return rowWithDefaults
+  }
+
+  protected fun deleteProjectAcceleratorDetails(projectId: ProjectId = inserted.projectId) {
+    projectAcceleratorDetailsDao.deleteById(projectId)
   }
 
   protected fun insertProjectLandUseModelType(
