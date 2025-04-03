@@ -1,3 +1,4 @@
+1a69d9de03a SW-6592 Implemented report submitted notifications (#2985)
 c6a40a8c38d SW-6707 Fix species merging for ad-hoc observations (#2984)
 7f75c34d5dd Allow reports to be editted and submitted in different statuses (#2982)
 11ded94c65e SW-6748 Do not drop height for trunk growth forms (#2983)
