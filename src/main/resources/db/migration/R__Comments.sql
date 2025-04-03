@@ -601,6 +601,7 @@ COMMENT ON TABLE accelerator.pipelines IS '(Enum) Deal pipelines for accelerator
 
 COMMENT ON TABLE accelerator.project_accelerator_details IS 'Details about projects that are only relevant for accelerator applicants. The values here are for internal use, not exposed to end users.';
 COMMENT ON COLUMN accelerator.project_accelerator_details.file_naming IS 'Identifier that is included in generated filenames. This is often, but not necessarily, the same as the project name.';
+COMMENT ON COLUMN accelerator.project_accelerator_details.logframe_url IS 'Link to the project logical framework, monitor and evaluation plan, and operational work plan.';
 
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
 

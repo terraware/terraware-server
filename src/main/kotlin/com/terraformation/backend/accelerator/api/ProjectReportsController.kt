@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
@@ -270,6 +271,19 @@ class ProjectReportsController(
   }
 
   @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/logframe")
+  @Operation(summary = "Update project logframe URL.")
+  fun updateLogframeUrl(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateProjectLogframeUrlRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateProjectLogframeUrl(projectId, payload.logframeUrl)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
   @GetMapping("/metrics")
   @Operation(summary = "List all project metrics for one project.")
   fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
@@ -307,6 +321,7 @@ data class ExistingAcceleratorReportConfigPayload(
     val frequency: ReportFrequency,
     val reportingStartDate: LocalDate,
     val reportingEndDate: LocalDate,
+    val logframeUrl: URI?,
 ) {
   constructor(
       model: ExistingProjectReportConfigModel
@@ -316,6 +331,7 @@ data class ExistingAcceleratorReportConfigPayload(
       frequency = model.frequency,
       reportingStartDate = model.reportingStartDate,
       reportingEndDate = model.reportingEndDate,
+      logframeUrl = model.logframeUrl,
   )
 }
 
@@ -327,6 +343,7 @@ data class UpdateAcceleratorReportConfigPayload(
 data class NewAcceleratorReportConfigPayload(
     val reportingStartDate: LocalDate,
     val reportingEndDate: LocalDate,
+    val logframeUrl: URI?,
 ) {
   fun toModel(projectId: ProjectId, frequency: ReportFrequency): NewProjectReportConfigModel =
       NewProjectReportConfigModel(
@@ -335,6 +352,7 @@ data class NewAcceleratorReportConfigPayload(
           frequency = frequency,
           reportingStartDate = reportingStartDate,
           reportingEndDate = reportingEndDate,
+          logframeUrl = logframeUrl,
       )
 }
 
@@ -556,7 +574,11 @@ data class UpdateAcceleratorReportConfigRequestPayload(
 )
 
 data class UpdateProjectAcceleratorReportConfigRequestPayload(
-    val config: UpdateAcceleratorReportConfigPayload
+    val config: UpdateAcceleratorReportConfigPayload,
+)
+
+data class UpdateProjectLogframeUrlRequestPayload(
+    val logframeUrl: URI?,
 )
 
 data class ReviewAcceleratorReportRequestPayload(

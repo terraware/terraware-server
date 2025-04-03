@@ -54,6 +54,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
@@ -141,6 +142,7 @@ class ReportStore(
           }
       val reportRows = createReportRows(config)
       reportsDao.insert(reportRows)
+      upsertProjectLogframeUrl(newModel.projectId, newModel.logframeUrl)
     }
   }
 
@@ -288,6 +290,11 @@ class ReportStore(
     }
 
     eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId, report.projectId))
+  }
+
+  fun updateProjectLogframeUrl(projectId: ProjectId, logframeUrl: URI?) {
+    requirePermissions { manageProjectReportConfigs() }
+    upsertProjectLogframeUrl(projectId, logframeUrl)
   }
 
   fun updateReportQualitatives(
@@ -609,7 +616,13 @@ class ReportStore(
       condition: Condition
   ): List<ExistingProjectReportConfigModel> {
     return with(PROJECT_REPORT_CONFIGS) {
-      dslContext.selectFrom(this).where(condition).fetch { ProjectReportConfigModel.of(it) }
+      dslContext
+          .select(asterisk(), PROJECT_ACCELERATOR_DETAILS.LOGFRAME_URL)
+          .from(this)
+          .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+          .on(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(PROJECT_ID))
+          .where(condition)
+          .fetch { ProjectReportConfigModel.of(it) }
     }
   }
 
@@ -682,6 +695,22 @@ class ReportStore(
             .and(POSITION.ge(challenges.size))
             .execute()
       }
+    }
+  }
+
+  private fun upsertProjectLogframeUrl(
+      projectId: ProjectId,
+      logframeUrl: URI?,
+  ) {
+    with(PROJECT_ACCELERATOR_DETAILS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(LOGFRAME_URL, logframeUrl)
+          .onConflict(PROJECT_ID)
+          .doUpdate()
+          .set(LOGFRAME_URL, logframeUrl)
+          .execute()
     }
   }
 
