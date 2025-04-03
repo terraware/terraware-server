@@ -3,7 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectMetricModel
@@ -51,8 +51,6 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
-import com.terraformation.backend.time.toInstant
-import com.terraformation.backend.util.toInstant
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -85,6 +83,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setup() {
     organizationId = insertOrganization()
     projectId = insertProject()
+    insertProjectAcceleratorDetails(dealName = "DEAL_Report Project")
     insertOrganizationUser(role = Role.Admin)
     insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
   }
@@ -131,6 +130,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NeedsUpdate,
@@ -385,6 +385,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
@@ -462,6 +463,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotNeeded,
@@ -490,6 +492,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
@@ -517,6 +520,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
@@ -571,6 +575,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId1,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q4,
               status = ReportStatus.NotSubmitted,
@@ -594,6 +599,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = otherReportId1,
               configId = otherConfigId,
               projectId = otherProjectId,
+              projectDealName = null,
           )
 
       val otherReportModel2 =
@@ -648,6 +654,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               quarter = ReportQuarter.Q1,
               frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
@@ -664,6 +671,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = secondReportId,
               configId = secondConfigId,
               projectId = secondProjectId,
+              projectDealName = null,
           )
 
       val otherReportModel =
@@ -671,6 +679,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = otherReportId,
               configId = otherConfigId,
               projectId = otherProjectId,
+              projectDealName = null,
           )
 
       assertEquals(
@@ -955,6 +964,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
+              projectDealName = "DEAL_Report Project",
               frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
@@ -2182,9 +2192,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception for reports in Approved or NotNeeded`() {
       insertProjectReportConfig()
       val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
       assertThrows<IllegalStateException> { store.submitReport(notNeededReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(submittedReportId) }
       assertThrows<IllegalStateException> { store.submitReport(approvedReportId) }
     }
 
@@ -2351,7 +2363,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Report system metrics")
 
-      eventPublisher.assertEventPublished(ReportSubmittedEvent(reportId))
+      eventPublisher.assertEventPublished(AcceleratorReportSubmittedEvent(reportId, projectId))
     }
   }
 

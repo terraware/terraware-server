@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
@@ -26,6 +26,7 @@ import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
@@ -286,7 +287,7 @@ class ReportStore(
       updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
     }
 
-    eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
+    eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId, report.projectId))
   }
 
   fun updateReportQualitatives(
@@ -579,6 +580,7 @@ class ReportStore(
     return dslContext
         .select(
             REPORTS.asterisk(),
+            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
@@ -586,6 +588,8 @@ class ReportStore(
             challengesMultiset,
         )
         .from(REPORTS)
+        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+        .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
         .where(condition)
         .orderBy(REPORTS.START_DATE)
         .fetch {

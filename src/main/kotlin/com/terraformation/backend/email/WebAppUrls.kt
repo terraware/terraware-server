@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -105,7 +106,7 @@ class WebAppUrls(
   }
 
   fun acceleratorConsoleApplication(applicationId: ApplicationId): URI {
-    return UriBuilder.fromPath("/applications/$applicationId").build()
+    return UriBuilder.fromPath("/accelerator/applications/$applicationId").build()
   }
 
   fun fullNurseryInventory(organizationId: OrganizationId): URI {
@@ -224,6 +225,23 @@ class WebAppUrls(
   fun acceleratorConsoleDeliverable(deliverableId: DeliverableId, projectId: ProjectId): URI {
     return UriBuilder.fromPath(
             "/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}")
+        .build()
+  }
+
+  fun fullAcceleratorConsoleReport(
+      reportId: ReportId,
+      projectId: ProjectId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accelerator/projects/${projectId.value}/reports/${reportId.value}")
+        .build()
+  }
+
+  fun acceleratorConsoleReport(
+      reportId: ReportId,
+      projectId: ProjectId,
+  ): URI {
+    return UriBuilder.fromPath("/accelerator/projects/${projectId.value}/reports/${reportId.value}")
         .build()
   }
 

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -36,6 +37,7 @@ data class ReportModel(
     val id: ReportId,
     val configId: ProjectReportConfigId,
     val projectId: ProjectId,
+    val projectDealName: String? = null,
     val frequency: ReportFrequency,
     val quarter: ReportQuarter?,
     val status: ReportStatus,
@@ -56,18 +58,25 @@ data class ReportModel(
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
     val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
-  fun isSubmittable(): Boolean {
-    return status == ReportStatus.NotSubmitted ||
-        status == ReportStatus.NeedsUpdate ||
-        status == ReportStatus.Submitted
-  }
+
+  /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
+  val prefix: String
+    get() {
+      val reportYear = endDate.year
+      val reportQuarter = quarter?.name ?: "Quarterly"
+
+      return when (frequency) {
+        ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
+        ReportFrequency.Annual -> "$reportYear Annual"
+      }
+    }
 
   fun isEditable(): Boolean {
     return status == ReportStatus.NotSubmitted || status == ReportStatus.NeedsUpdate
   }
 
   fun validateForSubmission() {
-    if (!isSubmittable()) {
+    if (!isEditable()) {
       throw IllegalStateException(
           "Report $id not in a submittable status. Status is ${status.name}")
     }
@@ -169,6 +178,7 @@ data class ReportModel(
             id = record[ID]!!,
             configId = record[CONFIG_ID]!!,
             projectId = record[PROJECT_ID]!!,
+            projectDealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME],
             quarter = record[REPORT_QUARTER_ID],
             frequency = record[REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,

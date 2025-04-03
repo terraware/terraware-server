@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -9,9 +10,11 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
+import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
+import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
@@ -42,6 +45,11 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
+import com.terraformation.backend.db.accelerator.ReportFrequency
+import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportQuarter
+import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -137,6 +145,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
+import java.time.Month
 import java.util.Locale
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.*
@@ -160,6 +169,7 @@ internal class EmailNotificationServiceTest {
   private val participantStore: ParticipantStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val projectStore: ProjectStore = mockk()
+  private val reportStore: ReportStore = mockk()
   private val sender: EmailSender = mockk()
   private val speciesStore: SpeciesStore = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
@@ -197,6 +207,7 @@ internal class EmailNotificationServiceTest {
           participantStore,
           plantingSiteStore,
           projectStore,
+          reportStore,
           speciesStore,
           systemUser,
           userInternalInterestsStore,
@@ -253,6 +264,7 @@ internal class EmailNotificationServiceTest {
           verbosity = 0)
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
+  private val acceleratorReportId = ReportId(1)
   private val applicationId = ApplicationId(1)
   private val plantingSite =
       ExistingPlantingSiteModel(
@@ -375,6 +387,25 @@ internal class EmailNotificationServiceTest {
           modifiedTime = Instant.EPOCH,
       )
 
+  private val report =
+      ReportModel(
+          id = acceleratorReportId,
+          configId = ProjectReportConfigId(1),
+          projectId = project.id,
+          projectDealName = "Deal name",
+          frequency = ReportFrequency.Quarterly,
+          quarter = ReportQuarter.Q1,
+          status = ReportStatus.Submitted,
+          startDate = LocalDate.of(2025, Month.JANUARY, 1),
+          endDate = LocalDate.of(2025, Month.MARCH, 31),
+          createdBy = UserId(1),
+          createdTime = Instant.EPOCH,
+          modifiedBy = UserId(1),
+          modifiedTime = Instant.EPOCH,
+          submittedBy = UserId(1),
+          submittedTime = Instant.EPOCH,
+      )
+
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val tfContactUserId = UserId(5)
@@ -437,6 +468,7 @@ internal class EmailNotificationServiceTest {
     every { plantingSiteStore.fetchSiteById(plantingSite.id, PlantingSiteDepth.Site) } returns
         plantingSite
     every { projectStore.fetchOneById(project.id) } returns project
+    every { reportStore.fetchOne(acceleratorReportId) } returns report
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { speciesStore.fetchSpeciesById(species.id) } returns species
     every { user.email } returns "user@test.com"
@@ -1163,6 +1195,18 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `rateLimitedAcceleratorReportSubmittedEvent should notify global role users and TFContact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId, project.id)
+    service.on(event)
+    val message = sentMessageWithSubject("Report Submitted for")
+    assertSubjectContains(report.prefix, message = message)
+    assertBodyContains(report.prefix, message = message)
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
 
