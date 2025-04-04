@@ -223,6 +223,12 @@ class TerrawareClient:
             json=payload,
         )
 
+    def complete_ad_hoc_observation(self, payload):
+        return self.post(
+            f"/api/v1/tracking/observations/adHoc",
+            json=payload,
+        )
+
     def fetch_access_token(self):
         if self.refresh_token:
             # This depends on how Keycloak populates some JWT fields. We don't bother verifying
