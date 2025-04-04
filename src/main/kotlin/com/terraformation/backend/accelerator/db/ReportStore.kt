@@ -328,6 +328,9 @@ class ReportStore(
           "Cannot update values for report $reportId of status ${report.status.name}")
     }
 
+    report.validateMetricEntries(
+        standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
+
     dslContext.transaction { _ ->
       mergeReportAchievements(reportId, achievements)
       mergeReportChallenges(reportId, challenges)
