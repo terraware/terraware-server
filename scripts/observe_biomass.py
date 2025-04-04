@@ -3,12 +3,12 @@ import argparse
 import random
 import time
 from datetime import datetime, timezone
-from math import floor
 
 from client import add_terraware_args, client_from_args
 
 
 def isoformat(timestamp: int) -> str:
+    """Convert a Unix timestamp to ISO 8601 format with Z suffix."""
     return (
         datetime.fromtimestamp(timestamp, timezone.utc)
         .isoformat()
@@ -18,168 +18,81 @@ def isoformat(timestamp: int) -> str:
 
 def random_decimal(min_val, max_val, precision=1):
     """Generate a random decimal with specified precision."""
-    value = random.uniform(min_val, max_val)
-    return round(value, precision)
+    return round(random.uniform(min_val, max_val), precision)
 
 
-def get_random_species(species_ids):
-    """Helper function to randomly get a species ID or name.
-
-    Returns a tuple of (species_id, species_name) with one being None
-    based on a random choice.
-    """
+def generate_species_entry(species_ids):
+    """Generate a random species entry with either ID or name."""
     if random.randint(1, 10) > 2:  # 80% chance of known species
-        species_id = random.choice(species_ids)
-        species_name = None
-    else:
-        species_id = None
-        species_name = f"Unknown Species {random.randint(1, 10)}"
-
-    return species_id, species_name
-
-
-def generate_species_payload(species_ids):
-    """Generate a random species payload."""
-    species_id, species_name = get_random_species(species_ids)
-
-    return {
-        "commonName": None,
-        "isInvasive": random.choice([True, False]),
-        "isThreatened": random.choice([True, False]),
-        "scientificName": species_name,
-        "speciesId": species_id,
-    }
-
-
-def generate_quadrat_species_payload(species_ids):
-    """Generate a random quadrat species payload."""
-    species_id, species_name = get_random_species(species_ids)
-
-    return {
-        "abundancePercent": random.randint(5, 95),
-        "speciesId": species_id,
-        "speciesName": species_name,
-    }
-
-
-def generate_tree_payload(species_ids):
-    """Generate a random tree payload."""
-    tree_type = random.choice(["shrub", "tree"])
-    species_id, species_name = get_random_species(species_ids)
-
-    if tree_type == "shrub":
         return {
-            "growthForm": "shrub",
-            "description": f"Shrub {random.randint(1, 100)}",
-            "isDead": random.choices([True, False], weights=[1, 9])[
-                0
-            ],  # 10% chance of being dead
-            "speciesId": species_id,
-            "speciesName": species_name,
-            "shrubDiameter": random.randint(5, 50),
+            "commonName": None,
+            "isInvasive": random.choice([True, False]),
+            "isThreatened": random.choice([True, False]),
+            "scientificName": None,
+            "speciesId": random.choice(species_ids),
         }
     else:
-        num_trunks = random.choices([1, random.randint(2, 5)], weights=[8, 2])[
-            0
-        ]  # 20% chance of multiple trunks
         return {
-            "growthForm": "tree",
-            "speciesId": species_id,
-            "speciesName": species_name,
-            "trunks": [
-                {
-                    "diameterAtBreastHeight": random_decimal(5, 100, 1),
-                    "height": random_decimal(1, 20, 1),
-                    "pointOfMeasurement": random_decimal(
-                        1.3, 1.5, 1
-                    ),  # Usually around 1.3-1.5m
-                    "description": f"Trunk {i+1}",
-                    "isDead": random.choices([True, False], weights=[1, 9])[
-                        0
-                    ],  # 10% chance of being dead
-                }
-                for i in range(num_trunks)
-            ],
+            "commonName": None,
+            "isInvasive": random.choice([True, False]),
+            "isThreatened": random.choice([True, False]),
+            "scientificName": f"Unknown Species {random.randint(1, 10)}",
+            "speciesId": None,
         }
+
+
+def get_species_refs(species_entry):
+    """Extract speciesId and speciesName from a species entry."""
+    if species_entry["speciesId"] is not None:
+        return {"speciesId": species_entry["speciesId"], "speciesName": None}
+    else:
+        return {"speciesId": None, "speciesName": species_entry["scientificName"]}
 
 
 def generate_biomass_observation_payload(planting_site_id, forest_type, species_ids):
     """Generate a random biomass observation payload."""
-    # Random timestamp within the last day
+    # Create timestamp for the observation
     current_time = int(time.time())
     observed_time = isoformat(current_time - random.randint(0, 86400))
 
-    # Generate master list of species entries for the observation
-    num_species = random.randint(5, 15)  # Increased to ensure we have enough species
-
-    # Create a set of unique species identifiers to avoid duplicates
+    # Generate unique master species list
+    num_species = random.randint(5, 15)
     unique_species_keys = set()
     master_species_list = []
 
-    # Generate the master species list with unique entries
     while len(master_species_list) < num_species:
-        species_entry = generate_species_payload(species_ids)
-
-        # Create a unique key based on either ID or name
+        species_entry = generate_species_entry(species_ids)
         key = (
             species_entry["speciesId"]
             if species_entry["speciesId"] is not None
             else species_entry["scientificName"]
         )
 
-        # Only add if this is a new species
         if key is not None and key not in unique_species_keys:
             unique_species_keys.add(key)
             master_species_list.append(species_entry)
 
-    # Create lookup dictionaries for the species data (might be useful for future extensions)
-    species_by_id = {
-        s["speciesId"]: s for s in master_species_list if s["speciesId"] is not None
-    }
-    species_by_name = {
-        s["scientificName"]: s
-        for s in master_species_list
-        if s["scientificName"] is not None
-    }
-
-    # Generate quadrats (usually at 4 positions: NW, NE, SW, SE)
+    # Generate quadrats
     quadrats = []
-    for position in [
+    positions = [
         "NorthwestCorner",
         "NortheastCorner",
         "SoutheastCorner",
         "SouthwestCorner",
-    ]:
+    ]
+
+    for position in positions:
         if random.random() < 0.9:  # 90% chance of including each position
-            # Maximum number of species is the smaller of 5 or the total number in the master list
+            # Select a random subset of species for this quadrat
             max_species = min(5, len(master_species_list))
             num_quadrat_species = random.randint(1, max_species)
+            selected_species = random.sample(master_species_list, num_quadrat_species)
 
-            # Randomly select species from the master list (without replacement for this quadrat)
-            selected_species_entries = random.sample(
-                master_species_list, num_quadrat_species
-            )
-            quadrat_species = []
-
-            # Create the quadrat species entries
-            for species_entry in selected_species_entries:
-                # Only include either speciesId or speciesName (not both)
-                if species_entry["speciesId"] is not None:
-                    quadrat_species.append(
-                        {
-                            "abundancePercent": random.randint(5, 95),
-                            "speciesId": species_entry["speciesId"],
-                            "speciesName": None,
-                        }
-                    )
-                else:
-                    quadrat_species.append(
-                        {
-                            "abundancePercent": random.randint(5, 95),
-                            "speciesId": None,
-                            "speciesName": species_entry["scientificName"],
-                        }
-                    )
+            # Create species entries for the quadrat
+            quadrat_species = [
+                {"abundancePercent": random.randint(5, 95), **get_species_refs(species)}
+                for species in selected_species
+            ]
 
             quadrats.append(
                 {
@@ -190,59 +103,37 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
             )
 
     # Generate trees
-    num_trees = random.randint(3, 15)
     trees = []
+    num_trees = random.randint(3, 15)
 
     for _ in range(num_trees):
-        tree_type = random.choice(["shrub", "tree"])
-        species_entry = random.choice(master_species_list)
+        species = random.choice(master_species_list)
+        species_refs = get_species_refs(species)
 
-        # Only include either speciesId or speciesName (not both)
-        if species_entry["speciesId"] is not None:
-            species_id = species_entry["speciesId"]
-            species_name = None
-        else:
-            species_id = None
-            species_name = species_entry["scientificName"]
-
-        if tree_type == "shrub":
+        if random.choice(["shrub", "tree"]) == "shrub":
             trees.append(
                 {
                     "growthForm": "shrub",
                     "description": f"Shrub {random.randint(1, 100)}",
-                    "isDead": random.choices([True, False], weights=[1, 9])[
-                        0
-                    ],  # 10% chance of being dead
-                    "speciesId": species_id,
-                    "speciesName": species_name,
+                    "isDead": random.choices([True, False], weights=[1, 9])[0],
                     "shrubDiameter": random.randint(5, 50),
+                    **species_refs,
                 }
             )
         else:
-            num_trunks = random.choices([1, random.randint(2, 5)], weights=[8, 2])[
-                0
-            ]  # 20% chance of multiple trunks
-            trees.append(
+            num_trunks = random.choices([1, random.randint(2, 5)], weights=[8, 2])[0]
+            trunks = [
                 {
-                    "growthForm": "tree",
-                    "speciesId": species_id,
-                    "speciesName": species_name,
-                    "trunks": [
-                        {
-                            "diameterAtBreastHeight": random_decimal(5, 100, 1),
-                            "height": random_decimal(1, 20, 1),
-                            "pointOfMeasurement": random_decimal(
-                                1.3, 1.5, 1
-                            ),  # Usually around 1.3-1.5m
-                            "description": f"Trunk {i+1}",
-                            "isDead": random.choices([True, False], weights=[1, 9])[
-                                0
-                            ],  # 10% chance of being dead
-                        }
-                        for i in range(num_trunks)
-                    ],
+                    "diameterAtBreastHeight": random_decimal(5, 100),
+                    "height": random_decimal(1, 20),
+                    "pointOfMeasurement": random_decimal(1.3, 1.5),
+                    "description": f"Trunk {i+1}",
+                    "isDead": random.choices([True, False], weights=[1, 9])[0],
                 }
-            )
+                for i in range(num_trunks)
+            ]
+
+            trees.append({"growthForm": "tree", "trunks": trunks, **species_refs})
 
     # Observable conditions from the enum
     observable_conditions = [
@@ -255,7 +146,7 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
         "UnfavorableWeather",
     ]
 
-    # Base payload
+    # Create the payload
     payload = {
         "biomassMeasurements": {
             "description": f"Observation {datetime.now().strftime('%Y-%m-%d')}",
@@ -291,8 +182,8 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
     if forest_type == "Mangrove":
         payload["biomassMeasurements"].update(
             {
-                "ph": random_decimal(6.0, 8.5, 1),
-                "salinity": random_decimal(15, 35, 1),
+                "ph": random_decimal(6.0, 8.5),
+                "salinity": random_decimal(15, 35),
                 "tide": random.choice(["High", "Low"]),
                 "tideTime": observed_time,
                 "waterDepth": random.randint(10, 100),
