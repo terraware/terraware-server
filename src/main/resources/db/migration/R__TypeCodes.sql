@@ -491,7 +491,8 @@ SET name = excluded.name,
     description = excluded.description,
     type_id = excluded.type_id,
     component_id = excluded.component_id,
-    reference = excluded.reference;
+    reference = excluded.reference,
+    is_publishable = excluded.is_publishable;
 
 INSERT INTO seed_fund_report_statuses (id, name)
 VALUES (1, 'New'),
