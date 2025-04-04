@@ -1,4 +1,4 @@
-package com.terraformation.backend.support.atlassian
+package com.terraformation.backend.tracking.mapbox
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
