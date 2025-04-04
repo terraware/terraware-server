@@ -6,7 +6,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.client.engine.java.Java
 import io.mockk.every
