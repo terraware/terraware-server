@@ -94,41 +94,24 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}")
-  @Operation(summary = "Update qualitative data for a report")
-  fun updateAcceleratorReportQualitatives(
+  @Operation(summary = "Update metric data and qualitative data for a report")
+  fun updateAcceleratorReportValues(
       @PathVariable reportId: ReportId,
-      @RequestBody payload: UpdateAcceleratorReportQualitativesRequestPayload,
-  ): SimpleSuccessResponsePayload {
-
-    reportStore.updateReportQualitatives(
-        reportId = reportId,
-        highlights = payload.highlights,
-        achievements = payload.achievements,
-        challenges = payload.challenges.map { it.toModel() },
-    )
-
-    return SimpleSuccessResponsePayload()
-  }
-
-  @ApiResponse200
-  @ApiResponse400
-  @ApiResponse404
-  @PostMapping("/{reportId}/metrics")
-  @Operation(summary = "Update metric entries for a report")
-  fun updateAcceleratorReportMetrics(
-      @PathVariable projectId: ProjectId,
-      @PathVariable reportId: ReportId,
-      @RequestBody payload: UpdateAcceleratorReportMetricsRequestPayload,
+      @RequestBody payload: UpdateAcceleratorReportValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
     val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
-    reportStore.updateReportMetrics(
+    reportStore.updateReport(
         reportId = reportId,
+        highlights = payload.highlights,
+        achievements = payload.achievements,
+        challenges = payload.challenges.map { it.toModel() },
         standardMetricEntries = standardMetricUpdates,
         systemMetricEntries = systemMetricUpdates,
-        projectMetricEntries = projectMetricUpdates)
+        projectMetricEntries = projectMetricUpdates,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -252,7 +235,10 @@ class ProjectReportsController(
       @RequestBody payload: UpdateProjectAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
     reportStore.updateProjectReportConfig(
-        projectId, payload.config.reportingStartDate, payload.config.reportingEndDate)
+        projectId,
+        payload.config.reportingStartDate,
+        payload.config.reportingEndDate,
+        payload.config.logframeUrl)
     return SimpleSuccessResponsePayload()
   }
 
@@ -266,20 +252,10 @@ class ProjectReportsController(
       @RequestBody payload: UpdateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
     reportStore.updateProjectReportConfig(
-        configId, payload.config.reportingStartDate, payload.config.reportingEndDate)
-    return SimpleSuccessResponsePayload()
-  }
-
-  @ApiResponse200
-  @ApiResponse400
-  @ApiResponse404
-  @PostMapping("/logframe")
-  @Operation(summary = "Update project logframe URL.")
-  fun updateLogframeUrl(
-      @PathVariable projectId: ProjectId,
-      @RequestBody payload: UpdateProjectLogframeUrlRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    reportStore.updateProjectLogframeUrl(projectId, payload.logframeUrl)
+        configId,
+        payload.config.reportingStartDate,
+        payload.config.reportingEndDate,
+        payload.config.logframeUrl)
     return SimpleSuccessResponsePayload()
   }
 
@@ -338,6 +314,7 @@ data class ExistingAcceleratorReportConfigPayload(
 data class UpdateAcceleratorReportConfigPayload(
     val reportingStartDate: LocalDate,
     val reportingEndDate: LocalDate,
+    val logframeUrl: URI?,
 )
 
 data class NewAcceleratorReportConfigPayload(
@@ -583,10 +560,6 @@ data class UpdateProjectAcceleratorReportConfigRequestPayload(
     val config: UpdateAcceleratorReportConfigPayload,
 )
 
-data class UpdateProjectLogframeUrlRequestPayload(
-    val logframeUrl: URI?,
-)
-
 data class ReviewAcceleratorReportRequestPayload(
     val review: ReportReviewPayload,
 )
@@ -597,13 +570,10 @@ data class ReviewAcceleratorReportMetricsRequestPayload(
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
-data class UpdateAcceleratorReportQualitativesRequestPayload(
+data class UpdateAcceleratorReportValuesRequestPayload(
     val highlights: String?,
     val achievements: List<String>,
     val challenges: List<ReportChallengePayload>,
-)
-
-data class UpdateAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,

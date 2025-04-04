@@ -13,6 +13,7 @@ import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
@@ -150,20 +151,37 @@ class ReportStore(
       projectId: ProjectId,
       reportingStartDate: LocalDate,
       reportingEndDate: LocalDate,
+      logframeUrl: URI?,
   ) {
     requirePermissions { manageProjectReportConfigs() }
-    updateConfigDatesByCondition(
-        PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(projectId), reportingStartDate, reportingEndDate)
+
+    dslContext.transaction { _ ->
+      updateConfigDatesByCondition(
+          PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(projectId), reportingStartDate, reportingEndDate)
+      upsertProjectLogframeUrl(projectId, logframeUrl)
+    }
   }
 
   fun updateProjectReportConfig(
       configId: ProjectReportConfigId,
       reportingStartDate: LocalDate,
       reportingEndDate: LocalDate,
+      logframeUrl: URI?,
   ) {
     requirePermissions { manageProjectReportConfigs() }
-    updateConfigDatesByCondition(
-        PROJECT_REPORT_CONFIGS.ID.eq(configId), reportingStartDate, reportingEndDate)
+    val projectId =
+        dslContext
+            .select(PROJECT_REPORT_CONFIGS.PROJECT_ID)
+            .from(PROJECT_REPORT_CONFIGS)
+            .where(PROJECT_REPORT_CONFIGS.ID.eq(configId))
+            .fetchOne(PROJECT_REPORT_CONFIGS.PROJECT_ID)
+            ?: throw ReportConfigNotFoundException(configId)
+
+    dslContext.transaction { _ ->
+      updateConfigDatesByCondition(
+          PROJECT_REPORT_CONFIGS.ID.eq(configId), reportingStartDate, reportingEndDate)
+      upsertProjectLogframeUrl(projectId, logframeUrl)
+    }
   }
 
   fun fetchProjectReportConfigs(
@@ -292,42 +310,11 @@ class ReportStore(
     eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId, report.projectId))
   }
 
-  fun updateProjectLogframeUrl(projectId: ProjectId, logframeUrl: URI?) {
-    requirePermissions { manageProjectReportConfigs() }
-    upsertProjectLogframeUrl(projectId, logframeUrl)
-  }
-
-  fun updateReportQualitatives(
+  fun updateReport(
       reportId: ReportId,
       highlights: String?,
       achievements: List<String>,
       challenges: List<ReportChallengeModel>,
-  ) {
-    requirePermissions { updateReport(reportId) }
-
-    val report = fetchOne(reportId, true)
-
-    if (!report.isEditable()) {
-      throw IllegalStateException(
-          "Cannot update qualitatives data for report $reportId of status ${report.status.name}")
-    }
-
-    dslContext.transaction { _ ->
-      mergeReportAchievements(reportId, achievements)
-      mergeReportChallenges(reportId, challenges)
-
-      dslContext
-          .update(REPORTS)
-          .set(REPORTS.HIGHLIGHTS, highlights)
-          .set(REPORTS.MODIFIED_BY, currentUser().userId)
-          .set(REPORTS.MODIFIED_TIME, clock.instant())
-          .where(REPORTS.ID.eq(reportId))
-          .execute()
-    }
-  }
-
-  fun updateReportMetrics(
-      reportId: ReportId,
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
       systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
@@ -338,20 +325,27 @@ class ReportStore(
 
     if (!report.isEditable()) {
       throw IllegalStateException(
-          "Cannot update metrics for report $reportId of status ${report.status.name}")
+          "Cannot update values for report $reportId of status ${report.status.name}")
     }
 
     report.validateMetricEntries(
         standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
 
     dslContext.transaction { _ ->
-      val rowsUpdated =
-          upsertReportStandardMetrics(reportId, standardMetricEntries, false) +
-              upsertReportSystemMetrics(reportId, systemMetricEntries, false) +
-              upsertReportProjectMetrics(reportId, projectMetricEntries, false)
-      if (rowsUpdated > 0) {
-        updateReportModifiedTime(reportId)
-      }
+      mergeReportAchievements(reportId, achievements)
+      mergeReportChallenges(reportId, challenges)
+
+      upsertReportStandardMetrics(reportId, standardMetricEntries, false)
+      upsertReportSystemMetrics(reportId, systemMetricEntries, false)
+      upsertReportProjectMetrics(reportId, projectMetricEntries, false)
+
+      dslContext
+          .update(REPORTS)
+          .set(REPORTS.HIGHLIGHTS, highlights)
+          .set(REPORTS.MODIFIED_BY, currentUser().userId)
+          .set(REPORTS.MODIFIED_TIME, clock.instant())
+          .where(REPORTS.ID.eq(reportId))
+          .execute()
     }
   }
 

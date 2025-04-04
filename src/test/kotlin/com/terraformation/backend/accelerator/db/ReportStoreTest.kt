@@ -1496,27 +1496,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class UpdateReportMetrics {
+  inner class UpdateReport {
     @Test
     fun `throws exception for non-organization users`() {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
       deleteOrganizationUser()
-      assertThrows<AccessDeniedException> { store.updateReportMetrics(reportId) }
-    }
-
-    @Test
-    fun `throws exception for project metrics not part of the project`() {
-      insertProjectReportConfig()
-      val reportId = insertReport(status = ReportStatus.NotSubmitted)
-
-      val otherProjectId = insertProject()
-      val metricId = insertProjectMetric(projectId = otherProjectId)
-
-      assertThrows<IllegalArgumentException> {
-        store.updateReportMetrics(
+      assertThrows<AccessDeniedException> {
+        store.updateReport(
             reportId = reportId,
-            projectMetricEntries = mapOf(metricId to ReportMetricEntryModel(target = 50)),
+            highlights = "Highlights",
+            achievements = emptyList(),
+            challenges = emptyList(),
         )
       }
     }
@@ -1528,9 +1519,157 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val submittedReportId = insertReport(status = ReportStatus.Submitted)
       val approvedReportId = insertReport(status = ReportStatus.Approved)
 
-      assertThrows<IllegalStateException> { store.updateReportMetrics(notNeededReportId) }
-      assertThrows<IllegalStateException> { store.updateReportMetrics(submittedReportId) }
-      assertThrows<IllegalStateException> { store.updateReportMetrics(approvedReportId) }
+      listOf(notNeededReportId, submittedReportId, approvedReportId).forEach {
+        assertThrows<IllegalStateException> {
+          store.updateReport(
+              reportId = it,
+              highlights = "Highlights",
+              achievements = emptyList(),
+              challenges = emptyList(),
+          )
+        }
+      }
+    }
+
+    @Test
+    fun `updates highlights, merges new achievements and challenges rows`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(highlights = "Existing Highlights")
+      val existingReportRow = reportsDao.fetchOneById(reportId)!!
+
+      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
+      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
+      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+
+      clock.instant = Instant.ofEpochSecond(30000)
+
+      store.updateReport(
+          reportId = reportId,
+          highlights = "New Highlights",
+          achievements =
+              listOf(
+                  "New Achievement Z",
+                  "New Achievement Y",
+              ),
+          challenges =
+              listOf(
+                  ReportChallengeModel(
+                      challenge = "New Challenge Z",
+                      mitigationPlan = "New Plan Z",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge X",
+                      mitigationPlan = "New Plan X",
+                  ),
+                  ReportChallengeModel(
+                      challenge = "New Challenge Y",
+                      mitigationPlan = "New Plan Y",
+                  ),
+              ),
+      )
+
+      assertTableEquals(
+          listOf(
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 0,
+                  achievement = "New Achievement Z",
+              ),
+              ReportAchievementsRecord(
+                  reportId = reportId,
+                  position = 1,
+                  achievement = "New Achievement Y",
+              ),
+          ),
+          "Report achievements table",
+      )
+
+      assertTableEquals(
+          listOf(
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 0,
+                  challenge = "New Challenge Z",
+                  mitigationPlan = "New Plan Z",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 1,
+                  challenge = "New Challenge X",
+                  mitigationPlan = "New Plan X",
+              ),
+              ReportChallengesRecord(
+                  reportId = reportId,
+                  position = 2,
+                  challenge = "New Challenge Y",
+                  mitigationPlan = "New Plan Y",
+              ),
+          ),
+          "Report achievements table",
+      )
+
+      assertTableEquals(
+          ReportsRecord(
+              existingReportRow.copy(
+                  highlights = "New Highlights",
+                  modifiedTime = clock.instant,
+                  modifiedBy = user.userId,
+              )),
+          "Report table")
+    }
+
+    @Test
+    fun `sets null and deletes achievements and challenges rows for empty params`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(highlights = "Existing Highlights")
+      val existingReportRow = reportsDao.fetchOneById(reportId)!!
+
+      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
+      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
+      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
+
+      insertReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+
+      clock.instant = Instant.ofEpochSecond(30000)
+
+      store.updateReport(
+          reportId = reportId,
+          highlights = null,
+          achievements = emptyList(),
+          challenges = emptyList(),
+      )
+
+      assertTableEmpty(REPORT_ACHIEVEMENTS, "Report achievements table")
+      assertTableEmpty(REPORT_CHALLENGES, "Report challenges table")
+
+      assertTableEquals(
+          ReportsRecord(
+              existingReportRow.copy(
+                  highlights = null,
+                  modifiedTime = clock.instant,
+                  modifiedBy = user.userId,
+              )),
+          "Report table")
     }
 
     @Test
@@ -1639,8 +1778,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // We add new entries for standard metric 2 and 3. Standard metric 1 and 4 are not modified.
       // We also add a new entry for project metric
-      store.updateReportMetrics(
+      store.updateReport(
           reportId = reportId,
+          highlights = null,
+          achievements = emptyList(),
+          challenges = emptyList(),
           standardMetricEntries =
               mapOf(
                   standardMetricId2 to
@@ -1803,184 +1945,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
           "Reports table")
-    }
-  }
-
-  @Nested
-  inner class UpdateReportQualitatives {
-    @Test
-    fun `throws exception for non-organization users`() {
-      insertProjectReportConfig()
-      val reportId = insertReport(status = ReportStatus.NotSubmitted)
-      deleteOrganizationUser()
-      assertThrows<AccessDeniedException> {
-        store.updateReportQualitatives(
-            reportId = reportId,
-            highlights = "Highlights",
-            achievements = emptyList(),
-            challenges = emptyList(),
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports not in NotSubmitted or NeedsUpdate`() {
-      insertProjectReportConfig()
-      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
-      val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val approvedReportId = insertReport(status = ReportStatus.Approved)
-
-      listOf(notNeededReportId, submittedReportId, approvedReportId).forEach {
-        assertThrows<IllegalStateException> {
-          store.updateReportQualitatives(
-              reportId = it,
-              highlights = "Highlights",
-              achievements = emptyList(),
-              challenges = emptyList(),
-          )
-        }
-      }
-    }
-
-    @Test
-    fun `updates highlights, merges new achievements and challenges rows`() {
-      insertProjectReportConfig()
-      val reportId = insertReport(highlights = "Existing Highlights")
-      val existingReportRow = reportsDao.fetchOneById(reportId)!!
-
-      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
-      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
-      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
-
-      insertReportChallenge(
-          position = 1,
-          challenge = "Existing Challenge B",
-          mitigationPlan = "Existing Plan B",
-      )
-      insertReportChallenge(
-          position = 0,
-          challenge = "Existing Challenge A",
-          mitigationPlan = "Existing Plan A",
-      )
-
-      clock.instant = Instant.ofEpochSecond(30000)
-
-      store.updateReportQualitatives(
-          reportId = reportId,
-          highlights = "New Highlights",
-          achievements =
-              listOf(
-                  "New Achievement Z",
-                  "New Achievement Y",
-              ),
-          challenges =
-              listOf(
-                  ReportChallengeModel(
-                      challenge = "New Challenge Z",
-                      mitigationPlan = "New Plan Z",
-                  ),
-                  ReportChallengeModel(
-                      challenge = "New Challenge X",
-                      mitigationPlan = "New Plan X",
-                  ),
-                  ReportChallengeModel(
-                      challenge = "New Challenge Y",
-                      mitigationPlan = "New Plan Y",
-                  ),
-              ),
-      )
-
-      assertTableEquals(
-          listOf(
-              ReportAchievementsRecord(
-                  reportId = reportId,
-                  position = 0,
-                  achievement = "New Achievement Z",
-              ),
-              ReportAchievementsRecord(
-                  reportId = reportId,
-                  position = 1,
-                  achievement = "New Achievement Y",
-              ),
-          ),
-          "Report achievements table",
-      )
-
-      assertTableEquals(
-          listOf(
-              ReportChallengesRecord(
-                  reportId = reportId,
-                  position = 0,
-                  challenge = "New Challenge Z",
-                  mitigationPlan = "New Plan Z",
-              ),
-              ReportChallengesRecord(
-                  reportId = reportId,
-                  position = 1,
-                  challenge = "New Challenge X",
-                  mitigationPlan = "New Plan X",
-              ),
-              ReportChallengesRecord(
-                  reportId = reportId,
-                  position = 2,
-                  challenge = "New Challenge Y",
-                  mitigationPlan = "New Plan Y",
-              ),
-          ),
-          "Report achievements table",
-      )
-
-      assertTableEquals(
-          ReportsRecord(
-              existingReportRow.copy(
-                  highlights = "New Highlights",
-                  modifiedTime = clock.instant,
-                  modifiedBy = user.userId,
-              )),
-          "Report table")
-    }
-
-    @Test
-    fun `sets null and deletes achievements and challenges rows for empty params`() {
-      insertProjectReportConfig()
-      val reportId = insertReport(highlights = "Existing Highlights")
-      val existingReportRow = reportsDao.fetchOneById(reportId)!!
-
-      insertReportAchievement(position = 0, achievement = "Existing Achievement A")
-      insertReportAchievement(position = 2, achievement = "Existing Achievement C")
-      insertReportAchievement(position = 1, achievement = "Existing Achievement B")
-
-      insertReportChallenge(
-          position = 1,
-          challenge = "Existing Challenge B",
-          mitigationPlan = "Existing Plan B",
-      )
-      insertReportChallenge(
-          position = 0,
-          challenge = "Existing Challenge A",
-          mitigationPlan = "Existing Plan A",
-      )
-
-      clock.instant = Instant.ofEpochSecond(30000)
-
-      store.updateReportQualitatives(
-          reportId = reportId,
-          highlights = null,
-          achievements = emptyList(),
-          challenges = emptyList(),
-      )
-
-      assertTableEmpty(REPORT_ACHIEVEMENTS, "Report achievements table")
-      assertTableEmpty(REPORT_CHALLENGES, "Report challenges table")
-
-      assertTableEquals(
-          ReportsRecord(
-              existingReportRow.copy(
-                  highlights = null,
-                  modifiedTime = clock.instant,
-                  modifiedBy = user.userId,
-              )),
-          "Report table")
     }
   }
 
@@ -2630,6 +2594,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             configId = configId,
             reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
             reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+            logframeUrl = null,
         )
       }
 
@@ -2638,6 +2603,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             projectId = projectId,
             reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
             reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
+            logframeUrl = null,
         )
       }
     }
@@ -2672,6 +2638,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           configId = configId,
           reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
           reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
+          logframeUrl = null,
       )
 
       assertTableEquals(
@@ -2813,6 +2780,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           configId = configId,
           reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
           reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
+          logframeUrl = null,
       )
 
       val reportIdsByYear =
@@ -2918,6 +2886,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `archives all existing reports and creates new reports if dates do not overlap`() {
+      deleteProjectAcceleratorDetails(projectId)
       val config =
           NewProjectReportConfigModel(
               id = null,
@@ -2939,6 +2908,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           configId = configId,
           reportingStartDate = LocalDate.of(2023, Month.MARCH, 13),
           reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
+          logframeUrl = URI("https://example.com/new"),
       )
 
       assertTableEquals(
@@ -2992,10 +2962,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(900),
               ),
           ))
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId, logframeUrl = URI("https://example.com/new")),
+          "Project accelerator details table")
     }
 
     @Test
     fun `updates all configs by projectId`() {
+      deleteProjectAcceleratorDetails(projectId)
+      insertProjectAcceleratorDetails(
+          projectId = projectId,
+          dealName = "Unchanged deal name",
+          logframeUrl = URI("https://example.com/existing"))
+
       val quarterlyConfigId =
           insertProjectReportConfig(
               projectId = projectId,
@@ -3016,6 +2997,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           reportingStartDate = LocalDate.of(2044, Month.MARCH, 13),
           reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
+          logframeUrl = URI("https://example.com/new"),
       )
 
       assertTableEquals(
@@ -3035,50 +3017,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
               ),
           ),
-          "Project report config tables")
-    }
-  }
-
-  @Nested
-  inner class UpdateProjectLogframeUrl {
-    @Test
-    fun `throws exception for non accelerator admin users`() {
-      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-
-      assertThrows<AccessDeniedException> {
-        store.updateProjectLogframeUrl(projectId = projectId, logframeUrl = null)
-      }
-    }
-
-    @Test
-    fun `updates existing project accelerator detail row`() {
-      deleteProjectAcceleratorDetails(projectId)
-      insertProjectAcceleratorDetails(
-          projectId = projectId,
-          dealName = "Unchanged deal name",
-          logframeUrl = URI("https://example.com/existing"))
-
-      store.updateProjectLogframeUrl(
-          projectId = projectId, logframeUrl = URI("https://example.com/new"))
+          "Project report config table")
 
       assertTableEquals(
           ProjectAcceleratorDetailsRecord(
               projectId = projectId,
               dealName = "Unchanged deal name",
-              logframeUrl = URI("https://example.com/new")))
-    }
-
-    @Test
-    fun `creates new project accelerator detail row`() {
-      deleteProjectAcceleratorDetails(projectId)
-
-      store.updateProjectLogframeUrl(
-          projectId = projectId, logframeUrl = URI("https://example.com/new"))
-
-      assertTableEquals(
-          ProjectAcceleratorDetailsRecord(
-              projectId = projectId, logframeUrl = URI("https://example.com/new")),
-      )
+              logframeUrl = URI("https://example.com/new")),
+          "Project accelerator details table")
     }
   }
 
