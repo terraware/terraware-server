@@ -49,14 +49,11 @@ def get_species_refs(species_entry):
         return {"speciesId": None, "speciesName": species_entry["scientificName"]}
 
 
-def generate_biomass_observation_payload(planting_site_id, forest_type, species_ids):
-    """Generate a random biomass observation payload."""
-    # Create timestamp for the observation
-    current_time = int(time.time())
-    observed_time = isoformat(current_time - random.randint(0, 86400))
+def generate_unique_species_list(species_ids, num_species=None):
+    """Generate a unique list of random species entries."""
+    if num_species is None:
+        num_species = random.randint(5, 15)
 
-    # Generate unique master species list
-    num_species = random.randint(5, 15)
     unique_species_keys = set()
     master_species_list = []
 
@@ -72,7 +69,11 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
             unique_species_keys.add(key)
             master_species_list.append(species_entry)
 
-    # Generate quadrats
+    return master_species_list
+
+
+def generate_quadrats(master_species_list):
+    """Generate random quadrats with species from the master list."""
     quadrats = []
     positions = [
         "NorthwestCorner",
@@ -102,10 +103,15 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
                 }
             )
 
-    # Generate trees
-    trees = []
-    num_trees = random.randint(3, 15)
+    return quadrats
 
+
+def generate_trees(master_species_list, num_trees=None):
+    """Generate random trees using species from the master list."""
+    if num_trees is None:
+        num_trees = random.randint(3, 15)
+
+    trees = []
     for _ in range(num_trees):
         species = random.choice(master_species_list)
         species_refs = get_species_refs(species)
@@ -135,6 +141,59 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
 
             trees.append({"growthForm": "tree", "trunks": trunks, **species_refs})
 
+    return trees
+
+
+def generate_biomass_measurements(
+    forest_type, master_species_list, quadrats, trees, observed_time=None
+):
+    """Generate the biomass measurements part of the payload."""
+    measurements = {
+        "description": f"Observation {datetime.now().strftime('%Y-%m-%d')}",
+        "forestType": forest_type,
+        "herbaceousCoverPercent": random.randint(10, 90),
+        "smallTreeCountLow": random.randint(5, 20),
+        "smallTreeCountHigh": random.randint(25, 50),
+        "soilAssessment": random.choice(
+            [
+                "Healthy with good moisture",
+                "Dry and compacted",
+                "Rich in organic matter",
+                "Sandy with poor nutrients",
+                "Clay-like with moderate drainage",
+            ]
+        ),
+        "quadrats": quadrats,
+        "species": master_species_list,
+        "trees": trees,
+    }
+
+    # Add mangrove-specific fields if needed
+    if forest_type == "Mangrove" and observed_time is not None:
+        measurements.update(
+            {
+                "ph": random_decimal(6.0, 8.5),
+                "salinity": random_decimal(15, 35),
+                "tide": random.choice(["High", "Low"]),
+                "tideTime": observed_time,
+                "waterDepth": random.randint(10, 100),
+            }
+        )
+
+    return measurements
+
+
+def generate_biomass_observation_payload(planting_site_id, forest_type, species_ids):
+    """Generate a random biomass observation payload."""
+    # Create timestamp for the observation
+    current_time = int(time.time())
+    observed_time = isoformat(current_time - random.randint(0, 86400))
+
+    # Generate components of the observation
+    master_species_list = generate_unique_species_list(species_ids)
+    quadrats = generate_quadrats(master_species_list)
+    trees = generate_trees(master_species_list)
+
     # Observable conditions from the enum
     observable_conditions = [
         "AnimalDamage",
@@ -148,25 +207,9 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
 
     # Create the payload
     payload = {
-        "biomassMeasurements": {
-            "description": f"Observation {datetime.now().strftime('%Y-%m-%d')}",
-            "forestType": forest_type,
-            "herbaceousCoverPercent": random.randint(10, 90),
-            "smallTreeCountLow": random.randint(5, 20),
-            "smallTreeCountHigh": random.randint(25, 50),
-            "soilAssessment": random.choice(
-                [
-                    "Healthy with good moisture",
-                    "Dry and compacted",
-                    "Rich in organic matter",
-                    "Sandy with poor nutrients",
-                    "Clay-like with moderate drainage",
-                ]
-            ),
-            "quadrats": quadrats,
-            "species": master_species_list,
-            "trees": trees,
-        },
+        "biomassMeasurements": generate_biomass_measurements(
+            forest_type, master_species_list, quadrats, trees, observed_time
+        ),
         "observationType": "Biomass Measurements",
         "plantingSiteId": planting_site_id,
         "observedTime": observed_time,
@@ -177,18 +220,6 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
         "conditions": random.sample(observable_conditions, k=random.randint(1, 3)),
         "notes": f"Biomass observation on {datetime.now().strftime('%Y-%m-%d')}",
     }
-
-    # Add mangrove-specific fields if needed
-    if forest_type == "Mangrove":
-        payload["biomassMeasurements"].update(
-            {
-                "ph": random_decimal(6.0, 8.5),
-                "salinity": random_decimal(15, 35),
-                "tide": random.choice(["High", "Low"]),
-                "tideTime": observed_time,
-                "waterDepth": random.randint(10, 100),
-            }
-        )
 
     return payload
 
