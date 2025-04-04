@@ -866,15 +866,17 @@ abstract class DatabaseBackedTest {
       row: ProjectMetricsRow = ProjectMetricsRow(),
       component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
       description: String? = row.description,
+      isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
-      reference: String = row.reference ?: "1.1",
       projectId: ProjectId = row.projectId ?: inserted.projectId,
+      reference: String = row.reference ?: "1.1",
       type: MetricType = row.typeId ?: MetricType.Impact,
   ): ProjectMetricId {
     val rowWithDefaults =
         row.copy(
             componentId = component,
             description = description,
+            isPublishable = isPublishable,
             name = name,
             reference = reference,
             projectId = projectId,
@@ -2398,6 +2400,7 @@ abstract class DatabaseBackedTest {
       row: StandardMetricsRow = StandardMetricsRow(),
       component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
       description: String? = row.description,
+      isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
       reference: String = row.reference ?: "1.1",
       type: MetricType = row.typeId ?: MetricType.Impact,
@@ -2406,6 +2409,7 @@ abstract class DatabaseBackedTest {
         row.copy(
             componentId = component,
             description = description,
+            isPublishable = isPublishable,
             name = name,
             reference = reference,
             typeId = type,
