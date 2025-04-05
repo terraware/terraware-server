@@ -82,28 +82,35 @@ class MapboxService(
 
   /** Return elevation in meter given a point */
   fun getElevation(point: Point): Double {
-    // Tile with height data.
-    // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
-    val tileName = "mapbox-terrain-dem-v1"
-
     // Zoom level for maximum precision
     val zoom = 14
 
     val slippyCoordinate = convertToSlippy(point, zoom)
+    val tile = retrieveMapboxTile(slippyCoordinate)
 
-    log.info("Slippy coordinate for point=$point is $slippyCoordinate")
-
-    val tile = retrieveMapboxTile(mapboxUrl(slippyCoordinate.mapboxEndpoint(tileName)))
-
-    return readHeightFromTile(tile, slippyCoordinate.pixelX, slippyCoordinate.pixelY)
+    // If a tile does not exist, default to sea level.
+    return tile?.let { readHeightFromTile(it, slippyCoordinate.pixelX, slippyCoordinate.pixelY) }
+        ?: 0.0
   }
 
-  private fun retrieveMapboxTile(url: URL): BufferedImage {
+  private fun retrieveMapboxTile(slippyCoordinate: SlippyCoordinate): BufferedImage? {
+    // Tile with height data.
+    // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
+    val tilesetName = "mapbox-terrain-dem-v1"
+    val url = mapboxUrl(slippyCoordinate.mapboxEndpoint(tilesetName))
+
     return runBlocking {
       try {
         val byteArray = httpClient.get(url).body<ByteArray>()
         ImageIO.read(ByteArrayInputStream(byteArray))
       } catch (e: ClientRequestException) {
+        if (e.response.body<MapboxClientErrorResponsePayload>().message == "Tile not found") {
+          // This is a special case for this Mapbox tile set when the requested tile is entirely
+          // surrounded by water. Return null for no tile, instead of raising an error.
+          return@runBlocking null
+        }
+
+        // All other errors will be thrown.
         log.error("HTTP ${e.response.status} when fetching Mapbox tile at $url")
         log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
         throw MapboxRequestFailedException(e.response.status)
@@ -176,4 +183,6 @@ class MapboxService(
   data class RetrieveTokenResponsePayload(val code: String, val token: Token) {
     data class Token(val user: String)
   }
+
+  data class MapboxClientErrorResponsePayload(val message: String)
 }
