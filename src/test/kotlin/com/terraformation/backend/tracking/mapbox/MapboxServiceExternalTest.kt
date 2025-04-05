@@ -10,6 +10,7 @@ import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.client.engine.java.Java
 import io.mockk.every
 import java.net.URI
+import kotlin.math.abs
 import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -75,7 +76,7 @@ class MapboxServiceExternalTest : RunsAsUser {
       percentThreshold: Double = 1.0,
       message: String = ""
   ) {
-    val difference = Math.abs(actual - expected)
+    val difference = abs(actual - expected)
     val relativeDifference = difference / Math.abs(expected) * 100
     if (relativeDifference > percentThreshold) {
       assertEquals(expected, actual, message)
@@ -100,7 +101,15 @@ class MapboxServiceExternalTest : RunsAsUser {
           ElevationDataPoint(
               "Mount Whitney", geometryFactory.createPoint(Coordinate(-118.2922, 36.5785)), 4412.4),
           ElevationDataPoint(
-              "Sahara Desert", geometryFactory.createPoint(Coordinate(25.6628, 23.4162)), 982.6))
+              "Sahara Desert", geometryFactory.createPoint(Coordinate(25.6628, 23.4162)), 982.6),
+          // Some ocean locations have tiles but the tile set will return 0.0 elevation instead of
+          // the actual depth.
+          ElevationDataPoint(
+              "Mariana Trench", geometryFactory.createPoint(Coordinate(142.1995, 11.3493)), 0.0),
+          // This is a random location in the Pacific Ocean, which has no tile data. The service
+          // will return 0.0.
+          ElevationDataPoint(
+              "Pacific Ocean", geometryFactory.createPoint(Coordinate(-155.45, 24.79)), 0.0))
     }
   }
 }
