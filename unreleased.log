@@ -1,3 +1,5 @@
+9487026eb4a Added Mapbox service to get elevation on one point (#2994)
+b8df5ef0f50 Simplified reports API (#2993)
 7af9af1971e Update plugin org.gradle.toolchains.foojay-resolver-convention to v0.9.0 (#2991)
 2017580cf6b Update geoToolsVersion to v33 (#2996)
 6e8d2923388 Add script to create biomass observations (#2992)

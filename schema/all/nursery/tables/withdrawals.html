@@ -450,12 +450,12 @@
                                     <td>(((purpose_id &#61; 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL)))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_destination_only_for_transfers</td>
-                                    <td>((destination_facility_id IS NULL) OR (purpose_id &#61; 1))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_destination_only_for_transfers</td>
+                                    <td>((destination_facility_id IS NULL) OR (purpose_id &#61; 1))</td>
                                 </tr>
                                 </tbody>
                             </table>
