@@ -73,8 +73,8 @@ class MapboxService(
 
         responsePayload.token
       } catch (e: ClientRequestException) {
-        log.error("Mapbox tile request failed with HTTP ${e.response.status}")
-        log.info("Mapbox tile error response payload: ${e.response.bodyAsText()}")
+        log.error("Mapbox token request failed with HTTP ${e.response.status}")
+        log.info("Mapbox token error response payload: ${e.response.bodyAsText()}")
         throw MapboxRequestFailedException(e.response.status)
       }
     }
@@ -124,11 +124,8 @@ class MapboxService(
    */
   private fun readHeightFromTile(tileImage: BufferedImage, pixelX: Int, pixelY: Int): Double {
     val rgb = tileImage.getRGB(pixelX, pixelY)
-    val red = (rgb shr 16) and 0xFF
-    val green = (rgb shr 8) and 0xFF
-    val blue = rgb and 0xFF
+    val offset = BigDecimal((rgb and 0xFFFFFF) * 0.1)
 
-    val offset = BigDecimal((red * 256 * 256 + green * 256 + blue) * 0.1)
     val elevation = BigDecimal(-10000) + offset
     return elevation.setScale(1, RoundingMode.HALF_UP).toDouble()
   }
