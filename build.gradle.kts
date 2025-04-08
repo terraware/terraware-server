@@ -140,7 +140,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
-  runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.0")
+  runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.1")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
   testImplementation("io.mockk:mockk:1.13.17")
