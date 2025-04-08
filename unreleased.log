@@ -1,3 +1,4 @@
+4cf0784ccc7 SW-6242 Make biomass observation enums localizable (#2998)
 9487026eb4a Added Mapbox service to get elevation on one point (#2994)
 b8df5ef0f50 Simplified reports API (#2993)
 7af9af1971e Update plugin org.gradle.toolchains.foojay-resolver-convention to v0.9.0 (#2991)

@@ -331,6 +331,11 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td><a href='tables/facilities.html'>facilities</a></td>
+                                        <td>facilities_description_check</td>
+                                        <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>country_code_matches_subdivision</td>
                                         <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
@@ -359,11 +364,6 @@
                                         <td><a href='tables/organizations.html'>organizations</a></td>
                                         <td>other_type_details_only_for_other</td>
                                         <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/facilities.html'>facilities</a></td>
-                                        <td>facilities_description_check</td>
-                                        <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/device_managers.html'>device_managers</a></td>
