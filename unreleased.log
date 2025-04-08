@@ -1,3 +1,5 @@
+6fee05e231a Update dependency net.logstash.logback:logstash-logback-encoder to v8.1 (#3000)
+701a2d4af7d Update database dependencies (#2995)
 eb69e9f6b59 SW-6242 Add biomass details to search API (#2999)
 4cf0784ccc7 SW-6242 Make biomass observation enums localizable (#2998)
 9487026eb4a Added Mapbox service to get elevation on one point (#2994)
