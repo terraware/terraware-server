@@ -6,10 +6,8 @@ CREATE TABLE funder.funder_reports (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK (end_date > start_date),
     highlights TEXT,
-    created_by BIGINT NOT NULL REFERENCES users,
-    created_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    modified_by BIGINT NOT NULL REFERENCES users,
-    modified_time TIMESTAMP WITH TIME ZONE NOT NULL
+    published_by BIGINT NOT NULL REFERENCES users,
+    published_time TIMESTAMP WITH TIME ZONE NOT NULL
 );
 CREATE INDEX ON funder.funder_reports(project_id);
 
