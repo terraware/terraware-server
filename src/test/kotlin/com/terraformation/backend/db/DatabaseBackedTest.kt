@@ -2773,7 +2773,7 @@ abstract class DatabaseBackedTest {
       row: RecordedTreesRow = RecordedTreesRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
       treeNumber: Int = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
       trunkNumber: Int =
           row.trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to treeNumber, 1),

@@ -449,8 +449,23 @@ val EMBEDDABLES =
             .withTables("nursery.species_projects")
             .withColumns("species_id", "project_id"),
         EmbeddableDefinitionType()
+            .withName("observation_biomass_quadrat_species_id")
+            .withTables("tracking.observation_biomass_quadrat_species")
+            .withColumns(
+                "observation_id", "monitoring_plot_id", "position_id", "biomass_species_id"),
+        EmbeddableDefinitionType()
             .withName("observation_plot_id")
-            .withTables("tracking.observation_plots")
+            .withTables(
+                listOf(
+                        "observation_biomass_details",
+                        "observation_biomass_quadrat_details",
+                        "observation_biomass_quadrat_species",
+                        "observation_biomass_species",
+                        "observation_plot_conditions",
+                        "observation_plots",
+                        "recorded_trees",
+                    )
+                    .joinToString("|", prefix = "tracking."))
             .withColumns("observation_id", "monitoring_plot_id"),
         EmbeddableDefinitionType()
             .withName("organization_internal_tag_id")

@@ -6,7 +6,13 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.MangroveTide
+import com.terraformation.backend.db.tracking.ObservableCondition
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
@@ -159,6 +165,45 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             endDate = LocalDate.of(2024, 2, 28))
     insertObservationPlot(monitoringPlotId = monitoringPlotId5, isPermanent = true)
 
+    val observationId3 =
+        insertObservation(
+            plantingSiteId = plantingSiteId,
+            startDate = LocalDate.of(2025, 2, 1),
+            endDate = LocalDate.of(2025, 2, 1),
+            observationType = ObservationType.BiomassMeasurements,
+            completedTime = Instant.ofEpochSecond(7),
+        )
+    insertObservationPlot(monitoringPlotId = exteriorPlotId9, isPermanent = false)
+    insertObservationBiomassDetails(
+        description = "Biomass description",
+        forestType = BiomassForestType.Mangrove,
+        herbaceousCoverPercent = 33,
+        monitoringPlotId = exteriorPlotId9,
+        ph = BigDecimal("0.8"),
+        salinityPpt = BigDecimal(15),
+        smallTreesCountHigh = 50,
+        smallTreesCountLow = 11,
+        soilAssessment = "Looks like dirt to me",
+        tideId = MangroveTide.Low,
+        tideTime = Instant.ofEpochSecond(1),
+        waterDepthCm = 11,
+    )
+    insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
+    insertObservationPlotCondition(condition = ObservableCondition.Pests)
+    insertObservationBiomassSpecies(isInvasive = true, scientificName = "Species 2")
+    insertRecordedTree(
+        description = "Tree description",
+        diameterAtBreastHeightCm = BigDecimal("30.1"),
+        heightM = BigDecimal("13.1"),
+        pointOfMeasurementM = BigDecimal("1.3"),
+        treeGrowthForm = TreeGrowthForm.Tree,
+    )
+    insertObservationBiomassQuadratSpecies(
+        abundancePercent = 33,
+        biomassSpeciesId = inserted.biomassSpeciesId,
+        position = ObservationPlotPosition.NorthwestCorner,
+    )
+
     val expected =
         SearchResults(
             listOf(
@@ -283,6 +328,75 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "monitoringPlot" to
                                                 mapOf(
                                                     "id" to "$monitoringPlotId5",
+                                                ),
+                                        ),
+                                    ),
+                            ),
+                            mapOf(
+                                "completedTime" to "1970-01-01T00:00:07Z",
+                                "createdTime" to "1970-01-01T00:00:00Z",
+                                "endDate" to "2025-02-01",
+                                "id" to "$observationId3",
+                                "plantingSiteHistoryId" to "$plantingSiteHistoryId",
+                                "startDate" to "2025-02-01",
+                                "observationPlots" to
+                                    listOf(
+                                        mapOf(
+                                            "biomassDetails" to
+                                                mapOf(
+                                                    "description" to "Biomass description",
+                                                    "forestType" to "Mangrove",
+                                                    "herbaceousCoverPercent" to "33",
+                                                    "numPlants" to "1",
+                                                    "numSpecies" to "1",
+                                                    "ph" to "0.8",
+                                                    "salinity" to "15",
+                                                    "smallTreesCountHigh" to "50",
+                                                    "smallTreesCountLow" to "11",
+                                                    "soilAssessment" to "Looks like dirt to me",
+                                                    "species" to
+                                                        listOf(
+                                                            mapOf(
+                                                                "isInvasive" to "true",
+                                                                "isThreatened" to "false",
+                                                                "name" to "Species 2",
+                                                                "quadratSpecies" to
+                                                                    listOf(
+                                                                        mapOf(
+                                                                            "abundancePercent" to
+                                                                                "33",
+                                                                            "position" to
+                                                                                "Northwest",
+                                                                        ),
+                                                                    ),
+                                                            ),
+                                                        ),
+                                                    "tide" to "Low",
+                                                    "tideTime" to "1970-01-01T00:00:01Z",
+                                                    "waterDepth" to "11",
+                                                ),
+                                            "conditions" to
+                                                listOf(
+                                                    mapOf("condition" to "Animal Damage"),
+                                                    mapOf("condition" to "Pests"),
+                                                ),
+                                            "isPermanent" to "false",
+                                            "monitoringPlot" to
+                                                mapOf(
+                                                    "id" to "$exteriorPlotId9",
+                                                ),
+                                            "recordedTrees" to
+                                                listOf(
+                                                    mapOf(
+                                                        "description" to "Tree description",
+                                                        "diameterAtBreastHeight" to "30.1",
+                                                        "growthForm" to "Tree",
+                                                        "height" to "13.1",
+                                                        "isDead" to "false",
+                                                        "pointOfMeasurement" to "1.3",
+                                                        "treeNumber" to "1",
+                                                        "trunkNumber" to "1",
+                                                    ),
                                                 ),
                                         ),
                                     ),
@@ -471,11 +585,39 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.createdTime",
                 "observations.endDate",
                 "observations.id",
+                "observations.observationPlots.biomassDetails.description",
+                "observations.observationPlots.biomassDetails.forestType",
+                "observations.observationPlots.biomassDetails.herbaceousCoverPercent",
+                "observations.observationPlots.biomassDetails.numPlants",
+                "observations.observationPlots.biomassDetails.numSpecies",
+                "observations.observationPlots.biomassDetails.ph",
+                "observations.observationPlots.biomassDetails.smallTreesCountHigh",
+                "observations.observationPlots.biomassDetails.smallTreesCountLow",
+                "observations.observationPlots.biomassDetails.salinity",
+                "observations.observationPlots.biomassDetails.soilAssessment",
+                "observations.observationPlots.biomassDetails.species.isInvasive",
+                "observations.observationPlots.biomassDetails.species.isThreatened",
+                "observations.observationPlots.biomassDetails.species.name",
+                "observations.observationPlots.biomassDetails.species.quadratSpecies.abundancePercent",
+                "observations.observationPlots.biomassDetails.species.quadratSpecies.position",
+                "observations.observationPlots.biomassDetails.tide",
+                "observations.observationPlots.biomassDetails.tideTime",
+                "observations.observationPlots.biomassDetails.waterDepth",
                 "observations.observationPlots.claimedTime",
                 "observations.observationPlots.completedTime",
+                "observations.observationPlots.conditions.condition",
                 "observations.observationPlots.isPermanent",
                 "observations.observationPlots.monitoringPlot.id",
                 "observations.observationPlots.notes",
+                "observations.observationPlots.recordedTrees.description",
+                "observations.observationPlots.recordedTrees.diameterAtBreastHeight",
+                "observations.observationPlots.recordedTrees.growthForm",
+                "observations.observationPlots.recordedTrees.height",
+                "observations.observationPlots.recordedTrees.isDead",
+                "observations.observationPlots.recordedTrees.pointOfMeasurement",
+                "observations.observationPlots.recordedTrees.shrubDiameter",
+                "observations.observationPlots.recordedTrees.treeNumber",
+                "observations.observationPlots.recordedTrees.trunkNumber",
                 "observations.plantingSiteHistoryId",
                 "observations.startDate",
                 "plantingSeasons.endDate",
