@@ -438,6 +438,26 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           "Monitoring plot in moved subzone")
     }
 
+    @Test
+    fun `moves subzone from deleted zone to new one, perhaps because the zone was renamed`() {
+      val initial = newSite {
+        zone(name = "A", numPermanent = 1) { subzone(name = "Subzone") { cluster() } }
+      }
+
+      val desired = newSite { zone(name = "B", numPermanent = 1) { subzone(name = "Subzone") } }
+
+      val (edited, existing) = runScenario(initial = initial, desired = desired)
+
+      val existingSubzone = existing.plantingZones[0].plantingSubzones[0]
+      val editedSubzone = edited.plantingZones[0].plantingSubzones[0]
+
+      assertEquals(existingSubzone.id, editedSubzone.id, "ID of moved subzone")
+      assertEquals(
+          existingSubzone.monitoringPlots[0].copy(permanentCluster = 1),
+          editedSubzone.monitoringPlots[0],
+          "Monitoring plot in moved subzone")
+    }
+
     private fun createSite(initial: NewPlantingSiteModel): ExistingPlantingSiteModel {
       clock.instant = Instant.EPOCH
 
