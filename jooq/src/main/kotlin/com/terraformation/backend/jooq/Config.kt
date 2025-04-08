@@ -204,17 +204,12 @@ val ENUM_TABLES =
                     "biomass_forest_types", listOf("observation_biomass_details\\.forest_type_id")),
                 EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
                 EnumTable(
-                    "observable_conditions",
-                    listOf("observation_plot_conditions\\.condition_id"),
-                    isLocalizable = false),
+                    "observable_conditions", listOf("observation_plot_conditions\\.condition_id")),
                 EnumTable(
                     "observation_photo_types",
                     listOf("observation_photos\\.type_id"),
                     isLocalizable = false),
-                EnumTable(
-                    "observation_plot_positions",
-                    listOf("tracking\\..*\\.position_id"),
-                    isLocalizable = false),
+                EnumTable("observation_plot_positions", listOf("tracking\\..*\\.position_id")),
                 EnumTable(
                     "observation_plot_statuses",
                     listOf("observation_plots\\.status_id"),
