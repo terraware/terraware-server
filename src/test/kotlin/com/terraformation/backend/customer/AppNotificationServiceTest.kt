@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -560,6 +561,39 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "It's time to schedule your next planting season",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
         role = Role.Manager)
+  }
+
+  @Test
+  fun `should store accelerator report upcoming notification for organization admins`() {
+    val admin = insertUser()
+    val owner = insertUser()
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+
+    val projectId = insertProject()
+    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertProjectReportConfig()
+    val reportId =
+        insertReport(
+            projectId = projectId,
+            status = ReportStatus.Submitted,
+            startDate = LocalDate.of(2025, Month.JANUARY, 1),
+            endDate = LocalDate.of(2025, Month.MARCH, 31),
+        )
+
+    val commonValues =
+        NotificationsRow(
+            notificationTypeId = NotificationType.AcceleratorReportSubmitted,
+            title = "2025 Q1 Report Due",
+            body = "Your 2025 Q1 Report is due.",
+            localUrl = webAppUrls.acceleratorReport(reportId, projectId),
+            organizationId = organizationId,
+            userId = admin)
+
+    testMultipleEventNotifications(
+        AcceleratorReportUpcomingEvent(reportId),
+        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
   }
 
   @Test

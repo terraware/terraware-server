@@ -521,7 +521,7 @@ class AppNotificationService(
           project.organizationId,
           NotificationType.AcceleratorReportSubmitted,
           renderMessage,
-          webAppUrls.acceleratorConsoleReport(event.reportId, report.projectId),
+          webAppUrls.acceleratorReport(event.reportId, report.projectId),
           setOf(Role.Owner, Role.Admin))
     }
   }
