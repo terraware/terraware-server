@@ -610,6 +610,7 @@
       <table name="project_metrics" remarks="Metrics specific to one project to report on." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_metric_id" foreignKey="report_project_metrics_project_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_metrics"/>
+            <child column="project_metric_id" foreignKey="published_report_project_metrics_project_metric_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_project_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_metrics_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
@@ -794,6 +795,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="report_frequency_id" foreignKey="project_report_configs_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <child column="report_frequency_id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="report_frequency_id" foreignKey="published_reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -852,6 +854,7 @@
       <table name="report_quarters" remarks="(Enum) Quarters of accelerator project reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="report_quarter_id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="report_quarter_id" foreignKey="published_reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -941,6 +944,7 @@
             <child column="report_id" foreignKey="report_project_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_metrics"/>
             <child column="report_id" foreignKey="report_standard_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_metrics"/>
             <child column="report_id" foreignKey="report_system_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_system_metrics"/>
+            <child column="report_id" foreignKey="published_reports_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="config_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
@@ -1000,6 +1004,7 @@
       <table name="standard_metrics" remarks="Standard non-system metrics for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="standard_metric_id" foreignKey="report_standard_metrics_standard_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_metrics"/>
+            <child column="standard_metric_id" foreignKey="published_report_standard_metrics_standard_metric_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_standard_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="standard_metrics_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="metric_types"/>
@@ -1114,6 +1119,7 @@
       <table name="system_metrics" remarks="(Enum) Accelerator report metrics, for which data are collected from Terraware." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="system_metric_id" foreignKey="report_system_metrics_system_metric_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_system_metrics"/>
+            <child column="system_metric_id" foreignKey="published_report_system_metrics_system_metric_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_system_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">

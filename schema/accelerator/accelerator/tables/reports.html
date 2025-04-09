@@ -155,6 +155,11 @@
                                                 <td class="constraint detail">report_system_metrics_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="published_reports.report_id references reports.id via published_reports_report_id_fkey"><a href='../../funder/tables/published_reports.html'>published_reports</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_reports_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -551,12 +556,12 @@
                                     <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
                                 </tr>
                                 <tr>
-                                    <td>reports_check</td>
-                                    <td>(end_date &gt; start_date)</td>
-                                </tr>
-                                <tr>
                                     <td>submitted_status</td>
                                     <td>(((status_id &#61; 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id &#61; 2) OR (status_id &#61; 3) OR (status_id &#61; 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id &#61; 5))</td>
+                                </tr>
+                                <tr>
+                                    <td>reports_check</td>
+                                    <td>(end_date &gt; start_date)</td>
                                 </tr>
                                 </tbody>
                             </table>
