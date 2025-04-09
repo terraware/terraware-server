@@ -36,7 +36,6 @@ import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -503,85 +502,6 @@ class ObservationService(
   /** Updates observations, if any, when a site's map is edited. */
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    when (event.plantingSiteEdit.behavior) {
-      PlantingSiteEditBehavior.Restricted -> onRestrictedSiteEdit(event)
-      PlantingSiteEditBehavior.Flexible -> onFlexibleSiteEdit(event)
-    }
-  }
-
-  private fun onRestrictedSiteEdit(event: PlantingSiteMapEditedEvent) {
-    dslContext.transaction { _ ->
-      // We no longer want plants from past observations of the removed plots to show up in the
-      // per-species totals.
-      event.monitoringPlotReplacements.removedMonitoringPlotIds.forEach {
-        observationStore.removePlotFromTotals(it)
-      }
-
-      // If there's an observation in progress, try to replace any removed plots with new ones.
-      val plantingSiteId = event.plantingSiteEdit.existingModel.id
-      val observation =
-          observationStore.fetchInProgressObservation(plantingSiteId) ?: return@transaction
-      val observationId = observation.id
-      val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
-
-      val existingPermanentPlotIds =
-          observationPlots.filter { it.model.isPermanent }.map { it.model.monitoringPlotId }
-      val removedObservationPlots =
-          observationPlots.filter {
-            it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
-          }
-      val removedPermanentPlots = removedObservationPlots.filter { it.model.isPermanent }
-      val removedTemporaryPlots = removedObservationPlots.filterNot { it.model.isPermanent }
-
-      observationStore.removePlotsFromObservation(
-          observationId, removedPermanentPlots.map { it.model.monitoringPlotId })
-
-      plantingSiteStore.ensurePermanentClustersExist(plantingSiteId)
-
-      removedTemporaryPlots.forEach { plot ->
-        replaceMonitoringPlot(
-            observationId,
-            plot.model.monitoringPlotId,
-            "Planting site map edited",
-            ReplacementDuration.LongTerm,
-            true)
-      }
-
-      val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-
-      plantingSite.plantingZones.forEach { zone ->
-        val clusterNumbersWithPlotsInUnrequestedSubzones =
-            zone.plantingSubzones
-                .filterNot { it.id in observation.requestedSubzoneIds }
-                .flatMap { subzone -> subzone.monitoringPlots.mapNotNull { it.permanentCluster } }
-                .toSet()
-
-        val newPermanentPlotsInClustersWithoutPlotsInUnrequestedSubzones =
-            zone.plantingSubzones
-                .flatMap { subzone ->
-                  subzone.monitoringPlots.filter { plot ->
-                    val plotNotAlreadyInObservation = plot.id !in existingPermanentPlotIds
-                    val clusterNumberIsCandidateForObservation =
-                        plot.permanentCluster != null &&
-                            plot.permanentCluster <= zone.numPermanentClusters
-                    val allPlotsInClusterAreInRequestedSubzones =
-                        plot.permanentCluster !in clusterNumbersWithPlotsInUnrequestedSubzones
-
-                    plot.isAvailable &&
-                        plotNotAlreadyInObservation &&
-                        clusterNumberIsCandidateForObservation &&
-                        allPlotsInClusterAreInRequestedSubzones
-                  }
-                }
-                .map { it.id }
-
-        observationStore.addPlotsToObservation(
-            observationId, newPermanentPlotsInClustersWithoutPlotsInUnrequestedSubzones, true)
-      }
-    }
-  }
-
-  private fun onFlexibleSiteEdit(event: PlantingSiteMapEditedEvent) {
     dslContext.transaction { _ ->
       // Abandon any active observations with incomplete plots in planting zones that are affected
       // by the edit.

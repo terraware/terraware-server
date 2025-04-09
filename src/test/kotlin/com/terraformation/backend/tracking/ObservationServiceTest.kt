@@ -37,9 +37,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRecord
@@ -63,9 +60,6 @@ import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
-import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationPlot
-import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationZone
-import com.terraformation.backend.tracking.db.ObservationTestHelper.PlantTotals
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
@@ -73,7 +67,6 @@ import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -2126,13 +2119,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Plot)
     }
 
-    @BeforeEach
-    fun setUp() {
-      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
-    }
-
     @Test
     fun `abandons in-progress observations in edited zones`() {
+      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
       insertPlantingSubzone()
       val plotInEditedZone = insertMonitoringPlot(permanentCluster = 1)
       insertPlantingZone()
@@ -2162,7 +2151,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingSite,
               PlantingSiteEdit(
                   areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Flexible,
                   desiredModel = plantingSite,
                   existingModel = plantingSite,
                   plantingZoneEdits =
@@ -2187,299 +2175,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           observationsDao.findAll().associate { it.id!! to it.stateId!! },
           "Observation states")
-    }
-
-    @Test
-    fun `does not replace plots in completed observation`() {
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
-      insertObservation(completedTime = Instant.EPOCH)
-      insertObservationRequestedSubzone()
-      val permanentPlotIds =
-          setOf(
-              insertMonitoringPlot(isAvailable = false, x = 0, y = 8),
-              insertMonitoringPlot(isAvailable = false, x = 1, y = 8),
-              insertMonitoringPlot(isAvailable = false, x = 0, y = 9),
-              insertMonitoringPlot(isAvailable = false, x = 1, y = 9),
-          )
-      permanentPlotIds.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
-
-      val temporaryPlotId = insertMonitoringPlot(isAvailable = false, x = 2, y = 8)
-      insertObservationPlot()
-
-      val monitoringPlotIds = permanentPlotIds + temporaryPlotId
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(emptySet(), monitoringPlotIds))
-
-      service.on(event)
-
-      assertEquals(
-          monitoringPlotIds,
-          observationPlotsDao
-              .fetchByObservationId(inserted.observationId)
-              .map { it.monitoringPlotId }
-              .toSet(),
-          "IDs of monitoring plots in observation")
-    }
-
-    // Plant total update logic is tested more comprehensively in ObservationStoreTest; this is
-    // just to verify that the event handler actually updates the totals.
-    @Test
-    fun `subtracts removed plot plant counts from totals`() {
-      val plantingSubzoneId =
-          insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 3, height = 7)
-      val observationId = insertObservation()
-      insertObservationRequestedSubzone()
-      val remainingPlotId = insertMonitoringPlot()
-      val removedPlotId = insertMonitoringPlot()
-
-      val speciesId = insertSpecies()
-      val plantingZoneId = inserted.plantingZoneId
-
-      helper.insertObservationScenario(
-          ObservationZone(
-              zoneId = plantingZoneId,
-              plots =
-                  listOf(
-                      ObservationPlot(
-                          remainingPlotId,
-                          listOf(PlantTotals(speciesId, live = 3, dead = 2, existing = 1))),
-                      ObservationPlot(
-                          removedPlotId,
-                          listOf(PlantTotals(speciesId, live = 4, dead = 5, existing = 6))))))
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(emptySet(), setOf(removedPlotId)))
-
-      service.on(event)
-
-      helper.assertTotals(
-          setOf(
-              ObservedPlotSpeciesTotalsRow(
-                  observationId, removedPlotId, speciesId, null, Known, 4, 5, 6, 56, 5, 4),
-              ObservedPlotSpeciesTotalsRow(
-                  observationId, remainingPlotId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
-              ObservedSubzoneSpeciesTotalsRow(
-                  observationId, plantingSubzoneId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
-              ObservedZoneSpeciesTotalsRow(
-                  observationId, plantingZoneId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
-              ObservedSiteSpeciesTotalsRow(
-                  observationId, plantingSiteId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
-          ),
-          "Totals after removal")
-    }
-
-    @Test
-    fun `creates new temporary plot in observation if existing one is removed from site`() {
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
-      val replacedMonitoringPlotId = insertMonitoringPlot(isAvailable = false, x = 0, y = 8)
-      insertObservation()
-      insertObservationRequestedSubzone()
-      insertObservationPlot()
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(emptySet(), setOf(inserted.monitoringPlotId)))
-
-      service.on(event)
-
-      val observationPlots = observationPlotsDao.findAll()
-      val temporaryPlots = observationPlots.filterNot { it.isPermanent!! }
-
-      assertEquals(1, temporaryPlots.size, "Number of temporary plots")
-      assertNotEquals(
-          replacedMonitoringPlotId, temporaryPlots[0].monitoringPlotId, "ID of temporary plot")
-    }
-
-    @Test
-    fun `creates new permanent cluster in observation if existing one is removed from site`() {
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
-      insertObservation()
-      insertObservationRequestedSubzone()
-      val originalPermanentPlotIds =
-          setOf(
-              insertMonitoringPlot(isAvailable = true, x = 0, y = 8),
-              insertMonitoringPlot(isAvailable = true, x = 1, y = 8),
-              insertMonitoringPlot(isAvailable = false, x = 0, y = 9),
-              insertMonitoringPlot(isAvailable = false, x = 1, y = 9),
-          )
-      originalPermanentPlotIds.forEach {
-        insertObservationPlot(monitoringPlotId = it, isPermanent = true)
-      }
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(emptySet(), originalPermanentPlotIds))
-
-      service.on(event)
-
-      val observationPlots = observationPlotsDao.fetchByObservationId(inserted.observationId)
-
-      assertEquals(
-          1,
-          observationPlots.filter { it.isPermanent!! }.size,
-          "Number of permanent plots in observation")
-      assertEquals(
-          emptySet<MonitoringPlotId>(),
-          observationPlots.map { it.monitoringPlotId }.toSet().intersect(originalPermanentPlotIds),
-          "Permanent plots remaining in observation")
-    }
-
-    @Test
-    fun `adds new permanent cluster to observation if it already exists`() {
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
-      insertObservation()
-      insertObservationRequestedSubzone()
-      val newPermanentPlotIds =
-          setOf(
-              insertMonitoringPlot(x = 0, y = 8, permanentCluster = 1, permanentClusterSubplot = 1),
-          )
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(newPermanentPlotIds, emptySet()))
-
-      service.on(event)
-
-      val observationPlots = observationPlotsDao.fetchByObservationId(inserted.observationId)
-
-      assertEquals(
-          newPermanentPlotIds,
-          observationPlots.map { it.monitoringPlotId }.toSet(),
-          "Permanent plots in observation")
-    }
-
-    @Test
-    fun `does not add new permanent cluster to observation if it is in an unrequested subzone`() {
-      plantingZonesDao.update(
-          plantingZonesDao.fetchOneById(inserted.plantingZoneId)!!.copy(numPermanentClusters = 2))
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 2)
-
-      // The requested subzone already has a cluster, so any new one we create has to go somewhere
-      // else.
-      val plotIdsInRequestedSubzone =
-          setOf(
-              insertMonitoringPlot(
-                  isAvailable = true,
-                  x = 0,
-                  y = 0,
-                  permanentCluster = 1,
-                  permanentClusterSubplot = 1),
-              insertMonitoringPlot(
-                  isAvailable = true,
-                  x = 1,
-                  y = 0,
-                  permanentCluster = 1,
-                  permanentClusterSubplot = 2),
-              insertMonitoringPlot(
-                  isAvailable = true,
-                  x = 0,
-                  y = 1,
-                  permanentCluster = 1,
-                  permanentClusterSubplot = 3),
-              insertMonitoringPlot(
-                  isAvailable = true,
-                  x = 1,
-                  y = 1,
-                  permanentCluster = 1,
-                  permanentClusterSubplot = 4),
-          )
-
-      val plotIdsInRemovedArea =
-          setOf(
-              insertMonitoringPlot(
-                  isAvailable = false,
-                  x = 2,
-                  y = 0,
-                  permanentCluster = 2,
-                  permanentClusterSubplot = 1),
-              insertMonitoringPlot(
-                  isAvailable = false,
-                  x = 3,
-                  y = 0,
-                  permanentCluster = 2,
-                  permanentClusterSubplot = 2),
-              insertMonitoringPlot(
-                  isAvailable = false,
-                  x = 2,
-                  y = 1,
-                  permanentCluster = 2,
-                  permanentClusterSubplot = 3),
-              insertMonitoringPlot(
-                  isAvailable = false,
-                  x = 3,
-                  y = 1,
-                  permanentCluster = 2,
-                  permanentClusterSubplot = 4),
-          )
-
-      insertObservation()
-      insertObservationRequestedSubzone()
-      (plotIdsInRemovedArea + plotIdsInRequestedSubzone).forEach {
-        insertObservationPlot(monitoringPlotId = it, isPermanent = true)
-      }
-
-      // Second subzone is the only place with room for a new cluster, but it isn't requested.
-      insertPlantingSubzone(
-          plantingCompletedTime = Instant.EPOCH, x = 0, y = 2, width = 2, height = 5)
-
-      val event =
-          PlantingSiteMapEditedEvent(
-              plantingSite,
-              PlantingSiteEdit(
-                  areaHaDifference = BigDecimal.ONE,
-                  behavior = PlantingSiteEditBehavior.Restricted,
-                  desiredModel = plantingSite,
-                  existingModel = plantingSite,
-                  plantingZoneEdits = listOf()),
-              ReplacementResult(emptySet(), plotIdsInRemovedArea))
-
-      service.on(event)
-
-      assertEquals(
-          plotIdsInRequestedSubzone,
-          observationPlotsDao
-              .fetchByObservationId(inserted.observationId)
-              .map { it.monitoringPlotId }
-              .toSet(),
-          "Plot IDs in observation")
     }
   }
 

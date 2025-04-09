@@ -29,7 +29,6 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               createdBy = createdBy,
               createdTime = createdTime,
               errorMargin = BigDecimal.TWO,
-              extraPermanentClusters = 0,
               plantingSiteId = plantingSiteId,
               modifiedBy = createdBy,
               modifiedTime = createdTime,
@@ -49,13 +48,11 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       val newVariance = BigDecimal(12)
       val newPermanent = 13
       val newTemporary = 14
-      val newExtraPermanent = 15
       val newTargetPlantingDensity = BigDecimal(13)
 
       val expected =
           initialRow.copy(
               errorMargin = newErrorMargin,
-              extraPermanentClusters = newExtraPermanent,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               numPermanentClusters = newPermanent,
@@ -69,7 +66,6 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
         it.copy(
             // Editable
             errorMargin = newErrorMargin,
-            extraPermanentClusters = newExtraPermanent,
             numPermanentClusters = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,

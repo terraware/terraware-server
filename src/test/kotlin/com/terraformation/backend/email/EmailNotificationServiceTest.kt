@@ -106,7 +106,6 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -148,7 +147,9 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.Locale
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSenderImpl
@@ -1350,7 +1351,6 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
-                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),
@@ -1385,7 +1385,6 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
-                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),
@@ -1422,7 +1421,6 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
-                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),

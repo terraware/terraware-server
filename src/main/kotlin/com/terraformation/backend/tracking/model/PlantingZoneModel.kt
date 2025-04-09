@@ -26,7 +26,6 @@ data class PlantingZoneModel<
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
-    val extraPermanentClusters: Int = 0,
     val id: PZID,
     val name: String,
     val numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
@@ -381,7 +380,6 @@ data class PlantingZoneModel<
         id == other.id &&
         name == other.name &&
         boundaryModifiedTime == other.boundaryModifiedTime &&
-        extraPermanentClusters == other.extraPermanentClusters &&
         numPermanentClusters == other.numPermanentClusters &&
         numTemporaryPlots == other.numTemporaryPlots &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
@@ -399,7 +397,6 @@ data class PlantingZoneModel<
           boundary = boundary,
           boundaryModifiedTime = null,
           errorMargin = errorMargin,
-          extraPermanentClusters = extraPermanentClusters,
           id = null,
           name = name,
           numPermanentClusters = numPermanentClusters,
@@ -431,7 +428,6 @@ data class PlantingZoneModel<
         plantingSubzones: List<NewPlantingSubzoneModel>,
         exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
-        extraPermanentClusters: Int = 0,
         numPermanentClusters: Int? = null,
         numTemporaryPlots: Int? = null,
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
@@ -451,7 +447,6 @@ data class PlantingZoneModel<
           boundary = boundary,
           boundaryModifiedTime = null,
           errorMargin = errorMargin,
-          extraPermanentClusters = extraPermanentClusters,
           id = null,
           name = name,
           numPermanentClusters = numPermanentClusters ?: defaultPermanentClusters,

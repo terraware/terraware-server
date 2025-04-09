@@ -19,7 +19,6 @@ import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementResult
@@ -201,8 +200,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       service.on(
           PlantingSiteMapEditedEvent(
               site,
-              PlantingSiteEdit(
-                  BigDecimal.ZERO, PlantingSiteEditBehavior.Flexible, site, site, emptyList()),
+              PlantingSiteEdit(BigDecimal.ZERO, site, site, emptyList()),
               ReplacementResult(emptySet(), emptySet())))
 
       assertTableEquals(existingSubzonePopulations, "Subzone populations should not have changed")

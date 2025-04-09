@@ -30,9 +30,6 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
@@ -456,7 +453,6 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam dryRun: Boolean,
       @RequestParam subzoneIdsToMarkIncomplete: String?,
-      @RequestParam editVersion: Int,
       @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -474,34 +470,21 @@ class AdminPlantingSitesController(
                 existing.description,
                 existing.organizationId,
             )
-        val plantedSubzoneIds = plantingSiteStore.fetchSubzoneIdsWithPastPlantings(plantingSiteId)
 
-        val calculator: PlantingSiteEditCalculator =
-            when (editVersion) {
-              1 -> PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds)
-              2 -> PlantingSiteEditCalculatorV2(existing, desired)
-              else -> throw IllegalArgumentException("Unrecognized edit version $editVersion")
-            }
+        val calculator = PlantingSiteEditCalculatorV2(existing, desired)
 
         val edit = calculator.calculateSiteEdit()
 
-        if (edit.problems.isEmpty()) {
-          if (dryRun) {
-            redirectAttributes.successMessage = "Would make the following changes:"
-            redirectAttributes.successDetails = describeSiteEdit(edit)
-          } else {
-            plantingSiteStore.applyPlantingSiteEdit(
-                edit,
-                subzoneIdsToMarkIncomplete
-                    ?.split(",")
-                    ?.map { PlantingSubzoneId(it.trim()) }
-                    ?.toSet() ?: emptySet(),
-            )
-            redirectAttributes.successMessage = "Site map updated."
-          }
+        if (dryRun) {
+          redirectAttributes.successMessage = "Would make the following changes:"
+          redirectAttributes.successDetails = describeSiteEdit(edit)
         } else {
-          redirectAttributes.failureMessage = "Edit invalid:"
-          redirectAttributes.failureDetails = edit.problems.map { it.toString() }
+          plantingSiteStore.applyPlantingSiteEdit(
+              edit,
+              subzoneIdsToMarkIncomplete?.split(",")?.map { PlantingSubzoneId(it.trim()) }?.toSet()
+                  ?: emptySet(),
+          )
+          redirectAttributes.successMessage = "Site map updated."
         }
       }
     } catch (e: PlantingSiteMapInvalidException) {
@@ -547,14 +530,12 @@ class AdminPlantingSitesController(
       @RequestParam numPermanent: Int,
       @RequestParam numTemporary: Int,
       @RequestParam targetPlantingDensity: BigDecimal,
-      @RequestParam extraPermanent: Int,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
         row.copy(
             errorMargin = errorMargin,
-            extraPermanentClusters = extraPermanent,
             numPermanentClusters = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
@@ -758,15 +739,9 @@ class AdminPlantingSitesController(
             edit.existingModel.id, edit.plantingZoneEdits.mapNotNull { it.existingModel?.id })
     val affectedObservationsMessage =
         if (affectedObservationIds.isNotEmpty()) {
-          val prefix =
-              when (edit.behavior) {
-                PlantingSiteEditBehavior.Restricted ->
-                    "Plots may be replaced in observations with these IDs: "
-                PlantingSiteEditBehavior.Flexible ->
-                    "The following observations will be abandoned because they have incomplete " +
-                        "plots in edited planting zones: "
-              }
-          prefix + affectedObservationIds.joinToString(", ")
+          "The following observations will be abandoned because they have incomplete " +
+              "plots in edited planting zones: " +
+              affectedObservationIds.joinToString(", ")
         } else {
           null
         }
