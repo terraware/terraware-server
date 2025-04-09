@@ -18,7 +18,7 @@ import kotlin.math.min
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 
-class PlantingSiteEditCalculatorV2(
+class PlantingSiteEditCalculator(
     private val existingSite: ExistingPlantingSiteModel,
     private val desiredSite: AnyPlantingSiteModel,
 ) {

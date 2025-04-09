@@ -30,7 +30,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.mapbox.MapboxService
@@ -471,7 +471,7 @@ class AdminPlantingSitesController(
                 existing.organizationId,
             )
 
-        val calculator = PlantingSiteEditCalculatorV2(existing, desired)
+        val calculator = PlantingSiteEditCalculator(existing, desired)
 
         val edit = calculator.calculateSiteEdit()
 
