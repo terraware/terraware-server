@@ -198,14 +198,16 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: SeedFundReportCreatedEvent) {
-    val reportUrl = webAppUrls.report(event.metadata.id)
-    val renderMessage = { messages.reportCreated(event.metadata.year, event.metadata.quarter) }
+    val reportUrl = webAppUrls.seedFundReport(event.metadata.id)
+    val renderMessage = {
+      messages.seedFundReportCreated(event.metadata.year, event.metadata.quarter)
+    }
 
     log.info("Creating app notifications for report ${event.metadata.id} created.")
 
     insertOrganizationNotifications(
         event.metadata.organizationId,
-        NotificationType.ReportCreated,
+        NotificationType.SeedFundReportCreated,
         renderMessage,
         reportUrl,
         setOf(Role.Owner, Role.Admin))

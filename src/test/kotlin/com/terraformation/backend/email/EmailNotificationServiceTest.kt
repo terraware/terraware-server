@@ -633,8 +633,9 @@ internal class EmailNotificationServiceTest {
     val gibberishMessage = sentMessageFor("gibberish@x.com")
 
     assertBodyContains("2023-Q3", "Year and quarter", message = englishMessage)
-    assertBodyContains("Report", "English text", message = englishMessage)
-    assertBodyContains("Report".toGibberish(), "Gibberish text", message = gibberishMessage)
+    assertBodyContains("Seed Fund Report", "English text", message = englishMessage)
+    assertBodyContains(
+        "Seed Fund Report".toGibberish(), "Gibberish text", message = gibberishMessage)
     assertRecipientsEqual(admins.toSet())
   }
 

@@ -1,4 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ReportCreated" --> -->
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SeedFundReportCreated" --> -->
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
 
@@ -8,10 +8,10 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    ${strings("notification.report.created.email.body.1", year, quarter)}
+                    ${strings("notification.seedFundReport.created.email.body.1", year, quarter)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                    ${strings("notification.report.created.email.body.2", year, quarter)}
+                    ${strings("notification.seedFundReport.created.email.body.2", year, quarter)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
                            href="${reportUrl?no_esc}">${strings("notification.email.buttonLabel")}
