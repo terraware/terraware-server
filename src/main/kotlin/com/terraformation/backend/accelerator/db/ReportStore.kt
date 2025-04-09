@@ -369,6 +369,7 @@ class ReportStore(
                 .and(UPCOMING_NOTIFICATION_SENT_TIME.isNull)
                 .and(END_DATE.lessOrEqual(today.plusDays(15)))
                 .forUpdate()
+                .skipLocked()
                 .fetch { it[ID.asNonNullable()] }
 
         reportIds.forEach { eventPublisher.publishEvent(AcceleratorReportUpcomingEvent(it)) }
