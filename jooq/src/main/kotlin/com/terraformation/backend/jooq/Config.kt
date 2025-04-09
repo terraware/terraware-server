@@ -255,7 +255,6 @@ val ID_WRAPPERS =
                     listOf(
                         "accelerator\\.reports\\.id",
                         "accelerator\\..*\\.report_id",
-                        "funder\\.funder_reports\\.id",
                         "funder\\..*\\.report_id")),
                 IdWrapper(
                     "StandardMetricId", listOf("standard_metrics\\.id", ".*\\.standard_metric_id")),
