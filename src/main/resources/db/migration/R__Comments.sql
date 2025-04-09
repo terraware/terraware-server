@@ -740,4 +740,16 @@ COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding
 COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
 COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 
+COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
+
+COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigation plans of published reports.';
+
+COMMENT ON TABLE funder.published_report_project_metrics IS 'Project-specific metrics of published reports.';
+
+COMMENT ON TABLE funder.published_report_standard_metrics IS 'Standard metrics of published reports.';
+
+COMMENT ON TABLE funder.published_report_system_metrics IS 'System metrics of published reports.';
+
+COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.

@@ -50,7 +50,7 @@ val ENUM_TABLES =
                         "report_standard_metrics\\.status_id",
                         "report_system_metrics\\.status_id",
                     )),
-                EnumTable("report_quarters", listOf("reports\\.report_quarter_id")),
+                EnumTable("report_quarters"),
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),
@@ -252,7 +252,10 @@ val ID_WRAPPERS =
                     listOf("project_report_configs\\.id", ".*\\.config_id")),
                 IdWrapper(
                     "ReportId",
-                    listOf("accelerator\\.reports\\.id", "accelerator\\..*\\.report_id")),
+                    listOf(
+                        "accelerator\\.reports\\.id",
+                        "accelerator\\..*\\.report_id",
+                        "funder\\..*\\.report_id")),
                 IdWrapper(
                     "StandardMetricId", listOf("standard_metrics\\.id", ".*\\.standard_metric_id")),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
