@@ -371,6 +371,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
+  fun canNotifyUpcomingReports(): Boolean = defaultPermission
+
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission
 
   fun canReadAllAcceleratorDetails(): Boolean = defaultPermission

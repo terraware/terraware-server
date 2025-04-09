@@ -576,7 +576,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         )
 
     testEventNotification(
-        RateLimitedAcceleratorReportSubmittedEvent(reportId, projectId),
+        RateLimitedAcceleratorReportSubmittedEvent(reportId),
         type = NotificationType.AcceleratorReportSubmitted,
         title = "2025 Q1 Report Submitted for DEAL_name",
         body = "DEAL_name has submitted their 2025 Q1 Report.",

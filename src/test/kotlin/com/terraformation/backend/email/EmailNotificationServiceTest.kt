@@ -1202,7 +1202,7 @@ internal class EmailNotificationServiceTest {
   fun `rateLimitedAcceleratorReportSubmittedEvent should notify global role users and TFContact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
-    val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId, project.id)
+    val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId)
     service.on(event)
     val message = sentMessageWithSubject("Report Submitted for")
     assertSubjectContains(report.prefix, message = message)

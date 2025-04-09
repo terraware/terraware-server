@@ -500,17 +500,17 @@ class AppNotificationService(
   @EventListener
   fun on(event: RateLimitedAcceleratorReportSubmittedEvent) {
     systemUser.run {
-      val project = projectStore.fetchOneById(event.projectId)
-
       val report =
           try {
             reportStore.fetchOne(event.reportId)
           } catch (e: ReportNotFoundException) {
             log.error(
-                "Got report ready for review notification for report ${event.reportId} in " +
-                    "project ${event.projectId} but the report is not found")
+                "Got report ready for review notification for report ${event.reportId} but the " +
+                    "report is not found")
             return@run
           }
+
+      val project = projectStore.fetchOneById(report.projectId)
 
       val renderMessage = {
         messages.acceleratorReportSubmitted(
@@ -518,7 +518,7 @@ class AppNotificationService(
       }
 
       insertAcceleratorNotification(
-          webAppUrls.acceleratorConsoleReport(event.reportId, event.projectId),
+          webAppUrls.acceleratorConsoleReport(event.reportId, report.projectId),
           NotificationType.AcceleratorReportSubmitted,
           project.organizationId,
           renderMessage)
