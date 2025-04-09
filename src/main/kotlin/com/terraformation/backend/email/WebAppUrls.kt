@@ -245,6 +245,22 @@ class WebAppUrls(
         .build()
   }
 
+  fun fullAcceleratorReport(
+      reportId: ReportId,
+      projectId: ProjectId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/projects/${projectId.value}/reports/${reportId.value}")
+        .build()
+  }
+
+  fun acceleratorReport(
+      reportId: ReportId,
+      projectId: ProjectId,
+  ): URI {
+    return UriBuilder.fromPath("/projects/${projectId.value}/reports/${reportId.value}").build()
+  }
+
   // Section variable ID is unused for now but included in anticipation of being able to link
   // directly to a section in a document.
   fun fullDocument(documentId: DocumentId, sectionVariableId: VariableId?): URI {

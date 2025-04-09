@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -496,6 +497,32 @@ class AppNotificationService(
             webAppUrls.document(event.documentId, event.referencingSectionVariableId),
             project.organizationId)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportUpcomingEvent) {
+    systemUser.run {
+      val report =
+          try {
+            reportStore.fetchOne(event.reportId)
+          } catch (e: ReportNotFoundException) {
+            log.error(
+                "Got report ready for review notification for report ${event.reportId} but the " +
+                    "report is not found")
+            return@run
+          }
+
+      val project = projectStore.fetchOneById(report.projectId)
+
+      val renderMessage = { messages.acceleratorReportUpcoming(report.prefix) }
+
+      insertOrganizationNotifications(
+          project.organizationId,
+          NotificationType.AcceleratorReportSubmitted,
+          renderMessage,
+          webAppUrls.acceleratorConsoleReport(event.reportId, report.projectId),
+          setOf(Role.Owner, Role.Admin))
     }
   }
 

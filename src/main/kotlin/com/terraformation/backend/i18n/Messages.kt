@@ -111,6 +111,12 @@ class Messages {
         numericValue
   }
 
+  fun acceleratorReportUpcoming(reportPrefix: String): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.acceleratorReport.upcoming.app.title", reportPrefix),
+        body = getMessage("notification.acceleratorReport.upcoming.app.body", reportPrefix))
+  }
+
   fun acceleratorReportSubmitted(
       projectDealName: String,
       reportPrefix: String
