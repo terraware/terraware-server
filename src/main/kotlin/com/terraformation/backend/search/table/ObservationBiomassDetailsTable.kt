@@ -52,8 +52,7 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
                       .from(RECORDED_TREES)
                       .where(
                           RECORDED_TREES.OBSERVATION_PLOT_ID.eq(
-                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID))
-                      .and(RECORDED_TREES.TRUNK_NUMBER.eq(1)))),
+                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID)))),
           integerField(
               "numSpecies",
               DSL.field(
