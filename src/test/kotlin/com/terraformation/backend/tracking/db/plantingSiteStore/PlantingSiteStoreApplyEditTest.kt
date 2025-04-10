@@ -13,8 +13,8 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2Test
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -38,8 +38,8 @@ import org.springframework.security.access.AccessDeniedException
 
 /**
  * Tests for applying edit operations to planting sites. Most of these tests don't manually
- * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculatorV2] and rely on
- * the coverage in [PlantingSiteEditCalculatorV2Test] to verify that the calculated edits would be
+ * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculator] and rely on
+ * the coverage in [PlantingSiteEditCalculatorTest] to verify that the calculated edits would be
  * correct.
  */
 internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
@@ -559,7 +559,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         existing: ExistingPlantingSiteModel,
         desired: AnyPlantingSiteModel,
     ): PlantingSiteEdit {
-      val calculator = PlantingSiteEditCalculatorV2(existing, desired)
+      val calculator = PlantingSiteEditCalculator(existing, desired)
       return calculator.calculateSiteEdit()
     }
 

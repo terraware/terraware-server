@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
-class PlantingSiteEditCalculatorV2Test {
+class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns create edits for newly added zone and subzone`() {
     val existing = existingSite(width = 500) { zone(numPermanent = 1) { subzone { cluster() } } }
@@ -955,7 +955,7 @@ class PlantingSiteEditCalculatorV2Test {
     @Test
     fun `throws exception if desired site has no boundary`() {
       assertThrows<IllegalArgumentException> {
-        PlantingSiteEditCalculatorV2(
+        PlantingSiteEditCalculator(
                 existingSite(),
                 newSite().copy(boundary = null),
             )
@@ -966,7 +966,7 @@ class PlantingSiteEditCalculatorV2Test {
     @Test
     fun `throws exception if a subzone move is ambiguous`() {
       assertThrows<IllegalArgumentException> {
-        PlantingSiteEditCalculatorV2(
+        PlantingSiteEditCalculator(
                 existingSite {
                   zone {
                     subzone(name = "A")
@@ -986,7 +986,7 @@ class PlantingSiteEditCalculatorV2Test {
   private fun calculateSiteEdit(
       existing: ExistingPlantingSiteModel,
       desired: AnyPlantingSiteModel,
-  ): PlantingSiteEdit = PlantingSiteEditCalculatorV2(existing, desired).calculateSiteEdit()
+  ): PlantingSiteEdit = PlantingSiteEditCalculator(existing, desired).calculateSiteEdit()
 
   private fun assertEditResult(
       expected: PlantingSiteEdit,
