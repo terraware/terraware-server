@@ -150,13 +150,6 @@ class WebAppUrls(
         .build()
   }
 
-  fun fullReport(seedFundReportId: SeedFundReportId, organizationId: OrganizationId): URI {
-    return UriBuilder.fromUri(config.webAppUrl)
-        .path("/reports/$seedFundReportId")
-        .queryParam("organizationId", organizationId)
-        .build()
-  }
-
   fun moduleEvent(
       moduleId: ModuleId,
       eventId: EventId,
@@ -168,8 +161,15 @@ class WebAppUrls(
         .build()
   }
 
-  fun report(seedFundReportId: SeedFundReportId): URI {
-    return UriBuilder.fromPath("/reports/$seedFundReportId").build()
+  fun fullSeedFundReport(seedFundReportId: SeedFundReportId, organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/seed-fund-reports/$seedFundReportId")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun seedFundReport(seedFundReportId: SeedFundReportId): URI {
+    return UriBuilder.fromPath("/seed-fund-reports/$seedFundReportId").build()
   }
 
   fun fullPlantingSite(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {

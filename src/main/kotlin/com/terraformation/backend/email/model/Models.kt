@@ -199,7 +199,7 @@ class NurserySeedlingBatchReady(
     get() = "nursery/seedlingBatchReady"
 }
 
-class ReportCreated(
+class SeedFundReportCreated(
     config: TerrawareServerConfig,
     val year: String,
     val quarter: String,
@@ -213,7 +213,7 @@ class ReportCreated(
   ) : this(config, "$year", "$quarter", reportUrl)
 
   override val templateDir: String
-    get() = "report/created"
+    get() = "seedFundReport/created"
 }
 
 class ObservationStarted(

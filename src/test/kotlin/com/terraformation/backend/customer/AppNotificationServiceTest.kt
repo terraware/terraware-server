@@ -426,11 +426,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val commonValues =
         NotificationsRow(
-            body = "Your 2023-Q3 Report is ready to be completed and submitted to Terraformation.",
-            localUrl = webAppUrls.report(SeedFundReportId(1)),
-            notificationTypeId = NotificationType.ReportCreated,
+            body =
+                "Your 2023-Q3 Seed Fund Report is ready to be completed and submitted to Terraformation.",
+            localUrl = webAppUrls.seedFundReport(SeedFundReportId(1)),
+            notificationTypeId = NotificationType.SeedFundReportCreated,
             organizationId = organizationId,
-            title = "Time to Complete Your 2023-Q3 Report",
+            title = "Time to Complete Your 2023-Q3 Seed Fund Report",
         )
 
     testMultipleEventNotifications(

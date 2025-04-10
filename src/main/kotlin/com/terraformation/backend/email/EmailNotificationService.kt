@@ -77,9 +77,9 @@ import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.PlantingSeasonStarted
 import com.terraformation.backend.email.model.PlantingSiteMapEdited
-import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
+import com.terraformation.backend.email.model.SeedFundReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -303,11 +303,11 @@ class EmailNotificationService(
   @EventListener
   fun on(event: SeedFundReportCreatedEvent) {
     val reportUrl =
-        webAppUrls.fullReport(event.metadata.id, event.metadata.organizationId).toString()
+        webAppUrls.fullSeedFundReport(event.metadata.id, event.metadata.organizationId).toString()
 
     emailService.sendOrganizationNotification(
         event.metadata.organizationId,
-        ReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
+        SeedFundReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
         roles = setOf(Role.Owner, Role.Admin))
   }
 
