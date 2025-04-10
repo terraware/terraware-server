@@ -508,8 +508,8 @@ class AppNotificationService(
             reportStore.fetchOne(event.reportId)
           } catch (e: ReportNotFoundException) {
             log.error(
-                "Got report ready for review notification for report ${event.reportId} but the " +
-                    "report is not found")
+                "Got report upcoming notification for report ${event.reportId} but the report is " +
+                    "not found")
             return@run
           }
 
@@ -519,7 +519,7 @@ class AppNotificationService(
 
       insertOrganizationNotifications(
           project.organizationId,
-          NotificationType.AcceleratorReportSubmitted,
+          NotificationType.AcceleratorReportUpcoming,
           renderMessage,
           webAppUrls.acceleratorReport(event.reportId, report.projectId),
           setOf(Role.Owner, Role.Admin))
