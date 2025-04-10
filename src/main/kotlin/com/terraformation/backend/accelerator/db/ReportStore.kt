@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
@@ -307,7 +308,7 @@ class ReportStore(
       updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
     }
 
-    eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId, report.projectId))
+    eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId))
   }
 
   fun updateReport(
@@ -346,6 +347,39 @@ class ReportStore(
           .set(REPORTS.MODIFIED_TIME, clock.instant())
           .where(REPORTS.ID.eq(reportId))
           .execute()
+    }
+  }
+
+  /**
+   * Fetch upcoming reports and notify that they are due. Also marks the report notification time.
+   */
+  fun notifyUpcomingReports(): Int {
+    requirePermissions { notifyUpcomingReports() }
+
+    val today = LocalDate.ofInstant(clock.instant(), ZoneId.systemDefault())
+
+    return with(REPORTS) {
+      dslContext.transactionResult { _ ->
+        // Lock these rows to prevent multiple notifications being sent per report
+        val reportIds =
+            dslContext
+                .select(ID)
+                .from(this)
+                .where(STATUS_ID.eq(ReportStatus.NotSubmitted))
+                .and(UPCOMING_NOTIFICATION_SENT_TIME.isNull)
+                .and(END_DATE.lessOrEqual(today.plusDays(15)))
+                .forUpdate()
+                .skipLocked()
+                .fetch { it[ID.asNonNullable()] }
+
+        reportIds.forEach { eventPublisher.publishEvent(AcceleratorReportUpcomingEvent(it)) }
+
+        dslContext
+            .update(this)
+            .set(UPCOMING_NOTIFICATION_SENT_TIME, clock.instant())
+            .where(ID.`in`(reportIds))
+            .execute()
+      }
     }
   }
 
@@ -428,7 +462,7 @@ class ReportStore(
   private fun updateReportRows(
       config: ExistingProjectReportConfigModel,
   ) {
-    val existingReports = fetchByCondition(REPORTS.CONFIG_ID.eq(config.id))
+    val existingReports = reportsDao.fetchByConfigId(config.id)
     val newReportRows = createReportRows(config)
 
     if (existingReports.isEmpty()) {
@@ -439,14 +473,13 @@ class ReportStore(
     if (newReportRows.isEmpty()) {
       reportsDao.update(
           existingReports.map {
-            it.toRow()
-                .copy(
-                    statusId = ReportStatus.NotNeeded,
-                    modifiedBy = systemUser.userId,
-                    modifiedTime = clock.instant(),
-                    submittedBy = null,
-                    submittedTime = null,
-                )
+            it.copy(
+                statusId = ReportStatus.NotNeeded,
+                modifiedBy = systemUser.userId,
+                modifiedTime = clock.instant(),
+                submittedBy = null,
+                submittedTime = null,
+            )
           })
       return
     }
@@ -469,19 +502,17 @@ class ReportStore(
     var desiredReportRow = desiredReportIterator.next()
 
     while (true) {
-      if (existingReport.endDate.isBefore(desiredReportRow.startDate!!)) {
+      if (existingReport.endDate!!.isBefore(desiredReportRow.startDate!!)) {
         // If existing report date is before the new report date, archive it
-        if (existingReport.status != ReportStatus.NotNeeded) {
+        if (existingReport.statusId != ReportStatus.NotNeeded) {
           reportRowsToUpdate.add(
-              existingReport
-                  .toRow()
-                  .copy(
-                      statusId = ReportStatus.NotNeeded,
-                      modifiedBy = systemUser.userId,
-                      modifiedTime = clock.instant(),
-                      submittedBy = null,
-                      submittedTime = null,
-                  ))
+              existingReport.copy(
+                  statusId = ReportStatus.NotNeeded,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant(),
+                  submittedBy = null,
+                  submittedTime = null,
+              ))
         }
 
         if (existingReportIterator.hasNext()) {
@@ -497,35 +528,33 @@ class ReportStore(
           desiredReportRow = desiredReportIterator.next()
         } else {
           reportRowsToUpdate.add(
-              existingReport
-                  .toRow()
-                  .copy(
-                      statusId = ReportStatus.NotNeeded,
-                      modifiedBy = systemUser.userId,
-                      modifiedTime = clock.instant(),
-                      submittedBy = null,
-                      submittedTime = null,
-                  ))
+              existingReport.copy(
+                  statusId = ReportStatus.NotNeeded,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant(),
+                  submittedBy = null,
+                  submittedTime = null,
+              ))
           break
         }
       } else {
         // If the report dates overlap, they point to the same reporting period. Update the
-        // existing report dates to match the desired report dates, and un-archive
+        // existing report dates to match the desired report dates, and un-archive. Reset
+        // notifications to allow for notifications again.
         if (existingReport.startDate != desiredReportRow.startDate!! ||
             existingReport.endDate != desiredReportRow.endDate!! ||
-            existingReport.status == ReportStatus.NotNeeded) {
+            existingReport.statusId == ReportStatus.NotNeeded) {
           reportRowsToUpdate.add(
-              existingReport
-                  .toRow()
-                  .copy(
-                      statusId = ReportStatus.NotSubmitted,
-                      startDate = desiredReportRow.startDate!!,
-                      endDate = desiredReportRow.endDate!!,
-                      modifiedBy = systemUser.userId,
-                      modifiedTime = clock.instant(),
-                      submittedBy = null,
-                      submittedTime = null,
-                  ))
+              existingReport.copy(
+                  statusId = ReportStatus.NotSubmitted,
+                  startDate = desiredReportRow.startDate!!,
+                  endDate = desiredReportRow.endDate!!,
+                  modifiedBy = systemUser.userId,
+                  modifiedTime = clock.instant(),
+                  submittedBy = null,
+                  submittedTime = null,
+                  upcomingNotificationSentTime = null,
+              ))
         }
 
         if (existingReportIterator.hasNext() && desiredReportIterator.hasNext()) {
@@ -541,8 +570,8 @@ class ReportStore(
     reportRowsToUpdate.addAll(
         existingReportIterator
             .asSequence()
-            .filter { it.status != ReportStatus.NotNeeded }
-            .map { it.toRow().copy(statusId = ReportStatus.NotNeeded) })
+            .filter { it.statusId != ReportStatus.NotNeeded }
+            .map { it.copy(statusId = ReportStatus.NotNeeded) })
 
     // Mark any unmatched new reports to be added
     reportRowsToAdd.addAll(desiredReportIterator.asSequence())

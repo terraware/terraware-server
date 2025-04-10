@@ -759,6 +759,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun notifyUpcomingReports() {
+    user.recordPermissionChecks {
+      if (!user.canNotifyUpcomingReports()) {
+        throw AccessDeniedException("No permission to notify upcoming reports.")
+      }
+    }
+  }
+
   fun readAccession(accessionId: AccessionId) {
     user.recordPermissionChecks {
       if (!user.canReadAccession(accessionId)) {

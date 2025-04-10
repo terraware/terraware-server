@@ -608,6 +608,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.movePlantingSiteToAnyOrg(plantingSiteId)
   }
 
+  @Test
+  fun notifyUpcomingReports() =
+      allow { notifyUpcomingReports() } ifUser { canNotifyUpcomingReports() }
+
   @Test fun readAccession() = testRead { readAccession(accessionId) }
 
   @Test

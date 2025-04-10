@@ -2863,7 +2863,8 @@ abstract class DatabaseBackedTest {
               } else {
                 null
               },
-      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH }
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
+      upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
   ): ReportId {
     val rowWithDefaults =
         row.copy(
@@ -2883,6 +2884,7 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
             submittedBy = submittedBy,
             submittedTime = submittedTime,
+            upcomingNotificationSentTime = upcomingNotificationSentTime,
         )
 
     reportsDao.insert(rowWithDefaults)

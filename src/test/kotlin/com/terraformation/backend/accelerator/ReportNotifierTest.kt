@@ -5,7 +5,6 @@ import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEv
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.default_schema.ProjectId
 import org.junit.jupiter.api.Test
 
 class ReportNotifierTest {
@@ -15,11 +14,11 @@ class ReportNotifierTest {
 
   @Test
   fun `publishes RateLimitedAcceleratorReportSubmittedEvent on report submission`() {
-    val event = AcceleratorReportSubmittedEvent(ReportId(1), ProjectId(2))
+    val event = AcceleratorReportSubmittedEvent(ReportId(1))
 
     notifier.on(event)
     rateLimitedEventPublisher.assertEventPublished(
-        RateLimitedAcceleratorReportSubmittedEvent(event.reportId, event.projectId))
+        RateLimitedAcceleratorReportSubmittedEvent(event.reportId))
     assertIsEventListener<AcceleratorReportSubmittedEvent>(notifier)
   }
 }

@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectMetricModel
@@ -52,11 +53,13 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.util.toInstant
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
+import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
@@ -2264,7 +2267,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Report system metrics")
 
-      eventPublisher.assertEventPublished(AcceleratorReportSubmittedEvent(reportId, projectId))
+      eventPublisher.assertEventPublished(AcceleratorReportSubmittedEvent(reportId))
     }
   }
 
@@ -2749,6 +2752,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = ReportStatus.Submitted,
               startDate = LocalDate.of(2021, Month.MARCH, 13),
               endDate = LocalDate.of(2021, Month.DECEMBER, 31),
+              upcomingNotificationSentTime = Instant.EPOCH,
           )
 
       // year 2 is missing, which can happen if report dates were changed before
@@ -2761,6 +2765,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = ReportStatus.Approved,
               startDate = LocalDate.of(2023, Month.JANUARY, 1),
               endDate = LocalDate.of(2023, Month.DECEMBER, 31),
+              upcomingNotificationSentTime = Instant.EPOCH,
           )
 
       val year4ReportId =
@@ -2772,6 +2777,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               status = ReportStatus.NotNeeded,
               startDate = LocalDate.of(2024, Month.JANUARY, 1),
               endDate = LocalDate.of(2024, Month.JULY, 9),
+              upcomingNotificationSentTime = Instant.EPOCH,
           )
 
       clock.instant = Instant.ofEpochSecond(9000)
@@ -2823,6 +2829,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = Instant.EPOCH,
                   modifiedBy = systemUser.userId,
                   modifiedTime = clock.instant,
+                  upcomingNotificationSentTime = Instant.EPOCH,
               ),
               ReportsRecord(
                   id = reportIdsByYear[2022]!!,
@@ -2852,6 +2859,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.EPOCH,
                   submittedBy = user.userId,
                   submittedTime = Instant.EPOCH,
+                  upcomingNotificationSentTime = Instant.EPOCH,
               ),
               ReportsRecord(
                   id = year4ReportId,
@@ -2865,6 +2873,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = Instant.EPOCH,
                   modifiedBy = systemUser.userId,
                   modifiedTime = clock.instant,
+                  // Notification time set to null to allow new notifications
+                  upcomingNotificationSentTime = null,
               ),
               ReportsRecord(
                   id = reportIdsByYear[2025]!!,
@@ -3025,6 +3035,178 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               dealName = "Unchanged deal name",
               logframeUrl = URI("https://example.com/new")),
           "Project accelerator details table")
+    }
+  }
+
+  @Nested
+  inner class NotifyUpcomingReports {
+    @Test
+    fun `throws exception for non-system user`() {
+      assertThrows<AccessDeniedException>(message = "accelerator admin") {
+        store.notifyUpcomingReports()
+      }
+
+      assertDoesNotThrow(message = "system user") {
+        systemUser.run { store.notifyUpcomingReports() }
+      }
+    }
+
+    @Test
+    fun `publishes event for all Not Submitted reports within 15 days that have not been notified`() {
+      val today = LocalDate.of(2025, Month.MARCH, 20)
+
+      clock.instant = today.toInstant(ZoneId.systemDefault())
+      val configId = insertProjectReportConfig()
+      val upcomingReportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+          )
+
+      val overdueReportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              quarter = ReportQuarter.Q4,
+              startDate = LocalDate.of(2024, Month.OCTOBER, 1),
+              endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+          )
+
+      val notifiedReportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+              upcomingNotificationSentTime = Instant.ofEpochSecond(15000),
+          )
+
+      val submittedReportId =
+          insertReport(
+              status = ReportStatus.Submitted,
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+              submittedBy = currentUser().userId,
+              submittedTime = Instant.ofEpochSecond(30000),
+          )
+
+      val notNeededReportId =
+          insertReport(
+              status = ReportStatus.NotNeeded,
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+          )
+
+      val futureReportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              quarter = ReportQuarter.Q2,
+              startDate = LocalDate.of(2025, Month.APRIL, 1),
+              endDate = LocalDate.of(2025, Month.JUNE, 30),
+          )
+
+      systemUser.run { store.notifyUpcomingReports() }
+
+      eventPublisher.assertExactEventsPublished(
+          setOf(
+              AcceleratorReportUpcomingEvent(upcomingReportId),
+              AcceleratorReportUpcomingEvent(overdueReportId),
+          ))
+
+      assertTableEquals(
+          listOf(
+              ReportsRecord(
+                  id = upcomingReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.NotSubmitted,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q1,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+                  upcomingNotificationSentTime = clock.instant,
+              ),
+              ReportsRecord(
+                  id = overdueReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.NotSubmitted,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q4,
+                  startDate = LocalDate.of(2024, Month.OCTOBER, 1),
+                  endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+                  upcomingNotificationSentTime = clock.instant,
+              ),
+              ReportsRecord(
+                  id = notifiedReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.NotSubmitted,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q1,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+                  upcomingNotificationSentTime = Instant.ofEpochSecond(15000)),
+              ReportsRecord(
+                  id = submittedReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.Submitted,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q1,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+                  submittedBy = currentUser().userId,
+                  submittedTime = Instant.ofEpochSecond(30000),
+              ),
+              ReportsRecord(
+                  id = notNeededReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.NotNeeded,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q1,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+              ),
+              ReportsRecord(
+                  id = futureReportId,
+                  projectId = projectId,
+                  configId = configId,
+                  statusId = ReportStatus.NotSubmitted,
+                  reportFrequencyId = ReportFrequency.Quarterly,
+                  reportQuarterId = ReportQuarter.Q2,
+                  startDate = LocalDate.of(2025, Month.APRIL, 1),
+                  endDate = LocalDate.of(2025, Month.JUNE, 30),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+              ),
+          ))
     }
   }
 
