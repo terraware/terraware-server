@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -1206,10 +1207,28 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
     val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId)
     service.on(event)
-    val message = sentMessageWithSubject("Report Submitted for")
+    val message = sentMessageWithSubject("2025 Q1 Report Submitted for")
     assertSubjectContains(report.prefix, message = message)
     assertBodyContains(report.prefix, message = message)
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `acceleratorReportUpcomingEvent should notify organization admin and owners`() {
+    val admins = listOf("admin1@x.com", "admin2@x.com", "gibberish@x.com")
+    every {
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Owner, Role.Admin))
+    } returns admins.map { userForEmail(it) }
+
+    service.on(AcceleratorReportUpcomingEvent(acceleratorReportId))
+
+    val englishMessage = sentMessageFor("admin1@x.com")
+    val gibberishMessage = sentMessageFor("gibberish@x.com")
+
+    assertSubjectContains(report.prefix, message = englishMessage)
+    assertBodyContains("Report", "English text", message = englishMessage)
+    assertBodyContains("Report".toGibberish(), "Gibberish text", message = gibberishMessage)
+    assertRecipientsEqual(admins.toSet())
   }
 
   @Test

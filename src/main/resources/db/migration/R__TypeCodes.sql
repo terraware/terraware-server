@@ -327,7 +327,8 @@ VALUES (1, 'User Added to Organization', 1),
        (29, 'Participant Project Species Approved Species Edited', 1),
        (30, 'Application Submitted', 1),
        (31, 'Completed Section Variable Updated', 1),
-       (32, 'Accelerator Report Submitted', 1)
+       (32, 'Accelerator Report Submitted', 1),
+       (33, 'AcceleratorReportUpcoming', 1)
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 

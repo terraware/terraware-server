@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -49,6 +50,7 @@ import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.email.model.AcceleratorReportSubmitted
+import com.terraformation.backend.email.model.AcceleratorReportUpcoming
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.CompletedSectionVariableUpdated
@@ -754,6 +756,31 @@ class EmailNotificationService(
               report.prefix,
               webAppUrls.fullAcceleratorConsoleReport(event.reportId, report.projectId).toString()),
       )
+    }
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportUpcomingEvent) {
+    systemUser.run {
+      val report =
+          try {
+            reportStore.fetchOne(event.reportId)
+          } catch (e: ReportNotFoundException) {
+            log.error(
+                "Got report upcoming notification for report ${event.reportId} but the report is " +
+                    "not found")
+            return@run
+          }
+
+      val project = projectStore.fetchOneById(report.projectId)
+
+      emailService.sendOrganizationNotification(
+          project.organizationId,
+          AcceleratorReportUpcoming(
+              config,
+              report.prefix,
+              webAppUrls.fullAcceleratorReport(event.reportId, report.projectId).toString()),
+          roles = setOf(Role.Owner, Role.Admin))
     }
   }
 
