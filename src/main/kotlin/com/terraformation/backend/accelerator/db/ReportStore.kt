@@ -45,7 +45,7 @@ import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
-import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
@@ -1023,8 +1023,12 @@ class ReportStore(
                         DSL.sum(GERMINATING_QUANTITY_WITHDRAWN) +
                         DSL.sum(NOT_READY_QUANTITY_WITHDRAWN))
                 .from(this)
+                .join(WITHDRAWAL_SUMMARIES)
+                .on(WITHDRAWAL_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
                 .where(BATCH_ID.eq(BATCHES.ID))
-                .and(withdrawals.PURPOSE_ID.notEqual(WithdrawalPurpose.NurseryTransfer)))
+                .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.NurseryTransfer))
+                .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
+                .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull))
       }
 
   private val seedlingsField =
@@ -1052,14 +1056,16 @@ class ReportStore(
                         .from(this)
                         .join(DELIVERIES)
                         .on(DELIVERIES.ID.eq(DELIVERY_ID))
-                        .join(WITHDRAWALS)
-                        .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                        .join(WITHDRAWAL_SUMMARIES)
+                        .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
                         .join(PLANTING_SITES)
                         .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
                         .where(
-                            WITHDRAWALS.WITHDRAWN_DATE.between(
+                            WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
                                 REPORTS.START_DATE, REPORTS.END_DATE))
                         .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
+                        .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
                         .groupBy(SPECIES_ID)
                         .having(DSL.sum(NUM_PLANTS).ge(BigDecimal.ZERO))))
       }
@@ -1071,12 +1077,16 @@ class ReportStore(
                     .from(this)
                     .join(DELIVERIES)
                     .on(DELIVERIES.ID.eq(DELIVERY_ID))
-                    .join(WITHDRAWALS)
-                    .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                    .join(WITHDRAWAL_SUMMARIES)
+                    .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
                     .join(PLANTING_SITES)
                     .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
-                    .where(WITHDRAWALS.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+                    .where(
+                        WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
+                            REPORTS.START_DATE, REPORTS.END_DATE))
+                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
+                    .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull))
             .convertFrom { it.toInt() }
       }
 

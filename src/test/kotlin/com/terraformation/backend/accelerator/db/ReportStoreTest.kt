@@ -3442,16 +3442,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         notReadyQuantityWithdrawn = 100,
     )
 
-    // These two will be counted towards the seedlings metric, but should negate each other
-    // These should not be counted towards species planted metric
+    // These two will not be counted
     val undoDate = getRandomDate(reportStartDate, reportEndDate)
     val undoneWithdrawalId =
         insertWithdrawal(purpose = WithdrawalPurpose.OutPlant, withdrawnDate = undoDate)
+    // An undo can happen any time in the future
     val undoWithdrawalId =
         insertWithdrawal(
             purpose = WithdrawalPurpose.Undo,
             undoesWithdrawalId = undoneWithdrawalId,
-            withdrawnDate = undoDate,
+            withdrawnDate = reportEndDate.plusDays(1),
         )
     insertBatchWithdrawal(
         batchId = batchId1,
@@ -3493,7 +3493,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         numPlants = 27, // This should match up with the number of seedlings withdrawn
     )
 
-    // These two should negate each other, in both tree planted and species planted
+    // These two are not counted, in both tree planted and species planted
     val undoneDeliveryId =
         insertDelivery(
             plantingSiteId = plantingSiteId1,
