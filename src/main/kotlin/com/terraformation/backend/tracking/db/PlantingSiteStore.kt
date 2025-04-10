@@ -263,9 +263,6 @@ class PlantingSiteStore(
    * Subzones that do not currently have any plants are not included in the return value. If subzone
    * A had a planting but all the plants were late reassigned to subzone B, subzone A will not be
    * included in the return value.
-   *
-   * To find out which subzones have ever had plantings, even ones that were later reassigned, call
-   * [fetchSubzoneIdsWithPastPlantings].
    */
   fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<PlantingSubzoneId, Long> {
     requirePermissions { readPlantingSite(plantingSiteId) }
@@ -354,29 +351,6 @@ class PlantingSiteStore(
               totalSpecies = record[siteTotalSpeciesField] ?: 0,
           )
         } ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
-  }
-
-  /**
-   * Returns a set of the subzone IDs at a planting site that have ever had plantings. This can be
-   * different than the subzones returned by [countReportedPlantsInSubzones]: if a subzone had a
-   * planting that was later reassigned, it will still be returned by this method but will be
-   * omitted by [countReportedPlantsInSubzones].
-   *
-   * This should be used when the goal is to figure out which subzones are referred to by historical
-   * planting records.
-   */
-  fun fetchSubzoneIdsWithPastPlantings(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    return dslContext
-        .select(PLANTING_SUBZONES.ID)
-        .from(PLANTING_SUBZONES)
-        .whereExists(
-            DSL.selectOne()
-                .from(PLANTINGS)
-                .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
-        .and(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-        .fetchSet(PLANTING_SUBZONES.ID.asNonNullable())
   }
 
   fun createPlantingSite(
@@ -537,10 +511,6 @@ class PlantingSiteStore(
   ): ExistingPlantingSiteModel {
     val plantingSiteId = plantingSiteEdit.existingModel.id
 
-    if (plantingSiteEdit.problems.isNotEmpty()) {
-      throw PlantingSiteMapInvalidException(plantingSiteEdit.problems)
-    }
-
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     val countryCode =
@@ -676,11 +646,6 @@ class PlantingSiteStore(
         }
       }
       is PlantingZoneEdit.Update -> {
-        val newExtraPermanentClusters =
-            edit.monitoringPlotEdits.count { it.permanentCluster == null }
-        val totalExtraPermanentClusters =
-            edit.existingModel.extraPermanentClusters + newExtraPermanentClusters
-
         with(PLANTING_ZONES) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -696,13 +661,10 @@ class PlantingSiteStore(
                     }
                   }
                   .set(ERROR_MARGIN, edit.desiredModel.errorMargin)
-                  .set(EXTRA_PERMANENT_CLUSTERS, totalExtraPermanentClusters)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
-                  .set(
-                      NUM_PERMANENT_CLUSTERS,
-                      edit.desiredModel.numPermanentClusters + totalExtraPermanentClusters)
+                  .set(NUM_PERMANENT_CLUSTERS, edit.desiredModel.numPermanentClusters)
                   .set(STUDENTS_T, edit.desiredModel.studentsT)
                   .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
                   .set(VARIANCE, edit.desiredModel.variance)
@@ -753,23 +715,6 @@ class PlantingSiteStore(
                       updatedSite, updatedZone, plotEdits.map { it.permanentCluster!! }, region)
               replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
             }
-
-        if (newExtraPermanentClusters > 0) {
-          // Create the new permanent clusters at random places in the cluster list so that they
-          // aren't less likely to be selected for observations if the number of permanent clusters
-          // in the zone changes over time.
-          val newClusterNumbers =
-              (1..edit.existingModel.numPermanentClusters + newExtraPermanentClusters)
-                  .shuffled()
-                  .take(newExtraPermanentClusters)
-                  .sorted()
-          newClusterNumbers.forEach { makeRoomForClusterNumber(edit.existingModel.id, it) }
-
-          val newPlotIds =
-              createPermanentClusters(updatedSite, updatedZone, newClusterNumbers, edit.addedRegion)
-
-          replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
-        }
       }
     }
 
@@ -1050,7 +995,6 @@ class PlantingSiteStore(
       dslContext
           .update(PLANTING_ZONES)
           .set(ERROR_MARGIN, edited.errorMargin)
-          .set(EXTRA_PERMANENT_CLUSTERS, edited.extraPermanentClusters)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NUM_PERMANENT_CLUSTERS, edited.numPermanentClusters)
@@ -1117,7 +1061,6 @@ class PlantingSiteStore(
             createdBy = userId,
             createdTime = now,
             errorMargin = zone.errorMargin,
-            extraPermanentClusters = zone.extraPermanentClusters,
             modifiedBy = userId,
             modifiedTime = now,
             name = zone.name,
@@ -1600,26 +1543,6 @@ class PlantingSiteStore(
   }
 
   /**
-   * Makes room for a new permanent cluster with a particular number. This is effectively an
-   * insertion into the ordered list of clusters for the zone: the numbers of any existing clusters
-   * with the desired number or higher are incremented by 1.
-   */
-  private fun makeRoomForClusterNumber(plantingZoneId: PlantingZoneId, clusterNumber: Int) {
-    with(MONITORING_PLOTS) {
-      dslContext
-          .update(MONITORING_PLOTS)
-          .set(PERMANENT_CLUSTER, PERMANENT_CLUSTER.plus(1))
-          .where(
-              PLANTING_SUBZONE_ID.`in`(
-                  DSL.select(PLANTING_SUBZONES.ID)
-                      .from(PLANTING_SUBZONES)
-                      .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))))
-          .and(PERMANENT_CLUSTER.ge(clusterNumber))
-          .execute()
-    }
-  }
-
-  /**
    * Creates permanent clusters with a specific set of cluster numbers. The permanent clusters may
    * include a mix of newly-created monitoring plots and plots that exist already but were only used
    * as temporary plots in the past.
@@ -1918,7 +1841,6 @@ class PlantingSiteStore(
                     PLANTING_ZONES.AREA_HA,
                     PLANTING_ZONES.BOUNDARY_MODIFIED_TIME,
                     PLANTING_ZONES.ERROR_MARGIN,
-                    PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS,
                     PLANTING_ZONES.ID,
                     PLANTING_ZONES.NAME,
                     PLANTING_ZONES.NUM_PERMANENT_CLUSTERS,
@@ -1938,7 +1860,6 @@ class PlantingSiteStore(
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
                 record[PLANTING_ZONES.BOUNDARY_MODIFIED_TIME]!!,
                 record[PLANTING_ZONES.ERROR_MARGIN]!!,
-                record[PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS]!!,
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
                 record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS]!!,

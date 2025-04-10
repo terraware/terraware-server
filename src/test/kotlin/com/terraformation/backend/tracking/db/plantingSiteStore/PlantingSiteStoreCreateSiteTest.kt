@@ -157,7 +157,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                       PlantingZoneModel.create(
                           boundary = zone1Boundary,
                           errorMargin = BigDecimal(1),
-                          extraPermanentClusters = 2,
                           name = "Zone 1",
                           numPermanentClusters = 3,
                           numTemporaryPlots = 4,
@@ -232,7 +231,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           setOf(
               commonZonesRow.copy(
                   errorMargin = BigDecimal(1),
-                  extraPermanentClusters = 2,
                   id = actualZones["Zone 1"]?.id,
                   name = "Zone 1",
                   numPermanentClusters = 3,
@@ -243,7 +241,6 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
               commonZonesRow.copy(
                   errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
-                  extraPermanentClusters = 0,
                   id = actualZones["Zone 2"]?.id,
                   name = "Zone 2",
                   numPermanentClusters = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,

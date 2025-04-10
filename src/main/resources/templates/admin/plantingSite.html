@@ -40,7 +40,6 @@
         <script th:inline="javascript">
             function registerPlotCalculator(zoneId) {
                 const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
-                const extraPermanentField = document.getElementById(`extraPermanent-${zoneId}`);
                 const permanentClustersField = document.getElementById(`numPermanent-${zoneId}`);
                 const studentsTField = document.getElementById(`studentsT-${zoneId}`);
                 const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
@@ -51,8 +50,7 @@
                     const errorMargin = Number.parseFloat(errorMarginField.value);
                     const studentsT = Number.parseFloat(studentsTField.value);
                     const variance = Number.parseFloat(varianceField.value);
-                    const extraPermanent = Number.parseFloat(extraPermanentField.value);
-                    return Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin + extraPermanent);
+                    return Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin);
                 };
 
                 const recalculateTotalPlots = () => {
@@ -83,7 +81,6 @@
                 };
 
                 errorMarginField.addEventListener('change', recalculatePermanentClusters);
-                extraPermanentField.addEventListener('change', recalculatePermanentClusters);
                 studentsTField.addEventListener('change', recalculatePermanentClusters);
                 varianceField.addEventListener('change', recalculatePermanentClusters);
                 permanentClustersField.addEventListener('change', recalculateTemporaryPlots);
@@ -238,7 +235,6 @@
                 <th>Variance</th>
                 <th>Error</th>
                 <th>Student's t</th>
-                <th>Extra<br/>Permanent</th>
                 <th>Permanent</th>
                 <th>Temporary</th>
                 <th>Total</th>
@@ -263,10 +259,6 @@
                 <td>
                     <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
                            th:value="${zone.studentsT}" th:form="|zone-${zone.id}|"/>
-                </td>
-                <td>
-                    <input type="number" required min="0" step="1" name="extraPermanent" th:id="|extraPermanent-${zone.id}|"
-                           th:value="${zone.extraPermanentClusters}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${zone.id}|"
@@ -311,14 +303,6 @@
                 <select name="dryRun">
                     <option value="true" selected>Dry run (no change to site)</option>
                     <option value="false">Apply changes to site</option>
-                </select>
-            </label>
-            <br/>
-            <label>
-                Edit Behavior
-                <select name="editVersion">
-                    <option value="1">Restricted (some edits not allowed)</option>
-                    <option value="2" selected>Flexible (may affect monitoring plots)</option>
                 </select>
             </label>
             <br/>

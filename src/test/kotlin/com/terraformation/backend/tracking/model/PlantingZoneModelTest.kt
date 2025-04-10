@@ -737,7 +737,6 @@ class PlantingZoneModelTest {
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = BigDecimal.ONE,
-          extraPermanentClusters = 0,
           id = PlantingZoneId(1),
           name = "name",
           numPermanentClusters = numPermanentClusters,

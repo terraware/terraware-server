@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 
@@ -24,12 +23,6 @@ data class PlantingSiteEdit(
      */
     val areaHaDifference: BigDecimal,
 
-    /**
-     * Which map editing behavior to use. This controls things like how active observations are
-     * affected by edits.
-     */
-    val behavior: PlantingSiteEditBehavior,
-
     /** Desired planting site model. The intended end result after edits are applied. */
     val desiredModel: AnyPlantingSiteModel,
 
@@ -38,12 +31,6 @@ data class PlantingSiteEdit(
 
     /** Edits to this site's planting zones. */
     val plantingZoneEdits: List<PlantingZoneEdit>,
-
-    /**
-     * List of problems that prevent the edit from being performed. If this is nonempty, the edit
-     * should be considered invalid.
-     */
-    val problems: List<PlantingSiteValidationFailure> = emptyList(),
 ) {
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
@@ -53,6 +40,5 @@ data class PlantingSiteEdit(
           plantingZoneEdits.size == other.plantingZoneEdits.size &&
           plantingZoneEdits.zip(other.plantingZoneEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
-          } &&
-          problems == other.problems
+          }
 }

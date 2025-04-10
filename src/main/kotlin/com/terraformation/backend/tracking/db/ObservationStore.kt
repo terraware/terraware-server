@@ -133,17 +133,6 @@ class ObservationStore(
         .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
   }
 
-  fun fetchInProgressObservation(plantingSiteId: PlantingSiteId): ExistingObservationModel? {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    return dslContext
-        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
-        .from(OBSERVATIONS)
-        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress))
-        .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
-  }
-
   fun fetchObservationsByPlantingSite(
       plantingSiteId: PlantingSiteId,
       isAdHoc: Boolean = false,

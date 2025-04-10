@@ -7,8 +7,8 @@ import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
-import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import java.math.BigDecimal
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -28,7 +28,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -72,7 +71,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -137,7 +135,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -162,7 +159,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("5.0"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -206,7 +202,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -288,7 +283,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -354,7 +348,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -413,7 +406,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -491,7 +483,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("-25.0"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -566,7 +557,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal(25),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -611,7 +601,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal(5),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -663,7 +652,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("10.0"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -719,7 +707,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -753,7 +740,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -792,7 +778,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("-12.5"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -823,7 +808,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal(-25),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -863,7 +847,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("-0.1"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -912,7 +895,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal.ZERO,
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -953,7 +935,6 @@ class PlantingSiteEditCalculatorV2Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("0.0"),
-            behavior = PlantingSiteEditBehavior.Flexible,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits = emptyList()),
@@ -968,7 +949,7 @@ class PlantingSiteEditCalculatorV2Test {
       val existing = existingSite(x = 0, width = 1000)
       val desired = newSite(x = 5000, width = 100)
 
-      assertHasNoProblems(existing, desired)
+      assertDoesNotThrow { calculateSiteEdit(existing, desired) }
     }
 
     @Test
@@ -1023,13 +1004,5 @@ class PlantingSiteEditCalculatorV2Test {
           { assertEquals(expected, actual) },
       )
     }
-  }
-
-  private fun assertHasNoProblems(
-      existing: ExistingPlantingSiteModel,
-      desired: AnyPlantingSiteModel,
-  ) {
-    val edit = calculateSiteEdit(existing, desired)
-    assertEquals(emptyList<PlantingSiteValidationFailure>(), edit.problems, "Unexpected problems")
   }
 }

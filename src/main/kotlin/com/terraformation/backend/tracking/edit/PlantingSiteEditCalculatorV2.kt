@@ -9,7 +9,6 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
-import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.nearlyCoveredBy
@@ -22,10 +21,8 @@ import org.locationtech.jts.geom.MultiPolygon
 class PlantingSiteEditCalculatorV2(
     private val existingSite: ExistingPlantingSiteModel,
     private val desiredSite: AnyPlantingSiteModel,
-) : PlantingSiteEditCalculator {
-  private val problems = mutableListOf<PlantingSiteValidationFailure>()
-
-  override fun calculateSiteEdit(): PlantingSiteEdit {
+) {
+  fun calculateSiteEdit(): PlantingSiteEdit {
     if (desiredSite.boundary == null) {
       throw IllegalArgumentException("Cannot remove map from site")
     }
@@ -34,11 +31,9 @@ class PlantingSiteEditCalculatorV2(
 
     return PlantingSiteEdit(
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
-        behavior = PlantingSiteEditBehavior.Flexible,
         desiredModel = desiredSite,
         existingModel = existingSite,
         plantingZoneEdits = zoneEdits,
-        problems = problems,
     )
   }
 

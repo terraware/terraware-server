@@ -42,7 +42,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertPlantingZone(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
-              extraPermanentClusters = 1,
               targetPlantingDensity = BigDecimal.ONE)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
@@ -102,7 +101,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
-                          extraPermanentClusters = 1,
                           id = plantingZoneId,
                           name = "Z1",
                           plantingSubzones = emptyList(),
@@ -218,7 +216,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           areaHa = BigDecimal.TEN,
                           boundary = zoneBoundary4326,
                           boundaryModifiedTime = Instant.EPOCH,
-                          extraPermanentClusters = 0,
                           id = plantingZoneId,
                           name = "Z1",
                           plantingSubzones =

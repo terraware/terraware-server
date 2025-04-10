@@ -11,13 +11,10 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
-import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1Test
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2Test
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -41,8 +38,8 @@ import org.springframework.security.access.AccessDeniedException
 
 /**
  * Tests for applying edit operations to planting sites. Most of these tests don't manually
- * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculatorV1] and rely on
- * the coverage in [PlantingSiteEditCalculatorV1Test] to verify that the calculated edits would be
+ * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculatorV2] and rely on
+ * the coverage in [PlantingSiteEditCalculatorV2Test] to verify that the calculated edits would be
  * correct.
  */
 internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
@@ -101,8 +98,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                       targetPlantingDensity = newTargetPlantingDensity
                       variance = newVariance
                     }
-                  },
-              useV2Calculator = true)
+                  })
 
       assertEquals(newErrorMargin, edited.plantingZones[0].errorMargin, "Error margin")
       assertEquals(newStudentsT, edited.plantingZones[0].studentsT, "Student's t")
@@ -124,26 +120,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `creates new subzones in existing zones`() {
-      runScenario(
-          initial = newSite(width = 500) { zone(numPermanent = 7) },
-          desired =
-              newSite(width = 750) {
-                zone(numPermanent = 7) {
-                  subzone(width = 500)
-                  subzone()
-                }
-              },
-          expected =
-              newSite(width = 750) {
-                zone(numPermanent = 10, extraPermanent = 3) {
-                  subzone(width = 500)
-                  subzone()
-                }
-              })
-    }
-
-    @Test
     fun `deletes existing zones`() {
       runScenario(
           initial =
@@ -151,10 +127,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 zone(width = 500)
                 zone()
               },
-          desired = newSite(width = 500),
-          getPlantedSubzoneIds = { existing ->
-            setOf(existing.plantingZones[0].plantingSubzones[0].id)
-          })
+          desired = newSite(width = 500))
     }
 
     @Test
@@ -167,179 +140,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   subzone()
                 }
               },
-          desired = newSite(width = 500),
-          getPlantedSubzoneIds = { existing ->
-            setOf(existing.plantingZones[0].plantingSubzones[0].id)
-          })
-    }
-
-    @Test
-    fun `v1 edit creates extra permanent clusters in added area`() {
-      runScenario(
-          initial =
-              newSite(width = 500) {
-                zone(numPermanent = 7) { subzone { repeat(7) { cluster() } } }
-              },
-          desired = newSite(width = 750) { zone(numPermanent = 7) },
-          expected = newSite(width = 750) { zone(numPermanent = 10, extraPermanent = 3) },
-          expectedPlotCounts =
-              listOf(
-                  rectangle(x = 0, width = 500, height = 500) to 7,
-                  rectangle(x = 500, width = 250, height = 500) to 3,
-              ))
-    }
-
-    @Test
-    fun `uses random cluster numbers for newly added clusters, renumbering existing clusters if needed`() {
-      val clusterNumbersFoundInInitialArea = mutableSetOf<Int>()
-      val clusterNumbersFoundInAddedArea = mutableSetOf<Int>()
-      val maxAttempts = 100
-      var currentAttempt = 0
-      val initialArea = rectangle(x = 0, width = 500, height = 500)
-      val addedArea = rectangle(x = 500, width = 500, height = 500)
-
-      // Initially, the site has an existing area with two clusters numbered 1 and 2.
-      //
-      // We're editing it to double its size, which means there should be two new clusters created.
-      // The numbers of those clusters should be random, and the numbers of the initial clusters
-      // should be updated to make room for them. For example, if the newly-added clusters end up
-      // with numbers 1 and 3 randomly, we would end up with a result of
-      //
-      // Cluster 1: first new cluster in added area
-      // Cluster 2: the cluster formerly known as 1, in the initial area, renumbered because the
-      //            first new cluster in the added area was selected to take its position in the
-      //            list.
-      // Cluster 3: second new cluster in added area
-      // Cluster 4: the cluster formerly known as 2, in the initial area, renumbered because there
-      //            were two newly-created clusters with cluster numbers less than or equal to its
-      //            former cluster number.
-      //
-      // If the newly-added clusters end up with numbers 2 and 4 randomly, we'd get
-      //
-      // Cluster 1: the original cluster 1 in the initial area
-      // Cluster 2: first new cluster in added area
-      // Cluster 3: the cluster formerly known as 2, in the initial area, renumbered because we
-      //            needed to insert a new cluster at position 2
-      // Cluster 4: second new cluster in added area
-      //
-      // Each of the two new clusters should be able to appear in any of the four positions. To test
-      // that that's the case, we run the edit a bunch of times until we see that the initial two
-      // clusters have, on various runs, occupied all four possible cluster numbers, and that the
-      // newly-added clusters have done the same. This verifies that (a) the selection isn't the
-      // same each time, and (b) the existing clusters are correctly renumbered as needed.
-
-      while (++currentAttempt < maxAttempts &&
-          (clusterNumbersFoundInAddedArea != setOf(1, 2, 3, 4) ||
-              clusterNumbersFoundInInitialArea != setOf(1, 2, 3, 4))) {
-        val (edited) =
-            runScenario(
-                initial =
-                    newSite(width = 500) {
-                      name = "Site $currentAttempt"
-                      nextPlotNumber =
-                          identifierGenerator.generateNumericIdentifier(
-                              inserted.organizationId, NumericIdentifierType.PlotNumber)
-                      zone(numPermanent = 2) {
-                        subzone {
-                          cluster()
-                          cluster()
-                        }
-                      }
-                    },
-                desired = newSite(width = 1000) { zone(numPermanent = 2) },
-                expected =
-                    newSite(width = 1000) {
-                      name = "Site $currentAttempt"
-                      zone(numPermanent = 4, extraPermanent = 2)
-                    },
-                expectedPlotCounts =
-                    listOf(
-                        initialArea to 2,
-                        addedArea to 2,
-                    ))
-
-        val monitoringPlots = edited.plantingZones[0].plantingSubzones[0].monitoringPlots
-
-        monitoringPlots.forEach { plot ->
-          plot.permanentCluster?.let { permanentCluster ->
-            if (plot.boundary.nearlyCoveredBy(addedArea)) {
-              clusterNumbersFoundInAddedArea.add(permanentCluster)
-            } else {
-              clusterNumbersFoundInInitialArea.add(permanentCluster)
-            }
-          }
-        }
-
-        val plotCountsByClusterNumber =
-            monitoringPlots.groupBy { it.permanentCluster }.mapValues { (_, plots) -> plots.size }
-
-        assertEquals(
-            mapOf(1 to 1, 2 to 1, 3 to 1, 4 to 1),
-            plotCountsByClusterNumber,
-            "Number of plots with each cluster number after edit")
-      }
-
-      assertEquals(
-          setOf(1, 2, 3, 4),
-          clusterNumbersFoundInAddedArea,
-          "Cluster numbers assigned to newly-added clusters across all runs")
-      assertEquals(
-          setOf(1, 2, 3, 4),
-          clusterNumbersFoundInInitialArea,
-          "Cluster numbers assigned to existing clusters after edit across all runs")
-    }
-
-    @Test
-    fun `retains availability of existing temporary plots even if they are outside the new usable area`() {
-      val exclusionAreaPlotNumber = 1L
-      val plantableAreaPlotNumber = 2L
-      val unavailablePlotNumber = 3L
-      runScenario(
-          newSite {
-            zone {
-              subzone {
-                plot(plotNumber = exclusionAreaPlotNumber)
-                plot(plotNumber = plantableAreaPlotNumber)
-                plot(plotNumber = unavailablePlotNumber, isAvailable = false)
-              }
-            }
-          },
-          newSite {
-            exclusion = rectangle(10)
-            zone()
-          })
-
-      assertEquals(
-          mapOf(
-              exclusionAreaPlotNumber to true,
-              plantableAreaPlotNumber to true,
-              unavailablePlotNumber to false),
-          monitoringPlotsDao.findAll().associate { it.plotNumber to it.isAvailable },
-          "isAvailable flags")
-    }
-
-    @Test
-    fun `ejects permanent plot if no longer in plantable area`() {
-      runScenario(
-          newSite {
-            zone {
-              subzone {
-                cluster()
-                cluster()
-              }
-            }
-          },
-          newSite { exclusion = rectangle(10) })
-
-      val allPlots = monitoringPlotsDao.findAll()
-      assertEquals(
-          mapOf(1L to null, 2L to 2),
-          allPlots.associate { it.plotNumber to it.permanentCluster },
-          "Cluster numbers of monitoring plots")
-      assertEquals(
-          mapOf(1L to true, 2L to true),
-          allPlots.associate { it.plotNumber to it.isAvailable },
-          "isAvailable flags")
+          desired = newSite(width = 500))
     }
 
     @Test
@@ -369,7 +170,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           initial =
               newSite {
                 zone(numPermanent = 1) {
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
+                  subzone(width = 250) {
+                    plantingCompletedTime = Instant.EPOCH
+                    cluster()
+                  }
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                 }
               },
@@ -378,6 +182,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 zone(numPermanent = 1) {
                   subzone(width = 250)
                   subzone(width = 250)
+                }
+              },
+          expected =
+              newSite(height = 600) {
+                zone(numPermanent = 1) {
+                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
+                  subzone(width = 250) { plantingCompletedTime = null }
                 }
               },
           getSubzonesToMarkIncomplete = { existing ->
@@ -388,45 +199,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 .map { it.id }
                 .toSet()
           },
-          expected =
-              newSite(height = 600) {
-                zone(numPermanent = 2, extraPermanent = 1) {
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
-                  subzone(width = 250) { plantingCompletedTime = null }
-                }
-              },
-      )
-    }
-
-    @Test
-    fun `does not mark non-expanded subzones as not complete`() {
-      runScenario(
-          initial =
-              newSite {
-                zone(numPermanent = 1) {
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
-                }
-              },
-          desired =
-              newSite(width = 600) {
-                zone(numPermanent = 1) {
-                  subzone(width = 250)
-                  subzone(width = 350)
-                }
-              },
-          getSubzonesToMarkIncomplete = { existing ->
-            // Ask it to mark all the subzones as incomplete; only the one that grew should actually
-            // be marked.
-            existing.plantingZones[0].plantingSubzones.map { it.id }.toSet()
-          },
-          expected =
-              newSite(width = 600) {
-                zone(numPermanent = 2, extraPermanent = 1) {
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
-                  subzone(width = 350) { plantingCompletedTime = null }
-                }
-              },
       )
     }
 
@@ -443,11 +215,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 zone(width = 500)
                 zone(width = 600)
               },
-          expected =
-              newSite(width = 1100) {
-                zone(width = 500)
-                zone(width = 600, numPermanent = 9, extraPermanent = 1)
-              },
       )
 
       val zonesRows = plantingZonesDao.findAll().associateBy { it.name }
@@ -458,11 +225,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `publishes event if site was edited`() {
-      val results =
-          runScenario(
-              newSite(),
-              newSite(width = 600),
-              newSite(width = 600) { zone(numPermanent = 9, extraPermanent = 1) })
+      val results = runScenario(newSite(), newSite(width = 600))
 
       val monitoringPlotIds =
           results.edited.plantingZones[0].plantingSubzones[0].monitoringPlots.map { it.id }.toSet()
@@ -476,21 +239,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `does not publish event if edit was a no-op`() {
-      runScenario(newSite(), newSite())
+      runScenario(
+          initial = newSite { zone(numPermanent = 1) { subzone { cluster() } } },
+          desired = newSite { zone(numPermanent = 1) })
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
-    }
-
-    @Test
-    fun `throws exception if edit has problems`() {
-      assertThrows<PlantingSiteMapInvalidException> {
-        runScenario(
-            newSite(),
-            newSite {
-              zone(width = 250)
-              zone()
-            })
-      }
     }
 
     @Test
@@ -501,7 +254,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         store.applyPlantingSiteEdit(
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal.ZERO,
-                behavior = PlantingSiteEditBehavior.Flexible,
                 desiredModel = existing,
                 existingModel = existing,
                 plantingZoneEdits =
@@ -532,8 +284,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       every { user.canUpdatePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.applyPlantingSiteEdit(
-            calculateSiteEdit(existing, newSite(width = 600), emptySet(), false))
+        store.applyPlantingSiteEdit(calculateSiteEdit(existing, newSite(width = 600)))
       }
     }
 
@@ -548,7 +299,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           runScenario(
               initial = initial,
               desired = expected,
-              useV2Calculator = true,
               expectedPlotCounts = listOf(existingArea to 2, newArea to 2))
 
       assertClusterRegions(
@@ -580,7 +330,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         }
       }
 
-      val (edited) = runScenario(initial = initial, desired = expected, useV2Calculator = true)
+      val (edited) = runScenario(initial = initial, desired = expected)
 
       assertSubzoneClusters(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
     }
@@ -619,7 +369,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
             zone(name = "A", numPermanent = 11, numTemporary = 3) {}
           }
 
-      runScenario(initial = initial, desired = desired, useV2Calculator = true)
+      runScenario(initial = initial, desired = desired)
 
       assertEquals(
           mapOf(
@@ -656,7 +406,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         zone(name = "B", numPermanent = 1)
       }
 
-      val (edited) = runScenario(initial = initial, desired = desired, useV2Calculator = true)
+      val (edited) = runScenario(initial = initial, desired = desired)
 
       assertSubzoneClusters(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
       assertSubzonePlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
@@ -676,8 +426,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         zone(name = "B", numPermanent = 1, width = 250) { subzone(name = "Subzone 2") }
       }
 
-      val (edited, existing) =
-          runScenario(initial = initial, desired = desired, useV2Calculator = true)
+      val (edited, existing) = runScenario(initial = initial, desired = desired)
 
       val existingSubzone2 = existing.plantingZones[0].plantingSubzones[1]
       val editedSubzone2 = edited.plantingZones[1].plantingSubzones[0]
@@ -749,19 +498,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         initial: NewPlantingSiteModel,
         desired: NewPlantingSiteModel,
         expected: NewPlantingSiteModel = desired,
-        useV2Calculator: Boolean = false,
         expectedPlotCounts: List<Pair<Geometry, Int>>? = null,
-        getPlantedSubzoneIds: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = { existing ->
-          existing.plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
-        },
         getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = {
           emptySet()
         },
     ): ScenarioResults {
       val existing = createSite(initial)
 
-      val plantingSiteEdit =
-          calculateSiteEdit(existing, desired, getPlantedSubzoneIds(existing), useV2Calculator)
+      val plantingSiteEdit = calculateSiteEdit(existing, desired)
 
       clock.instant = editTime
       val subzonesToMarkIncomplete = getSubzonesToMarkIncomplete(existing)
@@ -814,15 +558,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     private fun calculateSiteEdit(
         existing: ExistingPlantingSiteModel,
         desired: AnyPlantingSiteModel,
-        plantedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
-        useV2Calculator: Boolean,
     ): PlantingSiteEdit {
-      val calculator =
-          if (useV2Calculator) {
-            PlantingSiteEditCalculatorV2(existing, desired)
-          } else {
-            PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds)
-          }
+      val calculator = PlantingSiteEditCalculatorV2(existing, desired)
       return calculator.calculateSiteEdit()
     }
 

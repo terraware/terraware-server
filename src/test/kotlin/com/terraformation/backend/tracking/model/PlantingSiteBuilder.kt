@@ -144,7 +144,6 @@ private constructor(
       name: String? = null,
       numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
       numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-      extraPermanent: Int = 0,
       func: ZoneBuilder.() -> Unit = {}
   ): ExistingPlantingZoneModel {
     ++currentZoneId
@@ -158,7 +157,6 @@ private constructor(
             name = name ?: "Z$currentZoneId",
             numPermanentClusters = numPermanent,
             numTemporaryPlots = numTemporary,
-            extraPermanentClusters = extraPermanent,
         )
     builder.func()
 
@@ -205,7 +203,6 @@ private constructor(
       private val name: String,
       private val numPermanentClusters: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
       private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-      private val extraPermanentClusters: Int = 0,
   ) {
     var errorMargin: BigDecimal = PlantingZoneModel.DEFAULT_ERROR_MARGIN
     var studentsT: BigDecimal = PlantingZoneModel.DEFAULT_STUDENTS_T
@@ -223,7 +220,6 @@ private constructor(
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = errorMargin,
-          extraPermanentClusters = extraPermanentClusters,
           id = PlantingZoneId(currentZoneId),
           name = name,
           numPermanentClusters = numPermanentClusters,
