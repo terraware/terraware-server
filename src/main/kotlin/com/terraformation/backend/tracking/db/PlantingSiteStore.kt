@@ -1671,13 +1671,14 @@ class PlantingSiteStore(
     }
   }
 
-  fun migrateSimplePlantingSites(): List<String> {
+  fun migrateSimplePlantingSites(
+      addSuccessMessage: (String) -> Unit,
+      addFailureMessage: (String) -> Unit
+  ) {
     // These are the names we use in terraware-web when creating a new planting site without
     // specifying zones or subzones. They are not translated into the user's language.
     val zoneName = "Zone 01"
     val subzoneName = "Subzone A"
-
-    val messages = mutableListOf<String>()
 
     dslContext.transaction { _ ->
       val simplePlantingSiteIds =
@@ -1712,7 +1713,8 @@ class PlantingSiteStore(
               )
 
           if (newSite.areaHa == null || newSite.areaHa.equalsIgnoreScale(BigDecimal.ZERO)) {
-            messages.add("Planting site $siteId (${existingSite.name}) area too small to convert")
+            addFailureMessage(
+                "Planting site $siteId (${existingSite.name}) area too small to convert")
             continue
           }
 
@@ -1746,16 +1748,14 @@ class PlantingSiteStore(
           val subzoneId = createPlantingSubzone(subzone, siteId, zoneId)
           insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
 
-          messages.add("Migrated planting site $siteId (${existingSite.name})")
+          addSuccessMessage("Migrated planting site $siteId (${existingSite.name})")
         } catch (e: Exception) {
           log.error("Unable to migrate planting site $siteId", e)
-          messages.add("Unable to migrate planting site $siteId: ${e.message}")
+          addFailureMessage("Unable to migrate planting site $siteId: ${e.message}")
           break
         }
       }
     }
-
-    return messages
   }
 
   private val plantingSeasonsMultiset =
