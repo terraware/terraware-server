@@ -179,14 +179,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="batch_sub_locations.facility_id references public.facilities.id via batch_sub_locations_facility_id_fkey"><a href='../../public/tables/facilities.html'>facilities</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">batch_sub_locations_facility_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="batch_sub_locations.[facility_id, batch_id] references batches.[facility_id, id] via batch_sub_locations_facility_id_batch_id_fkey"><a href='batches.html'>batches</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batch_sub_locations_facility_id_batch_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batch_sub_locations.[facility_id, sub_location_id] references public.sub_locations.[facility_id, id] via batch_sub_locations_facility_id_sub_location_id_fkey"><a href='../../public/tables/sub_locations.html'>sub_locations</a><span class='relatedKey'>.facility_id</span></td>
