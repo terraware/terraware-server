@@ -89,8 +89,10 @@ import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
+import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -1665,6 +1667,93 @@ class PlantingSiteStore(
         insertMonitoringPlotHistory(monitoringPlotsRow)
 
         monitoringPlotsRow.id!!
+      }
+    }
+  }
+
+  fun migrateSimplePlantingSites(
+      addSuccessMessage: (String) -> Unit,
+      addFailureMessage: (String) -> Unit
+  ) {
+    // These are the names we use in terraware-web when creating a new planting site without
+    // specifying zones or subzones. They are not translated into the user's language.
+    val zoneName = "Zone 01"
+    val subzoneName = "Subzone A"
+
+    dslContext.transaction { _ ->
+      val simplePlantingSiteIds =
+          dslContext
+              .select(PLANTING_SITES.ID)
+              .distinctOn(PLANTING_SITES.ID)
+              .from(PLANTING_SITES)
+              .where(PLANTING_SITES.BOUNDARY.isNotNull)
+              .andNotExists(
+                  DSL.selectOne()
+                      .from(PLANTING_ZONES)
+                      .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)))
+              .orderBy(PLANTING_SITES.ID)
+              .fetch(PLANTING_SITES.ID.asNonNullable())
+
+      for (siteId in simplePlantingSiteIds) {
+        try {
+          val now = clock.instant()
+
+          log.info("Migrating simple planting site $siteId to detailed")
+
+          val existingSite = fetchSiteById(siteId, PlantingSiteDepth.Site)
+          val boundary = existingSite.boundary!!.toMultiPolygon()
+
+          // This calculates the grid origin and area.
+          val newSite =
+              NewPlantingSiteModel.create(
+                  boundary,
+                  existingSite.description,
+                  name = existingSite.name,
+                  organizationId = existingSite.organizationId,
+              )
+
+          if (newSite.areaHa == null || newSite.areaHa.equalsIgnoreScale(BigDecimal.ZERO)) {
+            addFailureMessage(
+                "Planting site $siteId (${existingSite.name}) area too small to convert")
+            continue
+          }
+
+          val zone =
+              NewPlantingZoneModel.create(
+                  boundary = boundary,
+                  name = zoneName,
+                  plantingSubzones = emptyList(),
+              )
+          val subzone =
+              NewPlantingSubzoneModel.create(
+                  boundary = boundary,
+                  fullName = "$zoneName-$subzoneName",
+                  name = subzoneName,
+              )
+
+          with(PLANTING_SITES) {
+            dslContext
+                .update(PLANTING_SITES)
+                .set(AREA_HA, newSite.areaHa)
+                .set(GRID_ORIGIN, newSite.gridOrigin)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, now)
+                .where(ID.eq(siteId))
+                .execute()
+          }
+
+          val siteHistoryId = insertPlantingSiteHistory(newSite, newSite.gridOrigin!!, now, siteId)
+          val zoneId = createPlantingZone(zone, siteId)
+          val zoneHistoryId = insertPlantingZoneHistory(zone, siteHistoryId, zoneId)
+          val subzoneId = createPlantingSubzone(subzone, siteId, zoneId)
+          insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
+
+          addSuccessMessage("Migrated planting site $siteId (${existingSite.name})")
+        } catch (e: Exception) {
+          log.error("Unable to migrate planting site $siteId", e)
+          addFailureMessage("Unable to migrate planting site $siteId: ${e.message}")
+          break
+        }
       }
     }
   }

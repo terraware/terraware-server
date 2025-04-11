@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -83,6 +84,7 @@ class AdminPlantingSitesController(
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
+    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -725,6 +727,31 @@ class AdminPlantingSitesController(
     } catch (e: Exception) {
       log.warn("Mortality rate recalculation failed", e)
       redirectAttributes.failureMessage = "Failed to recalculate mortality rates: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/migrateSimplePlantingSites")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun migrateSimplePlantingSites(redirectAttributes: RedirectAttributes): String {
+    val successDetails = mutableListOf<String>()
+    val failureDetails = mutableListOf<String>()
+
+    try {
+      systemUser.run {
+        plantingSiteStore.migrateSimplePlantingSites(successDetails::add, failureDetails::add)
+        redirectAttributes.successMessage = "Successfully migrated planting sites"
+        redirectAttributes.successDetails = successDetails
+      }
+
+      if (failureDetails.isNotEmpty()) {
+        redirectAttributes.failureMessage = "Failed to migrate some planting sites"
+        redirectAttributes.failureDetails = failureDetails
+      }
+    } catch (e: Exception) {
+      log.error("Failed to migrate simple planting sites", e)
+      redirectAttributes.failureMessage = "Failed to migrate planting sites: ${e.message}"
     }
 
     return redirectToAdminHome()
