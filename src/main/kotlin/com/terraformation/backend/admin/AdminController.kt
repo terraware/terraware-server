@@ -59,6 +59,8 @@ class AdminController(
         currentUser().canManageModules() || currentUser().canManageDeliverables())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
+    model.addAttribute(
+        "canMigrateSimplePlantingSites", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute(
         "canRecalculateMortalityRates", GlobalRole.SuperAdmin in currentUser().globalRoles)
