@@ -197,6 +197,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         heightM = BigDecimal("13.1"),
         pointOfMeasurementM = BigDecimal("1.3"),
         treeGrowthForm = TreeGrowthForm.Tree,
+        treeNumber = 1,
+    )
+    insertRecordedTree(
+        description = "Trunk description",
+        diameterAtBreastHeightCm = BigDecimal("25.7"),
+        heightM = BigDecimal("10.2"),
+        pointOfMeasurementM = BigDecimal("1.3"),
+        treeGrowthForm = TreeGrowthForm.Trunk,
+        treeNumber = 1,
+        trunkNumber = 2,
     )
     insertObservationBiomassQuadratSpecies(
         abundancePercent = 33,
@@ -347,7 +357,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     "description" to "Biomass description",
                                                     "forestType" to "Mangrove",
                                                     "herbaceousCoverPercent" to "33",
-                                                    "numPlants" to "1",
+                                                    "numPlants" to "2",
                                                     "numSpecies" to "1",
                                                     "ph" to "0.8",
                                                     "salinity" to "15",
@@ -396,6 +406,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "pointOfMeasurement" to "1.3",
                                                         "treeNumber" to "1",
                                                         "trunkNumber" to "1",
+                                                    ),
+                                                    mapOf(
+                                                        "description" to "Trunk description",
+                                                        "diameterAtBreastHeight" to "25.7",
+                                                        "growthForm" to "Tree",
+                                                        "height" to "10.2",
+                                                        "isDead" to "false",
+                                                        "pointOfMeasurement" to "1.3",
+                                                        "treeNumber" to "1",
+                                                        "trunkNumber" to "2",
                                                     ),
                                                 ),
                                         ),
