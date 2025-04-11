@@ -176,7 +176,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         setOf(OrganizationFeature.Applications),
         store.listOrganizationFeatures(organizationId),
-        "Onne application project")
+        "One application project")
 
     val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
     val participantId = insertParticipant(cohortId = cohortId)
@@ -204,6 +204,6 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             OrganizationFeature.Modules,
             OrganizationFeature.Reports),
         store.listOrganizationFeatures(organizationId),
-        "One application project, one cohort phase 1 project, and one report proojects")
+        "One application project, one cohort phase 1 project, and one report projects")
   }
 }
