@@ -720,6 +720,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readOrganizationFeatures() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.readOrganizationFeatures(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.readOrganizationFeatures(organizationId) }
+
+    grant { user.canReadOrganizationFeatures(organizationId) }
+    requirements.readOrganizationFeatures(organizationId)
+  }
+
+  @Test
   fun readOrganizationUser() {
     assertThrows<OrganizationNotFoundException> {
       requirements.readOrganizationUser(organizationId, userId)

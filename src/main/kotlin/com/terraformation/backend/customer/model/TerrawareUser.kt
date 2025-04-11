@@ -436,6 +436,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canReadOrganizationFeatures(organizationId: OrganizationId): Boolean = defaultPermission
+
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       defaultPermission
 

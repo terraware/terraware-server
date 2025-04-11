@@ -1011,6 +1011,16 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readOrganizationFeatures(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canReadOrganizationFeatures(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to read features for organization $organizationId")
+      }
+    }
+  }
+
   fun readOrganizationUser(organizationId: OrganizationId, userId: UserId) {
     user.recordPermissionChecks {
       if (!user.canReadOrganizationUser(organizationId, userId)) {
