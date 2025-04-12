@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -21,6 +22,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var organizationId: OrganizationId
   private val store: OrganizationFeatureStore by lazy { OrganizationFeatureStore(dslContext) }
 
+  private val emptyOrganizationFeatureProjects: Map<OrganizationFeature, Set<ProjectId>> =
+      mapOf(
+          OrganizationFeature.Applications to emptySet(),
+          OrganizationFeature.Deliverables to emptySet(),
+          OrganizationFeature.Modules to emptySet(),
+          OrganizationFeature.Reports to emptySet(),
+          OrganizationFeature.SeedFundReports to emptySet(),
+      )
+
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
@@ -31,80 +41,93 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun `throws exception for non-organization user or contributors`() {
     deleteOrganizationUser()
     assertThrows<OrganizationNotFoundException>("Not organization member") {
-      store.listOrganizationFeatures(organizationId)
+      store.listOrganizationFeatureProjects(organizationId)
     }
 
     insertOrganizationUser(role = Role.Contributor)
     assertThrows<AccessDeniedException>("Organization contributor") {
-      store.listOrganizationFeatures(organizationId)
+      store.listOrganizationFeatureProjects(organizationId)
     }
 
     deleteOrganizationUser()
     insertOrganizationUser(role = Role.Manager)
-    assertDoesNotThrow("Organization manager") { store.listOrganizationFeatures(organizationId) }
+    assertDoesNotThrow("Organization manager") {
+      store.listOrganizationFeatureProjects(organizationId)
+    }
   }
 
   @Test
   fun `checks for existence of applications for the applications feature`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
-        "No applications")
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
+        "No projects")
 
-    insertProject()
+    val projectId = insertProject()
     insertApplication()
+
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.Applications] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Applications),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has applications")
   }
 
   @Test
   fun `checks for existence of modules for the modules feature`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No modules")
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(cohortId = cohortId)
-    insertProject(participantId = participantId)
+    val projectId = insertProject(participantId = participantId)
 
     insertModule()
     insertCohortModule()
 
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Modules),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has modules")
   }
 
   @Test
   fun `checks for existence of deliverables in a module for the deliverables feature`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No deliverables")
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(cohortId = cohortId)
-    insertProject(participantId = participantId)
+    val projectId = insertProject(participantId = participantId)
 
     insertModule()
     insertDeliverable()
     insertCohortModule()
 
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(projectId)
+    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Deliverables, OrganizationFeature.Modules),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has deliverables")
   }
 
   @Test
   fun `checks for existence of submissions for projects not in a cohort for the deliverables feature`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No submission")
 
     insertModule(phase = CohortPhase.Application)
@@ -112,98 +135,118 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProject()
     insertSubmission()
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "Only submission for application module")
 
     insertModule()
     insertDeliverable()
-    insertProject()
+    val projectId = insertProject()
     insertSubmission()
 
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Deliverables),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has submissions")
   }
 
   @Test
   fun `checks for existence of reports for projects`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No reports")
 
-    insertProject()
+    val projectId = insertProject()
     insertProjectReportConfig()
     insertReport()
 
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Reports),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has reports")
   }
 
   @Test
   fun `checks for existence of seed fund reports for projects`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No seed fund reports")
 
     val projectId = insertProject()
     insertSeedFundReport(projectId = projectId)
 
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    expectedFeatureProjects[OrganizationFeature.SeedFundReports] = setOf(projectId)
+
     assertEquals(
-        setOf(OrganizationFeature.SeedFundReports),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "Has seed fund reports")
   }
 
   @Test
   fun `queries with multiple projects`() {
     assertEquals(
-        emptySet<OrganizationFeature>(),
-        store.listOrganizationFeatures(organizationId),
+        emptyOrganizationFeatureProjects,
+        store.listOrganizationFeatureProjects(organizationId),
         "No project added")
 
-    insertProject(name = "Application project")
+    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+
+    val applicationProjectId = insertProject(name = "Application project")
     insertApplication()
     insertModule(phase = CohortPhase.Application)
     insertDeliverable()
     insertSubmission()
 
+    expectedFeatureProjects[OrganizationFeature.Applications] = setOf(applicationProjectId)
+
     assertEquals(
-        setOf(OrganizationFeature.Applications),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "One application project")
 
     val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
     val participantId = insertParticipant(cohortId = cohortId)
-    insertProject(name = "Cohort project", participantId = participantId)
+    val moduleProjectId = insertProject(name = "Cohort project", participantId = participantId)
     insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
     insertDeliverable()
     insertCohortModule()
 
+    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(moduleProjectId)
+    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(moduleProjectId)
+
     assertEquals(
-        setOf(
-            OrganizationFeature.Applications,
-            OrganizationFeature.Deliverables,
-            OrganizationFeature.Modules),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "One application project and one cohort phase 1 project")
 
-    insertProject(name = "Report project")
+    val reportProjectId = insertProject(name = "Report project")
     insertProjectReportConfig()
     insertReport()
 
+    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(reportProjectId)
+
     assertEquals(
-        setOf(
-            OrganizationFeature.Applications,
-            OrganizationFeature.Deliverables,
-            OrganizationFeature.Modules,
-            OrganizationFeature.Reports),
-        store.listOrganizationFeatures(organizationId),
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
         "One application project, one cohort phase 1 project, and one report projects")
+
+    val seedFundProjectId = insertProject()
+    insertSeedFundReport(projectId = seedFundProjectId)
+    expectedFeatureProjects[OrganizationFeature.SeedFundReports] = setOf(seedFundProjectId)
+
+    assertEquals(
+        expectedFeatureProjects.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
+        "One project for every organization feature")
   }
 }

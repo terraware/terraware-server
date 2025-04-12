@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.accelerator.api.TerraformationContactUserPayload
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
@@ -24,6 +23,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.OrganizationType
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
@@ -136,9 +136,8 @@ class OrganizationsController(
   fun listOrganizationFeatures(
       @PathVariable("organizationId") organizationId: OrganizationId
   ): ListOrganizationFeaturesResponsePayload {
-    val features = organizationFeatureStore.listOrganizationFeatures(organizationId)
-    return ListOrganizationFeaturesResponsePayload(
-        features.map { OrganizationFeaturePayload.of(it) })
+    val features = organizationFeatureStore.listOrganizationFeatureProjects(organizationId)
+    return ListOrganizationFeaturesResponsePayload(features)
   }
 
   @Operation(summary = "Lists the roles in an organization.")
@@ -390,24 +389,16 @@ data class OrganizationPayload(
   )
 }
 
-enum class OrganizationFeaturePayload(@get:JsonValue val jsonValue: String) {
-  Applications("Applications"),
-  Deliverables("Deliverables"),
-  Modules("Modules"),
-  Reports("Reports"),
-  SeedFundReports("SeedFundReports");
-
-  companion object {
-    fun of(feature: OrganizationFeature): OrganizationFeaturePayload {
-      return when (feature) {
-        OrganizationFeature.Applications -> Applications
-        OrganizationFeature.Deliverables -> Deliverables
-        OrganizationFeature.Modules -> Modules
-        OrganizationFeature.Reports -> Reports
-        OrganizationFeature.SeedFundReports -> SeedFundReports
-      }
-    }
-  }
+data class OrganizationFeaturePayload(
+    val enabled: Boolean,
+    val projectIds: List<ProjectId>,
+) {
+  constructor(
+      projectIds: Set<ProjectId>
+  ) : this(
+      enabled = projectIds.isNotEmpty(),
+      projectIds = projectIds.toList(),
+  )
 }
 
 data class OrganizationRolePayload(
@@ -452,8 +443,26 @@ data class GetOrganizationResponsePayload(val organization: OrganizationPayload)
 data class GetOrganizationUserResponsePayload(val user: OrganizationUserPayload) :
     SuccessResponsePayload
 
-data class ListOrganizationFeaturesResponsePayload(val features: List<OrganizationFeaturePayload>) :
-    SuccessResponsePayload
+data class ListOrganizationFeaturesResponsePayload(
+    val applications: OrganizationFeaturePayload,
+    val deliverables: OrganizationFeaturePayload,
+    val modules: OrganizationFeaturePayload,
+    val reports: OrganizationFeaturePayload,
+    val seedFundReports: OrganizationFeaturePayload,
+) : SuccessResponsePayload {
+  constructor(
+      features: Map<OrganizationFeature, Set<ProjectId>>
+  ) : this(
+      applications =
+          OrganizationFeaturePayload(features[OrganizationFeature.Applications] ?: emptySet()),
+      deliverables =
+          OrganizationFeaturePayload(features[OrganizationFeature.Deliverables] ?: emptySet()),
+      modules = OrganizationFeaturePayload(features[OrganizationFeature.Modules] ?: emptySet()),
+      reports = OrganizationFeaturePayload(features[OrganizationFeature.Reports] ?: emptySet()),
+      seedFundReports =
+          OrganizationFeaturePayload(features[OrganizationFeature.SeedFundReports] ?: emptySet()),
+  )
+}
 
 data class ListOrganizationRolesResponsePayload(val roles: List<OrganizationRolePayload>) :
     SuccessResponsePayload
