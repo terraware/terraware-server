@@ -128,6 +128,18 @@ class VariableStore(
             ?.let { fetchVariableOrNull(it) }
       }
 
+  fun fetchListByStableIds(stableIds: List<StableId>): List<Variable> =
+      with(VARIABLES) {
+        dslContext
+            .select(ID)
+            .distinctOn(STABLE_ID)
+            .from(VARIABLES)
+            .where(STABLE_ID.`in`(stableIds))
+            .orderBy(STABLE_ID, ID.desc())
+            .fetch(ID.asNonNullable())
+            .mapNotNull { fetchVariableOrNull(it) }
+      }
+
   fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> {
     val replacementVariables = VARIABLES.`as`("replacement_variables")
 

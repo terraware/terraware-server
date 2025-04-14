@@ -56,15 +56,16 @@ class AcceleratorProjectVariableValuesService(
   }
 
   private val variablesById: Map<VariableId, Variable> by lazy {
-    projectAcceleratorVariablesStableIds
-        .mapNotNull {
-          val variable = variableStore.fetchByStableId(it)
-          if (variable == null) {
-            log.warn("Variable with stableId=${it.value} not found")
-          }
-          variable
-        }
-        .associateBy { it.id }
+    val variables = variableStore.fetchListByStableIds(projectAcceleratorVariablesStableIds)
+
+    val fetchedStableIds = variables.map { it.stableId }.toSet()
+    val missingStableIds = projectAcceleratorVariablesStableIds.filter { it !in fetchedStableIds }
+
+    if (missingStableIds.isNotEmpty()) {
+      log.warn("Variables with stableIds in: $missingStableIds not found")
+    }
+
+    variables.associateBy { it.id }
   }
 
   private val variablesByStableId: Map<StableId, Variable> by lazy {
