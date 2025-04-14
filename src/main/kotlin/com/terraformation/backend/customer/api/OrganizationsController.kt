@@ -10,10 +10,11 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.OrganizationService
+import com.terraformation.backend.customer.db.OrganizationFeatureStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.customer.model.OrganizationFeature
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
@@ -22,6 +23,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.OrganizationType
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
@@ -55,7 +57,7 @@ import org.springframework.web.bind.annotation.RestController
 class OrganizationsController(
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,
-    private val userStore: UserStore,
+    private val organizationFeatureStore: OrganizationFeatureStore,
 ) {
   private val emailValidator = EmailValidator.getInstance()
 
@@ -127,6 +129,15 @@ class OrganizationsController(
     } catch (e: OrganizationHasOtherUsersException) {
       throw WebApplicationException(e.message, Response.Status.CONFLICT)
     }
+  }
+
+  @Operation(summary = "Lists the features available to an organization.")
+  @GetMapping("/{organizationId}/features")
+  fun listOrganizationFeatures(
+      @PathVariable("organizationId") organizationId: OrganizationId
+  ): ListOrganizationFeaturesResponsePayload {
+    val features = organizationFeatureStore.listOrganizationFeatureProjects(organizationId)
+    return ListOrganizationFeaturesResponsePayload(features)
   }
 
   @Operation(summary = "Lists the roles in an organization.")
@@ -378,6 +389,18 @@ data class OrganizationPayload(
   )
 }
 
+data class OrganizationFeaturePayload(
+    val enabled: Boolean,
+    val projectIds: List<ProjectId>,
+) {
+  constructor(
+      projectIds: Set<ProjectId>
+  ) : this(
+      enabled = projectIds.isNotEmpty(),
+      projectIds = projectIds.toList(),
+  )
+}
+
 data class OrganizationRolePayload(
     val role: Role,
     @Schema(description = "Total number of users in the organization with this role.")
@@ -419,6 +442,27 @@ data class GetOrganizationResponsePayload(val organization: OrganizationPayload)
 
 data class GetOrganizationUserResponsePayload(val user: OrganizationUserPayload) :
     SuccessResponsePayload
+
+data class ListOrganizationFeaturesResponsePayload(
+    val applications: OrganizationFeaturePayload,
+    val deliverables: OrganizationFeaturePayload,
+    val modules: OrganizationFeaturePayload,
+    val reports: OrganizationFeaturePayload,
+    val seedFundReports: OrganizationFeaturePayload,
+) : SuccessResponsePayload {
+  constructor(
+      features: Map<OrganizationFeature, Set<ProjectId>>
+  ) : this(
+      applications =
+          OrganizationFeaturePayload(features[OrganizationFeature.Applications] ?: emptySet()),
+      deliverables =
+          OrganizationFeaturePayload(features[OrganizationFeature.Deliverables] ?: emptySet()),
+      modules = OrganizationFeaturePayload(features[OrganizationFeature.Modules] ?: emptySet()),
+      reports = OrganizationFeaturePayload(features[OrganizationFeature.Reports] ?: emptySet()),
+      seedFundReports =
+          OrganizationFeaturePayload(features[OrganizationFeature.SeedFundReports] ?: emptySet()),
+  )
+}
 
 data class ListOrganizationRolesResponsePayload(val roles: List<OrganizationRolePayload>) :
     SuccessResponsePayload

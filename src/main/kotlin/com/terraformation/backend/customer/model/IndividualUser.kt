@@ -420,6 +420,9 @@ data class IndividualUser(
   override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(organizationId)
 
+  override fun canReadOrganizationFeatures(organizationId: OrganizationId): Boolean =
+      isManagerOrHigher(organizationId)
+
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
     return if (userId == this.userId) {
       isMember(organizationId)
