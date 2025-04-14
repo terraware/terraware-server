@@ -3516,7 +3516,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         numPlants = -200,
     )
 
-    // Does not count towards trees or speces planted, since planting site is outside of project
+    // Does not count towards trees or species planted, since planting site is outside of project
     val otherDeliveryId =
         insertDelivery(
             plantingSiteId = otherPlantingSiteId,
