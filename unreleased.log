@@ -1,3 +1,4 @@
+2179ee52d1d SW-6770 Implemented organization features store (#3013)
 6c2bc4a7c62 Fix incorrect HTML tag closure in notification email (#3020)
 9ee3c2c0db8 Update plugin org.gradle.toolchains.foojay-resolver-convention to v0.10.0 (#3019)
 2c43d1f603d Update dependency io.mockk:mockk to v1.14.0 (#3018)
