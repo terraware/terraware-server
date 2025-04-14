@@ -38,16 +38,18 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `throws exception for non-organization user or contributors`() {
+  fun `throws exception for non-organization user`() {
     deleteOrganizationUser()
-    assertThrows<OrganizationNotFoundException>("Not organization member") {
+    assertThrows<OrganizationNotFoundException> {
       store.listOrganizationFeatureProjects(organizationId)
     }
+  }
 
+  @Test
+  fun `throws exception for contributors`() {
+    deleteOrganizationUser()
     insertOrganizationUser(role = Role.Contributor)
-    assertThrows<AccessDeniedException>("Organization contributor") {
-      store.listOrganizationFeatureProjects(organizationId)
-    }
+    assertThrows<AccessDeniedException> { store.listOrganizationFeatureProjects(organizationId) }
 
     deleteOrganizationUser()
     insertOrganizationUser(role = Role.Manager)
@@ -57,7 +59,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of applications for the applications feature`() {
+  fun `checks for projects of applications for the applications feature`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -76,7 +78,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of modules for the modules feature`() {
+  fun `checks for projects of modules for the modules feature`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -99,7 +101,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of deliverables in a module for the deliverables feature`() {
+  fun `checks for projects of deliverables in a module for the deliverables feature`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -124,7 +126,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of submissions for projects not in a cohort for the deliverables feature`() {
+  fun `checks for projects of submissions for projects not in a cohort for the deliverables feature`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -154,7 +156,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of reports for projects`() {
+  fun `checks for projects of reports for projects`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -164,8 +166,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectReportConfig()
     insertReport()
 
+    val otherProjectId = insertProject()
+    insertProjectReportConfig()
+    insertReport()
+
     val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(projectId)
+    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(projectId, otherProjectId)
 
     assertEquals(
         expectedFeatureProjects.toMap(),
@@ -174,7 +180,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for existence of seed fund reports for projects`() {
+  fun `checks for projects of seed fund reports for projects`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),

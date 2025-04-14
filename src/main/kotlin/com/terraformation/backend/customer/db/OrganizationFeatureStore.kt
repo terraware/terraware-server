@@ -30,26 +30,26 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
 
     return dslContext
         .select(
-            applicationsExistsField,
-            deliverablesExistsField,
-            modulesExistsField,
-            reportsExistsField,
-            seedFundReportsExistsField,
+            applicationProjectIdsField,
+            deliverableProjectIdsField,
+            moduleProjectIdsField,
+            reportProjectIdsField,
+            seedFundReportProjectIdsField,
         )
         .from(ORGANIZATIONS)
         .where(ORGANIZATIONS.ID.eq(organizationId))
         .fetchOne { record ->
           mapOf(
-              OrganizationFeature.Applications to record[applicationsExistsField],
-              OrganizationFeature.Deliverables to record[deliverablesExistsField],
-              OrganizationFeature.Modules to record[modulesExistsField],
-              OrganizationFeature.Reports to record[reportsExistsField],
-              OrganizationFeature.SeedFundReports to record[seedFundReportsExistsField],
+              OrganizationFeature.Applications to record[applicationProjectIdsField],
+              OrganizationFeature.Deliverables to record[deliverableProjectIdsField],
+              OrganizationFeature.Modules to record[moduleProjectIdsField],
+              OrganizationFeature.Reports to record[reportProjectIdsField],
+              OrganizationFeature.SeedFundReports to record[seedFundReportProjectIdsField],
           )
         } ?: emptyMap()
   }
 
-  private val applicationsExistsField =
+  private val applicationProjectIdsField =
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(APPLICATIONS)
@@ -58,7 +58,7 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
-  private val deliverablesExistsField =
+  private val deliverableProjectIdsField =
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(DELIVERABLES)
@@ -77,7 +77,7 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)))
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
-  private val modulesExistsField =
+  private val moduleProjectIdsField =
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(COHORT_MODULES)
@@ -88,7 +88,7 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
-  private val reportsExistsField =
+  private val reportProjectIdsField =
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(REPORTS)
@@ -98,7 +98,7 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .and(REPORTS.STATUS_ID.notEqual(ReportStatus.NotNeeded)))
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
-  private val seedFundReportsExistsField =
+  private val seedFundReportProjectIdsField =
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(SEED_FUND_REPORTS)
