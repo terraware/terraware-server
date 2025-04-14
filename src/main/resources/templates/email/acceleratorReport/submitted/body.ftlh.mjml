@@ -5,7 +5,7 @@
         <mj-include path="../../logo.ftlh.mjml"/>
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
-                <mj-text mj-class="text-headline06-bold">
+                <mj-text mj-class="text-headline06-bold"
                          padding-right="0px">
                     ${strings("notification.acceleratorReport.submitted.email.body", projectDealName, reportPrefix)}
                 </mj-text>
