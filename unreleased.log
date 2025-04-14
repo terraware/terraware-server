@@ -1,3 +1,4 @@
+b1ef11e23d9 SW-6754 Implemented permissions to publish reports (#3022)
 2179ee52d1d SW-6770 Implemented organization features store (#3013)
 6c2bc4a7c62 Fix incorrect HTML tag closure in notification email (#3020)
 9ee3c2c0db8 Update plugin org.gradle.toolchains.foojay-resolver-convention to v0.10.0 (#3019)
