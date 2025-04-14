@@ -865,14 +865,14 @@
 <text text-anchor="start" x="239.5" y="-9468.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
 <polygon fill="none" stroke="black" points="216.5,-9438 216.5,-9460 316.5,-9460 316.5,-9438 216.5,-9438"/>
 <text text-anchor="start" x="239.5" y="-9446.2" font-family="Helvetica,sans-Serif" font-size="11.00">eligible</text>
-<polygon fill="#ffffff" stroke="transparent" points="216.5,-9420 216.5,-9438 259.5,-9438 259.5,-9420 216.5,-9420"/>
-<polygon fill="none" stroke="black" points="216.5,-9420 216.5,-9438 259.5,-9438 259.5,-9420 216.5,-9420"/>
+<polygon fill="#ffffff" stroke="transparent" points="216.5,-9420 216.5,-9438 240.5,-9438 240.5,-9420 216.5,-9420"/>
+<polygon fill="none" stroke="black" points="216.5,-9420 216.5,-9438 240.5,-9438 240.5,-9420 216.5,-9420"/>
 <text text-anchor="start" x="219.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="259.5,-9420 259.5,-9438 283.5,-9438 283.5,-9420 259.5,-9420"/>
-<polygon fill="none" stroke="black" points="259.5,-9420 259.5,-9438 283.5,-9438 283.5,-9420 259.5,-9420"/>
-<text text-anchor="start" x="273.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="283.5,-9420 283.5,-9438 316.5,-9438 316.5,-9420 283.5,-9420"/>
-<polygon fill="none" stroke="black" points="283.5,-9420 283.5,-9438 316.5,-9438 316.5,-9420 283.5,-9420"/>
+<polygon fill="#ffffff" stroke="transparent" points="240.5,-9420 240.5,-9438 293.5,-9438 293.5,-9420 240.5,-9420"/>
+<polygon fill="none" stroke="black" points="240.5,-9420 240.5,-9438 293.5,-9438 293.5,-9420 240.5,-9420"/>
+<text text-anchor="start" x="244.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="293.5,-9420 293.5,-9438 316.5,-9438 316.5,-9420 293.5,-9420"/>
+<polygon fill="none" stroke="black" points="293.5,-9420 293.5,-9438 316.5,-9438 316.5,-9420 293.5,-9420"/>
 <text text-anchor="start" x="297.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
@@ -902,14 +902,14 @@
 <text text-anchor="start" x="479" y="-9714.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
 <polygon fill="none" stroke="black" points="447,-9684 447,-9706 616,-9706 616,-9684 447,-9684"/>
 <text text-anchor="start" x="479" y="-9692.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="447,-9666 447,-9684 525,-9684 525,-9666 447,-9666"/>
-<polygon fill="none" stroke="black" points="447,-9666 447,-9684 525,-9684 525,-9666 447,-9666"/>
+<polygon fill="#ffffff" stroke="transparent" points="447,-9666 447,-9684 508,-9684 508,-9666 447,-9666"/>
+<polygon fill="none" stroke="black" points="447,-9666 447,-9684 508,-9684 508,-9666 447,-9666"/>
 <text text-anchor="start" x="450" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="525,-9666 525,-9684 566,-9684 566,-9666 525,-9666"/>
-<polygon fill="none" stroke="black" points="525,-9666 525,-9684 566,-9684 566,-9666 525,-9666"/>
-<text text-anchor="start" x="556" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="566,-9666 566,-9684 616,-9684 616,-9666 566,-9666"/>
-<polygon fill="none" stroke="black" points="566,-9666 566,-9684 616,-9684 616,-9666 566,-9666"/>
+<polygon fill="#ffffff" stroke="transparent" points="508,-9666 508,-9684 574,-9684 574,-9666 508,-9666"/>
+<polygon fill="none" stroke="black" points="508,-9666 508,-9684 574,-9684 574,-9666 508,-9666"/>
+<text text-anchor="start" x="531" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">57 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="574,-9666 574,-9684 616,-9684 616,-9666 574,-9666"/>
+<polygon fill="none" stroke="black" points="574,-9666 574,-9684 616,-9684 616,-9666 574,-9666"/>
 <text text-anchor="start" x="597" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
