@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -24,10 +25,13 @@ class PublishedReportsStore(
         .select(
             PUBLISHED_REPORTS.asterisk(),
             PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+            PROJECTS.NAME,
             achievementsMultiset,
             challengesMultiset)
         .from(PUBLISHED_REPORTS)
-        .join(PROJECT_ACCELERATOR_DETAILS)
+        .join(PROJECTS)
+        .on(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
+        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
         .on(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
         .where(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
         .orderBy(PUBLISHED_REPORTS.END_DATE.desc())
@@ -39,7 +43,8 @@ class PublishedReportsStore(
               frequency = record[PUBLISHED_REPORTS.REPORT_FREQUENCY_ID]!!,
               highlights = record[PUBLISHED_REPORTS.HIGHLIGHTS],
               projectId = record[PUBLISHED_REPORTS.PROJECT_ID]!!,
-              projectName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME]!!,
+              projectName =
+                  record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME] ?: record[PROJECTS.NAME]!!,
               publishedBy = record[PUBLISHED_REPORTS.PUBLISHED_BY]!!,
               publishedTime = record[PUBLISHED_REPORTS.PUBLISHED_TIME]!!,
               quarter = record[PUBLISHED_REPORTS.REPORT_QUARTER_ID],
