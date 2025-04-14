@@ -365,6 +365,11 @@ class ReportStore(
     val now = clock.instant()
     val userId = currentUser().userId
 
+    if (report.status != ReportStatus.Approved) {
+      throw IllegalStateException(
+          "Report $reportId cannot be published because the status is ${report.status.name}")
+    }
+
     dslContext.transaction { _ ->
       // Upsert the published report
       with(PUBLISHED_REPORTS) {
