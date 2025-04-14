@@ -5,6 +5,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import jakarta.inject.Named
 import org.jooq.DSLContext
@@ -69,5 +71,19 @@ class PermissionStore(private val dslContext: DSLContext) {
         .fetchMap(
             ORGANIZATION_USERS.ORGANIZATION_ID.asNonNullable(),
             ORGANIZATION_USERS.ROLE_ID.asNonNullable())
+  }
+
+  /**
+   * Returns the IDs of the projects associated with a user's funding entity. This is only relevant
+   * for funder users.
+   */
+  fun fetchFundingEntityProjects(userId: UserId): Set<ProjectId> {
+    return dslContext
+        .select(FUNDING_ENTITY_PROJECTS.PROJECT_ID)
+        .from(FUNDING_ENTITY_USERS)
+        .join(FUNDING_ENTITY_PROJECTS)
+        .on(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID))
+        .where(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
+        .fetchSet(FUNDING_ENTITY_PROJECTS.PROJECT_ID.asNonNullable())
   }
 }

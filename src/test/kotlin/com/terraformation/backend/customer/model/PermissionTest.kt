@@ -1553,6 +1553,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
@@ -2554,6 +2555,11 @@ internal class PermissionTest : DatabaseTest() {
         listFundingEntityUsers = true,
     )
 
+    permissions.expect(
+        *projectIds.forOrg1(),
+        readPublishedReports = true,
+    )
+
     permissions.expect(userId, readUser = true)
     permissions.expect(deleteSelf = true)
     permissions.andNothingElse()
@@ -2625,6 +2631,9 @@ internal class PermissionTest : DatabaseTest() {
         .execute()
 
     insertFundingEntityUser(getDatabaseId(fundingEntityId), userId)
+    projectIds.forOrg1().forEach { projectId ->
+      insertFundingEntityProject(getDatabaseId(fundingEntityId), getDatabaseId(projectId))
+    }
   }
 
   private fun fetchUser(): TerrawareUser {
@@ -3478,6 +3487,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
+        readPublishedReports: Boolean = false,
         updateDefaultVoters: Boolean = false,
         updateInternalVariableWorkflowDetails: Boolean = false,
         updateProject: Boolean = false,
@@ -3530,6 +3540,10 @@ internal class PermissionTest : DatabaseTest() {
             readProjectVotes,
             user.canReadProjectVotes(idInDatabase),
             "Can read votes for project $projectId")
+        assertEquals(
+            readPublishedReports,
+            user.canReadPublishedReports(idInDatabase),
+            "Can read published reports for project $projectId")
         assertEquals(
             updateDefaultVoters, user.canUpdateDefaultVoters(), "Can update default voters")
         assertEquals(

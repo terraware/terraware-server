@@ -474,6 +474,8 @@ data class IndividualUser(
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
 
+  override fun canReadPublishedReports(projectId: ProjectId) = false
+
   override fun canReadReport(reportId: ReportId) =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(reportId))
 
