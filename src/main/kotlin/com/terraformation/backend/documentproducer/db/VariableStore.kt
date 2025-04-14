@@ -132,7 +132,7 @@ class VariableStore(
       with(VARIABLES) {
         dslContext
             .select(ID)
-            .on(STABLE_ID)
+            .distinctOn(STABLE_ID)
             .from(VARIABLES)
             .where(STABLE_ID.`in`(stableIds))
             .orderBy(STABLE_ID, ID.desc())
