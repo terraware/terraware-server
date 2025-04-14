@@ -132,16 +132,11 @@ class VariableStore(
       with(VARIABLES) {
         dslContext
             .select(ID)
+            .on(STABLE_ID)
             .from(VARIABLES)
             .where(STABLE_ID.`in`(stableIds))
-            .and(
-                ID.notIn(
-                    dslContext
-                        .select(REPLACES_VARIABLE_ID)
-                        .from(VARIABLES)
-                        .where(REPLACES_VARIABLE_ID.isNotNull())))
-            .fetch(ID)
-            .filterNotNull()
+            .orderBy(STABLE_ID, ID.desc())
+            .fetch(ID.asNonNullable())
             .mapNotNull { fetchVariableOrNull(it) }
       }
 
