@@ -767,6 +767,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun publishReports() {
+    user.recordPermissionChecks {
+      if (!user.canPublishReports()) {
+        throw AccessDeniedException("No permission to publish reports.")
+      }
+    }
+  }
+
   fun readAccession(accessionId: AccessionId) {
     user.recordPermissionChecks {
       if (!user.canReadAccession(accessionId)) {

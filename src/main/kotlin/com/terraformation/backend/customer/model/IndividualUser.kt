@@ -334,6 +334,8 @@ data class IndividualUser(
 
   override fun canNotifyUpcomingReports(): Boolean = false
 
+  override fun canPublishReports() = isAcceleratorAdmin()
+
   override fun canReadAccession(accessionId: AccessionId) =
       isMember(parentStore.getFacilityId(accessionId))
 

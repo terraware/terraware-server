@@ -612,6 +612,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun notifyUpcomingReports() =
       allow { notifyUpcomingReports() } ifUser { canNotifyUpcomingReports() }
 
+  @Test fun publishReports() = allow { publishReports() } ifUser { canPublishReports() }
+
   @Test fun readAccession() = testRead { readAccession(accessionId) }
 
   @Test
