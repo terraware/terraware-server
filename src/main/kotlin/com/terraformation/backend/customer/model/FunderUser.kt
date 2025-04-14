@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -28,19 +29,29 @@ data class FunderUser(
   private val _fundingEntityId = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
   override val fundingEntityId: FundingEntityId? by _fundingEntityId
 
+  private val _projectIds = ResettableLazy { permissionStore.fetchFundingEntityProjects(userId) }
+  private val projectIds: Set<ProjectId> by _projectIds
+
   override val userType: UserType
     get() = UserType.Funder
 
   override val defaultPermission: Boolean
     get() = false
 
+  override fun clearCachedPermissions() {
+    _fundingEntityId.reset()
+    _projectIds.reset()
+  }
+
   override fun canDeleteSelf() = true
+
+  override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
 
   override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntityId == entityId
 
-  override fun canReadUser(userId: UserId) = userId == this.userId
+  override fun canReadPublishedReports(projectId: ProjectId) = projectId in projectIds
 
-  override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
+  override fun canReadUser(userId: UserId) = userId == this.userId
 }

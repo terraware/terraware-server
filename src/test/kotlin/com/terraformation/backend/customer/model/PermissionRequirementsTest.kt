@@ -814,6 +814,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.readProjectScores(projectId)
   }
 
+  @Test
+  fun readPublishedReports() {
+    assertThrows<ProjectNotFoundException> { requirements.readPublishedReports(projectId) }
+
+    grant { user.canReadPublishedReports(projectId) }
+    requirements.readPublishedReports(projectId)
+  }
+
   @Test fun readReport() = testRead { readReport(reportId) }
 
   @Test fun readSeedFundReport() = testRead { readSeedFundReport(seedFundReportId) }

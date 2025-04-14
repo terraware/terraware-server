@@ -285,6 +285,9 @@ import com.terraformation.backend.db.funder.tables.daos.FundingEntityUsersDao
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -3018,6 +3021,65 @@ abstract class DatabaseBackedTest {
         )
 
     reportSystemMetricsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedReport(
+      reportId: ReportId = inserted.reportId,
+      projectId: ProjectId = inserted.projectId,
+      startDate: LocalDate = LocalDate.of(2025, 1, 1),
+      endDate: LocalDate = LocalDate.of(2025, 3, 31),
+      frequency: ReportFrequency = ReportFrequency.Quarterly,
+      quarter: ReportQuarter? = ReportQuarter.Q1,
+      publishedBy: UserId = currentUser().userId,
+      publishedTime: Instant = Instant.EPOCH,
+      highlights: String? = null
+  ) {
+    with(PUBLISHED_REPORTS) {
+      dslContext
+          .insertInto(PUBLISHED_REPORTS)
+          .set(REPORT_ID, reportId)
+          .set(PROJECT_ID, projectId)
+          .set(REPORT_FREQUENCY_ID, frequency)
+          .set(REPORT_QUARTER_ID, quarter)
+          .set(START_DATE, startDate)
+          .set(END_DATE, endDate)
+          .set(HIGHLIGHTS, highlights)
+          .set(PUBLISHED_BY, publishedBy)
+          .set(PUBLISHED_TIME, publishedTime)
+          .execute()
+    }
+  }
+
+  protected fun insertPublishedReportAchievement(
+      reportId: ReportId = inserted.reportId,
+      position: Int = 1,
+      achievement: String = "Achievement"
+  ) {
+    with(PUBLISHED_REPORT_ACHIEVEMENTS) {
+      dslContext
+          .insertInto(PUBLISHED_REPORT_ACHIEVEMENTS)
+          .set(REPORT_ID, reportId)
+          .set(POSITION, position)
+          .set(ACHIEVEMENT, achievement)
+          .execute()
+    }
+  }
+
+  protected fun insertPublishedReportChallenge(
+      reportId: ReportId = inserted.reportId,
+      position: Int = 1,
+      challenge: String = "Challenge",
+      mitigationPlan: String = "Mitigation"
+  ) {
+    with(PUBLISHED_REPORT_CHALLENGES) {
+      dslContext
+          .insertInto(PUBLISHED_REPORT_CHALLENGES)
+          .set(REPORT_ID, reportId)
+          .set(POSITION, position)
+          .set(CHALLENGE, challenge)
+          .set(MITIGATION_PLAN, mitigationPlan)
+          .execute()
+    }
   }
 
   private var nextInternalTagNumber = 1
