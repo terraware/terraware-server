@@ -1,3 +1,5 @@
+9045e4a94f3 SW-6189 Remove subplots from data model (#3027)
+afad34e9334 Return projects list with funding entity details (#3026)
 30dd5bb5e19 Upgrade to Spring AI 1.0.0-M7 (#3025)
 18353af0fdb SW-6756 Fetch funder reports (#3024)
 938af7b3c49 Reduce variable fetches (#3021)

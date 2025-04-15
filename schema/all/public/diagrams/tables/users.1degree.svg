@@ -3291,13 +3291,13 @@
 <text text-anchor="start" x="985" y="-1957.43" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="825,-1927.23 825,-1949.23 1024,-1949.23 1024,-1927.23 825,-1927.23"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="830" y="-1944.23"/>
-<text text-anchor="start" x="853" y="-1935.43" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="874" y="-1935.43" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="825,-1905.23 825,-1927.23 1024,-1927.23 1024,-1905.23 825,-1905.23"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="830" y="-1922.23"/>
-<text text-anchor="start" x="853" y="-1913.43" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="874" y="-1913.43" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="825,-1883.23 825,-1905.23 1024,-1905.23 1024,-1883.23 825,-1883.23"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="830" y="-1900.23"/>
-<text text-anchor="start" x="853" y="-1891.43" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="874" y="-1891.43" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="none" stroke="black" points="825,-1865.23 825,-1883.23 1024,-1883.23 1024,-1865.23 825,-1865.23"/>
 <text text-anchor="start" x="828" y="-1871.43" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="825,-1847.23 825,-1865.23 909,-1865.23 909,-1847.23 825,-1847.23"/>

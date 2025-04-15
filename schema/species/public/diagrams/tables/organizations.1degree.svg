@@ -225,7 +225,7 @@
 <text text-anchor="start" x="503.5" y="-272.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="343.5,-242 343.5,-264 542.5,-264 542.5,-242 343.5,-242"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="348.5" y="-259"/>
-<text text-anchor="start" x="371.5" y="-250.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="392.5" y="-250.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="none" stroke="black" points="343.5,-224 343.5,-242 542.5,-242 542.5,-224 343.5,-224"/>
 <text text-anchor="start" x="346.5" y="-230.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="343.5,-206 343.5,-224 427.5,-224 427.5,-206 343.5,-206"/>
