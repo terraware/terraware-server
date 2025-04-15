@@ -169,17 +169,17 @@ class PlantingSiteEditCalculator(
         boundary: MultiPolygon
     ): (Int) -> MonitoringPlotEdit {
       return { index ->
-        val permanentCluster = index + 1
+        val permanentIndex = index + 1
         val nextExistingPlot = plotList.removeFirstOrNull()
         if (nextExistingPlot != null) {
-          MonitoringPlotEdit.Adopt(nextExistingPlot.id, permanentCluster)
+          MonitoringPlotEdit.Adopt(nextExistingPlot.id, permanentIndex)
         } else {
-          MonitoringPlotEdit.Create(boundary, permanentCluster)
+          MonitoringPlotEdit.Create(boundary, permanentIndex)
         }
       }
     }
 
-    val desiredPermanentClusterEdits =
+    val desiredPermanentPlotEdits =
         (zipProportionally(
             desiredZone.numPermanentPlots,
             fractionOfDesiredAreaOverlappingWithExisting,
@@ -187,16 +187,16 @@ class PlantingSiteEditCalculator(
             nextPlotForArea(existingPlotsInNewArea, nonOverlappingBoundary),
         ))
 
-    // If we didn't use up all the existing permanent plots, remove the remaining ones
-    // from the permanent list by setting their permanent cluster numbers to null so that
-    // any permanent plots we create later will be randomly placed in the zone. We still
-    // want to adopt them into the correct subzones, though.
+    // If we didn't use up all the existing permanent plots, remove the remaining ones from the
+    // permanent list by setting their permanent indexes to null so that any permanent plots we
+    // create later will be randomly placed in the zone. We still want to adopt them into the
+    // correct subzones, though.
     val dropExcessExistingClusterEdits =
         (existingPlotsInOverlappingArea + existingPlotsInNewArea + disqualifiedPlots).map {
-          MonitoringPlotEdit.Adopt(it.id, permanentCluster = null)
+          MonitoringPlotEdit.Adopt(it.id, permanentIndex = null)
         }
 
-    return desiredPermanentClusterEdits + dropExcessExistingClusterEdits
+    return desiredPermanentPlotEdits + dropExcessExistingClusterEdits
   }
 
   private fun calculateSubzoneEdits(
@@ -251,12 +251,12 @@ class PlantingSiteEditCalculator(
                             desiredSubzone
                       }
                       .filter { plotEdit ->
-                        // If the plot is already in the right subzone with the right cluster
-                        // number, no need to adopt it.
+                        // If the plot is already in the right subzone with the right permanent
+                        // index, no need to adopt it.
                         val monitoringPlotId = plotEdit.monitoringPlotId
                         val existingMonitoringPlot = existingMonitoringPlotsById[monitoringPlotId]
                         existingSubzonesByMonitoringPlotId[monitoringPlotId] != existingSubzone ||
-                            existingMonitoringPlot?.permanentCluster != plotEdit.permanentCluster
+                            existingMonitoringPlot?.permanentIndex != plotEdit.permanentIndex
                       }
               val ejectEdits =
                   existingSubzone.monitoringPlots
@@ -404,7 +404,7 @@ class PlantingSiteEditCalculator(
           plantingZone.plantingSubzones.flatMap { it.monitoringPlots }
         }
     (plotsInSubzones + existingSite.exteriorPlots).sortedWith(
-        compareBy({ it.permanentCluster ?: Int.MAX_VALUE }, { it.plotNumber }))
+        compareBy({ it.permanentIndex ?: Int.MAX_VALUE }, { it.plotNumber }))
   }
 
   private val existingMonitoringPlotsById: Map<MonitoringPlotId, MonitoringPlotModel> by lazy {

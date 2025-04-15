@@ -247,7 +247,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `throws exception if edit results in duplicate permanent cluster numbers`() {
+    fun `throws exception if edit results in duplicate permanent indexes`() {
       val existing = createSite(newSite())
 
       assertThrows<IllegalStateException> {
@@ -301,7 +301,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               desired = expected,
               expectedPlotCounts = listOf(existingArea to 2, newArea to 2))
 
-      assertClusterRegions(
+      assertPermanentPlotRegions(
           edited,
           mapOf(
               1 to existingArea,
@@ -332,11 +332,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited) = runScenario(initial = initial, desired = expected)
 
-      assertSubzoneClusters(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
+      assertSubzonePermanentIndexes(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
     }
 
     @Test
-    fun `creates and adopts monitoring plots with permanent cluster renumbering`() {
+    fun `creates and adopts monitoring plots with permanent index renumbering`() {
       // This scenario is from the PRD and the edit calculation is covered in
       // PlantingSiteEditCalculatorV2Test.
       val initial =
@@ -386,8 +386,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               29L to 11, // Newly-created plot
               27L to null,
           ),
-          monitoringPlotsDao.findAll().associate { it.plotNumber to it.permanentCluster },
-          "Permanent cluster numbers for each plot number")
+          monitoringPlotsDao.findAll().associate { it.plotNumber to it.permanentIndex },
+          "Permanent indexes for each plot number")
     }
 
     @Test
@@ -408,7 +408,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited) = runScenario(initial = initial, desired = desired)
 
-      assertSubzoneClusters(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
+      assertSubzonePermanentIndexes(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
       assertSubzonePlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
     }
 
@@ -433,7 +433,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(existingSubzone2.id, editedSubzone2.id, "ID of moved subzone")
       assertEquals(
-          existingSubzone2.monitoringPlots[0].copy(permanentCluster = 1),
+          existingSubzone2.monitoringPlots[0].copy(permanentIndex = 1),
           editedSubzone2.monitoringPlots[0],
           "Monitoring plot in moved subzone")
     }
@@ -479,7 +479,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 insertMonitoringPlot(
                     boundary = initialPlot.boundary,
                     isAvailable = initialPlot.isAvailable,
-                    permanentCluster = initialPlot.permanentCluster,
+                    permanentIndex = initialPlot.permanentIndex,
                     plantingSiteId = existingWithoutPlots.id,
                     plantingSubzoneId = existingSubzone.id,
                     plotNumber = initialPlot.plotNumber,
@@ -723,12 +723,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
   }
 
   /**
-   * Asserts that each permanent cluster is located somewhere in a particular region. This is used
-   * to test random cluster placement.
+   * Asserts that each permanent plot is located somewhere in a particular region. This is used to
+   * test random plot placement.
    *
-   * @param expected Map of permanent cluster numbers to expected regions.
+   * @param expected Map of permanent indexes to expected regions.
    */
-  private fun assertClusterRegions(
+  private fun assertPermanentPlotRegions(
       edited: ExistingPlantingSiteModel,
       expected: Map<Int, Geometry>
   ) {
@@ -736,44 +736,46 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         edited.plantingZones.flatMap { zone ->
           zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots }
         }
-    val editedClusterNumbers = editedMonitoringPlots.mapNotNull { it.permanentCluster }.sorted()
-    val expectedClusterNumbers = expected.keys.sorted()
-    assertEquals(
-        expectedClusterNumbers, editedClusterNumbers, "Permanent cluster numbers after edit")
+    val editedPermanentIndexes = editedMonitoringPlots.mapNotNull { it.permanentIndex }.sorted()
+    val expectedPermanentIndexes = expected.keys.sorted()
+    assertEquals(expectedPermanentIndexes, editedPermanentIndexes, "Permanent indexes after edit")
 
-    val clustersNotInExpectedRegions =
+    val plotsNotInExpectedRegions =
         editedMonitoringPlots
             .filter { plot ->
-              plot.permanentCluster != null &&
-                  !plot.boundary.nearlyCoveredBy(expected[plot.permanentCluster]!!)
+              plot.permanentIndex != null &&
+                  !plot.boundary.nearlyCoveredBy(expected[plot.permanentIndex]!!)
             }
-            .map { it.permanentCluster!! }
+            .map { it.permanentIndex!! }
             .sorted()
 
-    assertEquals(emptyList<Int>(), clustersNotInExpectedRegions, "Clusters not in expected regions")
+    assertEquals(emptyList<Int>(), plotsNotInExpectedRegions, "Plots not in expected regions")
   }
 
   /**
-   * Asserts that each subzone contains the expected list of permanent cluster numbers and
-   * non-permanent plots. Requires that subzone names be unique across zones.
+   * Asserts that each subzone contains the expected list of permanent indexes and non-permanent
+   * plots. Requires that subzone names be unique across zones.
    *
-   * @param expected Map of subzone names to sorted lists of expected permanent cluster numbers. Use
-   *   nulls to expect non-permanent plots.
+   * @param expected Map of subzone names to sorted lists of expected permanent indexes. Use nulls
+   *   to expect non-permanent plots.
    */
-  private fun assertSubzoneClusters(site: AnyPlantingSiteModel, expected: Map<String, List<Int?>>) {
+  private fun assertSubzonePermanentIndexes(
+      site: AnyPlantingSiteModel,
+      expected: Map<String, List<Int?>>
+  ) {
     val actual =
         site.plantingZones
             .flatMap { zone ->
               zone.plantingSubzones.map { subzone ->
                 subzone.name to
                     subzone.monitoringPlots
-                        .map { it.permanentCluster }
+                        .map { it.permanentIndex }
                         .sortedBy { it ?: Int.MAX_VALUE }
               }
             }
             .toMap()
 
-    assertEquals(expected, actual, "Cluster numbers in each subzone")
+    assertEquals(expected, actual, "Permanent indexes in each subzone")
   }
 
   /**

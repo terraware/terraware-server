@@ -2107,7 +2107,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      permanentCluster: Int? = row.permanentCluster,
+      permanentIndex: Int? = row.permanentIndex,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSubzoneId: PlantingSubzoneId? =
           row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
@@ -2128,7 +2128,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             organizationId = organizationId,
-            permanentCluster = permanentCluster,
+            permanentIndex = permanentIndex,
             plantingSiteId = plantingSiteId,
             plantingSubzoneId = plantingSubzoneId,
             plotNumber = plotNumber,

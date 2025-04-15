@@ -82,9 +82,9 @@ class PlantingSiteEditCalculatorTest {
                         existingModel = existing.plantingZones[0],
                         monitoringPlotEdits =
                             listOf(
-                                // Cluster 1 is already in the existing subzone
+                                // Index 1 is already in the existing subzone
                                 MonitoringPlotEdit.Create(newSubzoneBoundary, 2),
-                                // Cluster 3 will be the old cluster 2 from the existing subzone
+                                // Index 3 will be the old index 2 from the existing subzone
                                 MonitoringPlotEdit.Create(existingBoundary, 4),
                                 MonitoringPlotEdit.Create(newSubzoneBoundary, 5),
                                 MonitoringPlotEdit.Create(existingBoundary, 6),
@@ -389,7 +389,7 @@ class PlantingSiteEditCalculatorTest {
         existingSite(width = 1000, height = 500) {
           zone(name = "A") {
             subzone(name = "A-1") {
-              plot(x = 600, plotNumber = 1, cluster = 1)
+              plot(x = 600, plotNumber = 1, permanentIndex = 1)
               plot(x = 630, plotNumber = 2)
               plot(x = 660, plotNumber = 3, isAdHoc = true)
             }
@@ -419,7 +419,7 @@ class PlantingSiteEditCalculatorTest {
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
                                                 monitoringPlotId = MonitoringPlotId(1),
-                                                permanentCluster = 1),
+                                                permanentIndex = 1),
                                             MonitoringPlotEdit.Adopt(
                                                 monitoringPlotId = MonitoringPlotId(2)),
                                             MonitoringPlotEdit.Adopt(
@@ -493,7 +493,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 MonitoringPlotEdit.Create(
                                     region = rectangle(x = 280, width = 220, height = 500),
-                                    permanentCluster = 11),
+                                    permanentIndex = 11),
                             ),
                         plantingSubzoneEdits =
                             listOf(
@@ -505,27 +505,27 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(16), permanentCluster = 1),
+                                                MonitoringPlotId(16), permanentIndex = 1),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(1), permanentCluster = 2),
+                                                MonitoringPlotId(1), permanentIndex = 2),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(18), permanentCluster = 3),
+                                                MonitoringPlotId(18), permanentIndex = 3),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(2), permanentCluster = 4),
+                                                MonitoringPlotId(2), permanentIndex = 4),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(19), permanentCluster = 5),
+                                                MonitoringPlotId(19), permanentIndex = 5),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(4), permanentCluster = 6),
+                                                MonitoringPlotId(4), permanentIndex = 6),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(23), permanentCluster = 7),
+                                                MonitoringPlotId(23), permanentIndex = 7),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(25), permanentCluster = 8),
+                                                MonitoringPlotId(25), permanentIndex = 8),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(7), permanentCluster = 9),
+                                                MonitoringPlotId(7), permanentIndex = 9),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(26), permanentCluster = 10),
+                                                MonitoringPlotId(26), permanentIndex = 10),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(27), permanentCluster = null),
+                                                MonitoringPlotId(27), permanentIndex = null),
                                         ),
                                     removedRegion = rectangle(x = 0, width = 280, height = 500),
                                 ),
@@ -571,7 +571,7 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(1), permanentCluster = 1)),
+                                                MonitoringPlotId(1), permanentIndex = 1)),
                                     removedRegion = rectangle(0))),
                         removedRegion = rectangle(0)))),
         existing,
@@ -616,8 +616,8 @@ class PlantingSiteEditCalculatorTest {
                                     desiredModel = desired.plantingZones[0].plantingSubzones[0],
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     // The unqualified plots are already in the correct subzone and
-                                    // already have null permanent cluster numbers, so no need to
-                                    // update any of them.
+                                    // already have null permanent indexes, so no need to update any
+                                    // of them.
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 ),
@@ -866,8 +866,8 @@ class PlantingSiteEditCalculatorTest {
     val existing = existingSite {
       zone {
         subzone {
-          plot(cluster = 2)
-          plot(cluster = 1)
+          plot(permanentIndex = 2)
+          plot(permanentIndex = 1)
         }
       }
     }
@@ -900,7 +900,7 @@ class PlantingSiteEditCalculatorTest {
                                         listOf(
                                             MonitoringPlotEdit.Eject(MonitoringPlotId(1)),
                                             // Plot ID 2 is already in the correct subzone with the
-                                            // correct cluster number.
+                                            // correct permanent index.
                                         ),
                                     removedRegion = rectangle(25),
                                 ),
@@ -917,8 +917,8 @@ class PlantingSiteEditCalculatorTest {
     val existing = existingSite {
       zone(numPermanent = 1) {
         subzone {
-          plot(cluster = 1)
-          plot(cluster = 2)
+          plot(permanentIndex = 1)
+          plot(permanentIndex = 2)
         }
       }
     }

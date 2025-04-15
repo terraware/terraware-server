@@ -326,7 +326,7 @@ class ObservationService(
         val observationHasResults = observationPlots.any { it.model.completedTime != null }
 
         if (isFirstObservation && !observationHasResults) {
-          val replacementResult = plantingSiteStore.replacePermanentCluster(monitoringPlotId)
+          val replacementResult = plantingSiteStore.replacePermanentIndex(monitoringPlotId)
 
           if (duration == ReplacementDuration.LongTerm) {
             plantingSiteStore.makePlotUnavailable(monitoringPlotId)
