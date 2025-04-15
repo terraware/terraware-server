@@ -1,3 +1,4 @@
+30dd5bb5e19 Upgrade to Spring AI 1.0.0-M7 (#3025)
 18353af0fdb SW-6756 Fetch funder reports (#3024)
 938af7b3c49 Reduce variable fetches (#3021)
 b1ef11e23d9 SW-6754 Implemented permissions to publish reports (#3022)
