@@ -1,6 +1,7 @@
 package com.terraformation.backend.report.api
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
@@ -11,7 +12,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
 import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
 import com.terraformation.backend.report.model.SeedFundReportMetadata
-import com.terraformation.backend.report.model.SustainableDevelopmentGoal
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant

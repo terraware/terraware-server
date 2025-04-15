@@ -6,6 +6,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
@@ -44,7 +45,6 @@ import com.terraformation.backend.report.db.SeedFundReportStore
 import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
 import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.report.model.SeedFundReportModel
-import com.terraformation.backend.report.model.SustainableDevelopmentGoal
 import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
