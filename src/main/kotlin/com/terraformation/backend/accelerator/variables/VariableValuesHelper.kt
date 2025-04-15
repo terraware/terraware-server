@@ -5,6 +5,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
+import com.terraformation.backend.documentproducer.model.ExistingLinkValue
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
@@ -30,6 +31,10 @@ fun getNumberValue(
 
 fun getTextValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: StableId): String? {
   return (valuesByStableId[stableId] as? ExistingTextValue)?.value
+}
+
+fun getLinkValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: StableId): String? {
+  return (valuesByStableId[stableId] as? ExistingLinkValue)?.value?.url?.toString()
 }
 
 fun getSingleSelectValue(

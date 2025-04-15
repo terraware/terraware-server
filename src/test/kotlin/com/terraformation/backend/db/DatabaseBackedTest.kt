@@ -4144,7 +4144,7 @@ abstract class DatabaseBackedTest {
               failureRisk to VariableType.Text,
               whatNeedsToBeTrue to VariableType.Text,
               dealName to VariableType.Text,
-          )
+              slackLink to VariableType.Link)
         }
 
     return stableIds.mapValues { (stableId, type) -> insertStableVariable(stableId, type) }

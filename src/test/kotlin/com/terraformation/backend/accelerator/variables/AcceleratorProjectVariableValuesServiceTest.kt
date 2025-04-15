@@ -109,10 +109,18 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       insertSelectValue(
           variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
 
-      // Multi-select
+      // Multi-select (and corresponding map)
       insertSelectValue(
           variableIdsByStableId[StableIds.landUseModelType]!!,
           optionIds = setOf(agroforestryOptionId, mangrovesOptionId))
+      insertValue(
+          variableIdsByStableId[
+              StableIds.landUseHectaresByLandUseModel[LandUseModelType.Agroforestry]]!!,
+          numberValue = BigDecimal(10001))
+      insertValue(
+          variableIdsByStableId[
+              StableIds.landUseHectaresByLandUseModel[LandUseModelType.Mangroves]]!!,
+          numberValue = BigDecimal(20002))
 
       // Number value
       insertValue(
@@ -121,6 +129,11 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       // Text value
       insertValue(
           variableIdsByStableId[StableIds.dealDescription]!!, textValue = "Deal description")
+
+      // Link value
+      insertLinkValue(
+          variableIdsByStableId[StableIds.slackLink]!!,
+          url = "https://example.com/AcceleratorProjectVariableValuesService")
 
       // Second value should replace the first
       insertValue(
@@ -140,9 +153,14 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               countryCode = "BR",
               dealDescription = "Deal description",
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.Agroforestry to BigDecimal(10001),
+                      LandUseModelType.Mangroves to BigDecimal(20002)),
               maxCarbonAccumulation = BigDecimal.TEN,
               minCarbonAccumulation = BigDecimal.ONE,
               region = Region.LatinAmericaCaribbean,
+              slackLink = "https://example.com/AcceleratorProjectVariableValuesService",
           ),
           service.fetchValues(inserted.projectId))
     }

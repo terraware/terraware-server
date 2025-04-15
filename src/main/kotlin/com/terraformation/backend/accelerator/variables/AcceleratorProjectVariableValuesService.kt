@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -35,24 +36,37 @@ class AcceleratorProjectVariableValuesService(
 
     private val projectAcceleratorVariablesStableIds =
         listOf(
+            StableIds.accumulationRate,
             StableIds.annualCarbon,
             StableIds.applicationRestorableLand,
             StableIds.carbonCapacity,
+            StableIds.clickUpLink,
             StableIds.country,
             StableIds.dealDescription,
             StableIds.dealName,
+            StableIds.expectedMarketCredits,
             StableIds.failureRisk,
+            StableIds.gisReportsLink,
             StableIds.investmentThesis,
             StableIds.landUseModelType,
             StableIds.maxCarbonAccumulation,
+            StableIds.methodologyNumber,
             StableIds.minCarbonAccumulation,
+            StableIds.minProjectArea,
             StableIds.numSpecies,
             StableIds.perHectareEstimatedBudget,
+            StableIds.projectArea,
+            StableIds.riskTrackerLink,
+            StableIds.sdgList,
+            StableIds.slackLink,
+            StableIds.standard,
             StableIds.tfRestorableLand,
             StableIds.totalCarbon,
+            StableIds.totalVCU,
             StableIds.totalExpansionPotential,
+            StableIds.verraLink,
             StableIds.whatNeedsToBeTrue,
-        )
+        ) + StableIds.landUseHectaresByLandUseModel.values
   }
 
   private val variablesById: Map<VariableId, Variable> by lazy {
@@ -88,10 +102,12 @@ class AcceleratorProjectVariableValuesService(
             }
             .toMap()
 
+    val accumulationRate = getNumberValue(valuesByStableId, StableIds.accumulationRate)
     val annualCarbon = getNumberValue(valuesByStableId, StableIds.annualCarbon)
     val applicationReforestableLand =
         getNumberValue(valuesByStableId, StableIds.applicationRestorableLand)
     val carbonCapacity = getNumberValue(valuesByStableId, StableIds.carbonCapacity)
+    val clickUpLink = getLinkValue(valuesByStableId, StableIds.clickUpLink)
     val confirmedReforestableLand = getNumberValue(valuesByStableId, StableIds.tfRestorableLand)
     val countryRow =
         getSingleSelectValue(variablesById, valuesByStableId, StableIds.country)?.let {
@@ -105,7 +121,9 @@ class AcceleratorProjectVariableValuesService(
         }
     val dealDescription = getTextValue(valuesByStableId, StableIds.dealDescription)
     val dealName = getTextValue(valuesByStableId, StableIds.dealName)
+    val expectedMarketCredits = getNumberValue(valuesByStableId, StableIds.expectedMarketCredits)
     val failureRisk = getTextValue(valuesByStableId, StableIds.failureRisk)
+    val gisReportsLink = getLinkValue(valuesByStableId, StableIds.gisReportsLink)
     val investmentThesis = getTextValue(valuesByStableId, StableIds.investmentThesis)
     val landUseModelTypes =
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.landUseModelType)
@@ -118,34 +136,75 @@ class AcceleratorProjectVariableValuesService(
               }
             }
             ?.toSet() ?: emptySet()
+    val landUseHectares =
+        StableIds.landUseHectaresByLandUseModel
+            .mapNotNull { (landUseType, stableId) ->
+              getNumberValue(valuesByStableId, stableId)?.let { landUseType to it }
+            }
+            .filter { (landUseType, _) -> landUseType in landUseModelTypes }
+            .toMap()
     val maxCarbonAccumulation = getNumberValue(valuesByStableId, StableIds.maxCarbonAccumulation)
+    val methodologyNumber =
+        getSingleSelectValue(variablesById, valuesByStableId, StableIds.methodologyNumber)
     val minCarbonAccumulation = getNumberValue(valuesByStableId, StableIds.minCarbonAccumulation)
+    val minProjectArea = getNumberValue(valuesByStableId, StableIds.minProjectArea)
     val numNativeSpecies = getNumberValue(valuesByStableId, StableIds.numSpecies)?.toInt()
     val perHectareBudget = getNumberValue(valuesByStableId, StableIds.perHectareEstimatedBudget)
+    val projectArea = getNumberValue(valuesByStableId, StableIds.projectArea)
+    val riskTrackerLink = getLinkValue(valuesByStableId, StableIds.riskTrackerLink)
+    val sdgList =
+        getMultiSelectValue(variablesById, valuesByStableId, StableIds.sdgList)
+            ?.mapNotNull {
+              try {
+                SustainableDevelopmentGoal.forJsonValue(it)
+              } catch (e: IllegalArgumentException) {
+                log.error("Found unknown sdg $it for project $projectId")
+                null
+              }
+            }
+            ?.toSet() ?: emptySet()
+    val slackLink = getLinkValue(valuesByStableId, StableIds.slackLink)
+    val standard = getSingleSelectValue(variablesById, valuesByStableId, StableIds.standard)
     val totalCarbon = getNumberValue(valuesByStableId, StableIds.totalCarbon)
     val totalExpansionPotential =
         getNumberValue(valuesByStableId, StableIds.totalExpansionPotential)
+    val totalVCU = getNumberValue(valuesByStableId, StableIds.totalVCU)
+    val verraLink = getLinkValue(valuesByStableId, StableIds.verraLink)
     val whatNeedsToBeTrue = getTextValue(valuesByStableId, StableIds.whatNeedsToBeTrue)
 
     return ProjectAcceleratorVariableValuesModel(
+        accumulationRate = accumulationRate,
         annualCarbon = annualCarbon,
         applicationReforestableLand = applicationReforestableLand,
         carbonCapacity = carbonCapacity,
+        clickUpLink = clickUpLink,
         confirmedReforestableLand = confirmedReforestableLand,
         countryCode = countryRow?.code,
         dealDescription = dealDescription,
         dealName = dealName,
+        expectedMarketCredits = expectedMarketCredits,
         failureRisk = failureRisk,
+        gisReportsLink = gisReportsLink,
         investmentThesis = investmentThesis,
         landUseModelTypes = landUseModelTypes,
+        landUseModelHectares = landUseHectares,
         maxCarbonAccumulation = maxCarbonAccumulation,
+        methodologyNumber = methodologyNumber,
         minCarbonAccumulation = minCarbonAccumulation,
+        minProjectArea = minProjectArea,
         numNativeSpecies = numNativeSpecies,
         perHectareBudget = perHectareBudget,
         projectId = projectId,
+        projectArea = projectArea,
+        riskTrackerLink = riskTrackerLink,
+        sdgList = sdgList,
+        slackLink = slackLink,
+        standard = standard,
         region = countryRow?.regionId,
         totalCarbon = totalCarbon,
+        totalVCU = totalVCU,
         totalExpansionPotential = totalExpansionPotential,
+        verraLink = verraLink,
         whatNeedsToBeTrue = whatNeedsToBeTrue,
     )
   }
