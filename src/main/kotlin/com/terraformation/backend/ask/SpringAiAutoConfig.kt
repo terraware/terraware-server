@@ -1,7 +1,8 @@
 package com.terraformation.backend.ask
 
-import org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
-import org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
+import org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+import org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+import org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
 import org.springframework.context.annotation.Configuration
 
 /**
@@ -18,7 +19,13 @@ import org.springframework.context.annotation.Configuration
  * TODO: If/when we decide to make OpenAI integration a core part of Terraware rather than just an
  *   experiment, we'll want to get rid of this setup and make the API key required everywhere.
  */
-@ConditionalOnSpringAi @Configuration class OpenAiConditionalAutoConfig : OpenAiAutoConfiguration()
+@ConditionalOnSpringAi
+@Configuration
+class OpenAiChatConditionalAutoConfig : OpenAiChatAutoConfiguration()
+
+@ConditionalOnSpringAi
+@Configuration
+class OpenAiEmbeddingConditionalAutoConfig : OpenAiEmbeddingAutoConfiguration()
 
 @ConditionalOnSpringAi
 @Configuration
