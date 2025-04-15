@@ -24,17 +24,17 @@ enum class SustainableDevelopmentGoal(val displayName: String) {
   Peace("16. Peace, Justice, and Strong Institutions"),
   Partnerships("17. Partnerships for the Goals");
 
-  @get:JsonValue val sdgNumber: String = startingDigitRegex.find(displayName)?.value ?: ""
+  @get:JsonValue val sdgNumber: Int = startingDigitRegex.find(displayName)?.value?.toInt()!!
 
   companion object {
-    private val bySdgNumber: Map<String, SustainableDevelopmentGoal> by lazy {
+    private val bySdgNumber: Map<Int, SustainableDevelopmentGoal> by lazy {
       SustainableDevelopmentGoal.entries.associateBy { it.sdgNumber }
     }
 
     @JsonCreator
     @JvmStatic
     fun forJsonValue(value: String): SustainableDevelopmentGoal {
-      val sdgNumber = startingDigitRegex.find(value)?.value ?: ""
+      val sdgNumber = startingDigitRegex.find(value)?.value?.toInt()
       return SustainableDevelopmentGoal.bySdgNumber[sdgNumber]
           ?: throw IllegalArgumentException("Unknown goal $value")
     }

@@ -8,8 +8,8 @@ class SustainableDevelopmentGoalTest {
 
   @Test
   fun `sdgNumber works correctly for single and double digits`() {
-    assertEquals("4", SustainableDevelopmentGoal.QualityEducation.sdgNumber)
-    assertEquals("15", SustainableDevelopmentGoal.LifeOnLand.sdgNumber)
+    assertEquals(4, SustainableDevelopmentGoal.QualityEducation.sdgNumber)
+    assertEquals(15, SustainableDevelopmentGoal.LifeOnLand.sdgNumber)
   }
 
   @Test
