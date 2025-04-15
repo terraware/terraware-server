@@ -4,11 +4,15 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityUsersRecord
 import com.terraformation.backend.funder.model.FunderUserModel
+import com.terraformation.backend.funder.model.FundingEntityModel
+import com.terraformation.backend.funder.model.FundingProjectModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -19,13 +23,17 @@ import org.springframework.security.access.AccessDeniedException
 class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val store by lazy { FundingEntityUserStore(dslContext) }
-  private val fundingEntityId by lazy { insertFundingEntity() }
+  private val fundingEntityName = "Funding entity ${UUID.randomUUID()}"
 
+  private lateinit var fundingEntityId: FundingEntityId
+
+  private val store by lazy { FundingEntityUserStore(dslContext) }
   private val testUserId by lazy { insertUser() }
 
   @BeforeEach
   fun setUp() {
+    fundingEntityId = insertFundingEntity(name = fundingEntityName)
+
     every { user.canReadUser(testUserId) } returns true
     every { user.canReadFundingEntity(any()) } returns true
     every { user.canListFundingEntityUsers(any()) } returns true
@@ -63,10 +71,32 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchEntityByUserId returns correct funding entity id if userId attached to FundingEntity`() {
+  fun `fetchEntityByUserId returns correct funding entity if userId attached to FundingEntity`() {
     insertFundingEntityUser(fundingEntityId, testUserId)
 
-    assertEquals(fundingEntityId, store.fetchEntityByUserId(testUserId)!!.id)
+    insertOrganization()
+    val projectId1 = insertProject(name = "Project name 1")
+    insertProjectAcceleratorDetails(dealName = "Deal name 1")
+    insertFundingEntityProject()
+    val projectId2 = insertProject(name = "Project name 2")
+    insertFundingEntityProject()
+
+    // Unrelated funding entity shouldn't be returned
+    insertFundingEntity(name = UUID.randomUUID().toString())
+    insertProject()
+    insertFundingEntityProject()
+
+    assertEquals(
+        FundingEntityModel(
+            id = fundingEntityId,
+            name = fundingEntityName,
+            createdTime = Instant.EPOCH,
+            modifiedTime = Instant.EPOCH,
+            projects =
+                listOf(
+                    FundingProjectModel(projectId1, "Deal name 1"),
+                    FundingProjectModel(projectId2, "Project name 2"))),
+        store.fetchEntityByUserId(testUserId))
   }
 
   @Test
