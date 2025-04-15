@@ -2191,13 +2191,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       isPermanent: Boolean = false,
       insertObservationPlots: Boolean = isPermanent,
   ): List<MonitoringPlotId> {
-    val plotId =
-        insertMonitoringPlot(
-            permanentCluster = permanentCluster,
-            permanentClusterSubplot = 1,
-            x = x,
-            y = y,
-        )
+    val plotId = insertMonitoringPlot(permanentCluster = permanentCluster, x = x, y = y)
 
     if (insertObservationPlots) {
       insertObservationPlot(isPermanent = isPermanent)

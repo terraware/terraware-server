@@ -2098,8 +2098,6 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       permanentCluster: Int? = row.permanentCluster,
-      permanentClusterSubplot: Int? =
-          row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSubzoneId: PlantingSubzoneId? =
           row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
@@ -2120,7 +2118,6 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
             organizationId = organizationId,
             permanentCluster = permanentCluster,
-            permanentClusterSubplot = permanentClusterSubplot,
             plantingSiteId = plantingSiteId,
             plantingSubzoneId = plantingSubzoneId,
             plotNumber = plotNumber,

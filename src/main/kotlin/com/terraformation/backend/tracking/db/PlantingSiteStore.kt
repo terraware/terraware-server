@@ -811,7 +811,6 @@ class PlantingSiteStore(
           dslContext
               .update(MONITORING_PLOTS)
               .set(PERMANENT_CLUSTER, edit.permanentCluster)
-              .set(PERMANENT_CLUSTER_SUBPLOT, if (edit.permanentCluster != null) 1 else null)
               .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
@@ -833,7 +832,6 @@ class PlantingSiteStore(
           dslContext
               .update(MONITORING_PLOTS)
               .setNull(PERMANENT_CLUSTER)
-              .setNull(PERMANENT_CLUSTER_SUBPLOT)
               .setNull(PLANTING_SUBZONE_ID)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
@@ -1117,7 +1115,6 @@ class PlantingSiteStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(PERMANENT_CLUSTER, permanentCluster)
-          .set(PERMANENT_CLUSTER_SUBPLOT, 1)
           .where(ID.eq(monitoringPlotId))
           .execute()
     }
@@ -1385,7 +1382,6 @@ class PlantingSiteStore(
             .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
             .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
             .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER)
-            .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT)
             .where(MONITORING_PLOTS.ID.`in`(clusterPlotIds))
             .execute()
 
@@ -1458,7 +1454,6 @@ class PlantingSiteStore(
               .set(MODIFIED_BY, userId)
               .set(MODIFIED_TIME, now)
               .setNull(PERMANENT_CLUSTER)
-              .setNull(PERMANENT_CLUSTER_SUBPLOT)
               .where(ID.`in`(clusterPlotIds))
               .execute()
 
@@ -1605,7 +1600,6 @@ class PlantingSiteStore(
                 modifiedTime = now,
                 organizationId = plantingSite.organizationId,
                 permanentCluster = clusterNumber,
-                permanentClusterSubplot = 1,
                 plantingSiteId = plantingSite.id,
                 plantingSubzoneId = subzone.id,
                 plotNumber = plotNumber,
@@ -1790,7 +1784,6 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.IS_AVAILABLE,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
-                      MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
                       MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
@@ -1805,7 +1798,6 @@ class PlantingSiteStore(
                   isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                   isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
                   permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
-                  permanentClusterSubplot = record[MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT],
                   plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
                   sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
               )
