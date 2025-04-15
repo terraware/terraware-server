@@ -460,7 +460,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                     boundary = initialPlot.boundary,
                     isAvailable = initialPlot.isAvailable,
                     permanentCluster = initialPlot.permanentCluster,
-                    permanentClusterSubplot = initialPlot.permanentClusterSubplot,
                     plantingSiteId = existingWithoutPlots.id,
                     plantingSubzoneId = existingSubzone.id,
                     plotNumber = initialPlot.plotNumber,

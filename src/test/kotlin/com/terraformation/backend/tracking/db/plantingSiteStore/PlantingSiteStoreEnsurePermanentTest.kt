@@ -85,10 +85,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
       insertMonitoringPlot(
-          boundary = existingPlotBoundary,
-          permanentCluster = 2,
-          permanentClusterSubplot = 1,
-          insertHistory = false)
+          boundary = existingPlotBoundary, permanentCluster = 2, insertHistory = false)
 
       store.ensurePermanentClustersExist(plantingSiteId)
 
@@ -152,10 +149,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
       insertPlantingSubzone(boundary = siteBoundary)
-      insertMonitoringPlot(
-          boundary = plotBoundary, permanentCluster = 1, permanentClusterSubplot = 1)
-      insertMonitoringPlot(
-          boundary = plotBoundary, permanentCluster = 2, permanentClusterSubplot = 1)
+      insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 1)
+      insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 2)
 
       val before = monitoringPlotsDao.findAll().toSet()
 

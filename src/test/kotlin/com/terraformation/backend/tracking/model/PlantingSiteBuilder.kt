@@ -184,7 +184,6 @@ private constructor(
             isAdHoc = isAdHoc,
             isAvailable = isAvailable,
             permanentCluster = null,
-            permanentClusterSubplot = null,
             plotNumber = plotNumber,
             sizeMeters = size,
         )
@@ -264,7 +263,6 @@ private constructor(
       private var lastCluster: Int? = null
       private val monitoringPlots = mutableListOf<MonitoringPlotModel>()
       private var nextMonitoringPlotX: Int = x
-      private var nextSubplot: Int = 1
 
       var plantingCompletedTime: Instant? = null
 
@@ -284,12 +282,6 @@ private constructor(
           x: Int = nextMonitoringPlotX,
           y: Int = this.y,
           cluster: Int? = null,
-          subplot: Int? =
-              when (cluster) {
-                null -> null
-                lastCluster -> nextSubplot
-                else -> 1
-              },
           isAdHoc: Boolean = false,
           isAvailable: Boolean = true,
           size: Int = MONITORING_PLOT_SIZE_INT,
@@ -298,10 +290,6 @@ private constructor(
         lastCluster = cluster
         nextMonitoringPlotX = x + size
 
-        if (subplot != null) {
-          nextSubplot = subplot + 1
-        }
-
         val plot =
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
@@ -309,7 +297,6 @@ private constructor(
                 isAdHoc = isAdHoc,
                 isAvailable = isAvailable,
                 permanentCluster = cluster,
-                permanentClusterSubplot = subplot,
                 plotNumber = plotNumber,
                 sizeMeters = size,
             )

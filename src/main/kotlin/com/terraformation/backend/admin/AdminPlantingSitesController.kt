@@ -292,10 +292,7 @@ class AdminPlantingSitesController(
                               else -> emptyMap()
                             }
 
-                        val cluster =
-                            if (plot.permanentCluster != null)
-                                "${plot.permanentCluster}-${plot.permanentClusterSubplot}"
-                            else null
+                        val cluster = plot.permanentCluster?.toString()
 
                         val properties =
                             mapOf(

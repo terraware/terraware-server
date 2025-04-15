@@ -10,7 +10,6 @@ data class MonitoringPlotModel(
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
     val permanentCluster: Int? = null,
-    val permanentClusterSubplot: Int? = null,
     val plotNumber: Long,
     val sizeMeters: Int,
 ) {
@@ -23,7 +22,6 @@ data class MonitoringPlotModel(
         isAdHoc == other.isAdHoc &&
         isAvailable == other.isAvailable &&
         permanentCluster == other.permanentCluster &&
-        permanentClusterSubplot == other.permanentClusterSubplot &&
         plotNumber == other.plotNumber &&
         sizeMeters == other.sizeMeters &&
         boundary.equalsExact(other.boundary, tolerance)
