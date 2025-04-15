@@ -90,9 +90,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M6"))
-  implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
-  implementation("org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter")
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M7"))
+  implementation("org.springframework.ai:spring-ai-starter-model-openai")
+  implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
+  implementation("org.springframework.ai:spring-ai-advisors-vector-store")
   implementation("org.springframework.ai:spring-ai-tika-document-reader")
 
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.6")
