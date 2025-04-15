@@ -52,7 +52,7 @@ data class PlantingZoneModel<
     val plotsInRequestedSubzones =
         requestedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
-            plot.permanentCluster != null && plot.permanentCluster <= numPermanentPlots
+            plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
           }
         }
 
@@ -117,7 +117,7 @@ data class PlantingZoneModel<
         .sortedWith(
             compareBy { subzone: PlantingSubzoneModel<PSZID> ->
                   subzone.monitoringPlots.count { plot ->
-                    plot.permanentCluster != null && plot.permanentCluster <= numPermanentPlots
+                    plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
                   }
                 }
                 .thenBy { if (it.id != null && it.id in requestedSubzoneIds) 0 else 1 }
@@ -163,10 +163,10 @@ data class PlantingZoneModel<
     }
   }
 
-  /** Returns true if the zone contains a permanent cluster with the supplied cluster number. */
-  fun permanentClusterExists(clusterNumber: Int): Boolean {
+  /** Returns true if the zone contains a permanent plot with the supplied index. */
+  fun permanentIndexExists(permanentIndex: Int): Boolean {
     return plantingSubzones.any { subzone ->
-      subzone.monitoringPlots.any { it.permanentCluster == clusterNumber }
+      subzone.monitoringPlots.any { it.permanentIndex == permanentIndex }
     }
   }
 
@@ -350,8 +350,8 @@ data class PlantingZoneModel<
             .filter { plot ->
               !plot.isAvailable ||
                   plot.id in excludePlotIds ||
-                  plot.permanentCluster != null &&
-                      (includeAll || plot.permanentCluster <= numPermanentPlots)
+                  plot.permanentIndex != null &&
+                      (includeAll || plot.permanentIndex <= numPermanentPlots)
             }
 
     if (relevantPlots.isEmpty()) {

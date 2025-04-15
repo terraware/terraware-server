@@ -264,9 +264,9 @@ class AdminPlantingSitesController(
                               "geometry" to plotBoundary,
                               "properties" to
                                   mapOf(
-                                      "cluster" to null,
                                       "id" to "(new)",
                                       "name" to "New Temporary Plot",
+                                      "permanentIndex" to null,
                                       "subzone" to zone.findPlantingSubzone(plotBoundary)?.name,
                                       "type" to "temporary",
                                       "zone" to zone.name,
@@ -279,7 +279,7 @@ class AdminPlantingSitesController(
                       val permanentPlotIds =
                           subzone.monitoringPlots
                               .filter {
-                                it.permanentCluster != null && it.permanentCluster <= numPermanent
+                                it.permanentIndex != null && it.permanentIndex <= numPermanent
                               }
                               .map { it.id }
                               .toSet()
@@ -292,12 +292,12 @@ class AdminPlantingSitesController(
                               else -> emptyMap()
                             }
 
-                        val cluster = plot.permanentCluster?.toString()
+                        val permanentIndex = plot.permanentIndex?.toString()
 
                         val properties =
                             mapOf(
-                                "cluster" to cluster,
                                 "id" to "${plot.id}",
+                                "permanentIndex" to permanentIndex,
                                 "plotNumber" to plot.plotNumber,
                                 "subzone" to subzone.name,
                                 "zone" to zone.name,
@@ -790,7 +790,7 @@ class AdminPlantingSitesController(
               } else {
                 "new"
               }
-          "$prefix Create permanent cluster ${plotEdit.permanentCluster} in $existingOrNew area"
+          "$prefix Create permanent plot index ${plotEdit.permanentIndex} in $existingOrNew area"
         }
     val subzoneEdits = zoneEdit.plantingSubzoneEdits.flatMap { describeSubzoneEdit(zoneEdit, it) }
 
@@ -821,16 +821,16 @@ class AdminPlantingSitesController(
     val prefix = "Zone $zoneName subzone $subzoneName:"
     val monitoringPlotEdits =
         subzoneEdit.monitoringPlotEdits.map { plotEdit ->
-          val permanentCluster = plotEdit.permanentCluster
+          val permanentIndex = plotEdit.permanentIndex
           val plotId = plotEdit.monitoringPlotId
           when (plotEdit) {
             is MonitoringPlotEdit.Create ->
-                "$prefix BUG! Create plot $permanentCluster (should be at zone level)"
+                "$prefix BUG! Create plot $permanentIndex (should be at zone level)"
             is MonitoringPlotEdit.Adopt ->
-                if (permanentCluster != null) {
-                  "$prefix Adopt plot ID $plotId as cluster $permanentCluster"
+                if (permanentIndex != null) {
+                  "$prefix Adopt plot ID $plotId as permanent index $permanentIndex"
                 } else {
-                  "$prefix Adopt plot ID $plotId without cluster number"
+                  "$prefix Adopt plot ID $plotId without permanent index"
                 }
             is MonitoringPlotEdit.Eject -> "$prefix Eject plot ID $plotId"
           }

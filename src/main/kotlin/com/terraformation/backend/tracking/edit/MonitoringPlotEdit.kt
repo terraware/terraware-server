@@ -16,10 +16,10 @@ sealed interface MonitoringPlotEdit {
   val monitoringPlotId: MonitoringPlotId?
 
   /**
-   * New permanent cluster number to assign to the plot. Null if the plot should not have a
-   * permanent cluster number any more, or if the plot is being deleted.
+   * New permanent index to assign to the plot. Null if the plot should not have a permanent index
+   * any more, or if the plot is being deleted.
    */
-  val permanentCluster: Int?
+  val permanentIndex: Int?
 
   /** Region in which to create new plot. */
   val region: MultiPolygon?
@@ -28,21 +28,21 @@ sealed interface MonitoringPlotEdit {
   fun equalsExact(other: MonitoringPlotEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
           monitoringPlotId == other.monitoringPlotId &&
-          permanentCluster == other.permanentCluster &&
+          permanentIndex == other.permanentIndex &&
           region.equalsOrBothNull(other.region, tolerance)
 
   /**
    * Represents a monitoring plot that needs to move from one subzone to another, or change its
-   * permanent cluster number, because the subzone boundaries have changed out from under the plot.
+   * permanent index, because the subzone boundaries have changed out from under the plot.
    *
    * This will always be on the list of monitoring plot edits for the plot's _new_ subzone, never on
    * its existing subzone.
    *
-   * The plot may have a different permanent cluster number, or none at all, in its new home.
+   * The plot may have a different permanent index, or none at all, in its new home.
    */
   data class Adopt(
       override val monitoringPlotId: MonitoringPlotId,
-      override val permanentCluster: Int? = null,
+      override val permanentIndex: Int? = null,
   ) : MonitoringPlotEdit
 
   /**
@@ -50,12 +50,11 @@ sealed interface MonitoringPlotEdit {
    * when the containing zone covers area that wasn't covered by the previous version of the
    * planting site.
    *
-   * This always creates permanent plots. If [permanentCluster] is null, a cluster number is chosen
-   * at random.
+   * This always creates permanent plots. If [permanentIndex] is null, an index is chosen at random.
    */
   data class Create(
       override val region: MultiPolygon,
-      override val permanentCluster: Int?,
+      override val permanentIndex: Int?,
   ) : MonitoringPlotEdit {
     override val monitoringPlotId: MonitoringPlotId?
       get() = null
@@ -68,7 +67,7 @@ sealed interface MonitoringPlotEdit {
    * This will always be on the list of monitoring plot edits for the plot's existing subzone.
    */
   data class Eject(override val monitoringPlotId: MonitoringPlotId) : MonitoringPlotEdit {
-    override val permanentCluster: Int?
+    override val permanentIndex: Int?
       get() = null
   }
 }

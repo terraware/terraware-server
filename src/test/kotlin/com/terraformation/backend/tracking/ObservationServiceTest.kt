@@ -196,12 +196,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       //
       // Zone 1 (2 permanent, 3 temporary)
       //   Subzone 1
-      //     Plot A - permanent cluster 1
-      //     Plot B - permanent cluster 3
+      //     Plot A - permanent index 1
+      //     Plot B - permanent index 3
       //     Plot C
       //     Plot D
       //   Subzone 2
-      //     Plot E - permanent cluster 2
+      //     Plot E - permanent index 2
       //     Plot F
       //     Plot G
       // Zone 2 (2 permanent, 2 temporary)
@@ -213,7 +213,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // - Two temporary plots in subzone 1. The zone is configured for 3 temporary plots. 2 of them
       //   are spread evenly across the 2 subzones, and the remaining one is placed in the subzone
       //   with the fewest permanent plots that could potentially be included in the observation.
-      //   Since permanent clusters 1 and 2 are spread evenly across subzones, preference is given
+      //   Since permanent indexes 1 and 2 are spread evenly across subzones, preference is given
       //   to requested subzones, meaning subzone 1 is picked.
       // - Nothing from zone 2 because it was not requested.
 
@@ -360,7 +360,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val numPermanentPlotsBySubzone: Map<PlantingSubzoneId, Int> =
             monitoringPlots
-                .filter { it.permanentCluster != null }
+                .filter { it.permanentIndex != null }
                 .groupBy { it.plantingSubzoneId!! }
                 .mapValues { it.value.size }
         val numPermanentPlotsInSubzone1 = numPermanentPlotsBySubzone[subzone1Id] ?: 0
@@ -368,7 +368,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertEquals(
             4,
-            monitoringPlots.count { it.permanentCluster != null },
+            monitoringPlots.count { it.permanentIndex != null },
             "Total number of permanent plots created")
         assertEquals(
             2,
@@ -456,7 +456,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           index,
           (x, y) ->
         insertMonitoringPlot(
-            x = x, y = y, plantingSubzoneId = subzoneIds[x / 3 + 1], permanentCluster = index + 1)
+            x = x, y = y, plantingSubzoneId = subzoneIds[x / 3 + 1], permanentIndex = index + 1)
       }
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
@@ -1432,7 +1432,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `marks temporary plot as unavailable and clears its cluster number if duration is long-term`() {
+    fun `marks temporary plot as unavailable and clears its permanent index if duration is long-term`() {
       val plotId1 = insertPermanentPlot(1)
       insertPermanentPlot(2)
       insertPermanentPlot(3)
@@ -1443,7 +1443,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
 
-      assertNull(plots[plotId1]!!.permanentCluster, "Cluster number of plot that was replaced")
+      assertNull(plots[plotId1]!!.permanentIndex, "Permanent index of plot that was replaced")
 
       assertFalse(plots[plotId1]!!.isAvailable!!, "Replaced plot is available")
 
@@ -1542,14 +1542,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           1,
-          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentCluster,
-          "Should have moved second permanent cluster to first place")
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
+          "Should have moved second permanent plot to first place")
       assertNotEquals(
-          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentCluster, "Plot $plotId1 cluster")
+          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex, "Plot $plotId1 index")
     }
 
     @Test
-    fun `removes cluster number if replacement plot is in an unrequested subzone`() {
+    fun `removes permanent index if replacement plot is in an unrequested subzone`() {
       insertPlantingZone(numPermanentPlots = 1, width = 1, height = 2)
       insertPlantingSubzone(width = 1, height = 1)
       insertObservationRequestedSubzone()
@@ -1569,10 +1569,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           1,
-          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentCluster,
-          "Should have moved second permanent cluster to first place")
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
+          "Should have moved second permanent plot to first place")
       assertNotEquals(
-          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentCluster, "Plot $plotId1 cluster")
+          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex, "Plot $plotId1 index")
     }
 
     @Test
@@ -1601,13 +1601,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
 
-      assertNull(
-          plots[plotId1]!!.permanentCluster, "Permanent cluster number of plot that was replaced")
+      assertNull(plots[plotId1]!!.permanentIndex, "Permanent index of plot that was replaced")
 
       assertEquals(
           1,
-          plots.values.count { it.permanentCluster == 1 },
-          "Number of plots with permanent cluster number 1")
+          plots.values.count { it.permanentIndex == 1 },
+          "Number of plots with permanent index 1")
 
       assertFalse(plots[plotId1]!!.isAvailable!!, "Replaced plot is available")
 
@@ -2112,10 +2111,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `abandons in-progress observations in edited zones`() {
       insertPlantingZone(numPermanentPlots = 1, numTemporaryPlots = 1, width = 2, height = 7)
       insertPlantingSubzone()
-      val plotInEditedZone = insertMonitoringPlot(permanentCluster = 1)
+      val plotInEditedZone = insertMonitoringPlot(permanentIndex = 1)
       insertPlantingZone()
       insertPlantingSubzone()
-      val plotInNonEditedZone = insertMonitoringPlot(permanentCluster = 1)
+      val plotInNonEditedZone = insertMonitoringPlot(permanentIndex = 1)
 
       val completedObservation = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(
@@ -2168,19 +2167,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   /**
-   * Inserts a permanent monitoring plot with a given cluster number. By default, the clusters are
-   * stacked northward, that is, cluster 1 is at y=0, cluster 2 is at y=1, and cluster 3 is at y=2.
+   * Inserts a permanent monitoring plot with a given index. By default, the plots are stacked
+   * northward, that is, index 1 is at y=0, index 2 is at y=1, and index 3 is at y=2.
    *
    * Optionally also includes the plot in the most-recently-inserted observation.
    */
   private fun insertPermanentPlot(
-      permanentCluster: Int,
+      permanentIndex: Int,
       x: Int = 0,
-      y: Int = (permanentCluster - 1) * 2,
+      y: Int = (permanentIndex - 1) * 2,
       isPermanent: Boolean = false,
       insertObservationPlots: Boolean = isPermanent,
   ): MonitoringPlotId {
-    val plotId = insertMonitoringPlot(permanentCluster = permanentCluster, x = x, y = y)
+    val plotId = insertMonitoringPlot(permanentIndex = permanentIndex, x = x, y = y)
 
     if (insertObservationPlots) {
       insertObservationPlot(isPermanent = isPermanent)

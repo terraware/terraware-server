@@ -1727,8 +1727,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `honors isPermanent flag`() {
       insertPlantingZone()
       insertPlantingSubzone()
-      val permanentPlotId = insertMonitoringPlot(permanentCluster = 1)
-      val temporaryPlotId = insertMonitoringPlot(permanentCluster = 2)
+      val permanentPlotId = insertMonitoringPlot(permanentIndex = 1)
+      val temporaryPlotId = insertMonitoringPlot(permanentIndex = 2)
       val observationId = insertObservation()
 
       store.addPlotsToObservation(observationId, listOf(permanentPlotId), isPermanent = true)

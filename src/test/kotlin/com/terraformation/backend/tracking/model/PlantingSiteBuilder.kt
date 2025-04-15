@@ -55,10 +55,8 @@ import org.locationtech.jts.geom.PrecisionModel
  *   the site's boundary
  *     - Subzone S1 with a boundary of 150 by 500 meters whose southwest corner is the southwest
  *       corner of the zone (and thus of the site)
- *         - Cluster 1 with plots 1, 2, 3, 4 arranged counterclockwise starting at the southwest
- *           corner of the subzone, that is, at coordinates (0,0), (25,0), (25,25), and (0,25) in
- *           meters relative to the subzone's southwest corner
- *         - Plot 5 immediately to the east of plot 2, that is, at coordinates (50,0) relative to
+ *         - Plot 1 with permanent index 1
+ *         - Plot 2 immediately to the east of plot 1, that is, at coordinates (30,0) relative to
  *           the subzone's southwest corner
  *     - Subzone S2 with a boundary of 250 by 500 meters, filling the remaining space in Z1
  * - Zone Z2 with a boundary of 600 by 500 meters (filling the remaining space in the site)
@@ -185,7 +183,7 @@ private constructor(
             id = MonitoringPlotId(plotNumber),
             isAdHoc = isAdHoc,
             isAvailable = isAvailable,
-            permanentCluster = null,
+            permanentIndex = null,
             plotNumber = plotNumber,
             sizeMeters = size,
         )
@@ -211,7 +209,7 @@ private constructor(
     var variance: BigDecimal = PlantingZoneModel.DEFAULT_VARIANCE
 
     private val boundary: MultiPolygon = rectangle(width, height, x, y)
-    private var nextPermanentCluster = 1
+    private var nextPermanentIndex = 1
     private var nextSubzoneX = x
     private val plantingSubzones = mutableListOf<ExistingPlantingSubzoneModel>()
 
@@ -262,7 +260,7 @@ private constructor(
     ) {
       private val boundary: MultiPolygon = rectangle(width, height, x, y)
       private val fullName: String = "$zoneName-$name"
-      private var lastCluster: Int? = null
+      private var lastIndex: Int? = null
       private val monitoringPlots = mutableListOf<MonitoringPlotModel>()
       private var nextMonitoringPlotX: Int = x
 
@@ -283,14 +281,14 @@ private constructor(
       fun plot(
           x: Int = nextMonitoringPlotX,
           y: Int = this.y,
-          cluster: Int? = null,
+          permanentIndex: Int? = null,
           elevationMeters: BigDecimal? = null,
           isAdHoc: Boolean = false,
           isAvailable: Boolean = true,
           size: Int = MONITORING_PLOT_SIZE_INT,
           plotNumber: Long = nextPlotNumber,
       ): MonitoringPlotModel {
-        lastCluster = cluster
+        lastIndex = permanentIndex
         nextMonitoringPlotX = x + size
 
         val plot =
@@ -300,7 +298,7 @@ private constructor(
                 id = MonitoringPlotId(plotNumber),
                 isAdHoc = isAdHoc,
                 isAvailable = isAvailable,
-                permanentCluster = cluster,
+                permanentIndex = permanentIndex,
                 plotNumber = plotNumber,
                 sizeMeters = size,
             )
@@ -314,11 +312,11 @@ private constructor(
       fun cluster(
           x: Int = nextMonitoringPlotX,
           y: Int = this.y,
-          cluster: Int = nextPermanentCluster++,
+          index: Int = nextPermanentIndex++,
           isAvailable: Boolean = true,
           plotNumber: Long = nextPlotNumber,
       ): MonitoringPlotModel {
-        return plot(x, y, cluster, isAvailable = isAvailable, plotNumber = plotNumber)
+        return plot(x, y, index, isAvailable = isAvailable, plotNumber = plotNumber)
       }
     }
   }
