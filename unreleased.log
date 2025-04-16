@@ -1,3 +1,5 @@
+d6019e32f92 Use planting site time zone for report mortality rate (#3030)
+743dc7c71df SW-6189 Simplify plot replacement logic (#3028)
 9045e4a94f3 SW-6189 Remove subplots from data model (#3027)
 afad34e9334 Return projects list with funding entity details (#3026)
 30dd5bb5e19 Upgrade to Spring AI 1.0.0-M7 (#3025)
