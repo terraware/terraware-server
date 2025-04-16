@@ -43,6 +43,12 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -65,6 +71,8 @@ import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.Record
+import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -232,8 +240,8 @@ class ReportStore(
     }
 
     dslContext.transaction { _ ->
-      achievements?.let { mergeReportAchievements(reportId, it) }
-      challenges?.let { mergeReportChallenges(reportId, it) }
+      achievements?.let { mergeReportAchievements(REPORT_ACHIEVEMENTS, reportId, it) }
+      challenges?.let { mergeReportChallenges(REPORT_CHALLENGES, reportId, it) }
 
       val rowsUpdated =
           with(REPORTS) {
@@ -333,8 +341,8 @@ class ReportStore(
         standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
 
     dslContext.transaction { _ ->
-      mergeReportAchievements(reportId, achievements)
-      mergeReportChallenges(reportId, challenges)
+      mergeReportAchievements(REPORT_ACHIEVEMENTS, reportId, achievements)
+      mergeReportChallenges(REPORT_CHALLENGES, reportId, challenges)
 
       upsertReportStandardMetrics(reportId, standardMetricEntries, false)
       upsertReportSystemMetrics(reportId, systemMetricEntries, false)
@@ -347,6 +355,80 @@ class ReportStore(
           .set(REPORTS.MODIFIED_TIME, clock.instant())
           .where(REPORTS.ID.eq(reportId))
           .execute()
+    }
+  }
+
+  fun publishReport(reportId: ReportId) {
+    requirePermissions { publishReports() }
+
+    val report = fetchOne(reportId, true)
+    val now = clock.instant()
+    val userId = currentUser().userId
+
+    if (report.status != ReportStatus.Approved) {
+      throw IllegalStateException(
+          "Report $reportId cannot be published because the status is ${report.status.name}")
+    }
+
+    dslContext.transaction { _ ->
+      // Upsert the published report
+      with(PUBLISHED_REPORTS) {
+        dslContext
+            .insertInto(this)
+            .set(REPORT_ID, report.id)
+            .set(PROJECT_ID, report.projectId)
+            .set(REPORT_FREQUENCY_ID, report.frequency)
+            .set(REPORT_QUARTER_ID, report.quarter)
+            .set(START_DATE, report.startDate)
+            .set(END_DATE, report.endDate)
+            .set(HIGHLIGHTS, report.highlights)
+            .set(PUBLISHED_BY, userId)
+            .set(PUBLISHED_TIME, now)
+            .onConflict()
+            .doUpdate()
+            .set(PROJECT_ID, report.projectId)
+            .set(REPORT_FREQUENCY_ID, report.frequency)
+            .set(REPORT_QUARTER_ID, report.quarter)
+            .set(START_DATE, report.startDate)
+            .set(END_DATE, report.endDate)
+            .set(HIGHLIGHTS, report.highlights)
+            .set(PUBLISHED_BY, userId)
+            .set(PUBLISHED_TIME, now)
+            .execute()
+      }
+
+      mergeReportAchievements(PUBLISHED_REPORT_ACHIEVEMENTS, report.id, report.achievements)
+      mergeReportChallenges(PUBLISHED_REPORT_CHALLENGES, report.id, report.challenges)
+
+      val publishableSystemMetrics =
+          report.systemMetrics
+              .filter { it.metric.isPublishable }
+              .associate { (metric, entry) ->
+                metric to
+                    ReportMetricEntryModel(
+                        target = entry.target,
+                        value = entry.overrideValue ?: entry.systemValue,
+                        underperformanceJustification = entry.underperformanceJustification,
+                        status = entry.status,
+                    )
+              }
+      val publishableStandardMetrics =
+          report.standardMetrics
+              .filter { it.metric.isPublishable && it.entry.value != null }
+              .associate { it.metric.id to it.entry }
+      val publishableProjectMetrics =
+          report.projectMetrics
+              .filter { it.metric.isPublishable && it.entry.value != null }
+              .associate { it.metric.id to it.entry }
+
+      publishReportMetrics(
+          reportId, PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, publishableSystemMetrics)
+      publishReportMetrics(
+          reportId,
+          PUBLISHED_REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+          publishableStandardMetrics)
+      publishReportMetrics(
+          reportId, PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, publishableProjectMetrics)
     }
   }
 
@@ -670,54 +752,65 @@ class ReportStore(
     }
   }
 
-  private fun mergeReportAchievements(
+  private fun <R : Record> mergeReportAchievements(
+      table: Table<R>,
       reportId: ReportId,
       achievements: List<String>,
   ) {
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val positionField = table.field("position", Int::class.java)!!
+    val achievementField = table.field("achievement", String::class.java)!!
+
     dslContext.transaction { _ ->
-      with(REPORT_ACHIEVEMENTS) {
-        if (achievements.isNotEmpty()) {
-          var insertQuery = dslContext.insertInto(this, REPORT_ID, POSITION, ACHIEVEMENT)
+      if (achievements.isNotEmpty()) {
+        var insertQuery =
+            dslContext.insertInto(table, reportIdField, positionField, achievementField)
 
-          achievements.forEachIndexed { index, achievement ->
-            insertQuery = insertQuery.values(reportId, index, achievement)
-          }
-
-          insertQuery.onConflict(REPORT_ID, POSITION).doUpdate().setAllToExcluded().execute()
+        achievements.forEachIndexed { index, achievement ->
+          insertQuery = insertQuery.values(reportId, index, achievement)
         }
 
-        dslContext
-            .deleteFrom(this)
-            .where(REPORT_ID.eq(reportId))
-            .and(POSITION.ge(achievements.size))
-            .execute()
+        insertQuery.onConflict(reportIdField, positionField).doUpdate().setAllToExcluded().execute()
       }
+
+      dslContext
+          .deleteFrom(table)
+          .where(reportIdField.eq(reportId))
+          .and(positionField.ge(achievements.size))
+          .execute()
     }
   }
 
-  private fun mergeReportChallenges(
+  private fun <R : Record> mergeReportChallenges(
+      table: Table<R>,
       reportId: ReportId,
       challenges: List<ReportChallengeModel>,
   ) {
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val positionField = table.field("position", Int::class.java)!!
+    val challengeField = table.field("challenge", String::class.java)!!
+    val mitigationPlanField = table.field("mitigation_plan", String::class.java)!!
+
     dslContext.transaction { _ ->
-      with(REPORT_CHALLENGES) {
-        if (challenges.isNotEmpty()) {
-          var insertQuery =
-              dslContext.insertInto(this, REPORT_ID, POSITION, CHALLENGE, MITIGATION_PLAN)
+      if (challenges.isNotEmpty()) {
+        var insertQuery =
+            dslContext.insertInto(
+                table, reportIdField, positionField, challengeField, mitigationPlanField)
 
-          challenges.forEachIndexed { index, model ->
-            insertQuery = insertQuery.values(reportId, index, model.challenge, model.mitigationPlan)
-          }
-
-          insertQuery.onConflict(REPORT_ID, POSITION).doUpdate().setAllToExcluded().execute()
+        challenges.forEachIndexed { index, model ->
+          insertQuery = insertQuery.values(reportId, index, model.challenge, model.mitigationPlan)
         }
 
-        dslContext
-            .deleteFrom(this)
-            .where(REPORT_ID.eq(reportId))
-            .and(POSITION.ge(challenges.size))
-            .execute()
+        insertQuery.onConflict(reportIdField, positionField).doUpdate().setAllToExcluded().execute()
       }
+
+      dslContext
+          .deleteFrom(table)
+          .where(reportIdField.eq(reportId))
+          .and(positionField.ge(challenges.size))
+          .execute()
     }
   }
 
@@ -754,13 +847,13 @@ class ReportStore(
     val valueField = table.field("value", Int::class.java)!!
     val underperformanceJustificationField =
         table.field("underperformance_justification", String::class.java)!!
-    val progressNotesField = table.field("progress_notes", String::class.java)!!
+    val progressNotesField = table.field("progress_notes", String::class.java)
     val statusField =
         table.field(
             "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
     val modifiedByField =
-        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))!!
-    val modifiedTimeField = table.field("modified_time", Instant::class.java)!!
+        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))
+    val modifiedTimeField = table.field("modified_time", Instant::class.java)
 
     var insertQuery = dslContext.insertInto(table).set()
 
@@ -776,10 +869,18 @@ class ReportStore(
               .set(valueField, entry.value)
               .set(underperformanceJustificationField, entry.underperformanceJustification)
               .set(statusField, entry.status)
-              .set(modifiedByField, currentUser().userId)
-              .set(modifiedTimeField, clock.instant())
               .apply {
-                if (updateProgressNotes) {
+                if (modifiedByField != null) {
+                  this.set(modifiedByField, currentUser().userId)
+                }
+              }
+              .apply {
+                if (modifiedTimeField != null) {
+                  this.set(modifiedTimeField, clock.instant())
+                }
+              }
+              .apply {
+                if (updateProgressNotes && progressNotesField != null) {
                   this.set(progressNotesField, entry.progressNotes)
                 }
               }
@@ -794,6 +895,28 @@ class ReportStore(
         insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
 
     return rowsUpdated
+  }
+
+  private fun <ID : Any> publishReportMetrics(
+      reportId: ReportId,
+      metricIdField: TableField<*, ID?>,
+      entries: Map<ID, ReportMetricEntryModel>,
+  ) {
+    val table = metricIdField.table!!
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+
+    dslContext.transaction { _ ->
+      // Insert all entries
+      upsertReportMetrics(reportId, metricIdField, entries, false)
+
+      // Delete any entries that are not publishable
+      dslContext
+          .deleteFrom(table)
+          .where(reportIdField.eq(reportId))
+          .and(metricIdField.notIn(entries.keys))
+          .execute()
+    }
   }
 
   private fun updateReportSystemMetricWithTerrawareData(

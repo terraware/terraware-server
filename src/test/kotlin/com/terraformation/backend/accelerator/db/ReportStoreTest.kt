@@ -44,6 +44,12 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectMetricsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardMetricsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportSystemMetricsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -3210,6 +3216,421 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
   }
 
+  @Nested
+  inner class PublishReport {
+    private lateinit var reportId: ReportId
+    val standardMetricId1 by lazy { insertStandardMetric() }
+    val standardMetricId2 by lazy { insertStandardMetric() }
+    val standardMetricNullValueId by lazy { insertStandardMetric() }
+    val standardMetricNotPublishableId by lazy { insertStandardMetric(isPublishable = false) }
+
+    val projectMetricId1 by lazy { insertProjectMetric() }
+    val projectMetricId2 by lazy { insertProjectMetric() }
+    val projectMetricNullValueId by lazy { insertProjectMetric() }
+    val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
+
+    @Test
+    fun `throws exception for non-accelerator admin user`() {
+      assertDoesNotThrow(message = "accelerator admin") { store.publishReport(reportId) }
+
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      assertThrows<AccessDeniedException>(message = "TFExpert") { store.publishReport(reportId) }
+    }
+
+    @Test
+    fun `throws exception if report is not yet approved`() {
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val notSubmittedReportId = insertReport(status = ReportStatus.NotSubmitted)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
+
+      assertThrows<IllegalStateException>(message = "NotNeeded") {
+        store.publishReport(notNeededReportId)
+      }
+      assertThrows<IllegalStateException>(message = "needsUpdateReportId") {
+        store.publishReport(notSubmittedReportId)
+      }
+      assertThrows<IllegalStateException>(message = "Submitted") {
+        store.publishReport(submittedReportId)
+      }
+      assertThrows<IllegalStateException>(message = "NeedsUpdate") {
+        store.publishReport(needsUpdateReportId)
+      }
+    }
+
+    @Test
+    fun `inserts new rows for first publish`() {
+      clock.instant = Instant.ofEpochSecond(10000)
+      store.publishReport(reportId)
+      assertPublishedReport(user.userId, clock.instant)
+    }
+
+    @Test
+    fun `overwrites existing rows for subsequent publishes`() {
+      insertPublishedReport(
+          highlights = "Existing highlights",
+      )
+
+      insertPublishedReportAchievement(position = 0, achievement = "Existing Achievement A")
+
+      insertPublishedReportAchievement(position = 25, achievement = "Existing Achievement Z")
+
+      insertPublishedReportChallenge(
+          position = 0,
+          challenge = "Existing Challenge A",
+          mitigationPlan = "Existing Plan A",
+      )
+      insertPublishedReportChallenge(
+          position = 1,
+          challenge = "Existing Challenge B",
+          mitigationPlan = "Existing Plan B",
+      )
+      insertPublishedReportChallenge(
+          position = 3,
+          challenge = "Existing Challenge C",
+          mitigationPlan = "Existing Plan C",
+      )
+      insertPublishedReportChallenge(
+          position = 4,
+          challenge = "Existing Challenge D",
+          mitigationPlan = "Existing Plan D",
+      )
+
+      insertPublishedReportStandardMetric(
+          metricId = standardMetricId1,
+          target = 100,
+          value = 100,
+          underperformanceJustification = "Existing underperformance justification",
+      )
+
+      insertPublishedReportStandardMetric(
+          metricId = standardMetricNullValueId,
+          target = 100,
+          value = 100,
+      )
+
+      insertPublishedReportStandardMetric(
+          metricId = standardMetricNotPublishableId,
+          target = 100,
+          value = 100,
+      )
+
+      insertPublishedReportProjectMetric(
+          metricId = projectMetricId1,
+          target = 100,
+          value = 100,
+          underperformanceJustification = "Existing underperformance justification",
+      )
+
+      insertPublishedReportProjectMetric(
+          metricId = projectMetricId2,
+          target = 100,
+          value = 100,
+          underperformanceJustification = "Existing underperformance justification",
+      )
+
+      insertPublishedReportProjectMetric(
+          metricId = projectMetricNotPublishableId,
+          target = 100,
+          value = 100,
+      )
+
+      insertPublishedReportSystemMetric(
+          metric = SystemMetric.SeedsCollected,
+          target = 100,
+          value = 100,
+      )
+
+      insertPublishedReportSystemMetric(
+          metric = SystemMetric.Seedlings,
+          target = 100,
+          value = 100,
+          underperformanceJustification = "Existing underperformance justification",
+      )
+
+      insertPublishedReportSystemMetric(
+          metric = SystemMetric.TreesPlanted,
+          target = 100,
+          value = 100,
+          underperformanceJustification = "Existing underperformance justification",
+      )
+
+      clock.instant = Instant.ofEpochSecond(10000)
+      store.publishReport(reportId)
+      assertPublishedReport(user.userId, clock.instant)
+    }
+
+    @BeforeEach
+    fun setupReport() {
+      insertProjectReportConfig()
+      reportId =
+          insertReport(
+              status = ReportStatus.Approved,
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.MARCH, 31),
+              highlights = "Highlights",
+              internalComment = "Internal Comment",
+              feedback = "Feedback",
+              createdBy = systemUser.userId,
+              createdTime = Instant.ofEpochSecond(4000),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.ofEpochSecond(8000),
+              submittedBy = user.userId,
+              submittedTime = Instant.ofEpochSecond(6000),
+          )
+
+      insertReportAchievement(position = 0, achievement = "Achievement A")
+      insertReportAchievement(position = 1, achievement = "Achievement B")
+      insertReportAchievement(position = 2, achievement = "Achievement C")
+
+      insertReportChallenge(
+          position = 0,
+          challenge = "Challenge A",
+          mitigationPlan = "Plan A",
+      )
+      insertReportChallenge(
+          position = 1,
+          challenge = "Challenge B",
+          mitigationPlan = "Plan B",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          status = ReportMetricStatus.Achieved,
+          target = 10,
+          value = 10,
+          underperformanceJustification = null,
+          progressNotes = "Progress notes are not published",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          status = ReportMetricStatus.OnTrack,
+          target = 20,
+          value = 19,
+          underperformanceJustification = "Standard Metric 2 Underperformance",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricNullValueId,
+          target = 999,
+          value = null,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricNotPublishableId,
+          target = 999,
+          value = 999,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId1,
+          status = ReportMetricStatus.Achieved,
+          target = 30,
+          value = 30,
+          underperformanceJustification = null,
+          progressNotes = "Progress notes are not published",
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId2,
+          status = ReportMetricStatus.Unlikely,
+          target = 40,
+          value = 39,
+          underperformanceJustification = "Project Metric 2 Underperformance",
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricNullValueId,
+          target = 999,
+          value = null,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricNotPublishableId,
+          target = 999,
+          value = 999,
+      )
+
+      // Seeds Collected is not publishable
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          status = ReportMetricStatus.Achieved,
+          target = 999,
+          systemValue = 999,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.Seedlings,
+          status = ReportMetricStatus.OnTrack,
+          target = 50,
+          overrideValue = 49,
+          systemValue = 39,
+          underperformanceJustification = "Seedlings underperformance justification",
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SpeciesPlanted,
+          status = ReportMetricStatus.Achieved,
+          target = 10,
+          systemValue = 10,
+      )
+
+      // Metrics can be published even with no target set
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.TreesPlanted,
+          status = ReportMetricStatus.Achieved,
+          target = null,
+          systemValue = 100,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.MortalityRate,
+          status = ReportMetricStatus.Unlikely,
+          target = 0,
+          systemValue = 50,
+      )
+    }
+
+    // Helper function to validate the report from setupReport() is in the published reports tables
+    private fun assertPublishedReport(publishedBy: UserId, publishedTime: Instant) {
+      assertTableEquals(
+          PublishedReportsRecord(
+              reportId = reportId,
+              projectId = projectId,
+              reportFrequencyId = ReportFrequency.Quarterly,
+              reportQuarterId = ReportQuarter.Q1,
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.MARCH, 31),
+              highlights = "Highlights",
+              publishedBy = publishedBy,
+              publishedTime = publishedTime,
+          ),
+          "Published reports table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedReportAchievementsRecord(
+                  reportId = reportId, position = 0, achievement = "Achievement A"),
+              PublishedReportAchievementsRecord(
+                  reportId = reportId, position = 1, achievement = "Achievement B"),
+              PublishedReportAchievementsRecord(
+                  reportId = reportId, position = 2, achievement = "Achievement C"),
+          ),
+          "Published report achievements table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedReportChallengesRecord(
+                  reportId = reportId,
+                  position = 0,
+                  challenge = "Challenge A",
+                  mitigationPlan = "Plan A",
+              ),
+              PublishedReportChallengesRecord(
+                  reportId = reportId,
+                  position = 1,
+                  challenge = "Challenge B",
+                  mitigationPlan = "Plan B",
+              ),
+          ),
+          "Published report challenges table")
+
+      assertTableEquals(
+          listOf(
+              PublishedReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId1,
+                  statusId = ReportMetricStatus.Achieved,
+                  target = 10,
+                  value = 10,
+                  underperformanceJustification = null,
+              ),
+              PublishedReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId2,
+                  statusId = ReportMetricStatus.OnTrack,
+                  target = 20,
+                  value = 19,
+                  underperformanceJustification = "Standard Metric 2 Underperformance",
+              ),
+          ),
+          "Published report standard metrics table")
+
+      assertTableEquals(
+          listOf(
+              PublishedReportProjectMetricsRecord(
+                  reportId = reportId,
+                  projectMetricId = projectMetricId1,
+                  statusId = ReportMetricStatus.Achieved,
+                  target = 30,
+                  value = 30,
+                  underperformanceJustification = null,
+              ),
+              PublishedReportProjectMetricsRecord(
+                  reportId = reportId,
+                  projectMetricId = projectMetricId2,
+                  statusId = ReportMetricStatus.Unlikely,
+                  target = 40,
+                  value = 39,
+                  underperformanceJustification = "Project Metric 2 Underperformance",
+              ),
+          ),
+          "Published report project metrics table")
+
+      assertTableEquals(
+          listOf(
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.Seedlings,
+                  statusId = ReportMetricStatus.OnTrack,
+                  target = 50,
+                  value = 49,
+                  underperformanceJustification = "Seedlings underperformance justification",
+              ),
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  statusId = ReportMetricStatus.Achieved,
+                  target = 10,
+                  value = 10,
+              ),
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  statusId = ReportMetricStatus.Achieved,
+                  target = null,
+                  value = 100,
+              ),
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.MortalityRate,
+                  statusId = ReportMetricStatus.Unlikely,
+                  target = 0,
+                  value = 50,
+              ),
+          ),
+          "Published report system metrics table")
+    }
+  }
+
   private fun getRandomDate(startDate: LocalDate, endDate: LocalDate): LocalDate {
     val startEpochDay = startDate.toEpochDay()
     val endEpochDay = endDate.toEpochDay()
@@ -3516,7 +3937,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         numPlants = -200,
     )
 
-    // Does not count towards trees or speces planted, since planting site is outside of project
+    // Does not count towards trees or species planted, since planting site is outside of project
     val otherDeliveryId =
         insertDelivery(
             plantingSiteId = otherPlantingSiteId,

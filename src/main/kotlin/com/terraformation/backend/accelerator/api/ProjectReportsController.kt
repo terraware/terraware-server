@@ -195,6 +195,20 @@ class ProjectReportsController(
   @ApiResponse200
   @ApiResponse400
   @ApiResponse404
+  @PostMapping("/{reportId}/publish")
+  @Operation(summary = "Publishes a report to funder")
+  fun publishAcceleratorReport(
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+  ): SimpleSuccessResponsePayload {
+    reportStore.publishReport(reportId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
   @PutMapping("/configs")
   @Operation(
       summary = "Insert accelerator report configuration.",
