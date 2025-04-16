@@ -16,10 +16,14 @@ import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.StableIds
+import com.terraformation.backend.file.InMemoryFileStore
+import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.net.URI
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -29,6 +33,9 @@ import org.springframework.security.access.AccessDeniedException
 
 class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
+  private val random: Random = mockk()
+  private lateinit var pathGenerator: PathGenerator
+  private lateinit var fileStore: InMemoryFileStore
 
   private val service: AcceleratorProjectVariableValuesService by lazy {
     AcceleratorProjectVariableValuesService(
@@ -93,6 +100,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadProjectAcceleratorDetails(any()) } returns true
     every { user.canUpdateProjectAcceleratorDetails(any()) } returns true
+    every { random.nextLong() } returns 0x0123456789abcdef
+    pathGenerator = PathGenerator(random)
+    fileStore = InMemoryFileStore(pathGenerator)
   }
 
   @Nested
@@ -136,6 +146,14 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
           variableIdsByStableId[StableIds.slackLink]!!,
           url = "https://example.com/AcceleratorProjectVariableValuesService")
 
+      // Id value
+      val uri = URI("https://test")
+      val contents = byteArrayOf(1, 2, 3, 4)
+      val fileId = insertFile(size = contents.size.toLong(), storageUrl = uri)
+      fileStore.write(uri, contents.inputStream())
+      val imageValueId =
+          insertImageValue(variableIdsByStableId[StableIds.projectHighlightPhoto]!!, fileId)
+
       // Second value should replace the first
       insertValue(
           variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
@@ -160,6 +178,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                       LandUseModelType.Mangroves to BigDecimal(20002)),
               maxCarbonAccumulation = BigDecimal.TEN,
               minCarbonAccumulation = BigDecimal.ONE,
+              projectHighlightPhotoValueId = imageValueId,
               region = Region.LatinAmericaCaribbean,
               slackLink = URI("https://example.com/AcceleratorProjectVariableValuesService"),
           ),

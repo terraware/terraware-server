@@ -38,6 +38,7 @@ object StableIds {
   val whatNeedsToBeTrue = StableId("439")
   val verraLink = StableId("471")
   val dealName = StableId("472")
+  val projectZoneFigure = StableId("525")
   val expectedMarketCredits = StableId("544")
   val minProjectArea = StableId("545")
   val sdgList = StableId("546")
@@ -45,6 +46,7 @@ object StableIds {
   val riskTrackerLink = StableId("548")
   val clickUpLink = StableId("549")
   val slackLink = StableId("550")
+  val projectHighlightPhoto = StableId("551")
 
   val landUseHectaresByLandUseModel =
       mapOf(

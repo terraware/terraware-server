@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
 import org.jooq.Record
@@ -55,8 +56,10 @@ data class ProjectAcceleratorDetailsModel(
     val perHectareBudget: BigDecimal? = null,
     val pipeline: Pipeline? = null,
     val projectArea: BigDecimal? = null,
+    val projectHighlightPhotoValueId: VariableValueId? = null,
     val projectId: ProjectId,
     val projectLead: String? = null,
+    val projectZoneFigureValueId: VariableValueId? = null,
     val region: Region? = null,
     val riskTrackerLink: URI? = null,
     val sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
@@ -110,8 +113,10 @@ data class ProjectAcceleratorDetailsModel(
             perHectareBudget = variableValues.perHectareBudget,
             pipeline = record[PIPELINE_ID],
             projectArea = variableValues.projectArea,
+            projectHighlightPhotoValueId = variableValues.projectHighlightPhotoValueId,
             projectId = record[PROJECTS.ID]!!,
             projectLead = record[PROJECT_LEAD],
+            projectZoneFigureValueId = variableValues.projectZoneFigureValueId,
             region = variableValues.region,
             riskTrackerLink = variableValues.riskTrackerLink,
             sdgList = variableValues.sdgList,
@@ -151,7 +156,9 @@ data class ProjectAcceleratorDetailsModel(
           numNativeSpecies = numNativeSpecies,
           perHectareBudget = perHectareBudget,
           projectArea = projectArea,
+          projectHighlightPhotoValueId = projectHighlightPhotoValueId,
           projectId = projectId,
+          projectZoneFigureValueId = projectZoneFigureValueId,
           riskTrackerLink = riskTrackerLink,
           sdgList = sdgList,
           slackLink = slackLink,

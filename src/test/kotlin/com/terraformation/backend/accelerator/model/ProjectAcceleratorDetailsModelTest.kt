@@ -5,6 +5,7 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
+import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,8 +49,10 @@ class ProjectAcceleratorDetailsModelTest {
             perHectareBudget = BigDecimal(6),
             pipeline = Pipeline.AcceleratorProjects,
             projectArea = BigDecimal(23),
+            projectHighlightPhotoValueId = VariableValueId(123),
             projectId = ProjectId(1),
             projectLead = "lead",
+            projectZoneFigureValueId = VariableValueId(456),
             region = Region.LatinAmericaCaribbean,
             riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =
@@ -91,8 +94,10 @@ class ProjectAcceleratorDetailsModelTest {
             minProjectArea = BigDecimal(22),
             numNativeSpecies = 1,
             perHectareBudget = BigDecimal(6),
-            projectId = ProjectId(1),
             projectArea = BigDecimal(23),
+            projectHighlightPhotoValueId = VariableValueId(123),
+            projectId = ProjectId(1),
+            projectZoneFigureValueId = VariableValueId(456),
             region = Region.LatinAmericaCaribbean,
             riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =

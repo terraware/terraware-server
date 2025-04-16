@@ -56,6 +56,8 @@ class AcceleratorProjectVariableValuesService(
             StableIds.numSpecies,
             StableIds.perHectareEstimatedBudget,
             StableIds.projectArea,
+            StableIds.projectHighlightPhoto,
+            StableIds.projectZoneFigure,
             StableIds.riskTrackerLink,
             StableIds.sdgList,
             StableIds.slackLink,
@@ -152,6 +154,8 @@ class AcceleratorProjectVariableValuesService(
     val numNativeSpecies = getNumberValue(valuesByStableId, StableIds.numSpecies)?.toInt()
     val perHectareBudget = getNumberValue(valuesByStableId, StableIds.perHectareEstimatedBudget)
     val projectArea = getNumberValue(valuesByStableId, StableIds.projectArea)
+    val projectHighlightPhotoValueId = getValueId(valuesByStableId, StableIds.projectHighlightPhoto)
+    val projectZoneFigureValueId = getValueId(valuesByStableId, StableIds.projectZoneFigure)
     val riskTrackerLink = getLinkValue(valuesByStableId, StableIds.riskTrackerLink)
     val sdgList =
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.sdgList)
@@ -195,8 +199,10 @@ class AcceleratorProjectVariableValuesService(
         minProjectArea = minProjectArea,
         numNativeSpecies = numNativeSpecies,
         perHectareBudget = perHectareBudget,
-        projectId = projectId,
         projectArea = projectArea,
+        projectHighlightPhotoValueId = projectHighlightPhotoValueId,
+        projectId = projectId,
+        projectZoneFigureValueId = projectZoneFigureValueId,
         riskTrackerLink = riskTrackerLink,
         sdgList = sdgList,
         slackLink = slackLink,

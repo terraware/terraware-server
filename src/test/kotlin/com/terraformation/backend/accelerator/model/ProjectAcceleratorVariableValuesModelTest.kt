@@ -2,12 +2,14 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class ProjectAcceleratorVariableValuesModelTest {
+
   @Test
   fun `can convert to ProjectAcceleratorDetailsModel, with null values for non-variable fields`() {
     val values =
@@ -36,7 +38,9 @@ class ProjectAcceleratorVariableValuesModelTest {
             numNativeSpecies = 1,
             perHectareBudget = BigDecimal(6),
             projectArea = BigDecimal(23),
+            projectHighlightPhotoValueId = VariableValueId(234),
             projectId = ProjectId(1),
+            projectZoneFigureValueId = VariableValueId(567),
             riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =
                 setOf(
@@ -83,7 +87,9 @@ class ProjectAcceleratorVariableValuesModelTest {
             perHectareBudget = BigDecimal(6),
             pipeline = null,
             projectArea = BigDecimal(23),
+            projectHighlightPhotoValueId = VariableValueId(234),
             projectId = ProjectId(1),
+            projectZoneFigureValueId = VariableValueId(567),
             riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =
                 setOf(

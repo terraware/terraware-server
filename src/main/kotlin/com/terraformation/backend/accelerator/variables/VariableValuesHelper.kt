@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
@@ -22,6 +23,13 @@ import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.Variable
 import java.math.BigDecimal
 import java.net.URI
+
+fun getValueId(
+    valuesByStableId: Map<StableId, ExistingValue>,
+    stableId: StableId
+): VariableValueId? {
+  return (valuesByStableId[stableId])?.id
+}
 
 fun getNumberValue(
     valuesByStableId: Map<StableId, ExistingValue>,
