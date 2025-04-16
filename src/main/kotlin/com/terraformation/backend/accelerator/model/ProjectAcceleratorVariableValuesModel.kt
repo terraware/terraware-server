@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
 import java.math.BigDecimal
+import java.net.URI
 
 /** Data class to hold project variable values. */
 data class ProjectAcceleratorVariableValuesModel(
@@ -11,14 +12,14 @@ data class ProjectAcceleratorVariableValuesModel(
     val annualCarbon: BigDecimal? = null,
     val applicationReforestableLand: BigDecimal? = null,
     val carbonCapacity: BigDecimal? = null,
-    val clickUpLink: String? = null,
+    val clickUpLink: URI? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryCode: String? = null,
     val dealDescription: String? = null,
     val dealName: String? = null,
     val expectedMarketCredits: BigDecimal? = null,
     val failureRisk: String? = null,
-    val gisReportsLink: String? = null,
+    val gisReportsLink: URI? = null,
     val investmentThesis: String? = null,
     val landUseModelTypes: Set<LandUseModelType> = emptySet(),
     val landUseModelHectares: Map<LandUseModelType, BigDecimal> = emptyMap(),
@@ -30,15 +31,15 @@ data class ProjectAcceleratorVariableValuesModel(
     val perHectareBudget: BigDecimal? = null,
     val projectArea: BigDecimal? = null,
     val projectId: ProjectId,
-    val riskTrackerLink: String? = null,
+    val riskTrackerLink: URI? = null,
     val sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
-    val slackLink: String? = null,
+    val slackLink: URI? = null,
     val standard: String? = null,
     val region: Region? = null,
     val totalCarbon: BigDecimal? = null,
     val totalExpansionPotential: BigDecimal? = null,
     val totalVCU: BigDecimal? = null,
-    val verraLink: String? = null,
+    val verraLink: URI? = null,
     val whatNeedsToBeTrue: String? = null,
 ) {
 

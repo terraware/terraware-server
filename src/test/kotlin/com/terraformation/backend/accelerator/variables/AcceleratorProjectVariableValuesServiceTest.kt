@@ -19,6 +19,7 @@ import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.math.BigDecimal
+import java.net.URI
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -160,7 +161,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               maxCarbonAccumulation = BigDecimal.TEN,
               minCarbonAccumulation = BigDecimal.ONE,
               region = Region.LatinAmericaCaribbean,
-              slackLink = "https://example.com/AcceleratorProjectVariableValuesService",
+              slackLink = URI("https://example.com/AcceleratorProjectVariableValuesService"),
           ),
           service.fetchValues(inserted.projectId))
     }

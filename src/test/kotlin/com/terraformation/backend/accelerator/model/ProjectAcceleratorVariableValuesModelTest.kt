@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import java.math.BigDecimal
+import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -16,12 +17,12 @@ class ProjectAcceleratorVariableValuesModelTest {
             applicationReforestableLand = BigDecimal(1),
             carbonCapacity = BigDecimal(8),
             confirmedReforestableLand = BigDecimal(2),
-            clickUpLink = "https://click.up",
+            clickUpLink = URI("https://click.up"),
             dealDescription = "description",
             dealName = "dealName",
             expectedMarketCredits = BigDecimal(21),
             failureRisk = "failure",
-            gisReportsLink = "https://gisReportsLink",
+            gisReportsLink = URI("https://gisReportsLink"),
             investmentThesis = "thesis",
             landUseModelTypes = setOf(LandUseModelType.NativeForest, LandUseModelType.Monoculture),
             landUseModelHectares =
@@ -36,17 +37,17 @@ class ProjectAcceleratorVariableValuesModelTest {
             perHectareBudget = BigDecimal(6),
             projectArea = BigDecimal(23),
             projectId = ProjectId(1),
-            riskTrackerLink = "https://riskTrackerLink",
+            riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.LifeBelowWater,
                     SustainableDevelopmentGoal.DecentWork),
-            slackLink = "https://slackLink",
+            slackLink = URI("https://slackLink"),
             standard = "standard",
             totalCarbon = BigDecimal(9),
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),
-            verraLink = "https://verraLink",
+            verraLink = URI("https://verraLink"),
             whatNeedsToBeTrue = null)
 
     assertEquals(
@@ -56,7 +57,7 @@ class ProjectAcceleratorVariableValuesModelTest {
             applicationReforestableLand = BigDecimal(1),
             carbonCapacity = BigDecimal(8),
             confirmedReforestableLand = BigDecimal(2),
-            clickUpLink = "https://click.up",
+            clickUpLink = URI("https://click.up"),
             dealDescription = "description",
             dealName = "dealName",
             dealStage = null,
@@ -64,7 +65,7 @@ class ProjectAcceleratorVariableValuesModelTest {
             expectedMarketCredits = BigDecimal(21),
             failureRisk = "failure",
             fileNaming = null,
-            gisReportsLink = "https://gisReportsLink",
+            gisReportsLink = URI("https://gisReportsLink"),
             googleFolderUrl = null,
             hubSpotUrl = null,
             investmentThesis = "thesis",
@@ -83,18 +84,18 @@ class ProjectAcceleratorVariableValuesModelTest {
             pipeline = null,
             projectArea = BigDecimal(23),
             projectId = ProjectId(1),
-            riskTrackerLink = "https://riskTrackerLink",
+            riskTrackerLink = URI("https://riskTrackerLink"),
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.DecentWork,
                     SustainableDevelopmentGoal.LifeBelowWater),
-            slackLink = "https://slackLink",
+            slackLink = URI("https://slackLink"),
             standard = "standard",
             projectLead = null,
             totalCarbon = BigDecimal(9),
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),
-            verraLink = "https://verraLink",
+            verraLink = URI("https://verraLink"),
             whatNeedsToBeTrue = null),
         values.toProjectAcceleratorDetails())
   }

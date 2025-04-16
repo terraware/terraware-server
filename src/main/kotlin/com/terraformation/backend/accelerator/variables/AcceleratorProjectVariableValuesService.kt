@@ -110,12 +110,13 @@ class AcceleratorProjectVariableValuesService(
     val clickUpLink = getLinkValue(valuesByStableId, StableIds.clickUpLink)
     val confirmedReforestableLand = getNumberValue(valuesByStableId, StableIds.tfRestorableLand)
     val countryRow =
-        getSingleSelectValue(variablesById, valuesByStableId, StableIds.country)?.let {
+        getSingleSelectValue(variablesById, valuesByStableId, StableIds.country)?.let { countryName
+          ->
           // This depends on the countries table name field matching up to the select values of the
           // country variable
-          val countryRow = countriesDao.fetchOneByName(it)
+          val countryRow = countriesDao.fetchOneByName(countryName)
           if (countryRow == null) {
-            log.error("Found unknown country name $it for project $projectId")
+            log.error("Found unknown country name $countryName for project $projectId")
           }
           countryRow
         }
@@ -127,11 +128,11 @@ class AcceleratorProjectVariableValuesService(
     val investmentThesis = getTextValue(valuesByStableId, StableIds.investmentThesis)
     val landUseModelTypes =
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.landUseModelType)
-            ?.mapNotNull {
+            ?.mapNotNull { landUseType ->
               try {
-                LandUseModelType.forJsonValue(it)
+                LandUseModelType.forJsonValue(landUseType)
               } catch (e: IllegalArgumentException) {
-                log.error("Found unknown land use model type $it for project $projectId")
+                log.error("Found unknown land use model type $landUseType for project $projectId")
                 null
               }
             }
@@ -154,11 +155,11 @@ class AcceleratorProjectVariableValuesService(
     val riskTrackerLink = getLinkValue(valuesByStableId, StableIds.riskTrackerLink)
     val sdgList =
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.sdgList)
-            ?.mapNotNull {
+            ?.mapNotNull { sdg ->
               try {
-                SustainableDevelopmentGoal.forJsonValue(it)
+                SustainableDevelopmentGoal.forJsonValue(sdg)
               } catch (e: IllegalArgumentException) {
-                log.error("Found unknown sdg $it for project $projectId")
+                log.error("Found unknown sdg $sdg for project $projectId")
                 null
               }
             }

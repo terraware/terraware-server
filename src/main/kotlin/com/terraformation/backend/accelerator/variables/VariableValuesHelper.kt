@@ -21,6 +21,7 @@ import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.Variable
 import java.math.BigDecimal
+import java.net.URI
 
 fun getNumberValue(
     valuesByStableId: Map<StableId, ExistingValue>,
@@ -33,8 +34,8 @@ fun getTextValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: Stabl
   return (valuesByStableId[stableId] as? ExistingTextValue)?.value
 }
 
-fun getLinkValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: StableId): String? {
-  return (valuesByStableId[stableId] as? ExistingLinkValue)?.value?.url?.toString()
+fun getLinkValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: StableId): URI? {
+  return (valuesByStableId[stableId] as? ExistingLinkValue)?.value?.url
 }
 
 fun getSingleSelectValue(
