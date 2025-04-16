@@ -158,7 +158,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                           boundary = zone1Boundary,
                           errorMargin = BigDecimal(1),
                           name = "Zone 1",
-                          numPermanentClusters = 3,
+                          numPermanentPlots = 3,
                           numTemporaryPlots = 4,
                           plantingSubzones =
                               listOf(
@@ -233,7 +233,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   errorMargin = BigDecimal(1),
                   id = actualZones["Zone 1"]?.id,
                   name = "Zone 1",
-                  numPermanentClusters = 3,
+                  numPermanentPlots = 3,
                   numTemporaryPlots = 4,
                   studentsT = BigDecimal(5),
                   targetPlantingDensity = BigDecimal(6),
@@ -243,7 +243,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
                   id = actualZones["Zone 2"]?.id,
                   name = "Zone 2",
-                  numPermanentClusters = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                  numPermanentPlots = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
                   numTemporaryPlots = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
                   studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
                   targetPlantingDensity = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,

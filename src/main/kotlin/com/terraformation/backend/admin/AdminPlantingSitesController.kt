@@ -240,7 +240,7 @@ class AdminPlantingSitesController(
           "type" to "FeatureCollection",
           "features" to
               site.plantingZones.flatMap { zone ->
-                val numPermanent = zone.numPermanentClusters
+                val numPermanent = zone.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     zone
@@ -535,7 +535,7 @@ class AdminPlantingSitesController(
       plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
         row.copy(
             errorMargin = errorMargin,
-            numPermanentClusters = numPermanent,
+            numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,

@@ -101,7 +101,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(expectedPermanent, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(expectedPermanent, plantingZonesRow.numPermanentPlots, "Permanent clusters")
       assertEquals(expectedTemporary, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
 
@@ -130,7 +130,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(32, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(32, plantingZonesRow.numPermanentPlots, "Permanent clusters")
       assertEquals(10, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
 
@@ -150,7 +150,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(15, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(15, plantingZonesRow.numPermanentPlots, "Permanent clusters")
       assertEquals(4, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
   }

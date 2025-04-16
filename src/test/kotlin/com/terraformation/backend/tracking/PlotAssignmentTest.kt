@@ -146,10 +146,10 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     // go in either one of them depending on where the permanent plots ended up. Any temporary
     // plots that ended up in subzone 2 will be discarded because subzone 2 has no plants.
 
-    val numPermanentClusters = observationPlots.count { it.model.isPermanent }
+    val numPermanentPlots = observationPlots.count { it.model.isPermanent }
     val numTemporaryPlots = observationPlots.count { !it.model.isPermanent }
 
-    when (numPermanentClusters) {
+    when (numPermanentPlots) {
       0 -> {
         // Subzone 1 has no clusters, so it should get the extra plot; either subzone 2 has more
         // clusters or all the clusters were disqualified for being partially in an unrequested
@@ -171,7 +171,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         assertEquals(1, numTemporaryPlots, "Temporary plots with 2 clusters")
       }
       else -> {
-        assertEquals("between 0 and 2", "$numPermanentClusters", "Number of permanent clusters")
+        assertEquals("between 0 and 2", "$numPermanentPlots", "Number of permanent clusters")
       }
     }
   }

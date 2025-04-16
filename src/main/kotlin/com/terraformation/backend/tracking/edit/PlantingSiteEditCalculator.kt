@@ -179,7 +179,7 @@ class PlantingSiteEditCalculator(
 
     val desiredPermanentClusterEdits =
         (zipProportionally(
-            desiredZone.numPermanentClusters,
+            desiredZone.numPermanentPlots,
             fractionOfDesiredAreaOverlappingWithExisting,
             nextPlotForArea(existingPlotsInOverlappingArea, overlappingBoundary),
             nextPlotForArea(existingPlotsInNewArea, nonOverlappingBoundary),

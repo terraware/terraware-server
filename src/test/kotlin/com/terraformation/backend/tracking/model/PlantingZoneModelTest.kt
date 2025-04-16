@@ -35,7 +35,7 @@ class PlantingZoneModelTest {
     fun `only chooses plots that lie in requested subzones`() {
       val model =
           plantingZoneModel(
-              numPermanentClusters = 4,
+              numPermanentPlots = 4,
               subzones =
                   listOf(
                       plantingSubzoneModel(
@@ -236,7 +236,7 @@ class PlantingZoneModelTest {
     fun `places excess plots in subzones with fewest permanent plots`() {
       val model =
           plantingZoneModel(
-              numPermanentClusters = 3,
+              numPermanentPlots = 3,
               numTemporaryPlots = 5,
               subzones =
                   listOf(
@@ -292,7 +292,7 @@ class PlantingZoneModelTest {
     fun `places excess plots in requested subzones if no difference in permanent plots`() {
       val model =
           plantingZoneModel(
-              numPermanentClusters = 3,
+              numPermanentPlots = 3,
               numTemporaryPlots = 5,
               subzones =
                   listOf(
@@ -701,7 +701,7 @@ class PlantingZoneModelTest {
 
   private fun plantingZoneModel(
       numTemporaryPlots: Int = 1,
-      numPermanentClusters: Int = 1,
+      numPermanentPlots: Int = 1,
       subzones: List<ExistingPlantingSubzoneModel>,
       boundary: MultiPolygon = plantingZoneBoundary(subzones),
   ) =
@@ -712,7 +712,7 @@ class PlantingZoneModelTest {
           errorMargin = BigDecimal.ONE,
           id = PlantingZoneId(1),
           name = "name",
-          numPermanentClusters = numPermanentClusters,
+          numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = subzones,
           studentsT = BigDecimal.ONE,

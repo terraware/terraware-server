@@ -227,7 +227,7 @@ class PlantingSiteImporter(
               .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
               .find { it.signum() > 0 } ?: PlantingZoneModel.DEFAULT_STUDENTS_T
 
-      val numPermanentClusters =
+      val numPermanentPlots =
           subzoneFeatures.firstNotNullOfOrNull {
             it.getProperty(permanentClusterCountProperties)?.toIntOrNull()
           }
@@ -246,7 +246,7 @@ class PlantingSiteImporter(
             errorMargin = errorMargin,
             exclusion = exclusion,
             name = zoneName,
-            numPermanentClusters = numPermanentClusters,
+            numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
             plantingSubzones = subzoneModels,
             studentsT = studentsT,

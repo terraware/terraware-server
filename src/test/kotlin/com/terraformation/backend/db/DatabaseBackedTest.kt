@@ -1899,8 +1899,8 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Z${nextPlantingZoneNumber++}",
-      numPermanentClusters: Int =
-          row.numPermanentClusters ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      numPermanentPlots: Int =
+          row.numPermanentPlots ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporaryPlots: Int =
           row.numTemporaryPlots ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       studentsT: BigDecimal = row.studentsT ?: PlantingZoneModel.DEFAULT_STUDENTS_T,
@@ -1922,7 +1922,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            numPermanentClusters = numPermanentClusters,
+            numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
             plantingSiteId = plantingSiteId,
             studentsT = studentsT,
