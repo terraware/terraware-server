@@ -42,6 +42,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRIC
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -53,7 +54,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -992,9 +992,24 @@ class ReportStore(
                               .from(OBSERVATIONS)
                               .where(
                                   OBSERVATIONS.COMPLETED_TIME.lessThan(
-                                      REPORTS.END_DATE.convertFrom {
-                                        it!!.plusDays(1).toInstant(ZoneId.systemDefault())
-                                      }))
+                                      // https://github.com/jOOQ/jOOQ/issues/7238
+                                      DSL.field(
+                                          "({0}) AT TIME ZONE ({1})",
+                                          SQLDataType.INSTANT,
+                                          REPORTS.END_DATE.plus(1),
+                                          DSL.select(
+                                                  DSL.coalesce(
+                                                      PLANTING_SITES.TIME_ZONE,
+                                                      ORGANIZATIONS.TIME_ZONE,
+                                                      DSL.value("UTC")))
+                                              .from(PLANTING_SITES)
+                                              .join(ORGANIZATIONS)
+                                              .on(
+                                                  PLANTING_SITES.ORGANIZATION_ID.eq(
+                                                      ORGANIZATIONS.ID))
+                                              .where(
+                                                  PLANTING_SITES.ID.eq(
+                                                      OBSERVATIONS.PLANTING_SITE_ID)))))
                               .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                               .and(OBSERVATIONS.IS_AD_HOC.isFalse)
                               .orderBy(
