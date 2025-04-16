@@ -915,6 +915,7 @@ class ReportStore(
           .deleteFrom(table)
           .where(reportIdField.eq(reportId))
           .and(metricIdField.notIn(entries.keys))
+          .execute()
     }
   }
 
