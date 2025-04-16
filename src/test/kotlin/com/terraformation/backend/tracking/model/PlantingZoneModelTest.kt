@@ -32,7 +32,7 @@ class PlantingZoneModelTest {
   @Nested
   inner class ChoosePermanentPlots {
     @Test
-    fun `only chooses plots that lie in unrequested subzones`() {
+    fun `only chooses plots that lie in requested subzones`() {
       val model =
           plantingZoneModel(
               numPermanentClusters = 4,
