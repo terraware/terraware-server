@@ -32,9 +32,10 @@ class PlantingZoneModelTest {
   @Nested
   inner class ChoosePermanentPlots {
     @Test
-    fun `chooses 4-plot cluster if all plots lie in requested subzones`() {
+    fun `only chooses plots that lie in unrequested subzones`() {
       val model =
           plantingZoneModel(
+              numPermanentClusters = 4,
               subzones =
                   listOf(
                       plantingSubzoneModel(
@@ -44,35 +45,8 @@ class PlantingZoneModelTest {
                   ))
 
       assertEquals(
-          setOf(MonitoringPlotId(1), MonitoringPlotId(2), MonitoringPlotId(3), MonitoringPlotId(4)),
-          model.choosePermanentPlots(plantingSubzoneIds(1, 2)))
-    }
-
-    @Test
-    fun `chooses 1-plot cluster if plot lies in requested subzone`() {
-      val model =
-          plantingZoneModel(
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(
-                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1)))))
-
-      assertEquals(setOf(MonitoringPlotId(1)), model.choosePermanentPlots(plantingSubzoneIds(1)))
-    }
-
-    @Test
-    fun `does not choose cluster if some plots lie in unrequested subzones`() {
-      val model =
-          plantingZoneModel(
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(
-                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1, 2))),
-                      plantingSubzoneModel(
-                          id = 2, plots = monitoringPlotModels(permanentIds = listOf(3, 4))),
-                  ))
-
-      assertEquals(emptySet<Any>(), model.choosePermanentPlots(plantingSubzoneIds(1)))
+          setOf(MonitoringPlotId(3), MonitoringPlotId(4)),
+          model.choosePermanentPlots(plantingSubzoneIds(2)))
     }
   }
 
