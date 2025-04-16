@@ -1328,66 +1328,35 @@ class PlantingSiteStore(
   /**
    * Makes a monitoring plot unavailable for inclusion in future observations.
    *
-   * The requested plot's "is available" flag is set to false.
+   * The requested plot's "is available" flag is set to false, and its permanent cluster number is
+   * cleared. If the plot was permanent, a new one with the removed cluster number will be created
+   * next time [ensurePermanentClustersExist] is called.
    *
-   * If the requested plot is part of a permanent cluster, the cluster is destroyed: the remaining
-   * plots in the cluster are updated such that they're no longer in a permanent cluster at all (but
-   * are still available for selection as temporary plots). A new cluster with the removed cluster
-   * number will be created next time [ensurePermanentClustersExist] is called.
-   *
-   * @return The plots that were modified. If the requested plot was part of a permanent cluster,
-   *   the "added plots" property will be the IDs of the plots in the cluster that was swapped in to
-   *   replace the original cluster (or an empty list if there wasn't a replacement cluster
-   *   available), and the "removed plots" property will be the IDs of the plots in the same cluster
-   *   as the requested plot. If the requested plot wasn't part of a permanent cluster, the "added
-   *   plots" property will be empty and the "removed plots" property will only include the
-   *   requested plot.
+   * @return The plots that were modified. This is always either an empty list (if the plot was
+   *   already unavailable) or a removed plots list with just the requested plot (if the plot was
+   *   available before and we've just marked it as unavailable).
    */
   fun makePlotUnavailable(monitoringPlotId: MonitoringPlotId): ReplacementResult {
     val plotsRow =
         monitoringPlotsDao.fetchOneById(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
 
-    if (plotsRow.isAvailable == false) {
-      return ReplacementResult(emptySet(), emptySet())
-    }
+    requirePermissions { updatePlantingSite(plotsRow.plantingSiteId!!) }
 
-    val subzonesRow =
-        plantingSubzonesDao.fetchOneById(plotsRow.plantingSubzoneId!!)
-            ?: throw PlantingSubzoneNotFoundException(plotsRow.plantingSubzoneId!!)
-    val permanentCluster = plotsRow.permanentCluster
-    val plantingZoneId = subzonesRow.plantingZoneId!!
-
-    requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
-
-    return dslContext.transactionResult { _ ->
+    return if (plotsRow.isAvailable == true) {
       dslContext
           .update(MONITORING_PLOTS)
           .set(MONITORING_PLOTS.IS_AVAILABLE, false)
           .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
           .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
+          .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER)
           .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
           .execute()
 
-      if (permanentCluster == null) {
-        ReplacementResult(
-            addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(monitoringPlotId))
-      } else {
-        // This plot is part of a permanent cluster; we need to make the other plots in this cluster
-        // standalone ones.
-        val clusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZoneId, permanentCluster)
-
-        dslContext
-            .update(MONITORING_PLOTS)
-            .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
-            .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
-            .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER)
-            .where(MONITORING_PLOTS.ID.`in`(clusterPlotIds))
-            .execute()
-
-        ReplacementResult(
-            addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = clusterPlotIds.toSet())
-      }
+      ReplacementResult(
+          addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(monitoringPlotId))
+    } else {
+      ReplacementResult(emptySet(), emptySet())
     }
   }
 
@@ -1434,17 +1403,17 @@ class PlantingSiteStore(
         return@withLockedPlantingSite ReplacementResult(emptySet(), emptySet())
       }
 
-      val clusterPlotIds = fetchPlotIdsForPermanentCluster(plantingZone.id, plot.permanentCluster)
-
       val unusedClusterNumber = fetchUnusedPermanentClusterNumber(plantingZone.id)
-      val replacementPlotIds =
-          fetchPlotIdsForPermanentCluster(plantingZone.id, unusedClusterNumber).ifEmpty {
-            // There's no unused cluster; try creating a new one.
-            log.debug("Creating new permanent cluster to use as replacement")
-            createPermanentClusters(plantingSite, plantingZone, listOf(unusedClusterNumber))
-          }
+      val replacementPlotId =
+          fetchPermanentPlotId(plantingZone.id, unusedClusterNumber)
+              ?: run {
+                // There's no unused cluster; try creating a new one.
+                log.debug("Creating new permanent cluster to use as replacement")
+                createPermanentClusters(plantingSite, plantingZone, listOf(unusedClusterNumber))
+                    .firstOrNull()
+              }
 
-      if (replacementPlotIds.isNotEmpty()) {
+      if (replacementPlotId != null) {
         val now = clock.instant()
         val userId = currentUser().userId
 
@@ -1454,7 +1423,7 @@ class PlantingSiteStore(
               .set(MODIFIED_BY, userId)
               .set(MODIFIED_TIME, now)
               .setNull(PERMANENT_CLUSTER)
-              .where(ID.`in`(clusterPlotIds))
+              .where(ID.eq(monitoringPlotId))
               .execute()
 
           dslContext
@@ -1462,11 +1431,11 @@ class PlantingSiteStore(
               .set(MODIFIED_BY, userId)
               .set(MODIFIED_TIME, now)
               .set(PERMANENT_CLUSTER, plot.permanentCluster)
-              .where(ID.`in`(replacementPlotIds))
+              .where(ID.eq(replacementPlotId))
               .execute()
         }
 
-        ReplacementResult(replacementPlotIds.toSet(), clusterPlotIds.toSet())
+        ReplacementResult(setOfNotNull(replacementPlotId), setOf(monitoringPlotId))
       } else {
         ReplacementResult(emptySet(), emptySet())
       }
@@ -1989,10 +1958,10 @@ class PlantingSiteStore(
         }
   }
 
-  private fun fetchPlotIdsForPermanentCluster(
+  private fun fetchPermanentPlotId(
       plantingZoneId: PlantingZoneId,
       permanentCluster: Int
-  ): List<MonitoringPlotId> {
+  ): MonitoringPlotId? {
     return dslContext
         .select(MONITORING_PLOTS.ID)
         .from(MONITORING_PLOTS)
@@ -2000,7 +1969,7 @@ class PlantingSiteStore(
         .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
         .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
         .and(MONITORING_PLOTS.PERMANENT_CLUSTER.eq(permanentCluster))
-        .fetch(MONITORING_PLOTS.ID.asNonNullable())
+        .fetchOne(MONITORING_PLOTS.ID)
   }
 
   /**
