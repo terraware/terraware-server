@@ -811,6 +811,9 @@
             <child column="status_id" foreignKey="report_project_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_metrics"/>
             <child column="status_id" foreignKey="report_standard_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_metrics"/>
             <child column="status_id" foreignKey="report_system_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_system_metrics"/>
+            <child column="status_id" foreignKey="published_report_project_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_project_metrics"/>
+            <child column="status_id" foreignKey="published_report_standard_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_standard_metrics"/>
+            <child column="status_id" foreignKey="published_report_system_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_system_metrics"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>

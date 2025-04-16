@@ -50,8 +50,8 @@ pipelines
 internal_interests
 deliverable_types
 application_statuses
-report_metric_statuses
 report_frequencies
 metric_types
 metric_components
 cohort_phases
+report_metric_statuses

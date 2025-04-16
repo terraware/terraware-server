@@ -177,7 +177,7 @@
 <g id="node5" class="node">
 <title>funder.published_report_system_metrics</title>
 <g id="a_node5"><a xlink:href="../../../funder/tables/published_report_system_metrics.html" xlink:title="funder.published_report_system_metrics" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="480,-81 480,-161 768,-161 768,-81 480,-81"/>
+<polygon fill="#ffffff" stroke="transparent" points="480,-59 480,-161 768,-161 768,-59 480,-59"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="480,-139 480,-161 768,-161 768,-139 480,-139"/>
 <polygon fill="none" stroke="black" points="480,-139 480,-161 768,-161 768,-139 480,-139"/>
 <text text-anchor="start" x="485" y="-148.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_report_system_metrics</text>
@@ -185,17 +185,20 @@
 <polygon fill="none" stroke="black" points="480,-117 480,-139 768,-139 768,-117 480,-117"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="485" y="-134"/>
 <text text-anchor="start" x="534" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_metric_id</text>
-<polygon fill="none" stroke="black" points="480,-99 480,-117 768,-117 768,-99 480,-99"/>
-<text text-anchor="start" x="483" y="-105.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="480,-81 480,-99 608,-99 608,-81 480,-81"/>
-<polygon fill="none" stroke="black" points="480,-81 480,-99 608,-99 608,-81 480,-81"/>
-<text text-anchor="start" x="483" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="608,-81 608,-99 701,-99 701,-81 608,-81"/>
-<polygon fill="none" stroke="black" points="608,-81 608,-99 701,-99 701,-81 608,-81"/>
-<text text-anchor="start" x="664" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="701,-81 701,-99 768,-99 768,-81 701,-81"/>
-<polygon fill="none" stroke="black" points="701,-81 701,-99 768,-99 768,-81 701,-81"/>
-<text text-anchor="start" x="758" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="none" stroke="black" points="480,-95 480,-117 768,-117 768,-95 480,-95"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="485" y="-112"/>
+<text text-anchor="start" x="534" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<polygon fill="none" stroke="black" points="480,-77 480,-95 768,-95 768,-77 480,-77"/>
+<text text-anchor="start" x="483" y="-83.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="480,-59 480,-77 608,-77 608,-59 480,-59"/>
+<polygon fill="none" stroke="black" points="480,-59 480,-77 608,-77 608,-59 480,-59"/>
+<text text-anchor="start" x="483" y="-65.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="608,-59 608,-77 701,-77 701,-59 608,-59"/>
+<polygon fill="none" stroke="black" points="608,-59 608,-77 701,-77 701,-59 608,-59"/>
+<text text-anchor="start" x="664" y="-65.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="701,-59 701,-77 768,-77 768,-59 701,-59"/>
+<polygon fill="none" stroke="black" points="701,-59 701,-77 768,-77 768,-59 701,-59"/>
+<text text-anchor="start" x="758" y="-65.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

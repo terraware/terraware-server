@@ -1,8 +1,8 @@
+report_metric_statuses
 cohort_phases
 metric_components
 metric_types
 report_frequencies
-report_metric_statuses
 application_statuses
 deliverable_types
 internal_interests
