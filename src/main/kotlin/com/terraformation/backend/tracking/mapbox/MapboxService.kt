@@ -96,40 +96,46 @@ class MapboxService(
   }
 
   /** Cache of elevation tile retrieved from Mapbox */
-  private val mapboxElevationTiles = ConcurrentHashMap<Pair<Int, Int>, MapboxTile>()
+  private val mapboxElevationTiles = ConcurrentHashMap<Triple<Int, Int, Int>, MapboxTile>()
 
   private fun retrieveMapboxTile(slippyCoordinate: SlippyCoordinate): MapboxTile {
-    log.info("Retrieving elevation tile at (${slippyCoordinate.x}, ${slippyCoordinate.y})")
+    log.info(
+        "Retrieving elevation tile at " +
+            "(${slippyCoordinate.x}, ${slippyCoordinate.y}, ${slippyCoordinate.zoom})")
     log.info("Number of cached tiles: ${mapboxElevationTiles.size}")
 
-    return mapboxElevationTiles.getOrPut(slippyCoordinate.x to slippyCoordinate.y) {
-      log.info("Cache miss at elevation tile at (${slippyCoordinate.x}, ${slippyCoordinate.y})")
+    return mapboxElevationTiles.getOrPut(
+        Triple(slippyCoordinate.x, slippyCoordinate.y, slippyCoordinate.zoom)) {
+          log.info(
+              "Cache miss at elevation tile at " +
+                  "(${slippyCoordinate.x}, ${slippyCoordinate.y}, ${slippyCoordinate.zoom})")
 
-      // Tile with height data.
-      // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
-      val tilesetName = "mapbox-terrain-dem-v1"
-      val url = mapboxUrl(slippyCoordinate.mapboxEndpoint(tilesetName))
+          // Tile with height data.
+          // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
+          val tilesetName = "mapbox-terrain-dem-v1"
+          val url = mapboxUrl(slippyCoordinate.mapboxEndpoint(tilesetName))
 
-      val tile = runBlocking {
-        try {
-          val byteArray = httpClient.get(url).body<ByteArray>()
-          ImageIO.read(ByteArrayInputStream(byteArray))
-        } catch (e: ClientRequestException) {
-          if (e.response.body<MapboxClientErrorResponsePayload>().message == "Tile not found") {
-            // This is a special case for this Mapbox tile set when the requested tile is entirely
-            // surrounded by water. Return null for no tile, instead of raising an error.
-            return@runBlocking null
+          val tile = runBlocking {
+            try {
+              val byteArray = httpClient.get(url).body<ByteArray>()
+              ImageIO.read(ByteArrayInputStream(byteArray))
+            } catch (e: ClientRequestException) {
+              if (e.response.body<MapboxClientErrorResponsePayload>().message == "Tile not found") {
+                // This is a special case for this Mapbox tile set when the requested tile is
+                // entirely
+                // surrounded by water. Return null for no tile, instead of raising an error.
+                return@runBlocking null
+              }
+
+              // All other errors will be thrown.
+              log.error("HTTP ${e.response.status} when fetching Mapbox tile at $url")
+              log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
+              throw MapboxRequestFailedException(e.response.status)
+            }
           }
 
-          // All other errors will be thrown.
-          log.error("HTTP ${e.response.status} when fetching Mapbox tile at $url")
-          log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
-          throw MapboxRequestFailedException(e.response.status)
+          MapboxTile(slippyCoordinate.x, slippyCoordinate.y, tile)
         }
-      }
-
-      MapboxTile(slippyCoordinate.x, slippyCoordinate.y, tile)
-    }
   }
 
   /**
