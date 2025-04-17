@@ -170,6 +170,7 @@ private constructor(
   fun exteriorPlot(
       x: Int = nextMonitoringPlotX,
       y: Int = this.y,
+      elevationMeters: BigDecimal? = null,
       isAdHoc: Boolean = false,
       isAvailable: Boolean = true,
       size: Int = MONITORING_PLOT_SIZE_INT,
@@ -180,6 +181,7 @@ private constructor(
     val plot =
         MonitoringPlotModel(
             boundary = rectanglePolygon(size, size, x, y),
+            elevationMeters = elevationMeters,
             id = MonitoringPlotId(plotNumber),
             isAdHoc = isAdHoc,
             isAvailable = isAvailable,
@@ -282,6 +284,7 @@ private constructor(
           x: Int = nextMonitoringPlotX,
           y: Int = this.y,
           cluster: Int? = null,
+          elevationMeters: BigDecimal? = null,
           isAdHoc: Boolean = false,
           isAvailable: Boolean = true,
           size: Int = MONITORING_PLOT_SIZE_INT,
@@ -293,6 +296,7 @@ private constructor(
         val plot =
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
+                elevationMeters = elevationMeters,
                 id = MonitoringPlotId(plotNumber),
                 isAdHoc = isAdHoc,
                 isAvailable = isAvailable,

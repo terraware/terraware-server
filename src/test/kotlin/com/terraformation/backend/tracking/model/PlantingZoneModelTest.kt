@@ -610,11 +610,13 @@ class PlantingZoneModelTest {
   private fun monitoringPlotModel(
       id: Int = 1,
       boundary: Polygon = monitoringPlotBoundary(id),
+      elevationMeters: BigDecimal? = null,
       isAvailable: Boolean = true,
       permanentCluster: Int? = null,
   ): MonitoringPlotModel {
     return MonitoringPlotModel(
         boundary = boundary,
+        elevationMeters = elevationMeters,
         id = MonitoringPlotId(id.toLong()),
         isAdHoc = false,
         isAvailable = isAvailable,
