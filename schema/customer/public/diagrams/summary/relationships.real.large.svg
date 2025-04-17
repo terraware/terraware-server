@@ -865,14 +865,14 @@
 <text text-anchor="start" x="239.5" y="-9468.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
 <polygon fill="none" stroke="black" points="216.5,-9438 216.5,-9460 316.5,-9460 316.5,-9438 216.5,-9438"/>
 <text text-anchor="start" x="239.5" y="-9446.2" font-family="Helvetica,sans-Serif" font-size="11.00">eligible</text>
-<polygon fill="#ffffff" stroke="transparent" points="216.5,-9420 216.5,-9438 259.5,-9438 259.5,-9420 216.5,-9420"/>
-<polygon fill="none" stroke="black" points="216.5,-9420 216.5,-9438 259.5,-9438 259.5,-9420 216.5,-9420"/>
+<polygon fill="#ffffff" stroke="transparent" points="216.5,-9420 216.5,-9438 240.5,-9438 240.5,-9420 216.5,-9420"/>
+<polygon fill="none" stroke="black" points="216.5,-9420 216.5,-9438 240.5,-9438 240.5,-9420 216.5,-9420"/>
 <text text-anchor="start" x="219.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="259.5,-9420 259.5,-9438 283.5,-9438 283.5,-9420 259.5,-9420"/>
-<polygon fill="none" stroke="black" points="259.5,-9420 259.5,-9438 283.5,-9438 283.5,-9420 259.5,-9420"/>
-<text text-anchor="start" x="273.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="283.5,-9420 283.5,-9438 316.5,-9438 316.5,-9420 283.5,-9420"/>
-<polygon fill="none" stroke="black" points="283.5,-9420 283.5,-9438 316.5,-9438 316.5,-9420 283.5,-9420"/>
+<polygon fill="#ffffff" stroke="transparent" points="240.5,-9420 240.5,-9438 293.5,-9438 293.5,-9420 240.5,-9420"/>
+<polygon fill="none" stroke="black" points="240.5,-9420 240.5,-9438 293.5,-9438 293.5,-9420 240.5,-9420"/>
+<text text-anchor="start" x="244.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="293.5,-9420 293.5,-9438 316.5,-9438 316.5,-9420 293.5,-9420"/>
+<polygon fill="none" stroke="black" points="293.5,-9420 293.5,-9438 316.5,-9438 316.5,-9420 293.5,-9420"/>
 <text text-anchor="start" x="297.5" y="-9426.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
@@ -902,14 +902,14 @@
 <text text-anchor="start" x="479" y="-9714.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
 <polygon fill="none" stroke="black" points="447,-9684 447,-9706 616,-9706 616,-9684 447,-9684"/>
 <text text-anchor="start" x="479" y="-9692.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="447,-9666 447,-9684 525,-9684 525,-9666 447,-9666"/>
-<polygon fill="none" stroke="black" points="447,-9666 447,-9684 525,-9684 525,-9666 447,-9666"/>
+<polygon fill="#ffffff" stroke="transparent" points="447,-9666 447,-9684 508,-9684 508,-9666 447,-9666"/>
+<polygon fill="none" stroke="black" points="447,-9666 447,-9684 508,-9684 508,-9666 447,-9666"/>
 <text text-anchor="start" x="450" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="525,-9666 525,-9684 566,-9684 566,-9666 525,-9666"/>
-<polygon fill="none" stroke="black" points="525,-9666 525,-9684 566,-9684 566,-9666 525,-9666"/>
-<text text-anchor="start" x="556" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="566,-9666 566,-9684 616,-9684 616,-9666 566,-9666"/>
-<polygon fill="none" stroke="black" points="566,-9666 566,-9684 616,-9684 616,-9666 566,-9666"/>
+<polygon fill="#ffffff" stroke="transparent" points="508,-9666 508,-9684 574,-9684 574,-9666 508,-9666"/>
+<polygon fill="none" stroke="black" points="508,-9666 508,-9684 574,-9684 574,-9666 508,-9666"/>
+<text text-anchor="start" x="531" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">57 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="574,-9666 574,-9684 616,-9684 616,-9666 574,-9666"/>
+<polygon fill="none" stroke="black" points="574,-9666 574,-9684 616,-9684 616,-9666 574,-9666"/>
 <text text-anchor="start" x="597" y="-9672.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
@@ -3201,42 +3201,42 @@
 <text text-anchor="start" x="719" y="-2698.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.planting_zones</text>
 <text text-anchor="start" x="861" y="-2697.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="714,-2667 714,-2689 900,-2689 900,-2667 714,-2667"/>
-<text text-anchor="start" x="741" y="-2675.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="743" y="-2675.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="714,-2645 714,-2667 900,-2667 900,-2645 714,-2645"/>
-<text text-anchor="start" x="741" y="-2653.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="743" y="-2653.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="none" stroke="black" points="714,-2623 714,-2645 900,-2645 900,-2623 714,-2623"/>
-<text text-anchor="start" x="741" y="-2631.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<text text-anchor="start" x="743" y="-2631.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="714,-2601 714,-2623 900,-2623 900,-2601 714,-2601"/>
-<text text-anchor="start" x="741" y="-2609.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
+<text text-anchor="start" x="743" y="-2609.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="714,-2579 714,-2601 900,-2601 900,-2579 714,-2579"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="719" y="-2596"/>
-<text text-anchor="start" x="741" y="-2587.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="743" y="-2587.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="714,-2557 714,-2579 900,-2579 900,-2557 714,-2557"/>
-<text text-anchor="start" x="741" y="-2565.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="743" y="-2565.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="714,-2535 714,-2557 900,-2557 900,-2535 714,-2535"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="719" y="-2552"/>
-<text text-anchor="start" x="741" y="-2543.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="743" y="-2543.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="714,-2513 714,-2535 900,-2535 900,-2513 714,-2513"/>
-<text text-anchor="start" x="741" y="-2521.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="743" y="-2521.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="714,-2491 714,-2513 900,-2513 900,-2491 714,-2491"/>
-<text text-anchor="start" x="741" y="-2499.2" font-family="Helvetica,sans-Serif" font-size="11.00">variance</text>
+<text text-anchor="start" x="743" y="-2499.2" font-family="Helvetica,sans-Serif" font-size="11.00">variance</text>
 <polygon fill="none" stroke="black" points="714,-2469 714,-2491 900,-2491 900,-2469 714,-2469"/>
-<text text-anchor="start" x="741" y="-2477.2" font-family="Helvetica,sans-Serif" font-size="11.00">students_t</text>
+<text text-anchor="start" x="743" y="-2477.2" font-family="Helvetica,sans-Serif" font-size="11.00">students_t</text>
 <polygon fill="none" stroke="black" points="714,-2447 714,-2469 900,-2469 900,-2447 714,-2447"/>
-<text text-anchor="start" x="741" y="-2455.2" font-family="Helvetica,sans-Serif" font-size="11.00">error_margin</text>
+<text text-anchor="start" x="743" y="-2455.2" font-family="Helvetica,sans-Serif" font-size="11.00">error_margin</text>
 <polygon fill="none" stroke="black" points="714,-2425 714,-2447 900,-2447 900,-2425 714,-2425"/>
-<text text-anchor="start" x="741" y="-2433.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_permanent_clusters</text>
+<text text-anchor="start" x="743" y="-2433.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_permanent_plots</text>
 <polygon fill="none" stroke="black" points="714,-2403 714,-2425 900,-2425 900,-2403 714,-2403"/>
-<text text-anchor="start" x="741" y="-2411.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_temporary_plots</text>
+<text text-anchor="start" x="743" y="-2411.2" font-family="Helvetica,sans-Serif" font-size="11.00">num_temporary_plots</text>
 <polygon fill="none" stroke="black" points="714,-2381 714,-2403 900,-2403 900,-2381 714,-2381"/>
-<text text-anchor="start" x="741" y="-2389.2" font-family="Helvetica,sans-Serif" font-size="11.00">area_ha</text>
+<text text-anchor="start" x="743" y="-2389.2" font-family="Helvetica,sans-Serif" font-size="11.00">area_ha</text>
 <polygon fill="none" stroke="black" points="714,-2359 714,-2381 900,-2381 900,-2359 714,-2359"/>
-<text text-anchor="start" x="741" y="-2367.2" font-family="Helvetica,sans-Serif" font-size="11.00">target_planting_density</text>
+<text text-anchor="start" x="743" y="-2367.2" font-family="Helvetica,sans-Serif" font-size="11.00">target_planting_density</text>
 <polygon fill="none" stroke="black" points="714,-2337 714,-2359 900,-2359 900,-2337 714,-2337"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="719" y="-2354"/>
-<text text-anchor="start" x="741" y="-2345.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
+<text text-anchor="start" x="743" y="-2345.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_by</text>
 <polygon fill="none" stroke="black" points="714,-2315 714,-2337 900,-2337 900,-2315 714,-2315"/>
-<text text-anchor="start" x="741" y="-2323.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_time</text>
+<text text-anchor="start" x="743" y="-2323.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary_modified_time</text>
 <polygon fill="#ffffff" stroke="transparent" points="714,-2297 714,-2315 791,-2315 791,-2297 714,-2297"/>
 <polygon fill="none" stroke="black" points="714,-2297 714,-2315 791,-2315 791,-2297 714,-2297"/>
 <text text-anchor="start" x="717" y="-2303.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>

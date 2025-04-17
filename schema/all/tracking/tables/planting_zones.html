@@ -349,7 +349,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="num_permanent_clusters">num_permanent_clusters</span></td>
+                                    <td><span id="num_permanent_plots">num_permanent_plots</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -363,7 +363,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of permanent clusters to assign to the next observation. This is typically derived from a statistical formula.</p></td>
+                                    <td><p>Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="num_temporary_plots">num_temporary_plots</span></td>
@@ -532,12 +532,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>area_positive</td>
-                                    <td>(area_ha &gt; (0)::numeric)</td>
+                                    <td>must_have_permanent_clusters</td>
+                                    <td>(num_permanent_plots &gt; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>must_have_permanent_clusters</td>
-                                    <td>(num_permanent_clusters &gt; 0)</td>
+                                    <td>area_positive</td>
+                                    <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 <tr>
                                     <td>positive_target_density</td>
