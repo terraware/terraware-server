@@ -94,7 +94,7 @@
 <g id="node3" class="node">
 <title>monitoring_plots</title>
 <g id="a_node3"><a xlink:href="../../tables/monitoring_plots.html" xlink:title="monitoring_plots" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="618,-364 618,-716 886,-716 886,-364 618,-364"/>
+<polygon fill="#ffffff" stroke="transparent" points="618,-342 618,-716 886,-716 886,-342 618,-342"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="620,-692 620,-714 884,-714 884,-692 620,-692"/>
 <polygon fill="none" stroke="black" points="620,-692 620,-714 884,-714 884,-692 620,-692"/>
 <text text-anchor="start" x="625" y="-701.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">monitoring_plots</text>
@@ -164,16 +164,20 @@
 <text text-anchor="start" x="640" y="-392.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
 <polygon fill="none" stroke="black" points="761,-384 761,-406 884,-406 884,-384 761,-384"/>
 <text text-anchor="start" x="764" y="-392.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="transparent" points="620,-366 620,-384 695,-384 695,-366 620,-366"/>
-<polygon fill="none" stroke="black" points="620,-366 620,-384 695,-384 695,-366 620,-366"/>
-<text text-anchor="start" x="623" y="-372.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="695,-366 695,-384 761,-384 761,-366 695,-366"/>
-<polygon fill="none" stroke="black" points="695,-366 695,-384 761,-384 761,-366 695,-366"/>
-<text text-anchor="start" x="751" y="-372.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="761,-366 761,-384 884,-384 884,-366 761,-366"/>
-<polygon fill="none" stroke="black" points="761,-366 761,-384 884,-384 884,-366 761,-366"/>
-<text text-anchor="start" x="859" y="-372.2" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="619,-365 619,-715 885,-715 885,-365 619,-365"/>
+<polygon fill="none" stroke="black" points="620,-362 620,-384 761,-384 761,-362 620,-362"/>
+<text text-anchor="start" x="640" y="-370.2" font-family="Helvetica,sans-Serif" font-size="11.00">elevation_meters</text>
+<polygon fill="none" stroke="black" points="761,-362 761,-384 884,-384 884,-362 761,-362"/>
+<text text-anchor="start" x="764" y="-370.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
+<polygon fill="#ffffff" stroke="transparent" points="620,-344 620,-362 695,-362 695,-344 620,-344"/>
+<polygon fill="none" stroke="black" points="620,-344 620,-362 695,-362 695,-344 620,-344"/>
+<text text-anchor="start" x="623" y="-350.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="695,-344 695,-362 761,-362 761,-344 695,-344"/>
+<polygon fill="none" stroke="black" points="695,-344 695,-362 761,-362 761,-344 695,-344"/>
+<text text-anchor="start" x="751" y="-350.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="761,-344 761,-362 884,-362 884,-344 761,-344"/>
+<polygon fill="none" stroke="black" points="761,-344 761,-362 884,-362 884,-344 761,-344"/>
+<text text-anchor="start" x="859" y="-350.2" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="619,-343 619,-715 885,-715 885,-343 619,-343"/>
 </a>
 </g>
 </g>
@@ -612,9 +616,9 @@
 <!-- observation_biomass_quadrat_details&#45;&gt;monitoring_plots -->
 <g id="edge15" class="edge">
 <title>observation_biomass_quadrat_details:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M1676.95,-505.74C1653.14,-491.1 1686.2,-431.01 1651,-407 1626.11,-390.02 965.17,-381.85 927,-415 881.82,-454.24 944.84,-681 885,-681"/>
-<polygon fill="black" stroke="black" points="1683.21,-507.19 1690.19,-512.51 1687.1,-508.1 1691,-509 1691,-509 1691,-509 1687.1,-508.1 1691.81,-505.49 1683.21,-507.19 1683.21,-507.19"/>
-<ellipse fill="none" stroke="black" cx="1680.09" cy="-506.47" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1676.74,-505.58C1653.68,-490.73 1685.79,-431.64 1651,-408 1626.21,-391.15 965.37,-381.74 927,-415 881.78,-454.2 944.84,-681 885,-681"/>
+<polygon fill="black" stroke="black" points="1683.22,-507.13 1690.16,-512.5 1687.11,-508.07 1691,-509 1691,-509 1691,-509 1687.11,-508.07 1691.84,-505.5 1683.22,-507.13 1683.22,-507.13"/>
+<ellipse fill="none" stroke="black" cx="1680.11" cy="-506.38" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_biomass_quadrat_details&#45;&gt;observation_biomass_details -->
 <g id="edge16" class="edge">
@@ -668,7 +672,7 @@
 <!-- observation_biomass_quadrat_species&#45;&gt;monitoring_plots -->
 <g id="edge19" class="edge">
 <title>observation_biomass_quadrat_species:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M1993.52,-361.01C1795.89,-361.28 1741.16,-367 1536.5,-367 1536.5,-367 1536.5,-367 1288,-367 1207.6,-367 986.01,-336.39 927,-391 879.21,-435.23 950.12,-681 885,-681"/>
+<path fill="none" stroke="black" d="M1993.52,-361.01C1795.89,-361.28 1741.16,-367 1536.5,-367 1536.5,-367 1536.5,-367 1288,-367 1207.59,-367 985.96,-337.32 927,-392 879.42,-436.13 949.9,-681 885,-681"/>
 <polygon fill="black" stroke="black" points="2000,-361.01 2008,-364.6 2004,-361 2008,-361 2008,-361 2008,-361 2004,-361 2008,-357.4 2000,-361.01 2000,-361.01"/>
 <ellipse fill="none" stroke="black" cx="1996.8" cy="-361.01" rx="3.2" ry="3.2"/>
 </g>

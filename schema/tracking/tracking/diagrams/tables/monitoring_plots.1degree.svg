@@ -63,7 +63,7 @@
 <g id="node2" class="node">
 <title>monitoring_plots</title>
 <g id="a_node2"><a xlink:href="../../tables/monitoring_plots.html" xlink:title="monitoring_plots" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="404,-338 404,-690 672,-690 672,-338 404,-338"/>
+<polygon fill="#ffffff" stroke="transparent" points="404,-316 404,-690 672,-690 672,-316 404,-316"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="406,-666 406,-688 670,-688 670,-666 406,-666"/>
 <polygon fill="none" stroke="black" points="406,-666 406,-688 670,-688 670,-666 406,-666"/>
 <text text-anchor="start" x="411" y="-675.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">monitoring_plots</text>
@@ -130,16 +130,20 @@
 <text text-anchor="start" x="426" y="-366.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
 <polygon fill="none" stroke="black" points="547,-358 547,-380 670,-380 670,-358 547,-358"/>
 <text text-anchor="start" x="550" y="-366.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="transparent" points="406,-340 406,-358 481,-358 481,-340 406,-340"/>
-<polygon fill="none" stroke="black" points="406,-340 406,-358 481,-358 481,-340 406,-340"/>
-<text text-anchor="start" x="409" y="-346.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="481,-340 481,-358 547,-358 547,-340 481,-340"/>
-<polygon fill="none" stroke="black" points="481,-340 481,-358 547,-358 547,-340 481,-340"/>
-<text text-anchor="start" x="537" y="-346.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="547,-340 547,-358 670,-358 670,-340 547,-340"/>
-<polygon fill="none" stroke="black" points="547,-340 547,-358 670,-358 670,-340 547,-340"/>
-<text text-anchor="start" x="645" y="-346.2" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="405,-339 405,-689 671,-689 671,-339 405,-339"/>
+<polygon fill="none" stroke="black" points="406,-336 406,-358 547,-358 547,-336 406,-336"/>
+<text text-anchor="start" x="426" y="-344.2" font-family="Helvetica,sans-Serif" font-size="11.00">elevation_meters</text>
+<polygon fill="none" stroke="black" points="547,-336 547,-358 670,-358 670,-336 547,-336"/>
+<text text-anchor="start" x="550" y="-344.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
+<polygon fill="#ffffff" stroke="transparent" points="406,-318 406,-336 481,-336 481,-318 406,-318"/>
+<polygon fill="none" stroke="black" points="406,-318 406,-336 481,-336 481,-318 406,-318"/>
+<text text-anchor="start" x="409" y="-324.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="481,-318 481,-336 547,-336 547,-318 481,-318"/>
+<polygon fill="none" stroke="black" points="481,-318 481,-336 547,-336 547,-318 481,-318"/>
+<text text-anchor="start" x="537" y="-324.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="547,-318 547,-336 670,-336 670,-318 547,-318"/>
+<polygon fill="none" stroke="black" points="547,-318 547,-336 670,-336 670,-318 547,-318"/>
+<text text-anchor="start" x="645" y="-324.2" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="405,-317 405,-689 671,-689 671,-317 405,-317"/>
 </a>
 </g>
 </g>
