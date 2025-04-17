@@ -134,7 +134,7 @@ class MapboxService(
             }
           }
 
-          MapboxTile(slippyCoordinate.x, slippyCoordinate.y, tile)
+          MapboxTile(slippyCoordinate.x, slippyCoordinate.y, slippyCoordinate.zoom, tile)
         }
   }
 
@@ -181,6 +181,7 @@ class MapboxService(
   data class MapboxTile(
       val x: Int,
       val y: Int,
+      val zoom: Int,
       val image: BufferedImage?, // If null, it means that the Mapbox does not have this tile.
   )
 
