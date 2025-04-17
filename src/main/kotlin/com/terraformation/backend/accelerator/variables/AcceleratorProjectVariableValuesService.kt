@@ -10,10 +10,12 @@ import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.model.ExistingLinkValue
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.StableId
@@ -44,7 +46,6 @@ class AcceleratorProjectVariableValuesService(
             StableIds.country,
             StableIds.dealDescription,
             StableIds.dealName,
-            StableIds.expectedMarketCredits,
             StableIds.failureRisk,
             StableIds.gisReportsLink,
             StableIds.investmentThesis,
@@ -124,7 +125,6 @@ class AcceleratorProjectVariableValuesService(
         }
     val dealDescription = getTextValue(valuesByStableId, StableIds.dealDescription)
     val dealName = getTextValue(valuesByStableId, StableIds.dealName)
-    val expectedMarketCredits = getNumberValue(valuesByStableId, StableIds.expectedMarketCredits)
     val failureRisk = getTextValue(valuesByStableId, StableIds.failureRisk)
     val gisReportsLink = getLinkValue(valuesByStableId, StableIds.gisReportsLink)
     val investmentThesis = getTextValue(valuesByStableId, StableIds.investmentThesis)
@@ -187,7 +187,6 @@ class AcceleratorProjectVariableValuesService(
         countryCode = countryRow?.code,
         dealDescription = dealDescription,
         dealName = dealName,
-        expectedMarketCredits = expectedMarketCredits,
         failureRisk = failureRisk,
         gisReportsLink = gisReportsLink,
         investmentThesis = investmentThesis,
@@ -238,6 +237,16 @@ class AcceleratorProjectVariableValuesService(
 
     val operations = mutableListOf<ValueOperation>()
 
+    if (existing.accumulationRate != model.accumulationRate) {
+      updateNumberValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.accumulationRate) as NumberVariable,
+              valuesByStableId[StableIds.accumulationRate] as? ExistingNumberValue,
+              model.accumulationRate,
+          )
+          ?.let { operations.add(it) }
+    }
+
     if (existing.annualCarbon != model.annualCarbon) {
       updateNumberValueOperation(
               projectId = projectId,
@@ -264,6 +273,16 @@ class AcceleratorProjectVariableValuesService(
               getVariableByStableId(StableIds.carbonCapacity) as NumberVariable,
               valuesByStableId[StableIds.carbonCapacity] as? ExistingNumberValue,
               model.carbonCapacity,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.clickUpLink != model.clickUpLink) {
+      updateLinkValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.clickUpLink) as LinkVariable,
+              valuesByStableId[StableIds.clickUpLink] as? ExistingLinkValue,
+              model.clickUpLink,
           )
           ?.let { operations.add(it) }
     }
@@ -323,6 +342,16 @@ class AcceleratorProjectVariableValuesService(
           ?.let { operations.add(it) }
     }
 
+    if (existing.gisReportsLink != model.gisReportsLink) {
+      updateLinkValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.gisReportsLink) as LinkVariable,
+              valuesByStableId[StableIds.gisReportsLink] as? ExistingLinkValue,
+              model.gisReportsLink,
+          )
+          ?.let { operations.add(it) }
+    }
+
     if (existing.investmentThesis != model.investmentThesis) {
       updateTextValueOperation(
               projectId = projectId,
@@ -345,6 +374,19 @@ class AcceleratorProjectVariableValuesService(
           ?.let { operations.add(it) }
     }
 
+    if (existing.landUseModelHectares != model.landUseModelHectares) {
+      StableIds.landUseHectaresByLandUseModel.forEach { (type, stableId) ->
+        val newHectares = model.landUseModelHectares[type]
+        updateNumberValueOperation(
+                projectId = projectId,
+                getVariableByStableId(stableId) as NumberVariable,
+                valuesByStableId[stableId] as? ExistingNumberValue,
+                newHectares,
+            )
+            ?.let { operations.add(it) }
+      }
+    }
+
     if (existing.maxCarbonAccumulation != model.maxCarbonAccumulation) {
       updateNumberValueOperation(
               projectId = projectId,
@@ -355,12 +397,32 @@ class AcceleratorProjectVariableValuesService(
           ?.let { operations.add(it) }
     }
 
+    if (existing.methodologyNumber != model.methodologyNumber) {
+      updateSelectValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.methodologyNumber) as SelectVariable,
+              valuesByStableId[StableIds.methodologyNumber] as? ExistingSelectValue,
+              setOfNotNull(model.methodologyNumber),
+          )
+          ?.let { operations.add(it) }
+    }
+
     if (existing.minCarbonAccumulation != model.minCarbonAccumulation) {
       updateNumberValueOperation(
               projectId = projectId,
               getVariableByStableId(StableIds.minCarbonAccumulation) as NumberVariable,
               valuesByStableId[StableIds.minCarbonAccumulation] as? ExistingNumberValue,
               model.minCarbonAccumulation,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.minProjectArea != model.minProjectArea) {
+      updateNumberValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.minProjectArea) as NumberVariable,
+              valuesByStableId[StableIds.minProjectArea] as? ExistingNumberValue,
+              model.minProjectArea,
           )
           ?.let { operations.add(it) }
     }
@@ -385,6 +447,65 @@ class AcceleratorProjectVariableValuesService(
           ?.let { operations.add(it) }
     }
 
+    if (existing.projectArea != model.projectArea) {
+      updateNumberValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.projectArea) as NumberVariable,
+              valuesByStableId[StableIds.projectArea] as? ExistingNumberValue,
+              model.projectArea,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.riskTrackerLink != model.riskTrackerLink) {
+      updateLinkValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.riskTrackerLink) as LinkVariable,
+              valuesByStableId[StableIds.riskTrackerLink] as? ExistingLinkValue,
+              model.riskTrackerLink,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.sdgList != model.sdgList) {
+      val variable = getVariableByStableId(StableIds.sdgList) as SelectVariable
+      val sdgSet = model.sdgList.map { it.sdgNumber }.toSet()
+
+      val sdgSelectValue =
+          sdgSet
+              .map { sdg -> variable.options.find { it.name.startsWith(sdg.toString()) }?.name }
+              .filterNotNull()
+              .toSet()
+
+      updateSelectValueOperation(
+              projectId = projectId,
+              variable,
+              valuesByStableId[StableIds.sdgList] as? ExistingSelectValue,
+              sdgSelectValue,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.slackLink != model.slackLink) {
+      updateLinkValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.slackLink) as LinkVariable,
+              valuesByStableId[StableIds.slackLink] as? ExistingLinkValue,
+              model.slackLink,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.standard != model.standard) {
+      updateSelectValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.standard) as SelectVariable,
+              valuesByStableId[StableIds.standard] as? ExistingSelectValue,
+              setOfNotNull(model.standard),
+          )
+          ?.let { operations.add(it) }
+    }
+
     if (existing.totalCarbon != model.totalCarbon) {
       updateNumberValueOperation(
               projectId = projectId,
@@ -401,6 +522,26 @@ class AcceleratorProjectVariableValuesService(
               getVariableByStableId(StableIds.totalExpansionPotential) as NumberVariable,
               valuesByStableId[StableIds.totalExpansionPotential] as? ExistingNumberValue,
               model.totalExpansionPotential,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.totalVCU != model.totalVCU) {
+      updateNumberValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.totalVCU) as NumberVariable,
+              valuesByStableId[StableIds.totalVCU] as? ExistingNumberValue,
+              model.totalVCU,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.verraLink != model.verraLink) {
+      updateLinkValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.verraLink) as LinkVariable,
+              valuesByStableId[StableIds.verraLink] as? ExistingLinkValue,
+              model.verraLink,
           )
           ?.let { operations.add(it) }
     }

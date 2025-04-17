@@ -11,6 +11,9 @@ import com.terraformation.backend.documentproducer.model.ExistingNumberValue
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.LinkValueDetails
+import com.terraformation.backend.documentproducer.model.LinkVariable
+import com.terraformation.backend.documentproducer.model.NewLinkValue
 import com.terraformation.backend.documentproducer.model.NewNumberValue
 import com.terraformation.backend.documentproducer.model.NewSelectValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
@@ -100,6 +103,26 @@ fun updateTextValueOperation(
     return AppendValueOperation(
         NewTextValue(
             BaseVariableValueProperties(null, projectId, 0, variable.id, null, null), newValue))
+  } else if (existingValue != null) {
+    return DeleteValueOperation(projectId, existingValue.id)
+  } else {
+    // Both existing and new are null. No-op
+    return null
+  }
+}
+
+fun updateLinkValueOperation(
+    projectId: ProjectId,
+    variable: LinkVariable,
+    existingValue: ExistingLinkValue?,
+    newValue: URI?,
+): ValueOperation? {
+  if (newValue != null) {
+    val newValueDetails = LinkValueDetails(newValue, title = existingValue?.value?.title)
+    return AppendValueOperation(
+        NewLinkValue(
+            BaseVariableValueProperties(null, projectId, 0, variable.id, null, null),
+            newValueDetails))
   } else if (existingValue != null) {
     return DeleteValueOperation(projectId, existingValue.id)
   } else {

@@ -39,7 +39,6 @@ object StableIds {
   val verraLink = StableId("471")
   val dealName = StableId("472")
   val projectZoneFigure = StableId("525")
-  val expectedMarketCredits = StableId("544")
   val minProjectArea = StableId("545")
   val sdgList = StableId("546")
   val gisReportsLink = StableId("547")
