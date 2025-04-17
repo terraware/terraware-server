@@ -18,6 +18,7 @@ import java.net.URI
 import java.net.URL
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 import javax.imageio.ImageIO
 import kotlin.math.*
 import kotlinx.coroutines.runBlocking
@@ -86,35 +87,48 @@ class MapboxService(
     val zoom = 14
 
     val slippyCoordinate = convertToSlippy(point, zoom)
-    val tile = retrieveMapboxTile(slippyCoordinate)
+    val mapboxTile = retrieveMapboxTile(slippyCoordinate)
 
     // If a tile does not exist, default to sea level.
-    return tile?.let { readHeightFromTile(it, slippyCoordinate.pixelX, slippyCoordinate.pixelY) }
-        ?: 0.0
+    return mapboxTile.image?.let {
+      readHeightFromTile(it, slippyCoordinate.pixelX, slippyCoordinate.pixelY)
+    } ?: 0.0
   }
 
-  private fun retrieveMapboxTile(slippyCoordinate: SlippyCoordinate): BufferedImage? {
-    // Tile with height data.
-    // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
-    val tilesetName = "mapbox-terrain-dem-v1"
-    val url = mapboxUrl(slippyCoordinate.mapboxEndpoint(tilesetName))
+  /** Cache of elevation tile retrieved from Mapbox */
+  private val mapboxElevationTiles = ConcurrentHashMap<Pair<Int, Int>, MapboxTile>()
 
-    return runBlocking {
-      try {
-        val byteArray = httpClient.get(url).body<ByteArray>()
-        ImageIO.read(ByteArrayInputStream(byteArray))
-      } catch (e: ClientRequestException) {
-        if (e.response.body<MapboxClientErrorResponsePayload>().message == "Tile not found") {
-          // This is a special case for this Mapbox tile set when the requested tile is entirely
-          // surrounded by water. Return null for no tile, instead of raising an error.
-          return@runBlocking null
+  private fun retrieveMapboxTile(slippyCoordinate: SlippyCoordinate): MapboxTile {
+    log.info("Retrieving elevation tile at (${slippyCoordinate.x}, ${slippyCoordinate.y})")
+    log.info("Number of cached tiles: ${mapboxElevationTiles.size}")
+
+    return mapboxElevationTiles.getOrPut(slippyCoordinate.x to slippyCoordinate.y) {
+      log.info("Cache miss at elevation tile at (${slippyCoordinate.x}, ${slippyCoordinate.y})")
+
+      // Tile with height data.
+      // Reference: https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/
+      val tilesetName = "mapbox-terrain-dem-v1"
+      val url = mapboxUrl(slippyCoordinate.mapboxEndpoint(tilesetName))
+
+      val tile = runBlocking {
+        try {
+          val byteArray = httpClient.get(url).body<ByteArray>()
+          ImageIO.read(ByteArrayInputStream(byteArray))
+        } catch (e: ClientRequestException) {
+          if (e.response.body<MapboxClientErrorResponsePayload>().message == "Tile not found") {
+            // This is a special case for this Mapbox tile set when the requested tile is entirely
+            // surrounded by water. Return null for no tile, instead of raising an error.
+            return@runBlocking null
+          }
+
+          // All other errors will be thrown.
+          log.error("HTTP ${e.response.status} when fetching Mapbox tile at $url")
+          log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
+          throw MapboxRequestFailedException(e.response.status)
         }
-
-        // All other errors will be thrown.
-        log.error("HTTP ${e.response.status} when fetching Mapbox tile at $url")
-        log.info("Mapbox error response payload: ${e.response.bodyAsText()}")
-        throw MapboxRequestFailedException(e.response.status)
       }
+
+      MapboxTile(slippyCoordinate.x, slippyCoordinate.y, tile)
     }
   }
 
@@ -154,6 +168,15 @@ class MapboxService(
 
   private fun mapboxUrl(endpoint: String): URL =
       URI("https://api.mapbox.com/$endpoint?access_token=${config.mapbox.apiToken}").toURL()
+
+  /**
+   * Wrapper class for the tile image, to distinguish between no cached tile yet vs an empty tile
+   */
+  data class MapboxTile(
+      val x: Int,
+      val y: Int,
+      val image: BufferedImage?, // If null, it means that the Mapbox does not have this tile.
+  )
 
   data class SlippyCoordinate(
       val x: Int,
