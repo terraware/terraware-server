@@ -20,7 +20,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 4)
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
@@ -56,7 +56,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 4)
       insertPlantingSubzone(boundary = siteBoundary)
 
       // Zone is configured for 4 clusters, but there's only room for 2.
@@ -81,7 +81,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           insertPlantingSite(
               boundary = siteBoundary, gridOrigin = gridOrigin, insertHistory = false)
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 3)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 3)
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
       insertMonitoringPlot(
@@ -127,7 +127,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 2)
       insertPlantingSubzone(boundary = siteBoundary)
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
 
@@ -147,7 +147,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 2)
       insertPlantingSubzone(boundary = siteBoundary)
       insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 1)
       insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 2)
@@ -173,7 +173,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
+      insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 2)
       insertPlantingSubzone(boundary = siteBoundary)
       insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentCluster = 1)
 

@@ -120,7 +120,7 @@ class ObservationTestHelper(
   fun insertPlantedSite(
       height: Int = 10,
       width: Int = 10,
-      numPermanentClusters: Int = 1,
+      numPermanentPlots: Int = 1,
       numTemporaryPlots: Int = 1,
       plantingCreatedTime: Instant = Instant.EPOCH,
       subzoneCompletedTime: Instant? = null,
@@ -143,7 +143,7 @@ class ObservationTestHelper(
         )
     test.insertPlantingZone(
         height = height,
-        numPermanentClusters = numPermanentClusters,
+        numPermanentPlots = numPermanentPlots,
         numTemporaryPlots = numTemporaryPlots,
         width = width,
     )

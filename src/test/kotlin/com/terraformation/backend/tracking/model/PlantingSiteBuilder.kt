@@ -142,7 +142,7 @@ private constructor(
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
       name: String? = null,
-      numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       func: ZoneBuilder.() -> Unit = {}
   ): ExistingPlantingZoneModel {
@@ -155,7 +155,7 @@ private constructor(
             width = width,
             height = height,
             name = name ?: "Z$currentZoneId",
-            numPermanentClusters = numPermanent,
+            numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
         )
     builder.func()
@@ -200,7 +200,7 @@ private constructor(
       private val width: Int,
       private val height: Int,
       private val name: String,
-      private val numPermanentClusters: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      private val numPermanentPlots: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
   ) {
     var errorMargin: BigDecimal = PlantingZoneModel.DEFAULT_ERROR_MARGIN
@@ -221,7 +221,7 @@ private constructor(
           errorMargin = errorMargin,
           id = PlantingZoneId(currentZoneId),
           name = name,
-          numPermanentClusters = numPermanentClusters,
+          numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.ifEmpty { listOf(subzone()) },
           studentsT = studentsT,

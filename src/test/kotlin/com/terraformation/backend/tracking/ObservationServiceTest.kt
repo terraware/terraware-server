@@ -218,8 +218,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertFacility(type = FacilityType.Nursery)
 
-      insertPlantingZone(
-          x = 0, width = 4, height = 1, numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingZone(x = 0, width = 4, height = 1, numPermanentPlots = 2, numTemporaryPlots = 3)
       val subzone1Boundary =
           rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
       val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzone1Boundary)
@@ -233,8 +232,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot(x = 5, y = 0)
       insertMonitoringPlot(x = 6, y = 0)
 
-      insertPlantingZone(
-          x = 7, width = 3, height = 1, numPermanentClusters = 2, numTemporaryPlots = 2)
+      insertPlantingZone(x = 7, width = 3, height = 1, numPermanentPlots = 2, numTemporaryPlots = 2)
       insertPlantingSubzone(x = 7, width = 3, height = 1)
       insertCluster(1, x = 7, y = 0)
 
@@ -312,16 +310,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
 
-      insertPlantingZone(
-          x = 0, width = 6, height = 2, numPermanentClusters = 2, numTemporaryPlots = 3)
+      insertPlantingZone(x = 0, width = 6, height = 2, numPermanentPlots = 2, numTemporaryPlots = 3)
       val subzone1Boundary =
           rectangle(width = 3 * MONITORING_PLOT_SIZE, height = 2 * MONITORING_PLOT_SIZE)
       val subzone1Id = insertPlantingSubzone(boundary = subzone1Boundary)
 
       val subzone2Id = insertPlantingSubzone(x = 3, width = 3, height = 2)
 
-      insertPlantingZone(
-          x = 6, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 2)
+      insertPlantingZone(x = 6, width = 8, height = 2, numPermanentPlots = 2, numTemporaryPlots = 2)
       insertPlantingSubzone(x = 6, width = 8, height = 2)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
@@ -449,7 +445,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSpecies()
 
       insertPlantingZone(
-          x = 0, width = 15, height = 2, numPermanentClusters = 8, numTemporaryPlots = 6)
+          x = 0, width = 15, height = 2, numPermanentPlots = 8, numTemporaryPlots = 6)
       val subzoneIds =
           listOf(PlantingSubzoneId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
@@ -497,7 +493,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `sets planting site history ID`() {
       val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
 
-      insertPlantingZone(boundary = boundary, numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingZone(boundary = boundary, numPermanentPlots = 1, numTemporaryPlots = 1)
       insertPlantingSubzone(boundary = boundary)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
@@ -852,7 +848,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
-      helper.insertPlantedSite(numPermanentClusters = 2, numTemporaryPlots = 3)
+      helper.insertPlantedSite(numPermanentPlots = 2, numTemporaryPlots = 3)
 
       val observationId =
           service.scheduleObservation(
@@ -990,7 +986,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         stateName: String
     ) {
       insertPlantingSite()
-      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingZone(numPermanentPlots = 1, numTemporaryPlots = 1)
       insertPlantingSubzone()
       insertMonitoringPlot()
 
@@ -1016,7 +1012,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         stateName: String
     ) {
       insertPlantingSite(x = 0)
-      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingZone(numPermanentPlots = 1, numTemporaryPlots = 1)
       insertPlantingSubzone()
       insertMonitoringPlot()
 
@@ -1531,7 +1527,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
-      insertPlantingZone(numPermanentClusters = 1, width = 2, height = 4)
+      insertPlantingZone(numPermanentPlots = 1, width = 2, height = 4)
       insertPlantingSubzone(width = 2, height = 4)
       insertObservationRequestedSubzone()
       val cluster1 = insertCluster(1, isPermanent = true)
@@ -1558,7 +1554,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `removes permanent cluster if replacement cluster is in an unrequested subzone`() {
-      insertPlantingZone(numPermanentClusters = 1, width = 1, height = 2)
+      insertPlantingZone(numPermanentPlots = 1, width = 1, height = 2)
       insertPlantingSubzone(width = 1, height = 1)
       insertObservationRequestedSubzone()
       val cluster1 = insertCluster(1, isPermanent = true)
@@ -2121,7 +2117,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `abandons in-progress observations in edited zones`() {
-      insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
+      insertPlantingZone(numPermanentPlots = 1, numTemporaryPlots = 1, width = 2, height = 7)
       insertPlantingSubzone()
       val plotInEditedZone = insertMonitoringPlot(permanentCluster = 1)
       insertPlantingZone()

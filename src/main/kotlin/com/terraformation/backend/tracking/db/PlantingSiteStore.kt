@@ -666,7 +666,7 @@ class PlantingSiteStore(
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
-                  .set(NUM_PERMANENT_CLUSTERS, edit.desiredModel.numPermanentClusters)
+                  .set(NUM_PERMANENT_PLOTS, edit.desiredModel.numPermanentPlots)
                   .set(STUDENTS_T, edit.desiredModel.studentsT)
                   .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
                   .set(VARIANCE, edit.desiredModel.variance)
@@ -997,7 +997,7 @@ class PlantingSiteStore(
           .set(ERROR_MARGIN, edited.errorMargin)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
-          .set(NUM_PERMANENT_CLUSTERS, edited.numPermanentClusters)
+          .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
           .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
           .set(STUDENTS_T, edited.studentsT)
           .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
@@ -1064,7 +1064,7 @@ class PlantingSiteStore(
             modifiedBy = userId,
             modifiedTime = now,
             name = zone.name,
-            numPermanentClusters = zone.numPermanentClusters,
+            numPermanentPlots = zone.numPermanentPlots,
             numTemporaryPlots = zone.numTemporaryPlots,
             plantingSiteId = plantingSiteId,
             studentsT = zone.studentsT,
@@ -1457,7 +1457,7 @@ class PlantingSiteStore(
 
       plantingSite.plantingZones.flatMap { plantingZone ->
         val missingClusterNumbers: List<Int> =
-            (1..plantingZone.numPermanentClusters).filterNot {
+            (1..plantingZone.numPermanentPlots).filterNot {
               plantingZone.permanentClusterExists(it)
             }
 
@@ -1893,7 +1893,7 @@ class PlantingSiteStore(
                     PLANTING_ZONES.ERROR_MARGIN,
                     PLANTING_ZONES.ID,
                     PLANTING_ZONES.NAME,
-                    PLANTING_ZONES.NUM_PERMANENT_CLUSTERS,
+                    PLANTING_ZONES.NUM_PERMANENT_PLOTS,
                     PLANTING_ZONES.NUM_TEMPORARY_PLOTS,
                     PLANTING_ZONES.STUDENTS_T,
                     PLANTING_ZONES.TARGET_PLANTING_DENSITY,
@@ -1912,7 +1912,7 @@ class PlantingSiteStore(
                 record[PLANTING_ZONES.ERROR_MARGIN]!!,
                 record[PLANTING_ZONES.ID]!!,
                 record[PLANTING_ZONES.NAME]!!,
-                record[PLANTING_ZONES.NUM_PERMANENT_CLUSTERS]!!,
+                record[PLANTING_ZONES.NUM_PERMANENT_PLOTS]!!,
                 record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
                 subzonesField?.let { record[it] } ?: emptyList(),
                 record[PLANTING_ZONES.STUDENTS_T]!!,

@@ -262,7 +262,7 @@
                 </td>
                 <td>
                     <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${zone.id}|"
-                           th:value="${zone.numPermanentClusters}" th:form="|zone-${zone.id}|"/>
+                           th:value="${zone.numPermanentPlots}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
                     <input type="number" required min="1" name="numTemporary" th:id="|numTemporary-${zone.id}|"
@@ -270,7 +270,7 @@
                 </td>
                 <td>
                     <span th:id="|total-${zone.id}|"
-                          th:text="${zone.numPermanentClusters != null || zone.numTemporaryPlots != null ? (zone.numPermanentClusters ?: 0) + (zone.numTemporaryPlots ?: 0) : ''}">
+                          th:text="${zone.numPermanentPlots != null || zone.numTemporaryPlots != null ? (zone.numPermanentPlots ?: 0) + (zone.numTemporaryPlots ?: 0) : ''}">
                         123
                     </span>
                 </td>

@@ -33,7 +33,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               modifiedBy = createdBy,
               modifiedTime = createdTime,
               name = "initial",
-              numPermanentClusters = 1,
+              numPermanentPlots = 1,
               numTemporaryPlots = 2,
               studentsT = BigDecimal.ONE,
               targetPlantingDensity = BigDecimal.ONE,
@@ -55,7 +55,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               errorMargin = newErrorMargin,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
-              numPermanentClusters = newPermanent,
+              numPermanentPlots = newPermanent,
               numTemporaryPlots = newTemporary,
               studentsT = newStudentsT,
               targetPlantingDensity = newTargetPlantingDensity,
@@ -66,7 +66,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
         it.copy(
             // Editable
             errorMargin = newErrorMargin,
-            numPermanentClusters = newPermanent,
+            numPermanentPlots = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,
             targetPlantingDensity = newTargetPlantingDensity,

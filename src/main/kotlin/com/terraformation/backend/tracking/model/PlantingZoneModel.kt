@@ -28,7 +28,7 @@ data class PlantingZoneModel<
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val id: PZID,
     val name: String,
-    val numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
+    val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
     val plantingSubzones: List<PlantingSubzoneModel<PSZID>>,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
@@ -37,7 +37,7 @@ data class PlantingZoneModel<
 ) {
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
-   * by [numPermanentClusters].
+   * by [numPermanentPlots].
    *
    * Only plots in requested subzones are returned, meaning there may be fewer plots than
    * configured, or none at all.
@@ -52,7 +52,7 @@ data class PlantingZoneModel<
     val plotsInRequestedSubzones =
         requestedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
-            plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
+            plot.permanentCluster != null && plot.permanentCluster <= numPermanentPlots
           }
         }
 
@@ -117,7 +117,7 @@ data class PlantingZoneModel<
         .sortedWith(
             compareBy { subzone: PlantingSubzoneModel<PSZID> ->
                   subzone.monitoringPlots.count { plot ->
-                    plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
+                    plot.permanentCluster != null && plot.permanentCluster <= numPermanentPlots
                   }
                 }
                 .thenBy { if (it.id != null && it.id in requestedSubzoneIds) 0 else 1 }
@@ -351,7 +351,7 @@ data class PlantingZoneModel<
               !plot.isAvailable ||
                   plot.id in excludePlotIds ||
                   plot.permanentCluster != null &&
-                      (includeAll || plot.permanentCluster <= numPermanentClusters)
+                      (includeAll || plot.permanentCluster <= numPermanentPlots)
             }
 
     if (relevantPlots.isEmpty()) {
@@ -370,7 +370,7 @@ data class PlantingZoneModel<
         id == other.id &&
         name == other.name &&
         boundaryModifiedTime == other.boundaryModifiedTime &&
-        numPermanentClusters == other.numPermanentClusters &&
+        numPermanentPlots == other.numPermanentPlots &&
         numTemporaryPlots == other.numTemporaryPlots &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         errorMargin.equalsIgnoreScale(other.errorMargin) &&
@@ -389,7 +389,7 @@ data class PlantingZoneModel<
           errorMargin = errorMargin,
           id = null,
           name = name,
-          numPermanentClusters = numPermanentClusters,
+          numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.map { it.toNew() },
           studentsT = studentsT,
@@ -406,7 +406,7 @@ data class PlantingZoneModel<
     val DEFAULT_ERROR_MARGIN = BigDecimal(100)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
     val DEFAULT_VARIANCE = BigDecimal(40000)
-    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 8
+    const val DEFAULT_NUM_PERMANENT_PLOTS = 8
     const val DEFAULT_NUM_TEMPORARY_PLOTS = 3
 
     /** Target planting density to use if not included in zone properties. */
@@ -418,7 +418,7 @@ data class PlantingZoneModel<
         plantingSubzones: List<NewPlantingSubzoneModel>,
         exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
-        numPermanentClusters: Int? = null,
+        numPermanentPlots: Int? = null,
         numTemporaryPlots: Int? = null,
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
         targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
@@ -439,7 +439,7 @@ data class PlantingZoneModel<
           errorMargin = errorMargin,
           id = null,
           name = name,
-          numPermanentClusters = numPermanentClusters ?: defaultPermanentClusters,
+          numPermanentPlots = numPermanentPlots ?: defaultPermanentClusters,
           numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
           plantingSubzones = plantingSubzones,
           studentsT = studentsT,
