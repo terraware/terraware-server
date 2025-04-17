@@ -205,6 +205,7 @@ class ObservationStore(
             OBSERVATION_PLOTS.OBSERVED_TIME,
             OBSERVATION_PLOTS.OBSERVATION_ID,
             OBSERVATION_PLOTS.monitoringPlots.BOUNDARY,
+            OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS,
             OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.FULL_NAME,
             OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID,
             OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER,
@@ -222,6 +223,7 @@ class ObservationStore(
               boundary = record[OBSERVATION_PLOTS.monitoringPlots.BOUNDARY]!!,
               claimedByName = record[claimedByNameField],
               completedByName = record[completedByNameField],
+              elevationMeters = record[OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS],
               isFirstObservation = record[isFirstObservationField]!!,
               plantingSubzoneId = record[OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID]!!,
               plantingSubzoneName =

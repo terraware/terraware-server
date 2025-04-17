@@ -326,7 +326,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
 
       // A plot that was observed previously and again in this observation
-      val monitoringPlotId11 = insertMonitoringPlot(boundary = polygon(1))
+      val monitoringPlotId11 =
+          insertMonitoringPlot(boundary = polygon(1), elevationMeters = BigDecimal.TEN)
       insertObservation()
       insertObservationPlot()
       val observationId = insertObservation()
@@ -371,6 +372,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = polygon(1),
                   claimedByName = null,
                   completedByName = null,
+                  elevationMeters = BigDecimal.TEN,
                   isFirstObservation = false,
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
@@ -389,6 +391,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = polygon(2),
                   claimedByName = "First Person",
                   completedByName = null,
+                  elevationMeters = null,
                   isFirstObservation = true,
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
@@ -411,6 +414,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = polygon(3),
                   claimedByName = "Second Human",
                   completedByName = "First Person",
+                  elevationMeters = null,
                   isFirstObservation = true,
                   plantingSubzoneId = plantingSubzoneId2,
                   plantingSubzoneName = "Z1-S2",
@@ -446,7 +450,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
 
       // A plot that was observed previously and again in this observation
-      val monitoringPlotId11 = insertMonitoringPlot(boundary = polygon(1))
+      val monitoringPlotId11 =
+          insertMonitoringPlot(boundary = polygon(1), elevationMeters = BigDecimal.TEN)
       insertObservation()
       insertObservationPlot()
       val observationId = insertObservation()
@@ -490,6 +495,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               boundary = polygon(1),
               claimedByName = null,
               completedByName = null,
+              elevationMeters = BigDecimal.TEN,
               isFirstObservation = false,
               plantingSubzoneId = plantingSubzoneId1,
               plantingSubzoneName = "Z1-S1",
@@ -512,6 +518,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               boundary = polygon(2),
               claimedByName = "First Person",
               completedByName = null,
+              elevationMeters = null,
               isFirstObservation = true,
               plantingSubzoneId = plantingSubzoneId1,
               plantingSubzoneName = "Z1-S1",
@@ -538,6 +545,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               boundary = polygon(3),
               claimedByName = "Second Human",
               completedByName = "First Person",
+              elevationMeters = null,
               isFirstObservation = true,
               plantingSubzoneId = plantingSubzoneId2,
               plantingSubzoneName = "Z1-S2",

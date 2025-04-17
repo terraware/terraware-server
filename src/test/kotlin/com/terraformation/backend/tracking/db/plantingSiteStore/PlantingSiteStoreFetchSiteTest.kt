@@ -44,7 +44,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
-      val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
+      val monitoringPlotId =
+          insertMonitoringPlot(boundary = polygon(0.1), elevationMeters = BigDecimal.TEN)
       insertMonitoringPlot(boundary = polygon(0.1), isAdHoc = true)
 
       val season1StartDate = LocalDate.of(2023, 6, 1)
@@ -132,6 +133,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                   listOf(
                       MonitoringPlotModel(
                           boundary = polygon(0.2),
+                          elevationMeters = null,
                           id = exteriorPlotId,
                           isAdHoc = false,
                           isAvailable = true,
@@ -149,6 +151,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                               listOf(
                                                   MonitoringPlotModel(
                                                       boundary = polygon(0.1),
+                                                      elevationMeters = BigDecimal.TEN,
                                                       id = monitoringPlotId,
                                                       isAdHoc = false,
                                                       isAvailable = true,
@@ -231,6 +234,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                           listOf(
                                               MonitoringPlotModel(
                                                   boundary = monitoringPlotBoundary4326,
+                                                  elevationMeters = null,
                                                   id = monitoringPlotId,
                                                   isAdHoc = false,
                                                   isAvailable = true,

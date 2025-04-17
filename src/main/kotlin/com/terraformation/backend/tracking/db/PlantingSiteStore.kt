@@ -1749,6 +1749,7 @@ class PlantingSiteStore(
   private fun monitoringPlotsMultiset(condition: Condition) =
       DSL.multiset(
               DSL.select(
+                      MONITORING_PLOTS.ELEVATION_METERS,
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.IS_AVAILABLE,
@@ -1763,6 +1764,7 @@ class PlantingSiteStore(
             result.map { record ->
               MonitoringPlotModel(
                   boundary = record[monitoringPlotBoundaryField]!! as Polygon,
+                  elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
                   id = record[MONITORING_PLOTS.ID]!!,
                   isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                   isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,

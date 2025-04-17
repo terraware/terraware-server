@@ -2091,6 +2091,7 @@ abstract class DatabaseBackedTest {
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
       x: Number = 0,
       y: Number = 0,
+      elevationMeters: BigDecimal? = row.elevationMeters,
       sizeMeters: Int = row.sizeMeters ?: MONITORING_PLOT_SIZE_INT,
       boundary: Polygon =
           (row.boundary as? Polygon)
@@ -2121,6 +2122,7 @@ abstract class DatabaseBackedTest {
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
+            elevationMeters = elevationMeters,
             isAdHoc = isAdHoc,
             isAvailable = isAvailable,
             modifiedBy = modifiedBy,

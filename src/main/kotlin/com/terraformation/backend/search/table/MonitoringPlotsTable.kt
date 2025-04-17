@@ -33,6 +33,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
       listOf(
           geometryField("boundary", MONITORING_PLOTS.BOUNDARY),
           timestampField("createdTime", MONITORING_PLOTS.CREATED_TIME),
+          bigDecimalField("elevationMeters", MONITORING_PLOTS.ELEVATION_METERS),
           // For backward compatibility; remove once clients aren't searching this anymore.
           longField("fullName", MONITORING_PLOTS.PLOT_NUMBER),
           idWrapperField("id", MONITORING_PLOTS.ID) { MonitoringPlotId(it) },

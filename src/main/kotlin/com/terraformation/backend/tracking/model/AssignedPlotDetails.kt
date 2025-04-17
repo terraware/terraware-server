@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.api.GpxWaypoint
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.i18n.Messages
+import java.math.BigDecimal
 import org.locationtech.jts.geom.Geometry
 
 /**
@@ -13,6 +14,7 @@ data class AssignedPlotDetails(
     val boundary: Geometry,
     val claimedByName: String?,
     val completedByName: String?,
+    val elevationMeters: BigDecimal?,
     val isFirstObservation: Boolean,
     val plantingSubzoneId: PlantingSubzoneId,
     val plantingSubzoneName: String,

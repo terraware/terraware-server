@@ -619,6 +619,7 @@ data class AssignedPlotPayload(
     val completedByName: String?,
     val completedByUserId: UserId?,
     val completedTime: Instant?,
+    val elevationMeters: BigDecimal?,
     @Schema(description = "True if this is the first observation to include the monitoring plot.")
     val isFirstObservation: Boolean,
     val isPermanent: Boolean,
@@ -640,6 +641,7 @@ data class AssignedPlotPayload(
       completedByName = details.completedByName,
       completedByUserId = details.model.completedBy,
       completedTime = details.model.completedTime,
+      elevationMeters = details.elevationMeters,
       isFirstObservation = details.isFirstObservation,
       isPermanent = details.model.isPermanent,
       observationId = details.model.observationId,
@@ -751,6 +753,7 @@ data class ObservationMonitoringPlotResultsPayload(
     @ArraySchema(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
+    val elevationMeters: BigDecimal?,
     val isAdHoc: Boolean,
     @Schema(
         description =
@@ -802,6 +805,7 @@ data class ObservationMonitoringPlotResultsPayload(
       completedTime = model.completedTime,
       conditions = model.conditions,
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
+      elevationMeters = model.elevationMeters,
       isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,

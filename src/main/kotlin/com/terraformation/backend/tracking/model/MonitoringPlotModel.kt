@@ -2,10 +2,12 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
+import java.math.BigDecimal
 import org.locationtech.jts.geom.Polygon
 
 data class MonitoringPlotModel(
     val boundary: Polygon,
+    val elevationMeters: BigDecimal?,
     val id: MonitoringPlotId,
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
@@ -18,6 +20,7 @@ data class MonitoringPlotModel(
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is MonitoringPlotModel &&
+        elevationMeters == other.elevationMeters &&
         id == other.id &&
         isAdHoc == other.isAdHoc &&
         isAvailable == other.isAvailable &&
