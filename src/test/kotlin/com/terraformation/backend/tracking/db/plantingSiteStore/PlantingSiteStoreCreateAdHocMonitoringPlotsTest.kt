@@ -15,6 +15,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.MonitoringPlotCreatedEvent
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import org.junit.jupiter.api.Assertions.*
@@ -80,6 +81,7 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(expected, actual.copy(boundary = null))
       assertGeometryEquals(plotBoundary, actual.boundary)
+      eventPublisher.assertEventPublished(MonitoringPlotCreatedEvent(monitoringPlotId))
     }
 
     @Test
