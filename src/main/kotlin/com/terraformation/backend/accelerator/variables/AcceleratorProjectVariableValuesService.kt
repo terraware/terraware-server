@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
+import com.terraformation.backend.accelerator.model.startingDigitRegex
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -473,8 +474,11 @@ class AcceleratorProjectVariableValuesService(
 
       val sdgSelectValue =
           sdgSet
-              .map { sdg -> variable.options.find { it.name.startsWith(sdg.toString()) }?.name }
-              .filterNotNull()
+              .mapNotNull { sdg ->
+                variable.options
+                    .find { startingDigitRegex.find(it.name)?.value?.toInt() == sdg }
+                    ?.name
+              }
               .toSet()
 
       updateSelectValueOperation(
