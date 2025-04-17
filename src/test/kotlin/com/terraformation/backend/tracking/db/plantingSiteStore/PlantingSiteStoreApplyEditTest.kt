@@ -237,9 +237,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               results.plantingSiteEdit,
               ReplacementResult(monitoringPlotIds, emptySet())))
 
-      eventPublisher.assertEventsPublished(
-          monitoringPlotIds.map { MonitoringPlotCreatedEvent(it) }
-      )
+      eventPublisher.assertEventsPublished(monitoringPlotIds.map { MonitoringPlotCreatedEvent(it) })
     }
 
     @Test
