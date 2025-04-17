@@ -37,36 +37,26 @@ data class PlantingZoneModel<
 ) {
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
-   * by [numPermanentClusters] (where each cluster has either 1 or 4 plots).
+   * by [numPermanentClusters].
    *
-   * Only clusters whose plots are all in planted subzones are returned, meaning there may be fewer
-   * plots than configured, or none at all. If particular subzones have been requested for the
-   * observation, only clusters whose plots are all in those subzones are returned.
+   * Only plots in requested subzones are returned, meaning there may be fewer plots than
+   * configured, or none at all.
    */
   fun choosePermanentPlots(requestedSubzoneIds: Set<PlantingSubzoneId>): Set<MonitoringPlotId> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
 
-    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in requestedSubzoneIds }
-    val plotsInPlantedSubzones =
-        plantedSubzones.flatMap { subzone ->
+    val requestedSubzones =
+        plantingSubzones.filter { it.id != null && it.id in requestedSubzoneIds }
+    val plotsInRequestedSubzones =
+        requestedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
             plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
           }
         }
 
-    val clusters =
-        plantingSubzones
-            .flatMap { subzone -> subzone.monitoringPlots.filter { it.permanentCluster != null } }
-            .groupBy { plot -> plot.permanentCluster }
-    val clustersCompletelyInPlantedSubzones =
-        plotsInPlantedSubzones
-            .groupBy { plot -> plot.permanentCluster }
-            .filter { (clusterNumber, plots) -> plots.size == clusters[clusterNumber]?.size }
-            .values
-
-    return clustersCompletelyInPlantedSubzones.flatMap { cluster -> cluster.map { it.id } }.toSet()
+    return plotsInRequestedSubzones.map { it.id }.toSet()
   }
 
   /**
