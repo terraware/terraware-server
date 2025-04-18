@@ -1722,7 +1722,135 @@ class PlantingSiteStore(
           break
         }
       }
+
+      migrateSimplePlantingSitePopulations()
+      migrateSimplePlantingSitePlantings()
     }
+  }
+
+  private fun migrateSimplePlantingSitePopulations() {
+    // When plants are withdrawn to a detailed planting site, we update the site, zone, and
+    // subzone populations. When they're withdrawn to a simple planting site, we only update the
+    // site populations since there are no zones or subzones.
+    //
+    // After converting a simple planting site to a detailed one, there will be values in
+    // planting_site_populations but no values for any of the site's zones or subzones in the
+    // corresponding tables. So we want to copy the site values down to those two tables.
+
+    dslContext.transaction { _ ->
+      with(PLANTING_ZONE_POPULATIONS) {
+        val rowsInserted =
+            dslContext
+                .insertInto(
+                    PLANTING_ZONE_POPULATIONS,
+                    PLANTING_ZONE_ID,
+                    SPECIES_ID,
+                    TOTAL_PLANTS,
+                    PLANTS_SINCE_LAST_OBSERVATION)
+                .select(
+                    DSL.select(
+                            PLANTING_ZONES.ID,
+                            PLANTING_SITE_POPULATIONS.SPECIES_ID,
+                            PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
+                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+                        .from(PLANTING_SITE_POPULATIONS)
+                        .join(PLANTING_ZONES)
+                        .on(
+                            PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
+                                PLANTING_ZONES.PLANTING_SITE_ID))
+                        .whereNotExists(
+                            DSL.selectOne()
+                                .from(PLANTING_ZONE_POPULATIONS)
+                                .join(PLANTING_ZONES)
+                                .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+                                .where(
+                                    PLANTING_ZONES.PLANTING_SITE_ID.eq(
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                        .and(
+                            DSL.value(1)
+                                .eq(
+                                    DSL.selectCount()
+                                        .from(PLANTING_ZONES)
+                                        .where(
+                                            PLANTING_ZONES.PLANTING_SITE_ID.eq(
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
+                .execute()
+
+        log.info("Inserted $rowsInserted planting zone populations")
+      }
+
+      with(PLANTING_SUBZONE_POPULATIONS) {
+        val rowsInserted =
+            dslContext
+                .insertInto(
+                    PLANTING_SUBZONE_POPULATIONS,
+                    PLANTING_SUBZONE_ID,
+                    SPECIES_ID,
+                    TOTAL_PLANTS,
+                    PLANTS_SINCE_LAST_OBSERVATION)
+                .select(
+                    DSL.select(
+                            PLANTING_SUBZONES.ID,
+                            PLANTING_SITE_POPULATIONS.SPECIES_ID,
+                            PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
+                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+                        .from(PLANTING_SITE_POPULATIONS)
+                        .join(PLANTING_SUBZONES)
+                        .on(
+                            PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
+                                PLANTING_SUBZONES.PLANTING_SITE_ID))
+                        .whereNotExists(
+                            DSL.selectOne()
+                                .from(PLANTING_SUBZONE_POPULATIONS)
+                                .join(PLANTING_SUBZONES)
+                                .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                                .where(
+                                    PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                        .and(
+                            DSL.value(1)
+                                .eq(
+                                    DSL.selectCount()
+                                        .from(PLANTING_SUBZONES)
+                                        .where(
+                                            PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
+                .execute()
+
+        log.info("Inserted $rowsInserted planting subzone populations")
+      }
+    }
+  }
+
+  private fun migrateSimplePlantingSitePlantings() {
+    // Outplanting withdrawals to simple planting sites result in rows in the plantings table
+    // with the planting site ID populated but the planting subzone ID set to null. Withdrawals to
+    // detailed planting sites are required to have a subzone ID. So we want to fill in the subzone
+    // ID for any plantings that have null subzone IDs but where the planting site has a subzone,
+    // since those will be the sites whose zones and subzones we've just created.
+    val rowsUpdated =
+        dslContext
+            .update(PLANTINGS)
+            .set(
+                PLANTINGS.PLANTING_SUBZONE_ID,
+                DSL.select(PLANTING_SUBZONES.ID)
+                    .from(PLANTING_SUBZONES)
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)))
+            .where(PLANTINGS.PLANTING_SUBZONE_ID.isNull)
+            .andExists(
+                DSL.selectOne()
+                    .from(PLANTING_SUBZONES)
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)))
+            .and(
+                DSL.value(1)
+                    .eq(
+                        DSL.selectCount()
+                            .from(PLANTING_SUBZONES)
+                            .where(
+                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID))))
+            .execute()
+
+    log.info("Populated planting subzones for $rowsUpdated plantings")
   }
 
   private val plantingSeasonsMultiset =
