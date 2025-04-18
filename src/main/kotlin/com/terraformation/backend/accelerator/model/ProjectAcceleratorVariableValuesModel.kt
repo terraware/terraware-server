@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
+import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
 
@@ -30,7 +31,9 @@ data class ProjectAcceleratorVariableValuesModel(
     val numNativeSpecies: Int? = null,
     val perHectareBudget: BigDecimal? = null,
     val projectArea: BigDecimal? = null,
+    val projectHighlightPhotoValueId: VariableValueId? = null,
     val projectId: ProjectId,
+    val projectZoneFigureValueId: VariableValueId? = null,
     val riskTrackerLink: URI? = null,
     val sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
     val slackLink: URI? = null,
@@ -67,7 +70,9 @@ data class ProjectAcceleratorVariableValuesModel(
           numNativeSpecies = numNativeSpecies,
           perHectareBudget = perHectareBudget,
           projectArea = projectArea,
+          projectHighlightPhotoValueId = projectHighlightPhotoValueId,
           projectId = projectId,
+          projectZoneFigureValueId = projectZoneFigureValueId,
           riskTrackerLink = riskTrackerLink,
           sdgList = sdgList,
           slackLink = slackLink,

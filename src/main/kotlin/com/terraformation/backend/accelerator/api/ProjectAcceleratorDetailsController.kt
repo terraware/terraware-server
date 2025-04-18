@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
+import com.terraformation.backend.db.docprod.VariableValueId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -110,8 +111,10 @@ data class ProjectAcceleratorDetailsPayload(
     val perHectareBudget: BigDecimal?,
     val pipeline: Pipeline?,
     val projectArea: BigDecimal?,
+    val projectHighlightPhotoValueId: VariableValueId?,
     val projectId: ProjectId,
     val projectLead: String?,
+    val projectZoneFigureValueId: VariableValueId?,
     val region: Region?,
     val riskTrackerLink: URI?,
     val sdgList: Set<SustainableDevelopmentGoal>,
@@ -160,8 +163,10 @@ data class ProjectAcceleratorDetailsPayload(
       perHectareBudget = model.perHectareBudget,
       pipeline = model.pipeline,
       projectArea = model.projectArea,
+      projectHighlightPhotoValueId = model.projectHighlightPhotoValueId,
       projectId = model.projectId,
       projectLead = model.projectLead,
+      projectZoneFigureValueId = model.projectZoneFigureValueId,
       region = model.region,
       riskTrackerLink = model.riskTrackerLink,
       sdgList = model.sdgList,
