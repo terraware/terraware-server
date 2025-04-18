@@ -2,7 +2,6 @@ package com.terraformation.backend.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -15,8 +14,6 @@ import java.math.BigDecimal
 import java.net.URI
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.PrecisionModel
 
 class MonitoringPlotElevationSchedulerTest {
   val mapboxService: MapboxService = mockk()
@@ -41,12 +38,6 @@ class MonitoringPlotElevationSchedulerTest {
     val boundary1 = polygon(11.0, 11.0, 13.0, 13.0)
     val boundary2 = polygon(21.0, 21.0, 23.0, 23.0)
     val boundary3 = polygon(31.0, 31.0, 33.0, 33.0)
-
-    val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-    val point1 = geometryFactory.createPoint(boundary1.coordinates.first())
-    val point2 = geometryFactory.createPoint(boundary2.coordinates.first())
-    val point3 = geometryFactory.createPoint(boundary3.coordinates.first())
-
     every { plantingSiteStore.fetchMonitoringPlotsWithoutElevation(any()) } returns
         listOf(
             MonitoringPlotModel(
@@ -83,9 +74,9 @@ class MonitoringPlotElevationSchedulerTest {
 
     every { plantingSiteStore.updateMonitoringPlotElevation(any()) } returns 0
 
-    every { mapboxService.getElevation(point1) } returns 1.5
-    every { mapboxService.getElevation(point2) } returns 2.5
-    every { mapboxService.getElevation(point3) } returns 3.5
+    every { mapboxService.getElevation(boundary1.centroid) } returns 1.5
+    every { mapboxService.getElevation(boundary2.centroid) } returns 2.5
+    every { mapboxService.getElevation(boundary3.centroid) } returns 3.5
   }
 
   @Test

@@ -2,18 +2,14 @@ package com.terraformation.backend.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.mapbox.MapboxService
-import com.terraformation.backend.tracking.model.AssignedPlotDetails.Companion.SOUTHWEST
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.jobrunr.scheduling.cron.Cron
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 
@@ -30,7 +26,7 @@ class MonitoringPlotElevationScheduler(
   @Inject
   fun schedule(scheduler: JobScheduler) {
     if (config.dailyTasks.enabled) {
-      scheduler.scheduleRecurrently<ObservationScheduler>(
+      scheduler.scheduleRecurrently<MonitoringPlotElevationScheduler>(
           javaClass.simpleName, Cron.every15minutes()) {
             updatePlotElevation()
           }
@@ -48,15 +44,12 @@ class MonitoringPlotElevationScheduler(
             return@run
           }
 
-      val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-
       val elevationByPlotId =
           plots
               .mapNotNull { plot ->
-                val swCorner = geometryFactory.createPoint(plot.boundary.coordinates[SOUTHWEST])
                 val elevation =
                     try {
-                      mapboxService.getElevation(swCorner).toBigDecimal()
+                      mapboxService.getElevation(plot.boundary.centroid).toBigDecimal()
                     } catch (e: Exception) {
                       log.warn(
                           "Failed to fetch elevation for monitoring plot ${plot.id}: ${e.message}")
