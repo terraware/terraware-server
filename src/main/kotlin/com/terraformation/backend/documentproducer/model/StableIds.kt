@@ -20,6 +20,11 @@ object StableIds {
   val contactName = StableId("25")
   val contactEmail = StableId("26")
   val website = StableId("27")
+  val projectArea = StableId("205")
+  val totalVCU = StableId("283")
+  val standard = StableId("350")
+  val methodologyNumber = StableId("351")
+  val accumulationRate = StableId("369")
   val tfRestorableLand = StableId("429")
   val perHectareEstimatedBudget = StableId("430")
   val minCarbonAccumulation = StableId("431")
@@ -31,7 +36,15 @@ object StableIds {
   val investmentThesis = StableId("437")
   val failureRisk = StableId("438")
   val whatNeedsToBeTrue = StableId("439")
+  val verraLink = StableId("471")
   val dealName = StableId("472")
+  val expectedMarketCredits = StableId("544")
+  val minProjectArea = StableId("545")
+  val sdgList = StableId("546")
+  val gisReportsLink = StableId("547")
+  val riskTrackerLink = StableId("548")
+  val clickUpLink = StableId("549")
+  val slackLink = StableId("550")
 
   val landUseHectaresByLandUseModel =
       mapOf(
