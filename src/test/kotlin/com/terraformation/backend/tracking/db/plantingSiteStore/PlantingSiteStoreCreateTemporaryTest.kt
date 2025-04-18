@@ -5,7 +5,6 @@ import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.event.MonitoringPlotCreatedEvent
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
@@ -67,8 +66,6 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
                   plantingSubzoneHistoryId = plantingSubzoneHistoryId,
                   plantingSubzoneId = plantingSubzoneId,
               )))
-
-      eventPublisher.assertEventPublished(MonitoringPlotCreatedEvent(newPlotId))
     }
 
     @Test

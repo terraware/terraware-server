@@ -16,7 +16,6 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
-import com.terraformation.backend.tracking.event.MonitoringPlotCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -236,8 +235,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               results.edited,
               results.plantingSiteEdit,
               ReplacementResult(monitoringPlotIds, emptySet())))
-
-      eventPublisher.assertEventsPublished(monitoringPlotIds.map { MonitoringPlotCreatedEvent(it) })
     }
 
     @Test
@@ -247,7 +244,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           desired = newSite { zone(numPermanent = 1) })
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
-      eventPublisher.assertEventNotPublished<MonitoringPlotCreatedEvent>()
     }
 
     @Test
@@ -313,11 +309,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               3 to existingArea,
               4 to newArea,
           ))
-
-      val plots = monitoringPlotsDao.findAll()
-      val newPlots = plots.filter { it.plotNumber == 2L || it.plotNumber == 4L }
-
-      eventPublisher.assertEventsPublished(newPlots.map { MonitoringPlotCreatedEvent(it.id!!) })
     }
 
     @Test
@@ -380,8 +371,6 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       runScenario(initial = initial, desired = desired)
 
-      val plots = monitoringPlotsDao.findAll()
-
       assertEquals(
           mapOf(
               16L to 1,
@@ -397,11 +386,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               29L to 11, // Newly-created plot
               27L to null,
           ),
-          plots.associate { it.plotNumber to it.permanentCluster },
+          monitoringPlotsDao.findAll().associate { it.plotNumber to it.permanentCluster },
           "Permanent cluster numbers for each plot number")
-
-      val newPlots = plots.filter { it.plotNumber == 29L }
-      eventPublisher.assertEventsPublished(newPlots.map { MonitoringPlotCreatedEvent(it.id!!) })
     }
 
     @Test

@@ -57,7 +57,6 @@ import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
-import com.terraformation.backend.tracking.event.MonitoringPlotCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
@@ -1505,7 +1504,6 @@ class PlantingSiteStore(
     monitoringPlotsDao.insert(monitoringPlotsRow)
 
     insertMonitoringPlotHistory(monitoringPlotsRow)
-    eventPublisher.publishEvent(MonitoringPlotCreatedEvent(monitoringPlotsRow.id!!))
 
     return monitoringPlotsRow.id!!
   }
@@ -1580,7 +1578,6 @@ class PlantingSiteStore(
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
         insertMonitoringPlotHistory(monitoringPlotsRow)
-        eventPublisher.publishEvent(MonitoringPlotCreatedEvent(monitoringPlotsRow.id!!))
 
         monitoringPlotsRow.id!!
       }
@@ -1631,7 +1628,6 @@ class PlantingSiteStore(
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
         insertMonitoringPlotHistory(monitoringPlotsRow)
-        eventPublisher.publishEvent(MonitoringPlotCreatedEvent(monitoringPlotsRow.id!!))
 
         monitoringPlotsRow.id!!
       }

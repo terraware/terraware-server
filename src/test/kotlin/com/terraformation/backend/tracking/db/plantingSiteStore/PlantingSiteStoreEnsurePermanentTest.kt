@@ -3,7 +3,6 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.event.MonitoringPlotCreatedEvent
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.util.Turtle
 import java.time.Instant
@@ -47,8 +46,6 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                 plantingSubzoneId = plantingSubzoneId,
             )
           })
-
-      eventPublisher.assertExactEventsPublished(plots.map { MonitoringPlotCreatedEvent(it.id!!) })
     }
 
     @Test
@@ -72,8 +69,6 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
           setOf(1, 2), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
       assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
       assertEquals(2L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
-
-      eventPublisher.assertExactEventsPublished(plots.map { MonitoringPlotCreatedEvent(it.id!!) })
     }
 
     @Test
@@ -100,23 +95,20 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       assertEquals(
           setOf(1, 2, 3), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
 
-      val newPlots = plots.filter { it.permanentCluster != 2 }
-
       assertTableEquals(
-          newPlots.map { plot ->
-            MonitoringPlotHistoriesRecord(
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                monitoringPlotId = plot.id,
-                plantingSiteHistoryId = plantingSiteHistoryId,
-                plantingSiteId = plantingSiteId,
-                plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-                plantingSubzoneId = plantingSubzoneId,
-            )
-          })
-
-      eventPublisher.assertExactEventsPublished(
-          newPlots.map { MonitoringPlotCreatedEvent(it.id!!) })
+          plots
+              .filter { it.permanentCluster != 2 }
+              .map { plot ->
+                MonitoringPlotHistoriesRecord(
+                    createdBy = user.userId,
+                    createdTime = Instant.EPOCH,
+                    monitoringPlotId = plot.id,
+                    plantingSiteHistoryId = plantingSiteHistoryId,
+                    plantingSiteId = plantingSiteId,
+                    plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+                    plantingSubzoneId = plantingSubzoneId,
+                )
+              })
     }
 
     @Test
@@ -143,13 +135,9 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
 
       val plots = monitoringPlotsDao.findAll()
       val existingPlot = plots.first { it.id == existingPlotId }
-      val newPlots = plots.filter { it.id != existingPlotId }
 
       assertEquals(2, plots.size, "Number of monitoring plots including existing one")
       assertNotNull(existingPlot.permanentCluster, "Cluster number of existing plot")
-
-      eventPublisher.assertExactEventsPublished(
-          newPlots.map { MonitoringPlotCreatedEvent(it.id!!) })
     }
 
     @Test
@@ -171,8 +159,6 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val after = monitoringPlotsDao.findAll().toSet()
 
       assertEquals(before, after, "Should not have created or modified any plots")
-
-      eventPublisher.assertNoEventsPublished()
     }
 
     @Test
