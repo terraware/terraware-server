@@ -1,5 +1,6 @@
 package com.terraformation.backend.report.model
 
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SpeciesId

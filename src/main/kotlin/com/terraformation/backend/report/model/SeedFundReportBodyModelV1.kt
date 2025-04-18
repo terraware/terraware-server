@@ -1,6 +1,7 @@
 package com.terraformation.backend.report.model
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
