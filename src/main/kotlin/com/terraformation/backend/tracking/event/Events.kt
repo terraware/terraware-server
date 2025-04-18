@@ -10,11 +10,6 @@ import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import java.time.LocalDate
 
-/** Published when a monitoring plot is created. */
-data class MonitoringPlotCreatedEvent(
-    val monitoringPlotId: MonitoringPlotId,
-)
-
 /** Published when an organization requests that a monitoring plot be replaced in an observation. */
 data class ObservationPlotReplacedEvent(
     val duration: ReplacementDuration,
