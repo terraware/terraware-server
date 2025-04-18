@@ -625,6 +625,9 @@ data class IndividualUser(
 
   override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId) = isTFExpertOrHigher()
 
+  override fun canUpdateMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean =
+      isAdminOrHigher(parentStore.getOrganizationId(monitoringPlotId))
+
   override fun canUpdateNotification(notificationId: NotificationId) =
       canReadNotification(notificationId)
 

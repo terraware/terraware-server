@@ -1577,6 +1577,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateMonitoringPlot(monitoringPlotId: MonitoringPlotId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateMonitoringPlot(monitoringPlotId)) {
+        readMonitoringPlot(monitoringPlotId)
+        throw AccessDeniedException("No permission to update monitoring plot $monitoringPlotId")
+      }
+    }
+  }
+
   fun updateNotification(notificationId: NotificationId) {
     user.recordPermissionChecks {
       if (!user.canUpdateNotification(notificationId)) {

@@ -577,7 +577,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = defaultPermission
 
-  fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = defaultPermission
+  fun canUpdateMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = defaultPermission
 
   fun canUpdateNotification(notificationId: NotificationId): Boolean = defaultPermission
 
@@ -616,6 +616,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean = defaultPermission
+
+  fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = defaultPermission
 
   fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = defaultPermission
 

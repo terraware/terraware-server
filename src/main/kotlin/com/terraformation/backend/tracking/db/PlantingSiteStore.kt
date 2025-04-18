@@ -13,9 +13,11 @@ import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -106,6 +108,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -1506,6 +1509,67 @@ class PlantingSiteStore(
     insertMonitoringPlotHistory(monitoringPlotsRow)
 
     return monitoringPlotsRow.id!!
+  }
+
+  fun fetchMonitoringPlotsWithoutElevation(limit: Int = 50): List<MonitoringPlotModel> {
+    return dslContext
+        .select(
+            MONITORING_PLOTS.BOUNDARY,
+            MONITORING_PLOTS.ELEVATION_METERS,
+            MONITORING_PLOTS.ID,
+            MONITORING_PLOTS.IS_AD_HOC,
+            MONITORING_PLOTS.IS_AVAILABLE,
+            MONITORING_PLOTS.PERMANENT_CLUSTER,
+            MONITORING_PLOTS.PLOT_NUMBER,
+            MONITORING_PLOTS.SIZE_METERS,
+        )
+        .from(MONITORING_PLOTS)
+        .where(MONITORING_PLOTS.ELEVATION_METERS.isNull)
+        .apply {
+          // For non-system users, check organization memberships
+          if (currentUser().userType != UserType.System) {
+            this.and(MONITORING_PLOTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+          }
+        }
+        .orderBy(MONITORING_PLOTS.ID.desc())
+        .limit(limit)
+        .fetch { record ->
+          MonitoringPlotModel(
+              boundary = record[MONITORING_PLOTS.BOUNDARY]!! as Polygon,
+              elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
+              id = record[MONITORING_PLOTS.ID]!!,
+              isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
+              isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
+              permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
+              plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
+              sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
+          )
+        }
+        .filter { currentUser().canReadMonitoringPlot(it.id) }
+  }
+
+  fun updateMonitoringPlotElevation(elevationByPlotId: Map<MonitoringPlotId, BigDecimal>): Int {
+
+    val elevationTable =
+        DSL.values(
+            *elevationByPlotId
+                .filter { currentUser().canUpdateMonitoringPlot(it.key) }
+                .ifEmpty {
+                  return 0
+                }
+                .map { (plotId, elevation) -> DSL.row(plotId, elevation) }
+                .toTypedArray())
+
+    val plotIdField =
+        elevationTable.field(0, SQLDataType.BIGINT.asConvertedDataType(MonitoringPlotIdConverter()))
+    val elevationField = elevationTable.field(1, BigDecimal::class.java)
+
+    return dslContext
+        .update(MONITORING_PLOTS)
+        .set(MONITORING_PLOTS.ELEVATION_METERS, elevationField)
+        .from(elevationTable)
+        .where(MONITORING_PLOTS.ID.eq(plotIdField))
+        .execute()
   }
 
   /**

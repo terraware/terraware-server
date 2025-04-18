@@ -1029,6 +1029,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun updateMonitoringPlot() =
+      allow { updateMonitoringPlot(monitoringPlotId) } ifUser
+          {
+            canUpdateMonitoringPlot(monitoringPlotId)
+          }
+
+  @Test
   fun updateNotification() =
       allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
 
