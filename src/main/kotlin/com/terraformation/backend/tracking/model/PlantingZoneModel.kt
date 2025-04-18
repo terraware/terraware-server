@@ -402,7 +402,7 @@ data class PlantingZoneModel<
     // required in each observation. The "Student's t" value is a constant based on a 90%
     // confidence level and should rarely need to change, but the other two will be adjusted by
     // admins based on the conditions at the planting site. These defaults mean that planting zones
-    // will have 11 permanent clusters and 14 temporary plots.
+    // will have 11 permanent plots and 14 temporary plots.
     val DEFAULT_ERROR_MARGIN = BigDecimal(100)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
     val DEFAULT_VARIANCE = BigDecimal(40000)
@@ -429,8 +429,8 @@ data class PlantingZoneModel<
           (studentsT * studentsT * variance / errorMargin / errorMargin)
               .setScale(0, RoundingMode.UP)
               .toInt()
-      val defaultPermanentClusters = max((defaultTotalPlots * 0.75).roundToInt(), 1)
-      val defaultTemporaryPlots = max(defaultTotalPlots - defaultPermanentClusters, 1)
+      val defaultPermanentPlots = max((defaultTotalPlots * 0.75).roundToInt(), 1)
+      val defaultTemporaryPlots = max(defaultTotalPlots - defaultPermanentPlots, 1)
 
       return NewPlantingZoneModel(
           areaHa = areaHa,
@@ -439,7 +439,7 @@ data class PlantingZoneModel<
           errorMargin = errorMargin,
           id = null,
           name = name,
-          numPermanentPlots = numPermanentPlots ?: defaultPermanentClusters,
+          numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
           numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
           plantingSubzones = plantingSubzones,
           studentsT = studentsT,

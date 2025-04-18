@@ -41,7 +41,7 @@ import org.locationtech.jts.geom.PrecisionModel
  *     existingSite(width = 1000) {
  *       zone(width = 400) {
  *         subzone(width = 150) {
- *           cluster()
+ *           permanent()
  *           plot()
  *         }
  *         subzone()
@@ -309,7 +309,7 @@ private constructor(
         return plot
       }
 
-      fun cluster(
+      fun permanent(
           x: Int = nextMonitoringPlotX,
           y: Int = this.y,
           index: Int = nextPermanentIndex++,

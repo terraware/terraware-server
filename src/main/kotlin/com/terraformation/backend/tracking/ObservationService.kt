@@ -97,7 +97,7 @@ class ObservationService(
           throw ObservationHasNoSubzonesException(observationId)
         }
 
-        plantingSiteStore.ensurePermanentClustersExist(observation.plantingSiteId)
+        plantingSiteStore.ensurePermanentPlotsExist(observation.plantingSiteId)
 
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
@@ -271,11 +271,7 @@ class ObservationService(
         plantingSiteId, criteria.notificationType, criteria.notificationNumber)
   }
 
-  /**
-   * Replaces a monitoring plot in an observation with a different one if possible. May result in
-   * additional monitoring plots being replaced if the requested one is part of a permanent plot
-   * cluster in the observation.
-   */
+  /** Replaces a monitoring plot in an observation with a different one if possible. */
   fun replaceMonitoringPlot(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
@@ -332,16 +328,14 @@ class ObservationService(
             plantingSiteStore.makePlotUnavailable(monitoringPlotId)
           }
 
-          // At this point we will usually have replaced the cluster containing the plot we're
-          // replacing with a new cluster in a random place in the zone that hasn't been used in an
-          // observation yet.
+          // At this point we will usually have replaced the plot with a new one in a random place
+          // in the zone that hasn't been used in an observation yet.
           //
           // If this is the first observation, there's a good chance that there are still subzones
-          // that haven't completed planting, and a chance that the replacement cluster will have
-          // plots in one of the incomplete subzones. In that case, we want the same behavior as
-          // during initial permanent cluster selection: the cluster is excluded from the
-          // observation even if that means the observation has fewer than the configured number of
-          // permanent clusters.
+          // that haven't completed planting, and a chance that the replacement plot be in one of
+          // the incomplete subzones. In that case, we want the same behavior as during initial
+          // permanent plot selection: the plot is excluded from the observation even if that means
+          // the observation has fewer than the configured number of permanent plots.
           val addedPlotsInRequestedSubzones =
               if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
                 val subzones =
@@ -352,13 +346,13 @@ class ObservationService(
                     }
                 if (subzones.all { it.id in observation.requestedSubzoneIds }) {
                   log.info(
-                      "Replacement permanent cluster's plots are all in subzones that have " +
-                          "completed planting; including the cluster in this observation.")
+                      "Replacement permanent plot is in a subzone that has completed planting; " +
+                          "including the plot in this observation.")
                   replacementResult.addedMonitoringPlotIds
                 } else {
                   log.info(
-                      "Replacement permanent cluster has plots in subzones that have not " +
-                          "completed planting; not including it in this observation.")
+                      "Replacement permanent plot is in a subzone that has not completed " +
+                          "planting; not including it in this observation.")
                   emptySet()
                 }
               } else {

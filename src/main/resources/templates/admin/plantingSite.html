@@ -40,7 +40,7 @@
         <script th:inline="javascript">
             function registerPlotCalculator(zoneId) {
                 const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
-                const permanentClustersField = document.getElementById(`numPermanent-${zoneId}`);
+                const permanentPlotsField = document.getElementById(`numPermanent-${zoneId}`);
                 const studentsTField = document.getElementById(`studentsT-${zoneId}`);
                 const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
                 const totalPlotsField = document.getElementById(`total-${zoneId}`);
@@ -54,36 +54,36 @@
                 };
 
                 const recalculateTotalPlots = () => {
-                    const permanentClusters = Number.parseFloat(permanentClustersField.value) || 0;
+                    const permanentPlots = Number.parseFloat(permanentPlotsField.value) || 0;
                     const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
-                    const totalPlots = permanentClusters + temporaryPlots;
+                    const totalPlots = permanentPlots + temporaryPlots;
 
                     totalPlotsField.innerText = `${totalPlots}`;
                 };
 
                 const recalculateTemporaryPlots = () => {
                     const defaultTotalPlots = calculateDefaultTotalPlots();
-                    const permanentClusters = Number.parseFloat(permanentClustersField.value);
-                    const temporaryPlots = Math.max(1, defaultTotalPlots - permanentClusters);
+                    const permanentPlots = Number.parseFloat(permanentPlotsField.value);
+                    const temporaryPlots = Math.max(1, defaultTotalPlots - permanentPlots);
 
                     temporaryPlotsField.value = `${temporaryPlots}`;
 
                     recalculateTotalPlots();
                 };
 
-                const recalculatePermanentClusters = () => {
+                const recalculatePermanentPlots = () => {
                     const defaultTotalPlots = calculateDefaultTotalPlots();
-                    const permanentClusters = Math.round(defaultTotalPlots * 0.75);
+                    const permanentPlots = Math.round(defaultTotalPlots * 0.75);
 
-                    permanentClustersField.value = `${permanentClusters}`;
+                    permanentPlotsField.value = `${permanentPlots}`;
 
                     recalculateTemporaryPlots();
                 };
 
-                errorMarginField.addEventListener('change', recalculatePermanentClusters);
-                studentsTField.addEventListener('change', recalculatePermanentClusters);
-                varianceField.addEventListener('change', recalculatePermanentClusters);
-                permanentClustersField.addEventListener('change', recalculateTemporaryPlots);
+                errorMarginField.addEventListener('change', recalculatePermanentPlots);
+                studentsTField.addEventListener('change', recalculatePermanentPlots);
+                varianceField.addEventListener('change', recalculatePermanentPlots);
+                permanentPlotsField.addEventListener('change', recalculateTemporaryPlots);
                 temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
             }
 
