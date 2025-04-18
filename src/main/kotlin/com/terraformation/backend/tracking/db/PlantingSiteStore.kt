@@ -1332,7 +1332,7 @@ class PlantingSiteStore(
    *
    * The requested plot's "is available" flag is set to false, and its permanent index is cleared.
    * If the plot was permanent, a new one with the removed index will be created next time
-   * [ensurePermanentClustersExist] is called.
+   * [ensurePermanentPlotsExist] is called.
    *
    * @return The plots that were modified. This is always either an empty list (if the plot was
    *   already unavailable) or a removed plots list with just the requested plot (if the plot was
@@ -1449,7 +1449,7 @@ class PlantingSiteStore(
    *
    * @return The IDs of any newly-created monitoring plots.
    */
-  fun ensurePermanentClustersExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
+  fun ensurePermanentPlotsExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     return withLockedPlantingSite(plantingSiteId) {

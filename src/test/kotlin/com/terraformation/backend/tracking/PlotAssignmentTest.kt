@@ -75,7 +75,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  private val gen = ShapefileGenerator(defaultPermanentClusters = 1, defaultTemporaryPlots = 2)
+  private val gen = ShapefileGenerator(defaultPermanentPlots = 1, defaultTemporaryPlots = 2)
 
   private lateinit var organizationId: OrganizationId
 
@@ -109,17 +109,16 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     //     |                    |                |             |
     //     +-------------------------------------|-------------+
     //     |   |   |   |   |   |   |   |   |   |   |   |   |   | (plot borders)
-    //     |       |       |       |       |       |       |     (cluster borders)
 
     val subzone1Boundary = gen.multiRectangle(0 to 0, 130 to 101)
     val subzone2Boundary = gen.multiRectangle(130 to 0, 230 to 101)
     val zone2Boundary = gen.multiRectangle(230 to 0, 326 to 101)
 
     val subzone1Feature =
-        gen.subzoneFeature(subzone1Boundary, zone = "Z1", permanentClusters = 2, temporaryPlots = 3)
+        gen.subzoneFeature(subzone1Boundary, zone = "Z1", permanentPlots = 2, temporaryPlots = 3)
     val subzone2Feature = gen.subzoneFeature(subzone2Boundary)
     val subzone3Feature =
-        gen.subzoneFeature(zone2Boundary, zone = "Z2", permanentClusters = 2, temporaryPlots = 3)
+        gen.subzoneFeature(zone2Boundary, zone = "Z2", permanentPlots = 2, temporaryPlots = 3)
 
     val plantingSite = importSite(listOf(subzone1Feature, subzone2Feature, subzone3Feature))
     val subzone1 =
@@ -151,27 +150,27 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     when (numPermanentPlots) {
       0 -> {
-        // Subzone 1 has no clusters, so it should get the extra plot; either subzone 2 has more
-        // clusters or all the clusters were disqualified for being partially in an unrequested
-        // subzone, in which case subzone 1 gets the extra plot because it's requested.
-        assertEquals(2, numTemporaryPlots, "Temporary plots with 0 clusters")
+        // Subzone 1 has no permanent plots, so it should get the extra plot; either subzone 2 has
+        // more permanent plots or all of them were disqualified for being partially in an
+        // unrequested subzone, in which case subzone 1 gets the extra plot because it's requested.
+        assertEquals(2, numTemporaryPlots, "Temporary plots with 0 permanent")
       }
       1 -> {
-        // Subzone 1 has one cluster, but we can't tell if the other cluster would have been in
-        // subzone 2 (in which case the extra plot would go to subzone 1 since it's requested) or
-        // straddles the subzone boundary (in which case it'd be eliminated and the extra plot
-        // would go to subzone 2 for having fewer clusters).
+        // Subzone 1 has one permanent plot, but we can't tell if the other permanent plot would
+        // have been in subzone 2 (in which case the extra plot would go to subzone 1 since it's
+        // requested) or straddles the subzone boundary (in which case it'd be eliminated and the
+        // extra plot would go to subzone 2 for having fewer permanent plots).
         if (numTemporaryPlots < 1 || numTemporaryPlots > 2) {
           // This will always fail but will give a nice assertion failure message.
-          assertEquals("either 1 or 2", "$numTemporaryPlots", "Temporary plots with 1 cluster")
+          assertEquals("either 1 or 2", "$numTemporaryPlots", "Temporary plots with 1 permanent")
         }
       }
       2 -> {
-        // Subzone 1 has both clusters, so subzone 2 will get the extra plot.
-        assertEquals(1, numTemporaryPlots, "Temporary plots with 2 clusters")
+        // Subzone 1 has both permanent plots, so subzone 2 will get the extra plot.
+        assertEquals(1, numTemporaryPlots, "Temporary plots with 2 permanent")
       }
       else -> {
-        assertEquals("between 0 and 2", "$numPermanentPlots", "Number of permanent clusters")
+        assertEquals("between 0 and 2", "$numPermanentPlots", "Number of permanent plots")
       }
     }
   }

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.assertThrows
 class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns create edits for newly added zone and subzone`() {
-    val existing = existingSite(width = 500) { zone(numPermanent = 1) { subzone { cluster() } } }
+    val existing = existingSite(width = 500) { zone(numPermanent = 1) { subzone { permanent() } } }
     val desired =
         newSite(width = 750) {
           zone(width = 500, numPermanent = 1)
@@ -53,8 +53,8 @@ class PlantingSiteEditCalculatorTest {
         existingSite(width = 500) {
           zone {
             subzone {
-              cluster()
-              cluster()
+              permanent()
+              permanent()
               plot(x = 600, isAdHoc = true)
             }
           }
@@ -122,7 +122,7 @@ class PlantingSiteEditCalculatorTest {
     val newTargetPlantingDensity = BigDecimal(1100)
     val newVariance = BigDecimal(40001)
 
-    val existing = existingSite { zone { subzone { repeat(8) { cluster() } } } }
+    val existing = existingSite { zone { subzone { repeat(8) { permanent() } } } }
     val desired = newSite {
       zone {
         errorMargin = newErrorMargin
@@ -190,8 +190,8 @@ class PlantingSiteEditCalculatorTest {
   fun `matches existing and new zones based on names, not locations`() {
     val existing =
         existingSite(width = 1000, height = 500) {
-          zone(name = "A", width = 800) { subzone(name = "A-1") { cluster() } }
-          zone(name = "B", width = 200) { subzone(name = "B-1") { cluster() } }
+          zone(name = "A", width = 800) { subzone(name = "A-1") { permanent() } }
+          zone(name = "B", width = 200) { subzone(name = "B-1") { permanent() } }
         }
     val desired =
         newSite(width = 1000, height = 500) {
@@ -253,7 +253,7 @@ class PlantingSiteEditCalculatorTest {
                                             // Plot 2 was in the area that overlapped with the old
                                             // area of the zone, which is smaller than the newly
                                             // added area, so it is removed from the permanent
-                                            // cluster list.
+                                            // plot list.
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(2), null),
                                         ),
                                     removedRegion = rectangle(x = 0, width = 500, height = 500),
@@ -270,8 +270,8 @@ class PlantingSiteEditCalculatorTest {
   fun `moves existing subzones to new zones`() {
     val existing = existingSite {
       zone(name = "A", numPermanent = 2) {
-        subzone(name = "Subzone 1", width = 250) { cluster() }
-        subzone(name = "Subzone 2", width = 250) { cluster() }
+        subzone(name = "Subzone 1", width = 250) { permanent() }
+        subzone(name = "Subzone 2", width = 250) { permanent() }
       }
     }
 
@@ -321,14 +321,14 @@ class PlantingSiteEditCalculatorTest {
     val existing =
         existingSite(width = 750) {
           zone(name = "A", width = 500, numPermanent = 3) {
-            subzone(name = "Subzone 1", width = 250) { cluster() }
+            subzone(name = "Subzone 1", width = 250) { permanent() }
             subzone(name = "Subzone 2", width = 250) {
-              cluster()
-              cluster()
+              permanent()
+              permanent()
             }
           }
           zone(name = "B", width = 250, numPermanent = 1) {
-            subzone(name = "Subzone 3", width = 250) { cluster() }
+            subzone(name = "Subzone 3", width = 250) { permanent() }
           }
         }
 
@@ -454,21 +454,21 @@ class PlantingSiteEditCalculatorTest {
         existingSite(x = 0, width = 1000) {
           zone(name = "A", x = 0, width = 500) {
             subzone {
-              cluster(plotNumber = 1, x = 300, y = 0)
-              cluster(plotNumber = 2, x = 300, y = 30)
-              cluster(plotNumber = 4, x = 300, y = 60)
-              cluster(plotNumber = 7, x = 300, y = 90)
+              permanent(plotNumber = 1, x = 300, y = 0)
+              permanent(plotNumber = 2, x = 300, y = 30)
+              permanent(plotNumber = 4, x = 300, y = 60)
+              permanent(plotNumber = 7, x = 300, y = 90)
             }
           }
           zone(name = "B", x = 500, width = 500) {
             subzone {
-              cluster(plotNumber = 16, x = 600, y = 0)
-              cluster(plotNumber = 18, x = 600, y = 30)
-              cluster(plotNumber = 19, x = 600, y = 60)
-              cluster(plotNumber = 23, x = 600, y = 90)
-              cluster(plotNumber = 25, x = 600, y = 120)
-              cluster(plotNumber = 26, x = 600, y = 150)
-              cluster(plotNumber = 27, x = 600, y = 180)
+              permanent(plotNumber = 16, x = 600, y = 0)
+              permanent(plotNumber = 18, x = 600, y = 30)
+              permanent(plotNumber = 19, x = 600, y = 60)
+              permanent(plotNumber = 23, x = 600, y = 90)
+              permanent(plotNumber = 25, x = 600, y = 120)
+              permanent(plotNumber = 26, x = 600, y = 150)
+              permanent(plotNumber = 27, x = 600, y = 180)
             }
           }
         }
@@ -687,12 +687,12 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `increases number of permanent clusters even if geometry stayed the same`() {
+  fun `increases number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
       zone(numPermanent = 2) {
         subzone {
-          cluster()
-          cluster()
+          permanent()
+          permanent()
         }
       }
     }
@@ -719,13 +719,13 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `reduces number of permanent clusters even if geometry stayed the same`() {
+  fun `reduces number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
       zone(numPermanent = 3) {
         subzone {
-          cluster()
-          cluster()
-          cluster()
+          permanent()
+          permanent()
+          permanent()
         }
       }
     }
@@ -764,8 +764,8 @@ class PlantingSiteEditCalculatorTest {
   fun `returns deletion of zone that no longer exists`() {
     val existing =
         existingSite(width = 1000) {
-          zone(width = 750, numPermanent = 1) { subzone { cluster() } }
-          zone(width = 250, numPermanent = 1) { subzone { cluster() } }
+          zone(width = 750, numPermanent = 1) { subzone { permanent() } }
+          zone(width = 250, numPermanent = 1) { subzone { permanent() } }
         }
     val desired = newSite(width = 750) { zone(numPermanent = 1) }
 
@@ -961,7 +961,7 @@ class PlantingSiteEditCalculatorTest {
 
   @Test
   fun `returns empty list of edits if nothing changed`() {
-    val existing = existingSite { zone(numPermanent = 1) { subzone { cluster() } } }
+    val existing = existingSite { zone(numPermanent = 1) { subzone { permanent() } } }
     val desired = existing.toNew()
 
     assertEditResult(

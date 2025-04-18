@@ -172,7 +172,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 zone(numPermanent = 1) {
                   subzone(width = 250) {
                     plantingCompletedTime = Instant.EPOCH
-                    cluster()
+                    permanent()
                   }
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                 }
@@ -240,7 +240,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `does not publish event if edit was a no-op`() {
       runScenario(
-          initial = newSite { zone(numPermanent = 1) { subzone { cluster() } } },
+          initial = newSite { zone(numPermanent = 1) { subzone { permanent() } } },
           desired = newSite { zone(numPermanent = 1) })
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
@@ -316,10 +316,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val initial = newSite {
         zone {
           subzone {
-            cluster(x = 0)
-            cluster(x = 300)
-            cluster(x = 30)
-            cluster(x = 330)
+            permanent(x = 0)
+            permanent(x = 300)
+            permanent(x = 30)
+            permanent(x = 330)
           }
         }
       }
@@ -343,21 +343,21 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           newSite(x = 0, width = 1000) {
             zone(name = "A", x = 0, width = 500) {
               subzone {
-                cluster(plotNumber = 1, x = 300, y = 0)
-                cluster(plotNumber = 2, x = 300, y = 30)
-                cluster(plotNumber = 4, x = 300, y = 60)
-                cluster(plotNumber = 7, x = 300, y = 90)
+                permanent(plotNumber = 1, x = 300, y = 0)
+                permanent(plotNumber = 2, x = 300, y = 30)
+                permanent(plotNumber = 4, x = 300, y = 60)
+                permanent(plotNumber = 7, x = 300, y = 90)
               }
             }
             zone(name = "B", x = 500, width = 500) {
               subzone {
-                cluster(plotNumber = 16, x = 600, y = 0)
-                cluster(plotNumber = 18, x = 600, y = 30)
-                cluster(plotNumber = 19, x = 600, y = 60)
-                cluster(plotNumber = 23, x = 600, y = 90)
-                cluster(plotNumber = 25, x = 600, y = 120)
-                cluster(plotNumber = 26, x = 600, y = 150)
-                cluster(plotNumber = 27, x = 600, y = 180)
+                permanent(plotNumber = 16, x = 600, y = 0)
+                permanent(plotNumber = 18, x = 600, y = 30)
+                permanent(plotNumber = 19, x = 600, y = 60)
+                permanent(plotNumber = 23, x = 600, y = 90)
+                permanent(plotNumber = 25, x = 600, y = 120)
+                permanent(plotNumber = 26, x = 600, y = 150)
+                permanent(plotNumber = 27, x = 600, y = 180)
               }
             }
           }
@@ -395,8 +395,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val initial = newSite {
         zone(name = "A") {
           subzone {
-            cluster(plotNumber = 1, x = 100)
-            cluster(plotNumber = 2, x = 400)
+            permanent(plotNumber = 1, x = 100)
+            permanent(plotNumber = 2, x = 400)
           }
         }
       }
@@ -416,8 +416,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     fun `moves existing subzones between zones`() {
       val initial = newSite {
         zone(name = "A", numPermanent = 2) {
-          subzone(name = "Subzone 1", width = 250) { cluster() }
-          subzone(name = "Subzone 2", width = 250) { cluster() }
+          subzone(name = "Subzone 1", width = 250) { permanent() }
+          subzone(name = "Subzone 2", width = 250) { permanent() }
         }
       }
 

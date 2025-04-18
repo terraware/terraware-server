@@ -317,9 +317,8 @@ class ObservationsController(
   @Operation(
       summary = "Requests that a monitoring plot be replaced with a new one.",
       description =
-          "Additional monitoring plots may be replaced as well, e.g., if the requested plot is " +
-              "part of a permanent cluster. In some cases, the requested plot will be removed " +
-              "from the observation but not replaced with a different one.")
+          "In some cases, the requested plot will be removed from the observation but not " +
+              "replaced with a different one.")
   @PostMapping("/{observationId}/plots/{plotId}/replace")
   fun replaceObservationPlot(
       @PathVariable observationId: ObservationId,

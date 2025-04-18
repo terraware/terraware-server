@@ -17,10 +17,10 @@ class ShapefileGenerator(
     /** Coordinate system to use for polygons. */
     srid: Int = SRID.UTM_20S,
     /**
-     * Number of permanent clusters to specify in zone shapefile features by default. Null means
-     * ShapefileImporter will calculate the number of clusters.
+     * Number of permanent plots to specify in zone shapefile features by default. Null means
+     * ShapefileImporter will calculate the number of plots.
      */
-    private val defaultPermanentClusters: Int? = null,
+    private val defaultPermanentPlots: Int? = null,
     /**
      * Number of temporary plots to specify in zone shapefile features by default. Null means
      * ShapefileImporter will calculate the number of plots.
@@ -41,7 +41,7 @@ class ShapefileGenerator(
       errorMargin: BigDecimal? = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
       studentsT: BigDecimal? = null,
       variance: BigDecimal? = PlantingZoneModel.DEFAULT_VARIANCE,
-      permanentClusters: Int? = defaultPermanentClusters,
+      permanentPlots: Int? = defaultPermanentPlots,
       temporaryPlots: Int? = defaultTemporaryPlots,
       targetPlantingDensity: BigDecimal? = null,
   ): ShapefileFeature {
@@ -56,7 +56,7 @@ class ShapefileGenerator(
                 errorMargin?.let { "error_marg" to "$it" },
                 studentsT?.let { "students_t" to "$it" },
                 variance?.let { "variance" to "$it" },
-                permanentClusters?.let { "permanent" to "$it" },
+                permanentPlots?.let { "permanent" to "$it" },
                 temporaryPlots?.let { "temporary" to "$it" },
                 targetPlantingDensity?.let { "density" to "$it" },
             )
