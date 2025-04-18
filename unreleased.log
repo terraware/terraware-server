@@ -1,3 +1,5 @@
+5002d03c699 SW-6189 Remove ObservationServiceTest cluster support (#3041)
+2b836300c09 SW-6786 Add new project profile variables (#3031)
 b92ffa71f13 SW-6786 Move SDG enum outside of Seed Fund Reports (#3029)
 12e1e63e1ab Added events for when plots are created (#3038)
 4510840211a Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.5.0 (#3015)
