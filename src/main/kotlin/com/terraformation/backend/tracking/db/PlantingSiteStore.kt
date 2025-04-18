@@ -1765,7 +1765,15 @@ class PlantingSiteStore(
                                 .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                                 .where(
                                     PLANTING_ZONES.PLANTING_SITE_ID.eq(
-                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID))))
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                        .and(
+                            DSL.value(1)
+                                .eq(
+                                    DSL.selectCount()
+                                        .from(PLANTING_ZONES)
+                                        .where(
+                                            PLANTING_ZONES.PLANTING_SITE_ID.eq(
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
                 .execute()
 
         log.info("Inserted $rowsInserted planting zone populations")
@@ -1798,7 +1806,15 @@ class PlantingSiteStore(
                                 .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
                                 .where(
                                     PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
-                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID))))
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                        .and(
+                            DSL.value(1)
+                                .eq(
+                                    DSL.selectCount()
+                                        .from(PLANTING_SUBZONES)
+                                        .where(
+                                            PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
                 .execute()
 
         log.info("Inserted $rowsInserted planting subzone populations")
@@ -1825,6 +1841,13 @@ class PlantingSiteStore(
                 DSL.selectOne()
                     .from(PLANTING_SUBZONES)
                     .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)))
+            .and(
+                DSL.value(1)
+                    .eq(
+                        DSL.selectCount()
+                            .from(PLANTING_SUBZONES)
+                            .where(
+                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID))))
             .execute()
 
     log.info("Populated planting subzones for $rowsUpdated plantings")
