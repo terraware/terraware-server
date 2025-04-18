@@ -37,7 +37,7 @@ class PlantingSiteImporter(
     val varianceProperties = setOf("variance")
 
     // Optional zone-level properties to set initial plot counts; mostly for testing
-    val permanentClusterCountProperties = setOf("permanent")
+    val permanentPlotCountProperties = setOf("permanent")
     val temporaryPlotCountProperties = setOf("temporary")
   }
 
@@ -229,7 +229,7 @@ class PlantingSiteImporter(
 
       val numPermanentPlots =
           subzoneFeatures.firstNotNullOfOrNull {
-            it.getProperty(permanentClusterCountProperties)?.toIntOrNull()
+            it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
           }
       val numTemporaryPlots =
           subzoneFeatures.firstNotNullOfOrNull {

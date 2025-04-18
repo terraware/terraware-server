@@ -76,7 +76,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class PlotCounts {
-    // Error, Student's t, variance, permanent clusters, temporary plots
+    // Error, Student's t, variance, permanent plots, temporary plots
     @CsvSource(
         "defaults        ,100,1.645,40000, 8, 3",
         "no students t   ,100,     ,40000, 8, 3",
@@ -101,7 +101,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(expectedPermanent, plantingZonesRow.numPermanentPlots, "Permanent clusters")
+      assertEquals(expectedPermanent, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(expectedTemporary, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
 
@@ -130,7 +130,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(32, plantingZonesRow.numPermanentPlots, "Permanent clusters")
+      assertEquals(32, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(10, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
 
@@ -144,13 +144,13 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
                   errorMargin = BigDecimal(70),
                   studentsT = BigDecimal(1.7),
                   variance = BigDecimal(70000),
-                  permanentClusters = 15,
+                  permanentPlots = 15,
                   temporaryPlots = 4))
 
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
       val plantingZonesRow = plantingZonesDao.findAll().first()
-      assertEquals(15, plantingZonesRow.numPermanentPlots, "Permanent clusters")
+      assertEquals(15, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(4, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
   }
