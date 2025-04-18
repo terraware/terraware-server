@@ -101,6 +101,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -222,19 +223,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val subzone1Boundary =
           rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
       val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzone1Boundary)
-      insertCluster(1)
-      insertCluster(3, x = 1, y = 0)
+      insertPermanentPlot(1)
+      insertPermanentPlot(3, x = 1, y = 0)
       insertMonitoringPlot(x = 2, y = 0)
       insertMonitoringPlot(x = 3, y = 0)
 
       insertPlantingSubzone(x = 4, width = 3, height = 1)
-      insertCluster(2, x = 4, y = 0)
+      insertPermanentPlot(2, x = 4, y = 0)
       insertMonitoringPlot(x = 5, y = 0)
       insertMonitoringPlot(x = 6, y = 0)
 
       insertPlantingZone(x = 7, width = 3, height = 1, numPermanentPlots = 2, numTemporaryPlots = 2)
       insertPlantingSubzone(x = 7, width = 3, height = 1)
-      insertCluster(1, x = 7, y = 0)
+      insertPermanentPlot(1, x = 7, y = 0)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
       insertObservationRequestedSubzone(plantingSubzoneId = plantingSubzoneId1)
@@ -276,9 +277,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       //
       // An observation is started with subzone 1 requested.
       //
-      // In zone 1, the service should create two permanent clusters of one plot each. The plots
-      // might both end up in subzone 1 or subzone 2, or there might be one plot in each subzone,
-      // depending on the random number generator.
+      // In zone 1, the service should create two permanent plots. The plots might both end up in
+      // subzone 1 or subzone 2, or there might be one plot in each subzone, depending on the random
+      // number generator.
       //
       // The placement of the permanent plots will also determine how many temporary plots are
       // created and included in the observation.
@@ -291,7 +292,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       //   are excluded because it wasn't requested.
       // If one permanent plot is in subzone 1 and the other in subzone 2:
       // - The plot in subzone 1 should be included in the observation, but not the one in subzone
-      //   2, because we only include permanent clusters whose plots all lie in requested subzones.
+      //   2, because we only include permanent plots in requested subzones.
       // - We should get two temporary plots in subzone 1. Two of zone 1's temporary plots are
       //   spread evenly across the two subzones, and the remaining plot is placed in the subzone
       //   with the fewest permanent plots, but in this case the subzones have the same number.
@@ -424,7 +425,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // |  Subzone 1  |  Subzone 2  |  Subzone 3  |  Subzone 4  |  Subzone 5  |
       // +-------------+-------------+-------------+-------------+-------------+
       //
-      // Zone 1: 8 permanent clusters, 6 temporary plots
+      // Zone 1: 8 permanent plots, 6 temporary plots
       //   Subzone 2: 2 permanent plots
       //   Subzone 3: 2 permanent plots
       //   Subzone 5: 4 permanent plots
@@ -450,7 +451,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(PlantingSubzoneId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
 
-      // Pre-existing permanent clusters in subzones 2, 3, and 5
+      // Pre-existing permanent plots in subzones 2, 3, and 5
       listOf(5 to 0, 5 to 1, 7 to 0, 7 to 1, 13 to 0, 13 to 1, 14 to 0, 14 to 1).forEachIndexed {
           index,
           (x, y) ->
@@ -1431,26 +1432,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `marks temporary plot as unavailable and destroys its permanent cluster if duration is long-term`() {
-      val cluster1 = insertCluster(1)
-      insertCluster(2)
-      insertCluster(3)
-      insertObservationPlot(monitoringPlotId = cluster1[0])
+    fun `marks temporary plot as unavailable and clears its cluster number if duration is long-term`() {
+      val plotId1 = insertPermanentPlot(1)
+      insertPermanentPlot(2)
+      insertPermanentPlot(3)
+      insertObservationPlot(monitoringPlotId = plotId1)
 
       service.replaceMonitoringPlot(
-          observationId, cluster1[0], "Meteor strike", ReplacementDuration.LongTerm)
+          observationId, plotId1, "Meteor strike", ReplacementDuration.LongTerm)
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
 
-      assertEquals(
-          listOf<MonitoringPlotId?>(null),
-          cluster1.map { plots[it]!!.permanentCluster },
-          "Permanent cluster numbers of cluster whose plot was replaced")
+      assertNull(plots[plotId1]!!.permanentCluster, "Cluster number of plot that was replaced")
 
-      assertFalse(plots[cluster1[0]]!!.isAvailable!!, "Replaced plot is available")
+      assertFalse(plots[plotId1]!!.isAvailable!!, "Replaced plot is available")
 
       plots.values
-          .filter { it.id != cluster1[0] }
+          .filter { it.id != plotId1 }
           .forEach { plot -> assertTrue(plot.isAvailable!!, "Plot ${plot.id} is available") }
     }
 
@@ -1526,110 +1524,105 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
+    fun `replaces permanent plot if this is the first observation and there are no completed plots`() {
       insertPlantingZone(numPermanentPlots = 1, width = 2, height = 4)
       insertPlantingSubzone(width = 2, height = 4)
       insertObservationRequestedSubzone()
-      val cluster1 = insertCluster(1, isPermanent = true)
-      val cluster2 = insertCluster(2)
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
+      val plotId2 = insertPermanentPlot(2)
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1[0], "why not", ReplacementDuration.Temporary)
+              observationId, plotId1, "why not", ReplacementDuration.Temporary)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = cluster2.toSet(),
-              removedMonitoringPlotIds = cluster1.toSet()),
+              addedMonitoringPlotIds = setOf(plotId2), removedMonitoringPlotIds = setOf(plotId1)),
           result)
 
       assertEquals(
-          listOf(1),
-          monitoringPlotsDao.fetchById(*cluster2.toTypedArray()).map { it.permanentCluster },
+          1,
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentCluster,
           "Should have moved second permanent cluster to first place")
-      monitoringPlotsDao.fetchById(*cluster1.toTypedArray()).forEach { plot ->
-        assertNotEquals(1, plot.permanentCluster, "Plot ${plot.id} cluster")
-      }
+      assertNotEquals(
+          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentCluster, "Plot $plotId1 cluster")
     }
 
     @Test
-    fun `removes permanent cluster if replacement cluster is in an unrequested subzone`() {
+    fun `removes cluster number if replacement plot is in an unrequested subzone`() {
       insertPlantingZone(numPermanentPlots = 1, width = 1, height = 2)
       insertPlantingSubzone(width = 1, height = 1)
       insertObservationRequestedSubzone()
-      val cluster1 = insertCluster(1, isPermanent = true)
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
       insertPlantingSubzone(y = 1, width = 1, height = 1)
-      val cluster2 = insertCluster(2)
+      val plotId2 = insertPermanentPlot(2)
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1[0], "why not", ReplacementDuration.Temporary)
+              observationId, plotId1, "why not", ReplacementDuration.Temporary)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = cluster1.toSet()),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
           result)
 
       assertEquals(
-          listOf(1),
-          monitoringPlotsDao.fetchById(*cluster2.toTypedArray()).map { it.permanentCluster },
+          1,
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentCluster,
           "Should have moved second permanent cluster to first place")
-      monitoringPlotsDao.fetchById(*cluster1.toTypedArray()).forEach { plot ->
-        assertNotEquals(1, plot.permanentCluster, "Plot ${plot.id} cluster")
-      }
+      assertNotEquals(
+          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentCluster, "Plot $plotId1 cluster")
     }
 
     @Test
-    fun `marks permanent plot as unavailable and swaps in a new cluster if this is the first observation and duration is long-term`() {
-      val cluster1 = insertCluster(1, isPermanent = true)
-      insertCluster(2)
-      insertCluster(3)
+    fun `marks permanent plot as unavailable and swaps in a new one if this is the first observation and duration is long-term`() {
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
+      insertPermanentPlot(2)
+      insertPermanentPlot(3)
 
-      testPermanentClusterReplacement(cluster1)
+      testPermanentPlotReplacement(plotId1)
     }
 
     @Test
-    fun `creates a new cluster to replace permanent plot if this is the first observation and duration is long-term`() {
-      val cluster1 = insertCluster(1, isPermanent = true)
+    fun `creates a new plot to replace permanent plot if this is the first observation and duration is long-term`() {
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
-      testPermanentClusterReplacement(cluster1)
+      testPermanentPlotReplacement(plotId1)
     }
 
-    private fun testPermanentClusterReplacement(cluster1: List<MonitoringPlotId>) {
+    private fun testPermanentPlotReplacement(plotId1: MonitoringPlotId) {
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1[0], "why not", ReplacementDuration.LongTerm)
+              observationId, plotId1, "why not", ReplacementDuration.LongTerm)
 
-      assertEquals(cluster1.toSet(), result.removedMonitoringPlotIds, "Removed plot IDs")
+      assertEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
       assertEquals(1, result.addedMonitoringPlotIds.size, "Number of plot IDs added")
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
 
-      assertEquals(
-          listOf<MonitoringPlotId?>(null),
-          cluster1.map { plots[it]!!.permanentCluster },
-          "Permanent cluster numbers of cluster whose plot was replaced")
+      assertNull(
+          plots[plotId1]!!.permanentCluster, "Permanent cluster number of plot that was replaced")
 
       assertEquals(
           1,
           plots.values.count { it.permanentCluster == 1 },
           "Number of plots with permanent cluster number 1")
 
-      assertFalse(plots[cluster1[0]]!!.isAvailable!!, "Replaced plot is available")
+      assertFalse(plots[plotId1]!!.isAvailable!!, "Replaced plot is available")
 
       plots.values
-          .filter { it.id != cluster1[0] }
+          .filter { it.id != plotId1 }
           .forEach { plot -> assertTrue(plot.isAvailable!!, "Plot ${plot.id} is available") }
     }
 
     @Test
     fun `removes permanent plot but keeps it available if this is the first observation and there are already completed plots`() {
-      val cluster1 = insertCluster(1)
-      val cluster2 = insertCluster(2)
-      insertObservationPlot(monitoringPlotId = cluster1[0], isPermanent = true)
+      val plotId1 = insertPermanentPlot(1)
+      val plotId2 = insertPermanentPlot(2)
+      insertObservationPlot(monitoringPlotId = plotId1, isPermanent = true)
       insertObservationPlot(
-          monitoringPlotId = cluster2[0],
+          monitoringPlotId = plotId2,
           isPermanent = true,
           claimedBy = user.userId,
           claimedTime = Instant.EPOCH,
@@ -1638,16 +1631,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, cluster1[0], "forest fire", ReplacementDuration.LongTerm)
+              observationId, plotId1, "forest fire", ReplacementDuration.LongTerm)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(cluster1[0])),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
           result)
 
       assertEquals(
           true,
-          monitoringPlotsDao.fetchOneById(cluster1[0])!!.isAvailable,
+          monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
           "Monitoring plot should remain available")
     }
 
@@ -1660,20 +1653,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val newObservationId = insertObservation()
 
-      val cluster1 = insertCluster(1, isPermanent = true)
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
       val result =
           service.replaceMonitoringPlot(
-              newObservationId, cluster1[0], "forest fire", ReplacementDuration.LongTerm)
+              newObservationId, plotId1, "forest fire", ReplacementDuration.LongTerm)
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(cluster1[0])),
+              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
           result)
 
       assertEquals(
           true,
-          monitoringPlotsDao.fetchOneById(cluster1[0])!!.isAvailable,
+          monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
           "Monitoring plot should remain available")
     }
 
@@ -2178,21 +2171,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
    * Inserts a permanent monitoring plot with a given cluster number. By default, the clusters are
    * stacked northward, that is, cluster 1 is at y=0, cluster 2 is at y=1, and cluster 3 is at y=2.
    *
-   * Optionally also includes the cluster's plot in the most-recently-inserted observation.
+   * Optionally also includes the plot in the most-recently-inserted observation.
    */
-  private fun insertCluster(
+  private fun insertPermanentPlot(
       permanentCluster: Int,
       x: Int = 0,
       y: Int = (permanentCluster - 1) * 2,
       isPermanent: Boolean = false,
       insertObservationPlots: Boolean = isPermanent,
-  ): List<MonitoringPlotId> {
+  ): MonitoringPlotId {
     val plotId = insertMonitoringPlot(permanentCluster = permanentCluster, x = x, y = y)
 
     if (insertObservationPlots) {
       insertObservationPlot(isPermanent = isPermanent)
     }
 
-    return listOf(plotId)
+    return plotId
   }
 }
