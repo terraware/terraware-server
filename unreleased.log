@@ -1,3 +1,4 @@
+12e1e63e1ab Added events for when plots are created (#3038)
 4510840211a Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.5.0 (#3015)
 32d659402e7 Added elevation column to monitoring plots (#3036)
 6bc31ecda8f Added in memory caching via concurrent hashmap for elevation tiles (#3035)
