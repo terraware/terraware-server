@@ -344,6 +344,7 @@ internal class PermissionTest : DatabaseTest() {
           monitoringPlotId,
           insertMonitoringPlot(
               createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(monitoringPlotId.value / 1000)),
               plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value))))
     }
 
@@ -570,6 +571,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
+        updateMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -847,6 +849,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
+        updateMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -1486,6 +1489,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *monitoringPlotIds.toTypedArray(),
         readMonitoringPlot = true,
+        updateMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -3347,6 +3351,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg monitoringPlotIds: MonitoringPlotId,
         readMonitoringPlot: Boolean = false,
+        updateMonitoringPlot: Boolean = false,
     ) {
       monitoringPlotIds.forEach { monitoringPlotId ->
         val idInDatabase = getDatabaseId(monitoringPlotId)
@@ -3355,6 +3360,10 @@ internal class PermissionTest : DatabaseTest() {
             readMonitoringPlot,
             user.canReadMonitoringPlot(idInDatabase),
             "Can read monitoring plot $monitoringPlotId")
+        assertEquals(
+            updateMonitoringPlot,
+            user.canUpdateMonitoringPlot(idInDatabase),
+            "Can update monitoring plot $monitoringPlotId")
 
         uncheckedMonitoringPlots.remove(monitoringPlotId)
       }
