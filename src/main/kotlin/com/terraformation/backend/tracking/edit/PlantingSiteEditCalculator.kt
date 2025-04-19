@@ -60,13 +60,15 @@ class PlantingSiteEditCalculator(
     val deleteEdits =
         existingSite.plantingZones.toSet().minus(existingZonesInUse).map { existingZone ->
           val plantingSubzoneEdits =
-              existingZone.plantingSubzones.map { existingSubzone ->
-                PlantingSubzoneEdit.Delete(
-                    existingSubzone,
-                    existingSubzone.monitoringPlots
-                        .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
-                        .map { MonitoringPlotEdit.Eject(it.id) })
-              }
+              existingZone.plantingSubzones
+                  .filter { it !in desiredSubzonesByExistingSubzone }
+                  .map { existingSubzone ->
+                    PlantingSubzoneEdit.Delete(
+                        existingSubzone,
+                        existingSubzone.monitoringPlots
+                            .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
+                            .map { MonitoringPlotEdit.Eject(it.id) })
+                  }
 
           PlantingZoneEdit.Delete(
               existingModel = existingZone,
@@ -120,7 +122,7 @@ class PlantingSiteEditCalculator(
               }
             }
 
-    return deleteEdits + updateEdits + createEdits
+    return createEdits + updateEdits + deleteEdits
   }
 
   private fun calculateMonitoringPlotEdits(
@@ -287,7 +289,7 @@ class PlantingSiteEditCalculator(
               }
             }
 
-    return deleteEdits + createEdits + updateEdits
+    return createEdits + updateEdits + deleteEdits
   }
 
   private fun calculateAreaHaDifference(existing: Geometry?, desired: Geometry): BigDecimal {
