@@ -21,6 +21,7 @@ class MonitoringPlotElevationScheduler(
     private val plantingSiteStore: PlantingSiteStore,
     private val systemUser: SystemUser,
 ) {
+  private val MONITORING_PLOT_BATCH_SIZE = 50
   private val log = perClassLogger()
 
   @Inject
@@ -28,13 +29,13 @@ class MonitoringPlotElevationScheduler(
     if (config.dailyTasks.enabled) {
       scheduler.scheduleRecurrently<MonitoringPlotElevationScheduler>(
           javaClass.simpleName, Cron.every15minutes()) {
-            updatePlotElevation()
+            updatePlotElevation(MONITORING_PLOT_BATCH_SIZE)
           }
     }
   }
 
   @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
-  fun updatePlotElevation(limit: Int = 50) {
+  fun updatePlotElevation(limit: Int) {
     systemUser.run {
       val plots =
           try {
@@ -71,6 +72,6 @@ class MonitoringPlotElevationScheduler(
 
   @EventListener
   fun on(@Suppress("UNUSED_PARAMETER") event: ClockAdvancedEvent) {
-    updatePlotElevation()
+    updatePlotElevation(MONITORING_PLOT_BATCH_SIZE)
   }
 }

@@ -81,7 +81,7 @@ class MonitoringPlotElevationSchedulerTest {
 
   @Test
   fun `fetches elevation data and updates for each plot`() {
-    scheduler.updatePlotElevation()
+    scheduler.updatePlotElevation(10)
 
     verify {
       plantingSiteStore.updateMonitoringPlotElevation(

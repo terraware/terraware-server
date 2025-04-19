@@ -344,6 +344,7 @@ internal class PermissionTest : DatabaseTest() {
           monitoringPlotId,
           insertMonitoringPlot(
               createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(monitoringPlotId.value / 1000)),
               plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value))))
     }
 
