@@ -314,7 +314,12 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
     }
 
     @Test
-    fun `updates no rows if no permission or empty map`() {
+    fun `updates no rows if empty map`() {
+      assertEquals(0, store.updateMonitoringPlotElevation(emptyMap()), "Empty map")
+    }
+
+    @Test
+    fun `updates no rows if no permission`() {
       val otherUserId = insertUser()
       val otherOrganizationId = insertOrganization(createdBy = otherUserId)
       insertOrganizationUser(otherUserId, otherOrganizationId, Role.Admin)
@@ -327,7 +332,6 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               organizationId = otherOrganizationId,
               plotNumber = 1L)
 
-      assertEquals(0, store.updateMonitoringPlotElevation(emptyMap()), "Empty map")
       assertEquals(
           0,
           store.updateMonitoringPlotElevation(mapOf(otherOrgPlotId to BigDecimal.ZERO)),
