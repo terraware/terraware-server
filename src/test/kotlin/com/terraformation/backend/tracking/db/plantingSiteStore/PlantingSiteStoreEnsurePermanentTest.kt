@@ -6,7 +6,8 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.util.Turtle
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -29,8 +30,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(4, plots.size, "Number of monitoring plots created")
-      assertEquals(
-          setOf(1, 2, 3, 4), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
+      assertEquals(setOf(1, 2, 3, 4), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
       assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
       assertEquals(4L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
 
@@ -65,8 +65,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(2, plots.size, "Number of monitoring plots created")
-      assertEquals(
-          setOf(1, 2), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
+      assertEquals(setOf(1, 2), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
       assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
       assertEquals(2L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
     }
@@ -85,19 +84,18 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
       insertMonitoringPlot(
-          boundary = existingPlotBoundary, permanentCluster = 2, insertHistory = false)
+          boundary = existingPlotBoundary, permanentIndex = 2, insertHistory = false)
 
       store.ensurePermanentClustersExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(3, plots.size, "Number of monitoring plots including existing one")
-      assertEquals(
-          setOf(1, 2, 3), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
+      assertEquals(setOf(1, 2, 3), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
 
       assertTableEquals(
           plots
-              .filter { it.permanentCluster != 2 }
+              .filter { it.permanentIndex != 2 }
               .map { plot ->
                 MonitoringPlotHistoriesRecord(
                     createdBy = user.userId,
@@ -137,7 +135,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val existingPlot = plots.first { it.id == existingPlotId }
 
       assertEquals(2, plots.size, "Number of monitoring plots including existing one")
-      assertNotNull(existingPlot.permanentCluster, "Cluster number of existing plot")
+      assertNotNull(existingPlot.permanentIndex, "Permanent index of existing plot")
     }
 
     @Test
@@ -149,8 +147,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 2)
       insertPlantingSubzone(boundary = siteBoundary)
-      insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 1)
-      insertMonitoringPlot(boundary = plotBoundary, permanentCluster = 2)
+      insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 1)
+      insertMonitoringPlot(boundary = plotBoundary, permanentIndex = 2)
 
       val before = monitoringPlotsDao.findAll().toSet()
 
@@ -175,7 +173,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 2)
       insertPlantingSubzone(boundary = siteBoundary)
-      insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentCluster = 1)
+      insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentIndex = 1)
 
       store.ensurePermanentClustersExist(plantingSiteId)
 

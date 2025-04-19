@@ -77,32 +77,24 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `can choose plots with permanent cluster numbers that are not permanent currently`() {
+    fun `can choose plots with permanent indexes that are not permanent currently`() {
       val model =
           plantingZoneModel(
               numTemporaryPlots = 1,
               subzones =
                   listOf(
                       plantingSubzoneModel(
-                          plots =
-                              listOf(
-                                  monitoringPlotModel(10, permanentCluster = 2),
-                                  monitoringPlotModel(11, permanentCluster = 2),
-                                  monitoringPlotModel(12, permanentCluster = 2),
-                                  monitoringPlotModel(13, permanentCluster = 2),
-                                  monitoringPlotModel(14, permanentCluster = 2),
-                              ))))
+                          plots = listOf(monitoringPlotModel(10, permanentIndex = 2)))))
 
       repeatTest {
-        val clusterNumberOfSelectedPlot =
+        val indexOfSelectedPlot =
             model
                 .chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
                 .mapNotNull { model.findMonitoringPlot(it) }
                 .single()
-                .permanentCluster
+                .permanentIndex
 
-        assertEquals(
-            2, clusterNumberOfSelectedPlot, "Should have chosen plot in unused permanent cluster")
+        assertEquals(2, indexOfSelectedPlot, "Should have chosen plot with unused permanent index")
       }
     }
 
@@ -244,24 +236,24 @@ class PlantingZoneModelTest {
                           id = 1,
                           plots =
                               listOf(
-                                  monitoringPlotModel(10, permanentCluster = 1),
-                                  monitoringPlotModel(11, permanentCluster = 1),
-                                  monitoringPlotModel(12, permanentCluster = 1),
-                                  monitoringPlotModel(13, permanentCluster = 1),
-                                  monitoringPlotModel(14, permanentCluster = 2),
-                                  monitoringPlotModel(15, permanentCluster = 2),
-                                  monitoringPlotModel(16, permanentCluster = 2),
-                                  monitoringPlotModel(17, permanentCluster = 2),
+                                  monitoringPlotModel(10, permanentIndex = 1),
+                                  monitoringPlotModel(11, permanentIndex = 1),
+                                  monitoringPlotModel(12, permanentIndex = 1),
+                                  monitoringPlotModel(13, permanentIndex = 1),
+                                  monitoringPlotModel(14, permanentIndex = 2),
+                                  monitoringPlotModel(15, permanentIndex = 2),
+                                  monitoringPlotModel(16, permanentIndex = 2),
+                                  monitoringPlotModel(17, permanentIndex = 2),
                                   monitoringPlotModel(18),
                                   monitoringPlotModel(19))),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
                               listOf(
-                                  monitoringPlotModel(20, permanentCluster = 3),
-                                  monitoringPlotModel(21, permanentCluster = 3),
-                                  monitoringPlotModel(22, permanentCluster = 3),
-                                  monitoringPlotModel(23, permanentCluster = 3),
+                                  monitoringPlotModel(20, permanentIndex = 3),
+                                  monitoringPlotModel(21, permanentIndex = 3),
+                                  monitoringPlotModel(22, permanentIndex = 3),
+                                  monitoringPlotModel(23, permanentIndex = 3),
                                   monitoringPlotModel(24),
                                   monitoringPlotModel(25))),
                       plantingSubzoneModel(
@@ -300,20 +292,20 @@ class PlantingZoneModelTest {
                           id = 1,
                           plots =
                               listOf(
-                                  monitoringPlotModel(10, permanentCluster = 1),
-                                  monitoringPlotModel(11, permanentCluster = 1),
-                                  monitoringPlotModel(12, permanentCluster = 1),
-                                  monitoringPlotModel(13, permanentCluster = 1),
+                                  monitoringPlotModel(10, permanentIndex = 1),
+                                  monitoringPlotModel(11, permanentIndex = 1),
+                                  monitoringPlotModel(12, permanentIndex = 1),
+                                  monitoringPlotModel(13, permanentIndex = 1),
                                   monitoringPlotModel(14),
                                   monitoringPlotModel(15))),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
                               listOf(
-                                  monitoringPlotModel(20, permanentCluster = 2),
-                                  monitoringPlotModel(21, permanentCluster = 2),
-                                  monitoringPlotModel(22, permanentCluster = 2),
-                                  monitoringPlotModel(23, permanentCluster = 2),
+                                  monitoringPlotModel(20, permanentIndex = 2),
+                                  monitoringPlotModel(21, permanentIndex = 2),
+                                  monitoringPlotModel(22, permanentIndex = 2),
+                                  monitoringPlotModel(23, permanentIndex = 2),
                                   monitoringPlotModel(24),
                                   monitoringPlotModel(25))),
                       plantingSubzoneModel(
@@ -544,7 +536,7 @@ class PlantingZoneModelTest {
                           plots =
                               listOf(
                                   monitoringPlotModel(
-                                      boundary = existingPlotPolygon, permanentCluster = 1)))))
+                                      boundary = existingPlotPolygon, permanentIndex = 1)))))
 
       val expected =
           Turtle(siteOrigin).makePolygon {
@@ -612,7 +604,7 @@ class PlantingZoneModelTest {
       boundary: Polygon = monitoringPlotBoundary(id),
       elevationMeters: BigDecimal? = null,
       isAvailable: Boolean = true,
-      permanentCluster: Int? = null,
+      permanentIndex: Int? = null,
   ): MonitoringPlotModel {
     return MonitoringPlotModel(
         boundary = boundary,
@@ -620,7 +612,7 @@ class PlantingZoneModelTest {
         id = MonitoringPlotId(id.toLong()),
         isAdHoc = false,
         isAvailable = isAvailable,
-        permanentCluster = permanentCluster,
+        permanentIndex = permanentIndex,
         plotNumber = id.toLong(),
         sizeMeters = MONITORING_PLOT_SIZE_INT,
     )
@@ -632,8 +624,8 @@ class PlantingZoneModelTest {
       permanentIds: List<Int> = emptyList(),
       temporaryIds: List<Int> = emptyList()
   ): List<MonitoringPlotModel> {
-    return permanentIds.map { monitoringPlotModel(id = it, permanentCluster = 1) } +
-        temporaryIds.map { monitoringPlotModel(id = it, permanentCluster = null) }
+    return permanentIds.map { monitoringPlotModel(id = it, permanentIndex = 1) } +
+        temporaryIds.map { monitoringPlotModel(id = it, permanentIndex = null) }
   }
 
   /**
