@@ -119,7 +119,7 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               id = org1Site1PlotId1,
               isAdHoc = false,
               isAvailable = true,
-              permanentCluster = null,
+              permanentIndex = null,
               plotNumber = 1L,
               sizeMeters = 30,
           )

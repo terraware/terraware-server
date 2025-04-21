@@ -1514,7 +1514,7 @@ class PlantingSiteStore(
             MONITORING_PLOTS.ID,
             MONITORING_PLOTS.IS_AD_HOC,
             MONITORING_PLOTS.IS_AVAILABLE,
-            MONITORING_PLOTS.PERMANENT_CLUSTER,
+            MONITORING_PLOTS.PERMANENT_INDEX,
             MONITORING_PLOTS.PLOT_NUMBER,
             MONITORING_PLOTS.SIZE_METERS,
         )
@@ -1535,7 +1535,7 @@ class PlantingSiteStore(
               id = record[MONITORING_PLOTS.ID]!!,
               isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
               isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-              permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
+              permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
               plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
               sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
           )

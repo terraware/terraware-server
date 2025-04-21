@@ -453,7 +453,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(existingSubzone.id, editedSubzone.id, "ID of moved subzone")
       assertEquals(
-          existingSubzone.monitoringPlots[0].copy(permanentCluster = 1),
+          existingSubzone.monitoringPlots[0].copy(permanentIndex = 1),
           editedSubzone.monitoringPlots[0],
           "Monitoring plot in moved subzone")
     }
