@@ -441,7 +441,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `moves subzone from deleted zone to new one, perhaps because the zone was renamed`() {
       val initial = newSite {
-        zone(name = "A", numPermanent = 1) { subzone(name = "Subzone") { cluster() } }
+        zone(name = "A", numPermanent = 1) { subzone(name = "Subzone") { permanent() } }
       }
 
       val desired = newSite { zone(name = "B", numPermanent = 1) { subzone(name = "Subzone") } }

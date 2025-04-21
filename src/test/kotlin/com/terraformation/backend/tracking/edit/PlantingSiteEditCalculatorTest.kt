@@ -827,8 +827,8 @@ class PlantingSiteEditCalculatorTest {
   fun `updates existing subzone if original zone is deleted and new zone has a subzone with its name`() {
     val existing =
         existingSite(width = 1000) {
-          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { cluster() } }
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") { cluster() } }
+          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { permanent() } }
+          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") { permanent() } }
         }
     val desired =
         newSite(width = 1000) {
