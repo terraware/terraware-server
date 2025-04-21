@@ -1,3 +1,4 @@
+71273d56d50 SW-6189 Remove remaining references to clusters (#3045)
 909d136289b SW-6189 Rename "cluster number" to "permanent index" (#3044)
 ca65afaabc9 SW-6766 Improve zone replacement/rename handling (#3046)
 220df1a04b5 Update database dependencies (#3047)
