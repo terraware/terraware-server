@@ -9,7 +9,9 @@ import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.UploadStatus
@@ -18,7 +20,9 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.default_schema.tables.records.SpeciesEcosystemTypesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SpeciesGrowthFormsRecord
+import com.terraformation.backend.db.default_schema.tables.records.SpeciesPlantMaterialSourcingMethodsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SpeciesRecord
+import com.terraformation.backend.db.default_schema.tables.records.SpeciesSuccessionalGroupsRecord
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
@@ -90,8 +94,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         userStore)
   }
 
-  private val header =
-      "Scientific Name,Common Name,Family,IUCN Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
+  private val header = speciesCsvColumnNames.joinToString(",")
 
   private val storageUrl = URI.create("file:///test")
 
@@ -195,7 +198,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv detects existing scientific names`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nExisting name,,,,,,,,,,,,,")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -222,7 +226,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `validateCsv detects duplicate species even if they were renamed`() {
     every { fileStore.read(storageUrl) } answers
         {
-          sizedInputStream("$header\nInitial name,,,,,,,")
+          sizedInputStream("$header\nInitial name,,,,,,,,,,,,,")
         }
     val uploadId =
         insertUpload(
@@ -247,7 +251,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv does not treat deleted species as name collisions`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nExisting name,,,,,,,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
     val uploadId =
         insertUpload(
@@ -287,7 +292,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `validateCsv schedules import if there are no validation errors`() {
-    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,,")
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
     val uploadId =
         insertUpload(
@@ -306,7 +311,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv creates new species with normalized scientific name`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nNew—name a–b,Common,Family,NT,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"") // note the dash types in the scientific name
+            "$header\nNew—name a–b," + // note the dash types in the scientific name
+                "Common,Family,NT,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"," +
+                "Native,\"Pioneer\nMature\",Eco role,Local uses,\"Wildling harvest\nOther\",Facts\n")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -335,12 +342,16 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 conservationCategoryId = ConservationCategory.NearThreatened,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
+                ecologicalRoleKnown = "Eco role",
                 familyName = "Family",
                 id = newSpeciesId,
                 initialScientificName = "New-name a-b",
+                localUsesKnown = "Local uses",
                 modifiedBy = userId,
                 modifiedTime = Instant.EPOCH,
+                nativeEcosystem = "Native",
                 organizationId = organizationId,
+                otherFacts = "Facts",
                 rare = false,
                 scientificName = "New-name a-b", // dashes replaced by hyphens
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant)))
@@ -352,6 +363,18 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     )
 
     assertTableEquals(SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Shrub))
+
+    assertTableEquals(
+        setOf(
+            SpeciesSuccessionalGroupsRecord(newSpeciesId, SuccessionalGroup.Pioneer),
+            SpeciesSuccessionalGroupsRecord(newSpeciesId, SuccessionalGroup.Mature)))
+
+    assertTableEquals(
+        setOf(
+            SpeciesPlantMaterialSourcingMethodsRecord(
+                newSpeciesId, PlantMaterialSourcingMethod.Other),
+            SpeciesPlantMaterialSourcingMethodsRecord(
+                newSpeciesId, PlantMaterialSourcingMethod.WildlingHarvest)))
 
     assertStatus(UploadStatus.Completed)
   }
@@ -372,8 +395,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,en,false,Shrub,Recalcitrant,Tundra\n" +
-                "Initial name,New common,NewFamily,lc,true,Shrub,Recalcitrant,")
+                "Existing name,Common,Family,en,false,Shrub,Recalcitrant,Tundra,,,,,,\n" +
+                "Initial name,New common,NewFamily,lc,true,Shrub,Recalcitrant,,Native," +
+                "Mature,Eco,Local,Other,Facts")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -383,10 +407,13 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertSpecies(
             scientificName = "Existing name",
             ecosystemTypes = setOf(EcosystemType.Mangroves),
-            growthForms = setOf(GrowthForm.Shrub))
+            growthForms = setOf(GrowthForm.Shrub),
+            plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
+            successionalGroups = setOf(SuccessionalGroup.Pioneer))
     val speciesId2 =
         insertSpecies(
             scientificName = "New name",
+            ecosystemTypes = setOf(EcosystemType.Mangroves),
             growthForms = setOf(GrowthForm.Shrub),
             initialScientificName = "Initial name")
 
@@ -417,12 +444,16 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 conservationCategoryId = ConservationCategory.LeastConcern,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
+                ecologicalRoleKnown = "Eco",
                 familyName = "NewFamily",
                 id = speciesId2,
                 initialScientificName = "Initial name",
+                localUsesKnown = "Local",
                 modifiedBy = userId,
                 modifiedTime = now,
+                nativeEcosystem = "Native",
                 organizationId = organizationId,
+                otherFacts = "Facts",
                 rare = true,
                 scientificName = "New name",
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant)))
@@ -434,13 +465,19 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             SpeciesGrowthFormsRecord(speciesId1, GrowthForm.Shrub),
             SpeciesGrowthFormsRecord(speciesId2, GrowthForm.Shrub)))
 
+    assertTableEquals(
+        SpeciesPlantMaterialSourcingMethodsRecord(speciesId2, PlantMaterialSourcingMethod.Other))
+
+    assertTableEquals(SpeciesSuccessionalGroupsRecord(speciesId2, SuccessionalGroup.Mature))
+
     assertStatus(UploadStatus.Completed)
   }
 
   @Test
   fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,")
+        sizedInputStream(
+            "$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,,,,,,,")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -491,8 +528,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "Existing name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n" +
-                "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,")
+                "Existing name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra,,,,,,\n" +
+                "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,,,,,,,")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -523,7 +560,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n")
+            "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra,,,,,,\n")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -566,7 +603,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv does not apply renames from deleted species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,")
+        sizedInputStream(
+            "$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,,,,,,,")
     val uploadId =
         insertUpload(
             organizationId = organizationId,
@@ -648,11 +686,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val gibberishShrub = "Shrub".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
+    val gibberishEarlySecondary = "Early secondary".toGibberish()
+    val gibberishSeedlingPurchase = "Seedling purchase".toGibberish()
 
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\n" +
-                "New name,,,EW,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves")
+                "New name,,,EW,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant," +
+                "$gibberishMangroves,,$gibberishEarlySecondary,,,$gibberishSeedlingPurchase,\n")
     val uploadId =
         insertUpload(
             locale = Locales.GIBBERISH,
@@ -677,6 +718,13 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             rare = true,
             scientificName = "New name",
             seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant))
+    assertTableEquals(
+        SpeciesSuccessionalGroupsRecord(
+            speciesId = speciesId, successionalGroupId = SuccessionalGroup.EarlySecondary))
+    assertTableEquals(
+        SpeciesPlantMaterialSourcingMethodsRecord(
+            plantMaterialSourcingMethodId = PlantMaterialSourcingMethod.SeedlingPurchase,
+            speciesId = speciesId))
   }
 
   private fun assertProblems(expected: List<UploadProblemsRow>) {

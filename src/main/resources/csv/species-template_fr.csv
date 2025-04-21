@@ -69,4 +69,31 @@ Veuillez choisir parmi la liste suivante ou une erreur se produira lors du tél�
 - Prairies, savanes et zones arbustives tropicales et subtropicales
 - Toundra
 
-Vous pouvez ajouter plusieurs types d'écosystèmes en les séparant par des sauts de ligne."
+Vous pouvez ajouter plusieurs types d'écosystèmes en les séparant par des sauts de ligne.","Écosystème indigène
+
+Indiquez le type d'écosystème où cette espèce est naturellement présente. Vous pouvez inclure des détails tels que l'altitude, les précipitations, etc.","Groupe de succession écologique
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Début du secondaire
+- Fin du secondaire
+- Mature
+- Pionnier
+
+Vous pouvez ajouter plusieurs groupes de succession écologique s'ils sont séparés par des sauts de ligne.","Rôle écologique connu
+
+Énumérez les rôles écologiques tels que le groupe fonctionnel de l’espèce, les services écosystémiques fournis, le rôle d’espèce clé, etc.","Utilisations locales connues
+
+Énumérez toutes les utilisations traditionnelles, culturelles, sociales, économiques/de subsistance importantes de l’espèce dans votre région.","Méthode d’obtention du matériel végétal
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Propagation de la mangrove
+- Collecte et germination des semences
+- Achat et germination des semences
+- Achat des semences
+- Propagation végétative
+- Récolte des sauvageons
+- Autre
+
+Vous pouvez ajouter plusieurs méthodes d’obtention si elles sont séparées par des sauts de ligne.","Autres faits"

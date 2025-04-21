@@ -3,7 +3,9 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.i18n.Messages
@@ -19,7 +21,7 @@ class SpeciesCsvValidator(
     messages: Messages,
 ) : CsvValidator(uploadId, messages) {
   companion object {
-    val ECOSYSTEM_TYPES_DELIMITER = Regex("\\s*[\\r\\n]+\\s*")
+    val MULTIPLE_VALUE_DELIMITER = Regex("\\s*[\\r\\n]+\\s*")
   }
 
   private val validBooleans = messages.csvBooleanValues(true) + messages.csvBooleanValues(false)
@@ -27,8 +29,12 @@ class SpeciesCsvValidator(
       EcosystemType.entries.map { it.getDisplayName(currentLocale()) }.toSet()
   private val validGrowthForms =
       GrowthForm.entries.map { it.getDisplayName(currentLocale()) }.toSet()
+  private val validPlantMaterialSourcingMethods =
+      PlantMaterialSourcingMethod.entries.map { it.getDisplayName(currentLocale()) }.toSet()
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.entries.map { it.getDisplayName(currentLocale()) }.toSet()
+  private val validSuccessionalGroups =
+      SuccessionalGroup.entries.map { it.getDisplayName(currentLocale()) }.toSet()
 
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(
@@ -40,6 +46,12 @@ class SpeciesCsvValidator(
           this::validateGrowthForm,
           this::validateSeedStorageBehavior,
           this::validateEcosystemTypes,
+          null,
+          this::validateSuccessionalGroup,
+          null,
+          null,
+          this::validatePlantMaterialSourcingMethod,
+          null,
       )
 
   override fun getColumnName(position: Int): String {
@@ -124,12 +136,34 @@ class SpeciesCsvValidator(
 
   private fun validateEcosystemTypes(value: String?, field: String) {
     if (!value.isNullOrBlank() &&
-        value.split(ECOSYSTEM_TYPES_DELIMITER).any { it !in validEcosystemTypes }) {
+        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validEcosystemTypes }) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
           messages.speciesCsvEcosystemTypesInvalid())
+    }
+  }
+
+  private fun validateSuccessionalGroup(value: String?, field: String) {
+    if (!value.isNullOrBlank() &&
+        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validSuccessionalGroups }) {
+      addError(
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.speciesCsvSuccessionalGroupInvalid())
+    }
+  }
+
+  private fun validatePlantMaterialSourcingMethod(value: String?, field: String) {
+    if (!value.isNullOrBlank() &&
+        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validPlantMaterialSourcingMethods }) {
+      addError(
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.speciesCsvPlantMaterialSourcingMethodInvalid())
     }
   }
 }

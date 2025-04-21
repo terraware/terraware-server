@@ -8,7 +8,9 @@ import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
@@ -125,19 +127,34 @@ class SpeciesImporter(
                     values[3]?.let {
                       ConservationCategory.forJsonValue(it.trim().uppercase(Locale.ENGLISH))
                     },
+                ecologicalRoleKnown = values[10],
                 ecosystemTypes =
                     values[7]
-                        ?.split(SpeciesCsvValidator.ECOSYSTEM_TYPES_DELIMITER)
+                        ?.split(SpeciesCsvValidator.MULTIPLE_VALUE_DELIMITER)
                         ?.map { EcosystemType.forDisplayName(it, locale) }
                         ?.toSet() ?: emptySet(),
                 familyName = values[2],
                 growthForms =
                     values[5]?.let { setOf(GrowthForm.forDisplayName(it, locale)) } ?: emptySet(),
+                localUsesKnown = values[11],
+                nativeEcosystem = values[8],
                 organizationId = organizationId,
+                otherFacts = values[13],
+                plantMaterialSourcingMethods =
+                    values[12]
+                        ?.split(SpeciesCsvValidator.MULTIPLE_VALUE_DELIMITER)
+                        ?.map { PlantMaterialSourcingMethod.forDisplayName(it, locale) }
+                        ?.toSet() ?: emptySet(),
                 rare = values[4]?.let { it in trueValues },
                 scientificName = normalizeScientificName(values[0]!!),
                 seedStorageBehavior =
-                    values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) })
+                    values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
+                successionalGroups =
+                    values[9]
+                        ?.split(SpeciesCsvValidator.MULTIPLE_VALUE_DELIMITER)
+                        ?.map { SuccessionalGroup.forDisplayName(it, locale) }
+                        ?.toSet() ?: emptySet(),
+            )
           }
           .forEach { row ->
             speciesStore.importSpecies(row, overwriteExisting)
