@@ -69,7 +69,7 @@
         const map = new mapboxgl.Map({
             bounds: bounds,
             container: 'map',
-            fitBoundsOptions: { padding: 10 },
+            fitBoundsOptions: {padding: 10},
             style: currentStyle.base,
         });
 
@@ -268,14 +268,16 @@
 
             const plotClickHandler = (e) => {
                 const props = e.features[0].properties;
-                const description =
-                        `<h4>${props.plotNumber}</h4>` + [
-                            `ID: ${props.id}`,
-                            `Zone: ${props.zone}`,
-                            `Subzone: ${props.subzone}`,
-                            `Cluster: ${props.cluster}`,
-                            props.type ? `Type: ${props.type}` : '',
-                        ].join('<br/>');
+                const detailsLineItems = [
+                    `ID: ${props.id}`,
+                    `Zone: ${props.zone}`,
+                    `Subzone: ${props.subzone}`,
+                    props.permanentIndex ? `Permanent: ${props.permanentIndex}` : null,
+                    props.type ? `Type: ${props.type}` : null,
+                ];
+
+                const popupBody = detailsLineItems.filter(Boolean).join('<br/>');
+                const description = `<h4>${props.plotNumber}</h4>${popupBody}`;
 
                 new mapboxgl.Popup()
                         .setLngLat(e.lngLat)

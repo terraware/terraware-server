@@ -707,17 +707,17 @@ class PlantingSiteStore(
           }
         }
 
-        // Need to create permanent clusters using the updated subzones since we need their IDs.
+        // Need to create permanent plots using the updated subzones since we need their IDs.
         val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
         val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
 
         edit.monitoringPlotEdits
-            .filter { it.permanentCluster != null }
+            .filter { it.permanentIndex != null }
             .groupBy { it.region }
             .forEach { (region, plotEdits) ->
               val newPlotIds =
-                  createPermanentClusters(
-                      updatedSite, updatedZone, plotEdits.map { it.permanentCluster!! }, region)
+                  createPermanentPlots(
+                      updatedSite, updatedZone, plotEdits.map { it.permanentIndex!! }, region)
               replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
             }
       }
@@ -813,7 +813,7 @@ class PlantingSiteStore(
         with(MONITORING_PLOTS) {
           dslContext
               .update(MONITORING_PLOTS)
-              .set(PERMANENT_CLUSTER, edit.permanentCluster)
+              .set(PERMANENT_INDEX, edit.permanentIndex)
               .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
@@ -834,7 +834,7 @@ class PlantingSiteStore(
         with(MONITORING_PLOTS) {
           dslContext
               .update(MONITORING_PLOTS)
-              .setNull(PERMANENT_CLUSTER)
+              .setNull(PERMANENT_INDEX)
               .setNull(PLANTING_SUBZONE_ID)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
@@ -856,29 +856,28 @@ class PlantingSiteStore(
    * @throws IllegalStateException A sanity check failed.
    */
   private fun sanityCheckAfterEdit(plantingSiteId: PlantingSiteId) {
-    // Make sure we haven't assigned the same permanent cluster number to two plots in a
-    // planting zone. We don't enforce this with a database constraint because duplicate cluster
-    // numbers are a valid intermediate state while a complex edit is being applied.
-    val zonesWithDuplicateClusterNumbers =
+    // Make sure we haven't assigned the same permanent index to two plots in a planting zone. We
+    // don't enforce this with a database constraint because duplicate indexes are a valid
+    // intermediate state while a complex edit is being applied.
+    val zonesWithDuplicatePermanentIndexes =
         dslContext
-            .select(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_CLUSTER)
+            .select(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_INDEX)
             .from(PLANTING_ZONES)
             .join(PLANTING_SUBZONES)
             .on(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
             .join(MONITORING_PLOTS)
             .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
             .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-            .and(MONITORING_PLOTS.PERMANENT_CLUSTER.isNotNull)
-            .groupBy(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_CLUSTER)
+            .and(MONITORING_PLOTS.PERMANENT_INDEX.isNotNull)
+            .groupBy(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_INDEX)
             .having(DSL.count().gt(1))
             .fetch { record ->
               "planting zone ${record[PLANTING_ZONES.ID]} (${record[PLANTING_ZONES.NAME]}) " +
-                  "cluster ${record[MONITORING_PLOTS.PERMANENT_CLUSTER]}"
+                  "index ${record[MONITORING_PLOTS.PERMANENT_INDEX]}"
             }
-    if (zonesWithDuplicateClusterNumbers.isNotEmpty()) {
-      val details = zonesWithDuplicateClusterNumbers.joinToString()
-      throw IllegalStateException(
-          "BUG! Edit resulted in duplicate permanent cluster numbers: $details")
+    if (zonesWithDuplicatePermanentIndexes.isNotEmpty()) {
+      val details = zonesWithDuplicatePermanentIndexes.joinToString()
+      throw IllegalStateException("BUG! Edit resulted in duplicate permanent indexes: $details")
     }
   }
 
@@ -1108,16 +1107,16 @@ class PlantingSiteStore(
     return plantingSubzonesRow.id!!
   }
 
-  private fun setMonitoringPlotCluster(
+  private fun setMonitoringPlotPermanentIndex(
       monitoringPlotId: MonitoringPlotId,
-      permanentCluster: Int,
+      permanentIndex: Int,
   ) {
     with(MONITORING_PLOTS) {
       dslContext
           .update(MONITORING_PLOTS)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
-          .set(PERMANENT_CLUSTER, permanentCluster)
+          .set(PERMANENT_INDEX, permanentIndex)
           .where(ID.eq(monitoringPlotId))
           .execute()
     }
@@ -1331,9 +1330,9 @@ class PlantingSiteStore(
   /**
    * Makes a monitoring plot unavailable for inclusion in future observations.
    *
-   * The requested plot's "is available" flag is set to false, and its permanent cluster number is
-   * cleared. If the plot was permanent, a new one with the removed cluster number will be created
-   * next time [ensurePermanentClustersExist] is called.
+   * The requested plot's "is available" flag is set to false, and its permanent index is cleared.
+   * If the plot was permanent, a new one with the removed index will be created next time
+   * [ensurePermanentClustersExist] is called.
    *
    * @return The plots that were modified. This is always either an empty list (if the plot was
    *   already unavailable) or a removed plots list with just the requested plot (if the plot was
@@ -1352,7 +1351,7 @@ class PlantingSiteStore(
           .set(MONITORING_PLOTS.IS_AVAILABLE, false)
           .set(MONITORING_PLOTS.MODIFIED_BY, currentUser().userId)
           .set(MONITORING_PLOTS.MODIFIED_TIME, clock.instant())
-          .setNull(MONITORING_PLOTS.PERMANENT_CLUSTER)
+          .setNull(MONITORING_PLOTS.PERMANENT_INDEX)
           .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
           .execute()
 
@@ -1364,23 +1363,23 @@ class PlantingSiteStore(
   }
 
   /**
-   * Replaces a monitoring plot's permanent cluster with an unused one.
+   * Replaces a monitoring plot's permanent index with an unused one.
    *
-   * If there are existing permanent clusters that haven't been used in any observations yet, uses
-   * one of them; the existing cluster's number will be changed to the cluster number of the plot
-   * being replaced.
+   * If there are existing permanent plots that haven't been used in any observations yet, uses one
+   * of them; the existing plot's permanent index will be changed to the index of the plot being
+   * replaced.
    *
-   * If there are no existing unused permanent clusters, tries to create a new cluster at a random
-   * location in the zone.
+   * If there are no existing unused permanent plots, tries to create a new one at a random location
+   * in the zone.
    *
-   * If the monitoring plot is not part of a permanent cluster, or there are no available places to
-   * put a new permanent cluster, does nothing.
+   * If the monitoring plot has no permanent index, or there are no available places to put a new
+   * permanent plot, does nothing.
    *
-   * @return A result whose "added plots" property has the IDs of the monitoring plots in the
-   *   replacement cluster, and whose "removed plots" property has the IDs of all the monitoring
-   *   plots in the requested plot's cluster.
+   * @return A result whose "added plots" property has the ID of the replacement monitoring plot and
+   *   whose "removed plots" property has the ID of the requested plot, if the replacement
+   *   succeeded.
    */
-  fun replacePermanentCluster(monitoringPlotId: MonitoringPlotId): ReplacementResult {
+  fun replacePermanentIndex(monitoringPlotId: MonitoringPlotId): ReplacementResult {
     val plantingSiteId =
         parentStore.getPlantingSiteId(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
@@ -1401,18 +1400,17 @@ class PlantingSiteStore(
               ?.findMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
 
-      if (plot.permanentCluster == null) {
-        log.warn("Cannot replace permanent cluster for non-permanent plot $monitoringPlotId")
+      if (plot.permanentIndex == null) {
+        log.warn("Cannot replace non-permanent plot $monitoringPlotId")
         return@withLockedPlantingSite ReplacementResult(emptySet(), emptySet())
       }
 
-      val unusedClusterNumber = fetchUnusedPermanentClusterNumber(plantingZone.id)
+      val unusedPermanentIndex = fetchUnusedPermanentIndex(plantingZone.id)
       val replacementPlotId =
-          fetchPermanentPlotId(plantingZone.id, unusedClusterNumber)
+          fetchPermanentPlotId(plantingZone.id, unusedPermanentIndex)
               ?: run {
-                // There's no unused cluster; try creating a new one.
-                log.debug("Creating new permanent cluster to use as replacement")
-                createPermanentClusters(plantingSite, plantingZone, listOf(unusedClusterNumber))
+                log.debug("Creating new permanent plot to use as replacement")
+                createPermanentPlots(plantingSite, plantingZone, listOf(unusedPermanentIndex))
                     .firstOrNull()
               }
 
@@ -1425,7 +1423,7 @@ class PlantingSiteStore(
               .update(MONITORING_PLOTS)
               .set(MODIFIED_BY, userId)
               .set(MODIFIED_TIME, now)
-              .setNull(PERMANENT_CLUSTER)
+              .setNull(PERMANENT_INDEX)
               .where(ID.eq(monitoringPlotId))
               .execute()
 
@@ -1433,7 +1431,7 @@ class PlantingSiteStore(
               .update(MONITORING_PLOTS)
               .set(MODIFIED_BY, userId)
               .set(MODIFIED_TIME, now)
-              .set(PERMANENT_CLUSTER, plot.permanentCluster)
+              .set(PERMANENT_INDEX, plot.permanentIndex)
               .where(ID.eq(replacementPlotId))
               .execute()
         }
@@ -1446,9 +1444,8 @@ class PlantingSiteStore(
   }
 
   /**
-   * Ensures that the required number of permanent clusters of correct size exists in each of a
-   * planting site's zones. There need to be clusters with numbers from 1 to the zone's permanent
-   * cluster count.
+   * Ensures that the required number of permanent plots exists in each of a planting site's zones.
+   * There need to be plots with numbers from 1 to the zone's permanent plot count.
    *
    * @return The IDs of any newly-created monitoring plots.
    */
@@ -1459,12 +1456,10 @@ class PlantingSiteStore(
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       plantingSite.plantingZones.flatMap { plantingZone ->
-        val missingClusterNumbers: List<Int> =
-            (1..plantingZone.numPermanentPlots).filterNot {
-              plantingZone.permanentClusterExists(it)
-            }
+        val missingPermanentIndexes: List<Int> =
+            (1..plantingZone.numPermanentPlots).filterNot { plantingZone.permanentIndexExists(it) }
 
-        createPermanentClusters(plantingSite, plantingZone, missingClusterNumbers)
+        createPermanentPlots(plantingSite, plantingZone, missingPermanentIndexes)
       }
     }
   }
@@ -1519,7 +1514,7 @@ class PlantingSiteStore(
             MONITORING_PLOTS.ID,
             MONITORING_PLOTS.IS_AD_HOC,
             MONITORING_PLOTS.IS_AVAILABLE,
-            MONITORING_PLOTS.PERMANENT_CLUSTER,
+            MONITORING_PLOTS.PERMANENT_INDEX,
             MONITORING_PLOTS.PLOT_NUMBER,
             MONITORING_PLOTS.SIZE_METERS,
         )
@@ -1540,7 +1535,7 @@ class PlantingSiteStore(
               id = record[MONITORING_PLOTS.ID]!!,
               isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
               isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-              permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
+              permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
               plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
               sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
           )
@@ -1573,14 +1568,14 @@ class PlantingSiteStore(
   }
 
   /**
-   * Creates permanent clusters with a specific set of cluster numbers. The permanent clusters may
+   * Creates permanent plots with a specific set of permanent indexes. The permanent plots may
    * include a mix of newly-created monitoring plots and plots that exist already but were only used
    * as temporary plots in the past.
    */
-  private fun createPermanentClusters(
+  private fun createPermanentPlots(
       plantingSite: ExistingPlantingSiteModel,
       plantingZone: ExistingPlantingZoneModel,
-      clusterNumbers: List<Int>,
+      permanentIndexes: List<Int>,
       searchBoundary: MultiPolygon = plantingZone.boundary,
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
@@ -1590,28 +1585,28 @@ class PlantingSiteStore(
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
     }
 
-    // List of [boundary, cluster number]
-    val clusterBoundaries: List<Pair<Polygon, Int>> =
+    // List of [boundary, permanent index]
+    val plotBoundaries: List<Pair<Polygon, Int>> =
         plantingZone
             .findUnusedSquares(
-                count = clusterNumbers.size,
+                count = permanentIndexes.size,
                 excludeAllPermanentPlots = true,
                 exclusion = plantingSite.exclusion,
                 gridOrigin = plantingSite.gridOrigin,
                 searchBoundary = searchBoundary,
                 sizeMeters = MONITORING_PLOT_SIZE,
             )
-            .zip(clusterNumbers)
+            .zip(permanentIndexes)
 
-    return clusterBoundaries.map { (plotBoundary, clusterNumber) ->
+    return plotBoundaries.map { (plotBoundary, permanentIndex) ->
       val existingPlot = plantingZone.findMonitoringPlot(plotBoundary)
 
       if (existingPlot != null) {
-        if (existingPlot.permanentCluster != null) {
-          throw IllegalStateException("Cannot place new permanent cluster over existing one")
+        if (existingPlot.permanentIndex != null) {
+          throw IllegalStateException("Cannot place new permanent plot over existing one")
         }
 
-        setMonitoringPlotCluster(existingPlot.id, clusterNumber)
+        setMonitoringPlotPermanentIndex(existingPlot.id, permanentIndex)
 
         existingPlot.id
       } else {
@@ -1632,7 +1627,7 @@ class PlantingSiteStore(
                 modifiedBy = userId,
                 modifiedTime = now,
                 organizationId = plantingSite.organizationId,
-                permanentCluster = clusterNumber,
+                permanentIndex = permanentIndex,
                 plantingSiteId = plantingSite.id,
                 plantingSubzoneId = subzone.id,
                 plotNumber = plotNumber,
@@ -1945,7 +1940,7 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.IS_AVAILABLE,
-                      MONITORING_PLOTS.PERMANENT_CLUSTER,
+                      MONITORING_PLOTS.PERMANENT_INDEX,
                       MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
@@ -1960,7 +1955,7 @@ class PlantingSiteStore(
                   id = record[MONITORING_PLOTS.ID]!!,
                   isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                   isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-                  permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
+                  permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
                   plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
                   sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
               )
@@ -2154,7 +2149,7 @@ class PlantingSiteStore(
 
   private fun fetchPermanentPlotId(
       plantingZoneId: PlantingZoneId,
-      permanentCluster: Int
+      permanentIndex: Int
   ): MonitoringPlotId? {
     return dslContext
         .select(MONITORING_PLOTS.ID)
@@ -2162,16 +2157,16 @@ class PlantingSiteStore(
         .join(PLANTING_SUBZONES)
         .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
         .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
-        .and(MONITORING_PLOTS.PERMANENT_CLUSTER.eq(permanentCluster))
+        .and(MONITORING_PLOTS.PERMANENT_INDEX.eq(permanentIndex))
         .fetchOne(MONITORING_PLOTS.ID)
   }
 
   /**
-   * Returns the number of a permanent cluster that hasn't been used in any observations yet. If all
-   * existing permanent clusters have already been used, returns a number 1 greater than the current
-   * maximum cluster number; the caller will have to create the cluster.
+   * Returns the index of a permanent plot that hasn't been used in any observations yet. If all
+   * existing permanent indexes have already been used, returns a number 1 greater than the current
+   * maximum permanent index; the caller will have to create the plot.
    */
-  private fun fetchUnusedPermanentClusterNumber(plantingZoneId: PlantingZoneId): Int {
+  private fun fetchUnusedPermanentIndex(plantingZoneId: PlantingZoneId): Int {
     val previouslyUsedField =
         DSL.exists(
                 DSL.selectOne()
@@ -2180,22 +2175,22 @@ class PlantingSiteStore(
                     .and(OBSERVATION_PLOTS.IS_PERMANENT))
             .asNonNullable()
 
-    val (maxCluster, maxClusterWasPreviouslyUsed) =
+    val (maxIndex, maxIndexWasPreviouslyUsed) =
         dslContext
-            .select(MONITORING_PLOTS.PERMANENT_CLUSTER.asNonNullable(), previouslyUsedField)
+            .select(MONITORING_PLOTS.PERMANENT_INDEX.asNonNullable(), previouslyUsedField)
             .from(MONITORING_PLOTS)
             .join(PLANTING_SUBZONES)
             .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
             .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
-            .and(MONITORING_PLOTS.PERMANENT_CLUSTER.isNotNull)
-            .orderBy(MONITORING_PLOTS.PERMANENT_CLUSTER.desc(), previouslyUsedField.desc())
+            .and(MONITORING_PLOTS.PERMANENT_INDEX.isNotNull)
+            .orderBy(MONITORING_PLOTS.PERMANENT_INDEX.desc(), previouslyUsedField.desc())
             .limit(1)
-            .fetchOne() ?: throw IllegalStateException("Could not query zone's permanent clusters")
+            .fetchOne() ?: throw IllegalStateException("Could not query zone's permanent plots")
 
-    return if (maxClusterWasPreviouslyUsed) {
-      maxCluster + 1
+    return if (maxIndexWasPreviouslyUsed) {
+      maxIndex + 1
     } else {
-      maxCluster
+      maxIndex
     }
   }
 
