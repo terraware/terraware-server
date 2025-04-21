@@ -5,10 +5,15 @@ import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
+import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import java.time.Instant
 import java.time.LocalDate
@@ -42,6 +47,42 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns all published report data`() {
       insertFundingEntityProject()
 
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Standard Metric Description 1",
+              name = "Standard Metric 1",
+              reference = "1.1.2",
+              type = MetricType.Output,
+          )
+
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Community,
+              description = "Standard Metric Description 2",
+              name = "Standard Metric 2",
+              reference = "1.1.1",
+              type = MetricType.Outcome,
+          )
+
+      val projectMetricId1 =
+          insertProjectMetric(
+              component = MetricComponent.Biodiversity,
+              description = "Project Metric Description 1",
+              name = "Project Metric 1",
+              reference = "1.2.1",
+              type = MetricType.Output,
+          )
+
+      val projectMetricId2 =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project Metric Description 2",
+              name = "Project Metric 2",
+              reference = "1.2.11",
+              type = MetricType.Outcome,
+          )
+
       val dealName = UUID.randomUUID().toString()
       insertProjectAcceleratorDetails(dealName = dealName)
       insertProjectReportConfig()
@@ -65,6 +106,51 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportChallenge(
           challenge = "challenge 1", mitigationPlan = "mitigation 1", position = 1)
 
+      insertPublishedReportStandardMetric(
+          reportId = reportId1,
+          metricId = standardMetricId1,
+          target = 100,
+          value = 120,
+          underperformanceJustification = null,
+          status = ReportMetricStatus.Achieved,
+      )
+
+      insertPublishedReportStandardMetric(
+          reportId = reportId1,
+          metricId = standardMetricId2,
+          target = 200,
+          value = 180,
+          underperformanceJustification = "Underperformance justification 2",
+          status = ReportMetricStatus.Unlikely,
+      )
+
+      insertPublishedReportProjectMetric(
+          reportId = reportId1,
+          metricId = projectMetricId1,
+          target = null,
+          value = 40,
+          underperformanceJustification = null,
+          status = ReportMetricStatus.OnTrack,
+      )
+
+      insertPublishedReportProjectMetric(
+          reportId = reportId1,
+          metricId = projectMetricId2,
+          target = null,
+          value = null,
+          underperformanceJustification = null,
+          status = null,
+      )
+
+      insertPublishedReportSystemMetric(
+          reportId = reportId1,
+          metric = SystemMetric.MortalityRate,
+          target = 0,
+          value = 5,
+          underperformanceJustification = "Some plants had died.",
+          status = ReportMetricStatus.Unlikely,
+      )
+
       val reportId2 =
           insertReport(
               startDate = LocalDate.of(2025, 4, 1),
@@ -87,12 +173,15 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   frequency = ReportFrequency.Quarterly,
                   highlights = null,
                   projectId = projectId,
+                  projectMetrics = emptyList(),
                   projectName = dealName,
                   publishedBy = user.userId,
                   publishedTime = Instant.ofEpochSecond(1),
                   quarter = ReportQuarter.Q2,
                   reportId = reportId2,
+                  standardMetrics = emptyList(),
                   startDate = LocalDate.of(2025, 4, 1),
+                  systemMetrics = emptyList(),
               ),
               PublishedReportModel(
                   achievements = listOf("achievement 1", "achievement 2"),
@@ -105,12 +194,80 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   frequency = ReportFrequency.Quarterly,
                   highlights = "highlights",
                   projectId = projectId,
+                  projectMetrics =
+                      listOf(
+                          PublishedReportMetricModel(
+                              component = MetricComponent.Biodiversity,
+                              description = "Project Metric Description 1",
+                              metricId = projectMetricId1,
+                              name = "Project Metric 1",
+                              reference = "1.2.1",
+                              status = ReportMetricStatus.OnTrack,
+                              target = null,
+                              type = MetricType.Output,
+                              underperformanceJustification = null,
+                              value = 40,
+                          ),
+                          PublishedReportMetricModel(
+                              component = MetricComponent.ProjectObjectives,
+                              description = "Project Metric Description 2",
+                              metricId = projectMetricId2,
+                              name = "Project Metric 2",
+                              reference = "1.2.11",
+                              status = null,
+                              target = null,
+                              type = MetricType.Outcome,
+                              underperformanceJustification = null,
+                              value = null,
+                          ),
+                      ),
                   projectName = dealName,
                   publishedBy = user.userId,
                   publishedTime = Instant.EPOCH,
                   quarter = ReportQuarter.Q1,
                   reportId = reportId1,
+                  standardMetrics =
+                      listOf(
+                          PublishedReportMetricModel(
+                              component = MetricComponent.Community,
+                              description = "Standard Metric Description 2",
+                              metricId = standardMetricId2,
+                              name = "Standard Metric 2",
+                              reference = "1.1.1",
+                              type = MetricType.Outcome,
+                              target = 200,
+                              value = 180,
+                              underperformanceJustification = "Underperformance justification 2",
+                              status = ReportMetricStatus.Unlikely,
+                          ),
+                          PublishedReportMetricModel(
+                              component = MetricComponent.Climate,
+                              description = "Standard Metric Description 1",
+                              metricId = standardMetricId1,
+                              name = "Standard Metric 1",
+                              status = ReportMetricStatus.Achieved,
+                              reference = "1.1.2",
+                              target = 100,
+                              type = MetricType.Output,
+                              underperformanceJustification = null,
+                              value = 120,
+                          ),
+                      ),
                   startDate = LocalDate.of(2025, 1, 1),
+                  systemMetrics =
+                      listOf(
+                          PublishedReportMetricModel(
+                              component = SystemMetric.MortalityRate.componentId,
+                              description = SystemMetric.MortalityRate.description,
+                              metricId = SystemMetric.MortalityRate,
+                              name = SystemMetric.MortalityRate.jsonValue,
+                              reference = SystemMetric.MortalityRate.reference,
+                              status = ReportMetricStatus.Unlikely,
+                              target = 0,
+                              type = SystemMetric.MortalityRate.typeId,
+                              underperformanceJustification = "Some plants had died.",
+                              value = 5,
+                          )),
               )),
           store.fetchPublishedReports(projectId))
     }
