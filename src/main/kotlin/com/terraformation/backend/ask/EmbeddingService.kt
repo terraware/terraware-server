@@ -32,7 +32,6 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.apache.tika.exception.UnsupportedFormatException
 import org.jooq.DSLContext
-import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.ai.document.Document
@@ -73,13 +72,13 @@ class EmbeddingService(
               .trimIndent(),
           RegexOption.COMMENTS)
 
+  private val projectIdField = DSL.jsonbGetAttributeAsText(VECTOR_STORE.METADATA, "projectId")
+
   private val log = perClassLogger()
 
   /** Returns the list of projects that have had their embeddings generated. */
   fun listEmbeddedProjects(): List<ExistingProjectModel> {
     requirePermissions { readAllAcceleratorDetails() }
-
-    val projectIdField = DSL.jsonbGetAttributeAsText(VECTOR_STORE.METADATA, "projectId")
 
     return dslContext
         .select(PROJECTS.asterisk())
@@ -91,8 +90,15 @@ class EmbeddingService(
                     .from(VECTOR_STORE)
                     .where(projectIdField.isNotNull)))
         .orderBy(PROJECTS.ID)
-        .also { log.info("Query: ${it.getSQL(ParamType.INLINED)}") }
         .fetch { ExistingProjectModel.of(it) }
+  }
+
+  /** Returns true if a project's embeddings have been generated. */
+  fun hasEmbeddings(projectId: ProjectId): Boolean {
+    requirePermissions { readAllAcceleratorDetails() }
+
+    return dslContext.fetchExists(
+        DSL.selectOne().from(VECTOR_STORE).where(projectIdField.eq("$projectId")))
   }
 
   /**
