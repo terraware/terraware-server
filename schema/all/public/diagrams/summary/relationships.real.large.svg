@@ -6895,7 +6895,7 @@
 <polygon fill="none" stroke="black" points="1025.5,-6364 1025.5,-6386 1224.5,-6386 1224.5,-6364 1025.5,-6364"/>
 <text text-anchor="start" x="1074.5" y="-6372.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="1025.5,-6342 1025.5,-6364 1224.5,-6364 1224.5,-6342 1025.5,-6342"/>
-<text text-anchor="start" x="1074.5" y="-6350.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_cluster</text>
+<text text-anchor="start" x="1074.5" y="-6350.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_index</text>
 <polygon fill="none" stroke="black" points="1025.5,-6320 1025.5,-6342 1224.5,-6342 1224.5,-6320 1025.5,-6320"/>
 <text text-anchor="start" x="1074.5" y="-6328.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_available</text>
 <polygon fill="none" stroke="black" points="1025.5,-6298 1025.5,-6320 1224.5,-6320 1224.5,-6298 1025.5,-6298"/>

@@ -326,7 +326,7 @@
                                     <td><p>Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="permanent_cluster">permanent_cluster</span></td>
+                                    <td><span id="permanent_index">permanent_index</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -340,7 +340,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. There are always 4 plots with a given sequence number in a given zone. If null, this plot is not part of a 4-plot cluster but may still be chosen as a temporary monitoring plot.</p></td>
+                                    <td><p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="is_available">is_available</span></td>

@@ -1303,7 +1303,7 @@
 <polygon fill="none" stroke="black" points="250.5,-2468 250.5,-2490 449.5,-2490 449.5,-2468 250.5,-2468"/>
 <text text-anchor="start" x="299.5" y="-2476.2" font-family="Helvetica,sans-Serif" font-size="11.00">boundary</text>
 <polygon fill="none" stroke="black" points="250.5,-2446 250.5,-2468 449.5,-2468 449.5,-2446 250.5,-2446"/>
-<text text-anchor="start" x="299.5" y="-2454.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_cluster</text>
+<text text-anchor="start" x="299.5" y="-2454.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_index</text>
 <polygon fill="none" stroke="black" points="250.5,-2424 250.5,-2446 449.5,-2446 449.5,-2424 250.5,-2424"/>
 <text text-anchor="start" x="299.5" y="-2432.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_available</text>
 <polygon fill="none" stroke="black" points="250.5,-2402 250.5,-2424 449.5,-2424 449.5,-2402 250.5,-2402"/>

@@ -385,7 +385,7 @@
 <polygon fill="none" stroke="black" points="1028,-1009.97 1028,-1031.97 1151,-1031.97 1151,-1009.97 1028,-1009.97"/>
 <text text-anchor="start" x="1031" y="-1018.17" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
 <polygon fill="none" stroke="black" points="887,-987.97 887,-1009.97 1028,-1009.97 1028,-987.97 887,-987.97"/>
-<text text-anchor="start" x="907" y="-996.17" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_cluster</text>
+<text text-anchor="start" x="907" y="-996.17" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_index</text>
 <polygon fill="none" stroke="black" points="1028,-987.97 1028,-1009.97 1151,-1009.97 1151,-987.97 1028,-987.97"/>
 <text text-anchor="start" x="1031" y="-996.17" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="887,-965.97 887,-987.97 1028,-987.97 1028,-965.97 887,-965.97"/>

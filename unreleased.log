@@ -1,3 +1,4 @@
+909d136289b SW-6189 Rename "cluster number" to "permanent index" (#3044)
 ca65afaabc9 SW-6766 Improve zone replacement/rename handling (#3046)
 220df1a04b5 Update database dependencies (#3047)
 4470b7f9c8d SW-6632 Added scheduled event to update elevation of plots (#3043)

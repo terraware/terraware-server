@@ -132,7 +132,7 @@
 <polygon fill="none" stroke="black" points="761,-538 761,-560 884,-560 884,-538 761,-538"/>
 <text text-anchor="start" x="764" y="-546.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
 <polygon fill="none" stroke="black" points="620,-516 620,-538 761,-538 761,-516 620,-516"/>
-<text text-anchor="start" x="640" y="-524.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_cluster</text>
+<text text-anchor="start" x="640" y="-524.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_index</text>
 <polygon fill="none" stroke="black" points="761,-516 761,-538 884,-538 884,-516 761,-516"/>
 <text text-anchor="start" x="764" y="-524.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="620,-494 620,-516 761,-516 761,-494 620,-494"/>
