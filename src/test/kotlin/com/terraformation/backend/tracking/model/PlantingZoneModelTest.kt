@@ -228,7 +228,7 @@ class PlantingZoneModelTest {
     fun `places excess plots in subzones with fewest permanent plots`() {
       val model =
           plantingZoneModel(
-              numPermanentPlots = 3,
+              numPermanentPlots = 12,
               numTemporaryPlots = 5,
               subzones =
                   listOf(
@@ -237,23 +237,23 @@ class PlantingZoneModelTest {
                           plots =
                               listOf(
                                   monitoringPlotModel(10, permanentIndex = 1),
-                                  monitoringPlotModel(11, permanentIndex = 1),
-                                  monitoringPlotModel(12, permanentIndex = 1),
-                                  monitoringPlotModel(13, permanentIndex = 1),
-                                  monitoringPlotModel(14, permanentIndex = 2),
-                                  monitoringPlotModel(15, permanentIndex = 2),
-                                  monitoringPlotModel(16, permanentIndex = 2),
-                                  monitoringPlotModel(17, permanentIndex = 2),
+                                  monitoringPlotModel(11, permanentIndex = 2),
+                                  monitoringPlotModel(12, permanentIndex = 3),
+                                  monitoringPlotModel(13, permanentIndex = 4),
+                                  monitoringPlotModel(14, permanentIndex = 5),
+                                  monitoringPlotModel(15, permanentIndex = 6),
+                                  monitoringPlotModel(16, permanentIndex = 7),
+                                  monitoringPlotModel(17, permanentIndex = 8),
                                   monitoringPlotModel(18),
                                   monitoringPlotModel(19))),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
                               listOf(
-                                  monitoringPlotModel(20, permanentIndex = 3),
-                                  monitoringPlotModel(21, permanentIndex = 3),
-                                  monitoringPlotModel(22, permanentIndex = 3),
-                                  monitoringPlotModel(23, permanentIndex = 3),
+                                  monitoringPlotModel(20, permanentIndex = 9),
+                                  monitoringPlotModel(21, permanentIndex = 10),
+                                  monitoringPlotModel(22, permanentIndex = 11),
+                                  monitoringPlotModel(23, permanentIndex = 12),
                                   monitoringPlotModel(24),
                                   monitoringPlotModel(25))),
                       plantingSubzoneModel(
