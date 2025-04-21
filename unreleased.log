@@ -1,3 +1,5 @@
+ca65afaabc9 SW-6766 Improve zone replacement/rename handling (#3046)
+220df1a04b5 Update database dependencies (#3047)
 4470b7f9c8d SW-6632 Added scheduled event to update elevation of plots (#3043)
 2f4464f9c49 SW-6787 Update Project Profile details (#3037)
 f713ee51ed8 SW-6788 Add variableValueIds for project photos (#3034)
