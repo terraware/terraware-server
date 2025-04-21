@@ -191,12 +191,12 @@ class PlantingSiteEditCalculator(
     // permanent list by setting their permanent indexes to null so that any permanent plots we
     // create later will be randomly placed in the zone. We still want to adopt them into the
     // correct subzones, though.
-    val dropExcessExistingClusterEdits =
+    val dropExcessExistingPlotEdits =
         (existingPlotsInOverlappingArea + existingPlotsInNewArea + disqualifiedPlots).map {
           MonitoringPlotEdit.Adopt(it.id, permanentIndex = null)
         }
 
-    return desiredPermanentPlotEdits + dropExcessExistingClusterEdits
+    return desiredPermanentPlotEdits + dropExcessExistingPlotEdits
   }
 
   private fun calculateSubzoneEdits(

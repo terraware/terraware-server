@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test
 
 internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest() {
   @Nested
-  inner class EnsurePermanentClustersExist {
+  inner class EnsurePermanentPlotsExist {
     @Test
-    fun `creates all clusters in empty planting site`() {
+    fun `creates all plots in empty planting site`() {
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(101) }
 
       val plantingSiteId =
@@ -25,7 +25,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
-      store.ensurePermanentClustersExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -49,7 +49,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
     }
 
     @Test
-    fun `creates as many clusters as there is room for`() {
+    fun `creates as many plots as there is room for`() {
       val siteBoundary =
           Turtle(point(0)).makeMultiPolygon {
             rectangle(MONITORING_PLOT_SIZE * 2 + 1, MONITORING_PLOT_SIZE + 1)
@@ -59,8 +59,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 4)
       insertPlantingSubzone(boundary = siteBoundary)
 
-      // Zone is configured for 4 clusters, but there's only room for 2.
-      store.ensurePermanentClustersExist(plantingSiteId)
+      // Zone is configured for 4 permanent plots, but there's only room for 2.
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -71,7 +71,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
     }
 
     @Test
-    fun `only creates nonexistent permanent clusters`() {
+    fun `only creates nonexistent permanent plots`() {
       val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(201) }
       val existingPlotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
@@ -86,7 +86,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertMonitoringPlot(
           boundary = existingPlotBoundary, permanentIndex = 2, insertHistory = false)
 
-      store.ensurePermanentClustersExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -129,7 +129,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertPlantingSubzone(boundary = siteBoundary)
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
 
-      store.ensurePermanentClustersExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
       val existingPlot = plots.first { it.id == existingPlotId }
@@ -139,7 +139,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
     }
 
     @Test
-    fun `does nothing if required clusters already exist`() {
+    fun `does nothing if required permanent plots already exist`() {
       val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(201) }
       val plotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
@@ -152,7 +152,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
 
       val before = monitoringPlotsDao.findAll().toSet()
 
-      store.ensurePermanentClustersExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val after = monitoringPlotsDao.findAll().toSet()
 
@@ -175,7 +175,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       insertPlantingSubzone(boundary = siteBoundary)
       insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentIndex = 1)
 
-      store.ensurePermanentClustersExist(plantingSiteId)
+      store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
       assertEquals(
