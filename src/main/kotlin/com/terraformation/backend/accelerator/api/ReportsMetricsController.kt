@@ -62,7 +62,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
 
 data class SystemMetricPayload(
     val metric: SystemMetric,
-    val name: String = metric.name,
+    val name: String = metric.jsonValue,
     val description: String = metric.description,
     val component: MetricComponent = metric.componentId,
     val type: MetricType = metric.typeId,

@@ -2,17 +2,31 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.MetricComponentConverter
+import com.terraformation.backend.db.accelerator.MetricTypeConverter
+import com.terraformation.backend.db.accelerator.ReportIdConverter
+import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
+import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.TableField
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 @Named
 class PublishedReportsStore(
@@ -27,7 +41,11 @@ class PublishedReportsStore(
             PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
             PROJECTS.NAME,
             achievementsMultiset,
-            challengesMultiset)
+            challengesMultiset,
+            projectMetricsMultiset,
+            standardMetricsMultiset,
+            systemMetricsMultiset,
+        )
         .from(PUBLISHED_REPORTS)
         .join(PROJECTS)
         .on(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
@@ -43,13 +61,17 @@ class PublishedReportsStore(
               frequency = record[PUBLISHED_REPORTS.REPORT_FREQUENCY_ID]!!,
               highlights = record[PUBLISHED_REPORTS.HIGHLIGHTS],
               projectId = record[PUBLISHED_REPORTS.PROJECT_ID]!!,
+              projectMetrics = record[projectMetricsMultiset],
               projectName =
                   record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME] ?: record[PROJECTS.NAME]!!,
               publishedBy = record[PUBLISHED_REPORTS.PUBLISHED_BY]!!,
               publishedTime = record[PUBLISHED_REPORTS.PUBLISHED_TIME]!!,
               quarter = record[PUBLISHED_REPORTS.REPORT_QUARTER_ID],
               reportId = record[PUBLISHED_REPORTS.REPORT_ID]!!,
-              startDate = record[PUBLISHED_REPORTS.START_DATE]!!)
+              startDate = record[PUBLISHED_REPORTS.START_DATE]!!,
+              standardMetrics = record[standardMetricsMultiset],
+              systemMetrics = record[systemMetricsMultiset],
+          )
         }
   }
 
@@ -77,4 +99,85 @@ class PublishedReportsStore(
               )
             }
           }
+
+  private fun <ID : Any> publishedMetricsMultiset(
+      metricTableIdField: TableField<*, ID?>,
+      publishedMetricIdField: TableField<*, ID?>,
+  ): Field<List<PublishedReportMetricModel<ID>>> {
+    val publishedMetricTable = publishedMetricIdField.table!!
+    val reportIdField =
+        publishedMetricTable.field(
+            "report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val statusField =
+        publishedMetricTable.field(
+            "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
+    val targetField = publishedMetricTable.field("target", Int::class.java)!!
+    val underperformanceJustificationField =
+        publishedMetricTable.field("underperformance_justification", String::class.java)!!
+    val valueField = publishedMetricTable.field("value", Int::class.java)!!
+
+    val metricTable = metricTableIdField.table!!
+    val metricComponentField =
+        metricTable.field(
+            "component_id", SQLDataType.INTEGER.asConvertedDataType(MetricComponentConverter()))!!
+    val metricDescriptionField = metricTable.field("description", String::class.java)!!
+    val metricNameField = metricTable.field("name", String::class.java)!!
+    val metricReferenceField = metricTable.field("reference", String::class.java)!!
+    val metricTypeField =
+        metricTable.field(
+            "type_id", SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()))!!
+
+    return DSL.multiset(
+            DSL.select(
+                    publishedMetricIdField,
+                    metricComponentField,
+                    metricDescriptionField,
+                    metricNameField,
+                    metricReferenceField,
+                    metricTypeField,
+                    statusField,
+                    targetField,
+                    underperformanceJustificationField,
+                    valueField,
+                )
+                .from(publishedMetricTable)
+                .join(metricTable)
+                .on(metricTableIdField.eq(publishedMetricIdField))
+                .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
+                .orderBy(metricReferenceField))
+        .convertFrom { result ->
+          result.map {
+            PublishedReportMetricModel(
+                component = it[metricComponentField],
+                description = it[metricDescriptionField],
+                metricId = it[publishedMetricIdField.asNonNullable()],
+                name = it[metricNameField],
+                reference = it[metricReferenceField],
+                status = it[statusField],
+                target = it[targetField],
+                type = it[metricTypeField],
+                underperformanceJustification = it[underperformanceJustificationField],
+                value = it[valueField],
+            )
+          }
+        }
+  }
+
+  private val projectMetricsMultiset =
+      publishedMetricsMultiset(
+          PROJECT_METRICS.ID,
+          PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
+      )
+
+  private val standardMetricsMultiset =
+      publishedMetricsMultiset(
+          STANDARD_METRICS.ID,
+          PUBLISHED_REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+      )
+
+  private val systemMetricsMultiset =
+      publishedMetricsMultiset(
+          SYSTEM_METRICS.ID,
+          PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
+      )
 }
