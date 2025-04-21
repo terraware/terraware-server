@@ -60,6 +60,10 @@ class AdminAskController(
     try {
       val project = projectStore.fetchOneById(projectId)
 
+      if (!embeddingService.hasEmbeddings(projectId)) {
+        throw IllegalStateException("Project $projectId has not been prepared yet")
+      }
+
       model.addAttribute("answer", null)
       model.addAttribute("conversationId", UUID.randomUUID().toString())
       model.addAttribute("project", project)
