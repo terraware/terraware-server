@@ -45,7 +45,7 @@ import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -744,6 +744,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
 
   companion object {
-    @JvmStatic fun supportedLocales() = listOf(Locale.US, Locales.GIBBERISH)
+    @JvmStatic
+    fun supportedLocales() =
+        listOf(Locales.ENGLISH, Locales.FRENCH, Locales.GIBBERISH, Locales.SPANISH)
   }
 }

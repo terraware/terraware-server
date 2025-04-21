@@ -8,7 +8,10 @@ import java.util.concurrent.ConcurrentHashMap
 import org.springframework.context.i18n.LocaleContextHolder
 
 object Locales {
+  val ENGLISH = Locale.ENGLISH
+  val FRENCH = Locale.FRENCH
   val GIBBERISH = Locale.forLanguageTag("gx")
+  val SPANISH = Locale.forLanguageTag("es")
 }
 
 /**
