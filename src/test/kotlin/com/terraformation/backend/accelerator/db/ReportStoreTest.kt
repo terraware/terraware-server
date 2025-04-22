@@ -92,7 +92,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @BeforeEach
   fun setup() {
-    organizationId = insertOrganization()
+    organizationId = insertOrganization(timeZone = ZoneOffset.UTC)
     projectId = insertProject()
     insertProjectAcceleratorDetails(dealName = "DEAL_Report Project")
     insertOrganizationUser(role = Role.Admin)
@@ -361,6 +361,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                       )),
               ReportSystemMetricModel(
+                  metric = SystemMetric.HectaresPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 0,
+                      )),
+              ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
@@ -439,6 +445,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 98,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.HectaresPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 60,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
@@ -943,6 +955,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemTime = Instant.ofEpochSecond(8000),
                           modifiedTime = Instant.ofEpochSecond(500),
                           modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.HectaresPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 0,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
@@ -2230,6 +2248,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemMetricId = SystemMetric.SeedsCollected,
                   target = 0,
                   systemValue = 98,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.HectaresPlanted,
+                  target = 0,
+                  systemValue = 60,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -3626,6 +3653,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 0,
                   value = 50,
               ),
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.HectaresPlanted,
+                  statusId = null,
+                  target = null,
+                  value = 0,
+              ),
           ),
           "Published report system metrics table")
     }
@@ -3895,13 +3929,53 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         readyQuantityWithdrawn = -100,
     )
 
+    val pastPlantingCompletedDate = reportStartDate.minusDays(1)
+    val plantingCompletedDate1 = getRandomDate(reportStartDate, reportEndDate)
+    val plantingCompletedDate2 = getRandomDate(reportStartDate, reportEndDate)
+    val futurePlantingCompletedDate = reportEndDate.plusDays(1)
+
     val plantingSiteId1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId1 = insertPlantingSiteHistory()
+    insertPlantingZone()
+    val plantingSubzoneId1 =
+        insertPlantingSubzone(
+            areaHa = BigDecimal(10),
+            plantingCompletedTime = plantingCompletedDate1.atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
+    insertPlantingSubzone(
+        areaHa = BigDecimal(20),
+        plantingCompletedTime = pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+    )
+    // Not counted, not completed
+    insertPlantingSubzone(
+        areaHa = BigDecimal(1000),
+        plantingCompletedTime = null,
+    )
+    // Not counted, after reporting period
+    insertPlantingSubzone(
+        areaHa = BigDecimal(3000),
+        plantingCompletedTime =
+            futurePlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+    )
+
     val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId2 = insertPlantingSiteHistory()
+    insertPlantingZone()
+    insertPlantingSubzone(
+        areaHa = BigDecimal(30),
+        plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
+    )
+
     val otherPlantingSiteId =
         insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
     val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
+    insertPlantingZone()
+    // Not counted, outside of project site
+    val otherPlantingSubzoneId =
+        insertPlantingSubzone(
+            areaHa = BigDecimal(5000),
+            plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
 
     val deliveryId =
         insertDelivery(
@@ -3910,6 +3984,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
+        plantingSubzoneId = plantingSubzoneId1,
         deliveryId = deliveryId,
         numPlants = 27, // This should match up with the number of seedlings withdrawn
     )
@@ -3922,6 +3997,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
+        plantingSubzoneId = plantingSubzoneId1,
         deliveryId = undoneDeliveryId,
         numPlants = 200,
     )
@@ -3932,6 +4008,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
+        plantingSubzoneId = plantingSubzoneId1,
         plantingTypeId = PlantingType.Undo,
         deliveryId = undoDeliveryId,
         numPlants = -200,
@@ -3945,6 +4022,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = otherPlantingSiteId,
+        plantingSubzoneId = otherPlantingSubzoneId,
         deliveryId = otherDeliveryId,
         numPlants = 6,
     )
@@ -3957,6 +4035,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
+        plantingSubzoneId = plantingSubzoneId1,
         deliveryId = futureDeliveryId,
         numPlants = 9,
     )
