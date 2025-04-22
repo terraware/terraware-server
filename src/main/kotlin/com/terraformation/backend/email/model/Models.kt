@@ -515,3 +515,13 @@ class AcceleratorReportSubmitted(
   override val templateDir: String
     get() = "acceleratorReport/submitted"
 }
+
+class AcceleratorReportPublished(
+    config: TerrawareServerConfig,
+    val projectDealName: String,
+    val reportPrefix: String,
+    val funderReportUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "acceleratorReport/published"
+}

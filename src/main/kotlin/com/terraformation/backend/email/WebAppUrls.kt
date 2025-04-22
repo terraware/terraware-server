@@ -261,6 +261,20 @@ class WebAppUrls(
     return UriBuilder.fromPath("/projects/${projectId.value}/reports/${reportId.value}").build()
   }
 
+  fun fullFunderReport(
+      reportId: ReportId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/funder/home?tab=report&reportId=${reportId.value}")
+        .build()
+  }
+
+  fun funderReport(
+      reportId: ReportId,
+  ): URI {
+    return UriBuilder.fromPath("/funder/home?tab=report&reportId=${reportId.value}").build()
+  }
+
   // Section variable ID is unused for now but included in anticipation of being able to link
   // directly to a section in a document.
   fun fullDocument(documentId: DocumentId, sectionVariableId: VariableId?): URI {

@@ -134,6 +134,17 @@ class Messages {
                 "notification.acceleratorReport.submitted.app.body", projectDealName, reportPrefix))
   }
 
+  fun acceleratorReportPublished(
+      projectDealName: String,
+      reportPrefix: String
+  ): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.acceleratorReport.published.app.title", projectDealName),
+        body =
+            getMessage(
+                "notification.acceleratorReport.published.app.body", projectDealName, reportPrefix))
+  }
+
   fun accessionCsvColumnName(position: Int) = getMessage("accessionCsvColumnName.$position")
 
   fun accessionCsvCollectionSourceInvalid() =

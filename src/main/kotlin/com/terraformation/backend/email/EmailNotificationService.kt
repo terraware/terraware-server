@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
@@ -34,7 +35,6 @@ import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -49,6 +49,7 @@ import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
+import com.terraformation.backend.email.model.AcceleratorReportPublished
 import com.terraformation.backend.email.model.AcceleratorReportSubmitted
 import com.terraformation.backend.email.model.AcceleratorReportUpcoming
 import com.terraformation.backend.email.model.AccessionDryingEnd
@@ -736,16 +737,7 @@ class EmailNotificationService(
   @EventListener
   fun on(event: RateLimitedAcceleratorReportSubmittedEvent) {
     systemUser.run {
-      val report =
-          try {
-            reportStore.fetchOne(event.reportId)
-          } catch (e: ReportNotFoundException) {
-            log.error(
-                "Got report ready for review notification for report ${event.reportId} but the " +
-                    "report is not found")
-            return@run
-          }
-
+      val report = reportStore.fetchOne(event.reportId)
       val project = projectStore.fetchOneById(report.projectId)
 
       sendToAccelerator(
@@ -762,16 +754,7 @@ class EmailNotificationService(
   @EventListener
   fun on(event: AcceleratorReportUpcomingEvent) {
     systemUser.run {
-      val report =
-          try {
-            reportStore.fetchOne(event.reportId)
-          } catch (e: ReportNotFoundException) {
-            log.error(
-                "Got report upcoming notification for report ${event.reportId} but the report is " +
-                    "not found")
-            return@run
-          }
-
+      val report = reportStore.fetchOne(event.reportId)
       val project = projectStore.fetchOneById(report.projectId)
 
       emailService.sendOrganizationNotification(
@@ -781,6 +764,26 @@ class EmailNotificationService(
               report.prefix,
               webAppUrls.fullAcceleratorReport(event.reportId, report.projectId).toString()),
           roles = setOf(Role.Owner, Role.Admin))
+    }
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportPublishedEvent) {
+    systemUser.run {
+      val report = reportStore.fetchOne(event.reportId)
+      val project = projectStore.fetchOneById(report.projectId)
+      val fundingEntityIds = parentStore.getFundingEntityIds(report.projectId)
+
+      fundingEntityIds.forEach { fundingEntityId ->
+        emailService.sendFundingEntityNotification(
+            fundingEntityId,
+            AcceleratorReportPublished(
+                config,
+                report.projectDealName ?: project.name,
+                report.prefix,
+                webAppUrls.fullFunderReport(event.reportId).toString()),
+        )
+      }
     }
   }
 
