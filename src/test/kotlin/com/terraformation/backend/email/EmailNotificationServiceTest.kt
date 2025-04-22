@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
@@ -32,6 +33,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -418,6 +420,10 @@ internal class EmailNotificationServiceTest {
   private val sectionOwnerEmail = "owner@terraformation.com"
   private val sectionOwnerUser = userForEmail(sectionOwnerEmail)
 
+  private val funderUserId = UserId(7)
+  private val funderEmail = "funder@terraformation.com"
+  private val funderUser = funderUerForEmail(funderEmail)
+
   private val supportContactEmail = "support@terraformation.com"
 
   private val mimeMessageSlot = slot<MimeMessage>()
@@ -460,6 +466,7 @@ internal class EmailNotificationServiceTest {
         nonAcceleratorOrganization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
     every { parentStore.getFacilityName(accessionId) } returns facility.name
+    every { parentStore.getFundingEntityIds(project.id) } returns listOf(fundingEntity.id)
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(applicationId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
@@ -481,6 +488,7 @@ internal class EmailNotificationServiceTest {
     every { user.userId } returns UserId(2)
     every { userInternalInterestsStore.conditionForUsers(any()) } returns DSL.trueCondition()
     every { userStore.getTerraformationContactUser(any()) } returns null
+    every { userStore.fetchByFundingEntityId(fundingEntity.id) } returns listOf(funderUser)
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
     every {
@@ -490,6 +498,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
     every { userStore.fetchOneById(sectionOwnerUserId) } returns sectionOwnerUser
+    every { userStore.fetchOneById(funderUserId) } returns funderUser
     every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), any()) } returns
         listOf(acceleratorUser)
     every { variableStore.fetchOneVariable(sectionVariable.id, sectionVariable.manifestId) } returns
@@ -1232,6 +1241,17 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `acceleratorReportPublishedEvent should notify funders`() {
+    service.on(AcceleratorReportPublishedEvent(acceleratorReportId))
+
+    val message = sentMessageFor("funder@terraformation.com")
+
+    assertSubjectContains("New Report Available for ${report.projectDealName}", message = message)
+    assertBodyContains("${report.prefix} report is now available in Terraware.", message = message)
+    assertRecipientsEqual(setOf(funderEmail))
+  }
+
+  @Test
   fun `applicationSubmittedEvent should notify global role users and TFContact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
@@ -1657,6 +1677,20 @@ internal class EmailNotificationServiceTest {
 
   private fun userForEmail(email: String): IndividualUser {
     val mock: IndividualUser = mockk()
+
+    every { mock.email } returns email
+    every { mock.emailNotificationsEnabled } returns true
+    if (email.startsWith("gibberish")) {
+      every { mock.locale } returns Locales.GIBBERISH
+    } else {
+      every { mock.locale } returns Locale.ENGLISH
+    }
+
+    return mock
+  }
+
+  private fun funderUerForEmail(email: String): FunderUser {
+    val mock: FunderUser = mockk()
 
     every { mock.email } returns email
     every { mock.emailNotificationsEnabled } returns true

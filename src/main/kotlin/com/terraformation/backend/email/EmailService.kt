@@ -3,11 +3,12 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
@@ -67,6 +68,24 @@ class EmailService(
   }
 
   /**
+   * Sends an email notification to all the funders within a funding entity
+   *
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   *   opted out of email notifications. The default is to obey the user's notification preference,
+   *   which is the correct thing to do in the vast majority of cases.
+   */
+  fun sendFundingEntityNotification(
+      fundingEntityId: FundingEntityId,
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true,
+  ) {
+    userStore.fetchByFundingEntityId(fundingEntityId).forEach { user ->
+      sendUserNotification(user, model, requireOptIn)
+    }
+  }
+
+  /**
    * Sends an email notification to all the people who should be notified about something happening
    * to a particular organization.
    *
@@ -97,7 +116,7 @@ class EmailService(
    *   correct thing to do in the majority of cases.
    */
   fun sendUserNotification(
-      user: IndividualUser,
+      user: TerrawareUser,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
   ) {
