@@ -1,3 +1,5 @@
+01f99c90ea1 Use RunsAsDatabaseUser for a couple more tests (#3055)
+fb0839dd64b SW-6803 Hectares Planted Metric (#3054)
 dbae373f83d Updated translations from Phrase (#3039)
 8469be26602 SW-6327 Add fields to species CSV import (#3051)
 0316cbb2a71 Make SpeciesImporterTest use assertTableEquals (#3050)
