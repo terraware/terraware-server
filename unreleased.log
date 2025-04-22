@@ -1,3 +1,7 @@
+0316cbb2a71 Make SpeciesImporterTest use assertTableEquals (#3050)
+a7fe030a521 SW-6767 Don't allow asking about unprepared projects (#3053)
+cf504bea00b Test all locales' templates in SpeciesImporterTest (#3049)
+58f5ccacca2 SW-6804 Added published metrics to report fetch (#3052)
 6ebbfe94309 Make project details properties nullable (#3048)
 71273d56d50 SW-6189 Remove remaining references to clusters (#3045)
 909d136289b SW-6189 Rename "cluster number" to "permanent index" (#3044)
