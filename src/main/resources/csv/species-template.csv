@@ -72,4 +72,31 @@ Please choose from the following list or an error will occur during upload:
 - Tropical and subtropical moist broad leaf forests
 - Tundra
 
-You can add multiple ecosystem types if they are separated with line breaks."
+You can add multiple ecosystem types if they are separated with line breaks.","Native Ecosystem
+
+List the ecosystem type where this species is found naturally. You may include details such as elevation range, rainfall, etc.","Successional Group
+
+Please choose from the following list or an error will occur during upload:
+
+- Pioneer
+- Early secondary
+- Late secondary
+- Mature
+
+You can add multiple successional groups if they are separated with line breaks.","Ecological Role Known
+
+List ecological roles such as functional group of the species, ecosystem services provided, role as keystone species, etc.","Local Uses Known
+
+List any important traditional, cultural, social, economic/livelihood uses of the species in your region.","Plant Material Sourcing Method
+
+Please choose from the following list or an error will occur during upload:
+
+- Seed collection & germination
+- Seed purchase & germination
+- Mangrove propagules
+- Vegetative propagation
+- Wildling harvest
+- Seedling purchase
+- Other
+
+You can add multiple sourcing methods if they are separated with line breaks.","Other Facts"

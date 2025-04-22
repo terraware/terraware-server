@@ -6,7 +6,9 @@ import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
@@ -201,6 +203,12 @@ class Messages {
 
   fun speciesCsvEcosystemTypesInvalid() =
       getMessage("speciesCsvEcosystemTypesInvalid", validEcosystemTypes)
+
+  fun speciesCsvSuccessionalGroupInvalid() =
+      getMessage("speciesCsvSuccessionalGroupInvalid", validSuccessionalGroups)
+
+  fun speciesCsvPlantMaterialSourcingMethodInvalid() =
+      getMessage("speciesCsvPlantMaterialSourcingMethodInvalid", validPlantMaterialSourcingMethods)
 
   fun searchFieldDisplayName(tableName: String, fieldName: String) =
       getMessage("search.$tableName.$fieldName")
@@ -549,9 +557,15 @@ class Messages {
   private val validGrowthForms
     get() = getEnumValuesList(GrowthForm.entries)
 
+  private val validPlantMaterialSourcingMethods
+    get() = getEnumValuesList(PlantMaterialSourcingMethod.entries)
+
   private val validQuantityUnits
     get() = getEnumValuesList(SeedQuantityUnits.entries)
 
   private val validSeedStorageBehaviors
     get() = getEnumValuesList(SeedStorageBehavior.entries)
+
+  private val validSuccessionalGroups
+    get() = getEnumValuesList(SuccessionalGroup.entries)
 }

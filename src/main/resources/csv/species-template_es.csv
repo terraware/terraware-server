@@ -68,4 +68,31 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 - Praderas, sabanas y matorrales tropicales y subtropicales
 - Tundra
 
-Puede agregar varios tipos de ecosistemas si están separados por saltos de línea."
+Puede agregar varios tipos de ecosistemas si están separados por saltos de línea.","Ecosistema autóctono
+
+Indique el tipo de ecosistema donde se encuentra esta especie de forma natural. Puede incluir detalles como la altitud, las precipitaciones, etc.","Grupo sucesional
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Pionero
+- Secundario temprano
+- Secundario tardío
+- Maduro
+
+Puede agregar varios grupos sucesionales si están separados con saltos de línea.","Función ecológica conocida
+
+Enumere los roles ecológicos como el grupo funcional de la especie, los servicios ecosistémicos que brinda, el rol como especie clave, etc.","Usos locales conocidos
+
+Enumere todos los usos importantes tradicionales, culturales, sociales, económicos y de subsistencia de las especies en su región.","Método de obtención de material vegetal
+
+Elija de la siguiente lista o se producirá un error durante la carga:
+
+- Compra de plántulas
+- Compra y germinación de semillas
+- Cosecha de plántulas silvestres
+- Propagación vegetativa
+- Propágulos de manglar
+- Recolección y germinación de semillas
+- Otro
+
+Puede agregar varios métodos de obtención si están separados por saltos de línea.","Otros datos"

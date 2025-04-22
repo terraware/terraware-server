@@ -11,7 +11,7 @@ import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -23,10 +23,9 @@ internal class SpeciesCsvValidatorTest {
   private val existingScientificNames = setOf("Existing a", "Existing b", "Existing c", "Renamed d")
   private val uploadId = UploadId(1)
 
-  private val header =
-      "Scientific Name,Common Name,Family,IUCN Red List Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
+  private val header = speciesCsvColumnNames.joinToString(",")
   private val gibberishHeader: String by lazy {
-    header.split(',').joinToString(",") { it.toGibberish() }
+    speciesCsvColumnNames.joinToString(",") { it.toGibberish() }
   }
 
   @Nested
@@ -46,9 +45,9 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `column names may be quoted`() {
-      assertValidationResults(
-          """"Scientific Name","Common Name","Family","IUCN Red List Category","Rare","Growth Form","Seed Storage Behavior","Ecosystem Types"""" +
-              "\n")
+      val headerWithQuotedColumns =
+          speciesCsvColumnNames.joinToString(separator = "\",\"", prefix = "\"", postfix = "\"\n")
+      assertValidationResults(headerWithQuotedColumns)
     }
 
     @Test
@@ -115,7 +114,7 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `existing names are flagged as warnings`() {
-      val csv = "$header\nExisting a,,,,,,,\nNew name,,,,,,,\nExisting b,,,,,,,\n"
+      val csv = "$header\nExisting a,,,,,,,,,,,,,\nNew name,,,,,,,,,,,,,\nExisting b,,,,,,,,,,,,,\n"
 
       assertValidationResults(
           csv,
@@ -142,7 +141,7 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `duplicate initial names are flagged as duplicates of the current names`() {
-      val csv = "$header\nInitial d,,,,,,,\n"
+      val csv = "$header\nInitial d,,,,,,,,,,,,,\n"
 
       assertValidationResults(
           csv,
@@ -160,7 +159,7 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `uses localized column name in problem description`() {
-      val csv = "$gibberishHeader\nBogus,,,,,,,"
+      val csv = "$gibberishHeader\nBogus,,,,,,,,,,,,,"
 
       Locales.GIBBERISH.use {
         assertValidationResults(
@@ -179,7 +178,7 @@ internal class SpeciesCsvValidatorTest {
     }
 
     private fun csvWithScientificName(scientificName: String): String =
-        "$header\n$scientificName,,,,,,,"
+        "$header\n$scientificName,,,,,,,,,,,,,"
 
     private fun assertError(
         scientificName: String,
@@ -225,7 +224,7 @@ internal class SpeciesCsvValidatorTest {
     }
 
     private fun csvWithFamilyName(familyName: String): String =
-        "$header\nScientific Name,,$familyName,,,,,"
+        "$header\nScientific Name,,$familyName,,,,,,,,,,,"
 
     private fun assertError(
         familyName: String,
@@ -250,7 +249,7 @@ internal class SpeciesCsvValidatorTest {
 
   @Test
   fun `rejects rows with incorrect number of fields`() {
-    val csv = "$header\n,,,\n,,,,,,,,,\n"
+    val csv = "$header\n,,,\n,,,,,,,,,,,,,,,\n"
 
     assertValidationResults(
         csv,
@@ -258,14 +257,14 @@ internal class SpeciesCsvValidatorTest {
             setOf(
                 UploadProblemsRow(
                     isError = true,
-                    message = messages.csvWrongFieldCount(8, 4),
+                    message = messages.csvWrongFieldCount(14, 4),
                     position = 2,
                     typeId = MalformedValue,
                     uploadId = uploadId,
                 ),
                 UploadProblemsRow(
                     isError = true,
-                    message = messages.csvWrongFieldCount(8, 10),
+                    message = messages.csvWrongFieldCount(14, 16),
                     position = 3,
                     typeId = MalformedValue,
                     uploadId = uploadId,
@@ -274,7 +273,9 @@ internal class SpeciesCsvValidatorTest {
 
   @Test
   fun `rejects unrecognized values for enumerated fields`() {
-    val csv = "$header\nSci name,Common,Family,XY,unknown,Mushroom,Impossible,Outer Space\n"
+    val csv =
+        "$header\n" +
+            "Sci name,Common,Family,XY,unknown,Mushroom,Impossible,Outer Space,,Logan Roy,,,Wal-Mart,\n"
 
     assertValidationResults(
         csv,
@@ -325,6 +326,24 @@ internal class SpeciesCsvValidatorTest {
                     uploadId = uploadId,
                     value = "Outer Space",
                 ),
+                UploadProblemsRow(
+                    field = "Successional Group",
+                    isError = true,
+                    message = messages.speciesCsvSuccessionalGroupInvalid(),
+                    position = 2,
+                    typeId = UnrecognizedValue,
+                    uploadId = uploadId,
+                    value = "Logan Roy",
+                ),
+                UploadProblemsRow(
+                    field = "Plant Material Sourcing Method",
+                    isError = true,
+                    message = messages.speciesCsvPlantMaterialSourcingMethodInvalid(),
+                    position = 2,
+                    typeId = UnrecognizedValue,
+                    uploadId = uploadId,
+                    value = "Wal-Mart",
+                ),
             ))
   }
 
@@ -334,23 +353,26 @@ internal class SpeciesCsvValidatorTest {
     val gibberishShrub = "Shrub or Tree".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
+    val gibberishEarlySecondary = "Early secondary".toGibberish()
+    val gibberishSeedlingPurchase = "Seedling purchase".toGibberish()
     val csv =
         "$gibberishHeader\n" +
-            "Sci name,Common,Family,LC,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves\n"
+            "Sci name,Common,Family,LC,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant," +
+            "$gibberishMangroves,,$gibberishEarlySecondary,,,$gibberishSeedlingPurchase,\n"
 
     Locales.GIBBERISH.use { assertValidationResults(csv) }
   }
 
   @Test
   fun `accepts multiple values for ecosystem types`() {
-    val csv = "$header\nSci name,Common,,,,,,\"Tundra\nMangroves \""
+    val csv = "$header\nSci name,Common,,,,,,\"Tundra\nMangroves \",,,,,,"
 
     assertValidationResults(csv)
   }
 
   @Test
   fun `accepts both UNIX-style and Windows-style line separators`() {
-    val csv = "$header\nScientific a,,,,,,,\r\nScientific b,,,,,,,\r\n"
+    val csv = "$header\nScientific a,,,,,,,,,,,,,\r\nScientific b,,,,,,,,,,,,,\r\n"
     assertValidationResults(csv)
   }
 
