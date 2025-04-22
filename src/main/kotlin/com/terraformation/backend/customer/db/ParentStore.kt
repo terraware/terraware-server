@@ -21,6 +21,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -49,6 +50,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -116,6 +118,13 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(withdrawalId: WithdrawalId): FacilityId? =
       fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.FACILITY_ID)
+
+  fun getFundingEntityIds(projectId: ProjectId): List<FundingEntityId> =
+      dslContext
+          .select(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID)
+          .from(FUNDING_ENTITY_PROJECTS)
+          .where(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(projectId))
+          .fetch(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID.asNonNullable())
 
   fun getOrganizationId(applicationId: ApplicationId): OrganizationId? =
       fetchFieldById(applicationId, APPLICATIONS.ID, APPLICATIONS.projects.ORGANIZATION_ID)

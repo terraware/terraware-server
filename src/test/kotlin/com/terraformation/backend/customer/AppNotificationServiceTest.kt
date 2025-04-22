@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
@@ -54,6 +55,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -70,6 +72,7 @@ import com.terraformation.backend.documentproducer.event.CompletedSectionVariabl
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
@@ -129,6 +132,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var deviceStore: DeviceStore
   private lateinit var documentStore: DocumentStore
   private lateinit var facilityStore: FacilityStore
+  private lateinit var fundingEntityStore: FundingEntityStore
   private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
@@ -617,6 +621,55 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "DEAL_name has submitted their 2025 Q1 Report.",
         localUrl = webAppUrls.acceleratorConsoleReport(reportId, projectId),
         organizationId = null)
+  }
+
+  @Test
+  fun `should store accelerator report published notification for funders`() {
+    val fundingEntityIdA = insertFundingEntity()
+    val fundingEntityIdB = insertFundingEntity()
+
+    val userIdA1 = insertUser(type = UserType.Funder)
+    val userIdA2 = insertUser(type = UserType.Funder)
+    val userIdB1 = insertUser(type = UserType.Funder)
+
+    insertFundingEntityUser(fundingEntityIdA, userIdA1)
+    insertFundingEntityUser(fundingEntityIdA, userIdA2)
+    insertFundingEntityUser(fundingEntityIdB, userIdB1)
+
+    // Not notified
+    insertFundingEntity()
+    insertUser(type = UserType.Funder)
+    insertFundingEntityUser()
+
+    val projectId = insertProject()
+    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertProjectReportConfig()
+
+    insertFundingEntityProject(fundingEntityIdA, projectId)
+    insertFundingEntityProject(fundingEntityIdB, projectId)
+
+    val reportId =
+        insertReport(
+            projectId = projectId,
+            status = ReportStatus.Approved,
+            startDate = LocalDate.of(2025, Month.JANUARY, 1),
+            endDate = LocalDate.of(2025, Month.MARCH, 31),
+        )
+
+    val commonValues =
+        NotificationsRow(
+            notificationTypeId = NotificationType.AcceleratorReportPublished,
+            title = "New Report Available for DEAL_name",
+            body = "DEAL_name's 2025 Q1 report is now available in Terraware.",
+            localUrl = webAppUrls.funderReport(reportId),
+            organizationId = null)
+
+    testMultipleEventNotifications(
+        AcceleratorReportPublishedEvent(reportId),
+        listOf(
+            commonValues.copy(userId = userIdA1),
+            commonValues.copy(userId = userIdA2),
+            commonValues.copy(userId = userIdB1)))
   }
 
   @Test

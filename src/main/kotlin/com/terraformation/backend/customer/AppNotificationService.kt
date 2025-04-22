@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
@@ -27,7 +28,6 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
@@ -503,16 +503,7 @@ class AppNotificationService(
   @EventListener
   fun on(event: AcceleratorReportUpcomingEvent) {
     systemUser.run {
-      val report =
-          try {
-            reportStore.fetchOne(event.reportId)
-          } catch (e: ReportNotFoundException) {
-            log.error(
-                "Got report upcoming notification for report ${event.reportId} but the report is " +
-                    "not found")
-            return@run
-          }
-
+      val report = reportStore.fetchOne(event.reportId)
       val project = projectStore.fetchOneById(report.projectId)
 
       val renderMessage = { messages.acceleratorReportUpcoming(report.prefix) }
@@ -529,16 +520,7 @@ class AppNotificationService(
   @EventListener
   fun on(event: RateLimitedAcceleratorReportSubmittedEvent) {
     systemUser.run {
-      val report =
-          try {
-            reportStore.fetchOne(event.reportId)
-          } catch (e: ReportNotFoundException) {
-            log.error(
-                "Got report ready for review notification for report ${event.reportId} but the " +
-                    "report is not found")
-            return@run
-          }
-
+      val report = reportStore.fetchOne(event.reportId)
       val project = projectStore.fetchOneById(report.projectId)
 
       val renderMessage = {
@@ -551,6 +533,28 @@ class AppNotificationService(
           NotificationType.AcceleratorReportSubmitted,
           project.organizationId,
           renderMessage)
+    }
+  }
+
+  @EventListener
+  fun on(event: AcceleratorReportPublishedEvent) {
+    systemUser.run {
+      val report = reportStore.fetchOne(event.reportId)
+      val fundingEntityIds = parentStore.getFundingEntityIds(report.projectId)
+      val project = projectStore.fetchOneById(report.projectId)
+
+      val renderMessage = {
+        messages.acceleratorReportPublished(
+            projectDealName = report.projectDealName ?: project.name, reportPrefix = report.prefix)
+      }
+
+      fundingEntityIds.forEach { fundingEntityId ->
+        insertFundingEntityNotification(
+            webAppUrls.funderReport(event.reportId),
+            NotificationType.AcceleratorReportPublished,
+            fundingEntityId,
+            renderMessage)
+      }
     }
   }
 
