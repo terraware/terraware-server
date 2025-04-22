@@ -422,7 +422,7 @@ internal class EmailNotificationServiceTest {
 
   private val funderUserId = UserId(7)
   private val funderEmail = "funder@terraformation.com"
-  private val funderUser = funderUerForEmail(funderEmail)
+  private val funderUser = funderUserForEmail(funderEmail)
 
   private val supportContactEmail = "support@terraformation.com"
 
@@ -1689,7 +1689,7 @@ internal class EmailNotificationServiceTest {
     return mock
   }
 
-  private fun funderUerForEmail(email: String): FunderUser {
+  private fun funderUserForEmail(email: String): FunderUser {
     val mock: FunderUser = mockk()
 
     every { mock.email } returns email
