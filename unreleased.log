@@ -1,3 +1,4 @@
+94c41dd5812 SW-6769 Added published report event (#3057)
 8e6d37eabc5 Split ObservationStoreTest (#3056)
 01f99c90ea1 Use RunsAsDatabaseUser for a couple more tests (#3055)
 fb0839dd64b SW-6803 Hectares Planted Metric (#3054)
