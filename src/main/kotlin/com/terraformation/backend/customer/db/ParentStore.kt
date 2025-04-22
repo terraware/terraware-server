@@ -124,6 +124,7 @@ class ParentStore(private val dslContext: DSLContext) {
           .select(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID)
           .from(FUNDING_ENTITY_PROJECTS)
           .where(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(projectId))
+          .orderBy(FUNDING_ENTITY_PROJECTS.PROJECT_ID)
           .fetch(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID.asNonNullable())
 
   fun getOrganizationId(applicationId: ApplicationId): OrganizationId? =
