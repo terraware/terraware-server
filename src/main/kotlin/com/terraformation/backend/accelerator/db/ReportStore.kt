@@ -54,12 +54,14 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -1092,6 +1094,50 @@ class ReportStore(
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 
+  private fun timestampToLocalDateField(
+      timestampField: Field<Instant?>,
+      timezoneField: Field<ZoneId>,
+  ): Field<LocalDate> {
+    // https://github.com/jOOQ/jOOQ/issues/7238
+    return DSL.field(
+        "({0}) AT TIME ZONE ({1})",
+        LocalDate::class.java,
+        timestampField,
+        timezoneField,
+    )
+  }
+
+  // Timezone for a planting site. Defaults to planting site, then organization, then UTC
+  private fun plantingSiteTimeZoneField(
+      plantingSiteIdField: Field<PlantingSiteId?>
+  ): Field<ZoneId> {
+    return DSL.field(
+            DSL.select(
+                    DSL.coalesce(
+                        PLANTING_SITES.TIME_ZONE, ORGANIZATIONS.TIME_ZONE, DSL.value("UTC")))
+                .from(PLANTING_SITES)
+                .join(ORGANIZATIONS)
+                .on(PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                .where(PLANTING_SITES.ID.eq(plantingSiteIdField)))
+        .asNonNullable()
+  }
+
+  private val hectaresPlantedField =
+      with(PLANTING_SUBZONES) {
+        DSL.field(
+                DSL.select(DSL.sum(AREA_HA))
+                    .from(this)
+                    .join(PLANTING_SITES)
+                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                    .where(
+                        timestampToLocalDateField(
+                                PLANTING_COMPLETED_TIME,
+                                plantingSiteTimeZoneField(PLANTING_SITE_ID))
+                            .le(REPORTS.END_DATE))
+                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+            .convertFrom { it.toInt() }
+      }
+
   private val mortalityRateDenominatorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
 
@@ -1114,25 +1160,10 @@ class ReportStore(
                               .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
                               .from(OBSERVATIONS)
                               .where(
-                                  OBSERVATIONS.COMPLETED_TIME.lessThan(
-                                      // https://github.com/jOOQ/jOOQ/issues/7238
-                                      DSL.field(
-                                          "({0}) AT TIME ZONE ({1})",
-                                          SQLDataType.INSTANT,
-                                          REPORTS.END_DATE.plus(1),
-                                          DSL.select(
-                                                  DSL.coalesce(
-                                                      PLANTING_SITES.TIME_ZONE,
-                                                      ORGANIZATIONS.TIME_ZONE,
-                                                      DSL.value("UTC")))
-                                              .from(PLANTING_SITES)
-                                              .join(ORGANIZATIONS)
-                                              .on(
-                                                  PLANTING_SITES.ORGANIZATION_ID.eq(
-                                                      ORGANIZATIONS.ID))
-                                              .where(
-                                                  PLANTING_SITES.ID.eq(
-                                                      OBSERVATIONS.PLANTING_SITE_ID)))))
+                                  timestampToLocalDateField(
+                                          OBSERVATIONS.COMPLETED_TIME,
+                                          plantingSiteTimeZoneField(OBSERVATIONS.PLANTING_SITE_ID))
+                                      .le(REPORTS.END_DATE))
                               .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                               .and(OBSERVATIONS.IS_AD_HOC.isFalse)
                               .orderBy(
@@ -1236,6 +1267,7 @@ class ReportStore(
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.HectaresPlanted), hectaresPlantedField)
               .else_(0),
           DSL.value(0))
 
