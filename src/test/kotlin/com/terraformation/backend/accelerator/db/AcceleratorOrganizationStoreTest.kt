@@ -1,12 +1,12 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.mockUser
-import io.mockk.every
+import com.terraformation.backend.db.default_schema.GlobalRole
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val store: AcceleratorOrganizationStore by lazy {
     AcceleratorOrganizationStore(dslContext)
@@ -24,7 +24,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { user.canReadInternalTags() } returns true
+    insertUserGlobalRole(role = GlobalRole.ReadOnly)
   }
 
   @Nested
@@ -100,7 +100,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read internal tags`() {
-      every { user.canReadInternalTags() } returns false
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
       assertThrows<AccessDeniedException> { store.fetchWithUnassignedProjects() }
     }
@@ -188,7 +188,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read internal tags`() {
-      every { user.canReadInternalTags() } returns false
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
       assertThrows<AccessDeniedException> { store.fetchWithUnassignedProjects() }
     }
@@ -198,8 +198,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FindAllWithProjectApplication {
     @Test
     fun `returns all organizations with a project that has an application`() {
-      every { user.canReadAllAcceleratorDetails() } returns true
-
       val projectApplicationOrg1Id = insertOrganization(name = "ProjectApplicationOrg1")
       val projectApplicationOrg1ProjectId = insertProject(organizationId = projectApplicationOrg1Id)
       insertApplication(
@@ -260,7 +258,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read all accelerator details (read only and higher)`() {
-      every { user.canReadAllAcceleratorDetails() } returns false
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
       assertThrows<AccessDeniedException> { store.findAllWithProjectApplication() }
     }

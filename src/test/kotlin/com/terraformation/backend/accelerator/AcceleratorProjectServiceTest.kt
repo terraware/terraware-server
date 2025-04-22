@@ -1,23 +1,24 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.mockUser
-import io.mockk.every
+import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val service: AcceleratorProjectService by lazy { AcceleratorProjectService(dslContext) }
 
@@ -44,8 +45,7 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
         voteOption = null,
     )
 
-    every { user.canReadAllAcceleratorDetails() } returns true
-    every { user.canReadProjectAcceleratorDetails(any()) } returns true
+    insertUserGlobalRole(role = GlobalRole.ReadOnly)
   }
 
   @Test
@@ -96,14 +96,13 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `throws exception if no permission to read one or list accelerator projects`() {
-    every { user.canReadAllAcceleratorDetails() } returns false
+    deleteUserGlobalRole(role = GlobalRole.ReadOnly)
     assertThrows<AccessDeniedException> { service.listAcceleratorProjects() }
 
-    every { user.canReadProjectAcceleratorDetails(inserted.projectId) } returns false
-    every { user.canReadProject(inserted.projectId) } returns true
+    insertOrganizationUser(role = Role.Manager)
     assertThrows<AccessDeniedException> { service.fetchOneById(inserted.projectId) }
 
-    every { user.canReadProject(inserted.projectId) } returns false
+    deleteOrganizationUser()
     assertThrows<ProjectNotFoundException> { service.fetchOneById(inserted.projectId) }
   }
 }
