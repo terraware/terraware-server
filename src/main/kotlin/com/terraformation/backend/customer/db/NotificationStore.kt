@@ -105,11 +105,8 @@ class NotificationStore(
    *   notifications, the organization id in the notification model will be null, hence this
    *   additional organization id parameter to capture context.
    */
-  fun create(
-      notification: CreateNotificationModel,
-      targetOrganizationId: OrganizationId
-  ): NotificationId {
-    requirePermissions { createNotification(notification.userId, targetOrganizationId) }
+  fun create(notification: CreateNotificationModel): NotificationId {
+    requirePermissions { createNotification(notification.userId) }
     return with(NOTIFICATIONS) {
       with(notification) {
         dslContext

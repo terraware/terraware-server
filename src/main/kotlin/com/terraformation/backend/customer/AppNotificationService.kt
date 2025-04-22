@@ -484,7 +484,6 @@ class AppNotificationService(
 
       if (sectionOwnerUserId != null) {
         val document = documentStore.fetchOneById(event.documentId)
-        val project = projectStore.fetchOneById(event.projectId)
         val sectionVariable =
             variableStore.fetchOneVariable(event.sectionVariableId, document.variableManifestId)
         val user = userStore.fetchOneById(sectionOwnerUserId)
@@ -495,7 +494,7 @@ class AppNotificationService(
             null,
             { messages.completedSectionVariableUpdated(document.name, sectionVariable.name) },
             webAppUrls.document(event.documentId, event.referencingSectionVariableId),
-            project.organizationId)
+        )
       }
     }
   }
@@ -606,7 +605,7 @@ class AppNotificationService(
           null,
           renderMessage,
           organizationHomeUrl,
-          organization.id)
+      )
     }
   }
 
@@ -617,11 +616,13 @@ class AppNotificationService(
       localUrl: URI,
       roles: Set<Role>? = null,
   ) {
-    val recipients = userStore.fetchByOrganizationId(organizationId, false, roles)
+    systemUser.run {
+      val recipients = userStore.fetchByOrganizationId(organizationId, false, roles)
 
-    dslContext.transaction { _ ->
-      recipients.forEach { user ->
-        insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
+      dslContext.transaction { _ ->
+        recipients.forEach { user ->
+          insert(notificationType, user, organizationId, renderMessage, localUrl)
+        }
       }
     }
   }
@@ -651,7 +652,7 @@ class AppNotificationService(
         recipients.forEach { user ->
           // this is a global notification not scoped to any specific org permission, for
           // accelerator purposes
-          insert(notificationType, user, null, renderMessage, localUrl, organizationId)
+          insert(notificationType, user, null, renderMessage, localUrl)
         }
       }
     }
@@ -663,13 +664,12 @@ class AppNotificationService(
       organizationId: OrganizationId?,
       renderMessage: () -> NotificationMessage,
       localUrl: URI,
-      targetOrganizationId: OrganizationId
   ) {
     val locale = user.locale ?: Locale.ENGLISH
     val message = locale.use { renderMessage() }
     val notification =
         CreateNotificationModel(
             notificationType, user.userId, organizationId, message.title, message.body, localUrl)
-    notificationStore.create(notification, targetOrganizationId)
+    notificationStore.create(notification)
   }
 }

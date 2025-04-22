@@ -272,7 +272,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateAutomation(any()) } returns true
-    every { user.canCreateNotification(any(), organizationId) } returns true
+    every { user.canCreateNotification(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canReadAccession(any()) } returns true
     every { user.canReadAllDeliverables() } returns true

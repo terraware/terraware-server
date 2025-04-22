@@ -73,7 +73,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     store = NotificationStore(dslContext, clock)
 
     every { user.canReadOrganization(any()) } returns true
-    every { user.canCreateNotification(any(), any()) } returns true
+    every { user.canCreateNotification(any()) } returns true
     every { user.canReadNotification(any()) } returns true
     every { user.canListNotifications(any()) } returns true
     every { user.canUpdateNotification(any()) } returns true
@@ -89,7 +89,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
         0,
         dslContext.fetchCount(NOTIFICATIONS),
         "Expected count of 0 notifications when none were created")
-    store.create(notificationModel(), organizationId)
+    store.create(notificationModel())
     assertEquals(
         1,
         dslContext.fetchCount(NOTIFICATIONS),
@@ -99,7 +99,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should fetch a notification by id`() {
     val toCreate = notificationModel()
-    val id = store.create(toCreate, organizationId)
+    val id = store.create(toCreate)
     val expected = toModel(toCreate, id)
     assertEquals(
         expected, store.fetchById(id), "Notification fetched by id does not match what was created")
@@ -112,7 +112,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   ) {
     val orgId = if (globalNotifications) null else organizationId
     val model = notificationModel(globalNotifications)
-    val createdIds = (1..5).map { store.create(model, organizationId) }
+    val createdIds = (1..5).map { store.create(model) }
     val expected = createdIds.map { id -> toModel(model, id) }
 
     assertEquals(
@@ -129,10 +129,10 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     val orgId = if (globalNotifications) null else organizationId
 
     // create 2 notifications of each type
-    val id1 = store.create(notificationModel(globalNotifications), organizationId)
-    val id2 = store.create(notificationModel(globalNotifications), organizationId)
-    store.create(notificationModel(!globalNotifications), organizationId)
-    store.create(notificationModel(!globalNotifications), organizationId)
+    val id1 = store.create(notificationModel(globalNotifications))
+    val id2 = store.create(notificationModel(globalNotifications))
+    store.create(notificationModel(!globalNotifications))
+    store.create(notificationModel(!globalNotifications))
 
     assertFalse(store.fetchById(id1).isRead, "Notification-1 is read when it should be unread")
     assertFalse(store.fetchById(id2).isRead, "Notification-2 is read when it should be unread")
@@ -155,7 +155,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should mark a notification as read`() {
     // create a notification
-    val id = store.create(notificationModel(), organizationId)
+    val id = store.create(notificationModel())
 
     assertFalse(store.fetchById(id).isRead, "Expected notification to be unread upon create")
 
@@ -174,10 +174,10 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should return count information on unread notifications`() {
     // create 2 notifications of each type
-    val id = store.create(notificationModel(), organizationId)
-    store.create(notificationModel(), organizationId)
-    store.create(notificationModel(true), organizationId)
-    store.create(notificationModel(true), organizationId)
+    val id = store.create(notificationModel())
+    store.create(notificationModel())
+    store.create(notificationModel(true))
+    store.create(notificationModel(true))
 
     var result = store.count()
 
@@ -217,7 +217,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     val otherUserId = insertUser()
     assertThrows<NotificationNotFoundException> {
       val notification = notificationModel(userId = otherUserId)
-      store.create(notification, organizationId)
+      store.create(notification)
       store.fetchById(NotificationId(1))
     }
   }
@@ -226,12 +226,12 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   fun `should delete user notifications when user is deleted`() {
     val otherUserId = insertUser()
 
-    store.create(notificationModel(userId = otherUserId), organizationId)
+    store.create(notificationModel(userId = otherUserId))
 
     val notificationsForOtherUser = notificationsDao.findAll()
 
-    store.create(notificationModel(), organizationId)
-    store.create(notificationModel(true), organizationId)
+    store.create(notificationModel())
+    store.create(notificationModel(true))
 
     store.on(UserDeletionStartedEvent(user.userId))
 

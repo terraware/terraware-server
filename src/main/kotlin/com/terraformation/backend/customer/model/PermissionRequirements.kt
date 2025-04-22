@@ -309,9 +309,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createNotification(userId: UserId, organizationId: OrganizationId) {
-    readOrganization(organizationId)
-    if (!user.canCreateNotification(userId, organizationId)) {
+  fun createNotification(userId: UserId) {
+    if (!user.canCreateNotification(userId)) {
       throw AccessDeniedException("No permission to create notification")
     }
   }
