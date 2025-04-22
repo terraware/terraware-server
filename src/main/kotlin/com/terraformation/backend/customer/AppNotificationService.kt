@@ -38,6 +38,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -647,6 +648,25 @@ class AppNotificationService(
       if (tfContact != null) {
         recipients.add(tfContact)
       }
+
+      dslContext.transaction { _ ->
+        recipients.forEach { user ->
+          // this is a global notification not scoped to any specific org permission, for
+          // accelerator purposes
+          insert(notificationType, user, null, renderMessage, localUrl)
+        }
+      }
+    }
+  }
+
+  private fun insertFundingEntityNotification(
+      localUrl: URI,
+      notificationType: NotificationType,
+      fundingEntityId: FundingEntityId,
+      renderMessage: () -> NotificationMessage,
+  ) {
+    systemUser.run {
+      val recipients = userStore.fetchByFundingEntityId(fundingEntityId)
 
       dslContext.transaction { _ ->
         recipients.forEach { user ->
