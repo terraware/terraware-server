@@ -132,14 +132,4 @@ data class DeviceManagerUser(
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = canAccessDevice(deviceId)
 
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canAccessDevice(deviceId)
-
-  // This one isn't a simple "is this the right organization" check because it depends on the
-  // target user's organization membership too.
-  override fun canCreateNotification(
-      targetUserId: UserId,
-      organizationId: OrganizationId
-  ): Boolean {
-    return canAccessOrganization(organizationId) &&
-        organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
-  }
 }

@@ -259,8 +259,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canCreateFundingEntities(): Boolean = defaultPermission
 
-  fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean =
-      defaultPermission
+  fun canCreateNotification(targetUserId: UserId): Boolean = defaultPermission
 
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 

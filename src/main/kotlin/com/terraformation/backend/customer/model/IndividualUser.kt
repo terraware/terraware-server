@@ -183,15 +183,7 @@ data class IndividualUser(
 
   override fun canCreateFundingEntities() = isAcceleratorAdmin()
 
-  override fun canCreateNotification(
-      targetUserId: UserId,
-      organizationId: OrganizationId
-  ): Boolean {
-    // for now, ensure user making the request and the target user for notification,
-    // are both members of the organization in context
-    return isMember(organizationId) &&
-        organizationId in permissionStore.fetchOrganizationRoles(targetUserId)
-  }
+  override fun canCreateNotification(targetUserId: UserId): Boolean = false
 
   override fun canCreateObservation(plantingSiteId: PlantingSiteId) =
       isSuperAdmin() || isManagerOrHigher(plantingSiteId)

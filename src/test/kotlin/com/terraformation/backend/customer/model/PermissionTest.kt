@@ -1607,6 +1607,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
+        createNotifications = true,
         readUser = true,
         readUserInternalInterests = true,
         updateUserInternalInterests = true,
@@ -3702,6 +3703,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg userIds: UserId,
         createEntityWithOwner: Boolean = false,
+        createNotifications: Boolean = false,
         readUser: Boolean = false,
         readUserInternalInterests: Boolean = false,
         updateUserInternalInterests: Boolean = false,
@@ -3711,6 +3713,10 @@ internal class PermissionTest : DatabaseTest() {
             createEntityWithOwner,
             user.canCreateEntityWithOwner(userId),
             "Can create entity with owner $userId")
+        assertEquals(
+            createNotifications,
+            user.canCreateNotification(userId),
+            "Can create notifications for $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
         assertEquals(
             readUserInternalInterests,

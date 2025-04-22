@@ -387,9 +387,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createNotification() =
-      allow { createNotification(notificationUserId, organizationId) } ifUser
+      allow { createNotification(notificationUserId) } ifUser
           {
-            canCreateNotification(notificationUserId, organizationId)
+            canCreateNotification(notificationUserId)
           }
 
   @Test
