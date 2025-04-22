@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
@@ -3246,15 +3247,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class PublishReport {
     private lateinit var reportId: ReportId
-    val standardMetricId1 by lazy { insertStandardMetric() }
-    val standardMetricId2 by lazy { insertStandardMetric() }
-    val standardMetricNullValueId by lazy { insertStandardMetric() }
-    val standardMetricNotPublishableId by lazy { insertStandardMetric(isPublishable = false) }
+    private val standardMetricId1 by lazy { insertStandardMetric() }
+    private val standardMetricId2 by lazy { insertStandardMetric() }
+    private val standardMetricNullValueId by lazy { insertStandardMetric() }
+    private val standardMetricNotPublishableId by lazy {
+      insertStandardMetric(isPublishable = false)
+    }
 
-    val projectMetricId1 by lazy { insertProjectMetric() }
-    val projectMetricId2 by lazy { insertProjectMetric() }
-    val projectMetricNullValueId by lazy { insertProjectMetric() }
-    val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
+    private val projectMetricId1 by lazy { insertProjectMetric() }
+    private val projectMetricId2 by lazy { insertProjectMetric() }
+    private val projectMetricNullValueId by lazy { insertProjectMetric() }
+    private val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
 
     @Test
     fun `throws exception for non-accelerator admin user`() {
@@ -3292,6 +3295,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(10000)
       store.publishReport(reportId)
       assertPublishedReport(user.userId, clock.instant)
+
+      eventPublisher.assertEventPublished(
+          AcceleratorReportPublishedEvent(reportId), "Published Event")
     }
 
     @Test
@@ -3387,6 +3393,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(10000)
       store.publishReport(reportId)
       assertPublishedReport(user.userId, clock.instant)
+      eventPublisher.assertEventPublished(
+          AcceleratorReportPublishedEvent(reportId), "Published Event")
     }
 
     @BeforeEach

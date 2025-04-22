@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
@@ -432,6 +433,8 @@ class ReportStore(
       publishReportMetrics(
           reportId, PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, publishableProjectMetrics)
     }
+
+    eventPublisher.publishEvent(AcceleratorReportPublishedEvent(reportId))
   }
 
   /**
