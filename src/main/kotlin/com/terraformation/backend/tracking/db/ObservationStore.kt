@@ -43,6 +43,7 @@ import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
@@ -59,6 +60,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -1162,118 +1164,248 @@ class ObservationStore(
     }
 
     withLockedObservation(observationId) { observation ->
-      val observationPlotDetails =
-          dslContext
-              .select(
-                  OBSERVATION_PLOTS.MONITORING_PLOT_ID,
-                  OBSERVATION_PLOTS.IS_PERMANENT,
-                  MONITORING_PLOTS.PLANTING_SUBZONE_ID,
-                  PLANTING_SUBZONES.PLANTING_ZONE_ID)
-              .from(OBSERVATION_PLOTS)
-              .join(MONITORING_PLOTS)
-              .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-              .leftJoin(PLANTING_SUBZONES)
-              .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-              .fetch()
-              .associateBy { it[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!! }
+      when (observation.observationType) {
+        ObservationType.BiomassMeasurements ->
+            mergeOtherSpeciesForBiomass(observation, speciesId, otherSpeciesName)
+        ObservationType.Monitoring ->
+            mergeOtherSpeciesForMonitoring(observation, speciesId, otherSpeciesName)
+      }
+    }
+  }
 
-      // Make the raw data (individual recorded plants) refer to the target species. This has no
-      // impact on statistics; those are adjusted later.
-      with(RECORDED_PLANTS) {
+  private fun mergeOtherSpeciesForBiomass(
+      observation: ExistingObservationModel,
+      speciesId: SpeciesId,
+      otherSpeciesName: String
+  ) {
+    val observationId = observation.id
+
+    val otherBiomassSpeciesId =
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          dslContext.fetchValue(
+              ID, SCIENTIFIC_NAME.eq(otherSpeciesName).and(OBSERVATION_ID.eq(observationId)))
+        }
+
+    if (otherBiomassSpeciesId == null) {
+      log.warn(
+          "Biomass observation $observationId does not contain species name $otherSpeciesName; " +
+              "merge is a no-op")
+      return
+    }
+
+    val targetBiomassSpeciesId =
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          dslContext.fetchValue(ID, SPECIES_ID.eq(speciesId).and(OBSERVATION_ID.eq(observationId)))
+        }
+
+    if (targetBiomassSpeciesId == null) {
+      // The target species wasn't present at all in the observation, so there's no need to merge
+      // anything: we can just update the biomass species to point to the target species ID instead
+      // of using a name.
+      with(OBSERVATION_BIOMASS_SPECIES) {
         dslContext
-            .update(RECORDED_PLANTS)
-            .set(CERTAINTY_ID, RecordedSpeciesCertainty.Known)
+            .update(OBSERVATION_BIOMASS_SPECIES)
             .set(SPECIES_ID, speciesId)
-            .setNull(SPECIES_NAME)
-            .where(OBSERVATION_ID.eq(observationId))
-            .and(SPECIES_NAME.eq(otherSpeciesName))
-            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+            .setNull(SCIENTIFIC_NAME)
+            .where(ID.eq(otherBiomassSpeciesId))
             .execute()
       }
 
-      // We need to adjust the plot-level summary statistics for all the sightings of the Other
-      // species in this observation. Updating the plot-level statistics will automatically also
-      // update the site- and zone-level ones.
-      val plotTotals: List<ObservedPlotSpeciesTotalsRecord> =
-          with(OBSERVED_PLOT_SPECIES_TOTALS) {
-            dslContext
-                .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
-                .where(OBSERVATION_ID.eq(observationId))
-                .and(SPECIES_NAME.eq(otherSpeciesName))
-                .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-                .fetch()
-          }
+      return
+    }
 
-      plotTotals.forEach { plotTotal ->
-        val monitoringPlotId = plotTotal.monitoringPlotId
-        val plotDetails =
-            observationPlotDetails[monitoringPlotId]
-                ?: throw IllegalStateException(
-                    "Monitoring plot $monitoringPlotId has species totals for $otherSpeciesName " +
-                        "in observation $observationId but is not in observation")
+    // Recorded trees are a simple replacement of the biomass species ID.
+    with(RECORDED_TREES) {
+      dslContext
+          .update(RECORDED_TREES)
+          .set(BIOMASS_SPECIES_ID, targetBiomassSpeciesId)
+          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+          .execute()
+    }
 
-        // Subtract the plot-level live/dead/existing counts from the Other species and add them
-        // to the target species. This propagates the changes up to the zone and site totals.
-        // Once this has been done for all the plot-level totals, the end result will be that the
-        // plot, zone, and site totals for the Other species will all be zero.
-        //
-        // We have to cancel out the Other totals rather than just deleting them because the same
-        // Other species might appear in later observations, in which case the cumulative dead and
-        // mortality rate in those observations will need to change to the values they would have
-        // had if the Other species hadn't been recorded in this observation.
-        updateSpeciesTotals(
-            observationId,
-            observation.plantingSiteId,
-            plotDetails[PLANTING_SUBZONES.PLANTING_ZONE_ID],
-            plotDetails[MONITORING_PLOTS.PLANTING_SUBZONE_ID],
-            monitoringPlotId,
-            observation.isAdHoc,
-            plotDetails[OBSERVATION_PLOTS.IS_PERMANENT]!!,
-            mapOf(
-                RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
-                    mapOf(
-                        RecordedPlantStatus.Live to -(plotTotal.totalLive ?: 0),
-                        RecordedPlantStatus.Dead to -(plotTotal.totalDead ?: 0),
-                        RecordedPlantStatus.Existing to -(plotTotal.totalExisting ?: 0),
-                    ),
-                RecordedSpeciesKey(RecordedSpeciesCertainty.Known, speciesId, null) to
-                    mapOf(
-                        RecordedPlantStatus.Live to (plotTotal.totalLive ?: 0),
-                        RecordedPlantStatus.Dead to (plotTotal.totalDead ?: 0),
-                        RecordedPlantStatus.Existing to (plotTotal.totalExisting ?: 0))))
-      }
+    // For quadrat species, we need to add the abundance percentages of the numbered species and the
+    // "Other" one if both exist in the quadrat. If only the "Other" one exists, then we can just
+    // switch its biomass species ID in place.
+    with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
+      val quadratSpeciesTable2 = OBSERVATION_BIOMASS_QUADRAT_SPECIES.`as`("quadrat2")
 
-      // The plant counts for the Other species have been emptied out for this observation. We want
-      // the end result to be as if people had never recorded the Other species in the first place,
-      // so we need to delete its statistics or else the Other species will still be included by
-      // queries that list all the recorded species in an observation.
-      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+          .set(BIOMASS_SPECIES_ID, targetBiomassSpeciesId)
+          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(quadratSpeciesTable2)
+                  .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
+                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))
+          .execute()
+
+      dslContext
+          .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+          .set(
+              ABUNDANCE_PERCENT,
+              ABUNDANCE_PERCENT.plus(
+                  DSL.field(
+                      DSL.select(quadratSpeciesTable2.ABUNDANCE_PERCENT)
+                          .from(quadratSpeciesTable2)
+                          .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+                          .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))))
+          .where(BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
+          .andExists(
+              DSL.selectOne()
+                  .from(quadratSpeciesTable2)
+                  .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
+                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))
+          .execute()
+    }
+
+    // Invasive and threatened should be true if they're true on either version of the species.
+    with(OBSERVATION_BIOMASS_SPECIES) {
+      dslContext
+          .update(OBSERVATION_BIOMASS_SPECIES)
+          .set(
+              IS_INVASIVE,
+              DSL.select(DSL.boolOr(IS_INVASIVE))
+                  .from(OBSERVATION_BIOMASS_SPECIES)
+                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)))
+          .set(
+              IS_THREATENED,
+              DSL.select(DSL.boolOr(IS_THREATENED))
+                  .from(OBSERVATION_BIOMASS_SPECIES)
+                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)))
+          .where(ID.eq(targetBiomassSpeciesId))
+          .execute()
+    }
+
+    // ON DELETE CASCADE will remove the data for the "Other" species from all the biomass tables.
+    dslContext
+        .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
+        .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
+        .execute()
+  }
+
+  private fun mergeOtherSpeciesForMonitoring(
+      observation: ExistingObservationModel,
+      speciesId: SpeciesId,
+      otherSpeciesName: String
+  ) {
+    val observationId = observation.id
+    val observationPlotDetails =
         dslContext
-            .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
-            .where(OBSERVATION_ID.eq(observationId))
-            .and(SPECIES_NAME.eq(otherSpeciesName))
-            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-            .execute()
-      }
+            .select(
+                OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+                OBSERVATION_PLOTS.IS_PERMANENT,
+                MONITORING_PLOTS.PLANTING_SUBZONE_ID,
+                PLANTING_SUBZONES.PLANTING_ZONE_ID,
+            )
+            .from(OBSERVATION_PLOTS)
+            .join(MONITORING_PLOTS)
+            .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+            .leftJoin(PLANTING_SUBZONES)
+            .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .fetch()
+            .associateBy { it[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!! }
 
-      with(OBSERVED_ZONE_SPECIES_TOTALS) {
-        dslContext
-            .deleteFrom(OBSERVED_ZONE_SPECIES_TOTALS)
-            .where(OBSERVATION_ID.eq(observationId))
-            .and(SPECIES_NAME.eq(otherSpeciesName))
-            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-            .execute()
-      }
+    // Make the raw data (individual recorded plants) refer to the target species. This has no
+    // impact on statistics; those are adjusted later.
+    with(RECORDED_PLANTS) {
+      dslContext
+          .update(RECORDED_PLANTS)
+          .set(CERTAINTY_ID, RecordedSpeciesCertainty.Known)
+          .set(SPECIES_ID, speciesId)
+          .setNull(SPECIES_NAME)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_NAME.eq(otherSpeciesName))
+          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+          .execute()
+    }
 
-      with(OBSERVED_SITE_SPECIES_TOTALS) {
-        dslContext
-            .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
-            .where(OBSERVATION_ID.eq(observationId))
-            .and(SPECIES_NAME.eq(otherSpeciesName))
-            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
-            .execute()
-      }
+    // We need to adjust the plot-level summary statistics for all the sightings of the Other
+    // species in this observation. Updating the plot-level statistics will automatically also
+    // update the site- and zone-level ones.
+    val plotTotals: List<ObservedPlotSpeciesTotalsRecord> =
+        with(OBSERVED_PLOT_SPECIES_TOTALS) {
+          dslContext
+              .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(SPECIES_NAME.eq(otherSpeciesName))
+              .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+              .fetch()
+        }
+
+    plotTotals.forEach { plotTotal ->
+      val monitoringPlotId = plotTotal.monitoringPlotId
+      val plotDetails =
+          observationPlotDetails[monitoringPlotId]
+              ?: throw IllegalStateException(
+                  "Monitoring plot $monitoringPlotId has species totals for $otherSpeciesName " +
+                      "in observation $observationId but is not in observation",
+              )
+
+      // Subtract the plot-level live/dead/existing counts from the Other species and add them
+      // to the target species. This propagates the changes up to the zone and site totals.
+      // Once this has been done for all the plot-level totals, the end result will be that the
+      // plot, zone, and site totals for the Other species will all be zero.
+      //
+      // We have to cancel out the Other totals rather than just deleting them because the same
+      // Other species might appear in later observations, in which case the cumulative dead and
+      // mortality rate in those observations will need to change to the values they would have
+      // had if the Other species hadn't been recorded in this observation.
+      updateSpeciesTotals(
+          observationId,
+          observation.plantingSiteId,
+          plotDetails[PLANTING_SUBZONES.PLANTING_ZONE_ID],
+          plotDetails[MONITORING_PLOTS.PLANTING_SUBZONE_ID],
+          monitoringPlotId,
+          observation.isAdHoc,
+          plotDetails[OBSERVATION_PLOTS.IS_PERMANENT]!!,
+          mapOf(
+              RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
+                  mapOf(
+                      RecordedPlantStatus.Live to -(plotTotal.totalLive ?: 0),
+                      RecordedPlantStatus.Dead to -(plotTotal.totalDead ?: 0),
+                      RecordedPlantStatus.Existing to -(plotTotal.totalExisting ?: 0),
+                  ),
+              RecordedSpeciesKey(RecordedSpeciesCertainty.Known, speciesId, null) to
+                  mapOf(
+                      RecordedPlantStatus.Live to (plotTotal.totalLive ?: 0),
+                      RecordedPlantStatus.Dead to (plotTotal.totalDead ?: 0),
+                      RecordedPlantStatus.Existing to (plotTotal.totalExisting ?: 0),
+                  ),
+          ),
+      )
+    }
+
+    // The plant counts for the Other species have been emptied out for this observation. We want
+    // the end result to be as if people had never recorded the Other species in the first place,
+    // so we need to delete its statistics or else the Other species will still be included by
+    // queries that list all the recorded species in an observation.
+    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_NAME.eq(otherSpeciesName))
+          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+          .execute()
+    }
+
+    with(OBSERVED_ZONE_SPECIES_TOTALS) {
+      dslContext
+          .deleteFrom(OBSERVED_ZONE_SPECIES_TOTALS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_NAME.eq(otherSpeciesName))
+          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+          .execute()
+    }
+
+    with(OBSERVED_SITE_SPECIES_TOTALS) {
+      dslContext
+          .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_NAME.eq(otherSpeciesName))
+          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+          .execute()
     }
   }
 
