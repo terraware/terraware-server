@@ -135,7 +135,10 @@ class SpeciesImporter(
                         ?.toSet() ?: emptySet(),
                 familyName = values[2],
                 growthForms =
-                    values[5]?.let { setOf(GrowthForm.forDisplayName(it, locale)) } ?: emptySet(),
+                    values[5]
+                        ?.split(SpeciesCsvValidator.MULTIPLE_VALUE_DELIMITER)
+                        ?.map { GrowthForm.forDisplayName(it, locale) }
+                        ?.toSet() ?: emptySet(),
                 localUsesKnown = values[11],
                 nativeEcosystem = values[8],
                 organizationId = organizationId,
