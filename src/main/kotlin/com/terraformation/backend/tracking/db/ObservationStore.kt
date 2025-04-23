@@ -1186,17 +1186,17 @@ class ObservationStore(
               ID, SCIENTIFIC_NAME.eq(otherSpeciesName).and(OBSERVATION_ID.eq(observationId)))
         }
 
-    val targetBiomassSpeciesId =
-        with(OBSERVATION_BIOMASS_SPECIES) {
-          dslContext.fetchValue(ID, SPECIES_ID.eq(speciesId).and(OBSERVATION_ID.eq(observationId)))
-        }
-
     if (otherBiomassSpeciesId == null) {
       log.warn(
           "Biomass observation $observationId does not contain species name $otherSpeciesName; " +
               "merge is a no-op")
       return
     }
+
+    val targetBiomassSpeciesId =
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          dslContext.fetchValue(ID, SPECIES_ID.eq(speciesId).and(OBSERVATION_ID.eq(observationId)))
+        }
 
     if (targetBiomassSpeciesId == null) {
       // The target species wasn't present at all in the observation, so there's no need to merge
