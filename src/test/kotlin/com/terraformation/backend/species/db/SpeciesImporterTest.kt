@@ -312,7 +312,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\nNew—name a–b," + // note the dash types in the scientific name
-                "Common,Family,NT,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"," +
+                "Common,Family,NT,false,\"Shrub\nHerb\",Recalcitrant,\"Tundra \r\n Mangroves \r\n\"," +
                 "Native,\"Pioneer\nMature\",Eco role,Local uses,\"Wildling harvest\nOther\",Facts\n")
     val uploadId =
         insertUpload(
@@ -359,10 +359,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertTableEquals(
         setOf(
             SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Tundra),
-            SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Mangroves)),
-    )
+            SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Mangroves)))
 
-    assertTableEquals(SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Shrub))
+    assertTableEquals(
+        setOf(
+            SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Herb),
+            SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Shrub)))
 
     assertTableEquals(
         setOf(

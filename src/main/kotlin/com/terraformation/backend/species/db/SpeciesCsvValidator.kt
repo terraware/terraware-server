@@ -118,7 +118,8 @@ class SpeciesCsvValidator(
   }
 
   private fun validateGrowthForm(value: String?, field: String) {
-    if (!value.isNullOrBlank() && value !in validGrowthForms) {
+    if (!value.isNullOrBlank() &&
+        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validGrowthForms }) {
       addError(
           UploadProblemType.UnrecognizedValue, field, value, messages.speciesCsvGrowthFormInvalid())
     }

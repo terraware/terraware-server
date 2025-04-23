@@ -371,6 +371,13 @@ internal class SpeciesCsvValidatorTest {
   }
 
   @Test
+  fun `accepts multiple values for growth forms`() {
+    val csv = "$header\nSci name,Common,,,,\"Vine\nMoss\n\",,,,,,,,"
+
+    assertValidationResults(csv)
+  }
+
+  @Test
   fun `accepts both UNIX-style and Windows-style line separators`() {
     val csv = "$header\nScientific a,,,,,,,,,,,,,\r\nScientific b,,,,,,,,,,,,,\r\n"
     assertValidationResults(csv)
