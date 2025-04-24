@@ -280,9 +280,6 @@ tasks.withType<KotlinCompile> {
 
     extraWarnings = true
 
-    // https://youtrack.jetbrains.com/issue/KT-72040
-    freeCompilerArgs.add("-Xsuppress-warning=UNUSED_ANONYMOUS_PARAMETER")
-
     // jOOQ generated code has redundant modifiers
     freeCompilerArgs.add("-Xsuppress-warning=REDUNDANT_MODALITY_MODIFIER")
     freeCompilerArgs.add("-Xsuppress-warning=REDUNDANT_VISIBILITY_MODIFIER")
