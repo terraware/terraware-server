@@ -49,8 +49,10 @@ class AcceleratorOrganizationsController(
       hasProjectApplication: Boolean?,
   ): ListAcceleratorOrganizationsResponsePayload {
     val organizations =
-        if (includeParticipants == true) {
+        if (includeParticipants == true && hasProjectApplication == true) {
           acceleratorOrganizationStore.findAll()
+        } else if (includeParticipants == true) {
+          acceleratorOrganizationStore.findAllWithAcceleratorTag()
         } else if (hasProjectApplication == true) {
           acceleratorOrganizationStore.findAllWithProjectApplication()
         } else {
