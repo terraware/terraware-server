@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTextType
@@ -20,7 +21,6 @@ import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable

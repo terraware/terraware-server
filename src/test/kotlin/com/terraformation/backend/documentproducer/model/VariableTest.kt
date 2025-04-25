@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.model
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId

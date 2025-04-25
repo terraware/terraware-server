@@ -1,6 +1,5 @@
-package com.terraformation.backend.documentproducer.db
+package com.terraformation.backend.db
 
-import com.terraformation.backend.documentproducer.model.StableId
 import org.jooq.impl.AbstractConverter
 
 /**

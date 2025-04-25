@@ -1,11 +1,11 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.opencsv.CSVReader
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
-import com.terraformation.backend.documentproducer.model.StableId
 import java.io.InputStreamReader
 import java.math.BigDecimal
 

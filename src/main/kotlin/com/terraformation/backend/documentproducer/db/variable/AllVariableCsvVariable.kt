@@ -1,12 +1,12 @@
 package com.terraformation.backend.documentproducer.db.variable
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
-import com.terraformation.backend.documentproducer.model.StableId
 import java.math.BigDecimal
 
 private const val LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE = "variablesCsvDataTypeUnknown"

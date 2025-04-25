@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.tables.records.DeliverableVariablesRecord
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
@@ -19,7 +20,6 @@ import com.terraformation.backend.db.docprod.tables.records.VariableTableColumns
 import com.terraformation.backend.db.docprod.tables.records.VariablesRecord
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
