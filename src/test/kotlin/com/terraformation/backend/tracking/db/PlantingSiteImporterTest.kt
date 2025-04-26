@@ -187,6 +187,86 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       }
     }
 
+    @Test
+    fun `can detect missing zone stable IDs`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeature =
+          gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 500), subzoneStableId = "x")
+
+      assertHasProblem("Subzone S1 is missing zone stable ID properties: stable_z, stable_zon") {
+        importer.shapefilesToModel(
+            listOf(Shapefile(listOf(subzoneFeature))),
+            "test",
+            "description",
+            organizationId,
+            requireStableIds = true)
+      }
+    }
+
+    @Test
+    fun `can detect missing subzone stable IDs`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeature =
+          gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 500), zoneStableId = "x")
+
+      assertHasProblem(
+          "Subzone S1 is missing subzone stable ID properties: stable_sz, stable_sub") {
+            importer.shapefilesToModel(
+                listOf(Shapefile(listOf(subzoneFeature))),
+                "test",
+                "description",
+                organizationId,
+                requireStableIds = true)
+          }
+    }
+
+    @Test
+    fun `detects duplicate subzone stable IDs`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeatures =
+          listOf(
+              gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 250), subzoneStableId = "Z1-S1"),
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 250, 500 to 500), subzoneStableId = "Z1-S1"))
+
+      assertHasProblem("Duplicate stable ID Z1-S1 on subzones: S1, S2") {
+        importer.import(
+            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+      }
+    }
+
+    @Test
+    fun `detects inconsistent zone stable IDs`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeatures =
+          listOf(
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 0, 500 to 250), zone = "A", zoneStableId = "A"),
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 250, 500 to 500), zone = "A", zoneStableId = "B"))
+
+      assertHasProblem("Inconsistent stable IDs for zone A: A, B") {
+        importer.import(
+            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+      }
+    }
+
+    @Test
+    fun `detects inconsistent zone names`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeatures =
+          listOf(
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 0, 500 to 250), zone = "A", zoneStableId = "A"),
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 250, 500 to 500), zone = "B", zoneStableId = "A"))
+
+      assertHasProblem("Inconsistent zone names for stable ID A: A, B") {
+        importer.import(
+            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+      }
+    }
+
     // Site validation logic is tested in PlantingSiteModelTest; this is just to confirm that
     // shapefile import actually validates the site before creating it.
     @Test
@@ -268,7 +348,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     private fun assertHasProblem(expected: String, importFunc: () -> Unit) {
       try {
         importFunc()
-        fail("Should have throw exception for validation failure")
+        fail("Should have thrown exception for validation failure")
       } catch (e: ShapefilesInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.

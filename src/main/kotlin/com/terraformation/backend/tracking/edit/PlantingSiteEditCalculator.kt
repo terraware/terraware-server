@@ -97,6 +97,7 @@ class PlantingSiteEditCalculator(
               if (subzoneEdits.isEmpty() &&
                   createMonitoringPlotEdits.isEmpty() &&
                   existingZone.errorMargin == desiredZone.errorMargin &&
+                  existingZone.name == desiredZone.name &&
                   existingZone.studentsT == desiredZone.studentsT &&
                   existingZone.targetPlantingDensity == desiredZone.targetPlantingDensity &&
                   existingZone.variance == desiredZone.variance &&
@@ -263,7 +264,8 @@ class PlantingSiteEditCalculator(
                       .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
                       .map { MonitoringPlotEdit.Eject(it.id) }
 
-              if (existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
+              if (existingSubzone.fullName == desiredSubzone.fullName &&
+                  existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
                   existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001) &&
                   existingZonesByExistingSubzone[existingSubzone] == existingZone &&
                   adoptEdits.isEmpty() &&
@@ -301,20 +303,13 @@ class PlantingSiteEditCalculator(
     }
   }
 
-  /** The desired version of each existing planting zone, or null if the zone is being deleted. */
-  private val desiredZonesByExistingZone:
-      Map<ExistingPlantingZoneModel, AnyPlantingZoneModel?> by lazy {
-    val desiredZonesByName = desiredSite.plantingZones.associateBy { it.name }
-    existingSite.plantingZones.associateWith { desiredZonesByName[it.name] }
-  }
-
   /**
    * The existing version of each desired planting zone, or null if the zone is being newly created.
    */
   private val existingZonesByDesiredZone:
       Map<AnyPlantingZoneModel, ExistingPlantingZoneModel?> by lazy {
-    val existingZonesByName = existingSite.plantingZones.associateBy { it.name }
-    desiredSite.plantingZones.associateWith { existingZonesByName[it.name] }
+    val existingZonesByStableId = existingSite.plantingZones.associateBy { it.stableId }
+    desiredSite.plantingZones.associateWith { existingZonesByStableId[it.stableId] }
   }
 
   /**
@@ -327,46 +322,16 @@ class PlantingSiteEditCalculator(
         .toMap()
   }
 
-  /**
-   * All the desired subzones by name. Subzone names are only required to be unique per zone, so
-   * there may be multiple subzones with the same name.
-   */
-  private val desiredSubzonesByName: Map<String, List<AnyPlantingSubzoneModel>> by lazy {
-    desiredSite.plantingZones.flatMap { it.plantingSubzones }.groupBy { it.name }
-  }
-
-  /**
-   * All the existing subzones by name. Subzone names are only required to be unique per zone, so
-   * there may be multiple subzones with the same name.
-   */
-  private val existingSubzonesByName: Map<String, List<ExistingPlantingSubzoneModel>> by lazy {
-    existingSite.plantingZones.flatMap { it.plantingSubzones }.groupBy { it.name }
-  }
-
   /** The desired version of each existing subzone that isn't being deleted. */
   private val desiredSubzonesByExistingSubzone:
       Map<ExistingPlantingSubzoneModel, AnyPlantingSubzoneModel> by lazy {
+    val desiredSubzonesByStableId =
+        desiredSite.plantingZones.flatMap { it.plantingSubzones }.associateBy { it.stableId }
+
     existingSite.plantingZones
-        .flatMap { existingZone ->
-          val desiredSubzonesByNameInDesiredZone =
-              desiredZonesByExistingZone[existingZone]?.plantingSubzones?.associateBy { it.name }
-                  ?: emptyMap()
-          existingZone.plantingSubzones.mapNotNull { existingSubzone ->
-            val desiredSubzonesFromWholeSite = desiredSubzonesByName[existingSubzone.name]
-            if (desiredSubzonesFromWholeSite == null) {
-              // No subzone by this name in the desired site, so it's a deletion.
-              null
-            } else if (desiredSubzonesFromWholeSite.size == 1) {
-              // Unambiguous name match, possibly in a different planting zone.
-              existingSubzone to desiredSubzonesFromWholeSite.first()
-            } else if (existingSubzone.name in desiredSubzonesByNameInDesiredZone) {
-              // Multiple desired zones with this name, which is fine as long as none of them are
-              // moving to new zones.
-              existingSubzone to desiredSubzonesByNameInDesiredZone[existingSubzone.name]!!
-            } else {
-              throw IllegalArgumentException("Cannot tell where to move ${existingSubzone.name}")
-            }
-          }
+        .flatMap { it.plantingSubzones }
+        .mapNotNull { subzone ->
+          desiredSubzonesByStableId[subzone.stableId]?.let { subzone to it }
         }
         .toMap()
   }
@@ -374,25 +339,13 @@ class PlantingSiteEditCalculator(
   /** The existing version of each desired subzone that isn't being newly created. */
   private val existingSubzonesByDesiredSubzone:
       Map<AnyPlantingSubzoneModel, ExistingPlantingSubzoneModel> by lazy {
+    val existingSubzonesByStableId =
+        existingSite.plantingZones.flatMap { it.plantingSubzones }.associateBy { it.stableId }
+
     desiredSite.plantingZones
-        .flatMap { desiredZone ->
-          val existingSubzonesByNameInExistingZone =
-              existingZonesByDesiredZone[desiredZone]?.plantingSubzones?.associateBy { it.name }
-                  ?: emptyMap()
-          desiredZone.plantingSubzones.mapNotNull { desiredSubzone ->
-            val existingSubzonesFromWholeSite = existingSubzonesByName[desiredSubzone.name]
-            if (existingSubzonesFromWholeSite == null) {
-              // No subzone by this name in the existing site, so it's a creation.
-              null
-            } else if (existingSubzonesFromWholeSite.size == 1) {
-              // Unambiguous name match, possibly in a different planting zone.
-              desiredSubzone to existingSubzonesFromWholeSite.first()
-            } else if (desiredSubzone.name in existingSubzonesByNameInExistingZone) {
-              desiredSubzone to existingSubzonesByNameInExistingZone[desiredSubzone.name]!!
-            } else {
-              throw IllegalArgumentException("Cannot tell where ${desiredSubzone.name} moved from")
-            }
-          }
+        .flatMap { it.plantingSubzones }
+        .mapNotNull { subzone ->
+          existingSubzonesByStableId[subzone.stableId]?.let { subzone to it }
         }
         .toMap()
   }

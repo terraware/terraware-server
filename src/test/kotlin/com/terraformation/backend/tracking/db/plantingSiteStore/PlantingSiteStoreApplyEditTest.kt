@@ -414,6 +414,95 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
+    fun `retains zone and subzone IDs on rename`() {
+      val initial = newSite {
+        zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone") }
+        zone(name = "B", numPermanent = 1, width = 250) { subzone(name = "Subzone") }
+      }
+
+      val desired = newSite {
+        zone(name = "C", stableId = StableId("A"), numPermanent = 1, width = 250) {
+          subzone(name = "Subzone", stableId = StableId("A-Subzone"))
+        }
+        zone(name = "D", stableId = StableId("B"), numPermanent = 1, width = 250) {
+          subzone(name = "Subzone", stableId = StableId("B-Subzone"))
+        }
+      }
+
+      val (edited, existing) = runScenario(initial = initial, desired = desired)
+
+      val existingZones = existing.plantingZones.associateBy { it.name }
+
+      assertEquals(
+          mapOf("C" to existingZones["A"]!!.id, "D" to existingZones["B"]!!.id),
+          edited.plantingZones.associate { it.name to it.id },
+          "Zone IDs")
+      assertEquals(
+          mapOf(
+              "C-Subzone" to existingZones["A"]!!.plantingSubzones.first().id,
+              "D-Subzone" to existingZones["B"]!!.plantingSubzones.first().id,
+          ),
+          edited.plantingZones.flatMap { it.plantingSubzones }.associate { it.fullName to it.id },
+          "Subzone IDs")
+    }
+
+    @Test
+    fun `can swap zone names`() {
+      val initial = newSite {
+        zone(name = "A", width = 250)
+        zone(name = "B")
+      }
+
+      val desired = newSite {
+        zone(name = "A", stableId = StableId("B"), x = 250, width = 250) {
+          subzone(stableId = StableId("B-S2"))
+        }
+        zone(name = "B", stableId = StableId("A"), x = 0, width = 250) {
+          subzone(stableId = StableId("A-S1"))
+        }
+      }
+
+      val (edited, existing) = runScenario(initial, desired)
+
+      assertEquals(
+          mapOf("A" to StableId("B"), "B" to StableId("A")),
+          edited.plantingZones.associate { it.name to it.stableId },
+          "Stable IDs for zone names after name swap")
+      assertEquals(
+          existing.plantingZones.associate { it.stableId to it.id },
+          edited.plantingZones.associate { it.stableId to it.id },
+          "Planting zone IDs by stable ID after name swap")
+    }
+
+    @Test
+    fun `can swap subzone names`() {
+      val initial = newSite {
+        zone {
+          subzone(name = "S1", stableId = StableId("S1"), width = 250)
+          subzone(name = "S2", stableId = StableId("S2"))
+        }
+      }
+
+      val desired = newSite {
+        zone {
+          subzone(name = "S1", stableId = StableId("S2"), x = 250, width = 250)
+          subzone(name = "S2", stableId = StableId("S1"), x = 0, width = 250)
+        }
+      }
+
+      val (edited, existing) = runScenario(initial, desired)
+
+      assertEquals(
+          mapOf("S1" to StableId("S2"), "S2" to StableId("S1")),
+          edited.plantingZones.single().plantingSubzones.associate { it.name to it.stableId },
+          "Stable IDs for subzone names after name swap")
+      assertEquals(
+          existing.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
+          edited.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
+          "Planting subzone IDs by stable ID after name swap")
+    }
+
+    @Test
     fun `moves existing subzones between zones`() {
       val initial = newSite {
         zone(name = "A", numPermanent = 2) {

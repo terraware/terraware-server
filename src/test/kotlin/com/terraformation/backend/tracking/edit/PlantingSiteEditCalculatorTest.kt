@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -277,7 +278,9 @@ class PlantingSiteEditCalculatorTest {
 
     val desired = newSite {
       zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
-      zone(name = "B", numPermanent = 2, width = 250) { subzone(name = "Subzone 2") }
+      zone(name = "B", numPermanent = 2, width = 250) {
+        subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"))
+      }
     }
 
     assertEditResult(
@@ -338,7 +341,7 @@ class PlantingSiteEditCalculatorTest {
             subzone(name = "Subzone 1", width = 250)
           }
           zone(name = "B", numPermanent = 2, width = 500) {
-            subzone(name = "Subzone 2", width = 250)
+            subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"), width = 250)
             subzone(name = "Subzone 3", width = 250)
           }
         }
@@ -824,7 +827,70 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `updates existing subzone if original zone is deleted and new zone has a subzone with its name`() {
+  fun `detects renames of zones and subzones`() {
+    val existing =
+        existingSite(width = 1000) {
+          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { permanent() } }
+          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") { permanent() } }
+        }
+
+    // Swap the names; the subzones should stay in their original zones.
+    val desired =
+        newSite(width = 1000) {
+          zone(name = "B", stableId = StableId("A"), width = 500, numPermanent = 1) {
+            subzone(name = "2", stableId = StableId("A-1"))
+          }
+          zone(name = "A", stableId = StableId("B"), width = 500, numPermanent = 1) {
+            subzone(name = "1", stableId = StableId("B-2"))
+          }
+        }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal.ZERO,
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        removedRegion = rectangle(0),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal.ZERO,
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    monitoringPlotEdits = emptyList(),
+                                    removedRegion = rectangle(0)))),
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal.ZERO,
+                        desiredModel = desired.plantingZones[1],
+                        existingModel = existing.plantingZones[1],
+                        monitoringPlotEdits = emptyList(),
+                        removedRegion = rectangle(0),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal.ZERO,
+                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
+                                    monitoringPlotEdits = emptyList(),
+                                    removedRegion = rectangle(0)))),
+                )),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `updates existing subzone if original zone is deleted and new zone has a subzone with its stable ID`() {
     val existing =
         existingSite(width = 1000) {
           zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { permanent() } }
@@ -832,7 +898,9 @@ class PlantingSiteEditCalculatorTest {
         }
     val desired =
         newSite(width = 1000) {
-          zone(name = "C", width = 500, numPermanent = 1) { subzone(name = "1") }
+          zone(name = "C", width = 500, numPermanent = 1) {
+            subzone(name = "1", stableId = StableId("A-1"))
+          }
           zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") }
         }
 
@@ -991,25 +1059,6 @@ class PlantingSiteEditCalculatorTest {
                 existingSite(),
                 newSite().copy(boundary = null),
             )
-            .calculateSiteEdit()
-      }
-    }
-
-    @Test
-    fun `throws exception if a subzone move is ambiguous`() {
-      assertThrows<IllegalArgumentException> {
-        PlantingSiteEditCalculator(
-                existingSite {
-                  zone {
-                    subzone(name = "A")
-                    subzone(name = "B")
-                  }
-                },
-                newSite {
-                  zone { subzone(name = "B") }
-                  zone { subzone(name = "A") }
-                  zone { subzone(name = "A") }
-                })
             .calculateSiteEdit()
       }
     }
