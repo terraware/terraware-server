@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -42,12 +43,14 @@ data class PlantingZoneHistoryModel(
     val plantingSubzones: List<PlantingSubzoneHistoryModel>,
     /** ID of planting zone if it currently exists. Null if the zone has been deleted. */
     val plantingZoneId: PlantingZoneId?,
+    val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
     return other is PlantingZoneHistoryModel &&
         id == other.id &&
         name == other.name &&
         plantingZoneId == other.plantingZoneId &&
+        stableId == other.stableId &&
         boundary.equalsExact(other.boundary, tolerance) &&
         plantingSubzones.size == other.plantingSubzones.size &&
         plantingSubzones.zip(other.plantingSubzones).all { it.first.equals(it.second, tolerance) }
@@ -62,6 +65,7 @@ data class PlantingSubzoneHistoryModel(
     val name: String,
     /** ID of planting subzone if it currently exists. Null if the zone has been deleted. */
     val plantingSubzoneId: PlantingSubzoneId?,
+    val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
     return other is PlantingSubzoneHistoryModel &&
@@ -69,6 +73,7 @@ data class PlantingSubzoneHistoryModel(
         id == other.id &&
         name == other.name &&
         plantingSubzoneId == other.plantingSubzoneId &&
+        stableId == other.stableId &&
         boundary.equalsExact(other.boundary, tolerance) &&
         monitoringPlots.size == other.monitoringPlots.size &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) }

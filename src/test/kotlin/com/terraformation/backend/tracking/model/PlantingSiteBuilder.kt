@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -112,8 +113,8 @@ private constructor(
   var organizationId: OrganizationId = OrganizationId(-1)
   var nextPlotNumber: Long = 1
 
-  private var currentSubzoneId: Long = 0
-  private var currentZoneId: Long = 0
+  private var currentSubzoneId: Long = 1
+  private var currentZoneId: Long = 1
   private var nextZoneX = x
   private var nextMonitoringPlotX: Int = x + width
   private val exteriorPlots = mutableListOf<MonitoringPlotModel>()
@@ -139,9 +140,10 @@ private constructor(
       y: Int = this.y,
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
-      name: String? = null,
+      name: String = "Z$currentZoneId",
       numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      stableId: StableId = StableId(name),
       func: ZoneBuilder.() -> Unit = {}
   ): ExistingPlantingZoneModel {
     ++currentZoneId
@@ -152,9 +154,10 @@ private constructor(
             y = y,
             width = width,
             height = height,
-            name = name ?: "Z$currentZoneId",
+            name = name,
             numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
+            stableId = stableId,
         )
     builder.func()
 
@@ -202,6 +205,7 @@ private constructor(
       private val name: String,
       private val numPermanentPlots: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val stableId: StableId = StableId(name),
   ) {
     var errorMargin: BigDecimal = PlantingZoneModel.DEFAULT_ERROR_MARGIN
     var studentsT: BigDecimal = PlantingZoneModel.DEFAULT_STUDENTS_T
@@ -224,6 +228,7 @@ private constructor(
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.ifEmpty { listOf(subzone()) },
+          stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
           variance = variance,
@@ -235,12 +240,14 @@ private constructor(
         y: Int = this.y,
         width: Int = this.width - (x - this.x),
         height: Int = this.height - (y - this.y),
-        name: String? = null,
+        name: String = "S$currentSubzoneId",
+        fullName: String = "${this.name}-$name",
+        stableId: StableId = StableId(fullName),
         func: SubzoneBuilder.() -> Unit = {},
     ): ExistingPlantingSubzoneModel {
       ++currentSubzoneId
 
-      val builder = SubzoneBuilder(x, y, width, height, name ?: "S$currentSubzoneId", this.name)
+      val builder = SubzoneBuilder(x, y, width, height, name, fullName, stableId)
       builder.func()
 
       nextSubzoneX = x + width
@@ -256,10 +263,10 @@ private constructor(
         width: Int,
         height: Int,
         val name: String,
-        zoneName: String,
+        private val fullName: String,
+        private val stableId: StableId = StableId(fullName),
     ) {
       private val boundary: MultiPolygon = rectangle(width, height, x, y)
-      private val fullName: String = "$zoneName-$name"
       private var lastIndex: Int? = null
       private val monitoringPlots = mutableListOf<MonitoringPlotModel>()
       private var nextMonitoringPlotX: Int = x
@@ -275,6 +282,7 @@ private constructor(
             monitoringPlots = monitoringPlots,
             name = name,
             plantingCompletedTime = plantingCompletedTime,
+            stableId = stableId,
         )
       }
 

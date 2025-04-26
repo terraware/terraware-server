@@ -486,6 +486,7 @@ COMMENT ON COLUMN tracking.planting_subzones.name IS 'Short name of this plantin
 COMMENT ON COLUMN tracking.planting_subzones.observed_time IS 'When an observation of a monitoring plot in the subzone was most recently completed.';
 COMMENT ON COLUMN tracking.planting_subzones.planting_site_id IS 'Which planting site this subzone is part of. This is the same as the planting site ID of this subzone''s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.';
 COMMENT ON COLUMN tracking.planting_subzones.planting_zone_id IS 'Which planting zone this subzone is part of.';
+COMMENT ON COLUMN tracking.planting_subzones.stable_id IS 'Subzone identifier that doesn''t change even if the subzone is renamed or edited. Defaults to the full name.';
 
 COMMENT ON TABLE tracking.planting_zone_histories IS 'Versions of planting zone maps over time. Each time a planting site map changes, its zones'' maps are inserted into this table.';
 
@@ -502,6 +503,7 @@ COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zo
 COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
 COMMENT ON COLUMN tracking.planting_zones.num_permanent_plots IS 'Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.';
 COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
+COMMENT ON COLUMN tracking.planting_zones.stable_id IS 'Zone identifier that doesn''t change even if the zone is renamed or edited. Defaults to the zone name.';
 
 COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
 COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';

@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.NumericIdentifierType
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -423,7 +424,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val desired = newSite {
         zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
-        zone(name = "B", numPermanent = 1, width = 250) { subzone(name = "Subzone 2") }
+        zone(name = "B", numPermanent = 1, width = 250) {
+          subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"))
+        }
       }
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
@@ -444,7 +447,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         zone(name = "A", numPermanent = 1) { subzone(name = "Subzone") { permanent() } }
       }
 
-      val desired = newSite { zone(name = "B", numPermanent = 1) { subzone(name = "Subzone") } }
+      val desired = newSite {
+        zone(name = "B", numPermanent = 1) {
+          subzone(name = "Subzone", stableId = StableId("A-Subzone"))
+        }
+      }
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
@@ -638,6 +645,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                     name = zone.name,
                     plantingSiteHistoryId = editedSiteHistory.id,
                     plantingZoneId = zone.id,
+                    stableId = zone.stableId,
                 )
               }
               .toSet(),
@@ -660,6 +668,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   name = subzone.name,
                   plantingSubzoneId = subzone.id,
                   plantingZoneHistoryId = plantingZoneHistoryId,
+                  stableId = subzone.stableId,
               )
             }
           },

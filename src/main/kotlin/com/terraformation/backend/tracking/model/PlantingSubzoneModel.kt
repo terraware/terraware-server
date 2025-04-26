@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.util.calculateAreaHectares
@@ -14,10 +15,11 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
     val boundary: MultiPolygon,
     val id: PSZID,
     val fullName: String,
+    val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
     val name: String,
     val observedTime: Instant? = null,
     val plantingCompletedTime: Instant? = null,
-    val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
+    val stableId: StableId,
 ) {
   fun findMonitoringPlot(monitoringPlotId: MonitoringPlotId): MonitoringPlotModel? =
       monitoringPlots.find { it.id == monitoringPlotId }
@@ -40,10 +42,11 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
           boundary = boundary,
           id = null,
           fullName = fullName,
+          monitoringPlots = monitoringPlots,
           name = name,
           observedTime = null,
           plantingCompletedTime = plantingCompletedTime,
-          monitoringPlots = monitoringPlots,
+          stableId = stableId,
       )
 
   companion object {
@@ -54,6 +57,7 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
         exclusion: MultiPolygon? = null,
         plantingCompletedTime: Instant? = null,
         monitoringPlots: List<MonitoringPlotModel> = emptyList(),
+        stableId: StableId = StableId(fullName),
     ): NewPlantingSubzoneModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
 
@@ -65,6 +69,7 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
           monitoringPlots = monitoringPlots,
           name = name,
           plantingCompletedTime = plantingCompletedTime,
+          stableId = stableId,
       )
     }
   }
