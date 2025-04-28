@@ -9,11 +9,14 @@ import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.documentproducer.model.ExistingTextValue
+import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.documentproducer.model.StableIds
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
@@ -147,13 +150,17 @@ data class ReportModel(
         systemMetricsField: Field<List<ReportSystemMetricModel>>?,
         achievementsField: Field<List<String>>?,
         challengesField: Field<List<ReportChallengeModel>>?,
+        variableValuesField: Field<Map<StableId, ExistingValue>>?,
     ): ReportModel {
       return with(REPORTS) {
         ReportModel(
             id = record[ID]!!,
             configId = record[CONFIG_ID]!!,
             projectId = record[PROJECT_ID]!!,
-            projectDealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME],
+            projectDealName =
+                variableValuesField?.let {
+                  (record[it][StableIds.dealName] as? ExistingTextValue)?.value
+                },
             quarter = record[REPORT_QUARTER_ID],
             frequency = record[REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,

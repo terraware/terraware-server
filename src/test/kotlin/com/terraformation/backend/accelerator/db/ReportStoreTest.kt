@@ -59,6 +59,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.toInstant
 import java.math.BigDecimal
@@ -95,9 +96,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setup() {
     organizationId = insertOrganization(timeZone = ZoneOffset.UTC)
     projectId = insertProject()
-    insertProjectAcceleratorDetails(dealName = "DEAL_Report Project")
     insertOrganizationUser(role = Role.Admin)
     insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+    val stableVariableIds = setupStableIdVariables()
+    val dealNameVariableId = stableVariableIds[StableIds.dealName]!!
+
+    insertValue(dealNameVariableId, textValue = "DEAL_Report Project")
   }
 
   @Nested
@@ -3018,7 +3023,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteProjectAcceleratorDetails(projectId)
       insertProjectAcceleratorDetails(
           projectId = projectId,
-          dealName = "Unchanged deal name",
+          fileNaming = "Unchanged file name",
           logframeUrl = URI("https://example.com/existing"))
 
       val quarterlyConfigId =
@@ -3066,7 +3071,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ProjectAcceleratorDetailsRecord(
               projectId = projectId,
-              dealName = "Unchanged deal name",
+              fileNaming = "Unchanged file name",
               logframeUrl = URI("https://example.com/new")),
           "Project accelerator details table")
     }
