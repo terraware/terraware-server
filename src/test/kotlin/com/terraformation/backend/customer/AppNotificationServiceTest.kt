@@ -57,6 +57,7 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
@@ -70,6 +71,8 @@ import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
+import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.funder.db.FundingEntityStore
@@ -149,6 +152,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var variableStore: VariableStore
   private lateinit var webAppUrls: WebAppUrls
   private lateinit var service: AppNotificationService
+
+  private lateinit var stableVariableIds: Map<StableId, VariableId>
 
   @BeforeEach
   fun setUp() {
@@ -297,6 +302,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
     otherUserId = insertUser()
+    stableVariableIds = setupStableIdVariables()
   }
 
   @Test
@@ -576,7 +582,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(owner, role = Role.Owner)
 
     val projectId = insertProject()
-    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertValue(stableVariableIds[StableIds.dealName]!!, textValue = "DEAL_name")
     insertProjectReportConfig()
     val reportId =
         insertReport(
@@ -604,7 +610,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accelerator report submitted notification for global users`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject()
-    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertValue(stableVariableIds[StableIds.dealName]!!, textValue = "DEAL_name")
     insertProjectReportConfig()
     val reportId =
         insertReport(
@@ -642,7 +648,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertFundingEntityUser()
 
     val projectId = insertProject()
-    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertValue(stableVariableIds[StableIds.dealName]!!, textValue = "DEAL_name")
     insertProjectReportConfig()
 
     insertFundingEntityProject(fundingEntityIdA, projectId)
