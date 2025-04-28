@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableType
@@ -26,7 +27,6 @@ import com.terraformation.backend.documentproducer.model.ImageValueDetails
 import com.terraformation.backend.documentproducer.model.LinkValueDetails
 import com.terraformation.backend.documentproducer.model.SectionValueText
 import com.terraformation.backend.documentproducer.model.SectionValueVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import java.net.URI
 import org.jooq.Field
 import org.jooq.impl.DSL

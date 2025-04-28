@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -15,7 +16,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.StableIds
 import java.time.Instant
 import java.time.LocalDate
