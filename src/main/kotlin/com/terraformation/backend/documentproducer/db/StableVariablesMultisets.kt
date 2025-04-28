@@ -34,7 +34,8 @@ import org.jooq.impl.DSL
 
 fun stableVariableValuesMultiset(
     projectIdField: Field<ProjectId>,
-    stableIds: Set<StableId>
+    stableIds: Set<StableId>,
+    includeInternalVariables: Boolean = false,
 ): Field<Map<StableId, ExistingValue>> {
   val selectOptionsMultiset =
       DSL.multiset(
@@ -97,7 +98,7 @@ fun stableVariableValuesMultiset(
               .where(VARIABLE_VALUES.PROJECT_ID.asNonNullable().eq(projectIdField))
               .and(VARIABLES.STABLE_ID.`in`(stableIds))
               .apply {
-                if (!currentUser().canReadInternalOnlyVariables()) {
+                if (!includeInternalVariables) {
                   this.and(VARIABLES.INTERNAL_ONLY.eq(false))
                 }
               }
