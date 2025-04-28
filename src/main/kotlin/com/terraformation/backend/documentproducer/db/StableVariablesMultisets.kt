@@ -1,6 +1,5 @@
 package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableType
