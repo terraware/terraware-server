@@ -127,7 +127,7 @@
 <g id="node5" class="node">
 <title>planting_subzones</title>
 <g id="a_node5"><a xlink:href="../../tables/planting_subzones.html" xlink:title="planting_subzones" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="365,-206 365,-352 537,-352 537,-206 365,-206"/>
+<polygon fill="#ffffff" stroke="transparent" points="365,-184 365,-352 537,-352 537,-184 365,-184"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="365,-330 365,-352 537,-352 537,-330 365,-330"/>
 <polygon fill="none" stroke="black" points="365,-330 365,-352 537,-352 537,-330 365,-330"/>
 <text text-anchor="start" x="370" y="-339.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">planting_subzones</text>
@@ -146,17 +146,20 @@
 <polygon fill="none" stroke="black" points="365,-242 365,-264 537,-264 537,-242 365,-242"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="370" y="-259"/>
 <text text-anchor="start" x="385" y="-250.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
-<polygon fill="none" stroke="black" points="365,-224 365,-242 537,-242 537,-224 365,-224"/>
-<text text-anchor="start" x="368" y="-230.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="365,-206 365,-224 444,-224 444,-206 365,-206"/>
-<polygon fill="none" stroke="black" points="365,-206 365,-224 444,-224 444,-206 365,-206"/>
-<text text-anchor="start" x="368" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="444,-206 444,-224 486,-224 486,-206 444,-206"/>
-<polygon fill="none" stroke="black" points="444,-206 444,-224 486,-224 486,-206 444,-206"/>
-<text text-anchor="start" x="476" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="486,-206 486,-224 537,-224 537,-206 486,-206"/>
-<polygon fill="none" stroke="black" points="486,-206 486,-224 537,-224 537,-206 486,-206"/>
-<text text-anchor="start" x="518" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="365,-220 365,-242 537,-242 537,-220 365,-220"/>
+<polygon fill="none" stroke="black" points="365,-220 365,-242 537,-242 537,-220 365,-220"/>
+<text text-anchor="start" x="385" y="-228.2" font-family="Helvetica,sans-Serif" font-size="11.00">stable_id</text>
+<polygon fill="none" stroke="black" points="365,-202 365,-220 537,-220 537,-202 365,-202"/>
+<text text-anchor="start" x="368" y="-208.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="365,-184 365,-202 444,-202 444,-184 365,-184"/>
+<polygon fill="none" stroke="black" points="365,-184 365,-202 444,-202 444,-184 365,-184"/>
+<text text-anchor="start" x="368" y="-190.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="444,-184 444,-202 486,-202 486,-184 444,-184"/>
+<polygon fill="none" stroke="black" points="444,-184 444,-202 486,-202 486,-184 444,-184"/>
+<text text-anchor="start" x="476" y="-190.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="486,-184 486,-202 537,-202 537,-184 486,-184"/>
+<polygon fill="none" stroke="black" points="486,-184 486,-202 537,-202 537,-184 486,-184"/>
+<text text-anchor="start" x="518" y="-190.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
 </g>
@@ -372,7 +375,7 @@
 <!-- plantings&#45;&gt;planting_sites -->
 <g id="edge15" class="edge">
 <title>plantings:w&#45;&gt;planting_sites:e</title>
-<path fill="none" stroke="black" d="M647.36,-64.05C428.31,-65.64 353.32,-103.97 175,-242 150.24,-261.17 166.31,-300 135,-300"/>
+<path fill="none" stroke="black" d="M647.36,-64.05C428.29,-65.61 352.82,-103.33 175,-242 150.31,-261.26 166.31,-300 135,-300"/>
 <polygon fill="black" stroke="black" points="654,-64.03 662.01,-67.6 658,-64.01 662,-64 662,-64 662,-64 658,-64.01 661.99,-60.4 654,-64.03 654,-64.03"/>
 <ellipse fill="none" stroke="black" cx="650.8" cy="-64.04" rx="3.2" ry="3.2"/>
 </g>
