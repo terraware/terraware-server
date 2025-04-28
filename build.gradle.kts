@@ -21,7 +21,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "7.0.7"
+  id("dev.monosoul.jooq-docker") version "7.0.8"
   id("com.diffplug.spotless") version "7.0.3"
   id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.7"
@@ -150,7 +150,7 @@ dependencies {
   testImplementation("org.junit.platform:junit-platform-launcher")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.6"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.0"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
