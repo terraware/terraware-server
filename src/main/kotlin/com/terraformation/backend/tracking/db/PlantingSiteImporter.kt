@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
@@ -28,8 +29,10 @@ class PlantingSiteImporter(
 ) {
   companion object {
     val subzoneNameProperties = setOf("planting_1", "subzone")
+    val subzoneStableIdProperties = setOf("stable_sz", "stable_sub")
     val targetPlantingDensityProperties = setOf("plan_dens", "density")
     val zoneNameProperties = setOf("planting_z", "zone")
+    val zoneStableIdProperties = setOf("stable_z", "stable_zon")
 
     // Zone-level properties to control number of monitoring plots
     val errorMarginProperties = setOf("error_marg")
@@ -194,6 +197,17 @@ class PlantingSiteImporter(
           }
         }
 
+    val stableIdsByZone = mutableMapOf<String, StableId>()
+    val zonesByStableId = mutableMapOf<StableId, String>()
+
+    validSubzones.forEach { feature ->
+      val zoneName = feature.getProperty(zoneNameProperties)!!
+      val stableId = StableId(feature.getProperty(zoneStableIdProperties) ?: zoneName)
+
+      stableIdsByZone[zoneName] = stableId
+      zonesByStableId[stableId] = zoneName
+    }
+
     val subzonesByZone =
         validSubzones.groupBy { feature -> feature.getProperty(zoneNameProperties)!! }
 
@@ -202,12 +216,16 @@ class PlantingSiteImporter(
           subzoneFeatures.map { subzoneFeature ->
             val boundary = convertToXY(subzoneFeature.geometry)
             val name = subzoneFeature.getProperty(subzoneNameProperties)!!
+            val fullName = "$zoneName-$name"
+            val stableId =
+                StableId(subzoneFeature.getProperty(subzoneStableIdProperties) ?: fullName)
 
             PlantingSubzoneModel.create(
                 boundary = boundary.toMultiPolygon(),
                 exclusion = exclusion,
-                fullName = "$zoneName-$name",
+                fullName = fullName,
                 name = name,
+                stableId = stableId,
             )
           }
 
@@ -249,6 +267,7 @@ class PlantingSiteImporter(
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
             plantingSubzones = subzoneModels,
+            stableId = stableIdsByZone[zoneName]!!,
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,
             variance = variance,

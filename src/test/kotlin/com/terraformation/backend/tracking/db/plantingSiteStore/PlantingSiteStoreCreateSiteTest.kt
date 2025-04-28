@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
@@ -235,6 +236,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   name = "Zone 1",
                   numPermanentPlots = 3,
                   numTemporaryPlots = 4,
+                  stableId = StableId("Zone 1"),
                   studentsT = BigDecimal(5),
                   targetPlantingDensity = BigDecimal(6),
                   variance = BigDecimal(7),
@@ -245,6 +247,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   name = "Zone 2",
                   numPermanentPlots = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
                   numTemporaryPlots = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+                  stableId = StableId("Zone 2"),
                   studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
                   targetPlantingDensity = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
                   variance = PlantingZoneModel.DEFAULT_VARIANCE,
@@ -287,21 +290,25 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   fullName = "Zone 1-Subzone 1",
                   name = "Subzone 1",
                   plantingZoneId = actualZones["Zone 1"]?.id,
+                  stableId = StableId("Zone 1-Subzone 1"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 1-Subzone 2",
                   name = "Subzone 2",
                   plantingZoneId = actualZones["Zone 1"]?.id,
+                  stableId = StableId("Zone 1-Subzone 2"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 2-Subzone 1",
                   name = "Subzone 1",
                   plantingZoneId = actualZones["Zone 2"]?.id,
+                  stableId = StableId("Zone 2-Subzone 1"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 2-Subzone 2",
                   name = "Subzone 2",
                   plantingZoneId = actualZones["Zone 2"]?.id,
+                  stableId = StableId("Zone 2-Subzone 2"),
               ),
           ),
           actualSubzones.map { it.copy(boundary = null) }.toSet(),
@@ -396,6 +403,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   name = "zone",
                   plantingSiteHistoryId = model.historyId,
                   plantingZoneId = model.plantingZones.first().id,
+                  stableId = StableId("zone"),
               ),
           ),
           zoneHistories.map { it.copy(id = null) },
@@ -410,6 +418,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   name = "subzone",
                   plantingSubzoneId = model.plantingZones.first().plantingSubzones.first().id,
                   plantingZoneHistoryId = zoneHistories.first().id,
+                  stableId = StableId("zone-subzone"),
               ),
           ),
           plantingSubzoneHistoriesDao.findAll().map { it.copy(id = null) },

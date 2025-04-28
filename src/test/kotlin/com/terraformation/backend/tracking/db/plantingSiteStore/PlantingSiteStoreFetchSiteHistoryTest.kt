@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.multiPolygon
@@ -73,6 +74,7 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
                         id = plantingZoneHistoryId1,
                         name = "Zone 1",
                         plantingZoneId = plantingZoneId1,
+                        stableId = StableId("Zone 1"),
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneHistoryModel(
@@ -81,6 +83,7 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
                                     fullName = "Z1-Subzone 1",
                                     name = "Subzone 1",
                                     plantingSubzoneId = plantingSubzoneId1,
+                                    stableId = StableId("Z1-Subzone 1"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(
@@ -99,6 +102,7 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
                                     fullName = "Z1-Subzone 2",
                                     name = "Subzone 2",
                                     plantingSubzoneId = null,
+                                    stableId = StableId("Z1-Subzone 2"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(

@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -31,6 +32,7 @@ data class PlantingZoneModel<
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
     val plantingSubzones: List<PlantingSubzoneModel<PSZID>>,
+    val stableId: StableId,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
     val variance: BigDecimal = DEFAULT_VARIANCE,
@@ -392,6 +394,7 @@ data class PlantingZoneModel<
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.map { it.toNew() },
+          stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
           variance = variance,
@@ -420,6 +423,7 @@ data class PlantingZoneModel<
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
         numPermanentPlots: Int? = null,
         numTemporaryPlots: Int? = null,
+        stableId: StableId = StableId(name),
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
         targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
         variance: BigDecimal = DEFAULT_VARIANCE,
@@ -442,6 +446,7 @@ data class PlantingZoneModel<
           numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
           numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
           plantingSubzones = plantingSubzones,
+          stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
           variance = variance,

@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -674,6 +675,7 @@ class PlantingZoneModelTest {
           name = "name",
           plantingCompletedTime = null,
           monitoringPlots = plots,
+          stableId = StableId("name"),
       )
 
   private fun plantingSubzoneIds(vararg id: Int) = id.map { PlantingSubzoneId(it.toLong()) }.toSet()
@@ -709,6 +711,7 @@ class PlantingZoneModelTest {
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = subzones,
+          stableId = StableId("name"),
           studentsT = BigDecimal.ONE,
           targetPlantingDensity = BigDecimal.ONE,
           variance = BigDecimal.ONE,

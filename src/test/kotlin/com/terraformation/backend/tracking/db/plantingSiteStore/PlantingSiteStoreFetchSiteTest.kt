@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
@@ -105,6 +106,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           id = plantingZoneId,
                           name = "Z1",
                           plantingSubzones = emptyList(),
+                          stableId = StableId("Z1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
                   ))
@@ -123,6 +125,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       fullName = "Z1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
+                                      stableId = StableId("Z1-1"),
                                       monitoringPlots = emptyList(),
                                   )))),
           )
@@ -221,6 +224,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           boundaryModifiedTime = Instant.EPOCH,
                           id = plantingZoneId,
                           name = "Z1",
+                          stableId = StableId("Z1"),
                           plantingSubzones =
                               listOf(
                                   PlantingSubzoneModel(
@@ -230,6 +234,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       fullName = "Z1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
+                                      stableId = StableId("Z1-1"),
                                       monitoringPlots =
                                           listOf(
                                               MonitoringPlotModel(

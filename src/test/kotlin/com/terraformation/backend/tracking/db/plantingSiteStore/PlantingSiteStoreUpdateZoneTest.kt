@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.multiPolygon
 import io.mockk.every
@@ -35,6 +36,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               name = "initial",
               numPermanentPlots = 1,
               numTemporaryPlots = 2,
+              stableId = StableId("initial"),
               studentsT = BigDecimal.ONE,
               targetPlantingDensity = BigDecimal.ONE,
               variance = BigDecimal.ZERO,

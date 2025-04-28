@@ -8,6 +8,7 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -1069,6 +1070,7 @@ class PlantingSiteStore(
             numPermanentPlots = zone.numPermanentPlots,
             numTemporaryPlots = zone.numTemporaryPlots,
             plantingSiteId = plantingSiteId,
+            stableId = zone.stableId,
             studentsT = zone.studentsT,
             targetPlantingDensity = zone.targetPlantingDensity,
             variance = zone.variance,
@@ -1100,6 +1102,7 @@ class PlantingSiteStore(
             plantingCompletedTime = subzone.plantingCompletedTime,
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId,
+            stableId = subzone.stableId,
         )
 
     plantingSubzonesDao.insert(plantingSubzonesRow)
@@ -1745,12 +1748,15 @@ class PlantingSiteStore(
                   boundary = boundary,
                   name = zoneName,
                   plantingSubzones = emptyList(),
+                  stableId = StableId(zoneName),
               )
+          val fullName = "$zoneName-$subzoneName"
           val subzone =
               NewPlantingSubzoneModel.create(
                   boundary = boundary,
-                  fullName = "$zoneName-$subzoneName",
+                  fullName = fullName,
                   name = subzoneName,
+                  stableId = StableId(fullName),
               )
 
           with(PLANTING_SITES) {
@@ -2011,6 +2017,7 @@ class PlantingSiteStore(
                     PLANTING_SUBZONES.NAME,
                     PLANTING_SUBZONES.OBSERVED_TIME,
                     PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
+                    PLANTING_SUBZONES.STABLE_ID,
                     plantingSubzoneBoundaryField,
                     plotsField)
                 .from(PLANTING_SUBZONES)
@@ -2023,10 +2030,11 @@ class PlantingSiteStore(
                 boundary = record[plantingSubzoneBoundaryField]!! as MultiPolygon,
                 id = record[PLANTING_SUBZONES.ID]!!,
                 fullName = record[PLANTING_SUBZONES.FULL_NAME]!!,
+                monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
                 name = record[PLANTING_SUBZONES.NAME]!!,
                 observedTime = record[PLANTING_SUBZONES.OBSERVED_TIME],
                 plantingCompletedTime = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
-                monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
+                stableId = record[PLANTING_SUBZONES.STABLE_ID]!!,
             )
           }
         }
@@ -2044,6 +2052,7 @@ class PlantingSiteStore(
                     PLANTING_SUBZONE_HISTORIES.ID,
                     PLANTING_SUBZONE_HISTORIES.NAME,
                     PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
+                    PLANTING_SUBZONE_HISTORIES.STABLE_ID,
                     boundaryField,
                     plotsField)
                 .from(PLANTING_SUBZONE_HISTORIES)
@@ -2060,6 +2069,7 @@ class PlantingSiteStore(
                 plotsField?.let { record[it] } ?: emptyList(),
                 record[PLANTING_SUBZONE_HISTORIES.NAME]!!,
                 record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID],
+                record[PLANTING_SUBZONE_HISTORIES.STABLE_ID]!!,
             )
           }
         }
@@ -2084,6 +2094,7 @@ class PlantingSiteStore(
                     PLANTING_ZONES.NAME,
                     PLANTING_ZONES.NUM_PERMANENT_PLOTS,
                     PLANTING_ZONES.NUM_TEMPORARY_PLOTS,
+                    PLANTING_ZONES.STABLE_ID,
                     PLANTING_ZONES.STUDENTS_T,
                     PLANTING_ZONES.TARGET_PLANTING_DENSITY,
                     PLANTING_ZONES.VARIANCE,
@@ -2104,6 +2115,7 @@ class PlantingSiteStore(
                 record[PLANTING_ZONES.NUM_PERMANENT_PLOTS]!!,
                 record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
                 subzonesField?.let { record[it] } ?: emptyList(),
+                record[PLANTING_ZONES.STABLE_ID]!!,
                 record[PLANTING_ZONES.STUDENTS_T]!!,
                 record[PLANTING_ZONES.TARGET_PLANTING_DENSITY]!!,
                 record[PLANTING_ZONES.VARIANCE]!!,
@@ -2128,6 +2140,7 @@ class PlantingSiteStore(
                     PLANTING_ZONE_HISTORIES.ID,
                     PLANTING_ZONE_HISTORIES.NAME,
                     PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
+                    PLANTING_ZONE_HISTORIES.STABLE_ID,
                     boundaryField,
                     subzonesField)
                 .from(PLANTING_ZONE_HISTORIES)
@@ -2142,6 +2155,7 @@ class PlantingSiteStore(
                 record[PLANTING_ZONE_HISTORIES.NAME]!!,
                 subzonesField?.let { record[it]!! } ?: emptyList(),
                 record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID],
+                record[PLANTING_ZONE_HISTORIES.STABLE_ID]!!,
             )
           }
         }
@@ -2378,6 +2392,7 @@ class PlantingSiteStore(
                 name = model.name,
                 plantingSiteHistoryId = plantingSiteHistoryId,
                 plantingZoneId = plantingZoneId,
+                stableId = model.stableId,
             )
             .attach(dslContext)
 
@@ -2400,6 +2415,7 @@ class PlantingSiteStore(
                 name = model.name,
                 plantingSubzoneId = plantingSubzoneId,
                 plantingZoneHistoryId = plantingZoneHistoryId,
+                stableId = model.stableId,
             )
             .attach(dslContext)
 

@@ -1902,6 +1902,7 @@ abstract class DatabaseBackedTest {
           row.numPermanentPlots ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporaryPlots: Int =
           row.numTemporaryPlots ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      stableId: Any = row.name ?: name,
       studentsT: BigDecimal = row.studentsT ?: PlantingZoneModel.DEFAULT_STUDENTS_T,
       targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
       variance: BigDecimal = row.variance ?: PlantingZoneModel.DEFAULT_VARIANCE,
@@ -1924,6 +1925,7 @@ abstract class DatabaseBackedTest {
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
             plantingSiteId = plantingSiteId,
+            stableId = StableId("$stableId"),
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,
             variance = variance,
@@ -1948,6 +1950,7 @@ abstract class DatabaseBackedTest {
       name: String = lastPlantingZonesRow.name!!,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
       plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      stableId: Any = lastPlantingZonesRow.stableId!!,
   ): PlantingZoneHistoryId {
     val row =
         PlantingZoneHistoriesRow(
@@ -1956,6 +1959,7 @@ abstract class DatabaseBackedTest {
             name = name,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingZoneId = plantingZoneId,
+            stableId = StableId("$stableId"),
         )
 
     plantingZoneHistoriesDao.insert(row)
@@ -1990,6 +1994,7 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "Z1-$name",
+      stableId: Any = row.fullName ?: fullName,
       insertHistory: Boolean = true,
   ): PlantingSubzoneId {
     val rowWithDefaults =
@@ -2006,6 +2011,7 @@ abstract class DatabaseBackedTest {
             plantingCompletedTime = plantingCompletedTime,
             plantingSiteId = plantingSiteId,
             plantingZoneId = plantingZoneId,
+            stableId = StableId("$stableId"),
         )
 
     plantingSubzonesDao.insert(rowWithDefaults)
@@ -2028,6 +2034,7 @@ abstract class DatabaseBackedTest {
       name: String = lastPlantingSubzonesRow.name!!,
       plantingSubzoneId: PlantingSubzoneId? = inserted.plantingSubzoneId,
       plantingZoneHistoryId: PlantingZoneHistoryId = inserted.plantingZoneHistoryId,
+      stableId: Any = lastPlantingSubzonesRow.stableId!!,
   ): PlantingSubzoneHistoryId {
     val row =
         PlantingSubzoneHistoriesRow(
@@ -2037,6 +2044,7 @@ abstract class DatabaseBackedTest {
             name = name,
             plantingZoneHistoryId = plantingZoneHistoryId,
             plantingSubzoneId = plantingSubzoneId,
+            stableId = StableId("$stableId"),
         )
 
     plantingSubzoneHistoriesDao.insert(row)
