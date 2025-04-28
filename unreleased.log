@@ -1,1 +1,5 @@
+f41fef6e7ad Update database dependencies (#3067)
+b270212b391 Update dependency com.google.apis:google-api-services-drive to v3-rev20250329-2.0.0 (#3065)
+81715485297 Update plugin org.springframework.boot to v3.4.5 (#3066)
+6e5b0183f23 Update dependency gradle to v8.14 (#3068)
 91c1e1f8ec3 Remove warning suppression that's no longer needed (#3064)
