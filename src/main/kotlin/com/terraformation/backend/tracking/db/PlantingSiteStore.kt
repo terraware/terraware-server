@@ -565,6 +565,8 @@ class PlantingSiteStore(
                 .fetchOne(ID)!!
           }
 
+      useTemporaryNames(plantingSiteEdit)
+
       plantingSiteEdit.plantingZoneEdits.forEach {
         replacementResults.add(
             applyPlantingZoneEdit(
@@ -607,6 +609,52 @@ class PlantingSiteStore(
               edited, plantingSiteEdit, ReplacementResult.merge(replacementResults)))
 
       edited
+    }
+  }
+
+  /**
+   * Gives unique temporary names to all the zones and subzones that are being updated. This is done
+   * before applying the actual zone and subzone edits.
+   *
+   * Using temporary names avoids potential unique constraint violations.
+   *
+   * Suppose you have a site with zones A and B. You realize you mislabeled them and you really want
+   * the zones to be named B and C. Without the temporary names, the system might first try to
+   * rename zone B to "C". That would bomb out with a database constraint violation because zone
+   * names are required to be unique within planting sites.
+   *
+   * Instead, we do it in two steps. We rename both A and B to random UUID names. Then we apply the
+   * edits, which set the names to "B" and "C", neither of which collides with any of the UUIDs no
+   * matter which order the updates are applied.
+   */
+  private fun useTemporaryNames(plantingSiteEdit: PlantingSiteEdit) {
+    val zoneIdsToUpdate =
+        plantingSiteEdit.plantingZoneEdits.filterIsInstance<PlantingZoneEdit.Update>().map {
+          it.existingModel.id
+        }
+    if (zoneIdsToUpdate.isNotEmpty()) {
+      with(PLANTING_ZONES) {
+        dslContext
+            .update(PLANTING_ZONES)
+            .set(NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
+            .where(ID.`in`(zoneIdsToUpdate))
+            .execute()
+      }
+    }
+
+    val subzoneIdsToUpdate =
+        plantingSiteEdit.plantingZoneEdits
+            .flatMap { it.plantingSubzoneEdits }
+            .filterIsInstance<PlantingSubzoneEdit.Update>()
+            .map { it.existingModel.id }
+    if (subzoneIdsToUpdate.isNotEmpty()) {
+      with(PLANTING_SUBZONES) {
+        dslContext
+            .update(PLANTING_SUBZONES)
+            .set(NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
+            .where(ID.`in`(subzoneIdsToUpdate))
+            .execute()
+      }
     }
   }
 

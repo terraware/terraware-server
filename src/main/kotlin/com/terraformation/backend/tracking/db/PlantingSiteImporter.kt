@@ -73,6 +73,7 @@ class PlantingSiteImporter(
       description: String?,
       organizationId: OrganizationId,
       gridOrigin: Point? = null,
+      requireStableIds: Boolean = false,
   ): NewPlantingSiteModel {
     if (shapefiles.isEmpty() || shapefiles.size > 2) {
       throw ShapefilesInvalidException(
@@ -104,6 +105,7 @@ class PlantingSiteImporter(
                     subzoneNameProperties.joinToString()),
         exclusionsFile,
         gridOrigin,
+        requireStableIds,
     )
   }
 
@@ -114,11 +116,13 @@ class PlantingSiteImporter(
       subzonesFile: Shapefile,
       exclusionsFile: Shapefile?,
       gridOrigin: Point? = null,
+      requireStableIds: Boolean = false,
   ): NewPlantingSiteModel {
     val problems = mutableListOf<String>()
 
     val exclusion = getExclusion(exclusionsFile, problems)
-    val zonesWithSubzones = getZonesWithSubzones(subzonesFile, exclusion, problems)
+    val zonesWithSubzones =
+        getZonesWithSubzones(subzonesFile, exclusion, problems, requireStableIds)
 
     if (problems.isNotEmpty()) {
       throw ShapefilesInvalidException(problems)
@@ -176,24 +180,49 @@ class PlantingSiteImporter(
       subzonesFile: Shapefile,
       exclusion: MultiPolygon?,
       problems: MutableList<String>,
+      requireStableIds: Boolean,
   ): List<NewPlantingZoneModel> {
     val validSubzones =
         subzonesFile.features.filter { feature ->
-          val subzoneName = feature.getProperty(subzoneNameProperties)
-          val zoneName = feature.getProperty(zoneNameProperties)
+          fun checkProperty(
+              description: String,
+              properties: Set<String>,
+              require: Boolean = true
+          ): String? {
+            return if (require && feature.getProperty(properties).isNullOrBlank()) {
+              val subzoneName = feature.getProperty(subzoneNameProperties) ?: "<no name>"
 
-          if (subzoneName.isNullOrBlank()) {
-            problems +=
-                "Subzone is missing subzone name properties: " +
-                    subzoneNameProperties.joinToString()
-            false
-          } else if (zoneName.isNullOrBlank()) {
-            problems +=
-                "Subzone $subzoneName is missing zone name properties: " +
-                    zoneNameProperties.joinToString()
-            false
-          } else {
-            true
+              "Subzone $subzoneName is missing $description properties: " +
+                  properties.joinToString()
+            } else {
+              null
+            }
+          }
+
+          val featureProblems =
+              listOfNotNull(
+                  checkProperty("subzone name", subzoneNameProperties),
+                  checkProperty("zone name", zoneNameProperties),
+                  checkProperty("subzone stable ID", subzoneStableIdProperties, requireStableIds),
+                  checkProperty("zone stable ID", zoneStableIdProperties, requireStableIds),
+              )
+
+          problems += featureProblems
+          featureProblems.isEmpty()
+        }
+
+    validSubzones
+        .groupBy { subzone ->
+          subzone.getProperty(subzoneStableIdProperties)
+              ?: (subzone.getProperty(zoneNameProperties) +
+                  "-" +
+                  subzone.getProperty(subzoneNameProperties))
+        }
+        .forEach { (stableId, subzones) ->
+          if (subzones.size > 1) {
+            val subzoneNames =
+                subzones.joinToString(", ") { it.getProperty(subzoneNameProperties)!! }
+            problems += "Duplicate stable ID $stableId on subzones: $subzoneNames"
           }
         }
 
@@ -203,9 +232,25 @@ class PlantingSiteImporter(
     validSubzones.forEach { feature ->
       val zoneName = feature.getProperty(zoneNameProperties)!!
       val stableId = StableId(feature.getProperty(zoneStableIdProperties) ?: zoneName)
+      val existingZoneName = zonesByStableId[stableId]
+      val existingStableId = stableIdsByZone[zoneName]
 
-      stableIdsByZone[zoneName] = stableId
-      zonesByStableId[stableId] = zoneName
+      if (existingStableId != null) {
+        if (existingStableId != stableId) {
+          problems += "Inconsistent stable IDs for zone $zoneName: $existingStableId, $stableId"
+        }
+      } else {
+        stableIdsByZone[zoneName] = stableId
+      }
+
+      if (existingZoneName != null) {
+        if (existingZoneName != zoneName) {
+          problems +=
+              "Inconsistent zone names for stable ID $stableId: $existingZoneName, $zoneName"
+        }
+      } else {
+        zonesByStableId[stableId] = zoneName
+      }
     }
 
     val subzonesByZone =
