@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -13,7 +14,6 @@ import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.importer.CsvImportFailedException
 import com.terraformation.backend.importer.processCsvFile

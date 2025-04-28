@@ -8,13 +8,13 @@ import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.mockUser
 import io.mockk.every

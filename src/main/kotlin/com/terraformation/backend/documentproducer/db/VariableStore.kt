@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.asNonNullable
@@ -48,7 +49,6 @@ import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectOption
 import com.terraformation.backend.documentproducer.model.SelectVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.TableColumn
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable

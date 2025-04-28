@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
@@ -15,7 +16,6 @@ import com.terraformation.backend.documentproducer.db.VariableManifestStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger

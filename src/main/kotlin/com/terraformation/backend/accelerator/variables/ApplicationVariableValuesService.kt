@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.CountryNotFoundException
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
@@ -13,7 +14,6 @@ import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable

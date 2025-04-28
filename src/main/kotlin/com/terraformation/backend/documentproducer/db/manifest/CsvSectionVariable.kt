@@ -1,10 +1,10 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
-import com.terraformation.backend.documentproducer.model.StableId
 
 // In the header order in the CSV
 data class CsvSectionVariable(

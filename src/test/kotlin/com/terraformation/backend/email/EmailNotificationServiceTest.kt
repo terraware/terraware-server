@@ -40,6 +40,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -93,7 +94,6 @@ import com.terraformation.backend.documentproducer.event.CompletedSectionVariabl
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
-import com.terraformation.backend.documentproducer.model.StableId
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.funder.db.FundingEntityStore

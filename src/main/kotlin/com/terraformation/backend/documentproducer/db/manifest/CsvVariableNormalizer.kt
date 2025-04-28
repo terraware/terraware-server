@@ -1,7 +1,7 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
 import com.opencsv.CSVReader
-import com.terraformation.backend.documentproducer.model.StableId
+import com.terraformation.backend.db.StableId
 import java.io.InputStreamReader
 
 class CsvVariableNormalizer {
