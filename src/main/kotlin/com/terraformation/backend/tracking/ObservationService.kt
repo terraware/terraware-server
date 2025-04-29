@@ -30,6 +30,7 @@ import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
@@ -430,6 +431,10 @@ class ObservationService(
 
     if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
       throw IllegalArgumentException("Observed time is in the future")
+    }
+
+    if (!plantingSiteStore.isDetailed(plantingSiteId)) {
+      throw PlantingSiteNotDetailedException(plantingSiteId)
     }
 
     when (observationType) {

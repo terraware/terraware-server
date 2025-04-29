@@ -79,6 +79,9 @@ class PlantingSeasonNotFoundException(val plantingSeasonId: PlantingSeasonId) :
 class PlantingSiteHistoryNotFoundException(val plantingSiteHistoryId: PlantingSiteHistoryId) :
     EntityNotFoundException("Planting site history $plantingSiteHistoryId not found")
 
+class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
+    MismatchedStateException("Planting site $plantingSiteId is not a detailed planting site")
+
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
 
