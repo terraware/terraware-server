@@ -153,8 +153,9 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
     val projectId2 = insertProject()
     insertFundingEntityProject(fundingEntity1, projectId2)
 
-    assertTrue(
-        store.fetchByProjectId(projectId1).isEmpty(),
+    assertEquals(
+        emptyList<FundingEntityModel>(),
+        store.fetchByProjectId(projectId1),
         "Project should not be connected to any entities")
   }
 
