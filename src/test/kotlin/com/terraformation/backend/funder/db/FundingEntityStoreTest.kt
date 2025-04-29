@@ -2,12 +2,16 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.funder.model.FundingProjectModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -27,6 +31,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canReadFundingEntity(any()) } returns true
     every { user.canReadFundingEntities() } returns true
+    every { user.canReadProject(any()) } returns true
   }
 
   @Test
@@ -122,5 +127,65 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
             FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2")),
         actualEntities[2].projects,
         "Third entity should have both projects")
+  }
+
+  @Test
+  fun `fetchByProjectId requires user to be able to read funding entities`() {
+    every { user.canReadFundingEntities() } returns false
+
+    assertThrows<AccessDeniedException> { store.fetchByProjectId(ProjectId(1)) }
+  }
+
+  @Test
+  fun `fetchByProjectId requires user to be able to read project`() {
+    insertOrganization()
+    val projectId = insertProject()
+    every { user.canReadProject(projectId) } returns false
+
+    assertThrows<ProjectNotFoundException> { store.fetchByProjectId(projectId) }
+  }
+
+  @Test
+  fun `fetchByProjectId returns empty list when no funding entities are attached to project`() {
+    insertOrganization()
+    val fundingEntity1 = insertFundingEntity()
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+    insertFundingEntityProject(fundingEntity1, projectId2)
+
+    assertTrue(
+        store.fetchByProjectId(projectId1).isEmpty(),
+        "Project should not be connected to any entities")
+  }
+
+  @Test
+  fun `fetchByProjectId returns correct funding entities`() {
+    insertOrganization()
+    val fundingEntity1 = insertFundingEntity(name = "Funding entity 1")
+    val fundingEntity2 = insertFundingEntity(name = "Funding entity 2")
+    val fundingEntity3 = insertFundingEntity(name = "Funding entity 3")
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+    insertFundingEntityProject(fundingEntity1, projectId1)
+    insertFundingEntityProject(fundingEntity2, projectId1)
+    insertFundingEntityProject(fundingEntity3, projectId2)
+
+    assertEquals(
+        listOf(
+            FundingEntityModel(
+                id = fundingEntity1,
+                name = "Funding entity 1",
+                createdTime = Instant.EPOCH,
+                modifiedTime = Instant.EPOCH,
+                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = ""))),
+            FundingEntityModel(
+                id = fundingEntity2,
+                name = "Funding entity 2",
+                createdTime = Instant.EPOCH,
+                modifiedTime = Instant.EPOCH,
+                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = ""))),
+        ),
+        store.fetchByProjectId(projectId1),
+        "Project should be connected to both entities")
   }
 }

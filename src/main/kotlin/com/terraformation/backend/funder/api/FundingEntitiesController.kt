@@ -135,6 +135,14 @@ class FundingEntitiesController(
             ?: throw FundingEntityNotFoundException(userId)
     return GetFundingEntityResponsePayload(fundingEntity = FundingEntityPayload(model))
   }
+
+  @Operation(summary = "Gets the Funding Entities that a specific project is tied to")
+  @GetMapping("/projects/{projectId}")
+  fun getProjectFundingEntities(@PathVariable projectId: ProjectId): ListFundingEntitiesPayload {
+    val elements =
+        fundingEntityStore.fetchByProjectId(projectId).map { model -> FundingEntityPayload(model) }
+    return ListFundingEntitiesPayload(elements)
+  }
 }
 
 data class FundingEntityPayload(

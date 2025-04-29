@@ -2,6 +2,7 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
@@ -19,6 +20,13 @@ class FundingEntityStore(
     requirePermissions { readFundingEntities() }
 
     return fetchWithCondition()
+  }
+
+  fun fetchByProjectId(projectId: ProjectId): List<FundingEntityModel> {
+    requirePermissions { readFundingEntities() }
+    requirePermissions { readProject(projectId) }
+
+    return fetchWithCondition(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(projectId))
   }
 
   fun fetchOneById(
