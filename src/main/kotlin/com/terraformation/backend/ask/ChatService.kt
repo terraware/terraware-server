@@ -15,6 +15,7 @@ import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvi
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder
+import org.springframework.web.client.ResourceAccessException
 
 @ConditionalOnSpringAi
 @Named
@@ -118,23 +119,29 @@ class ChatService(
                 .build(),
             template)
 
-    return chatClient
-        .prompt()
-        .user(question)
-        .user { promptSpec -> promptSpec.param("project_context", renderProjectContext(projectId)) }
-        .advisors(
-            questionAnswerAdvisor,
-            injectMetadataAdvisor,
-            chatMemoryAdvisor,
-            loggerAdvisor,
-        )
-        .advisors { a ->
-          if (conversationId != null) {
-            a.param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
+    return try {
+      chatClient
+          .prompt()
+          .user(question)
+          .user { promptSpec ->
+            promptSpec.param("project_context", renderProjectContext(projectId))
           }
-        }
-        .call()
-        .content()
+          .advisors(
+              questionAnswerAdvisor,
+              injectMetadataAdvisor,
+              chatMemoryAdvisor,
+              loggerAdvisor,
+          )
+          .advisors { a ->
+            if (conversationId != null) {
+              a.param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
+            }
+          }
+          .call()
+          .content()
+    } catch (e: ResourceAccessException) {
+      throw ChatRequestFailedException(e)
+    }
   }
 
   private fun renderProjectContext(projectId: ProjectId?): String {
