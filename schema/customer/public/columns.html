@@ -755,18 +755,18 @@
         "comments": ""
     },
     {
-        "tableName": "facility_connection_states",
-        "tableFileName": "facility_connection_states",
+        "tableName": "countries",
+        "tableFileName": "countries",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.<\/p>"
     },
     {
         "tableName": "uploads",
@@ -872,13 +872,13 @@
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>code_alpha3",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Name of country in US English.<\/p>"
+        "comments": "<p>ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model.<\/p>"
     },
     {
         "tableName": "upload_statuses",
@@ -1231,18 +1231,18 @@
         "comments": ""
     },
     {
-        "tableName": "facility_connection_states",
-        "tableFileName": "facility_connection_states",
+        "tableName": "countries",
+        "tableFileName": "countries",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "name",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Name of country in US English.<\/p>"
     },
     {
         "tableName": "uploads",
@@ -1749,18 +1749,18 @@
         "comments": ""
     },
     {
-        "tableName": "countries",
-        "tableFileName": "countries",
+        "tableName": "facility_connection_states",
+        "tableFileName": "facility_connection_states",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "eligible",
-        "type": "bool",
-        "length": 1,
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If false, projects in this country are ineligible for the accelerator program.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "roles",
@@ -2379,18 +2379,18 @@
         "comments": ""
     },
     {
-        "tableName": "countries",
-        "tableFileName": "countries",
+        "tableName": "facility_connection_states",
+        "tableFileName": "facility_connection_states",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>code_alpha3",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "facilities",
@@ -2452,15 +2452,15 @@
         "tableName": "countries",
         "tableFileName": "countries",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>region_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "eligible",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If false, projects in this country are ineligible for the accelerator program.<\/p>"
     },
     {
         "tableName": "users",
@@ -3054,15 +3054,15 @@
         "tableName": "countries",
         "tableFileName": "countries",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>region_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.<\/p>"
+        "comments": ""
     }
 ];
                     var config = {
