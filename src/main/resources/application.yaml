@@ -33,6 +33,12 @@ terraware:
     api-client-id: "api"
 
 spring:
+  ai:
+    openai:
+      embedding:
+        options:
+          model: "text-embedding-3-large"
+
   autoconfigure:
     exclude:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
