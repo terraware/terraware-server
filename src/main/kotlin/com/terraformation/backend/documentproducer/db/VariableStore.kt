@@ -292,6 +292,34 @@ class VariableStore(
         .mapNotNull { fetchVariableOrNull(it) }
   }
 
+  /**
+   * Returns the top-level variable that contains the requested variable ID.
+   *
+   * If the variable is already top-level, this is the same as [fetchOneVariable]. But if the
+   * variable is a table column or a child section, this returns the table variable or the top-level
+   * section that contains the requested section.
+   */
+  fun fetchTopLevelVariable(variableId: VariableId): Variable {
+    val tableVariableId =
+        dslContext.fetchValue(
+            VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID,
+            VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(variableId))
+    if (tableVariableId != null) {
+      // The table might be nested inside another table, so check it for table membership too.
+      return fetchTopLevelVariable(tableVariableId)
+    }
+
+    val parentSectionId =
+        dslContext.fetchValue(
+            VARIABLE_SECTIONS.PARENT_VARIABLE_ID, VARIABLE_SECTIONS.VARIABLE_ID.eq(variableId))
+    if (parentSectionId != null) {
+      // Walk up the section hierarchy.
+      return fetchTopLevelVariable(parentSectionId)
+    }
+
+    return fetchOneVariable(variableId)
+  }
+
   fun importVariable(variable: VariablesRow): VariableId {
     variablesDao.insert(variable)
     return variable.id!!
