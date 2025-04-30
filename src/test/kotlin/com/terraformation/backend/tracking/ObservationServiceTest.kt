@@ -60,6 +60,7 @@ import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
+import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
@@ -1764,6 +1765,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @BeforeEach
     fun setUp() {
       insertOrganizationUser(role = Role.Contributor)
+      insertPlantingZone()
+      insertPlantingSubzone()
     }
 
     @Test
@@ -2037,6 +2040,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observedTime = clock.instant.minusSeconds(1),
             observationType = ObservationType.Monitoring,
             plantingSiteId = plantingSiteId,
+            swCorner = point(1),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if planting site is not detailed`() {
+      val simplePlantingSiteId = insertPlantingSite()
+
+      assertThrows<PlantingSiteNotDetailedException> {
+        service.completeAdHocObservation(
+            observedTime = clock.instant.minusSeconds(1),
+            observationType = ObservationType.Monitoring,
+            plantingSiteId = simplePlantingSiteId,
             swCorner = point(1),
         )
       }

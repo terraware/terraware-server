@@ -1257,6 +1257,17 @@ class PlantingSiteStore(
     }
   }
 
+  /**
+   * Returns true if the ID refers to a detailed planting site, that is, a site with planting zones
+   * and subzones.
+   */
+  fun isDetailed(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext.fetchExists(
+        PLANTING_SUBZONES, PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
   fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
