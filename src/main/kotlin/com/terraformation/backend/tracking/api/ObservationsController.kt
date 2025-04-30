@@ -952,6 +952,7 @@ data class ObservationPlantingZoneResultsPayload(
 
 data class ObservationResultsPayload(
     val adHocPlot: ObservationMonitoringPlotResultsPayload?,
+    val areaHa: BigDecimal?,
     val biomassMeasurements: ExistingBiomassMeasurementPayload?,
     val completedTime: Instant?,
     @Schema(
@@ -974,6 +975,7 @@ data class ObservationResultsPayload(
                 "of monitoring plots.")
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
+    val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
     val species: List<ObservationSpeciesResultsPayload>,
@@ -986,6 +988,7 @@ data class ObservationResultsPayload(
       model: ObservationResultsModel
   ) : this(
       adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
+      areaHa = model.areaHa,
       biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
@@ -995,6 +998,7 @@ data class ObservationResultsPayload(
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
+      plantingSiteHistoryId = model.plantingSiteHistoryId,
       plantingSiteId = model.plantingSiteId,
       plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
       species =

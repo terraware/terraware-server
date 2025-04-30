@@ -29,6 +29,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -921,13 +922,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
             OBSERVATIONS.STATE_ID,
+            PLANTING_SITE_HISTORIES.AREA_HA,
+            PLANTING_SITE_HISTORIES.ID,
             plantingSiteSpeciesMultiset,
             plantingZoneMultiset)
         .from(OBSERVATIONS)
+        .leftJoin(PLANTING_SITE_HISTORIES)
+        .on(OBSERVATIONS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
         .where(condition)
         .orderBy(OBSERVATIONS.COMPLETED_TIME.desc().nullsLast(), OBSERVATIONS.ID.desc())
         .let { if (limit != null) it.limit(limit) else it }
         .fetch { record ->
+          // Area can be null for an observation that has not started.
+          val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
+
           val zones = record[plantingZoneMultiset]
           val species = record[plantingSiteSpeciesMultiset]
           val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -973,6 +981,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           ObservationResultsModel(
               adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),
+              areaHa = areaHa,
               biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               estimatedPlants = estimatedPlants,
@@ -984,6 +993,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               plantingCompleted = plantingCompleted,
               plantingDensity = plantingDensity.roundToInt(),
               plantingDensityStdDev = plantingDensityStdDev,
+              plantingSiteHistoryId = record[PLANTING_SITE_HISTORIES.ID],
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zones,
               species = knownSpecies,
