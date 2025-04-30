@@ -3,6 +3,7 @@ package com.terraformation.backend.ask
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
+import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
@@ -13,8 +14,10 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
@@ -153,6 +156,22 @@ class EmbeddingService(
   }
 
   @EventListener
+  fun on(event: DeliverableDocumentUploadedEvent) {
+    try {
+      // Only generate embeddings for projects whose other embeddings have already been generated.
+      if (hasEmbeddings(event.projectId)) {
+        // Do the embedding asynchronously to avoid blocking the document upload operation on an
+        // interaction with an external API.
+        jobScheduler.enqueue<EmbeddingService> {
+          embedDeliverableDocument(event.projectId, event.deliverableId, event.documentId)
+        }
+      }
+    } catch (e: Exception) {
+      log.error("Unable to enqueue embedding generation for $event", e)
+    }
+  }
+
+  @EventListener
   fun on(event: VariableValueUpdatedEvent) {
     try {
       // Only update variable value embeddings for projects whose other embeddings have already
@@ -168,6 +187,29 @@ class EmbeddingService(
       log.error(
           "Unable to update embeddings for project ${event.projectId} variable ${event.variableId}",
           e)
+    }
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
+  fun embedDeliverableDocument(
+      projectId: ProjectId,
+      deliverableId: DeliverableId,
+      submissionDocumentId: SubmissionDocumentId
+  ) {
+    systemUser.run {
+      val project = projectStore.fetchOneById(projectId)
+      val organization = organizationStore.fetchOneById(project.organizationId)
+      val deliverable = deliverableStore.fetchDeliverables(deliverableId).first()
+      val submissionDocument =
+          deliverableStore
+              .fetchDeliverableSubmissions(projectId = projectId, deliverableId = deliverableId)
+              .flatMap { it.documents }
+              .first { it.id == submissionDocumentId }
+
+      if (submissionDocument.documentStore == DocumentStore.Google) {
+        embedGoogleDriveFile(
+            projectId, deliverable, submissionDocument, makeMetadata(organization, project))
+      }
     }
   }
 
