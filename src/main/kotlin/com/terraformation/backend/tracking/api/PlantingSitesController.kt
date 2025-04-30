@@ -96,11 +96,11 @@ class PlantingSitesController(
 
   @GetMapping("/{id}/history")
   @Operation(summary = "Lists all older versions of a planting site.")
-  fun listPlantingSiteHistory(
+  fun listPlantingSiteHistories(
       @PathVariable("id") id: PlantingSiteId,
-  ): ListPlantingSiteHistoryResponsePayload {
+  ): ListPlantingSiteHistoriesResponsePayload {
     val models = plantingSiteStore.fetchSiteHistories(id, PlantingSiteDepth.Subzone)
-    return ListPlantingSiteHistoryResponsePayload(models.map { PlantingSiteHistoryPayload(it) })
+    return ListPlantingSiteHistoriesResponsePayload(models.map { PlantingSiteHistoryPayload(it) })
   }
 
   @GetMapping("/{id}/history/{historyId}")
@@ -541,8 +541,9 @@ data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessRe
 data class GetPlantingSiteHistoryResponsePayload(val site: PlantingSiteHistoryPayload) :
     SuccessResponsePayload
 
-data class ListPlantingSiteHistoryResponsePayload(val histories: List<PlantingSiteHistoryPayload>) :
-    SuccessResponsePayload
+data class ListPlantingSiteHistoriesResponsePayload(
+    val histories: List<PlantingSiteHistoryPayload>
+) : SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
 
