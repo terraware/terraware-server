@@ -138,7 +138,7 @@
          <column autoUpdated="false" defaultValue="uuid_generate_v4()" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metadata" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="embedding" nullable="true" remarks="" size="2147483647" type="vector" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="embedding" nullable="false" remarks="" size="2147483647" type="halfvec" typeCode="1111"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="vector_store_pkey" unique="true">
             <column ascending="true" name="id"/>
