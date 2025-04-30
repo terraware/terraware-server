@@ -1,13 +1,19 @@
-<div class="question" th:text="${query}" th:if="${query} != null" />
-<div class="answer" th:utext="${answer}" th:if="${answer} != null" />
-<div class="error" th:text="${failureMessage}" th:if="${failureMessage} != null" />
+<div class="question" th:text="${query}" th:if="${query != null}" />
+<div class="answer" th:utext="${answer}" th:if="${answer != null}" />
+<div class="error" th:if="${answer == null && query != null}">
+    <b>Unable to get an answer!</b> This may be a temporary problem; wait a moment and try again.
+    Conversation ID:
+    <th:block th:utext="${conversationId}" />
+</div>
 
 <form id="queryForm" th:hx-post="|/admin/ask/projects/${projectId}|" hx-swap="outerHTML"
       hx-disabled-elt="input, textarea">
     <label>
         Question (Enter to submit, Shift-Enter for line break):
         <br/>
-        <textarea id="query" rows=4 cols=80 name="query" autofocus></textarea>
+        <textarea id="query" rows=4 cols=80 name="query" autofocus th:if="${answer != null}"></textarea>
+        <textarea id="query" rows=4 cols=80 name="query" autofocus th:if="${answer == null}"
+                  th:text="${query}"></textarea>
     </label>
     <br/>
     <input type="hidden" name="projectId" th:value="${projectId}"/>

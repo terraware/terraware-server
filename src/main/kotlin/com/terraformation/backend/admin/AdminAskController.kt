@@ -1,6 +1,7 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.ask.ChatRequestFailedException
 import com.terraformation.backend.ask.ChatService
 import com.terraformation.backend.ask.ConditionalOnSpringAi
 import com.terraformation.backend.ask.EmbeddingService
@@ -98,9 +99,11 @@ class AdminAskController(
       val htmlAnswer = HtmlRenderer.builder().build().render(markdownAnswer)
 
       model.addAttribute("answer", htmlAnswer)
+    } catch (e: ChatRequestFailedException) {
+      // Don't spam our error logs if the external service is having an outage.
+      log.warn("Request to chat service failed for conversation $conversationId", e)
     } catch (e: Exception) {
-      log.error("Failed to generate answer", e)
-      model.addAttribute("failureMessage", e.message)
+      log.error("Failed to generate answer for conversation $conversationId", e)
     }
 
     return "/admin/ask/exchange"
