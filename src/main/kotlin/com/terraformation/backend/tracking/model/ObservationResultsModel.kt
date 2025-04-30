@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -214,6 +215,7 @@ data class ObservationPlantingZoneResultsModel(
 
 data class ObservationResultsModel(
     val adHocPlot: ObservationMonitoringPlotResultsModel?,
+    val areaHa: BigDecimal?,
     val biomassDetails: ExistingBiomassDetailsModel?,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
@@ -225,6 +227,7 @@ data class ObservationResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
+    val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     val species: List<ObservationSpeciesResultsModel>,
