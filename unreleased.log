@@ -1,3 +1,4 @@
+af79c404779 SW-6600 Generate embeddings for submitted documents (#3080)
 0a6dfacc62f SW-6600 Regenerate embeddings for updated variables (#3079)
 66733056cf1 Added planting site history and area to observation results (#3077)
 041cbe6d72e SW-6839 Disallow ad-hoc observations of simple sites (#3076)
