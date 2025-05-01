@@ -1,3 +1,4 @@
+0a6dfacc62f SW-6600 Regenerate embeddings for updated variables (#3079)
 66733056cf1 Added planting site history and area to observation results (#3077)
 041cbe6d72e SW-6839 Disallow ad-hoc observations of simple sites (#3076)
 d313f80e053 SW-6817 Improve handling of OpenAI API errors (#3073)
