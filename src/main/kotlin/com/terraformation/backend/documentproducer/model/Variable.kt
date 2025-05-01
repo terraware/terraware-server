@@ -198,6 +198,9 @@ sealed interface Variable : BaseVariable {
       oldValue: VariableValue<*, *>,
       newRowValueId: VariableValueId?,
   ): NewValue?
+
+  /** Returns a sequence of this variable and its descendents, if any. */
+  fun walkTree(): Sequence<Variable> = sequenceOf(this)
 }
 
 /**
@@ -540,6 +543,11 @@ data class SectionVariable(
       null
     }
   }
+
+  override fun walkTree(): Sequence<Variable> = sequence {
+    yield(this@SectionVariable)
+    children.forEach { child -> yieldAll(child.walkTree()) }
+  }
 }
 
 data class TableColumn(
@@ -574,6 +582,11 @@ data class TableVariable(
     } else {
       null
     }
+  }
+
+  override fun walkTree(): Sequence<Variable> = sequence {
+    yield(this@TableVariable)
+    columns.forEach { column -> yieldAll(column.variable.walkTree()) }
   }
 }
 

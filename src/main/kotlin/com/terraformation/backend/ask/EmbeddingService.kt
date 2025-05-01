@@ -3,12 +3,15 @@ package com.terraformation.backend.ask
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
+import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
+import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
@@ -20,17 +23,18 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.VECTOR_STORE
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.TableVariable
+import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.apache.tika.exception.UnsupportedFormatException
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -39,6 +43,8 @@ import org.springframework.ai.reader.tika.TikaDocumentReader
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder
+import org.springframework.context.annotation.Lazy
+import org.springframework.context.event.EventListener
 import org.springframework.core.io.InputStreamResource
 
 @ConditionalOnSpringAi
@@ -48,9 +54,11 @@ class EmbeddingService(
     private val deliverableStore: DeliverableStore,
     private val dslContext: DSLContext,
     private val googleDriveWriter: GoogleDriveWriter,
+    @Lazy private val jobScheduler: JobScheduler,
     private val organizationStore: OrganizationStore,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val projectStore: ProjectStore,
+    private val systemUser: SystemUser,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
     private val vectorStore: VectorStore,
@@ -118,45 +126,18 @@ class EmbeddingService(
         projectAcceleratorDetailsStore.fetchOneById(
             projectId, acceleratorProjectVariableValuesService.fetchValues(projectId))
 
-    val baseMetadata =
-        mapOf(
-            "organizationId" to organization.id,
-            "organizationName" to organization.name,
-            "projectId" to projectId,
-            "projectName" to project.name,
-        )
+    val baseMetadata = makeMetadata(organization, project)
 
     val documents =
         valuesByVariableId
             .filterValues { values -> values.any { it.rowValueId == null } }
-            .map { (variableId, values) ->
+            .keys
+            .map { variableId ->
               val variable = variableStore.fetchOneVariable(variableId)
-              val metadata =
-                  baseMetadata +
-                      listOfNotNull(
-                              "variableId" to variableId,
-                              "question" to (variable.deliverableQuestion ?: variable.name),
-                              variable.description?.let { "description" to it },
-                          )
-                          .toMap()
-              val text =
-                  if (variable is TableVariable) {
-                    renderTableAsMarkdown(variable, valuesByVariableId)
-                  } else {
-                    values.joinToString("\n") { variableValue ->
-                      if (variable is SelectVariable && variableValue is ExistingSelectValue) {
-                        variableValue.value
-                            .mapNotNull { optionId ->
-                              variable.options.firstOrNull { it.id == optionId }?.name
-                            }
-                            .joinToString("\n")
-                      } else {
-                        variableValue.value.toString()
-                      }
-                    }
-                  }
 
-              Document(text, metadata)
+              Document(
+                  renderVariableValue(variable, valuesByVariableId),
+                  makeMetadata(organization, project, variable))
             } +
             Document(
                 "Here is some accelerator-related information about the project:\n$projectDetails",
@@ -169,6 +150,101 @@ class EmbeddingService(
     vectorStore.add(documents)
 
     embedGoogleDriveFiles(projectId, baseMetadata)
+  }
+
+  @EventListener
+  fun on(event: VariableValueUpdatedEvent) {
+    try {
+      // Only update variable value embeddings for projects whose other embeddings have already
+      // been generated.
+      if (hasEmbeddings(event.projectId)) {
+        // Do the embedding asynchronously to avoid blocking the variable value write operation on
+        // an interaction with an external API.
+        jobScheduler.enqueue<EmbeddingService> {
+          embedVariableValue(event.projectId, event.variableId)
+        }
+      }
+    } catch (e: Exception) {
+      log.error(
+          "Unable to update embeddings for project ${event.projectId} variable ${event.variableId}",
+          e)
+    }
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
+  fun embedVariableValue(projectId: ProjectId, variableId: VariableId) {
+    systemUser.run {
+      val variable = variableStore.fetchTopLevelVariable(variableId)
+      val project = projectStore.fetchOneById(projectId)
+      val organization = organizationStore.fetchOneById(project.organizationId)
+      val variableIds = variable.walkTree().map { it.id }.toList()
+      val valuesByVariableId =
+          variableValueStore
+              .listValues(
+                  projectId,
+                  variableIds = variableIds,
+                  includeDeletedValues = false,
+                  includeReplacedVariables = false)
+              .groupBy { it.variableId }
+
+      vectorStore.delete(
+          FilterExpressionBuilder()
+              .and(
+                  FilterExpressionBuilder().eq("projectId", projectId),
+                  FilterExpressionBuilder().eq("variableId", variable.id))
+              .build())
+
+      // Only store new embeddings if the variable has a value. If the previous value was deleted,
+      // there won't be a value any more and we will have already removed the old embedding.
+      if (valuesByVariableId[variable.id] != null) {
+        log.debug("Generating new embedding for project $projectId variable ${variable.id}")
+
+        val document =
+            Document(
+                renderVariableValue(variable, valuesByVariableId),
+                makeMetadata(organization, project, variable))
+
+        vectorStore.add(listOf(document))
+      } else {
+        log.debug("Deleted previous embedding for project $projectId variable ${variable.id}")
+      }
+    }
+  }
+
+  private fun makeMetadata(
+      organization: OrganizationModel,
+      project: ExistingProjectModel,
+      variable: Variable? = null
+  ): Map<String, Any> {
+    return listOfNotNull(
+            "organizationId" to organization.id,
+            "organizationName" to organization.name,
+            "projectId" to project.id,
+            "projectName" to project.name,
+            variable?.id?.let { "variableId" to it },
+            (variable?.deliverableQuestion ?: variable?.name)?.let { "question" to it },
+            variable?.description?.let { "description" to it },
+        )
+        .toMap()
+  }
+
+  private fun renderVariableValue(
+      variable: Variable,
+      valuesByVariableId: Map<VariableId, List<ExistingValue>>
+  ): String {
+    return if (variable is TableVariable) {
+      renderTableAsMarkdown(variable, valuesByVariableId)
+    } else {
+      valuesByVariableId.getValue(variable.id).joinToString("\n") { variableValue ->
+        if (variable is SelectVariable && variableValue is ExistingSelectValue) {
+          variableValue.value
+              .mapNotNull { optionId -> variable.options.firstOrNull { it.id == optionId }?.name }
+              .joinToString("\n")
+        } else {
+          variableValue.value.toString()
+        }
+      }
+    }
   }
 
   /**
@@ -287,22 +363,5 @@ class EmbeddingService(
         throw e
       }
     }
-  }
-
-  fun embedAllProjectData() {
-    val projectsWithoutEmbeddings =
-        dslContext
-            .selectDistinct(VARIABLE_VALUES.PROJECT_ID)
-            .from(VARIABLE_VALUES)
-            .whereNotExists(
-                DSL.selectOne()
-                    .from(VECTOR_STORE)
-                    .where(
-                        DSL.jsonbGetAttributeAsText(VECTOR_STORE.METADATA, "projectId")
-                            .eq(VARIABLE_VALUES.PROJECT_ID.cast(SQLDataType.VARCHAR))))
-            .orderBy(VARIABLE_VALUES.PROJECT_ID)
-            .fetch(VARIABLE_VALUES.PROJECT_ID.asNonNullable())
-
-    projectsWithoutEmbeddings.forEach { embedProjectData(it) }
   }
 }
