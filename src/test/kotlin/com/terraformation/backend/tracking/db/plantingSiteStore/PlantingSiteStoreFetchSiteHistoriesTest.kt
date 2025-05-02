@@ -209,7 +209,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
   }
 
   @Test
-  fun `returns empty list if site ID does not exist`() {
+  fun `throws exception if site ID does not exist`() {
     assertThrows<PlantingSiteNotFoundException> {
       store.fetchSiteHistories(PlantingSiteId(-1), PlantingSiteDepth.Site)
     }
