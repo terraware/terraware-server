@@ -102,6 +102,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_project_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="project_metric_id" sequenceNumberInPK="2"/>
          <index name="published_report_project_metrics_pkey" unique="true">
@@ -122,6 +123,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_standard_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="standard_metric_id" sequenceNumberInPK="2"/>
          <index name="published_report_standard_metrics_pkey" unique="true">
@@ -142,6 +144,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_system_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <primaryKey column="system_metric_id" sequenceNumberInPK="2"/>
          <index name="published_report_system_metrics_pkey" unique="true">
