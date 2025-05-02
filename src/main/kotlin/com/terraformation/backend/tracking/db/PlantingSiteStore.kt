@@ -163,6 +163,16 @@ class PlantingSiteStore(
     return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth)
   }
 
+  fun fetchSiteHistories(
+      plantingSiteId: PlantingSiteId,
+      depth: PlantingSiteDepth,
+  ): List<PlantingSiteHistoryModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return fetchSiteHistoriesByCondition(
+        PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId), depth)
+  }
+
   fun fetchSiteHistoryById(
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
@@ -229,7 +239,7 @@ class PlantingSiteStore(
             zonesField)
         .from(PLANTING_SITE_HISTORIES)
         .where(condition)
-        .orderBy(PLANTING_SITE_HISTORIES.ID)
+        .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
         .fetch { record ->
           PlantingSiteHistoryModel(
               record[boundaryField] as MultiPolygon,

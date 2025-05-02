@@ -94,6 +94,15 @@ class PlantingSitesController(
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
   }
 
+  @GetMapping("/{id}/history")
+  @Operation(summary = "Lists all older versions of a planting site.")
+  fun listPlantingSiteHistories(
+      @PathVariable("id") id: PlantingSiteId,
+  ): ListPlantingSiteHistoriesResponsePayload {
+    val models = plantingSiteStore.fetchSiteHistories(id, PlantingSiteDepth.Subzone)
+    return ListPlantingSiteHistoriesResponsePayload(models.map { PlantingSiteHistoryPayload(it) })
+  }
+
   @GetMapping("/{id}/history/{historyId}")
   @Operation(summary = "Gets information about an older version of a planting site.")
   fun getPlantingSiteHistory(
@@ -531,6 +540,10 @@ data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessRe
 
 data class GetPlantingSiteHistoryResponsePayload(val site: PlantingSiteHistoryPayload) :
     SuccessResponsePayload
+
+data class ListPlantingSiteHistoriesResponsePayload(
+    val histories: List<PlantingSiteHistoryPayload>
+) : SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
 

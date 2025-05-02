@@ -1,26 +1,60 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteHistoryNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
-import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest() {
+internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
+
+  protected val clock = TestClock()
+  protected val eventPublisher = TestEventPublisher()
+  protected val store: PlantingSiteStore by lazy {
+    PlantingSiteStore(
+        clock,
+        TestSingletons.countryDetector,
+        dslContext,
+        eventPublisher,
+        IdentifierGenerator(clock, dslContext),
+        monitoringPlotsDao,
+        ParentStore(dslContext),
+        plantingSeasonsDao,
+        plantingSitesDao,
+        plantingSubzonesDao,
+        plantingZonesDao)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    insertOrganization()
+    insertOrganizationUser(user.userId, inserted.organizationId, Role.Contributor)
+  }
+
   @Test
   fun `fetches site history`() {
     val gridOrigin = point(1)
@@ -129,9 +163,9 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
 
   @Test
   fun `throws exception if history ID does not exist`() {
+    val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1), name = "Site 1")
     assertThrows<PlantingSiteHistoryNotFoundException> {
-      store.fetchSiteHistoryById(
-          PlantingSiteId(-1), PlantingSiteHistoryId(-1), PlantingSiteDepth.Site)
+      store.fetchSiteHistoryById(plantingSiteId, PlantingSiteHistoryId(-1), PlantingSiteDepth.Site)
     }
   }
 
@@ -151,7 +185,7 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1), name = "Site 1")
     val historyId = inserted.plantingSiteHistoryId
 
-    every { user.canReadPlantingSite(any()) } returns false
+    deleteOrganizationUser(user.userId, inserted.organizationId)
 
     assertThrows<PlantingSiteNotFoundException> {
       store.fetchSiteHistoryById(plantingSiteId, historyId, PlantingSiteDepth.Site)
