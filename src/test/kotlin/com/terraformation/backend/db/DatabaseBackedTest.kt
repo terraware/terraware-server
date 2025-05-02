@@ -3104,6 +3104,7 @@ abstract class DatabaseBackedTest {
       target: Int? = row.target,
       value: Int? = row.value,
       underperformanceJustification: String? = row.underperformanceJustification,
+      progressNotes: String? = row.progressNotes,
       status: ReportMetricStatus? = row.statusId,
   ) {
     val rowWithDefaults =
@@ -3113,6 +3114,7 @@ abstract class DatabaseBackedTest {
             target = target,
             value = value,
             underperformanceJustification = underperformanceJustification,
+            progressNotes = progressNotes,
             statusId = status,
         )
 
@@ -3126,6 +3128,7 @@ abstract class DatabaseBackedTest {
       target: Int? = row.target,
       value: Int? = row.value,
       underperformanceJustification: String? = row.underperformanceJustification,
+      progressNotes: String? = row.progressNotes,
       status: ReportMetricStatus? = row.statusId,
   ) {
     val rowWithDefaults =
@@ -3135,6 +3138,7 @@ abstract class DatabaseBackedTest {
             target = target,
             value = value,
             underperformanceJustification = underperformanceJustification,
+            progressNotes = progressNotes,
             statusId = status,
         )
 
@@ -3148,6 +3152,7 @@ abstract class DatabaseBackedTest {
       target: Int? = row.target,
       value: Int? = row.value,
       underperformanceJustification: String? = row.underperformanceJustification,
+      progressNotes: String? = row.progressNotes,
       status: ReportMetricStatus? = row.statusId,
   ) {
     val rowWithDefaults =
@@ -3157,6 +3162,7 @@ abstract class DatabaseBackedTest {
             target = target,
             value = value,
             underperformanceJustification = underperformanceJustification,
+            progressNotes = progressNotes,
             statusId = status,
         )
 

@@ -9,6 +9,7 @@ data class PublishedReportMetricModel<ID : Any>(
     val description: String?,
     val metricId: ID,
     val name: String,
+    val progressNotes: String?,
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,

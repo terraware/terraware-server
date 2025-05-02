@@ -3335,6 +3335,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 100,
           value = 100,
+          progressNotes = "Existing progress notes",
           underperformanceJustification = "Existing underperformance justification",
       )
 
@@ -3354,6 +3355,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = projectMetricId1,
           target = 100,
           value = 100,
+          progressNotes = "Existing progress notes",
           underperformanceJustification = "Existing underperformance justification",
       )
 
@@ -3380,6 +3382,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metric = SystemMetric.Seedlings,
           target = 100,
           value = 100,
+          progressNotes = "Existing progress notes",
           underperformanceJustification = "Existing underperformance justification",
       )
 
@@ -3438,7 +3441,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 10,
           value = 10,
           underperformanceJustification = null,
-          progressNotes = "Progress notes are not published",
+          progressNotes = "Standard Metric 1 Progress notes",
       )
 
       insertReportStandardMetric(
@@ -3471,7 +3474,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 30,
           value = 30,
           underperformanceJustification = null,
-          progressNotes = "Progress notes are not published",
+          progressNotes = "Project Metric 1 Progress notes",
       )
 
       insertReportProjectMetric(
@@ -3514,6 +3517,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 49,
           systemValue = 39,
           underperformanceJustification = "Seedlings underperformance justification",
+          progressNotes = "Seedlings progress notes",
       )
 
       insertReportSystemMetric(
@@ -3597,6 +3601,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 10,
                   value = 10,
                   underperformanceJustification = null,
+                  progressNotes = "Standard Metric 1 Progress notes",
               ),
               PublishedReportStandardMetricsRecord(
                   reportId = reportId,
@@ -3618,6 +3623,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 30,
                   value = 30,
                   underperformanceJustification = null,
+                  progressNotes = "Project Metric 1 Progress notes",
               ),
               PublishedReportProjectMetricsRecord(
                   reportId = reportId,
@@ -3639,6 +3645,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 50,
                   value = 49,
                   underperformanceJustification = "Seedlings underperformance justification",
+                  progressNotes = "Seedlings progress notes",
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
