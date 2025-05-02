@@ -130,6 +130,7 @@ class PublishedReportsStore(
 
     return DSL.multiset(
             DSL.select(
+                    progressNotesField,
                     publishedMetricIdField,
                     metricComponentField,
                     metricDescriptionField,
