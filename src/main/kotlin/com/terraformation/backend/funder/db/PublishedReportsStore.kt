@@ -108,6 +108,7 @@ class PublishedReportsStore(
     val reportIdField =
         publishedMetricTable.field(
             "report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val progressNotesField = publishedMetricTable.field("progress_notes", String::class.java)
     val statusField =
         publishedMetricTable.field(
             "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
@@ -152,6 +153,7 @@ class PublishedReportsStore(
                 description = it[metricDescriptionField],
                 metricId = it[publishedMetricIdField.asNonNullable()],
                 name = it[metricNameField],
+                progressNotes = it[progressNotesField],
                 reference = it[metricReferenceField],
                 status = it[statusField],
                 target = it[targetField],

@@ -412,6 +412,7 @@ class ReportStore(
                         target = entry.target,
                         value = entry.overrideValue ?: entry.systemValue,
                         underperformanceJustification = entry.underperformanceJustification,
+                        progressNotes = entry.progressNotes,
                         status = entry.status,
                     )
               }
@@ -913,7 +914,7 @@ class ReportStore(
 
     dslContext.transaction { _ ->
       // Insert all entries
-      upsertReportMetrics(reportId, metricIdField, entries, false)
+      upsertReportMetrics(reportId, metricIdField, entries, true)
 
       // Delete any entries that are not publishable
       dslContext
