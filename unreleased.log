@@ -1,3 +1,5 @@
+61fbba82d56 SW-6891 Allow contributors to mark subzones completed (#3089)
+2a3bdb27303 SW-6890 Don't log error if module event is deleted (#3090)
 6628e914aaf Update dependency com.google.auth:google-auth-library-oauth2-http to v1.34.0 (#3087)
 d0cceaa765e Update database dependencies (#3086)
 baa4f565fdc Update dependency io.mockk:mockk to v1.14.2 (#3084)
