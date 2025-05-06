@@ -52,7 +52,7 @@ class ModuleEventService(
         }
       } else {
         log.warn(
-            "Module event ${event.eventId} is starting before notificaiton lead time. " +
+            "Module event ${event.eventId} is starting before notification lead time. " +
                 "No notifications sent to users.")
       }
 
@@ -80,7 +80,7 @@ class ModuleEventService(
           try {
             eventStore.fetchOneById(event.eventId)
           } catch (e: EventNotFoundException) {
-            log.error("Module event ${event.eventId} not found.")
+            log.info("Module event ${event.eventId} not found; it may have been deleted.")
             return@run
           }
 
@@ -102,7 +102,7 @@ class ModuleEventService(
           log.info("Module event ${event.eventId} has been changed. Not updating status.")
         }
       } catch (e: EventNotFoundException) {
-        log.error("Module event ${event.eventId} not found.")
+        log.info("Module event ${event.eventId} not found; it may have been deleted.")
       } catch (e: Exception) {
         log.error("Update status for event ${event.eventId} failed.", e)
       }
