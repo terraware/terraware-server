@@ -52,12 +52,12 @@ Veuillez choisir parmi la liste suivante ou une erreur se produira lors du tél�
 - Probablement intermédiaire
 - Probablement orthodoxe
 - Probablement récalcitrant
-- Inconnu","Types d'écosystèmes
+- Inconnu","Type(s) d'écosystème(s)
 
 Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
 
 - Déserts et zones arbustives xériques
-- Forêt tempérée de conifères
+- Forêts tempérées de conifères
 - Forêts boréales/Taïga
 - Forêts de conifères tropicales et subtropicales
 - Forêts sèches de feuillus tropicales et subtropicales
@@ -65,7 +65,7 @@ Veuillez choisir parmi la liste suivante ou une erreur se produira lors du tél�
 - Forêts tropicales et subtropicales humides à larges feuilles
 - Forêts, bois et maquis méditerranéens
 - Mangroves
-- Prairies et arbustes montagnards
+- Prairies et arbustes de montagne
 - Prairies et savanes inondées
 - Prairies, savanes et zones arbustives tempérées
 - Prairies, savanes et zones arbustives tropicales et subtropicales
@@ -95,7 +95,7 @@ Veuillez choisir parmi la liste suivante ou une erreur se produira lors du tél�
 - Achat et germination des semences
 - Achat des semences
 - Propagation végétative
-- Récolte des sauvageons
+- Récolte de semis naturels spontanés
 - Autre
 
 Vous pouvez ajouter plusieurs méthodes d’obtention si elles sont séparées par des sauts de ligne.","Autres faits"
