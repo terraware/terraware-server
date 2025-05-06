@@ -2,15 +2,15 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantingSiteStoreUpdateSubzoneTest : BasePlantingSiteStoreTest() {
+internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteStoreTest() {
   @Nested
-  inner class UpdatePlantingSubzone {
+  inner class UpdatePlantingSubzoneCompleted {
     @Test
     fun `sets completed time to current time if not set previously`() {
       insertPlantingSite()
@@ -22,9 +22,7 @@ internal class PlantingSiteStoreUpdateSubzoneTest : BasePlantingSiteStoreTest() 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzone(plantingSubzoneId) { row ->
-        row.copy(plantingCompletedTime = Instant.EPOCH)
-      }
+      store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
 
       val expected = initial.copy(plantingCompletedTime = now, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
@@ -46,15 +44,11 @@ internal class PlantingSiteStoreUpdateSubzoneTest : BasePlantingSiteStoreTest() 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzone(plantingSubzoneId) { row ->
-        row.copy(plantingCompletedTime = now)
-      }
+      store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
 
-      val expected =
-          initial.copy(plantingCompletedTime = initialPlantingCompletedTime, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
 
-      assertEquals(expected, actual)
+      assertEquals(initial, actual)
     }
 
     @Test
@@ -69,9 +63,7 @@ internal class PlantingSiteStoreUpdateSubzoneTest : BasePlantingSiteStoreTest() 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzone(plantingSubzoneId) { row ->
-        row.copy(plantingCompletedTime = null)
-      }
+      store.updatePlantingSubzoneCompleted(plantingSubzoneId, false)
 
       val expected = initial.copy(plantingCompletedTime = null, modifiedTime = now)
       val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
@@ -85,9 +77,11 @@ internal class PlantingSiteStoreUpdateSubzoneTest : BasePlantingSiteStoreTest() 
       insertPlantingZone()
       val plantingSubzoneId = insertPlantingSubzone()
 
-      every { user.canUpdatePlantingSubzone(any()) } returns false
+      every { user.canUpdatePlantingSubzoneCompleted(any()) } returns false
 
-      assertThrows<AccessDeniedException> { store.updatePlantingSubzone(plantingSubzoneId) { it } }
+      assertThrows<AccessDeniedException> {
+        store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
+      }
     }
   }
 }
