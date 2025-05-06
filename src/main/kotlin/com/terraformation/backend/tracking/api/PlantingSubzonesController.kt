@@ -7,12 +7,10 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import io.swagger.v3.oas.annotations.Operation
-import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -43,13 +41,13 @@ class PlantingSubzonesController(
         species.map { PlantingSubzoneSpeciesPayload(it) })
   }
 
-  @Operation(summary = "Updates information about a planting subzone.")
+  @Operation(summary = "Updates the planting-completed state of a planting subzone.")
   @PutMapping("/{id}")
   fun updatePlantingSubzone(
       @PathVariable id: PlantingSubzoneId,
       @RequestBody payload: UpdatePlantingSubzoneRequestPayload
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSubzone(id) { payload.applyTo(it) }
+    plantingSiteStore.updatePlantingSubzoneCompleted(id, payload.plantingCompleted)
 
     return SimpleSuccessResponsePayload()
   }
@@ -70,12 +68,4 @@ data class ListPlantingSubzoneSpeciesResponsePayload(
 
 data class UpdatePlantingSubzoneRequestPayload(
     val plantingCompleted: Boolean,
-) {
-  fun applyTo(row: PlantingSubzonesRow): PlantingSubzonesRow {
-    // Completed time is treated as a flag; the specific value doesn't matter, just whether it's
-    // null or non-null.
-    val plantingCompletedTime = if (plantingCompleted) Instant.EPOCH else null
-
-    return row.copy(plantingCompletedTime = plantingCompletedTime)
-  }
-}
+)

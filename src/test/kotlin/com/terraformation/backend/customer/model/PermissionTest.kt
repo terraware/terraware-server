@@ -559,7 +559,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
-        updatePlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
     )
 
     permissions.expect(
@@ -833,7 +833,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
-        updatePlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
     )
 
     permissions.expect(
@@ -1027,6 +1027,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
     )
 
     permissions.expect(
@@ -1194,6 +1195,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.forOrg1(),
         readPlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
     )
 
     permissions.expect(
@@ -1477,7 +1479,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSubzoneIds.toTypedArray(),
         readPlantingSubzone = true,
-        updatePlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
     )
 
     permissions.expect(
@@ -3310,7 +3312,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg plantingSubzoneIds: PlantingSubzoneId,
         readPlantingSubzone: Boolean = false,
-        updatePlantingSubzone: Boolean = false,
+        updatePlantingSubzoneCompleted: Boolean = false,
     ) {
       plantingSubzoneIds.forEach { plantingSubzoneId ->
         val idInDatabase = getDatabaseId(plantingSubzoneId)
@@ -3320,9 +3322,9 @@ internal class PermissionTest : DatabaseTest() {
             user.canReadPlantingSubzone(idInDatabase),
             "Can read planting subzone $plantingSubzoneId")
         assertEquals(
-            updatePlantingSubzone,
-            user.canUpdatePlantingSubzone(idInDatabase),
-            "Can update planting subzone $plantingSubzoneId")
+            updatePlantingSubzoneCompleted,
+            user.canUpdatePlantingSubzoneCompleted(idInDatabase),
+            "Can update planting completed for subzone $plantingSubzoneId")
 
         uncheckedPlantingSubzones.remove(plantingSubzoneId)
       }

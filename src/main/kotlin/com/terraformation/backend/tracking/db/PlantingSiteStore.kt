@@ -1069,40 +1069,35 @@ class PlantingSiteStore(
   }
 
   /**
-   * Updates information about a planting subzone. The "planting completed time" value, though it's
-   * a timestamp, is treated as a flag:
-   * - If the existing planting completed time is null and the edited one is non-null, the planting
+   * Marks a planting subzone as having completed planting or not. The "planting completed time"
+   * value, though it's a timestamp, is treated as a flag:
+   * - If the existing planting completed time is null and [completed] is true, the planting
    *   completed time in the database is set to the current time.
-   * - If the existing planting completed time is non-null and the edited one is null, the planting
+   * - If the existing planting completed time is non-null and [completed] is false, the planting
    *   completed time in the database is cleared.
    * - Otherwise, the existing value is left as-is. That is, repeatedly calling this function with
-   *   different non-null planting completed times will not cause the planting completed time in the
-   *   database to change.
+   *   [completed] == true will not cause the planting completed time in the database to change.
    */
-  fun updatePlantingSubzone(
-      plantingSubzoneId: PlantingSubzoneId,
-      editFunc: (PlantingSubzonesRow) -> PlantingSubzonesRow
-  ) {
-    requirePermissions { updatePlantingSubzone(plantingSubzoneId) }
+  fun updatePlantingSubzoneCompleted(plantingSubzoneId: PlantingSubzoneId, completed: Boolean) {
+    requirePermissions { updatePlantingSubzoneCompleted(plantingSubzoneId) }
 
     val initial =
         plantingSubzonesDao.fetchOneById(plantingSubzoneId)
             ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
-    val edited = editFunc(initial)
 
-    // Don't allow the planting-completed time to be adjusted, just cleared or set.
     val plantingCompletedTime =
-        if (edited.plantingCompletedTime != null) initial.plantingCompletedTime ?: clock.instant()
-        else null
+        if (completed) initial.plantingCompletedTime ?: clock.instant() else null
 
-    with(PLANTING_SUBZONES) {
-      dslContext
-          .update(PLANTING_SUBZONES)
-          .set(PLANTING_COMPLETED_TIME, plantingCompletedTime)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .where(ID.eq(plantingSubzoneId))
-          .execute()
+    if (plantingCompletedTime != initial.plantingCompletedTime) {
+      with(PLANTING_SUBZONES) {
+        dslContext
+            .update(PLANTING_SUBZONES)
+            .set(PLANTING_COMPLETED_TIME, plantingCompletedTime)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(plantingSubzoneId))
+            .execute()
+      }
     }
   }
 

@@ -596,7 +596,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = defaultPermission
+  fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: PlantingSubzoneId): Boolean =
+      defaultPermission
 
   fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = defaultPermission
 

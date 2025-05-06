@@ -54,7 +54,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
-    every { user.canUpdatePlantingSubzone(any()) } returns true
+    every { user.canUpdatePlantingSubzoneCompleted(any()) } returns true
     every { user.canUpdatePlantingZone(any()) } returns true
   }
 }
