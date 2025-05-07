@@ -158,12 +158,14 @@ class EmbeddingService(
   @EventListener
   fun on(event: DeliverableDocumentUploadedEvent) {
     try {
-      // Only generate embeddings for projects whose other embeddings have already been generated.
-      if (hasEmbeddings(event.projectId)) {
-        // Do the embedding asynchronously to avoid blocking the document upload operation on an
-        // interaction with an external API.
-        jobScheduler.enqueue<EmbeddingService> {
-          embedDeliverableDocument(event.projectId, event.deliverableId, event.documentId)
+      systemUser.run {
+        // Only generate embeddings for projects whose other embeddings have already been generated.
+        if (hasEmbeddings(event.projectId)) {
+          // Do the embedding asynchronously to avoid blocking the document upload operation on an
+          // interaction with an external API.
+          jobScheduler.enqueue<EmbeddingService> {
+            embedDeliverableDocument(event.projectId, event.deliverableId, event.documentId)
+          }
         }
       }
     } catch (e: Exception) {
@@ -174,13 +176,15 @@ class EmbeddingService(
   @EventListener
   fun on(event: VariableValueUpdatedEvent) {
     try {
-      // Only update variable value embeddings for projects whose other embeddings have already
-      // been generated.
-      if (hasEmbeddings(event.projectId)) {
-        // Do the embedding asynchronously to avoid blocking the variable value write operation on
-        // an interaction with an external API.
-        jobScheduler.enqueue<EmbeddingService> {
-          embedVariableValue(event.projectId, event.variableId)
+      systemUser.run {
+        // Only update variable value embeddings for projects whose other embeddings have already
+        // been generated.
+        if (hasEmbeddings(event.projectId)) {
+          // Do the embedding asynchronously to avoid blocking the variable value write operation on
+          // an interaction with an external API.
+          jobScheduler.enqueue<EmbeddingService> {
+            embedVariableValue(event.projectId, event.variableId)
+          }
         }
       }
     } catch (e: Exception) {
