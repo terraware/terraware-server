@@ -304,7 +304,7 @@ class PlantingSiteStore(
   ): Field<List<PlantingSiteReportedPlantTotals.Species>> {
     val table = scopeIdField.table!!
 
-    val speciesIdfield =
+    val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val plantsSinceLastObservationField =
         table.field("plants_since_last_observation", Int::class.java)!!
@@ -312,7 +312,7 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
-                    speciesIdfield,
+                    speciesIdField,
                     plantsSinceLastObservationField,
                     totalPlantsField,
                 )
@@ -321,7 +321,7 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record ->
             PlantingSiteReportedPlantTotals.Species(
-                id = record[speciesIdfield],
+                id = record[speciesIdField],
                 plantsSinceLastObservation = record[plantsSinceLastObservationField],
                 totalPlants = record[totalPlantsField],
             )
