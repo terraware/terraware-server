@@ -14,6 +14,7 @@ import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
@@ -108,6 +109,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.MultiPolygon
@@ -296,77 +298,120 @@ class PlantingSiteStore(
         .associate { it.value1() to it.value2().toLong() }
   }
 
+  private fun <ID> speciesCountMultiset(
+      scopeIdField: TableField<*, ID?>,
+      tableIdField: Field<ID>
+  ): Field<List<PlantingSiteReportedPlantTotals.Species>> {
+    val table = scopeIdField.table!!
+
+    val speciesIdfield =
+        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val plantsSinceLastObservationField =
+        table.field("plants_since_last_observation", Int::class.java)!!
+    val totalPlantsField = table.field("total_plants", Int::class.java)!!
+
+    return DSL.multiset(
+            DSL.select(
+                    speciesIdfield,
+                    plantsSinceLastObservationField,
+                    totalPlantsField,
+                )
+                .from(table)
+                .where(tableIdField.eq(scopeIdField)))
+        .convertFrom { result ->
+          result.map { record ->
+            PlantingSiteReportedPlantTotals.Species(
+                id = record[speciesIdfield],
+                plantsSinceLastObservation = record[plantsSinceLastObservationField],
+                totalPlants = record[totalPlantsField],
+            )
+          }
+        }
+  }
+
   fun countReportedPlants(plantingSiteId: PlantingSiteId): PlantingSiteReportedPlantTotals {
     requirePermissions { readPlantingSite(plantingSiteId) }
+    val subzoneSpeciesField =
+        speciesCountMultiset(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID, PLANTING_SUBZONES.ID)
 
-    val zoneTotalSinceField = DSL.sum(PLANTING_ZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
-    val zoneTotalPlantsField = DSL.sum(PLANTING_ZONE_POPULATIONS.TOTAL_PLANTS)
-    val subzoneTotalPlantsField = DSL.sum(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS)
     val subzonesField =
         DSL.multiset(
-                DSL.select(
-                        PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID, subzoneTotalPlantsField)
-                    .from(PLANTING_SUBZONE_POPULATIONS)
-                    .join(PLANTING_SUBZONES)
-                    .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                DSL.select(PLANTING_SUBZONES.ID, subzoneSpeciesField)
+                    .from(PLANTING_SUBZONES)
                     .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                    .groupBy(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
-                    .having(subzoneTotalPlantsField.gt(BigDecimal.ZERO)))
+                    .orderBy(PLANTING_SUBZONES.ID))
             .convertFrom { result ->
               result.map { record ->
+                val species = record[subzoneSpeciesField]
+                val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
+                val totalPlants = species.sumOf { it.totalPlants }
+                val totalSpecies = species.size
+
                 PlantingSiteReportedPlantTotals.PlantingSubzone(
-                    record[PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID]!!,
-                    record[subzoneTotalPlantsField]!!.toInt())
+                    record[PLANTING_SUBZONES.ID]!!,
+                    plantsSinceLastObservation = plantsSinceLastObservation,
+                    species = species,
+                    totalPlants = totalPlants,
+                    totalSpecies = totalSpecies,
+                )
               }
             }
 
-    val zoneTotals =
-        dslContext
-            .select(
-                PLANTING_ZONES.ID,
-                PLANTING_ZONES.AREA_HA,
-                PLANTING_ZONES.TARGET_PLANTING_DENSITY,
-                zoneTotalSinceField,
-                zoneTotalPlantsField,
-                subzonesField)
-            .from(PLANTING_ZONES)
-            .leftJoin(PLANTING_ZONE_POPULATIONS)
-            .on(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-            .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-            .groupBy(
-                PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA, PLANTING_ZONES.TARGET_PLANTING_DENSITY)
-            .orderBy(PLANTING_ZONES.ID)
-            .fetch { record ->
-              val targetPlants =
-                  record[PLANTING_ZONES.AREA_HA.asNonNullable()] *
-                      record[PLANTING_ZONES.TARGET_PLANTING_DENSITY.asNonNullable()]
+    val zoneSpeciesField =
+        speciesCountMultiset(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID, PLANTING_ZONES.ID)
+    val zonesField =
+        DSL.multiset(
+                DSL.select(
+                        PLANTING_ZONES.ID,
+                        PLANTING_ZONES.AREA_HA,
+                        PLANTING_ZONES.TARGET_PLANTING_DENSITY,
+                        zoneSpeciesField,
+                        subzonesField,
+                    )
+                    .from(PLANTING_ZONES)
+                    .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                    .orderBy(PLANTING_ZONES.ID))
+            .convertFrom { result ->
+              result.map { record ->
+                val targetPlants =
+                    record[PLANTING_ZONES.AREA_HA.asNonNullable()] *
+                        record[PLANTING_ZONES.TARGET_PLANTING_DENSITY.asNonNullable()]
 
-              PlantingSiteReportedPlantTotals.PlantingZone(
-                  id = record[PLANTING_ZONES.ID.asNonNullable()],
-                  plantsSinceLastObservation = record[zoneTotalSinceField]?.toInt() ?: 0,
-                  plantingSubzones = record[subzonesField] ?: emptyList(),
-                  targetPlants = targetPlants.toInt(),
-                  totalPlants = record[zoneTotalPlantsField]?.toInt() ?: 0,
-              )
+                val species = record[zoneSpeciesField]
+                val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
+                val totalPlants = species.sumOf { it.totalPlants }
+                val totalSpecies = species.size
+
+                PlantingSiteReportedPlantTotals.PlantingZone(
+                    id = record[PLANTING_ZONES.ID.asNonNullable()],
+                    plantsSinceLastObservation = plantsSinceLastObservation,
+                    plantingSubzones = record[subzonesField] ?: emptyList(),
+                    species = species,
+                    targetPlants = targetPlants.toInt(),
+                    totalPlants = totalPlants,
+                    totalSpecies = totalSpecies,
+                )
+              }
             }
 
-    val siteTotalSinceField = DSL.sum(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
-    val siteTotalPlantsField = DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS)
-    val siteTotalSpeciesField = DSL.count()
+    val siteSpeciesField =
+        speciesCountMultiset(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID, DSL.value(plantingSiteId))
 
     return dslContext
-        .select(siteTotalSinceField, siteTotalPlantsField, siteTotalSpeciesField)
-        .from(PLANTING_SITE_POPULATIONS)
-        .where(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .select(siteSpeciesField, zonesField)
+        .from(PLANTING_SITES)
+        .where(PLANTING_SITES.ID.eq(plantingSiteId))
         .fetchOne { record ->
+          val species = record[siteSpeciesField]
           PlantingSiteReportedPlantTotals(
               id = plantingSiteId,
-              plantingZones = zoneTotals,
-              plantsSinceLastObservation = record[siteTotalSinceField]?.toInt() ?: 0,
-              totalPlants = record[siteTotalPlantsField]?.toInt() ?: 0,
-              totalSpecies = record[siteTotalSpeciesField] ?: 0,
+              plantingZones = record[zonesField],
+              plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation },
+              species = record[siteSpeciesField],
+              totalPlants = species.sumOf { it.totalPlants },
+              totalSpecies = species.size,
           )
-        } ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
+        } ?: PlantingSiteReportedPlantTotals(plantingSiteId, emptyList(), 0, emptyList(), 0, 0)
   }
 
   fun createPlantingSite(
