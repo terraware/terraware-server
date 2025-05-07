@@ -1,3 +1,4 @@
+bad0db049c7 SW-6895 Prune old timeseries values (#3094)
 5b3ed32cdad SW-6896 Fix permission error on embedding update (#3093)
 f75c0e150ed Updated translations from Phrase (#3091)
 963b4b6480a SW-6843 Update translations in species CSV (#3088)

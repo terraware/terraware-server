@@ -306,6 +306,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="retention_days">retention_days</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>If non-null, only retain values for this many days. If null, do not expire old timeseries values.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -377,12 +394,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>timeseries_decimal_places_check</td>
-                                    <td>(decimal_places &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>timeseries_units_check</td>
                                     <td>(units !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>timeseries_decimal_places_check</td>
+                                    <td>(decimal_places &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

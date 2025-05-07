@@ -2108,7 +2108,7 @@
 <g id="node52" class="node">
 <title>timeseries</title>
 <g id="a_node52"><a xlink:href="../../tables/timeseries.html" xlink:title="timeseries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1185,-3704.73 1185,-3968.73 1399,-3968.73 1399,-3704.73 1185,-3704.73"/>
+<polygon fill="#ffffff" stroke="transparent" points="1185,-3682.73 1185,-3968.73 1399,-3968.73 1399,-3682.73 1185,-3682.73"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1187,-3944.73 1187,-3966.73 1397,-3966.73 1397,-3944.73 1187,-3944.73"/>
 <polygon fill="none" stroke="black" points="1187,-3944.73 1187,-3966.73 1397,-3966.73 1397,-3944.73 1187,-3944.73"/>
 <text text-anchor="start" x="1192" y="-3953.93" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries</text>
@@ -2160,16 +2160,20 @@
 <text text-anchor="start" x="1207" y="-3732.93" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="1297,-3724.73 1297,-3746.73 1397,-3746.73 1397,-3724.73 1297,-3724.73"/>
 <text text-anchor="start" x="1300" y="-3732.93" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="transparent" points="1187,-3706.73 1187,-3724.73 1246,-3724.73 1246,-3706.73 1187,-3706.73"/>
-<polygon fill="none" stroke="black" points="1187,-3706.73 1187,-3724.73 1246,-3724.73 1246,-3706.73 1187,-3706.73"/>
-<text text-anchor="start" x="1190" y="-3712.93" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="1246,-3706.73 1246,-3724.73 1297,-3724.73 1297,-3706.73 1246,-3706.73"/>
-<polygon fill="none" stroke="black" points="1246,-3706.73 1246,-3724.73 1297,-3724.73 1297,-3706.73 1246,-3706.73"/>
-<text text-anchor="start" x="1287" y="-3712.93" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1297,-3706.73 1297,-3724.73 1397,-3724.73 1397,-3706.73 1297,-3706.73"/>
-<polygon fill="none" stroke="black" points="1297,-3706.73 1297,-3724.73 1397,-3724.73 1397,-3706.73 1297,-3706.73"/>
-<text text-anchor="start" x="1378" y="-3712.93" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="1186,-3705.73 1186,-3967.73 1398,-3967.73 1398,-3705.73 1186,-3705.73"/>
+<polygon fill="none" stroke="black" points="1187,-3702.73 1187,-3724.73 1297,-3724.73 1297,-3702.73 1187,-3702.73"/>
+<text text-anchor="start" x="1207" y="-3710.93" font-family="Helvetica,sans-Serif" font-size="11.00">retention_days</text>
+<polygon fill="none" stroke="black" points="1297,-3702.73 1297,-3724.73 1397,-3724.73 1397,-3702.73 1297,-3702.73"/>
+<text text-anchor="start" x="1300" y="-3710.93" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="#ffffff" stroke="transparent" points="1187,-3684.73 1187,-3702.73 1246,-3702.73 1246,-3684.73 1187,-3684.73"/>
+<polygon fill="none" stroke="black" points="1187,-3684.73 1187,-3702.73 1246,-3702.73 1246,-3684.73 1187,-3684.73"/>
+<text text-anchor="start" x="1190" y="-3690.93" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="1246,-3684.73 1246,-3702.73 1297,-3702.73 1297,-3684.73 1246,-3684.73"/>
+<polygon fill="none" stroke="black" points="1246,-3684.73 1246,-3702.73 1297,-3702.73 1297,-3684.73 1246,-3684.73"/>
+<text text-anchor="start" x="1287" y="-3690.93" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1297,-3684.73 1297,-3702.73 1397,-3702.73 1397,-3684.73 1297,-3684.73"/>
+<polygon fill="none" stroke="black" points="1297,-3684.73 1297,-3702.73 1397,-3702.73 1397,-3684.73 1297,-3684.73"/>
+<text text-anchor="start" x="1378" y="-3690.93" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="1186,-3683.73 1186,-3967.73 1398,-3967.73 1398,-3683.73 1186,-3683.73"/>
 </a>
 </g>
 </g>

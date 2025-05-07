@@ -445,7 +445,7 @@
 <g id="node11" class="node">
 <title>timeseries</title>
 <g id="a_node11"><a xlink:href="../../tables/timeseries.html" xlink:title="timeseries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="867.5,-1054 867.5,-1314 977.5,-1314 977.5,-1054 867.5,-1054"/>
+<polygon fill="#ffffff" stroke="transparent" points="867.5,-1032 867.5,-1314 977.5,-1314 977.5,-1032 867.5,-1032"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="867.5,-1292 867.5,-1314 977.5,-1314 977.5,-1292 867.5,-1292"/>
 <polygon fill="none" stroke="black" points="867.5,-1292 867.5,-1314 977.5,-1314 977.5,-1292 867.5,-1292"/>
 <text text-anchor="start" x="872.5" y="-1301.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries</text>
@@ -475,15 +475,17 @@
 <text text-anchor="start" x="887.5" y="-1102.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="867.5,-1072 867.5,-1094 977.5,-1094 977.5,-1072 867.5,-1072"/>
 <text text-anchor="start" x="887.5" y="-1080.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="#ffffff" stroke="transparent" points="867.5,-1054 867.5,-1072 915.5,-1072 915.5,-1054 867.5,-1054"/>
-<polygon fill="none" stroke="black" points="867.5,-1054 867.5,-1072 915.5,-1072 915.5,-1054 867.5,-1054"/>
-<text text-anchor="start" x="870.5" y="-1060.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="915.5,-1054 915.5,-1072 941.5,-1072 941.5,-1054 915.5,-1054"/>
-<polygon fill="none" stroke="black" points="915.5,-1054 915.5,-1072 941.5,-1072 941.5,-1054 915.5,-1054"/>
-<text text-anchor="start" x="931.5" y="-1060.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="941.5,-1054 941.5,-1072 977.5,-1072 977.5,-1054 941.5,-1054"/>
-<polygon fill="none" stroke="black" points="941.5,-1054 941.5,-1072 977.5,-1072 977.5,-1054 941.5,-1054"/>
-<text text-anchor="start" x="958.5" y="-1060.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="none" stroke="black" points="867.5,-1050 867.5,-1072 977.5,-1072 977.5,-1050 867.5,-1050"/>
+<text text-anchor="start" x="887.5" y="-1058.2" font-family="Helvetica,sans-Serif" font-size="11.00">retention_days</text>
+<polygon fill="#ffffff" stroke="transparent" points="867.5,-1032 867.5,-1050 915.5,-1050 915.5,-1032 867.5,-1032"/>
+<polygon fill="none" stroke="black" points="867.5,-1032 867.5,-1050 915.5,-1050 915.5,-1032 867.5,-1032"/>
+<text text-anchor="start" x="870.5" y="-1038.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="915.5,-1032 915.5,-1050 941.5,-1050 941.5,-1032 915.5,-1032"/>
+<polygon fill="none" stroke="black" points="915.5,-1032 915.5,-1050 941.5,-1050 941.5,-1032 915.5,-1032"/>
+<text text-anchor="start" x="931.5" y="-1038.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="941.5,-1032 941.5,-1050 977.5,-1050 977.5,-1032 941.5,-1032"/>
+<polygon fill="none" stroke="black" points="941.5,-1032 941.5,-1050 977.5,-1050 977.5,-1032 941.5,-1032"/>
+<text text-anchor="start" x="958.5" y="-1038.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
