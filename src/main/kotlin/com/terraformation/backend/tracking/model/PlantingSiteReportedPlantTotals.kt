@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -9,6 +10,7 @@ data class PlantingSiteReportedPlantTotals(
     val id: PlantingSiteId,
     val plantingZones: List<PlantingZone>,
     val plantsSinceLastObservation: Int,
+    val species: List<Species>,
     val totalPlants: Int,
     val totalSpecies: Int,
 ) {
@@ -30,8 +32,10 @@ data class PlantingSiteReportedPlantTotals(
       val id: PlantingZoneId,
       val plantsSinceLastObservation: Int,
       val plantingSubzones: List<PlantingSubzone>,
+      val species: List<Species>,
       val targetPlants: Int,
       val totalPlants: Int,
+      val totalSpecies: Int,
   ) {
     val progressPercent: Int
       get() {
@@ -45,6 +49,15 @@ data class PlantingSiteReportedPlantTotals(
 
   data class PlantingSubzone(
       val id: PlantingSubzoneId,
+      val plantsSinceLastObservation: Int,
+      val species: List<Species>,
+      val totalPlants: Int,
+      val totalSpecies: Int,
+  )
+
+  data class Species(
+      val id: SpeciesId,
+      val plantsSinceLastObservation: Int,
       val totalPlants: Int,
   )
 }

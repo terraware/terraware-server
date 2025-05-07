@@ -8,6 +8,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -344,13 +345,19 @@ data class PlantingSiteHistoryPayload(
 
 data class PlantingSubzoneReportedPlantsPayload(
     val id: PlantingSubzoneId,
+    val plantsSinceLastObservation: Int,
+    val species: List<ReportedSpeciesPayload>,
     val totalPlants: Int,
+    val totalSpecies: Int,
 ) {
   constructor(
       subzoneTotals: PlantingSiteReportedPlantTotals.PlantingSubzone
   ) : this(
       id = subzoneTotals.id,
+      plantsSinceLastObservation = subzoneTotals.plantsSinceLastObservation,
+      species = subzoneTotals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = subzoneTotals.totalPlants,
+      totalSpecies = subzoneTotals.totalSpecies,
   )
 }
 
@@ -359,7 +366,9 @@ data class PlantingZoneReportedPlantsPayload(
     val plantsSinceLastObservation: Int,
     val plantingSubzones: List<PlantingSubzoneReportedPlantsPayload>,
     val progressPercent: Int,
+    val species: List<ReportedSpeciesPayload>,
     val totalPlants: Int,
+    val totalSpecies: Int,
 ) {
   constructor(
       zoneTotals: PlantingSiteReportedPlantTotals.PlantingZone
@@ -369,7 +378,9 @@ data class PlantingZoneReportedPlantsPayload(
       plantingSubzones =
           zoneTotals.plantingSubzones.map { PlantingSubzoneReportedPlantsPayload(it) },
       progressPercent = zoneTotals.progressPercent,
+      species = zoneTotals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = zoneTotals.totalPlants,
+      totalSpecies = zoneTotals.totalSpecies,
   )
 }
 
@@ -378,6 +389,7 @@ data class PlantingSiteReportedPlantsPayload(
     val plantingZones: List<PlantingZoneReportedPlantsPayload>,
     val plantsSinceLastObservation: Int,
     val progressPercent: Int?,
+    val species: List<ReportedSpeciesPayload>,
     val totalPlants: Int,
 ) {
   constructor(
@@ -387,7 +399,22 @@ data class PlantingSiteReportedPlantsPayload(
       plantingZones = totals.plantingZones.map { PlantingZoneReportedPlantsPayload(it) },
       plantsSinceLastObservation = totals.plantsSinceLastObservation,
       progressPercent = totals.progressPercent,
+      species = totals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = totals.totalPlants,
+  )
+}
+
+data class ReportedSpeciesPayload(
+    val id: SpeciesId,
+    val plantsSinceLastObservation: Int,
+    val totalPlants: Int,
+) {
+  constructor(
+      species: PlantingSiteReportedPlantTotals.Species
+  ) : this(
+      id = species.id,
+      plantsSinceLastObservation = species.plantsSinceLastObservation,
+      totalPlants = species.totalPlants,
   )
 }
 
