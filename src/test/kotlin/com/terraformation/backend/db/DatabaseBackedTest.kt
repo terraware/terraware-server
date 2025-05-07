@@ -145,6 +145,8 @@ import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.ThumbnailId
+import com.terraformation.backend.db.default_schema.TimeseriesId
+import com.terraformation.backend.db.default_schema.TimeseriesType
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -198,6 +200,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSe
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -211,6 +214,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GR
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
+import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
@@ -1076,6 +1080,54 @@ abstract class DatabaseBackedTest {
           .returning(ID)
           .fetchOne(ID)!!
           .also { inserted.deviceIds.add(it) }
+    }
+  }
+
+  private var nextTimeseriesNumber = 1
+
+  protected fun insertTimeseries(
+      deviceId: DeviceId = inserted.deviceId,
+      name: String = "timeseries ${nextTimeseriesNumber++}",
+      createdBy: UserId = inserted.userId,
+      createdTime: Instant = Instant.EPOCH,
+      type: TimeseriesType = TimeseriesType.Numeric,
+      units: String = "volts",
+      decimalPlaces: Int? = 1,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      retentionDays: Int? = null,
+  ): TimeseriesId {
+    val row =
+        TimeseriesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            decimalPlaces = decimalPlaces,
+            deviceId = deviceId,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            retentionDays = retentionDays,
+            typeId = type,
+            units = units,
+        )
+
+    timeseriesDao.insert(row)
+
+    return row.id!!.also { inserted.timeseriesIds.add(it) }
+  }
+
+  protected fun insertTimeseriesValue(
+      timeseriesId: TimeseriesId = inserted.timeseriesId,
+      createdTime: Instant = Instant.EPOCH,
+      value: String = "1",
+  ) {
+    with(TIMESERIES_VALUES) {
+      dslContext
+          .insertInto(TIMESERIES_VALUES)
+          .set(TIMESERIES_ID, timeseriesId)
+          .set(CREATED_TIME, createdTime)
+          .set(VALUE, value)
+          .execute()
     }
   }
 
@@ -4358,6 +4410,7 @@ abstract class DatabaseBackedTest {
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val submissionIds = mutableListOf<SubmissionId>()
     val submissionSnapshotIds = mutableListOf<SubmissionSnapshotId>()
+    val timeseriesIds = mutableListOf<TimeseriesId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
     val variableIds = mutableListOf<VariableId>()
@@ -4500,6 +4553,9 @@ abstract class DatabaseBackedTest {
 
     val submissionId
       get() = submissionIds.last()
+
+    val timeseriesId
+      get() = timeseriesIds.last()
 
     val uploadId
       get() = uploadIds.last()

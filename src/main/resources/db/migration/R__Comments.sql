@@ -207,6 +207,7 @@ COMMENT ON TABLE thumbnails IS 'Information about scaled-down versions of photos
 
 COMMENT ON TABLE timeseries IS 'Properties of a series of values collected from a device. Each device metric is represented as a timeseries.';
 COMMENT ON COLUMN timeseries.decimal_places IS 'For numeric timeseries, the number of digits after the decimal point to display.';
+COMMENT ON COLUMN timeseries.retention_days IS 'If non-null, only retain values for this many days. If null, do not expire old timeseries values.';
 COMMENT ON COLUMN timeseries.units IS 'For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site.';
 
 COMMENT ON TABLE timeseries_types IS '(Enum) Data formats of the values of a timeseries.';
