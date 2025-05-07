@@ -460,6 +460,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = defaultPermission
 
+  fun canReadProjectFunderDetails(projectId: ProjectId): Boolean = defaultPermission
+
   fun canReadProjectDeliverables(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectModules(projectId: ProjectId): Boolean = defaultPermission

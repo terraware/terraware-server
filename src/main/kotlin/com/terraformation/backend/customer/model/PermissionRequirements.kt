@@ -1103,6 +1103,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectFunderDetails(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canReadProjectFunderDetails(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to read funder details for project $projectId")
+      }
+    }
+  }
+
   fun readProjectDeliverables(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadProjectDeliverables(projectId)) {
