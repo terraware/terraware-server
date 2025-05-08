@@ -158,6 +158,20 @@ interface BaseMonitoringResult {
    * monitoring plots.
    */
   val plantingDensity: Int
+
+  /** List of species result used for this rollup */
+  val species: List<ObservationSpeciesResultsModel>
+  /**
+   * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+   * species.
+   */
+  val totalPlants: Int
+  /**
+   * Total number of species observed, not counting dead plants. Includes plants with Known and
+   * Other certainties. In the case of Other, each distinct user-supplied species name is counted as
+   * a separate species for purposes of this total.
+   */
+  val totalSpecies: Int
 }
 
 data class ObservationPlantingSubzoneResultsModel(
@@ -172,19 +186,9 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSubzoneId: PlantingSubzoneId?,
-    /** List of species result used for this rollup */
-    val species: List<ObservationSpeciesResultsModel>,
-    /**
-     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-     * species.
-     */
-    val totalPlants: Int,
-    /**
-     * Total number of species observed, not counting dead plants. Includes plants with Known and
-     * Other certainties. In the case of Other, each distinct user-supplied species name is counted
-     * as a separate species for purposes of this total.
-     */
-    val totalSpecies: Int,
+    override val species: List<ObservationSpeciesResultsModel>,
+    override val totalPlants: Int,
+    override val totalSpecies: Int,
 ) : BaseMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(
@@ -199,18 +203,9 @@ data class ObservationPlantingZoneResultsModel(
     override val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId?,
-    val species: List<ObservationSpeciesResultsModel>,
-    /**
-     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-     * species.
-     */
-    val totalPlants: Int,
-    /**
-     * Total number of species observed, not counting dead plants. Includes plants with Known and
-     * Other certainties. In the case of Other, each distinct user-supplied species name is counted
-     * as a separate species for purposes of this total.
-     */
-    val totalSpecies: Int,
+    override val species: List<ObservationSpeciesResultsModel>,
+    override val totalPlants: Int,
+    override val totalSpecies: Int,
 ) : BaseMonitoringResult
 
 data class ObservationResultsModel(
@@ -230,10 +225,11 @@ data class ObservationResultsModel(
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
-    val species: List<ObservationSpeciesResultsModel>,
+    override val species: List<ObservationSpeciesResultsModel>,
     val startDate: LocalDate,
     val state: ObservationState,
-    val totalSpecies: Int,
+    override val totalPlants: Int,
+    override val totalSpecies: Int,
 ) : BaseMonitoringResult
 
 data class ObservationPlantingZoneRollupResultsModel(
@@ -251,14 +247,9 @@ data class ObservationPlantingZoneRollupResultsModel(
     /** List of subzone observation results used for this rollup */
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
-    /** List of species result used for this rollup */
-    val species: List<ObservationSpeciesResultsModel>,
-    /**
-     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-     * species in this observation summary.
-     */
-    val totalPlants: Int,
-    val totalSpecies: Int,
+    override val species: List<ObservationSpeciesResultsModel>,
+    override val totalPlants: Int,
+    override val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
@@ -354,13 +345,9 @@ data class ObservationRollupResultsModel(
     /** List of subzone observation results used for this rollup */
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
     /** List of species result used for this rollup */
-    val species: List<ObservationSpeciesResultsModel>,
-    /**
-     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-     * species in this observation summary.
-     */
-    val totalPlants: Int,
-    val totalSpecies: Int,
+    override val species: List<ObservationSpeciesResultsModel>,
+    override val totalPlants: Int,
+    override val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
