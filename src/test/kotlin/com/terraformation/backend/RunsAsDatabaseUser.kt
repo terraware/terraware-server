@@ -79,7 +79,7 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.firstName,
                     record.lastName,
                     record.countryCode,
-                    record.cookiesConsented!!,
+                    record.cookiesConsented,
                     record.cookiesConsentedTime,
                     record.locale,
                     record.timeZone,
