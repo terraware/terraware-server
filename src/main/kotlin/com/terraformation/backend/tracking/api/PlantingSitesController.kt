@@ -114,6 +114,21 @@ class PlantingSitesController(
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
   }
 
+  @GetMapping("/reportedPlants")
+  @Operation(
+      summary =
+          "Lists the total number of plants planted at a planting site and in each planting zone.",
+      description = "The totals are based on nursery withdrawals.")
+  fun listPlantingSiteReportedPlants(
+      @RequestParam //
+      organizationId: OrganizationId,
+  ): ListPlantingSiteReportedPlantsResponsePayload {
+    val totals = plantingSiteStore.countReportedPlantsForOrganization(organizationId)
+
+    return ListPlantingSiteReportedPlantsResponsePayload(
+        totals.map { PlantingSiteReportedPlantsPayload(it) })
+  }
+
   @GetMapping("/{id}/reportedPlants")
   @Operation(
       summary =
@@ -580,6 +595,10 @@ data class GetPlantingSiteReportedPlantsResponsePayload(
 
 data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>) :
     SuccessResponsePayload
+
+data class ListPlantingSiteReportedPlantsResponsePayload(
+    val sites: List<PlantingSiteReportedPlantsPayload>
+) : SuccessResponsePayload
 
 data class UpdatePlantingSiteRequestPayload(
     @Schema(description = "Site boundary. Ignored if this is a detailed planting site.")
