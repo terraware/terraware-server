@@ -77,6 +77,7 @@ class FunderProjectDetailsModelTest {
             countryCode = "US",
             dealDescription = "description",
             dealName = "dealName",
+            landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.Silvopasture),
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Mangroves to BigDecimal(1001),

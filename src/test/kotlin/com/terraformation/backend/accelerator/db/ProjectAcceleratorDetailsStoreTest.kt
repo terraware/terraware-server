@@ -220,7 +220,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               dealName = "project deal name",
               failureRisk = "failure",
               investmentThesis = "thesis",
-              landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
+              landUseModelTypes =
+                  setOf(
+                      LandUseModelType.Agroforestry,
+                      LandUseModelType.Mangroves,
+                      LandUseModelType.Silvopasture),
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.Agroforestry to BigDecimal(10),
+                      LandUseModelType.Mangroves to BigDecimal(20)),
               maxCarbonAccumulation = BigDecimal(5),
               minCarbonAccumulation = BigDecimal(4),
               numNativeSpecies = 1,
@@ -239,6 +247,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
               dealName = "project deal name",
+              landUseModelTypes =
+                  setOf(
+                      LandUseModelType.Agroforestry,
+                      LandUseModelType.Mangroves,
+                      LandUseModelType.Silvopasture),
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.Agroforestry to BigDecimal(10),
+                      LandUseModelType.Mangroves to BigDecimal(20)),
               numNativeSpecies = detailsRow.numNativeSpecies,
               perHectareBudget = detailsRow.perHectareBudget,
               projectId = projectId,
