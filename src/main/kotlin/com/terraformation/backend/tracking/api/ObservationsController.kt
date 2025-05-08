@@ -981,6 +981,7 @@ data class ObservationResultsPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
+    val totalPlants: Int,
     val totalSpecies: Int,
     val type: ObservationType,
 ) {
@@ -1007,6 +1008,7 @@ data class ObservationResultsPayload(
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
+      totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
       type = model.observationType,
   )

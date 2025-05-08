@@ -964,6 +964,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               }
 
           val totalSpecies = liveSpecies.size
+          val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
           val mortalityRate = species.calculateMortalityRate()
           val mortalityRateStdDev =
@@ -999,6 +1000,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               species = knownSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
+              totalPlants = totalPlants,
               totalSpecies = totalSpecies,
           )
         }
