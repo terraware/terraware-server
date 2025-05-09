@@ -84,7 +84,7 @@ class ModulesImporter(
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
                 .set(RECORDED_SESSION_DESCRIPTION, recordedSessionInfo)
-                .set(PHASE_ID, CohortPhase.Phase1FeasibilityStudy)
+                .set(PHASE_ID, phase)
                 .set(POSITION, rowNumber)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
