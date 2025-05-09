@@ -727,6 +727,14 @@ data class ObservationSpeciesResultsPayload(
             "If certainty is Other, the user-supplied name of the species. Null if certainty is " +
                 "Known or Unknown.")
     val speciesName: String?,
+    @Schema(description = "Number of dead plants observed in this observation.") //
+    val totalDead: Int,
+    @Schema(description = "Number of existing plants observed in this observation.")
+    val totalExisting: Int,
+    @Schema(
+        description =
+            "Number of live plants observed in this observation, not including existing plants.")
+    val totalLive: Int,
     @Schema(description = "Total number of live and existing plants of this species.")
     val totalPlants: Int,
 ) {
@@ -739,6 +747,9 @@ data class ObservationSpeciesResultsPayload(
       permanentLive = model.permanentLive,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
+      totalDead = model.totalDead,
+      totalExisting = model.totalExisting,
+      totalLive = model.totalLive,
       totalPlants = model.totalPlants,
   )
 }
