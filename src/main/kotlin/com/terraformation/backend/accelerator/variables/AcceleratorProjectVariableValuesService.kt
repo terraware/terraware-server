@@ -145,7 +145,6 @@ class AcceleratorProjectVariableValuesService(
             .mapNotNull { (landUseType, stableId) ->
               getNumberValue(valuesByStableId, stableId)?.let { landUseType to it }
             }
-            .filter { (landUseType, _) -> landUseType in landUseModelTypes }
             .toMap()
     val maxCarbonAccumulation = getNumberValue(valuesByStableId, StableIds.maxCarbonAccumulation)
     val methodologyNumber =

@@ -51,6 +51,8 @@ data class FunderUser(
 
   override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntityId == entityId
 
+  override fun canReadProjectFunderDetails(projectId: ProjectId) = projectId in projectIds
+
   override fun canReadPublishedReports(projectId: ProjectId) = projectId in projectIds
 
   override fun canReadUser(userId: UserId) = userId == this.userId

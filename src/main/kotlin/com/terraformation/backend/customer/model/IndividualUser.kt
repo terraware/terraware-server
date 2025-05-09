@@ -452,6 +452,8 @@ data class IndividualUser(
   override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher()
 
+  override fun canReadProjectFunderDetails(projectId: ProjectId): Boolean = isReadOnlyOrHigher()
+
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
