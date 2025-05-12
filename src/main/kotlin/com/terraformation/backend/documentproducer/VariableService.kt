@@ -1,12 +1,11 @@
 package com.terraformation.backend.documentproducer
 
-import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
-import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
+import com.terraformation.backend.documentproducer.event.VariablesUpdatedEvent
 import com.terraformation.backend.documentproducer.event.VariablesUploadedEvent
 import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.log.perClassLogger
@@ -93,20 +92,8 @@ class VariableService(
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: VariablesUploadedEvent) {
-    log.info("Variables uploaded; clearing cache")
-    variableStore.clearCache()
-  }
-
-  @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: ModulesUploadedEvent) {
-    log.info("Modules uploaded; clearing cache")
-    variableStore.clearCache()
-  }
-
-  @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: DeliverablesUploadedEvent) {
-    log.info("Deliverables uploaded; clearing cache")
+  fun on(event: VariablesUpdatedEvent) {
+    log.info(event.message)
     variableStore.clearCache()
   }
 }

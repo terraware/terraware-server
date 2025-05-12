@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.assertThrows
 
 class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
+  private val eventPublisher = TestEventPublisher()
 
   private val importer: DeliverablesImporter by lazy {
     DeliverablesImporter(
@@ -36,7 +39,9 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionsDao,
             variableTablesDao,
             variableTableColumnsDao,
-            variableTextsDao))
+            variableTextsDao),
+        eventPublisher,
+    )
   }
 
   private val stableIdSuffix = "${UUID.randomUUID()}"
@@ -79,6 +84,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRow(deliverableId2, variableId3, 2),
           ),
           deliverableVariablesDao.findAll().toSet())
+
+      eventPublisher.assertEventPublished { event -> event is DeliverablesUploadedEvent }
     }
 
     @Test

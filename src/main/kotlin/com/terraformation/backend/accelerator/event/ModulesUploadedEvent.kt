@@ -1,3 +1,6 @@
 package com.terraformation.backend.accelerator.event
 
-class ModulesUploadedEvent
+import com.terraformation.backend.documentproducer.event.VariableUpdatedSource
+import com.terraformation.backend.documentproducer.event.VariablesUpdatedEvent
+
+class ModulesUploadedEvent : VariablesUpdatedEvent(VariableUpdatedSource.ModulesUploaded)
