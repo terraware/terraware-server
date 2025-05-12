@@ -1,14 +1,20 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
+import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
+import com.terraformation.backend.documentproducer.event.VariablesUploadedEvent
 import com.terraformation.backend.documentproducer.model.TableVariable
+import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class VariableService(
@@ -17,7 +23,10 @@ class VariableService(
     private val variableImporter: VariableImporter,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
+  private val log = perClassLogger()
+
   fun importAllVariables(inputStream: InputStream): VariableImportResult {
     return dslContext.transactionResult { _ ->
       val result = variableImporter.import(inputStream)
@@ -37,6 +46,7 @@ class VariableService(
         }
       }
 
+      eventPublisher.publishEvent(VariablesUploadedEvent())
       result
     }
   }
@@ -80,5 +90,23 @@ class VariableService(
             }
       }
     }
+  }
+
+  @EventListener
+  fun on(@Suppress("UNUSED_PARAMETER") event: VariablesUploadedEvent) {
+    log.info("Variables uploaded; clearing cache")
+    variableStore.clearCache()
+  }
+
+  @EventListener
+  fun on(@Suppress("UNUSED_PARAMETER") event: ModulesUploadedEvent) {
+    log.info("Modules uploaded; clearing cache")
+    variableStore.clearCache()
+  }
+
+  @EventListener
+  fun on(@Suppress("UNUSED_PARAMETER") event: DeliverablesUploadedEvent) {
+    log.info("Deliverables uploaded; clearing cache")
+    variableStore.clearCache()
   }
 }
