@@ -1,3 +1,7 @@
+691d72b936f Update dependency com.google.apis:google-api-services-drive to v3-rev20250506-2.0.0 (#3104)
+687723dad9b Update ktor monorepo to v3.1.3 (#3103)
+45b4d312d91 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.8 (#3102)
+7b0543ebe75 Update database dependencies to v11.8.1 (#3101)
 1bb756ebc2f SW-6840 Add raw per-observation plant totals to results (#3100)
 1e7dffde76b Import correct phase in ModuleImporter (#3099)
 37e89cd4127 Added fetch reported plants by organization (#3097)
