@@ -1,0 +1,3 @@
+package com.terraformation.backend.documentproducer.event
+
+class VariablesUploadedEvent : VariablesUpdatedEvent(VariableUpdatedSource.VariablesUploaded)

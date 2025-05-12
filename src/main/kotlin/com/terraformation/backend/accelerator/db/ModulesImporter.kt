@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -10,12 +11,14 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 /** Imports the list of modules from a CSV file. */
 @Named
 class ModulesImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   companion object {
     private const val COLUMN_NAME = 0
@@ -110,5 +113,7 @@ class ModulesImporter(
         }
       }
     }
+
+    eventPublisher.publishEvent(ModulesUploadedEvent())
   }
 }

@@ -384,7 +384,7 @@ class VariableStore(
     }
   }
 
-  /** Clears the variable cache. Used in tests. */
+  /** Clears the variable caches. */
   fun clearCache() {
     publicVariables.clear()
     replacements.clear()

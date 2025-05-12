@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -669,6 +670,47 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   maxValue = BigDecimal(10)))
 
       assertEquals(expected, actual, "Fetch used variables for document")
+    }
+  }
+
+  @Nested
+  inner class ClearCache {
+    @Test
+    fun `test that cache is properly cleared`() {
+      val variableId = insertTextVariable(insertVariable())
+      insertModule()
+      val deliverableId = insertDeliverable()
+      insertDeliverableVariable(position = 0)
+
+      // add to cache
+      val beforeVariable = store.fetchOneVariable(variableId)
+      assertEquals(
+          beforeVariable.deliverablePositions[deliverableId],
+          0,
+          "Position after insertion should be correct")
+
+      with(DELIVERABLE_VARIABLES) {
+        dslContext
+            .update(this)
+            .set(POSITION, 1)
+            .where(DELIVERABLE_ID.eq(deliverableId))
+            .and(VARIABLE_ID.eq(variableId))
+            .execute()
+      }
+
+      val nonUpdatedVariable = store.fetchOneVariable(variableId)
+      assertEquals(
+          nonUpdatedVariable.deliverablePositions[deliverableId],
+          0,
+          "Position after update should be from cache, not db")
+
+      store.clearCache()
+
+      val updatedVariable = store.fetchOneVariable(variableId)
+      assertEquals(
+          updatedVariable.deliverablePositions[deliverableId],
+          1,
+          "Position after cache clear should be updated from db")
     }
   }
 }

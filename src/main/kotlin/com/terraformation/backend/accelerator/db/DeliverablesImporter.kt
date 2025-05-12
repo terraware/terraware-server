@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.StableId
@@ -22,6 +23,7 @@ import java.io.InputStream
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 /** Imports the list of deliverables from a CSV file. */
 @Named
@@ -29,6 +31,7 @@ class DeliverablesImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val variableStore: VariableStore,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   companion object {
     private const val COLUMN_NAME = 0
@@ -252,5 +255,7 @@ class DeliverablesImporter(
             "Deleting deliverables isn't supported yet. Missing IDs: $leftOverNegativePositions")
       }
     }
+
+    eventPublisher.publishEvent(DeliverablesUploadedEvent())
   }
 }

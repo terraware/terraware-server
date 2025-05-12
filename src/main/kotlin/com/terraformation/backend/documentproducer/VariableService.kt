@@ -5,10 +5,15 @@ import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
+import com.terraformation.backend.documentproducer.event.VariablesUpdatedEvent
+import com.terraformation.backend.documentproducer.event.VariablesUploadedEvent
 import com.terraformation.backend.documentproducer.model.TableVariable
+import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class VariableService(
@@ -17,7 +22,10 @@ class VariableService(
     private val variableImporter: VariableImporter,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
+  private val log = perClassLogger()
+
   fun importAllVariables(inputStream: InputStream): VariableImportResult {
     return dslContext.transactionResult { _ ->
       val result = variableImporter.import(inputStream)
@@ -37,6 +45,7 @@ class VariableService(
         }
       }
 
+      eventPublisher.publishEvent(VariablesUploadedEvent())
       result
     }
   }
@@ -80,5 +89,11 @@ class VariableService(
             }
       }
     }
+  }
+
+  @EventListener
+  fun on(event: VariablesUpdatedEvent) {
+    log.info(event.message)
+    variableStore.clearCache()
   }
 }
