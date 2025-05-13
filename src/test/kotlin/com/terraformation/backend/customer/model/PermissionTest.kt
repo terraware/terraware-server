@@ -1556,6 +1556,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1706,6 +1707,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1743,6 +1745,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -1955,6 +1958,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2000,6 +2004,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2216,6 +2221,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2253,6 +2259,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2469,6 +2476,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2482,6 +2490,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectFunderDetails = true,
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
@@ -2564,6 +2573,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        readProjectFunderDetails = true,
         readPublishedReports = true,
     )
 
@@ -3496,6 +3506,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject: Boolean = false,
         readProjectAcceleratorDetails: Boolean = false,
         readProjectDeliverables: Boolean = false,
+        readProjectFunderDetails: Boolean = false,
         readProjectModules: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
@@ -3544,6 +3555,10 @@ internal class PermissionTest : DatabaseTest() {
             readProjectDeliverables,
             user.canReadProjectDeliverables(idInDatabase),
             "Can read deliverables for project $projectId")
+        assertEquals(
+            readProjectFunderDetails,
+            user.canReadProjectFunderDetails(idInDatabase),
+            "Can read project funder details for project $projectId")
         assertEquals(
             readProjectScores,
             user.canReadProjectScores(idInDatabase),

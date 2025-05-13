@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
+import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
@@ -41,11 +42,38 @@ class ProjectAcceleratorDetailsStore(
   }
 
   /**
+   * Returns the funder-visible details for a project. If the project doesn't have any details yet,
+   * returns a model with just the non-accelerator-specific fields populated.
+   */
+  fun fetchOneByIdForFunder(
+      projectId: ProjectId,
+      variableValuesModel: ProjectAcceleratorVariableValuesModel,
+  ): FunderProjectDetailsModel {
+    requirePermissions { readProjectFunderDetails(projectId) }
+
+    val projectAcceleratorDetailsModel =
+        fetch(
+                PROJECTS.ID.eq(projectId),
+                { _projectId -> currentUser().canReadProjectFunderDetails(_projectId) },
+            ) {
+              variableValuesModel
+            }
+            .firstOrNull()
+    if (projectAcceleratorDetailsModel == null) {
+      throw ProjectNotFoundException(projectId)
+    }
+    return FunderProjectDetailsModel.of(projectAcceleratorDetailsModel)
+  }
+
+  /**
    * Returns the accelerator details for every project. If the project doesn't have any details yet,
    * returns a model with just the non-accelerator-specific fields populated.
    */
   fun fetch(
       condition: Condition,
+      filterFn: (ProjectId) -> Boolean = { projectId ->
+        currentUser().canReadProjectAcceleratorDetails(projectId)
+      },
       projectVariableValues: (ProjectId) -> ProjectAcceleratorVariableValuesModel,
   ): List<ProjectAcceleratorDetailsModel> {
     return dslContext
@@ -66,7 +94,7 @@ class ProjectAcceleratorDetailsStore(
         .leftJoin(COHORTS)
         .on(COHORTS.ID.eq(PARTICIPANTS.COHORT_ID))
         .where(condition)
-        .filter { currentUser().canReadProjectAcceleratorDetails(it[PROJECTS.ID]!!) }
+        .filter { filterFn(it[PROJECTS.ID]!!) }
         .map { ProjectAcceleratorDetailsModel.of(it, projectVariableValues(it[PROJECTS.ID]!!)) }
   }
 
