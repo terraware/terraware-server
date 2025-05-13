@@ -187,6 +187,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorVariableValuesModel(
               projectId = inserted.projectId,
               countryCode = "BR",
+              countryAlpha3 = "BRA",
               dealDescription = "Deal description",
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               landUseModelHectares =
@@ -236,6 +237,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               carbonCapacity = BigDecimal(300),
               confirmedReforestableLand = BigDecimal(75),
               countryCode = "BR",
+              countryAlpha3 = "BRA",
               dealDescription = "New deal description",
               failureRisk = "New failure risk",
               gisReportsLink = URI("https://gis.reports/"),
@@ -328,6 +330,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           existing.copy(
               countryCode = null,
+              countryAlpha3 = null,
               clickUpLink = null,
               gisReportsLink = URI("https://gis.reports/updated"),
               landUseModelHectares =

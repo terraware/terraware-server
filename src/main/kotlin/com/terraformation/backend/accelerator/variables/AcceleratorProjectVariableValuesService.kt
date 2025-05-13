@@ -184,6 +184,7 @@ class AcceleratorProjectVariableValuesService(
         carbonCapacity = carbonCapacity,
         clickUpLink = clickUpLink,
         confirmedReforestableLand = confirmedReforestableLand,
+        countryAlpha3 = countryRow?.codeAlpha3,
         countryCode = countryRow?.code,
         dealDescription = dealDescription,
         dealName = dealName,
