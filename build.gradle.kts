@@ -90,7 +90,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M7"))
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-RC1"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
   implementation("org.springframework.ai:spring-ai-advisors-vector-store")
@@ -127,7 +127,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.5.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.5.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
