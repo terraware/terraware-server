@@ -2815,7 +2815,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               upcomingNotificationSentTime = Instant.EPOCH,
           )
 
-      // year 2 is missing, which can happen if report dates were changed before
+      // year 2 is missing, which can happen if report dates were changed previously
 
       clock.instant = Instant.ofEpochSecond(9000)
 
