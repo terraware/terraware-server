@@ -2765,17 +2765,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               reportingEndDate = LocalDate.of(2024, Month.JULY, 9),
           )
 
-      // This one remains unchanged, but will help catch any looping issues
-      val year0ReportId =
-          insertReport(
-              configId = configId,
-              projectId = projectId,
-              quarter = null,
-              frequency = ReportFrequency.Annual,
-              status = ReportStatus.NotNeeded,
-              startDate = LocalDate.of(2020, Month.MARCH, 13),
-              endDate = LocalDate.of(2020, Month.MAY, 31),
-          )
+      // Reports are added in random order
 
       val year1ReportId =
           insertReport(
@@ -2789,17 +2779,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               upcomingNotificationSentTime = Instant.EPOCH,
           )
 
-      // year 2 is missing, which can happen if report dates were changed before
-      val year3ReportId =
+      // This one remains unchanged, but will help catch any looping issues
+      val year0ReportId =
           insertReport(
               configId = configId,
               projectId = projectId,
               quarter = null,
               frequency = ReportFrequency.Annual,
-              status = ReportStatus.Approved,
-              startDate = LocalDate.of(2023, Month.JANUARY, 1),
-              endDate = LocalDate.of(2023, Month.DECEMBER, 31),
-              upcomingNotificationSentTime = Instant.EPOCH,
+              status = ReportStatus.NotNeeded,
+              startDate = LocalDate.of(2020, Month.MARCH, 13),
+              endDate = LocalDate.of(2020, Month.MAY, 31),
           )
 
       val year4ReportId =
@@ -2813,6 +2802,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2024, Month.JULY, 9),
               upcomingNotificationSentTime = Instant.EPOCH,
           )
+
+      val year3ReportId =
+          insertReport(
+              configId = configId,
+              projectId = projectId,
+              quarter = null,
+              frequency = ReportFrequency.Annual,
+              status = ReportStatus.Approved,
+              startDate = LocalDate.of(2023, Month.JANUARY, 1),
+              endDate = LocalDate.of(2023, Month.DECEMBER, 31),
+              upcomingNotificationSentTime = Instant.EPOCH,
+          )
+
+      // year 2 is missing, which can happen if report dates were changed previously
 
       clock.instant = Instant.ofEpochSecond(9000)
 

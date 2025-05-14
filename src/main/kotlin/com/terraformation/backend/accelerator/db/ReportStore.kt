@@ -550,7 +550,7 @@ class ReportStore(
   private fun updateReportRows(
       config: ExistingProjectReportConfigModel,
   ) {
-    val existingReports = reportsDao.fetchByConfigId(config.id)
+    val existingReports = reportsDao.fetchByConfigId(config.id).sortedBy { it.startDate }
     val newReportRows = createReportRows(config)
 
     if (existingReports.isEmpty()) {
