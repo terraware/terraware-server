@@ -52,6 +52,7 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
@@ -798,18 +799,14 @@ class AdminPlantingSitesController(
     return listOf(
         if (existingModel != null) {
           if (desiredModel != null) {
-            val overlapPercent =
-                "%.2f"
-                    .format(
-                        existingModel.boundary.intersection(desiredModel.boundary).area /
-                            desiredModel.boundary.area * 100.0)
+            val overlapPercent = renderOverlapPercent(existingModel.boundary, desiredModel.boundary)
             val areaDifference = zoneEdit.areaHaDifference.toPlainString()
             "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
           } else {
-            "$prefix Delete"
+            "$prefix Delete (stable ID ${existingModel.stableId})"
           }
         } else {
-          "$prefix Create"
+          "$prefix Create (stable ID ${desiredModel?.stableId})"
         }) + monitoringPlotCreations + subzoneEdits
   }
 
@@ -820,6 +817,20 @@ class AdminPlantingSitesController(
     val zoneName = zoneEdit.existingModel?.name ?: zoneEdit.desiredModel!!.name
     val subzoneName = subzoneEdit.existingModel?.name ?: subzoneEdit.desiredModel!!.name
     val prefix = "Zone $zoneName subzone $subzoneName:"
+    val subzoneEditText =
+        when (subzoneEdit) {
+          is PlantingSubzoneEdit.Create ->
+              "$prefix Create (stable ID ${subzoneEdit.desiredModel.stableId})"
+          is PlantingSubzoneEdit.Delete ->
+              "$prefix Delete (stable ID ${subzoneEdit.existingModel.stableId})"
+          is PlantingSubzoneEdit.Update -> {
+            val overlapPercent =
+                renderOverlapPercent(
+                    subzoneEdit.existingModel.boundary, subzoneEdit.desiredModel.boundary)
+            val areaDifference = subzoneEdit.areaHaDifference.toPlainString()
+            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
+          }
+        }
     val monitoringPlotEdits =
         subzoneEdit.monitoringPlotEdits.map { plotEdit ->
           val permanentIndex = plotEdit.permanentIndex
@@ -837,7 +848,11 @@ class AdminPlantingSitesController(
           }
         }
 
-    return monitoringPlotEdits
+    return listOf(subzoneEditText) + monitoringPlotEdits
+  }
+
+  private fun renderOverlapPercent(existing: Geometry, desired: Geometry): String {
+    return "%.2f".format(existing.intersection(desired).area / desired.area * 100.0)
   }
 
   private fun redirectToAdminHome() = "redirect:/admin/"
