@@ -469,7 +469,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
 
       // Original delivery to subzone 12, then reassignment to 11, so 12 shouldn't be counted as
       // planted any more.
-      insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant)
       insertDelivery()
       insertPlanting(numPlants = 1, plantingSubzoneId = plantingSubzoneId12)
       insertPlanting(
@@ -483,7 +483,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertSpecies()
       insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId21)
 
-      insertWithdrawal(purpose = WithdrawalPurpose.OutPlant)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant)
       insertDelivery()
       insertPlanting(numPlants = 4, plantingSubzoneId = plantingSubzoneId21)
 

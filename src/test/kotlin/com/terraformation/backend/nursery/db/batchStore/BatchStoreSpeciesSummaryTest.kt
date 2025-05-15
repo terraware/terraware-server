@@ -8,7 +8,7 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
   @Test
   fun `does not include germinating quantities in total withdrawn`() {
     val batchId = insertBatch(speciesId = speciesId)
-    val withdrawalId = insertWithdrawal()
+    val withdrawalId = insertNurseryWithdrawal()
     insertBatchWithdrawal(
         batchId = batchId,
         germinatingQuantityWithdrawn = 1,

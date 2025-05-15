@@ -53,7 +53,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
-  private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
+  private val withdrawalId: WithdrawalId by lazy { insertNurseryWithdrawal() }
 
   private lateinit var organizationId: OrganizationId
 
@@ -98,7 +98,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto throws exception if photo is on a different withdrawal`() {
-    val otherWithdrawalId = insertWithdrawal()
+    val otherWithdrawalId = insertNurseryWithdrawal()
     val fileId = storePhoto()
 
     assertThrows<FileNotFoundException> { service.readPhoto(otherWithdrawalId, fileId) }
@@ -116,7 +116,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `listPhotos returns list of withdrawal photo IDs for correct withdrawal`() {
     val fileIds = setOf(storePhoto(), storePhoto())
-    val otherWithdrawalId = insertWithdrawal()
+    val otherWithdrawalId = insertNurseryWithdrawal()
     storePhoto(otherWithdrawalId)
 
     assertEquals(fileIds, service.listPhotos(withdrawalId).toSet())
@@ -135,10 +135,10 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     storePhoto()
 
     val facilityId2 = insertFacility(type = FacilityType.Nursery)
-    val facility2WithdrawalId = insertWithdrawal(facilityId = facilityId2)
+    val facility2WithdrawalId = insertNurseryWithdrawal(facilityId = facilityId2)
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
-    val otherOrgWithdrawalId = insertWithdrawal()
+    val otherOrgWithdrawalId = insertNurseryWithdrawal()
 
     storePhoto(facility2WithdrawalId)
     val otherOrgfileId = storePhoto(otherOrgWithdrawalId)
@@ -156,7 +156,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `handler for WithdrawalDeletionStartedEvent deletes withdrawal photos`() {
-    val otherWithdrawalId = insertWithdrawal()
+    val otherWithdrawalId = insertNurseryWithdrawal()
 
     storePhoto()
     storePhoto()

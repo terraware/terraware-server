@@ -522,18 +522,18 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingZone()
 
       val subzoneId = insertPlantingSubzone()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
       insertPlanting(speciesId = speciesId2)
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
       // Deleted species should not be included
       insertPlanting(speciesId = speciesId4)
 
       insertPlantingSubzone()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId2)
       insertPlanting(speciesId = speciesId3)
@@ -542,7 +542,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId5)
 
@@ -595,7 +595,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val subzoneId = insertPlantingSubzone()
       insertMonitoringPlot()
 
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
       insertPlanting(speciesId = speciesId2)
@@ -798,7 +798,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite()
     insertPlantingZone()
     insertPlantingSubzone()
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertDelivery()
     insertPlanting(speciesId = created)
 
@@ -810,7 +810,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite()
     insertPlantingZone()
     insertPlantingSubzone()
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertDelivery()
     insertPlanting(speciesId = other)
 

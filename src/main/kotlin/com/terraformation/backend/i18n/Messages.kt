@@ -435,7 +435,7 @@ class Messages {
       quantityText != null && purpose != null ->
           getMessage("historyAccessionQuantityWithdrawnFor$purpose", quantityText)
       quantityText != null -> getMessage("historyAccessionQuantityWithdrawn", quantityText)
-      purpose != null -> getMessage("historyAccessionWithdrownFor$purpose")
+      purpose != null -> getMessage("historyAccessionWithdrawnFor$purpose")
       else -> getMessage("historyAccessionWithdrawn")
     }
   }

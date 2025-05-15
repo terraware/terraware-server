@@ -3816,7 +3816,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             ))
 
     val outplantWithdrawalId1 =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant,
             withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
     insertBatchWithdrawal(
@@ -3838,7 +3838,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val outplantWithdrawalId2 =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant,
             withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
     insertBatchWithdrawal(
@@ -3850,7 +3850,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // This will count towards the seedlings metric, but not the trees planted metric.
     // This includes two species, but does not count towards species planted.
     val futureWithdrawalId =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant, withdrawnDate = reportEndDate.plusDays(1))
     insertBatchWithdrawal(
         batchId = batchId1,
@@ -3864,7 +3864,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val otherWithdrawalId =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.Other,
             withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
     insertBatchWithdrawal(
@@ -3881,7 +3881,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val deadWithdrawalId =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.Dead,
             withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
     insertBatchWithdrawal(
@@ -3897,7 +3897,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     // This will not be counted towards seedlings, to prevent double-counting
     val nurseryTransferWithdrawalId =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.NurseryTransfer,
             withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
     insertBatchWithdrawal(
@@ -3918,10 +3918,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // These two will not be counted
     val undoDate = getRandomDate(reportStartDate, reportEndDate)
     val undoneWithdrawalId =
-        insertWithdrawal(purpose = WithdrawalPurpose.OutPlant, withdrawnDate = undoDate)
+        insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant, withdrawnDate = undoDate)
     // An undo can happen any time in the future
     val undoWithdrawalId =
-        insertWithdrawal(
+        insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.Undo,
             undoesWithdrawalId = undoneWithdrawalId,
             withdrawnDate = reportEndDate.plusDays(1),

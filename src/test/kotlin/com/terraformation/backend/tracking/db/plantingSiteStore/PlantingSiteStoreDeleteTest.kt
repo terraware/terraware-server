@@ -32,7 +32,7 @@ internal class PlantingSiteStoreDeleteTest : BasePlantingSiteStoreTest() {
       insertMonitoringPlot()
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting()
       insertObservation(completedTime = Instant.EPOCH)

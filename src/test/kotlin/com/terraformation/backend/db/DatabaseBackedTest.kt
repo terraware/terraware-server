@@ -317,6 +317,10 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.WithdrawalId as SeedbankWithdrawalId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose as SeedbankWithdrawalPurpose
 import com.terraformation.backend.db.seedbank.keys.ACCESSION_PKEY
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
@@ -328,6 +332,7 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestResultsDa
 import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow as SeedbankWithdrawalsRow
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.DeliveryId
@@ -1739,7 +1744,7 @@ abstract class DatabaseBackedTest {
     batchSubLocationsDao.insert(row)
   }
 
-  fun insertWithdrawal(
+  fun insertNurseryWithdrawal(
       row: WithdrawalsRow = WithdrawalsRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
@@ -1767,6 +1772,54 @@ abstract class DatabaseBackedTest {
     nurseryWithdrawalsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.withdrawalIds.add(it) }
+  }
+
+  fun insertSeedbankWithdrawal(
+      row: SeedbankWithdrawalsRow = SeedbankWithdrawalsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      updatedTime: Instant = row.createdTime ?: Instant.EPOCH,
+      withdrawnBy: UserId = row.withdrawnBy ?: currentUser().userId,
+      date: LocalDate = row.date ?: LocalDate.EPOCH,
+      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
+      purpose: SeedbankWithdrawalPurpose? = row.purposeId,
+      destination: String? = row.destination,
+      staffResponsible: String? = row.staffResponsible,
+      notes: String? = row.notes,
+      viabilityTestId: ViabilityTestId? = row.viabilityTestId,
+      withdrawnGrams: BigDecimal? = row.withdrawnGrams,
+      withdrawnQuantity: BigDecimal? = row.withdrawnQuantity,
+      withdrawnUnitsId: SeedQuantityUnits = row.withdrawnUnitsId ?: SeedQuantityUnits.Grams,
+      estimatedCount: Int? = row.estimatedCount,
+      estimatedWeightQuantity: BigDecimal? = row.estimatedWeightQuantity,
+      estimatedWeightUnitsId: SeedQuantityUnits? = row.estimatedWeightUnitsId,
+      batchId: BatchId? = row.batchId ?: inserted.batchId,
+  ): SeedbankWithdrawalId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            updatedTime = updatedTime,
+            withdrawnBy = withdrawnBy,
+            date = date,
+            accessionId = accessionId,
+            purposeId = purpose,
+            destination = destination,
+            staffResponsible = staffResponsible,
+            notes = notes,
+            viabilityTestId = viabilityTestId,
+            withdrawnGrams = withdrawnGrams,
+            withdrawnQuantity = withdrawnQuantity,
+            withdrawnUnitsId = withdrawnUnitsId,
+            estimatedCount = estimatedCount,
+            estimatedWeightQuantity = estimatedWeightQuantity,
+            estimatedWeightUnitsId = estimatedWeightUnitsId,
+            batchId = batchId,
+        )
+
+    withdrawalsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.seedbankWithdrawalIds.add(it) }
   }
 
   fun insertBatchWithdrawal(
@@ -4403,6 +4456,7 @@ abstract class DatabaseBackedTest {
     val projectReportConfigIds = mutableListOf<ProjectReportConfigId>()
     val recordedTreeIds = mutableListOf<RecordedTreeId>()
     val reportIds = mutableListOf<ReportId>()
+    val seedbankWithdrawalIds = mutableListOf<SeedbankWithdrawalId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val standardMetricIds = mutableListOf<StandardMetricId>()

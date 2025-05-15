@@ -5,7 +5,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
@@ -276,7 +275,7 @@ internal class PermissionTest : DatabaseTest() {
               speciesId = speciesIdInDatabase))
       putDatabaseId(
           WithdrawalId(facilityId.value),
-          insertWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant))
+          insertNurseryWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant))
     }
 
     subLocationIds.forEach { subLocationId ->
