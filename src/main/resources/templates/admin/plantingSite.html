@@ -10,7 +10,7 @@
             padding: .25em;
         }
 
-        table#subzones>tbody>tr>:nth-child(n+3) {
+        table#subzones>tbody>tr>:nth-child(n+3):nth-child(-n+5) {
             text-align: right;
         }
 
@@ -325,24 +325,28 @@
         <tr>
             <th>Zone</th>
             <th>Subzone</th>
-            <th>Subzone ID</th>
             <th>Area<br/>(ha)</th>
             <th>Plots</th>
             <th>Reported<br/>Plants</th>
+            <th>Stable ID</th>
+            <th>ID</th>
         </tr>
 
         <th:block th:each="zone : ${site.plantingZones}">
             <tr>
-                <td colspan="6" th:text="${zone.name}">Zone</td>
+                <td th:text="${zone.name}" colspan="5">Zone</td>
+                <td th:text="${zone.stableId}">SID</td>
+                <td th:text="${zone.id}">1234</td>
             </tr>
 
             <tr th:each="subzone : ${zone.plantingSubzones}">
                 <td></td>
                 <td th:text="${subzone.name}">Subzone</td>
-                <td th:text="${subzone.id}">999</td>
                 <td th:text="${subzone.areaHa}">123.45</td>
                 <td th:text="${plotCounts[zone.id][subzone.id] ?: 0}">1000</td>
                 <td th:text="${plantCounts[subzone.id] ?: 0}">543</td>
+                <td th:text="${subzone.stableId}">999</td>
+                <td th:text="${subzone.id}">999</td>
             </tr>
         </th:block>
     </table>
