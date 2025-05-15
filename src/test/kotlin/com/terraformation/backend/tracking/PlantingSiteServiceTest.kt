@@ -89,7 +89,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       val plantingSiteId = insertPlantingSite()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting()
 

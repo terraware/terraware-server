@@ -315,7 +315,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `batches table returns correct totals`() {
-      insertWithdrawal(facilityId = facilityId)
+      insertNurseryWithdrawal(facilityId = facilityId)
       insertBatchWithdrawal(
           batchId = batchId1,
           germinatingQuantityWithdrawn = 512,
@@ -329,7 +329,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           readyQuantityWithdrawn = 16384,
       )
 
-      insertWithdrawal(facilityId = facilityId)
+      insertNurseryWithdrawal(facilityId = facilityId)
       insertBatchWithdrawal(
           batchId = batchId2,
           germinatingQuantityWithdrawn = 32768,
@@ -460,7 +460,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           )
 
       val nurseryTransferWithdrawalId =
-          insertWithdrawal(
+          insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.NurseryTransfer,
               destinationFacilityId = facilityId2,
@@ -479,7 +479,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       )
 
       val otherWithdrawalId =
-          insertWithdrawal(facilityId = facilityId, withdrawnDate = LocalDate.of(2022, 2, 2))
+          insertNurseryWithdrawal(facilityId = facilityId, withdrawnDate = LocalDate.of(2022, 2, 2))
 
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
@@ -487,7 +487,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       )
 
       val outplantWithdrawalId =
-          insertWithdrawal(
+          insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.OutPlant,
               withdrawnDate = LocalDate.of(2023, 3, 3))
@@ -521,7 +521,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       // Withdrawal for another organization shouldn't be visible.
       insertOrganization()
       insertFacility()
-      insertWithdrawal()
+      insertNurseryWithdrawal()
 
       val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawals)
       val fields =
@@ -612,10 +612,11 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     fun `undo relationships can be queried from both directions`() {
       insertBatch()
       val withdrawalId =
-          insertWithdrawal(facilityId = facilityId, withdrawnDate = LocalDate.of(2024, 1, 15))
+          insertNurseryWithdrawal(
+              facilityId = facilityId, withdrawnDate = LocalDate.of(2024, 1, 15))
       insertBatchWithdrawal(germinatingQuantityWithdrawn = 1)
       val undoWithdrawalId =
-          insertWithdrawal(
+          insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.Undo,
               undoesWithdrawalId = withdrawalId,

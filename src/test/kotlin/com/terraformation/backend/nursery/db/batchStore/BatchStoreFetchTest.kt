@@ -40,10 +40,10 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
     val subLocationId2 = insertSubLocation()
     insertBatchSubLocation()
 
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 1, notReadyQuantityWithdrawn = 2, readyQuantityWithdrawn = 4)
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 8,
         notReadyQuantityWithdrawn = 16,
@@ -88,10 +88,10 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
     every { user.canReadWithdrawal(any()) } returns true
 
     insertBatch()
-    val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Other)
+    val withdrawalId = insertNurseryWithdrawal(purpose = WithdrawalPurpose.Other)
     insertBatchWithdrawal(readyQuantityWithdrawn = 1)
     val undoWithdrawalId =
-        insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+        insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
     insertBatchWithdrawal(readyQuantityWithdrawn = -1)
 
     val withdrawal = store.fetchWithdrawalById(withdrawalId)

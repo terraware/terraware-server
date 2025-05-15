@@ -21,6 +21,8 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
+import com.terraformation.backend.seedbank.model.AccessionHistoryModel
+import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import io.mockk.every
@@ -550,5 +552,99 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           ),
       )
     }
+  }
+
+  @Test
+  fun `fetches history descriptions based on purpose and quantity`() {
+    val batchId = insertBatch()
+    val viabilityTestsRow1 =
+        ViabilityTestsRow(accessionId = accessionId, testType = ViabilityTestType.Lab)
+    val viabilityTestsRow2 = viabilityTestsRow1.copy()
+    viabilityTestsDao.insert(viabilityTestsRow1)
+    viabilityTestsDao.insert(viabilityTestsRow2)
+    val viabilityTestId1 = viabilityTestsRow1.id!!
+    val viabilityTestId2 = viabilityTestsRow2.id!!
+
+    // with quantity, no purpose
+    insertSeedbankWithdrawal(withdrawnQuantity = BigDecimal.ONE)
+
+    // with quantity, all 4 purposes
+    insertSeedbankWithdrawal(withdrawnQuantity = BigDecimal(2), purpose = WithdrawalPurpose.Other)
+    insertSeedbankWithdrawal(
+        withdrawnQuantity = BigDecimal(3),
+        purpose = WithdrawalPurpose.ViabilityTesting,
+        viabilityTestId = viabilityTestId1)
+    insertSeedbankWithdrawal(
+        withdrawnQuantity = BigDecimal(4), purpose = WithdrawalPurpose.OutPlanting)
+    insertSeedbankWithdrawal(withdrawnQuantity = BigDecimal(5), purpose = WithdrawalPurpose.Nursery)
+
+    // no quantity, all 4 purposes
+    insertSeedbankWithdrawal(purpose = WithdrawalPurpose.Other)
+    insertSeedbankWithdrawal(
+        purpose = WithdrawalPurpose.ViabilityTesting, viabilityTestId = viabilityTestId2)
+    insertSeedbankWithdrawal(purpose = WithdrawalPurpose.OutPlanting)
+    insertSeedbankWithdrawal(purpose = WithdrawalPurpose.Nursery)
+
+    // no quantity, no purpose
+    insertSeedbankWithdrawal()
+
+    val accessionHistoryDefaults =
+        AccessionHistoryModel(
+            batchId = batchId,
+            createdTime = Instant.EPOCH,
+            date = LocalDate.EPOCH,
+            description = "withdrew 1 gram",
+            fullName = user.fullName,
+            type = AccessionHistoryType.Withdrawal,
+            userId = user.userId,
+        )
+
+    val expected =
+        listOf(
+            accessionHistoryDefaults.copy(
+                description = "withdrew 1 gram",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew 2 grams for other",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew 3 grams for viability testing",
+                type = AccessionHistoryType.ViabilityTesting,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew 4 grams for outplanting",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew 5 grams for nursery",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds for other",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds for viability testing",
+                type = AccessionHistoryType.ViabilityTesting,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds for outplanting",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds for nursery",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+            accessionHistoryDefaults.copy(
+                description = "withdrew seeds",
+                type = AccessionHistoryType.Withdrawal,
+            ),
+        )
+
+    val actual = store.fetchHistory(accessionId)
+
+    assertEquals(expected, actual, "descriptions should be based on purpose and quantity")
   }
 }

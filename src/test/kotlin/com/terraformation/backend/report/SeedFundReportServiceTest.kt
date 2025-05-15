@@ -686,7 +686,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
           readyQuantity = 70,
           speciesId = speciesId,
       )
-      val withdrawalId = insertWithdrawal(facilityId = firstNursery)
+      val withdrawalId = insertNurseryWithdrawal(facilityId = firstNursery)
       val deliveryId =
           insertDelivery(plantingSiteId = firstPlantingSite, withdrawalId = withdrawalId)
       insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
@@ -1003,10 +1003,10 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
         speciesId = speciesId,
     )
 
-    insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(readyQuantityWithdrawn = 100, notReadyQuantityWithdrawn = 52)
 
-    insertWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
+    insertNurseryWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(readyQuantityWithdrawn = 20, notReadyQuantityWithdrawn = 30)
     insertDelivery(plantingSiteId = plantingSiteId)
     insertPlanting(plantingSiteId = plantingSiteId, speciesId = speciesId)

@@ -37,7 +37,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             totalLost = 500,
             totalLossCandidates = 600)
 
-    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
+    insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 10,
@@ -49,14 +49,14 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         notReadyQuantityWithdrawn = 14,
         readyQuantityWithdrawn = 15)
 
-    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
+    insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 16,
         notReadyQuantityWithdrawn = 17,
         readyQuantityWithdrawn = 18)
 
-    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 19,
@@ -68,7 +68,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         notReadyQuantityWithdrawn = 23,
         readyQuantityWithdrawn = 24)
 
-    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 25,
@@ -85,26 +85,26 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         totalGerminationCandidates = 800,
         totalLost = 900,
         totalLossCandidates = 1000)
-    insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
+    insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 28,
         notReadyQuantityWithdrawn = 29,
         readyQuantityWithdrawn = 30)
 
-    insertWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 31,
         notReadyQuantityWithdrawn = 32,
         readyQuantityWithdrawn = 33)
 
     // Withdrawal that is undone should not affect stats.
-    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 34,
         notReadyQuantityWithdrawn = 35,
         readyQuantityWithdrawn = 36)
-    insertWithdrawal(
+    insertNurseryWithdrawal(
         facilityId = facilityId,
         purpose = WithdrawalPurpose.Undo,
         undoesWithdrawalId = inserted.withdrawalId)

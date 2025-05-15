@@ -152,7 +152,7 @@ class ObservationTestHelper(
         plantingCompletedTime = subzoneCompletedTime,
         width = width,
     )
-    test.insertWithdrawal()
+    test.insertNurseryWithdrawal()
     test.insertDelivery()
     test.insertPlanting(createdTime = plantingCreatedTime)
 

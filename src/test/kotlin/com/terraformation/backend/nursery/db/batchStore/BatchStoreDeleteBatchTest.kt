@@ -44,11 +44,11 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
   @Test
   fun `only deletes withdrawals that did not reference other batches`() {
-    val singleBatchWithdrawlId = insertWithdrawal()
+    val singleBatchWithdrawlId = insertNurseryWithdrawal()
     val batchIdToDelete = insertBatch()
     insertBatchWithdrawal()
 
-    val multipleBatchWithdrawalId = insertWithdrawal()
+    val multipleBatchWithdrawalId = insertNurseryWithdrawal()
     insertBatchWithdrawal()
 
     val remainingBatchId = insertBatch()
@@ -86,7 +86,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     val destinationBatchId = insertBatch()
 
     insertBatch()
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertBatchWithdrawal(destinationBatchId = destinationBatchId)
 
     val expectedBatchWithdrawals =
@@ -125,7 +125,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             totalLost = 0,
             notReadyQuantity = 2,
             readyQuantity = 3)
-    insertWithdrawal(purpose = WithdrawalPurpose.Dead)
+    insertNurseryWithdrawal(purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 10,
         readyQuantityWithdrawn = 20,

@@ -181,7 +181,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     insertFacility(type = FacilityType.Nursery)
     insertBatch(BatchesRow(accessionId = initial.id!!))
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertBatchWithdrawal()
     insertPlantingSite()
     insertDelivery()
@@ -290,7 +290,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val seedBankFacilityId = inserted.facilityId
     val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
     insertBatch(BatchesRow(accessionId = initial.id!!, facilityId = nurseryFacilityId))
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     insertBatchWithdrawal()
     insertPlantingSite()
     insertDelivery()

@@ -42,7 +42,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   private val plantingSubzoneId by lazy { insertPlantingSubzone(plantingZoneId = plantingZoneId) }
   private val speciesId1 by lazy { insertSpecies() }
   private val speciesId2 by lazy { insertSpecies() }
-  private val withdrawalId by lazy { insertWithdrawal() }
+  private val withdrawalId by lazy { insertNurseryWithdrawal() }
 
   @BeforeEach
   fun setUp() {
@@ -290,7 +290,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if plantings are from a different delivery`() {
-      val otherWithdrawalId = insertWithdrawal()
+      val otherWithdrawalId = insertNurseryWithdrawal()
       val otherDeliveryId =
           store.createDelivery(
               otherWithdrawalId, plantingSiteId, plantingSubzoneId, mapOf(speciesId1 to 10))
@@ -364,7 +364,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       // Insert the original delivery and planting.
       assertNotNull(species1PlantingId)
 
-      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
       insertDelivery(plantingSiteId = plantingSiteId)
       insertPlanting(
           speciesId = speciesId1,
@@ -388,7 +388,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       // Insert the original delivery and planting.
       assertNotNull(species1PlantingId)
 
-      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
       insertDelivery(plantingSiteId = plantingSiteId)
       insertPlanting(
           speciesId = speciesId1,
@@ -512,7 +512,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingSubzonePopulation(otherSubzoneId, speciesId1, 3, 2)
 
       val undoWithdrawalId =
-          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+          insertNurseryWithdrawal(
+              purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
       val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
 
       val dummyPlantingId = PlantingId(1)
@@ -593,7 +594,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
 
       val undoWithdrawalId =
-          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+          insertNurseryWithdrawal(
+              purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
       val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
 
       val dummyPlantingId = PlantingId(1)
@@ -645,7 +647,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       clock.instant = clock.instant.plus(1, ChronoUnit.DAYS)
       val undoWithdrawalId =
-          insertWithdrawal(
+          insertNurseryWithdrawal(
               createdTime = clock.instant,
               purpose = WithdrawalPurpose.Undo,
               undoesWithdrawalId = withdrawalId)
@@ -663,7 +665,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if original delivery was already an undo`() {
-      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
       insertDelivery(plantingSiteId = plantingSiteId)
       insertPlanting(
           speciesId = speciesId1,
@@ -690,7 +692,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateDelivery(any()) } returns false
 
       insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
-      insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
 
       assertThrows<AccessDeniedException> {
         store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)

@@ -104,9 +104,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     insertFacility(type = FacilityType.Nursery)
 
-    insertWithdrawal()
+    insertNurseryWithdrawal()
     val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId)
-    insertWithdrawal()
+    insertNurseryWithdrawal()
 
     val plantingId1 =
         insertPlanting(
