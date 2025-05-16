@@ -82,7 +82,7 @@ data class ProjectAcceleratorDetailsPayload(
     val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
     val carbonCapacity: BigDecimal?,
-    val carbonCertifications: Set<CarbonCertification>,
+    val carbonCertifications: Set<CarbonCertification>?,
     val clickUpLink: URI?,
     val cohortId: CohortId?,
     val cohortName: String?,
