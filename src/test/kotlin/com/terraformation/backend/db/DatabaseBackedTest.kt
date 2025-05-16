@@ -4237,6 +4237,7 @@ abstract class DatabaseBackedTest {
               agroforestryLandUseModelHectare to VariableType.Number,
               annualCarbon to VariableType.Number,
               applicationRestorableLand to VariableType.Number,
+              carbonCertifications to VariableType.Select,
               carbonCapacity to VariableType.Number,
               clickUpLink to VariableType.Link,
               contactEmail to VariableType.Text,

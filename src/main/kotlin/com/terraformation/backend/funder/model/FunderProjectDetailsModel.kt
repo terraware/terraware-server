@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.model
 
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -11,6 +12,7 @@ import java.net.URI
 data class FunderProjectDetailsModel(
     val accumulationRate: BigDecimal? = null,
     val annualCarbon: BigDecimal? = null,
+    val carbonCertifications: Set<CarbonCertification> = emptySet(),
     val confirmedReforestableLand: BigDecimal? = null,
     val countryAlpha3: String? = null,
     val countryCode: String? = null,
@@ -37,6 +39,7 @@ data class FunderProjectDetailsModel(
       return FunderProjectDetailsModel(
           accumulationRate = details.accumulationRate,
           annualCarbon = details.annualCarbon,
+          carbonCertifications = details.carbonCertifications,
           confirmedReforestableLand = details.confirmedReforestableLand,
           countryAlpha3 = details.countryAlpha3,
           countryCode = details.countryCode,

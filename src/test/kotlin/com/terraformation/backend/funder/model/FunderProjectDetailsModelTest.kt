@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.model
 
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.accelerator.DealStage
@@ -23,6 +24,7 @@ class FunderProjectDetailsModelTest {
             annualCarbon = BigDecimal(7),
             applicationReforestableLand = BigDecimal(1),
             carbonCapacity = BigDecimal(8),
+            carbonCertifications = setOf(CarbonCertification.CcbVerraStandard),
             clickUpLink = URI("https://click.up"),
             confirmedReforestableLand = BigDecimal(2),
             countryCode = "US",
@@ -73,6 +75,7 @@ class FunderProjectDetailsModelTest {
         FunderProjectDetailsModel(
             accumulationRate = BigDecimal(20),
             annualCarbon = BigDecimal(7),
+            carbonCertifications = setOf(CarbonCertification.CcbVerraStandard),
             confirmedReforestableLand = BigDecimal(2),
             countryCode = "US",
             dealDescription = "description",

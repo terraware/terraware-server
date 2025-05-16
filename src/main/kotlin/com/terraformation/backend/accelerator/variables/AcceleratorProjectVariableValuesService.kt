@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.variables
 
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.accelerator.model.startingDigitRegex
@@ -43,6 +44,7 @@ class AcceleratorProjectVariableValuesService(
             StableIds.annualCarbon,
             StableIds.applicationRestorableLand,
             StableIds.carbonCapacity,
+            StableIds.carbonCertifications,
             StableIds.clickUpLink,
             StableIds.country,
             StableIds.dealDescription,
@@ -111,6 +113,10 @@ class AcceleratorProjectVariableValuesService(
     val applicationReforestableLand =
         getNumberValue(valuesByStableId, StableIds.applicationRestorableLand)
     val carbonCapacity = getNumberValue(valuesByStableId, StableIds.carbonCapacity)
+    val carbonCertifications =
+        getMultiSelectValue(variablesById, valuesByStableId, StableIds.carbonCertifications)
+            ?.mapNotNull { certification -> CarbonCertification.forDisplayName(certification) }
+            ?.toSet() ?: emptySet()
     val clickUpLink = getLinkValue(valuesByStableId, StableIds.clickUpLink)
     val confirmedReforestableLand = getNumberValue(valuesByStableId, StableIds.tfRestorableLand)
     val countryRow =
@@ -182,6 +188,7 @@ class AcceleratorProjectVariableValuesService(
         annualCarbon = annualCarbon,
         applicationReforestableLand = applicationReforestableLand,
         carbonCapacity = carbonCapacity,
+        carbonCertifications = carbonCertifications,
         clickUpLink = clickUpLink,
         confirmedReforestableLand = confirmedReforestableLand,
         countryAlpha3 = countryRow?.codeAlpha3,
