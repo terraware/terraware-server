@@ -104,7 +104,7 @@ dependencies {
   implementation("com.google.apis:google-api-services-drive:v3-rev20250506-2.0.0")
   implementation("com.opencsv:opencsv:5.11")
   implementation("com.pgvector:pgvector:0.1.6")
-  implementation("com.squarespace.cldr-engine:cldr-engine:1.10.2")
+  implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
   implementation("commons-codec:commons-codec:1.18.0")
   implementation("commons-validator:commons-validator:1.9.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.1")
