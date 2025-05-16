@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.variables
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.SystemUser
@@ -75,6 +76,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var mangrovesOptionId: VariableSelectOptionId
   private lateinit var nativeForestOptionId: VariableSelectOptionId
   private lateinit var sustainableTimberOptionId: VariableSelectOptionId
+  private lateinit var carbonCertificationOptionId: VariableSelectOptionId
 
   private lateinit var methodologyId: VariableSelectOptionId
 
@@ -105,6 +107,8 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     sustainableTimberOptionId =
         insertSelectOption(
             variableIdsByStableId[StableIds.landUseModelType]!!, "Sustainable Timber")
+    carbonCertificationOptionId =
+        insertSelectOption(variableIdsByStableId[StableIds.carbonCertifications]!!, "CCB Standard")
 
     methodologyId =
         insertSelectOption(variableIdsByStableId[StableIds.methodologyNumber]!!, "VM0047")
@@ -149,6 +153,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
           variableIdsByStableId[
               StableIds.landUseHectaresByLandUseModel[LandUseModelType.Mangroves]]!!,
           numberValue = BigDecimal(20002))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.carbonCertifications]!!,
+          optionIds = setOf(carbonCertificationOptionId))
 
       // Number value
       insertValue(
@@ -186,6 +193,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ProjectAcceleratorVariableValuesModel(
               projectId = inserted.projectId,
+              carbonCertifications = setOf(CarbonCertification.CcbVerraStandard),
               countryCode = "BR",
               countryAlpha3 = "BRA",
               dealDescription = "Deal description",
@@ -235,6 +243,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               applicationReforestableLand = BigDecimal(100),
               clickUpLink = URI("https://click.up"),
               carbonCapacity = BigDecimal(300),
+              carbonCertifications = setOf(CarbonCertification.CcbVerraStandard),
               confirmedReforestableLand = BigDecimal(75),
               countryCode = "BR",
               countryAlpha3 = "BRA",
@@ -279,6 +288,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     fun `can add, update and remove values`() {
       insertSelectValue(
           variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.carbonCertifications]!!,
+          optionIds = setOf(carbonCertificationOptionId))
 
       insertValue(
           variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
@@ -310,6 +322,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       service.writeValues(
           inserted.projectId,
           existing.copy(
+              carbonCertifications = emptySet(),
               countryCode = null,
               clickUpLink = null,
               gisReportsLink = URI("https://gis.reports/updated"),
@@ -329,6 +342,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           existing.copy(
+              carbonCertifications = emptySet(),
               countryCode = null,
               countryAlpha3 = null,
               clickUpLink = null,
