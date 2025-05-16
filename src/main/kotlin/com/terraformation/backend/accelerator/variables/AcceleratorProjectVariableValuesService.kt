@@ -285,6 +285,25 @@ class AcceleratorProjectVariableValuesService(
           ?.let { operations.add(it) }
     }
 
+    if (existing.carbonCertifications != model.carbonCertifications) {
+      val variable = getVariableByStableId(StableIds.carbonCertifications) as SelectVariable
+      val certificationsSet = model.carbonCertifications.map { it.displayName }.toSet()
+
+      val certificationsSelectValue =
+          certificationsSet
+              .mapNotNull { certification ->
+                variable.options.find { it.name == certification }?.name
+              }
+              .toSet()
+
+      updateSelectValueOperation(
+              projectId = projectId,
+              variable,
+              valuesByStableId[StableIds.carbonCertifications] as? ExistingSelectValue,
+              certificationsSelectValue)
+          ?.let { operations.add(it) }
+    }
+
     if (existing.clickUpLink != model.clickUpLink) {
       updateLinkValueOperation(
               projectId = projectId,

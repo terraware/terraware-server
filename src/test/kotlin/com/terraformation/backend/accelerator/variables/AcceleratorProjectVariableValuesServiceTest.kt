@@ -243,6 +243,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               applicationReforestableLand = BigDecimal(100),
               clickUpLink = URI("https://click.up"),
               carbonCapacity = BigDecimal(300),
+              carbonCertifications = setOf(CarbonCertification.CcbVerraStandard),
               confirmedReforestableLand = BigDecimal(75),
               countryCode = "BR",
               countryAlpha3 = "BRA",
@@ -287,6 +288,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     fun `can add, update and remove values`() {
       insertSelectValue(
           variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.carbonCertifications]!!,
+          optionIds = setOf(carbonCertificationOptionId))
 
       insertValue(
           variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
@@ -318,6 +322,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       service.writeValues(
           inserted.projectId,
           existing.copy(
+              carbonCertifications = emptySet(),
               countryCode = null,
               clickUpLink = null,
               gisReportsLink = URI("https://gis.reports/updated"),
@@ -337,6 +342,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           existing.copy(
+              carbonCertifications = emptySet(),
               countryCode = null,
               countryAlpha3 = null,
               clickUpLink = null,
