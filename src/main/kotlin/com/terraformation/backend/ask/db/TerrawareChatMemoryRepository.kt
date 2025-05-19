@@ -9,7 +9,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import java.util.UUID
 import org.jooq.DSLContext
-import org.springframework.ai.chat.memory.ChatMemory
+import org.springframework.ai.chat.memory.ChatMemoryRepository
 import org.springframework.ai.chat.messages.AssistantMessage
 import org.springframework.ai.chat.messages.Message
 import org.springframework.ai.chat.messages.MessageType
@@ -18,19 +18,19 @@ import org.springframework.ai.chat.messages.UserMessage
 
 /**
  * Stores the messages from chat conversations in the database. This is an implementation of the
- * Spring AI [ChatMemory] interface; the built-in implementations in Spring AI aren't suitable for
- * our environment.
+ * Spring AI [ChatMemoryRepository] interface; the built-in implementations in Spring AI aren't
+ * suitable for our environment.
  *
  * TODO: Prune old conversations. Currently the conversation history tables will grow without bound.
  */
 @Named
-class TerrawareChatMemory(
+class TerrawareChatMemoryRepository(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-) : ChatMemory {
+) : ChatMemoryRepository {
   private val log = perClassLogger()
 
-  override fun add(conversationId: String, messages: List<Message>) {
+  override fun saveAll(conversationId: String, messages: List<Message>) {
     dslContext.transaction { _ ->
       with(CHAT_MEMORY_CONVERSATIONS) {
         dslContext
@@ -72,7 +72,7 @@ class TerrawareChatMemory(
     }
   }
 
-  override fun get(conversationId: String, lastN: Int): List<Message> {
+  override fun findByConversationId(conversationId: String): List<Message> {
     return with(CHAT_MEMORY_MESSAGES) {
       dslContext
           .select(CONTENT, MESSAGE_TYPE_ID)
@@ -80,9 +80,8 @@ class TerrawareChatMemory(
           .where(CONVERSATION_ID.eq(UUID.fromString(conversationId)))
           .and(chatMemoryConversations.CREATED_BY.eq(currentUser().userId))
           .orderBy(ID.desc())
-          .limit(lastN)
           .fetch { record ->
-            val content = record[CONTENT]
+            val content = record[CONTENT]!!
             when (record[MESSAGE_TYPE_ID]!!) {
               ChatMemoryMessageType.Assistant -> AssistantMessage(content)
               ChatMemoryMessageType.System -> SystemMessage(content)
@@ -97,7 +96,7 @@ class TerrawareChatMemory(
     }
   }
 
-  override fun clear(conversationId: String) {
+  override fun deleteByConversationId(conversationId: String) {
     with(CHAT_MEMORY_CONVERSATIONS) {
       // Cascading delete will clean up the messages.
       dslContext
@@ -106,5 +105,13 @@ class TerrawareChatMemory(
           .and(CREATED_BY.eq(currentUser().userId))
           .execute()
     }
+  }
+
+  override fun findConversationIds(): List<String> {
+    return dslContext
+        .select(CHAT_MEMORY_CONVERSATIONS.ID)
+        .from(CHAT_MEMORY_CONVERSATIONS)
+        .fetch(CHAT_MEMORY_CONVERSATIONS.ID)
+        .map { "$it" }
   }
 }
