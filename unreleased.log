@@ -1,3 +1,8 @@
+f2cb1e6d3a9 Update dependency com.google.apis:google-api-services-drive to v3-rev20250511-2.0.0 (#3118)
+d432422febc Update dependency types-requests to v2.32.0.20250515 (#3117)
+e1c1b3cdbab Update dependency io.swagger.core.v3:swagger-annotations to v2.2.32 (#3116)
+3421b60d695 Update geoToolsVersion to v33.1 (#3114)
+9c97e2fa04c Update dependency com.squarespace.cldr-engine:cldr-engine to v1.12.0 (#3113)
 21449f24aee Update dependency com.google.auth:google-auth-library-oauth2-http to v1.35.0 (#3111)
 602fdcc462e SW-6924 Show stable IDs, subzone edits in dry run (#3109)
 cd956fd77df SW-6919 Fix withdrawn messages typo (#3110)
