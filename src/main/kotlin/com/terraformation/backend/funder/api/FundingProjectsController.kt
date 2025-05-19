@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.FunderEndpoint
@@ -40,6 +41,7 @@ data class GetFundingProjectResponsePayload(
 data class FunderProjectDetailsPayload(
     val accumulationRate: BigDecimal?,
     val annualCarbon: BigDecimal?,
+    val carbonCertifications: Set<CarbonCertification> = emptySet(),
     val confirmedReforestableLand: BigDecimal?,
     val countryAlpha3: String?,
     val countryCode: String?,
@@ -66,6 +68,7 @@ data class FunderProjectDetailsPayload(
   ) : this(
       accumulationRate = model.accumulationRate,
       annualCarbon = model.annualCarbon,
+      carbonCertifications = model.carbonCertifications,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryAlpha3 = model.countryAlpha3,
       countryCode = model.countryCode,
