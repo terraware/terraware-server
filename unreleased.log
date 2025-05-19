@@ -1,3 +1,4 @@
+908e7dafa70 Update Spring dependencies (#3085)
 2c7bb34f27c Upgrade to Spring AI 1.0.0-M1 (#3119)
 8addbd7709e Update database dependencies to v11.8.2 (#3115)
 f2cb1e6d3a9 Update dependency com.google.apis:google-api-services-drive to v3-rev20250511-2.0.0 (#3118)
