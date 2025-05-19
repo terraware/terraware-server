@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -81,6 +82,7 @@ data class ProjectAcceleratorDetailsPayload(
     val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
     val carbonCapacity: BigDecimal?,
+    val carbonCertifications: Set<CarbonCertification>?,
     val clickUpLink: URI?,
     val cohortId: CohortId?,
     val cohortName: String?,
@@ -133,6 +135,7 @@ data class ProjectAcceleratorDetailsPayload(
       annualCarbon = model.annualCarbon,
       applicationReforestableLand = model.applicationReforestableLand,
       carbonCapacity = model.carbonCapacity,
+      carbonCertifications = model.carbonCertifications,
       clickUpLink = model.clickUpLink,
       cohortId = model.cohortId,
       cohortName = model.cohortName,
@@ -193,6 +196,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
     val carbonCapacity: BigDecimal?,
+    val carbonCertifications: Set<CarbonCertification>? = emptySet(),
     val clickUpLink: URI? = null,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
@@ -242,6 +246,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           annualCarbon = annualCarbon,
           applicationReforestableLand = applicationReforestableLand,
           carbonCapacity = carbonCapacity,
+          carbonCertifications = carbonCertifications ?: emptySet(),
           clickUpLink = clickUpLink,
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,

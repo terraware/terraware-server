@@ -47,6 +47,7 @@ object StableIds {
   val clickUpLink = StableId("549")
   val slackLink = StableId("550")
   val projectHighlightPhoto = StableId("551")
+  val carbonCertifications = StableId("552")
 
   val landUseHectaresByLandUseModel =
       mapOf(
