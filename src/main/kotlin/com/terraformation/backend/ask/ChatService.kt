@@ -1,18 +1,20 @@
 package com.terraformation.backend.ask
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
-import com.terraformation.backend.ask.db.TerrawareChatMemory
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import jakarta.inject.Named
 import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor
-import org.springframework.ai.vectorstore.SearchRequest
+import org.springframework.ai.chat.memory.ChatMemory
+import org.springframework.ai.chat.prompt.PromptTemplate
+import org.springframework.ai.document.Document
+import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor
+import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder
 import org.springframework.web.client.ResourceAccessException
@@ -21,9 +23,8 @@ import org.springframework.web.client.ResourceAccessException
 @Named
 class ChatService(
     chatClientBuilder: ChatClient.Builder,
-    chatMemory: TerrawareChatMemory,
+    chatMemory: ChatMemory,
     private val countriesDao: CountriesDao,
-    private val injectMetadataAdvisor: InjectMetadataAdvisor,
     private val vectorStore: VectorStore,
     private val projectStore: ProjectStore,
     private val organizationStore: OrganizationStore,
@@ -43,19 +44,22 @@ class ChatService(
    */
   private val basePromptTemplate: String =
       """
-      
       Context information is below, surrounded by ---------------------
 
       ---------------------
       {project_context}
       
-      {question_answer_context}
+      {context}
       ---------------------
 
       Given the context and provided history information, reply to the user comment. If the answer
       is not in the context, inform the user that you can't answer the question. You may use general
       knowledge of geography and science to interpret the context. If there are multiple entries in
       the context with similar information, prefer the newer ones if you can determine their dates.
+      
+      Query: {query}
+      
+      Answer:
       """
           .trimIndent()
 
@@ -74,12 +78,10 @@ class ChatService(
    */
   private val loggerAdvisor =
       SimpleLoggerAdvisor(
-          { request -> request.toPrompt().contents },
-          { response -> response.result.output.text },
-          100)
+          { request -> request.prompt.contents }, { response -> response.result.output.text }, 100)
 
   private val chatClient: ChatClient = chatClientBuilder.build()
-  private val chatMemoryAdvisor = MessageChatMemoryAdvisor(chatMemory)
+  private val chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build()
 
   /**
    * Asks an LLM a question and returns the answer. Automatically includes contextual information in
@@ -99,48 +101,74 @@ class ChatService(
       conversationId: String? = null,
       showVariables: Boolean = false
   ): String? {
-    val template =
-        listOfNotNull(
-                basePromptTemplate,
-                if (showVariables) includeVariablesAndDocumentsPrompt else null,
-            )
-            .joinToString("\n")
-
-    val questionAnswerAdvisor =
-        QuestionAnswerAdvisor(
-            vectorStore,
-            SearchRequest.builder()
-                .apply {
-                  if (projectId != null) {
-                    filterExpression(FilterExpressionBuilder().eq("projectId", projectId).build())
-                  }
-                }
-                .topK(contextItemsToInclude)
-                .build(),
-            template)
-
     return try {
+      val template =
+          PromptTemplate.builder()
+              .template(
+                  listOfNotNull(
+                          basePromptTemplate,
+                          if (showVariables) includeVariablesAndDocumentsPrompt else null,
+                      )
+                      .joinToString("\n"))
+              .variables(mapOf("project_context" to renderProjectContext(projectId)))
+              .build()
+
+      val ragAdvisor =
+          RetrievalAugmentationAdvisor.builder()
+              .documentRetriever(
+                  VectorStoreDocumentRetriever.builder()
+                      .apply {
+                        if (projectId != null) {
+                          filterExpression(
+                              FilterExpressionBuilder().eq("projectId", projectId).build())
+                        }
+                      }
+                      .topK(contextItemsToInclude)
+                      .vectorStore(vectorStore)
+                      .build())
+              .queryAugmenter(
+                  ContextualQueryAugmenter.builder()
+                      .documentFormatter(this::formatDocuments)
+                      .promptTemplate(template)
+                      .build())
+              .build()
+
       chatClient
           .prompt()
           .user(question)
-          .user { promptSpec ->
-            promptSpec.param("project_context", renderProjectContext(projectId))
-          }
           .advisors(
-              questionAnswerAdvisor,
-              injectMetadataAdvisor,
+              ragAdvisor,
               chatMemoryAdvisor,
               loggerAdvisor,
           )
           .advisors { a ->
             if (conversationId != null) {
-              a.param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
+              a.param(ChatMemory.CONVERSATION_ID, conversationId)
             }
           }
           .call()
           .content()
     } catch (e: ResourceAccessException) {
       throw ChatRequestFailedException(e)
+    }
+  }
+
+  private val ignoredKeys =
+      setOf(
+          "distance",
+          "organizationName",
+          "projectName",
+      )
+
+  private fun formatDocuments(documents: List<Document>): String {
+    return documents.joinToString("\n\n---\n") { document ->
+      val metadataText =
+          document.metadata
+              .filterKeys { !it.endsWith("Id") && it !in ignoredKeys }
+              .entries
+              .joinToString("\n") { (key, value) -> "$key: $value" }
+
+      metadataText + "\n\n" + document.text
     }
   }
 
