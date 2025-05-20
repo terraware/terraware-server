@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.util.calculateAreaHectares
@@ -28,6 +29,10 @@ data class PlantingZoneModel<
     val boundaryModifiedTime: TIMESTAMP,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val id: PZID,
+    /** The time of the latest observation, if the planting zone has completed observations */
+    val latestObservationCompletedTime: Instant? = null,
+    /** The ID of the latest observation, if the planting zone has completed observations */
+    val latestObservationId: ObservationId? = null,
     val name: String,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,

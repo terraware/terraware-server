@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
@@ -15,6 +16,10 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
     val boundary: MultiPolygon,
     val id: PSZID,
     val fullName: String,
+    /** The time of the latest observation, if the planting subzone has completed observations */
+    val latestObservationCompletedTime: Instant? = null,
+    /** The ID of the latest observation, if the planting subzone has completed observations */
+    val latestObservationId: ObservationId? = null,
     val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
     val name: String,
     val observedTime: Instant? = null,
