@@ -179,6 +179,258 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
+    fun `includes latest observation details`() {
+      val plantingSiteId =
+          insertPlantingSite(
+              boundary = multiPolygon(3.0),
+              countryCode = "US",
+              timeZone = timeZone,
+          )
+      val boundaryModifiedTime = Instant.ofEpochSecond(5001)
+      val plantingZoneId1 =
+          insertPlantingZone(
+              boundary = multiPolygon(2.0),
+              boundaryModifiedTime = boundaryModifiedTime,
+              targetPlantingDensity = BigDecimal.ONE)
+      val plantingSubzoneId11 = insertPlantingSubzone(boundary = multiPolygon(1.0))
+      val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
+      val monitoringPlotId112 = insertMonitoringPlot(boundary = polygon(0.1))
+
+      val plantingSubzoneId12 = insertPlantingSubzone(boundary = multiPolygon(1.0))
+      val monitoringPlotId121 = insertMonitoringPlot(boundary = polygon(0.1))
+      val monitoringPlotId122 = insertMonitoringPlot(boundary = polygon(0.1))
+
+      val plantingZoneId2 =
+          insertPlantingZone(
+              boundary = multiPolygon(2.0),
+              boundaryModifiedTime = boundaryModifiedTime,
+              targetPlantingDensity = BigDecimal.ONE)
+      val plantingSubzoneId2 =
+          insertPlantingSubzone(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
+      val monitoringPlotId2 = insertMonitoringPlot(boundary = polygon(0.1))
+
+      val plotHistoryIds =
+          monitoringPlotHistoriesDao.findAll().associate { it.monitoringPlotId to it.id }
+
+      val observationId1 =
+          insertObservation(
+              completedTime = Instant.ofEpochSecond(1000),
+          )
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.ofEpochSecond(999),
+          completedBy = user.userId,
+          completedTime = Instant.ofEpochSecond(1000),
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId111,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId111]!!,
+      )
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.ofEpochSecond(999),
+          completedBy = user.userId,
+          completedTime = Instant.ofEpochSecond(1000),
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId121,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId121]!!,
+      )
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.ofEpochSecond(999),
+          completedBy = user.userId,
+          completedTime = Instant.ofEpochSecond(1000),
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId122,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId122]!!,
+      )
+
+      val observationId2 =
+          insertObservation(
+              completedTime = Instant.ofEpochSecond(2000),
+          )
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.ofEpochSecond(1999),
+          completedBy = user.userId,
+          completedTime = Instant.ofEpochSecond(2000),
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId122,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId122]!!,
+      )
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.ofEpochSecond(1999),
+          completedBy = user.userId,
+          completedTime = Instant.ofEpochSecond(2000),
+          isPermanent = true,
+          monitoringPlotId = monitoringPlotId2,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId2]!!,
+      )
+
+      /* (x) - for latest (o) for observed but not the latest.
+
+        Observations        | 1 | 2 |
+        --------------------|---|---|
+        Planting Site       | o | x |
+        | - Zone 1          | o | x |
+        | - - Subzone 1-1   | x |   |
+        | - - - Plot 1-1-1  | x |   |
+        | - - - Plot 1-1-2  |   |   |
+        | - - Subzone 1-2   | o | x |
+        | - - - Plot 1-2-1  | x |   |
+        | - - - Plot 1-2-2  | o | x |
+        | - Zone 2          |   | x |
+        | - - Subzone 1-2   |   | x |
+        | - - - Plot 1-2-1  |   | x |
+      */
+
+      val expected =
+          ExistingPlantingSiteModel(
+              boundary = multiPolygon(3),
+              countryCode = "US",
+              description = null,
+              exclusion = null,
+              gridOrigin = null,
+              id = plantingSiteId,
+              latestObservationCompletedTime = Instant.ofEpochSecond(2000),
+              latestObservationId = observationId2,
+              name = "Site 1",
+              organizationId = organizationId,
+              plantingSeasons = emptyList(),
+              plantingZones =
+                  listOf(
+                      ExistingPlantingZoneModel(
+                          areaHa = BigDecimal.TEN,
+                          boundary = multiPolygon(2.0),
+                          boundaryModifiedTime = boundaryModifiedTime,
+                          id = plantingZoneId1,
+                          latestObservationCompletedTime = Instant.ofEpochSecond(2000),
+                          latestObservationId = observationId2,
+                          name = "Z1",
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSubzoneModel(
+                                      areaHa = BigDecimal.ONE,
+                                      boundary = multiPolygon(1.0),
+                                      id = plantingSubzoneId11,
+                                      latestObservationCompletedTime = Instant.ofEpochSecond(1000),
+                                      latestObservationId = observationId1,
+                                      fullName = "Z1-1",
+                                      name = "1",
+                                      plantingCompletedTime = null,
+                                      stableId = StableId("Z1-1"),
+                                      monitoringPlots =
+                                          listOf(
+                                              MonitoringPlotModel(
+                                                  boundary = polygon(0.1),
+                                                  elevationMeters = null,
+                                                  id = monitoringPlotId111,
+                                                  isAdHoc = false,
+                                                  isAvailable = true,
+                                                  latestObservationCompletedTime =
+                                                      Instant.ofEpochSecond(1000),
+                                                  latestObservationId = observationId1,
+                                                  plotNumber = 1,
+                                                  sizeMeters = 30),
+                                              MonitoringPlotModel(
+                                                  boundary = polygon(0.1),
+                                                  elevationMeters = null,
+                                                  id = monitoringPlotId112,
+                                                  isAdHoc = false,
+                                                  isAvailable = true,
+                                                  latestObservationCompletedTime = null,
+                                                  latestObservationId = null,
+                                                  plotNumber = 2,
+                                                  sizeMeters = 30),
+                                          ),
+                                  ),
+                                  PlantingSubzoneModel(
+                                      areaHa = BigDecimal.ONE,
+                                      boundary = multiPolygon(1.0),
+                                      id = plantingSubzoneId12,
+                                      latestObservationCompletedTime = Instant.ofEpochSecond(2000),
+                                      latestObservationId = observationId2,
+                                      fullName = "Z1-2",
+                                      name = "2",
+                                      plantingCompletedTime = null,
+                                      stableId = StableId("Z1-2"),
+                                      monitoringPlots =
+                                          listOf(
+                                              MonitoringPlotModel(
+                                                  boundary = polygon(0.1),
+                                                  elevationMeters = null,
+                                                  id = monitoringPlotId121,
+                                                  isAdHoc = false,
+                                                  isAvailable = true,
+                                                  latestObservationCompletedTime =
+                                                      Instant.ofEpochSecond(1000),
+                                                  latestObservationId = observationId1,
+                                                  plotNumber = 3,
+                                                  sizeMeters = 30),
+                                              MonitoringPlotModel(
+                                                  boundary = polygon(0.1),
+                                                  elevationMeters = null,
+                                                  id = monitoringPlotId122,
+                                                  isAdHoc = false,
+                                                  isAvailable = true,
+                                                  latestObservationCompletedTime =
+                                                      Instant.ofEpochSecond(2000),
+                                                  latestObservationId = observationId2,
+                                                  plotNumber = 4,
+                                                  sizeMeters = 30),
+                                          ),
+                                  ),
+                              ),
+                          stableId = StableId("Z1"),
+                          targetPlantingDensity = BigDecimal.ONE,
+                      ),
+                      ExistingPlantingZoneModel(
+                          areaHa = BigDecimal.TEN,
+                          boundary = multiPolygon(2.0),
+                          boundaryModifiedTime = boundaryModifiedTime,
+                          id = plantingZoneId2,
+                          latestObservationCompletedTime = Instant.ofEpochSecond(2000),
+                          latestObservationId = observationId2,
+                          name = "Z2",
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSubzoneModel(
+                                      areaHa = BigDecimal.ONE,
+                                      boundary = multiPolygon(1.0),
+                                      id = plantingSubzoneId2,
+                                      latestObservationCompletedTime = Instant.ofEpochSecond(2000),
+                                      latestObservationId = observationId2,
+                                      fullName = "Z2-1",
+                                      name = "1",
+                                      plantingCompletedTime = null,
+                                      stableId = StableId("Z2-1"),
+                                      monitoringPlots =
+                                          listOf(
+                                              MonitoringPlotModel(
+                                                  boundary = polygon(0.1),
+                                                  elevationMeters = null,
+                                                  id = monitoringPlotId2,
+                                                  isAdHoc = false,
+                                                  isAvailable = true,
+                                                  latestObservationCompletedTime =
+                                                      Instant.ofEpochSecond(2000),
+                                                  latestObservationId = observationId2,
+                                                  plotNumber = 5,
+                                                  sizeMeters = 30),
+                                          ),
+                                  ),
+                              ),
+                          stableId = StableId("Z2"),
+                          targetPlantingDensity = BigDecimal.ONE,
+                      ),
+                  ),
+              timeZone = timeZone,
+          )
+
+      assertEquals(expected, store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot))
+    }
+
+    @Test
     fun `transforms coordinates to SRID 4326`() {
       val crsFactory = CRS.getAuthorityFactory(true)
       val crs3857 = crsFactory.createCoordinateReferenceSystem("EPSG:3857")
