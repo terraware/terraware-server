@@ -20,6 +20,8 @@ import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -37,11 +39,13 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
@@ -208,12 +212,35 @@ class PlantingSiteStore(
           null
         }
 
+    val observationPlotCondition =
+        OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
+            DSL.select(MONITORING_PLOTS.ID)
+                .from(MONITORING_PLOTS)
+                .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)))
+    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
+    val latestObservationTimeField =
+        latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
+
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField, exteriorPlotsField)
+        .select(
+            PLANTING_SITES.asterisk(),
+            plantingSeasonsMultiset,
+            zonesField,
+            exteriorPlotsField,
+            latestObservationIdField,
+            latestObservationTimeField)
         .from(PLANTING_SITES)
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
-        .fetch { PlantingSiteModel.of(it, plantingSeasonsMultiset, zonesField, exteriorPlotsField) }
+        .fetch {
+          PlantingSiteModel.of(
+              it,
+              plantingSeasonsMultiset,
+              zonesField,
+              exteriorPlotsField,
+              latestObservationIdField,
+              latestObservationTimeField)
+        }
   }
 
   private fun fetchSiteHistoriesByCondition(
@@ -1945,34 +1972,62 @@ class PlantingSiteStore(
             }
           }
 
-  private fun monitoringPlotsMultiset(condition: Condition) =
-      DSL.multiset(
-              DSL.select(
-                      MONITORING_PLOTS.ELEVATION_METERS,
-                      MONITORING_PLOTS.ID,
-                      MONITORING_PLOTS.IS_AD_HOC,
-                      MONITORING_PLOTS.IS_AVAILABLE,
-                      MONITORING_PLOTS.PERMANENT_INDEX,
-                      MONITORING_PLOTS.PLOT_NUMBER,
-                      MONITORING_PLOTS.SIZE_METERS,
-                      monitoringPlotBoundaryField)
-                  .from(MONITORING_PLOTS)
-                  .where(condition)
-                  .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
-          .convertFrom { result ->
-            result.map { record ->
-              MonitoringPlotModel(
-                  boundary = record[monitoringPlotBoundaryField]!! as Polygon,
-                  elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
-                  id = record[MONITORING_PLOTS.ID]!!,
-                  isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
-                  isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-                  permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
-                  plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
-                  sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
-              )
-            }
+  private fun <T> latestObservationField(
+      observationsTableField: TableField<ObservationsRecord, T>,
+      observationPlotCondition: Condition,
+  ): Field<T?> =
+      DSL.field(
+          DSL.select(observationsTableField)
+              .from(OBSERVATIONS)
+              .join(OBSERVATION_PLOTS)
+              .on(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              .where(OBSERVATIONS.IS_AD_HOC.isFalse)
+              .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+              .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
+              .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+              .and(observationPlotCondition)
+              .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
+              .limit(1))
+
+  private fun monitoringPlotsMultiset(condition: Condition): Field<List<MonitoringPlotModel>> {
+    val observationPlotCondition = OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
+    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
+    val latestObservationTimeField =
+        latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
+
+    return DSL.multiset(
+            DSL.select(
+                    MONITORING_PLOTS.ELEVATION_METERS,
+                    MONITORING_PLOTS.ID,
+                    MONITORING_PLOTS.IS_AD_HOC,
+                    MONITORING_PLOTS.IS_AVAILABLE,
+                    MONITORING_PLOTS.PERMANENT_INDEX,
+                    MONITORING_PLOTS.PLOT_NUMBER,
+                    MONITORING_PLOTS.SIZE_METERS,
+                    monitoringPlotBoundaryField,
+                    latestObservationIdField,
+                    latestObservationTimeField,
+                )
+                .from(MONITORING_PLOTS)
+                .where(condition)
+                .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
+        .convertFrom { result ->
+          result.map { record ->
+            MonitoringPlotModel(
+                boundary = record[monitoringPlotBoundaryField]!! as Polygon,
+                elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
+                id = record[MONITORING_PLOTS.ID]!!,
+                isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
+                isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
+                latestObservationCompletedTime = record[latestObservationTimeField],
+                latestObservationId = record[latestObservationIdField],
+                permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
+                plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
+                sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
+            )
           }
+        }
+  }
 
   private val monitoringPlotHistoriesMultiset =
       DSL.multiset(
@@ -2015,6 +2070,16 @@ class PlantingSiteStore(
                 ))
         else null
 
+    val observationPlotCondition =
+        OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
+            DSL.select(MONITORING_PLOTS.ID)
+                .from(MONITORING_PLOTS)
+                .where(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
+
+    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
+    val latestObservationTimeField =
+        latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
+
     return DSL.multiset(
             DSL.select(
                     PLANTING_SUBZONES.AREA_HA,
@@ -2025,6 +2090,8 @@ class PlantingSiteStore(
                     PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                     PLANTING_SUBZONES.STABLE_ID,
                     plantingSubzoneBoundaryField,
+                    latestObservationIdField,
+                    latestObservationTimeField,
                     plotsField)
                 .from(PLANTING_SUBZONES)
                 .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
@@ -2037,6 +2104,8 @@ class PlantingSiteStore(
                 id = record[PLANTING_SUBZONES.ID]!!,
                 fullName = record[PLANTING_SUBZONES.FULL_NAME]!!,
                 monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
+                latestObservationCompletedTime = record[latestObservationTimeField],
+                latestObservationId = record[latestObservationIdField],
                 name = record[PLANTING_SUBZONES.NAME]!!,
                 observedTime = record[PLANTING_SUBZONES.OBSERVED_TIME],
                 plantingCompletedTime = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
@@ -2091,6 +2160,17 @@ class PlantingSiteStore(
           null
         }
 
+    val observationPlotCondition =
+        OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
+            DSL.select(MONITORING_PLOTS.ID)
+                .from(MONITORING_PLOTS)
+                .join(PLANTING_SUBZONES)
+                .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+                .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)))
+    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
+    val latestObservationTimeField =
+        latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
+
     return DSL.multiset(
             DSL.select(
                     PLANTING_ZONES.AREA_HA,
@@ -2105,6 +2185,8 @@ class PlantingSiteStore(
                     PLANTING_ZONES.TARGET_PLANTING_DENSITY,
                     PLANTING_ZONES.VARIANCE,
                     plantingZonesBoundaryField,
+                    latestObservationIdField,
+                    latestObservationTimeField,
                     subzonesField)
                 .from(PLANTING_ZONES)
                 .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
@@ -2112,19 +2194,21 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             ExistingPlantingZoneModel(
-                record[PLANTING_ZONES.AREA_HA]!!,
-                record[plantingZonesBoundaryField]!! as MultiPolygon,
-                record[PLANTING_ZONES.BOUNDARY_MODIFIED_TIME]!!,
-                record[PLANTING_ZONES.ERROR_MARGIN]!!,
-                record[PLANTING_ZONES.ID]!!,
-                record[PLANTING_ZONES.NAME]!!,
-                record[PLANTING_ZONES.NUM_PERMANENT_PLOTS]!!,
-                record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
-                subzonesField?.let { record[it] } ?: emptyList(),
-                record[PLANTING_ZONES.STABLE_ID]!!,
-                record[PLANTING_ZONES.STUDENTS_T]!!,
-                record[PLANTING_ZONES.TARGET_PLANTING_DENSITY]!!,
-                record[PLANTING_ZONES.VARIANCE]!!,
+                areaHa = record[PLANTING_ZONES.AREA_HA]!!,
+                boundary = record[plantingZonesBoundaryField]!! as MultiPolygon,
+                boundaryModifiedTime = record[PLANTING_ZONES.BOUNDARY_MODIFIED_TIME]!!,
+                errorMargin = record[PLANTING_ZONES.ERROR_MARGIN]!!,
+                id = record[PLANTING_ZONES.ID]!!,
+                latestObservationCompletedTime = record[latestObservationTimeField],
+                latestObservationId = record[latestObservationIdField],
+                name = record[PLANTING_ZONES.NAME]!!,
+                numPermanentPlots = record[PLANTING_ZONES.NUM_PERMANENT_PLOTS]!!,
+                numTemporaryPlots = record[PLANTING_ZONES.NUM_TEMPORARY_PLOTS]!!,
+                plantingSubzones = subzonesField?.let { record[it] } ?: emptyList(),
+                stableId = record[PLANTING_ZONES.STABLE_ID]!!,
+                studentsT = record[PLANTING_ZONES.STUDENTS_T]!!,
+                targetPlantingDensity = record[PLANTING_ZONES.TARGET_PLANTING_DENSITY]!!,
+                variance = record[PLANTING_ZONES.VARIANCE]!!,
             )
           }
         }

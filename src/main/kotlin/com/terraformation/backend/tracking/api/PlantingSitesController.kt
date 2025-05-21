@@ -9,6 +9,7 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -202,6 +203,8 @@ data class PlantingSubzonePayload(
     val boundary: MultiPolygon,
     val fullName: String,
     val id: PlantingSubzoneId,
+    val latestObservationCompletedTime: Instant?,
+    val latestObservationId: ObservationId?,
     val name: String,
     @Schema(
         description =
@@ -218,6 +221,8 @@ data class PlantingSubzonePayload(
       boundary = model.boundary,
       fullName = model.fullName,
       id = model.id,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
       name = model.name,
       observedTime = model.observedTime,
       plantingCompleted = model.plantingCompletedTime != null,
@@ -235,7 +240,11 @@ data class PlantingZonePayload(
                 "attributes of the planting zone do not cause this timestamp to change.")
     val boundaryModifiedTime: Instant,
     val id: PlantingZoneId,
+    val latestObservationCompletedTime: Instant?,
+    val latestObservationId: ObservationId?,
     val name: String,
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
     val plantingSubzones: List<PlantingSubzonePayload>,
     val targetPlantingDensity: BigDecimal,
 ) {
@@ -246,7 +255,11 @@ data class PlantingZonePayload(
       model.boundary,
       model.boundaryModifiedTime,
       model.id,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
       model.name,
+      model.numPermanentPlots,
+      model.numTemporaryPlots,
       model.plantingSubzones.map { PlantingSubzonePayload(it) },
       model.targetPlantingDensity,
   )
@@ -277,6 +290,8 @@ data class PlantingSitePayload(
     val description: String?,
     val exclusion: MultiPolygon?,
     val id: PlantingSiteId,
+    val latestObservationCompletedTime: Instant?,
+    val latestObservationId: ObservationId?,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<PlantingSeasonPayload>,
@@ -293,6 +308,8 @@ data class PlantingSitePayload(
       description = model.description,
       exclusion = model.exclusion,
       id = model.id,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
       name = model.name,
       organizationId = model.organizationId,
       plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },

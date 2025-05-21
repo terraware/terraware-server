@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -46,6 +47,10 @@ data class PlantingSiteModel<
      */
     val historyId: PlantingSiteHistoryId? = null,
     val id: PSID,
+    /** The time of the latest observation, if the planting site has completed observations */
+    val latestObservationCompletedTime: Instant? = null,
+    /** The ID of the latest observation, if the planting site has completed observations */
+    val latestObservationId: ObservationId? = null,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
@@ -178,6 +183,8 @@ data class PlantingSiteModel<
         plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
         plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null,
         exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>? = null,
+        latestObservationIdField: Field<ObservationId?>? = null,
+        latestObservationTimeField: Field<Instant?>? = null,
     ) =
         ExistingPlantingSiteModel(
             areaHa = record[PLANTING_SITES.AREA_HA],
@@ -187,6 +194,8 @@ data class PlantingSiteModel<
             exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
             exteriorPlots = exteriorPlotsMultiset?.let { record[it] } ?: emptyList(),
             gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
+            latestObservationCompletedTime = latestObservationTimeField?.let { record[it] },
+            latestObservationId = latestObservationIdField?.let { record[it] },
             id = record[PLANTING_SITES.ID]!!,
             name = record[PLANTING_SITES.NAME]!!,
             organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
