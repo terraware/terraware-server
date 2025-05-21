@@ -33,6 +33,7 @@ data class PlantingSiteModel<
     PSZID : PlantingSubzoneId?,
     TIMESTAMP : Instant?,
 >(
+    val adHocPlots: List<MonitoringPlotModel> = emptyList(),
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
     val countryCode: String? = null,
@@ -182,11 +183,13 @@ data class PlantingSiteModel<
         record: Record,
         plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
         plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null,
+        adHocPlotsField: Field<List<MonitoringPlotModel>>? = null,
         exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>? = null,
         latestObservationIdField: Field<ObservationId?>? = null,
         latestObservationTimeField: Field<Instant?>? = null,
     ) =
         ExistingPlantingSiteModel(
+            adHocPlots = adHocPlotsField?.let { record[it] } ?: emptyList(),
             areaHa = record[PLANTING_SITES.AREA_HA],
             boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
             countryCode = record[PLANTING_SITES.COUNTRY_CODE],

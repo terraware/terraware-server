@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -67,17 +68,26 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
     val monitoringPlotBoundary2 = polygon(25)
 
     val plantingSiteId =
-        insertPlantingSite(boundary = siteBoundary1, gridOrigin = gridOrigin, name = "Site 1")
+        insertPlantingSite(
+            areaHa = BigDecimal(100),
+            boundary = siteBoundary1,
+            gridOrigin = gridOrigin,
+            name = "Site 1")
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
-    val plantingZoneId1 = insertPlantingZone(boundary = zoneBoundary1, name = "Zone 1")
+    val plantingZoneId1 =
+        insertPlantingZone(areaHa = BigDecimal(75), boundary = zoneBoundary1, name = "Zone 1")
     val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
-    val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzoneBoundary1, name = "Subzone 1")
+    val plantingSubzoneId1 =
+        insertPlantingSubzone(
+            areaHa = BigDecimal(50), boundary = subzoneBoundary1, name = "Subzone 1")
     val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
     // A subzone that was deleted after a monitoring plot was added to it.
-    val subzoneId2 = insertPlantingSubzone(boundary = subzoneBoundary2, name = "Subzone 2")
+    val subzoneId2 =
+        insertPlantingSubzone(
+            areaHa = BigDecimal(25), boundary = subzoneBoundary2, name = "Subzone 2")
     val subzoneHistoryId2 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId2 = insertMonitoringPlot(boundary = monitoringPlotBoundary2)
     val monitoringPlotHistoryId2 = inserted.monitoringPlotHistoryId
@@ -97,6 +107,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
 
     val expected =
         PlantingSiteHistoryModel(
+            areaHa = BigDecimal(100),
             boundary = siteBoundary1,
             gridOrigin = gridOrigin,
             id = plantingSiteHistoryId1,
@@ -104,6 +115,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
             plantingZones =
                 listOf(
                     PlantingZoneHistoryModel(
+                        areaHa = BigDecimal(75),
                         boundary = zoneBoundary1,
                         id = plantingZoneHistoryId1,
                         name = "Zone 1",
@@ -112,6 +124,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneHistoryModel(
+                                    areaHa = BigDecimal(50),
                                     boundary = subzoneBoundary1,
                                     id = subzoneHistoryId1,
                                     fullName = "Z1-Subzone 1",
@@ -131,6 +144,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                                         ),
                                 ),
                                 PlantingSubzoneHistoryModel(
+                                    areaHa = BigDecimal(25),
                                     boundary = subzoneBoundary2,
                                     id = subzoneHistoryId2,
                                     fullName = "Z1-Subzone 2",
