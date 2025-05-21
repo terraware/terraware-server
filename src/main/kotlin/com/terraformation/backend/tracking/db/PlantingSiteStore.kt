@@ -2005,11 +2005,6 @@ class PlantingSiteStore(
               .limit(1))
 
   private fun monitoringPlotsMultiset(condition: Condition): Field<List<MonitoringPlotModel>> {
-    val observationPlotCondition = OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
-    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
-    val latestObservationTimeField =
-        latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
-
     return DSL.multiset(
             DSL.select(
                     MONITORING_PLOTS.ELEVATION_METERS,
@@ -2020,8 +2015,6 @@ class PlantingSiteStore(
                     MONITORING_PLOTS.PLOT_NUMBER,
                     MONITORING_PLOTS.SIZE_METERS,
                     monitoringPlotBoundaryField,
-                    latestObservationIdField,
-                    latestObservationTimeField,
                 )
                 .from(MONITORING_PLOTS)
                 .where(condition)
@@ -2034,8 +2027,6 @@ class PlantingSiteStore(
                 id = record[MONITORING_PLOTS.ID]!!,
                 isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                 isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-                latestObservationCompletedTime = record[latestObservationTimeField],
-                latestObservationId = record[latestObservationIdField],
                 permanentIndex = record[MONITORING_PLOTS.PERMANENT_INDEX],
                 plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
                 sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,

@@ -343,9 +343,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId111,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  latestObservationCompletedTime =
-                                                      Instant.ofEpochSecond(1000),
-                                                  latestObservationId = observationId1,
                                                   plotNumber = 1,
                                                   sizeMeters = 30),
                                               MonitoringPlotModel(
@@ -354,8 +351,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId112,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  latestObservationCompletedTime = null,
-                                                  latestObservationId = null,
                                                   plotNumber = 2,
                                                   sizeMeters = 30),
                                           ),
@@ -378,9 +373,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId121,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  latestObservationCompletedTime =
-                                                      Instant.ofEpochSecond(1000),
-                                                  latestObservationId = observationId1,
                                                   plotNumber = 3,
                                                   sizeMeters = 30),
                                               MonitoringPlotModel(
@@ -389,9 +381,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId122,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  latestObservationCompletedTime =
-                                                      Instant.ofEpochSecond(2000),
-                                                  latestObservationId = observationId2,
                                                   plotNumber = 4,
                                                   sizeMeters = 30),
                                           ),
@@ -428,9 +417,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId2,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  latestObservationCompletedTime =
-                                                      Instant.ofEpochSecond(2000),
-                                                  latestObservationId = observationId2,
                                                   plotNumber = 5,
                                                   sizeMeters = 30),
                                           ),
