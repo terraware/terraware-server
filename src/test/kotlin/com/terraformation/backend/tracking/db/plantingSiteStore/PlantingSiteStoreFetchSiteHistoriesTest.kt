@@ -22,6 +22,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -68,21 +69,31 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
     val deletedMonitoringPlotBoundary = polygon(25)
 
     val plantingSiteId =
-        insertPlantingSite(boundary = siteBoundary1, gridOrigin = gridOrigin, name = "Site 1")
+        insertPlantingSite(
+            areaHa = BigDecimal(200),
+            boundary = siteBoundary1,
+            gridOrigin = gridOrigin,
+            name = "Site 1")
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
-    val plantingZoneId1 = insertPlantingZone(boundary = zoneBoundary1, name = "Zone 1")
+    val plantingZoneId1 =
+        insertPlantingZone(areaHa = BigDecimal(100), boundary = zoneBoundary1, name = "Zone 1")
     val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
-    val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzoneBoundary1, name = "Subzone 1")
+    val plantingSubzoneId1 =
+        insertPlantingSubzone(
+            areaHa = BigDecimal(70), boundary = subzoneBoundary1, name = "Subzone 1")
     val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
     // A second set of history records for the same site.
-    val plantingSiteHistoryId2 = insertPlantingSiteHistory(boundary = siteBoundary2)
-    val plantingZoneHistoryId2 = insertPlantingZoneHistory(boundary = zoneBoundary2)
+    val plantingSiteHistoryId2 = insertPlantingSiteHistory(areaHa = null, boundary = siteBoundary2)
+    val plantingZoneHistoryId2 =
+        insertPlantingZoneHistory(areaHa = BigDecimal(150), boundary = zoneBoundary2)
     val subzoneHistoryId2 =
         insertPlantingSubzoneHistory(
-            boundary = subzoneBoundary2, plantingSubzoneId = plantingSubzoneId1)
+            areaHa = BigDecimal(120),
+            boundary = subzoneBoundary2,
+            plantingSubzoneId = plantingSubzoneId1)
     val monitoringPlotHistoryId2 =
         insertMonitoringPlotHistory(
             plantingSubzoneId = plantingSubzoneId1, monitoringPlotId = monitoringPlotId1)
@@ -90,7 +101,8 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
     // A subzone that was deleted after a monitoring plot was added to it, in the second set of
     // history records
     val deletedSubzoneId =
-        insertPlantingSubzone(boundary = deletedSubzoneBoundary, name = "Subzone 2")
+        insertPlantingSubzone(
+            areaHa = BigDecimal(180), boundary = deletedSubzoneBoundary, name = "Subzone 2")
     val deletedSubzoneHistoryId = inserted.plantingSubzoneHistoryId
     val deletedMonitoringPlotId = insertMonitoringPlot(boundary = deletedMonitoringPlotBoundary)
     val deletedMonitoringPlotHistoryId = inserted.monitoringPlotHistoryId
@@ -105,6 +117,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
     val expected =
         listOf(
             PlantingSiteHistoryModel(
+                areaHa = null,
                 boundary = siteBoundary2,
                 gridOrigin = gridOrigin,
                 id = plantingSiteHistoryId2,
@@ -112,6 +125,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                 plantingZones =
                     listOf(
                         PlantingZoneHistoryModel(
+                            areaHa = BigDecimal(150),
                             boundary = zoneBoundary2,
                             id = plantingZoneHistoryId2,
                             name = "Zone 1",
@@ -120,6 +134,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                             plantingSubzones =
                                 listOf(
                                     PlantingSubzoneHistoryModel(
+                                        areaHa = BigDecimal(120),
                                         boundary = subzoneBoundary2,
                                         id = subzoneHistoryId2,
                                         fullName = "Z1-Subzone 1",
@@ -139,6 +154,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                                             ),
                                     ),
                                     PlantingSubzoneHistoryModel(
+                                        areaHa = BigDecimal(180),
                                         boundary = deletedSubzoneBoundary,
                                         id = deletedSubzoneHistoryId,
                                         fullName = "Z1-Subzone 2",
@@ -161,6 +177,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                     ),
             ),
             PlantingSiteHistoryModel(
+                areaHa = BigDecimal(200),
                 boundary = siteBoundary1,
                 gridOrigin = gridOrigin,
                 id = plantingSiteHistoryId1,
@@ -168,6 +185,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                 plantingZones =
                     listOf(
                         PlantingZoneHistoryModel(
+                            areaHa = BigDecimal(100),
                             boundary = zoneBoundary1,
                             id = plantingZoneHistoryId1,
                             name = "Zone 1",
@@ -176,6 +194,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                             plantingSubzones =
                                 listOf(
                                     PlantingSubzoneHistoryModel(
+                                        areaHa = BigDecimal(70),
                                         boundary = subzoneBoundary1,
                                         id = subzoneHistoryId1,
                                         fullName = "Z1-Subzone 1",

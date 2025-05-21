@@ -11,12 +11,14 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.util.equalsOrBothNull
+import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 data class PlantingSiteHistoryModel(
+    val areaHa: BigDecimal?,
     val boundary: MultiPolygon,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point,
@@ -28,6 +30,7 @@ data class PlantingSiteHistoryModel(
     return other is PlantingSiteHistoryModel &&
         id == other.id &&
         plantingSiteId == other.plantingSiteId &&
+        areaHa == other.areaHa &&
         boundary.equalsExact(other.boundary, tolerance) &&
         exclusion.equalsOrBothNull(other.exclusion, tolerance) &&
         gridOrigin.equalsExact(other.gridOrigin, tolerance) &&
@@ -37,6 +40,7 @@ data class PlantingSiteHistoryModel(
 }
 
 data class PlantingZoneHistoryModel(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: PlantingZoneHistoryId,
     val name: String,
@@ -51,6 +55,7 @@ data class PlantingZoneHistoryModel(
         name == other.name &&
         plantingZoneId == other.plantingZoneId &&
         stableId == other.stableId &&
+        areaHa == other.areaHa &&
         boundary.equalsExact(other.boundary, tolerance) &&
         plantingSubzones.size == other.plantingSubzones.size &&
         plantingSubzones.zip(other.plantingSubzones).all { it.first.equals(it.second, tolerance) }
@@ -58,6 +63,7 @@ data class PlantingZoneHistoryModel(
 }
 
 data class PlantingSubzoneHistoryModel(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
     val id: PlantingSubzoneHistoryId,
@@ -74,6 +80,7 @@ data class PlantingSubzoneHistoryModel(
         name == other.name &&
         plantingSubzoneId == other.plantingSubzoneId &&
         stableId == other.stableId &&
+        areaHa == other.areaHa &&
         boundary.equalsExact(other.boundary, tolerance) &&
         monitoringPlots.size == other.monitoringPlots.size &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) }

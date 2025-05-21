@@ -9,6 +9,8 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
@@ -23,6 +25,8 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
+import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
@@ -79,7 +83,7 @@ class PlantingSitesController(
           defaultValue = "false")
       full: Boolean?
   ): ListPlantingSitesResponsePayload {
-    val depth = if (full == true) PlantingSiteDepth.Subzone else PlantingSiteDepth.Site
+    val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
     val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
     val payloads = models.map { PlantingSitePayload(it) }
     return ListPlantingSitesResponsePayload(payloads)
@@ -92,7 +96,7 @@ class PlantingSitesController(
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
   ): GetPlantingSiteResponsePayload {
-    val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Subzone)
+    val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
   }
 
@@ -101,7 +105,7 @@ class PlantingSitesController(
   fun listPlantingSiteHistories(
       @PathVariable("id") id: PlantingSiteId,
   ): ListPlantingSiteHistoriesResponsePayload {
-    val models = plantingSiteStore.fetchSiteHistories(id, PlantingSiteDepth.Subzone)
+    val models = plantingSiteStore.fetchSiteHistories(id, PlantingSiteDepth.Plot)
     return ListPlantingSiteHistoriesResponsePayload(models.map { PlantingSiteHistoryPayload(it) })
   }
 
@@ -111,7 +115,7 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @PathVariable("historyId") historyId: PlantingSiteHistoryId,
   ): GetPlantingSiteHistoryResponsePayload {
-    val model = plantingSiteStore.fetchSiteHistoryById(id, historyId, PlantingSiteDepth.Subzone)
+    val model = plantingSiteStore.fetchSiteHistoryById(id, historyId, PlantingSiteDepth.Plot)
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
   }
 
@@ -197,6 +201,50 @@ class PlantingSitesController(
   }
 }
 
+data class MonitoringPlotPayload(
+    val boundary: Polygon,
+    val elevationMeters: BigDecimal?,
+    val id: MonitoringPlotId,
+    val isAdHoc: Boolean,
+    val isAvailable: Boolean,
+    val latestObservationCompletedTime: Instant? = null,
+    val latestObservationId: ObservationId? = null,
+    val permanentIndex: Int? = null,
+    val plotNumber: Long,
+    val sizeMeters: Int
+) {
+  constructor(
+      model: MonitoringPlotModel
+  ) : this(
+      boundary = model.boundary,
+      elevationMeters = model.elevationMeters,
+      id = model.id,
+      isAdHoc = model.isAdHoc,
+      isAvailable = model.isAvailable,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
+      permanentIndex = model.permanentIndex,
+      plotNumber = model.plotNumber,
+      sizeMeters = model.sizeMeters,
+  )
+}
+
+data class MonitoringPlotHistoryPayload(
+    val boundary: Polygon,
+    val id: MonitoringPlotHistoryId,
+    val monitoringPlotId: MonitoringPlotId,
+    val sizeMeters: Int
+) {
+  constructor(
+      model: MonitoringPlotHistoryModel
+  ) : this(
+      boundary = model.boundary,
+      id = model.id,
+      monitoringPlotId = model.monitoringPlotId,
+      sizeMeters = model.sizeMeters,
+  )
+}
+
 data class PlantingSubzonePayload(
     @Schema(description = "Area of planting subzone in hectares.") //
     val areaHa: BigDecimal,
@@ -205,6 +253,7 @@ data class PlantingSubzonePayload(
     val id: PlantingSubzoneId,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
+    val monitoringPlots: List<MonitoringPlotPayload>,
     val name: String,
     @Schema(
         description =
@@ -223,6 +272,7 @@ data class PlantingSubzonePayload(
       id = model.id,
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
+      monitoringPlots = model.monitoringPlots.map { MonitoringPlotPayload(it) },
       name = model.name,
       observedTime = model.observedTime,
       plantingCompleted = model.plantingCompletedTime != null,
@@ -320,9 +370,11 @@ data class PlantingSitePayload(
 }
 
 data class PlantingSubzoneHistoryPayload(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
     val id: PlantingSubzoneHistoryId,
+    val monitoringPlots: List<MonitoringPlotHistoryPayload>,
     val name: String,
     @Schema(description = "ID of planting subzone if it exists in the current version of the site.")
     val plantingSubzoneId: PlantingSubzoneId?,
@@ -330,15 +382,18 @@ data class PlantingSubzoneHistoryPayload(
   constructor(
       model: PlantingSubzoneHistoryModel
   ) : this(
+      areaHa = model.areaHa,
       boundary = model.boundary,
       fullName = model.fullName,
       id = model.id,
+      monitoringPlots = model.monitoringPlots.map { MonitoringPlotHistoryPayload(it) },
       name = model.name,
       plantingSubzoneId = model.plantingSubzoneId,
   )
 }
 
 data class PlantingZoneHistoryPayload(
+    val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: PlantingZoneHistoryId,
     val name: String,
@@ -349,6 +404,7 @@ data class PlantingZoneHistoryPayload(
   constructor(
       model: PlantingZoneHistoryModel
   ) : this(
+      areaHa = model.areaHa,
       boundary = model.boundary,
       id = model.id,
       name = model.name,
@@ -358,6 +414,7 @@ data class PlantingZoneHistoryPayload(
 }
 
 data class PlantingSiteHistoryPayload(
+    val areaHa: BigDecimal?,
     val boundary: MultiPolygon,
     val exclusion: MultiPolygon? = null,
     val id: PlantingSiteHistoryId,
@@ -367,6 +424,7 @@ data class PlantingSiteHistoryPayload(
   constructor(
       model: PlantingSiteHistoryModel
   ) : this(
+      areaHa = model.areaHa,
       boundary = model.boundary,
       exclusion = model.exclusion,
       id = model.id,

@@ -262,6 +262,7 @@ class PlantingSiteStore(
         .select(
             PLANTING_SITE_HISTORIES.ID,
             PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
+            PLANTING_SITE_HISTORIES.AREA_HA,
             boundaryField,
             exclusionField,
             gridOriginField,
@@ -271,6 +272,7 @@ class PlantingSiteStore(
         .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
         .fetch { record ->
           PlantingSiteHistoryModel(
+              record[PLANTING_SITE_HISTORIES.AREA_HA],
               record[boundaryField] as MultiPolygon,
               record[exclusionField] as? MultiPolygon,
               record[gridOriginField] as Point,
@@ -2123,6 +2125,7 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
+                    PLANTING_SUBZONE_HISTORIES.AREA_HA,
                     PLANTING_SUBZONE_HISTORIES.FULL_NAME,
                     PLANTING_SUBZONE_HISTORIES.ID,
                     PLANTING_SUBZONE_HISTORIES.NAME,
@@ -2138,6 +2141,7 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingSubzoneHistoryModel(
+                record[PLANTING_SUBZONE_HISTORIES.AREA_HA]!!,
                 record[boundaryField] as MultiPolygon,
                 record[PLANTING_SUBZONE_HISTORIES.FULL_NAME]!!,
                 record[PLANTING_SUBZONE_HISTORIES.ID]!!,
@@ -2227,6 +2231,7 @@ class PlantingSiteStore(
 
     return DSL.multiset(
             DSL.select(
+                    PLANTING_ZONE_HISTORIES.AREA_HA,
                     PLANTING_ZONE_HISTORIES.ID,
                     PLANTING_ZONE_HISTORIES.NAME,
                     PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
@@ -2240,6 +2245,7 @@ class PlantingSiteStore(
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingZoneHistoryModel(
+                record[PLANTING_ZONE_HISTORIES.AREA_HA]!!,
                 record[boundaryField] as MultiPolygon,
                 record[PLANTING_ZONE_HISTORIES.ID]!!,
                 record[PLANTING_ZONE_HISTORIES.NAME]!!,
