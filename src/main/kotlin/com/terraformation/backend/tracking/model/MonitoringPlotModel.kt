@@ -1,10 +1,8 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import java.math.BigDecimal
-import java.time.Instant
 import org.locationtech.jts.geom.Polygon
 
 data class MonitoringPlotModel(
@@ -13,10 +11,6 @@ data class MonitoringPlotModel(
     val id: MonitoringPlotId,
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
-    /** The time of the latest observation, if the planting site has completed observations */
-    val latestObservationCompletedTime: Instant? = null,
-    /** The ID of the latest observation, if the planting site has completed observations */
-    val latestObservationId: ObservationId? = null,
     val permanentIndex: Int? = null,
     val plotNumber: Long,
     val sizeMeters: Int,

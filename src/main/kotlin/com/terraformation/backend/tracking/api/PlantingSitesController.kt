@@ -207,9 +207,6 @@ data class MonitoringPlotPayload(
     val id: MonitoringPlotId,
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
-    val latestObservationCompletedTime: Instant? = null,
-    val latestObservationId: ObservationId? = null,
-    val permanentIndex: Int? = null,
     val plotNumber: Long,
     val sizeMeters: Int
 ) {
@@ -221,8 +218,6 @@ data class MonitoringPlotPayload(
       id = model.id,
       isAdHoc = model.isAdHoc,
       isAvailable = model.isAvailable,
-      latestObservationCompletedTime = model.latestObservationCompletedTime,
-      latestObservationId = model.latestObservationId,
       permanentIndex = model.permanentIndex,
       plotNumber = model.plotNumber,
       sizeMeters = model.sizeMeters,
