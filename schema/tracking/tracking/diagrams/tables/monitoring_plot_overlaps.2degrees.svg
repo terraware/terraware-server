@@ -45,6 +45,7 @@
 <polygon fill="none" stroke="black" points="386.5,-375.56 386.5,-397.56 531.5,-397.56 531.5,-375.56 386.5,-375.56"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="391.5" y="-392.564"/>
 <text text-anchor="start" x="408.5" y="-383.76" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="386.5,-353.56 386.5,-375.56 531.5,-375.56 531.5,-353.56 386.5,-353.56"/>
 <polygon fill="none" stroke="black" points="386.5,-353.56 386.5,-375.56 531.5,-375.56 531.5,-353.56 386.5,-353.56"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="391.5" y="-370.564"/>
 <text text-anchor="start" x="408.5" y="-361.76" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
