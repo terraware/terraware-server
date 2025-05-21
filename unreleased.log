@@ -1,3 +1,4 @@
+264f04478bd Included monitoring plots and historical areas in planting site APIs (#3121)
 acaa7220fa9 SW-6936 Added latest completed observations in planting site store and API (#3120)
 c2977cc577e SW-6904 Add Carbon Certification variable to Project Accelerator Details (#3112)
 908e7dafa70 Update Spring dependencies (#3085)
