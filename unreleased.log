@@ -1,3 +1,4 @@
+b50c57aa723 Removed latest observation info from monitoring plots (#3122)
 51299fb0313 Add missing index on monitoring_plots (#3123)
 264f04478bd Included monitoring plots and historical areas in planting site APIs (#3121)
 acaa7220fa9 SW-6936 Added latest completed observations in planting site store and API (#3120)
