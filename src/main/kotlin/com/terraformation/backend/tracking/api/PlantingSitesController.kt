@@ -218,7 +218,6 @@ data class MonitoringPlotPayload(
       id = model.id,
       isAdHoc = model.isAdHoc,
       isAvailable = model.isAvailable,
-      permanentIndex = model.permanentIndex,
       plotNumber = model.plotNumber,
       sizeMeters = model.sizeMeters,
   )
