@@ -203,11 +203,22 @@ class PlantingSiteStore(
         } else {
           null
         }
+
+    val adHocPlotsField =
+        if (depth == PlantingSiteDepth.Plot) {
+          monitoringPlotsMultiset(
+              PLANTING_SITES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
+                  .and(MONITORING_PLOTS.IS_AD_HOC.isTrue))
+        } else {
+          null
+        }
+
     val exteriorPlotsField =
         if (depth == PlantingSiteDepth.Plot) {
           monitoringPlotsMultiset(
               PLANTING_SITES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull))
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull)
+                  .and(MONITORING_PLOTS.IS_AD_HOC.isFalse))
         } else {
           null
         }
@@ -226,6 +237,7 @@ class PlantingSiteStore(
             PLANTING_SITES.asterisk(),
             plantingSeasonsMultiset,
             zonesField,
+            adHocPlotsField,
             exteriorPlotsField,
             latestObservationIdField,
             latestObservationTimeField)
@@ -237,6 +249,7 @@ class PlantingSiteStore(
               it,
               plantingSeasonsMultiset,
               zonesField,
+              adHocPlotsField,
               exteriorPlotsField,
               latestObservationIdField,
               latestObservationTimeField)

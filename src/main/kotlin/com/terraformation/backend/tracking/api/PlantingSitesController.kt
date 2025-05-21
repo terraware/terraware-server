@@ -331,6 +331,7 @@ data class PlantingSeasonPayload(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
+    val adHocPlots: List<MonitoringPlotPayload>,
     @Schema(
         description =
             "Area of planting site in hectares. Only present if the site has planting zones.")
@@ -352,6 +353,7 @@ data class PlantingSitePayload(
   constructor(
       model: ExistingPlantingSiteModel
   ) : this(
+      adHocPlots = model.adHocPlots.map { MonitoringPlotPayload(it) },
       areaHa = model.areaHa,
       boundary = model.boundary,
       countryCode = model.countryCode,
