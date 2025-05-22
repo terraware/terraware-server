@@ -741,6 +741,11 @@ COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding
 COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
 COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 
+COMMENT ON TABLE funder.published_project_carbon_certs  IS 'Carbon Certifications for published projects.';
+COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
+COMMENT ON TABLE funder.published_project_land_use  IS 'Land Use Model Types and hectares of each for published projects.';
+COMMENT ON TABLE funder.published_project_sdg  IS 'Sustainable Development Goals for published projects.';
+
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
 
 COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigation plans of published reports.';
