@@ -1,3 +1,4 @@
+692d0ed1682 SW-6974 Added timestamp on planting site history fetch (#3124)
 b50c57aa723 Removed latest observation info from monitoring plots (#3122)
 51299fb0313 Add missing index on monitoring_plots (#3123)
 264f04478bd Included monitoring plots and historical areas in planting site APIs (#3121)
