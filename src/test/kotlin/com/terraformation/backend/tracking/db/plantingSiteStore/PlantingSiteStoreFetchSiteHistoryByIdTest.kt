@@ -71,6 +71,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         insertPlantingSite(
             areaHa = BigDecimal(100),
             boundary = siteBoundary1,
+            createdTime = Instant.ofEpochSecond(1000),
             gridOrigin = gridOrigin,
             name = "Site 1")
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
@@ -109,6 +110,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         PlantingSiteHistoryModel(
             areaHa = BigDecimal(100),
             boundary = siteBoundary1,
+            createdTime = Instant.ofEpochSecond(1000),
             gridOrigin = gridOrigin,
             id = plantingSiteHistoryId1,
             plantingSiteId = plantingSiteId,
