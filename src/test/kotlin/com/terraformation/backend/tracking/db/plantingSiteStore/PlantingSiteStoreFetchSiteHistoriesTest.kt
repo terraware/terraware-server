@@ -72,6 +72,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
         insertPlantingSite(
             areaHa = BigDecimal(200),
             boundary = siteBoundary1,
+            createdTime = Instant.ofEpochSecond(1000),
             gridOrigin = gridOrigin,
             name = "Site 1")
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
@@ -86,7 +87,9 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
     // A second set of history records for the same site.
-    val plantingSiteHistoryId2 = insertPlantingSiteHistory(areaHa = null, boundary = siteBoundary2)
+    val plantingSiteHistoryId2 =
+        insertPlantingSiteHistory(
+            areaHa = null, boundary = siteBoundary2, createdTime = Instant.ofEpochSecond(2000))
     val plantingZoneHistoryId2 =
         insertPlantingZoneHistory(areaHa = BigDecimal(150), boundary = zoneBoundary2)
     val subzoneHistoryId2 =
@@ -119,6 +122,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
             PlantingSiteHistoryModel(
                 areaHa = null,
                 boundary = siteBoundary2,
+                createdTime = Instant.ofEpochSecond(2000),
                 gridOrigin = gridOrigin,
                 id = plantingSiteHistoryId2,
                 plantingSiteId = plantingSiteId,
@@ -179,6 +183,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
             PlantingSiteHistoryModel(
                 areaHa = BigDecimal(200),
                 boundary = siteBoundary1,
+                createdTime = Instant.ofEpochSecond(1000),
                 gridOrigin = gridOrigin,
                 id = plantingSiteHistoryId1,
                 plantingSiteId = plantingSiteId,

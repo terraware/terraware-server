@@ -412,6 +412,7 @@ data class PlantingZoneHistoryPayload(
 data class PlantingSiteHistoryPayload(
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon,
+    val createdTime: Instant,
     val exclusion: MultiPolygon? = null,
     val id: PlantingSiteHistoryId,
     val plantingSiteId: PlantingSiteId,
@@ -422,6 +423,7 @@ data class PlantingSiteHistoryPayload(
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
+      createdTime = model.createdTime,
       exclusion = model.exclusion,
       id = model.id,
       plantingSiteId = model.plantingSiteId,

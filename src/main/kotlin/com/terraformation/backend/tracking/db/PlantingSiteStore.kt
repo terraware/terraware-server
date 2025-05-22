@@ -273,6 +273,7 @@ class PlantingSiteStore(
 
     return dslContext
         .select(
+            PLANTING_SITE_HISTORIES.CREATED_TIME,
             PLANTING_SITE_HISTORIES.ID,
             PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
             PLANTING_SITE_HISTORIES.AREA_HA,
@@ -285,13 +286,14 @@ class PlantingSiteStore(
         .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
         .fetch { record ->
           PlantingSiteHistoryModel(
-              record[PLANTING_SITE_HISTORIES.AREA_HA],
-              record[boundaryField] as MultiPolygon,
-              record[exclusionField] as? MultiPolygon,
-              record[gridOriginField] as Point,
-              record[PLANTING_SITE_HISTORIES.ID]!!,
-              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID]!!,
-              zonesField?.let { record[it] } ?: emptyList(),
+              areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA],
+              boundary = record[boundaryField] as MultiPolygon,
+              createdTime = record[PLANTING_SITE_HISTORIES.CREATED_TIME]!!,
+              exclusion = record[exclusionField] as? MultiPolygon,
+              gridOrigin = record[gridOriginField] as Point,
+              id = record[PLANTING_SITE_HISTORIES.ID]!!,
+              plantingSiteId = record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID]!!,
+              plantingZones = zonesField?.let { record[it] } ?: emptyList(),
           )
         }
   }

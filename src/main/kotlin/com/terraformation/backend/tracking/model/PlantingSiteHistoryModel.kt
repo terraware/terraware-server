@@ -20,6 +20,7 @@ import org.locationtech.jts.geom.Polygon
 data class PlantingSiteHistoryModel(
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon,
+    val createdTime: Instant,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point,
     val id: PlantingSiteHistoryId,
