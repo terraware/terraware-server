@@ -374,6 +374,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canProxyGeoServerGetRequests(): Boolean = defaultPermission
 
+  fun canPublishProjectProfileDetails(): Boolean = defaultPermission
+
   fun canPublishReports(): Boolean = defaultPermission
 
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission

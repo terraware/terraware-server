@@ -774,6 +774,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun publishProjectProfileDetails() {
+    user.recordPermissionChecks {
+      if (!user.canPublishProjectProfileDetails()) {
+        throw AccessDeniedException("No permission to publish project profile details.")
+      }
+    }
+  }
+
   fun publishReports() {
     user.recordPermissionChecks {
       if (!user.canPublishReports()) {

@@ -616,6 +616,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun proxyGeoServerGetRequests() =
       allow { proxyGeoServerGetRequests() } ifUser { canProxyGeoServerGetRequests() }
 
+  @Test
+  fun publishProjectProfileDetails() =
+      allow { publishProjectProfileDetails() } ifUser { canPublishProjectProfileDetails() }
+
   @Test fun publishReports() = allow { publishReports() } ifUser { canPublishReports() }
 
   @Test fun readAccession() = testRead { readAccession(accessionId) }
