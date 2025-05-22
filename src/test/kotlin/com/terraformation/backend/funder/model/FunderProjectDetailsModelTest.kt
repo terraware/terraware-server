@@ -8,9 +8,13 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
+import com.terraformation.backend.db.funder.tables.records.PublishedProjectDetailsRecord
 import java.math.BigDecimal
 import java.net.URI
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -103,5 +107,64 @@ class FunderProjectDetailsModelTest {
             verraLink = URI("https://verraLink"),
         ),
         FunderProjectDetailsModel.of(projectAcceleratorDetailsModel))
+  }
+
+  @Test
+  fun `can convert from PublishedProjectDetailsRecord`() {
+    val record =
+        PublishedProjectDetailsRecord(
+            PublishedProjectDetailsRow(
+                projectId = ProjectId(10),
+                accumulationRate = BigDecimal(11),
+                annualCarbon = BigDecimal(12),
+                countryCode = "US",
+                dealDescription = "dealDescription",
+                dealName = "dealName",
+                methodologyNumber = "methodology",
+                minProjectArea = BigDecimal(13),
+                numNativeSpecies = 14,
+                perHectareEstimatedBudget = BigDecimal(15),
+                projectArea = BigDecimal(16),
+                projectHighlightPhotoValueId = 17,
+                projectZoneFigureValueId = 18,
+                standard = "standard",
+                tfReforestableLand = BigDecimal(19),
+                totalExpansionPotential = BigDecimal(20),
+                totalVcu = BigDecimal(21),
+                verraLink = "https://verraLink",
+                publishedBy = UserId(2),
+                publishedTime = Instant.EPOCH,
+            ))
+    val sdgList =
+        setOf(SustainableDevelopmentGoal.CleanWater, SustainableDevelopmentGoal.ClimateAction)
+    val carbonCerts = setOf(CarbonCertification.CcbVerraStandard)
+    val landUsages = mapOf(LandUseModelType.Mangroves to BigDecimal(10))
+
+    assertEquals(
+        FunderProjectDetailsModel(
+            projectId = ProjectId(10),
+            accumulationRate = BigDecimal(11),
+            annualCarbon = BigDecimal(12),
+            countryCode = "US",
+            dealDescription = "dealDescription",
+            dealName = "dealName",
+            methodologyNumber = "methodology",
+            minProjectArea = BigDecimal(13),
+            numNativeSpecies = 14,
+            perHectareBudget = BigDecimal(15),
+            projectArea = BigDecimal(16),
+            projectHighlightPhotoValueId = VariableValueId(17),
+            projectZoneFigureValueId = VariableValueId(18),
+            standard = "standard",
+            confirmedReforestableLand = BigDecimal(19),
+            totalExpansionPotential = BigDecimal(20),
+            totalVCU = BigDecimal(21),
+            verraLink = URI("https://verraLink"),
+            sdgList = sdgList,
+            carbonCertifications = carbonCerts,
+            landUseModelTypes = landUsages.keys,
+            landUseModelHectares = landUsages,
+        ),
+        FunderProjectDetailsModel.of(record, carbonCerts, sdgList, landUsages))
   }
 }

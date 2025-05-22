@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.funder.db.PublishedProjectDetailsStore
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import io.mockk.every
 import io.mockk.mockk
@@ -24,6 +25,7 @@ class FunderProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService = mockk()
   val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore = mockk()
+  val publishedProjectDetailsStore: PublishedProjectDetailsStore = mockk()
   lateinit var projectId: ProjectId
 
   private val service: FunderProjectService by lazy {
@@ -31,6 +33,7 @@ class FunderProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         acceleratorProjectVariableValuesService = acceleratorProjectVariableValuesService,
         projectAcceleratorDetailsStore = projectAcceleratorDetailsStore,
         systemUser = systemUser,
+        publishedProjectDetailsStore = publishedProjectDetailsStore,
     )
   }
 

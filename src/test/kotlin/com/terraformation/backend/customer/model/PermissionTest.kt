@@ -1440,6 +1440,7 @@ internal class PermissionTest : DatabaseTest() {
         manageNotifications = true,
         manageProjectReportConfigs = true,
         notifyUpcomingReports = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -1856,6 +1857,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModuleEvents = true,
         manageModules = true,
         manageProjectReportConfigs = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -2113,6 +2115,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModuleEvents = true,
         manageModules = true,
         manageProjectReportConfigs = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -3083,6 +3086,7 @@ internal class PermissionTest : DatabaseTest() {
         manageNotifications: Boolean = false,
         manageProjectReportConfigs: Boolean = false,
         notifyUpcomingReports: Boolean = false,
+        publishProjectProfileDetails: Boolean = false,
         publishReports: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
@@ -3160,6 +3164,10 @@ internal class PermissionTest : DatabaseTest() {
           "Can manage project report configs")
       assertEquals(
           notifyUpcomingReports, user.canNotifyUpcomingReports(), "Can notify upcoming reports")
+      assertEquals(
+          publishProjectProfileDetails,
+          user.canPublishProjectProfileDetails(),
+          "Can publish project profile details")
       assertEquals(publishReports, user.canPublishReports(), "Can publish reports")
       assertEquals(
           readAllAcceleratorDetails,
