@@ -22,7 +22,7 @@ data class PlantingSiteHistoryModel(
     val boundary: MultiPolygon,
     val createdTime: Instant,
     val exclusion: MultiPolygon? = null,
-    val gridOrigin: Point,
+    val gridOrigin: Point?,
     val id: PlantingSiteHistoryId,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<PlantingZoneHistoryModel>,
@@ -32,9 +32,10 @@ data class PlantingSiteHistoryModel(
         id == other.id &&
         plantingSiteId == other.plantingSiteId &&
         areaHa == other.areaHa &&
+        createdTime == other.createdTime &&
         boundary.equalsExact(other.boundary, tolerance) &&
         exclusion.equalsOrBothNull(other.exclusion, tolerance) &&
-        gridOrigin.equalsExact(other.gridOrigin, tolerance) &&
+        gridOrigin.equalsOrBothNull(other.gridOrigin, tolerance) &&
         plantingZones.size == other.plantingZones.size &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) }
   }
