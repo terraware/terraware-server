@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.funder.tables.records.PublishedProjectDetailsRecord
 import java.math.BigDecimal
 import java.net.URI
 
@@ -60,6 +61,39 @@ data class FunderProjectDetailsModel(
           totalExpansionPotential = details.totalExpansionPotential,
           totalVCU = details.totalVCU,
           verraLink = details.verraLink,
+      )
+    }
+
+    fun of(
+        record: PublishedProjectDetailsRecord,
+        carbonCertifications: Set<CarbonCertification> = emptySet(),
+        sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
+        landUsages: Map<LandUseModelType, BigDecimal?> = emptyMap(),
+    ): FunderProjectDetailsModel {
+      return FunderProjectDetailsModel(
+          accumulationRate = record.accumulationRate,
+          annualCarbon = record.annualCarbon,
+          carbonCertifications = carbonCertifications,
+          confirmedReforestableLand = record.tfReforestableLand,
+          countryCode = record.countryCode,
+          dealDescription = record.dealDescription,
+          dealName = record.dealName,
+          landUseModelTypes = landUsages.keys.toSet(),
+          landUseModelHectares = landUsages.filterValues { it != null }.mapValues { it.value!! },
+          methodologyNumber = record.methodologyNumber,
+          minProjectArea = record.minProjectArea,
+          numNativeSpecies = record.numNativeSpecies,
+          perHectareBudget = record.perHectareEstimatedBudget,
+          projectArea = record.projectArea,
+          projectHighlightPhotoValueId =
+              record.projectHighlightPhotoValueId?.let { VariableValueId(it) },
+          projectId = record.projectId!!,
+          projectZoneFigureValueId = record.projectZoneFigureValueId?.let { VariableValueId(it) },
+          sdgList = sdgList,
+          standard = record.standard,
+          totalExpansionPotential = record.totalExpansionPotential,
+          totalVCU = record.totalVcu,
+          verraLink = record.verraLink?.let { URI(it) },
       )
     }
   }

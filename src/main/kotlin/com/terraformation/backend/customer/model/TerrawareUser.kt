@@ -372,6 +372,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canNotifyUpcomingReports(): Boolean = defaultPermission
 
+  fun canPublishProjectProfileDetails(): Boolean = defaultPermission
+
   fun canPublishReports(): Boolean = defaultPermission
 
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission

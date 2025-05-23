@@ -326,6 +326,8 @@ data class IndividualUser(
 
   override fun canNotifyUpcomingReports(): Boolean = false
 
+  override fun canPublishProjectProfileDetails() = isAcceleratorAdmin()
+
   override fun canPublishReports() = isAcceleratorAdmin()
 
   override fun canReadAccession(accessionId: AccessionId) =
