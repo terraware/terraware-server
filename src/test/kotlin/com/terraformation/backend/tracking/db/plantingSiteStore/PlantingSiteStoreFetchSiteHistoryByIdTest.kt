@@ -178,6 +178,32 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
   }
 
   @Test
+  fun `fetches history for simple planting site`() {
+    val siteBoundary = multiPolygon(100)
+    val plantingSiteId =
+        insertPlantingSite(areaHa = BigDecimal(50), boundary = siteBoundary, name = "Site")
+    val plantingSiteHistoryId = inserted.plantingSiteHistoryId
+
+    val expected =
+        PlantingSiteHistoryModel(
+            areaHa = BigDecimal(50),
+            boundary = siteBoundary,
+            createdTime = Instant.EPOCH,
+            gridOrigin = null,
+            id = plantingSiteHistoryId,
+            plantingSiteId = plantingSiteId,
+            plantingZones = emptyList(),
+        )
+
+    val actual =
+        store.fetchSiteHistoryById(plantingSiteId, plantingSiteHistoryId, PlantingSiteDepth.Plot)
+
+    if (!expected.equals(actual, 0.00001)) {
+      assertEquals(expected, actual)
+    }
+  }
+
+  @Test
   fun `throws exception if history ID does not exist`() {
     val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1), name = "Site 1")
     assertThrows<PlantingSiteHistoryNotFoundException> {

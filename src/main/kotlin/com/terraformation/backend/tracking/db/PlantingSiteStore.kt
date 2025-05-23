@@ -290,7 +290,7 @@ class PlantingSiteStore(
               boundary = record[boundaryField] as MultiPolygon,
               createdTime = record[PLANTING_SITE_HISTORIES.CREATED_TIME]!!,
               exclusion = record[exclusionField] as? MultiPolygon,
-              gridOrigin = record[gridOriginField] as Point,
+              gridOrigin = record[gridOriginField] as? Point,
               id = record[PLANTING_SITE_HISTORIES.ID]!!,
               plantingSiteId = record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID]!!,
               plantingZones = zonesField?.let { record[it] } ?: emptyList(),
