@@ -24,7 +24,6 @@ CREATE TABLE funder.published_project_details (
     project_id BIGINT PRIMARY KEY NOT NULL REFERENCES projects ON DELETE CASCADE,
     accumulation_rate NUMERIC,
     annual_carbon NUMERIC,
-    tf_reforestable_land NUMERIC,
     country_code TEXT references countries,
     deal_description TEXT,
     deal_name TEXT,
@@ -36,10 +35,10 @@ CREATE TABLE funder.published_project_details (
     project_highlight_photo_value_id BIGINT REFERENCES docprod.variable_values,
     project_zone_figure_value_id BIGINT REFERENCES docprod.variable_values,
     standard TEXT,
+    tf_reforestable_land NUMERIC,
     total_expansion_potential NUMERIC,
     total_vcu NUMERIC,
     verra_link TEXT,
     published_by BIGINT NOT NULL REFERENCES users,
     published_time TIMESTAMP WITH TIME ZONE NOT NULL
 );
-CREATE INDEX ON funder.published_project_details(project_id);
