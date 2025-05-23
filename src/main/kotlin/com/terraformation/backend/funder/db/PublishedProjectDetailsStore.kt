@@ -6,7 +6,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.funder.tables.records.PublishedProjectDetailsRecord
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_CARBON_CERTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_DETAILS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_LAND_USE
@@ -33,8 +32,11 @@ class PublishedProjectDetailsStore(
               .select(SDG_NUMBER.asNonNullable())
               .from(this)
               .where(PROJECT_ID.eq(projectId))
-              .fetchSet(SDG_NUMBER.asNonNullable())
-              .mapNotNull { SustainableDevelopmentGoal.bySdgNumber[it] }
+              .fetch(SDG_NUMBER.asNonNullable())
+              .map {
+                SustainableDevelopmentGoal.bySdgNumber[it]
+                    ?: throw IllegalArgumentException("Unknown goal $it")
+              }
               .toSet()
         }
     val carbonCerts =
@@ -43,7 +45,7 @@ class PublishedProjectDetailsStore(
               .select(CARBON_CERTIFICATION.asNonNullable())
               .from(this)
               .where(PROJECT_ID.eq(projectId))
-              .fetchSet(CARBON_CERTIFICATION.asNonNullable())
+              .fetch(CARBON_CERTIFICATION.asNonNullable())
               .mapNotNull { CarbonCertification.forDisplayName(it) }
               .toSet()
         }
@@ -56,12 +58,11 @@ class PublishedProjectDetailsStore(
               .fetchMap(
                   LAND_USE_MODEL_TYPE_ID.asNonNullable(), LAND_USE_MODEL_HECTARES.asNonNullable())
         }
+
     return with(PUBLISHED_PROJECT_DETAILS) {
-      dslContext
-          .selectFrom(this)
-          .where(PROJECT_ID.eq(projectId))
-          .fetchOneInto(PublishedProjectDetailsRecord::class.java)
-          ?.let { FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap) }
+      dslContext.selectFrom(this).where(PROJECT_ID.eq(projectId)).fetchOne()?.let {
+        FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap)
+      }
     }
   }
 

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -49,6 +50,22 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class FetchOneById {
+    @Test
+    fun `throws exception if sdg number isn't valid`() {
+      insertPublishedProjectSdg(projectId = projectId, sdgNumber = 100)
+      assertThrows<IllegalArgumentException> { store.fetchOneById(projectId) }
+    }
+
+    @Test
+    fun `returns null if project id hasn't been published yet`() {
+      assertNull(store.fetchOneById(projectId))
+    }
+
+    @Test
+    fun `returns null if project doesn't exist`() {
+      assertNull(store.fetchOneById(ProjectId(100123)))
+    }
+
     @Test
     fun `can retrieve published project details when empty`() {
       insertPublishedProjectDetails(projectId = projectId)
