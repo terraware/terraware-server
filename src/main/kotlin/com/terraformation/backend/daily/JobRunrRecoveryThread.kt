@@ -52,6 +52,12 @@ class JobRunrRecoveryThread(
 
   private fun run() {
     try {
+      while (!backgroundJobServer.isRunning &&
+          !shutdownLatch.await(JOBRUNR_DOWN_POLL_INTERVAL.toMillis(), TimeUnit.MILLISECONDS)) {
+        // Wait for the background thread to start up initially so we don't try to "recover"
+        // during application start.
+      }
+
       while (!shutdownLatch.await(JOBRUNR_DOWN_POLL_INTERVAL.toMillis(), TimeUnit.MILLISECONDS)) {
         if (!backgroundJobServer.isRunning) {
           log.warn("JobRunr background thread is not running! Waiting for database to come back")
