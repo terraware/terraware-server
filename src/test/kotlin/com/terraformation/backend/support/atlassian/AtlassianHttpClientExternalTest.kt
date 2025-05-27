@@ -6,11 +6,13 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
+import io.ktor.client.plugins.ClientRequestException
 import io.mockk.every
 import java.net.URI
 import org.junit.Assume
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -24,7 +26,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
   private lateinit var client: AtlassianHttpClient
   private val createdIssueIds: MutableList<String> = mutableListOf()
   private val sixPixelPng: ByteArray by lazy {
-    javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
+    javaClass.getResourceAsStream("/file/sixPixels.png")!!.use { it.readAllBytes() }
   }
 
   @BeforeEach
@@ -87,6 +89,31 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
         attachTempFilesResponse.temporaryAttachments.map { it.temporaryAttachmentId }
 
     client.createAttachments(issueId, attachmentIds, "Test attachment uploads.")
+  }
+
+  @Test
+  fun `throws exception if attachment no longer exists`() {
+    val createResponse =
+        client.createServiceDeskRequest(
+            description = "Description",
+            summary = "Summary",
+            requestType = SupportRequestType.ContactUs,
+            reporter = "testuser@example.com",
+        )
+
+    val issueId = createResponse.issueId
+    createdIssueIds.addLast(issueId)
+
+    val sizedInputStream =
+        SizedInputStream(sixPixelPng.inputStream(), sixPixelPng.size.toLong(), MediaType.IMAGE_PNG)
+    val attachTempFilesResponse = client.attachTemporaryFile("test.png", sizedInputStream)
+    val attachmentIds =
+        attachTempFilesResponse.temporaryAttachments.map { it.temporaryAttachmentId }
+    client.createAttachments(issueId, attachmentIds, "Initial use of attachment")
+
+    assertThrows<ClientRequestException>("Should throw exception if attachment ID is reused") {
+      client.createAttachments(issueId, attachmentIds, "Reusing attachment ID")
+    }
   }
 
   @Test
