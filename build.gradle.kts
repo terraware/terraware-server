@@ -267,7 +267,7 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion = JavaLanguageVersion.of(23) }
+  toolchain { languageVersion = JavaLanguageVersion.of(24) }
   targetCompatibility = JavaVersion.VERSION_23
 }
 
