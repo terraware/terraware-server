@@ -23,7 +23,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "7.0.10"
   id("com.diffplug.spotless") version "7.0.3"
-  id("org.springframework.boot") version "3.5.0"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -90,7 +90,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0"))
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-RC1"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
   implementation("org.springframework.ai:spring-ai-advisors-vector-store")
