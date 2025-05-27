@@ -4642,9 +4642,14 @@ abstract class DatabaseBackedTest {
         started = true
       }
 
+      // Run tests using the AWS JDBC wrapper since we'll be using the wrapper in production.
+      // The wrapper requires an extra element in the JDBC URL.
+      val awsWrapperJdbcUrl =
+          postgresContainer.jdbcUrl.replace(Regex("^jdbc:"), "jdbc:aws-wrapper:")
+
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
           applicationContext,
-          "spring.datasource.url=${postgresContainer.jdbcUrl}",
+          "spring.datasource.url=$awsWrapperJdbcUrl",
           "spring.datasource.username=${postgresContainer.username}",
           "spring.datasource.password=${postgresContainer.password}",
       )

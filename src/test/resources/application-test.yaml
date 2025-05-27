@@ -1,7 +1,10 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:15:///terraware
+    url: jdbc:tc:aws-wrapper:postgresql:15:///terraware
+    driver-class-name: software.amazon.jdbc.Driver
     hikari:
+      data-source-properties:
+        wrapperPlugins: dev
       # Set this higher than the expected number of concurrent tests so tests don't block
       # waiting for connections from the pool.
       maximum-pool-size: 30
