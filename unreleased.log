@@ -1,1 +1,6 @@
+2868bae1090 Update plugin dev.monosoul.jooq-docker to v7.0.10 (#3130)
+033d3d1cdd4 Update dependency gradle to v8.14.1 (#3129)
+6ce09c87d79 Update dependency com.google.api-client:google-api-client to v2.8.0 (#3128)
+1be707a2225 Update dependency org.apache.tika:tika-core to v3.2.0 (#3132)
+29d8df0ef89 SW-7001 Improve Jira attachment failure error logging (#3133)
 94102d24577 SW-6998 Support fetching simple planting site history (#3127)
