@@ -257,11 +257,17 @@ class ObservationsController(
       summary = "Gets the results of an observation of a planting site.",
       description = "Some information is only available once all plots have been completed.")
   fun getObservationResults(
-      @PathVariable observationId: ObservationId
+      @PathVariable observationId: ObservationId,
+      @Parameter(
+          description =
+              "If true, include results for plants of unknown species in the per-species " +
+                  "details at the monitoring plot level.")
+      @RequestParam(defaultValue = "false")
+      includeUnknown: Boolean = false,
   ): GetObservationResultsResponsePayload {
     val results = observationResultsStore.fetchOneById(observationId)
 
-    return GetObservationResultsResponsePayload(ObservationResultsPayload(results))
+    return GetObservationResultsResponsePayload(ObservationResultsPayload(results, includeUnknown))
   }
 
   @ApiResponseSimpleSuccess
@@ -807,7 +813,8 @@ data class ObservationMonitoringPlotResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationMonitoringPlotResultsModel
+      model: ObservationMonitoringPlotResultsModel,
+      includeUnknown: Boolean = false,
   ) : this(
       boundary = model.boundary,
       claimedByName = model.claimedByName,
@@ -830,7 +837,7 @@ data class ObservationMonitoringPlotResultsPayload(
       sizeMeters = model.sizeMeters,
       species =
           model.species
-              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .filter { includeUnknown || it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       status = model.status,
       totalPlants = model.totalPlants,
@@ -878,12 +885,14 @@ data class ObservationPlantingSubzoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingSubzoneResultsModel
+      model: ObservationPlantingSubzoneResultsModel,
+      includeUnknown: Boolean = false,
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
-      monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
+      monitoringPlots =
+          model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it, includeUnknown) },
       mortalityRate = model.mortalityRate,
       mortalityRateStdDev = model.mortalityRateStdDev,
       name = model.name,
@@ -939,7 +948,8 @@ data class ObservationPlantingZoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingZoneResultsModel
+      model: ObservationPlantingZoneResultsModel,
+      includeUnknown: Boolean = false,
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -950,7 +960,9 @@ data class ObservationPlantingZoneResultsPayload(
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzones =
-          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
+          model.plantingSubzones.map {
+            ObservationPlantingSubzoneResultsPayload(it, includeUnknown)
+          },
       plantingZoneId = model.plantingZoneId,
       species =
           model.species
@@ -997,9 +1009,11 @@ data class ObservationResultsPayload(
     val type: ObservationType,
 ) {
   constructor(
-      model: ObservationResultsModel
+      model: ObservationResultsModel,
+      includeUnknown: Boolean = false,
   ) : this(
-      adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
+      adHocPlot =
+          model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it, includeUnknown) },
       areaHa = model.areaHa,
       biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       completedTime = model.completedTime,
@@ -1012,7 +1026,8 @@ data class ObservationResultsPayload(
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteHistoryId = model.plantingSiteHistoryId,
       plantingSiteId = model.plantingSiteId,
-      plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
+      plantingZones =
+          model.plantingZones.map { ObservationPlantingZoneResultsPayload(it, includeUnknown) },
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
