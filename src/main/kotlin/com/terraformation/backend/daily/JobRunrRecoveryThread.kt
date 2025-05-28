@@ -24,7 +24,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 class JobRunrRecoveryThread(
     private val backgroundJobServer: BackgroundJobServer,
     private val dataSource: DataSource,
-) : Thread() {
+) {
   companion object {
     /** How often to check whether JobRunr's background thread has stopped. */
     private val JOBRUNR_DOWN_POLL_INTERVAL = Duration.ofSeconds(1)!!
@@ -42,8 +42,7 @@ class JobRunrRecoveryThread(
 
   @PostConstruct
   fun startThread() {
-    isDaemon = true
-    start()
+    Thread.ofVirtual().name(javaClass.simpleName).start { run() }
   }
 
   @PreDestroy
@@ -51,7 +50,7 @@ class JobRunrRecoveryThread(
     shutdownLatch.countDown()
   }
 
-  override fun run() {
+  private fun run() {
     try {
       while (!shutdownLatch.await(JOBRUNR_DOWN_POLL_INTERVAL.toMillis(), TimeUnit.MILLISECONDS)) {
         if (!backgroundJobServer.isRunning) {
