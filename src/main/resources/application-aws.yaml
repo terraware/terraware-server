@@ -1,0 +1,8 @@
+# Configuration that's only used by the "aws" profile (prod and staging environments).
+
+spring:
+  datasource:
+    driver-class-name: "software.amazon.jdbc.Driver"
+    hikari:
+      data-source-properties:
+        wrapperPlugins: "iam,failover,efm2"

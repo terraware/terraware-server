@@ -53,6 +53,8 @@ spring:
     url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/terraware}"
     username: "${DATABASE_USER:${USER:postgres}}"
     password: "${DATABASE_PASSWORD:}"
+    hikari:
+      exception-override-class-name: "software.amazon.jdbc.util.HikariCPSQLException"
 
   flyway:
     placeholders:
