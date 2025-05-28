@@ -1628,6 +1628,7 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       number: String? = row.number ?: "${nextAccessionNumber++}",
       receivedDate: LocalDate? = row.receivedDate,
+      speciesId: SpeciesId? = row.speciesId,
       stateId: AccessionState = row.stateId ?: AccessionState.Processing,
       treesCollectedFrom: Int? = row.treesCollectedFrom,
   ): AccessionId {
@@ -1641,6 +1642,7 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
             number = number,
             receivedDate = receivedDate,
+            speciesId = speciesId,
             stateId = stateId,
             treesCollectedFrom = treesCollectedFrom,
         )

@@ -771,7 +771,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     // create an accession with 'other' species
     insertFacility()
-    insertAccession(row = AccessionsRow(speciesId = created))
+    insertAccession(speciesId = created)
 
     // create another org accession
     val otherOrgId = insertOrganization()
@@ -782,6 +782,27 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected = listOf(store.fetchSpeciesById(created))
     val actual = store.findAllSpecies(organizationId, true)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `find all species in use returns species used in observations`() {
+    val inUseSpeciesId =
+        store.createSpecies(
+            NewSpeciesModel(organizationId = organizationId, scientificName = "observed"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
+
+    insertPlantingSite(x = 0)
+    insertPlantingZone()
+    insertPlantingSubzone()
+    insertMonitoringPlot()
+    insertObservation()
+    insertObservationPlot()
+    insertRecordedPlant(speciesId = inUseSpeciesId)
+
+    val expected = listOf(store.fetchSpeciesById(inUseSpeciesId))
+    val actual = store.findAllSpecies(organizationId, inUse = true)
 
     assertEquals(expected, actual)
   }

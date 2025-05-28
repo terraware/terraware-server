@@ -19,7 +19,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -105,10 +106,33 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `deleteSpecies throws exception if species is in use`() {
+  fun `deleteSpecies throws exception if species is in use in accession`() {
+    val speciesId = insertSpecies("species name")
+    insertFacility()
+    insertAccession(speciesId = speciesId)
+
+    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+  }
+
+  @Test
+  fun `deleteSpecies throws exception if species is in use in batch`() {
     val speciesId = insertSpecies("species name")
     insertFacility()
     insertBatch(speciesId = speciesId)
+
+    assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
+  }
+
+  @Test
+  fun `deleteSpecies throws exception if species is in use in observation`() {
+    val speciesId = insertSpecies("species name")
+    insertPlantingSite(x = 0)
+    insertPlantingZone()
+    insertPlantingSubzone()
+    insertMonitoringPlot()
+    insertObservation()
+    insertObservationPlot()
+    insertRecordedPlant(speciesId = speciesId)
 
     assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }
   }
