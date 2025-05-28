@@ -1,2 +1,3 @@
+9f8875ab94d Upgrade to Java 24 JVM (#3134)
 afb4d49a142 Update Spring dependencies (#3136)
 67818585743 Use AWS JDBC wrapper for RDS IAM authentication (#3137)
