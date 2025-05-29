@@ -35,9 +35,12 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -113,6 +116,24 @@ class SpeciesStore(
 
   private val usedInBatches: Condition =
       DSL.exists(DSL.selectOne().from(BATCHES).where(BATCHES.SPECIES_ID.eq(SPECIES.ID)))
+
+  private val usedInObservations: Condition =
+      DSL.or(
+          DSL.exists(
+              DSL.selectOne()
+                  .from(RECORDED_PLANTS)
+                  .where(RECORDED_PLANTS.SPECIES_ID.eq(SPECIES.ID))),
+          DSL.exists(
+              DSL.selectOne()
+                  .from(OBSERVATION_BIOMASS_SPECIES)
+                  .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID))),
+          // Observed site, zone, subzone, and plot totals have the same species, so checking one
+          // of them is sufficient.
+          DSL.exists(
+              DSL.selectOne()
+                  .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                  .where(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.eq(SPECIES.ID))),
+      )
 
   private val usedInPlantings: Condition =
       DSL.exists(DSL.selectOne().from(PLANTINGS).where(PLANTINGS.SPECIES_ID.eq(SPECIES.ID)))
@@ -236,7 +257,7 @@ class SpeciesStore(
 
     val condition =
         if (inUse == true) {
-          DSL.or(usedInAccessions, usedInBatches, usedInPlantings)
+          DSL.or(usedInAccessions, usedInBatches, usedInObservations, usedInPlantings)
         } else {
           DSL.noCondition()
         }
@@ -270,7 +291,7 @@ class SpeciesStore(
         DSL.selectOne()
             .from(SPECIES)
             .where(SPECIES.ID.eq(speciesId))
-            .and(DSL.or(usedInAccessions, usedInBatches, usedInPlantings)),
+            .and(DSL.or(usedInAccessions, usedInBatches, usedInObservations, usedInPlantings)),
     )
   }
 
