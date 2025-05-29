@@ -99,6 +99,9 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with Dropbox. */
     val dropbox: DropboxConfig = DropboxConfig(),
 
+    /** Configures how terraware-server interacts with GeoServer. */
+    val geoServer: GeoServerConfig = GeoServerConfig(),
+
     /** Configures how the server interacts with HubSpot. */
     val hubSpot: HubSpotConfig = HubSpotConfig(),
 
@@ -252,6 +255,16 @@ class TerrawareServerConfig(
        * These should be source names, not dataset identifiers.
        */
       val distributionSources: List<String>? = null,
+  )
+
+  class GeoServerConfig(
+      val password: String? = null,
+      val username: String? = null,
+      /**
+       * URL of the WFS API endpoint. This will look something like
+       * `https://server-hostname/geoserver/wfs`.
+       */
+      val wfsUrl: URI? = null,
   )
 
   class BalenaConfig(
