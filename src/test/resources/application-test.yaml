@@ -1,7 +1,6 @@
 spring:
   datasource:
     url: jdbc:tc:aws-wrapper:postgresql:15:///terraware
-    driver-class-name: software.amazon.jdbc.Driver
     hikari:
       data-source-properties:
         wrapperPlugins: dev
