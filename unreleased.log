@@ -1,3 +1,5 @@
+bd6d87d4fdc SW-7005 Treat observed species as in use (#3141)
+d7681f241f3 Make JobRunr recovery thread wait for initialization (#3140)
 45bc958fc4f Enable virtual threads (#3135)
 9f8875ab94d Upgrade to Java 24 JVM (#3134)
 afb4d49a142 Update Spring dependencies (#3136)
