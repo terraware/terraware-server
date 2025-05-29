@@ -2,7 +2,6 @@
 
 spring:
   datasource:
-    driver-class-name: "software.amazon.jdbc.Driver"
     hikari:
       data-source-properties:
         wrapperPlugins: "iam,failover,efm2"
