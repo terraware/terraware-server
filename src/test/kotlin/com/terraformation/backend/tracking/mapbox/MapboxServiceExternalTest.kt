@@ -5,13 +5,13 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.client.engine.java.Java
 import io.mockk.every
 import java.net.URI
 import kotlin.math.abs
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
@@ -56,12 +56,6 @@ class MapboxServiceExternalTest : RunsAsUser {
     val actual = service.getElevation(elevationDataPoint.point)
     assertApproximatelyEqual(
         elevationDataPoint.elevation, actual, 0.5, "Fetching elevation for $elevationDataPoint")
-  }
-
-  private fun getEnvOrSkipTest(name: String): String {
-    val value = System.getenv(name)
-    assumeNotNull(value, "$name not set; skipping test")
-    return value
   }
 
   data class ElevationDataPoint(val name: String, val point: Point, val elevation: Double) {

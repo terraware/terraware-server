@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.log.perClassLogger
 import io.mockk.every
 import io.mockk.mockk
@@ -8,7 +9,6 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import kotlin.random.Random
 import org.junit.Assume.assumeNoException
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import software.amazon.awssdk.core.sync.RequestBody
@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  * run.
  */
 internal class S3FileStoreExternalTest : FileStoreTest() {
-  private val bucketName = System.getenv("TEST_S3_BUCKET_NAME")
+  private val bucketName = getEnvOrSkipTest("TEST_S3_BUCKET_NAME")
 
   private val config: TerrawareServerConfig = mockk()
   private val log = perClassLogger()
@@ -43,8 +43,6 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
 
   @BeforeEach
   fun setUp() {
-    assumeNotNull(bucketName, "TEST_S3_BUCKET_NAME not set; skipping test")
-
     try {
       s3Client = S3Client.create()
     } catch (e: Exception) {
