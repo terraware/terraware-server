@@ -698,6 +698,7 @@ data class ObservationMonitoringPlotCoordinatesPayload(
   fun toModel() = NewObservedPlotCoordinatesModel(gpsCoordinates, position)
 }
 
+@Schema(description = "Information about observed plants of a particular species in a region.")
 data class ObservationSpeciesResultsPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(
@@ -805,6 +806,8 @@ data class ObservationMonitoringPlotResultsPayload(
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total.")
     val totalSpecies: Int,
+    @Schema(description = "Information about plants of unknown species, if any were observed.")
+    val unknownSpecies: ObservationSpeciesResultsPayload?,
 ) {
   constructor(
       model: ObservationMonitoringPlotResultsModel
@@ -835,6 +838,10 @@ data class ObservationMonitoringPlotResultsPayload(
       status = model.status,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
+      unknownSpecies =
+          model.species
+              .firstOrNull { it.certainty == RecordedSpeciesCertainty.Unknown }
+              ?.let { ObservationSpeciesResultsPayload(it) },
   )
 }
 
