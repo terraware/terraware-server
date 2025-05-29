@@ -1,3 +1,4 @@
+9f2b2c218fe SW-7005 Fix observation data for deleted species (#3142)
 bd6d87d4fdc SW-7005 Treat observed species as in use (#3141)
 d7681f241f3 Make JobRunr recovery thread wait for initialization (#3140)
 45bc958fc4f Enable virtual threads (#3135)
