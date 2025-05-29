@@ -4,12 +4,12 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.ktor.client.plugins.ClientRequestException
 import io.mockk.every
 import java.net.URI
-import org.junit.Assume
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -120,11 +120,5 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
   fun `throws exception if no permission to delete issue`() {
     every { user.canDeleteSupportIssue() } returns false
     assertThrows<AccessDeniedException> { client.deleteIssue("issue") }
-  }
-
-  private fun getEnvOrSkipTest(name: String): String {
-    val value = System.getenv(name)
-    Assume.assumeNotNull(value, "$name not set; skipping test")
-    return value
   }
 }

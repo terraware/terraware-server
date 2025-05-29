@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.http.HttpMethod
@@ -13,7 +14,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import kotlin.random.Random
-import org.junit.AssumptionViolatedException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -71,8 +71,7 @@ internal class LiveBalenaClientExternalTest {
   @BeforeAll
   fun setUp() {
     // Skip all the tests if no API key is available.
-    val apiKey =
-        System.getenv("TEST_BALENA_API_KEY") ?: throw AssumptionViolatedException("No API key")
+    val apiKey = getEnvOrSkipTest("TEST_BALENA_API_KEY")
 
     // Need to bootstrap the client without a fleet ID to create the fleet to define the config
     // that includes the fleet ID.

@@ -1,9 +1,9 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.getEnvOrSkipTest
 import java.net.URI
 import java.util.UUID
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -92,11 +92,5 @@ class DropboxWriterExternalTest {
     // file is shared repeatedly while a valid link still exists.
     assertNotNull(writer.shareFile("$scratchFolder/$name"))
     assertNotNull(writer.shareFile("$scratchFolder/$name"))
-  }
-
-  private fun getEnvOrSkipTest(name: String): String {
-    val value = System.getenv(name)
-    assumeNotNull(value, "$name not set; skipping test")
-    return value
   }
 }

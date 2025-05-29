@@ -13,6 +13,7 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
@@ -197,4 +198,15 @@ fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
         fakeId to actualId
       }
       .toMap()
+}
+
+/**
+ * Gets the value of an environment variable. If the variable isn't set, skips the current test.
+ * This is typically used for tests that depend on external services, which we don't want to include
+ * in test runs by default since they can be slow and flaky.
+ */
+fun getEnvOrSkipTest(name: String): String {
+  val value = System.getenv(name)
+  assumeNotNull(value, "$name not set; skipping test")
+  return value
 }
