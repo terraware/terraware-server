@@ -1,11 +1,13 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.dummyTerrawareServerConfig
 import com.terraformation.backend.getEnvOrSkipTest
-import java.net.URI
 import java.util.UUID
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -30,20 +32,13 @@ class DropboxWriterExternalTest {
     val refreshToken = getEnvOrSkipTest("TERRAWARE_DROPBOX_REFRESHTOKEN")
 
     val config =
-        TerrawareServerConfig(
-            webAppUrl = URI("https://terraware.io"),
+        dummyTerrawareServerConfig(
             dropbox =
                 TerrawareServerConfig.DropboxConfig(
                     enabled = true,
                     appKey = appKey,
                     appSecret = appSecret,
-                    refreshToken = refreshToken,
-                ),
-            keycloak =
-                TerrawareServerConfig.KeycloakConfig(
-                    apiClientId = "test",
-                    apiClientGroupName = "test",
-                    apiClientUsernamePrefix = "test"))
+                    refreshToken = refreshToken))
 
     writer = DropboxWriter(config)
   }

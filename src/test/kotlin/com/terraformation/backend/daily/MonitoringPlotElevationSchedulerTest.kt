@@ -1,8 +1,8 @@
 package com.terraformation.backend.daily
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.dummyTerrawareServerConfig
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.mapbox.MapboxService
@@ -11,7 +11,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
-import java.net.URI
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -21,16 +20,7 @@ class MonitoringPlotElevationSchedulerTest {
 
   val scheduler: MonitoringPlotElevationScheduler by lazy {
     MonitoringPlotElevationScheduler(
-        TerrawareServerConfig(
-            webAppUrl = URI("https://terraware.io"),
-            keycloak =
-                TerrawareServerConfig.KeycloakConfig(
-                    apiClientId = "test",
-                    apiClientGroupName = "test",
-                    apiClientUsernamePrefix = "test")),
-        mapboxService,
-        plantingSiteStore,
-        SystemUser(mockk()))
+        dummyTerrawareServerConfig(), mapboxService, plantingSiteStore, SystemUser(mockk()))
   }
 
   @BeforeEach

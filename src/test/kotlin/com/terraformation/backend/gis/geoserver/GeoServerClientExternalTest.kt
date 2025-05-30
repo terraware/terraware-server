@@ -3,6 +3,7 @@ package com.terraformation.backend.gis.geoserver
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.GeometryModule
+import com.terraformation.backend.dummyTerrawareServerConfig
 import com.terraformation.backend.getEnvOrSkipTest
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
@@ -19,20 +20,10 @@ class GeoServerClientExternalTest {
     val password = System.getenv("TERRAWARE_GEOSERVER_PASSWORD")
 
     val config =
-        TerrawareServerConfig(
+        dummyTerrawareServerConfig(
             geoServer =
                 TerrawareServerConfig.GeoServerConfig(
-                    password = password,
-                    username = username,
-                    wfsUrl = wfsUrl,
-                ),
-            keycloak =
-                TerrawareServerConfig.KeycloakConfig(
-                    apiClientId = "test",
-                    apiClientGroupName = "test",
-                    apiClientUsernamePrefix = "test"),
-            webAppUrl = URI("https://terraware.io"),
-        )
+                    password = password, username = username, wfsUrl = wfsUrl))
 
     client = GeoServerClient(config, jacksonObjectMapper().registerModule(GeometryModule()))
   }

@@ -3,13 +3,13 @@ package com.terraformation.backend.support.atlassian
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.dummyTerrawareServerConfig
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.ktor.client.plugins.ClientRequestException
 import io.mockk.every
-import java.net.URI
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -39,20 +39,14 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     val serviceDeskKey = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_SERVICEDESKKEY")
 
     val config =
-        TerrawareServerConfig(
-            webAppUrl = URI("https://terraware.io"),
+        dummyTerrawareServerConfig(
             atlassian =
                 TerrawareServerConfig.AtlassianConfig(
                     account = account,
                     apiHost = apiHostname,
                     apiToken = apiToken,
                     enabled = true,
-                    serviceDeskKey = serviceDeskKey),
-            keycloak =
-                TerrawareServerConfig.KeycloakConfig(
-                    apiClientId = "test",
-                    apiClientGroupName = "test",
-                    apiClientUsernamePrefix = "test"))
+                    serviceDeskKey = serviceDeskKey))
 
     client = AtlassianHttpClient(config)
     assertTrue(client.requestTypeIds.isNotEmpty())

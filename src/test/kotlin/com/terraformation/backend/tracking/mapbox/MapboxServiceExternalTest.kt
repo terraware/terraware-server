@@ -5,14 +5,14 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.dummyTerrawareServerConfig
 import com.terraformation.backend.getEnvOrSkipTest
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.HttpClientConfig
 import io.ktor.client.engine.java.Java
 import io.mockk.every
-import java.net.URI
 import kotlin.math.abs
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -33,18 +33,10 @@ class MapboxServiceExternalTest : RunsAsUser {
     val apiToken = getEnvOrSkipTest("TERRAWARE_MAPBOX_APITOKEN")
 
     val config =
-        TerrawareServerConfig(
-            webAppUrl = URI("https://terraware.io"),
-            keycloak =
-                TerrawareServerConfig.KeycloakConfig(
-                    apiClientId = "test",
-                    apiClientGroupName = "test",
-                    apiClientUsernamePrefix = "test"),
+        dummyTerrawareServerConfig(
             mapbox =
                 TerrawareServerConfig.MapboxConfig(
-                    apiToken = apiToken,
-                    temporaryTokenExpirationMinutes = 30L,
-                ))
+                    apiToken = apiToken, temporaryTokenExpirationMinutes = 30L))
 
     val httpClient = HttpClientConfig().httpClient(Java.create(), jacksonObjectMapper())
     service = MapboxService(config, httpClient)
