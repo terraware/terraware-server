@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.SRID
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.java.Java
@@ -26,6 +27,8 @@ import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import kotlinx.coroutines.runBlocking
+import org.geotools.feature.FeatureCollection
+import org.geotools.geojson.feature.FeatureJSON
 
 @Named
 class GeoServerClient(
@@ -34,6 +37,32 @@ class GeoServerClient(
 ) {
   private val wfsVersion = "2.0.0"
   private val httpClient: HttpClient by lazy { createHttpClient() }
+
+  fun describeFeatureType(featureType: String): FeatureTypeDescription {
+    val descriptions =
+        sendGetRequest<FeatureTypeDescriptions>(
+            "DescribeFeatureType", mapOf("typeNames" to featureType))
+    return descriptions.featureTypes.first().copy(targetPrefix = descriptions.targetPrefix)
+  }
+
+  fun getPlantingSiteFeatures(
+      filter: String,
+      properties: List<String>?,
+      forceLongLat: Boolean = false,
+  ): FeatureCollection<*, *> {
+    return FeatureJSON()
+        .readFeatureCollection(
+            sendGetRequest<String>(
+                "GetFeature",
+                listOfNotNull(
+                        if (forceLongLat) "srsName" to "EPSG:${SRID.LONG_LAT}" else null,
+                        "cql_filter" to filter,
+                        "typeNames" to "tf_accelerator:planting_sites",
+                        if (properties != null) "propertyName" to properties.joinToString(",")
+                        else null,
+                    )
+                    .toMap()))
+  }
 
   fun getCapabilities(): WfsCapabilities {
     return sendGetRequest("GetCapabilities")

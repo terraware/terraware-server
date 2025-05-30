@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<head>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <style>
+        /* Only apply full-height flexbox when map is shown */
+        .has-map {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-content {
+            flex-shrink: 0;
+        }
+
+        .has-map .page-content {
+            margin: 8px;
+        }
+
+        .map-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body th:class="${geoJsonResults != null ? 'has-map' : ''}">
+
+<div class="page-content">
+    <span th:replace="~{/admin/header :: top}"/>
+
+    <a href="/admin/">Home</a>
+
+    <h2>GeoServer</h2>
+
+    <th:block th:if="${enabled}">
+        <form method="POST" action="/admin/geoServer/cql">
+            <h3>CQL Planting Sites Query</h3>
+
+            <label>
+                Filter
+                <input type="text" size="40" name="filter" th:value="${filter}"/>
+            </label>
+            <br/>
+            <label>
+                Properties (comma-separated)
+                <input type="text" size="40" name="properties" th:value="${cqlProperties}"/>
+                <small th:text="${availableProperties}"></small>
+            </label>
+            <br/>
+            <label>
+                Force long/lat coordinates
+                <input type="checkbox" name="forceLongLat" th:checked="${forceLongLat}"/>
+            </label>
+            <br/>
+            <label>
+                Show results on map
+                <input type="checkbox" name="showMap" th:checked="${showMap}"/>
+            </label>
+            <br/>
+            <input type="submit" value="Query"/>
+        </form>
+
+        <th:block th:if="${results != null}">
+            <h3>Results</h3>
+
+            <textarea rows="20" cols="80" th:text="${results}"></textarea>
+        </th:block>
+</div>
+
+<th:block th:if="${geoJsonResults != null}">
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        mapboxgl.accessToken = /*[[${mapboxToken}]]*/;
+        const geoJsonData = /*[[${geoJsonResults}]]*/;
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            center: [0, 0],
+            zoom: 2
+        });
+
+        map.on('load', () => {
+            if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
+                map.addSource('query-results', {
+                    type: 'geojson',
+                    data: geoJsonData
+                });
+
+                // Feature interiors
+                map.addLayer({
+                    id: 'fill',
+                    type: 'fill',
+                    source: 'query-results',
+                    filter: ['==', ['geometry-type'], 'Polygon'],
+                    paint: {
+                        'fill-color': '#088',
+                        'fill-opacity': 0.6
+                    }
+                });
+
+                // Line layer for feature boundaries
+                map.addLayer({
+                    id: 'line',
+                    source: 'query-results',
+                    type: 'line',
+                    filter: ['in', ['geometry-type'], ['literal', ['Polygon', 'LineString']]],
+                    paint: {
+                        'line-color': '#099',
+                        'line-width': 2
+                    }
+                });
+
+                // Default filter expression (shows no features initially)
+                const emptyFilter = ['==', ['get', 'fid'], ''];
+
+                // Hover highlight layers
+                map.addLayer({
+                    id: 'fill-hover',
+                    type: 'fill',
+                    source: 'query-results',
+                    filter: emptyFilter,
+                    paint: {
+                        'fill-color': '#0bb',
+                        'fill-opacity': 0.3
+                    }
+                });
+
+                map.addLayer({
+                    id: 'line-hover',
+                    source: 'query-results',
+                    type: 'line',
+                    filter: emptyFilter,
+                    paint: {
+                        'line-color': '#0bb',
+                        'line-width': 3
+                    }
+                });
+
+                // Add highlighted layers for selected features
+                map.addLayer({
+                    id: 'fill-highlighted',
+                    type: 'fill',
+                    source: 'query-results',
+                    filter: emptyFilter,
+                    paint: {
+                        'fill-color': '#ff8800',
+                        'fill-opacity': 0.8
+                    }
+                });
+
+                map.addLayer({
+                    id: 'line-highlighted',
+                    source: 'query-results',
+                    type: 'line',
+                    filter: emptyFilter,
+                    paint: {
+                        'line-color': '#ff8800',
+                        'line-width': 4
+                    }
+                });
+
+                // Fit map to show all features
+                const bounds = new mapboxgl.LngLatBounds();
+                geoJsonData.features.forEach((feature) => {
+                    if (feature.geometry.type === 'Polygon') {
+                        feature.geometry.coordinates[0].forEach((coord) => {
+                            bounds.extend(coord);
+                        });
+                    } else if (feature.geometry.type === 'MultiPolygon') {
+                        feature.geometry.coordinates.forEach((polygon) => {
+                            polygon[0].forEach((coord) => {
+                                bounds.extend(coord);
+                            });
+                        });
+                    }
+                });
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds, {padding: 50});
+                }
+
+                let currentlyHighlightedId = null;
+                let currentlyHoveredId = null;
+
+                const clearHighlight = () => {
+                    if (currentlyHighlightedId !== null) {
+                        map.setFilter('fill-highlighted', emptyFilter);
+                        map.setFilter('line-highlighted', emptyFilter);
+                        currentlyHighlightedId = null;
+                    }
+                };
+
+                const clearHover = () => {
+                    if (currentlyHoveredId !== null) {
+                        map.setFilter('fill-hover', emptyFilter);
+                        map.setFilter('line-hover', emptyFilter);
+                        currentlyHoveredId = null;
+                    }
+                };
+
+                const setHighlight = (featureId) => {
+                    const filterExpression = ['==', ['get', 'fid'], featureId];
+                    map.setFilter('fill-highlighted', filterExpression);
+                    map.setFilter('line-highlighted', filterExpression);
+                    currentlyHighlightedId = featureId;
+                };
+
+                const setHover = (featureId) => {
+                    const filterExpression = ['==', ['get', 'fid'], featureId];
+                    map.setFilter('fill-hover', filterExpression);
+                    map.setFilter('line-hover', filterExpression);
+                    currentlyHoveredId = featureId;
+                };
+
+                map.on('mousemove', (e) => {
+                    const features = map.queryRenderedFeatures(e.point, {layers: ['fill', 'line']});
+
+                    if (features.length > 0) {
+                        map.getCanvas().style.cursor = 'pointer';
+                        const featureId = features[0].properties.fid;
+
+                        // Only update hover if this is a different feature and not currently highlighted
+                        if (featureId !== currentlyHighlightedId && featureId !== currentlyHoveredId) {
+                            clearHover();
+                            setHover(featureId);
+                        }
+                    } else {
+                        map.getCanvas().style.cursor = '';
+                        clearHover();
+                    }
+                });
+
+                const showPopup = (e, properties) => {
+                    let popupContent = '<h4>Feature Properties</h4>';
+                    Object.keys(properties).forEach((key) => {
+                        if (properties[key] !== null && properties[key] !== undefined) {
+                            popupContent += `<strong>${key}:</strong> ${properties[key]}<br>`;
+                        }
+                    });
+
+                    new mapboxgl.Popup()
+                            .setLngLat(e.lngLat)
+                            .setHTML(popupContent)
+                            .addTo(map);
+                };
+
+                const addPopupClickHandler = (layerId) => {
+                    map.on('click', layerId, (e) => {
+                        const properties = e.features[0].properties;
+                        const featureId = properties.fid;
+
+                        clearHighlight();
+                        clearHover();
+                        setHighlight(featureId);
+                        showPopup(e, properties);
+                    });
+                };
+
+                // Clear highlights when clicking on empty map area
+                map.on('click', (e) => {
+                    const features = map.queryRenderedFeatures(e.point, {layers: ['fill', 'line']});
+                    if (features.length === 0) {
+                        clearHighlight();
+                        clearHover();
+                    }
+                });
+
+                addPopupClickHandler('fill');
+                addPopupClickHandler('line');
+            }
+        });
+        /*]]>*/
+    </script>
+    </div>
+</th:block>
+
+<th:block th:unless="${enabled}">
+    <p>
+        GeoServer is not configured.
+    </p>
+</th:block>
+
+<th:block th:if="${geoJsonResults == null}">
+    </div>
+</th:block>
+
+</body>
+</html>
