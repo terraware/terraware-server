@@ -17,4 +17,9 @@ COPY --chown=$USER_ID application/ ./
 EXPOSE 8080
 
 USER $USER_ID
-CMD ["java", "-Djava.locale.providers=SPI,CLDR", "org.springframework.boot.loader.launch.JarLauncher"]
+CMD [ \
+    "java", \
+        "-Djava.locale.providers=SPI,CLDR", \
+        "--sun-misc-unsafe-memory-access=allow", \
+        "org.springframework.boot.loader.launch.JarLauncher" \
+]
