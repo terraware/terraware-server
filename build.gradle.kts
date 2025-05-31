@@ -153,7 +153,7 @@ dependencies {
   testImplementation("org.junit.platform:junit-platform-launcher")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.0"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.1"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
