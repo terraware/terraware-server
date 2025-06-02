@@ -1,3 +1,7 @@
+2e3315d9873 Update dependency mypy to v1.16.0 (#3151)
+716f8d419b7 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.36.0 (#3150)
+8452aecda2e Update dependency software.amazon.awssdk:bom to v2.31.54 (#3149)
+9d8569fc30f Update database dependencies (#3148)
 d4cf55c0bfe Add dummy TerrawareServerConfig helper function (#3146)
 8cfbfc6c861 SW-7022 Suppress warning about sun.misc.Unsafe (#3147)
 24fa11185a4 SW-7000 Add basic GeoServer client (#3145)
