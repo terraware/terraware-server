@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.requirePermissions
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.java.Java
@@ -14,6 +15,8 @@ import io.ktor.client.plugins.auth.providers.BasicAuthCredentials
 import io.ktor.client.plugins.auth.providers.basic
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.expectSuccess
+import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
@@ -34,6 +37,17 @@ class GeoServerClient(
 
   fun getCapabilities(): WfsCapabilities {
     return sendGetRequest("GetCapabilities")
+  }
+
+  suspend fun proxyGetRequest(queryParams: Map<String, Array<String>>): HttpResponse {
+    requirePermissions { proxyGeoServerGetRequests() }
+
+    return httpClient.get {
+      // Pass GeoServer error responses through to the client.
+      expectSuccess = false
+
+      queryParams.forEach { (name, values) -> values.forEach { value -> parameter(name, value) } }
+    }
   }
 
   private inline fun <reified T> sendGetRequest(
