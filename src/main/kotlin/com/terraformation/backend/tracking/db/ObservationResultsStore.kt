@@ -264,6 +264,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
       }
 
+  private val recordedTreesGpsCoordinatesField = RECORDED_TREES.GPS_COORDINATES.forMultiset()
+
   private val recordedTreesMultiset =
       with(RECORDED_TREES) {
         DSL.multiset(
@@ -280,6 +282,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         TREE_GROWTH_FORM_ID,
                         TREE_NUMBER,
                         TRUNK_NUMBER,
+                        recordedTreesGpsCoordinatesField,
                     )
                     .from(this)
                     .join(OBSERVATION_BIOMASS_SPECIES)
@@ -293,6 +296,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     id = it[ID]!!,
                     description = it[DESCRIPTION],
                     diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM],
+                    gpsCoordinates = it[recordedTreesGpsCoordinatesField] as? Point,
                     heightM = it[HEIGHT_M],
                     isDead = it[IS_DEAD]!!,
                     pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M],

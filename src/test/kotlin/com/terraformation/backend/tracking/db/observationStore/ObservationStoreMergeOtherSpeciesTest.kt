@@ -414,6 +414,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 listOf(
                     NewRecordedTreeModel(
                         diameterAtBreastHeightCm = BigDecimal(1),
+                        gpsCoordinates = point(1),
                         heightM = BigDecimal(10),
                         id = null,
                         isDead = false,
@@ -425,6 +426,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                     ),
                     NewRecordedTreeModel(
                         diameterAtBreastHeightCm = BigDecimal(1.5),
+                        gpsCoordinates = point(2),
                         heightM = BigDecimal(11),
                         id = null,
                         isDead = false,
@@ -436,6 +438,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                     ),
                     NewRecordedTreeModel(
                         diameterAtBreastHeightCm = BigDecimal(1.9),
+                        gpsCoordinates = point(2),
                         id = null,
                         isDead = false,
                         pointOfMeasurementM = BigDecimal(1.2),
@@ -446,6 +449,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                     ),
                     NewRecordedTreeModel(
                         diameterAtBreastHeightCm = BigDecimal(12),
+                        gpsCoordinates = null,
                         heightM = BigDecimal(30),
                         id = null,
                         isDead = false,
@@ -544,6 +548,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 listOf(
                     NewRecordedTreeModel(
                         diameterAtBreastHeightCm = BigDecimal(15),
+                        gpsCoordinates = point(1),
                         heightM = BigDecimal(11),
                         id = null,
                         isDead = false,
