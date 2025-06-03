@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import java.math.BigDecimal
 import java.time.Instant
+import org.locationtech.jts.geom.Point
 
 data class BiomassSpeciesKey(
     val speciesId: SpeciesId? = null,
@@ -39,6 +40,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     val id: TreeId,
     val description: String? = null,
     val diameterAtBreastHeightCm: BigDecimal? = null,
+    val gpsCoordinates: Point?,
     val heightM: BigDecimal? = null,
     val isDead: Boolean,
     val pointOfMeasurementM: BigDecimal? = null,

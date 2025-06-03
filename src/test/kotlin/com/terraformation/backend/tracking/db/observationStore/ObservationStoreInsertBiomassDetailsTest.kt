@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -142,6 +143,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                         id = null,
                         isDead = false,
                         diameterAtBreastHeightCm = BigDecimal.TWO, // this value is ignored
+                        gpsCoordinates = point(1),
                         pointOfMeasurementM = BigDecimal.valueOf(1.3), // ignored
                         shrubDiameterCm = 25,
                         speciesId = treeSpeciesId1,
@@ -153,6 +155,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                         id = null,
                         isDead = true,
                         diameterAtBreastHeightCm = BigDecimal.TWO,
+                        gpsCoordinates = null,
                         pointOfMeasurementM = BigDecimal.valueOf(1.3),
                         heightM = BigDecimal.TEN,
                         shrubDiameterCm = 1, // ignored
@@ -165,6 +168,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                         id = null,
                         isDead = false,
                         diameterAtBreastHeightCm = BigDecimal.TEN,
+                        gpsCoordinates = point(2),
                         pointOfMeasurementM = BigDecimal.valueOf(1.5),
                         heightM = BigDecimal.TEN,
                         speciesId = treeSpeciesId2,
@@ -175,6 +179,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                     NewRecordedTreeModel(
                         id = null,
                         diameterAtBreastHeightCm = BigDecimal.TWO,
+                        gpsCoordinates = point(2),
                         pointOfMeasurementM = BigDecimal.valueOf(1.1),
                         isDead = false,
                         speciesId = treeSpeciesId2,
@@ -343,6 +348,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 biomassSpeciesId = biomassTreeSpeciesId1,
+                gpsCoordinates = point(1),
                 isDead = false,
                 shrubDiameterCm = 25,
                 treeGrowthFormId = TreeGrowthForm.Shrub,
@@ -366,6 +372,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 monitoringPlotId = plotId,
                 biomassSpeciesId = biomassTreeSpeciesId2,
                 diameterAtBreastHeightCm = BigDecimal.TEN,
+                gpsCoordinates = point(2),
                 pointOfMeasurementM = BigDecimal.valueOf(1.5),
                 heightM = BigDecimal.TEN,
                 isDead = false,
@@ -378,6 +385,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 monitoringPlotId = plotId,
                 biomassSpeciesId = biomassTreeSpeciesId2,
                 diameterAtBreastHeightCm = BigDecimal.TWO,
+                gpsCoordinates = point(2),
                 pointOfMeasurementM = BigDecimal.valueOf(1.1),
                 isDead = false,
                 treeGrowthFormId = TreeGrowthForm.Trunk,

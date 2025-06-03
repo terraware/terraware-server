@@ -1017,6 +1017,7 @@ class ObservationStore(
                 treeNumber = it.treeNumber,
                 trunkNumber = it.trunkNumber,
                 treeGrowthFormId = it.treeGrowthForm,
+                gpsCoordinates = it.gpsCoordinates,
                 isDead = it.isDead,
                 diameterAtBreastHeightCm =
                     if (it.treeGrowthForm == TreeGrowthForm.Tree ||

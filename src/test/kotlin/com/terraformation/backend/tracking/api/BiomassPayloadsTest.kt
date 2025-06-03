@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -28,6 +29,7 @@ class BiomassPayloadsTest {
           listOf<NewTreePayload>(
               NewShrubPayload(
                   description = "Live shrub description",
+                  gpsCoordinates = point(1),
                   isDead = false,
                   shrubDiameter = 5,
                   speciesId = SpeciesId(10),
@@ -41,6 +43,7 @@ class BiomassPayloadsTest {
                   speciesName = null,
               ),
               NewTreeWithTrunksPayload(
+                  gpsCoordinates = point(2),
                   speciesId = null,
                   speciesName = "Other tree",
                   trunks =
@@ -54,6 +57,7 @@ class BiomassPayloadsTest {
                           ),
                       )),
               NewTreeWithTrunksPayload(
+                  gpsCoordinates = point(3),
                   speciesId = SpeciesId(5),
                   speciesName = null,
                   trunks =
@@ -80,6 +84,7 @@ class BiomassPayloadsTest {
               NewRecordedTreeModel(
                   id = null,
                   description = "Live shrub description",
+                  gpsCoordinates = point(1),
                   isDead = false,
                   shrubDiameterCm = 5,
                   speciesId = SpeciesId(10),
@@ -91,6 +96,7 @@ class BiomassPayloadsTest {
               NewRecordedTreeModel(
                   id = null,
                   description = "Dead shrub description",
+                  gpsCoordinates = null,
                   isDead = true,
                   shrubDiameterCm = 3,
                   speciesId = SpeciesId(10),
@@ -103,6 +109,7 @@ class BiomassPayloadsTest {
                   id = null,
                   description = "Single trunk description",
                   diameterAtBreastHeightCm = BigDecimal(7),
+                  gpsCoordinates = point(2),
                   heightM = BigDecimal(16),
                   isDead = false,
                   pointOfMeasurementM = BigDecimal(1.3),
@@ -116,6 +123,7 @@ class BiomassPayloadsTest {
                   id = null,
                   description = "Multi-trunk description 1",
                   diameterAtBreastHeightCm = BigDecimal(4),
+                  gpsCoordinates = point(3),
                   heightM = BigDecimal(4),
                   isDead = false,
                   pointOfMeasurementM = BigDecimal(1.3),
@@ -129,6 +137,7 @@ class BiomassPayloadsTest {
                   id = null,
                   description = "Multi-trunk description 2",
                   diameterAtBreastHeightCm = BigDecimal(8),
+                  gpsCoordinates = point(3),
                   heightM = BigDecimal(9),
                   isDead = false,
                   pointOfMeasurementM = BigDecimal(1.3),
@@ -246,6 +255,7 @@ class BiomassPayloadsTest {
               trees =
                   listOf(
                       ExistingRecordedTreeModel(
+                          gpsCoordinates = point(1),
                           id = RecordedTreeId(1),
                           isDead = false,
                           shrubDiameterCm = 25,
@@ -257,6 +267,7 @@ class BiomassPayloadsTest {
                       ExistingRecordedTreeModel(
                           id = RecordedTreeId(2),
                           diameterAtBreastHeightCm = BigDecimal.TWO,
+                          gpsCoordinates = null,
                           pointOfMeasurementM = BigDecimal.valueOf(1.3),
                           heightM = BigDecimal.TEN,
                           isDead = true,
@@ -269,6 +280,7 @@ class BiomassPayloadsTest {
                           id = RecordedTreeId(3),
                           description = "Multi-trunk description 1",
                           diameterAtBreastHeightCm = BigDecimal.TEN,
+                          gpsCoordinates = point(2),
                           pointOfMeasurementM = BigDecimal.valueOf(1.5),
                           isDead = false,
                           speciesId = SpeciesId(12),
@@ -280,6 +292,7 @@ class BiomassPayloadsTest {
                           id = RecordedTreeId(4),
                           description = "Multi-trunk description 2",
                           diameterAtBreastHeightCm = BigDecimal.TWO,
+                          gpsCoordinates = point(2),
                           pointOfMeasurementM = BigDecimal.valueOf(1.1),
                           isDead = false,
                           speciesId = SpeciesId(12),
@@ -377,6 +390,7 @@ class BiomassPayloadsTest {
                       ExistingTreePayload(
                           description = null,
                           diameterAtBreastHeight = null,
+                          gpsCoordinates = point(1),
                           height = null,
                           isDead = false,
                           isInvasive = false,
@@ -392,6 +406,7 @@ class BiomassPayloadsTest {
                       ExistingTreePayload(
                           description = null,
                           diameterAtBreastHeight = BigDecimal.TWO,
+                          gpsCoordinates = null,
                           height = BigDecimal.TEN,
                           isDead = true,
                           isInvasive = false,
@@ -407,6 +422,7 @@ class BiomassPayloadsTest {
                       ExistingTreePayload(
                           description = "Multi-trunk description 1",
                           diameterAtBreastHeight = BigDecimal.TEN,
+                          gpsCoordinates = point(2),
                           height = null,
                           isDead = false,
                           isInvasive = true,
@@ -422,6 +438,7 @@ class BiomassPayloadsTest {
                       ExistingTreePayload(
                           description = "Multi-trunk description 2",
                           diameterAtBreastHeight = BigDecimal.TWO,
+                          gpsCoordinates = point(2),
                           height = null,
                           isDead = false,
                           isInvasive = true,

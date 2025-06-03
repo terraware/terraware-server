@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
+import org.locationtech.jts.geom.Point
 
 data class BiomassSpeciesPayload(
     val commonName: String?,
@@ -116,6 +117,7 @@ data class ExistingTreePayload(
     val description: String?,
     @Schema(description = "Measured in centimeters.") //
     val diameterAtBreastHeight: BigDecimal?,
+    val gpsCoordinates: Point?,
     @Schema(description = "Measured in meters.") //
     val height: BigDecimal?,
     val isDead: Boolean,
@@ -136,6 +138,7 @@ data class ExistingTreePayload(
   ) : this(
       description = model.description,
       diameterAtBreastHeight = model.diameterAtBreastHeightCm,
+      gpsCoordinates = model.gpsCoordinates,
       height = model.heightM,
       isDead = model.isDead,
       isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
@@ -163,6 +166,8 @@ data class ExistingTreePayload(
             DiscriminatorMapping(value = "tree", schema = NewTreeWithTrunksPayload::class),
         ])
 sealed interface NewTreePayload {
+  @get:Schema(description = "GPS coordinates where plant was observed.") //
+  val gpsCoordinates: Point?
   val speciesId: SpeciesId?
   val speciesName: String?
 
@@ -172,6 +177,7 @@ sealed interface NewTreePayload {
 @JsonTypeName("shrub")
 data class NewShrubPayload(
     val description: String?,
+    override val gpsCoordinates: Point? = null,
     val isDead: Boolean,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
@@ -183,6 +189,7 @@ data class NewShrubPayload(
             id = null,
             description = description,
             diameterAtBreastHeightCm = null,
+            gpsCoordinates = gpsCoordinates,
             heightM = null,
             isDead = isDead,
             pointOfMeasurementM = null,
@@ -207,6 +214,7 @@ data class NewTrunkPayload(
     val isDead: Boolean,
 ) {
   fun toTreeModel(
+      gpsCoordinates: Point?,
       growthForm: TreeGrowthForm,
       speciesId: SpeciesId?,
       speciesName: String?,
@@ -217,6 +225,7 @@ data class NewTrunkPayload(
         id = null,
         description = description,
         diameterAtBreastHeightCm = diameterAtBreastHeight,
+        gpsCoordinates = gpsCoordinates,
         heightM = height,
         isDead = isDead,
         pointOfMeasurementM = pointOfMeasurement,
@@ -232,6 +241,7 @@ data class NewTrunkPayload(
 
 @JsonTypeName("tree")
 data class NewTreeWithTrunksPayload(
+    override val gpsCoordinates: Point? = null,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
     val trunks: List<NewTrunkPayload>,
@@ -249,7 +259,7 @@ data class NewTreeWithTrunksPayload(
         }
 
     return trunks.mapIndexed { index, trunk ->
-      trunk.toTreeModel(growthForm, speciesId, speciesName, treeNumber, index + 1)
+      trunk.toTreeModel(gpsCoordinates, growthForm, speciesId, speciesName, treeNumber, index + 1)
     }
   }
 }
