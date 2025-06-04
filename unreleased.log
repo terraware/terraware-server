@@ -1,3 +1,4 @@
+66faf7d9c71 SW-7030 Proxy WFS requests to GeoServer (#3153)
 8b53f9a1857 SW-7029 Add GPS coordinates to recorded trees (#3152)
 2e3315d9873 Update dependency mypy to v1.16.0 (#3151)
 716f8d419b7 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.36.0 (#3150)
