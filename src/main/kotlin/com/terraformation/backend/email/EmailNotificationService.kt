@@ -65,6 +65,7 @@ import com.terraformation.backend.email.model.FunderAddedToFundingEntity
 import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
+import com.terraformation.backend.email.model.ObservationNotStarted
 import com.terraformation.backend.email.model.ObservationPlotReplaced
 import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
@@ -96,6 +97,7 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -435,6 +437,16 @@ class EmailNotificationService(
     val model = ObservationNotScheduled(config, organization.name, plantingSite.name)
 
     sendToOrganizationContact(organization, model)
+  }
+
+  @EventListener
+  fun on(event: ObservationNotStartedEvent) {
+    val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+
+    emailService.sendOrganizationNotification(
+        plantingSite.organizationId,
+        ObservationNotStarted(config, plantingSite.name, webAppUrls.fullContactUs().toString()),
+        roles = setOf(Role.Admin, Role.Owner))
   }
 
   @EventListener
