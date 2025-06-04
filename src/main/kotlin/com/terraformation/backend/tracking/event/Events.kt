@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.event
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -56,6 +57,12 @@ data class ScheduleObservationReminderNotificationEvent(
 
 /** Published when a site has not had observations scheduled */
 data class ObservationNotScheduledNotificationEvent(
+    val plantingSiteId: PlantingSiteId,
+) : ObservationSchedulingNotificationEvent
+
+/** Published when we're unable to start a scheduled observation. */
+data class ObservationNotStartedEvent(
+    val observationId: ObservationId,
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
 
