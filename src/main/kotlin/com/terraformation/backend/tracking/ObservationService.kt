@@ -37,6 +37,7 @@ import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -48,6 +49,7 @@ import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSubzoneFullException
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import jakarta.inject.Named
@@ -108,38 +110,47 @@ class ObservationService(
 
         log.info("Starting observation")
 
-        plantingSite.plantingZones.forEach { plantingZone ->
-          log.withMDC("plantingZoneId" to plantingZone.id) {
-            if (plantingZone.plantingSubzones.any { it.id in observation.requestedSubzoneIds }) {
-              val permanentPlotIds =
-                  plantingZone.choosePermanentPlots(observation.requestedSubzoneIds)
-              val temporaryPlotIds =
-                  plantingZone
-                      .chooseTemporaryPlots(
-                          observation.requestedSubzoneIds, gridOrigin, plantingSite.exclusion)
-                      .map { plotBoundary ->
-                        plantingSiteStore.createTemporaryPlot(
-                            plantingSite.id, plantingZone.id, plotBoundary)
-                      }
+        try {
+          plantingSite.plantingZones.forEach { plantingZone ->
+            log.withMDC("plantingZoneId" to plantingZone.id) {
+              if (plantingZone.plantingSubzones.any { it.id in observation.requestedSubzoneIds }) {
+                val permanentPlotIds =
+                    plantingZone.choosePermanentPlots(observation.requestedSubzoneIds)
+                val temporaryPlotIds =
+                    plantingZone
+                        .chooseTemporaryPlots(
+                            observation.requestedSubzoneIds, gridOrigin, plantingSite.exclusion)
+                        .map { plotBoundary ->
+                          plantingSiteStore.createTemporaryPlot(
+                              plantingSite.id, plantingZone.id, plotBoundary)
+                        }
 
-              observationStore.addPlotsToObservation(
-                  observationId, permanentPlotIds, isPermanent = true)
-              observationStore.addPlotsToObservation(
-                  observationId, temporaryPlotIds, isPermanent = false)
+                observationStore.addPlotsToObservation(
+                    observationId, permanentPlotIds, isPermanent = true)
+                observationStore.addPlotsToObservation(
+                    observationId, temporaryPlotIds, isPermanent = false)
 
-              log.info(
-                  "Added ${permanentPlotIds.size} permanent and ${temporaryPlotIds.size} " +
-                      "temporary plots")
-            } else {
-              log.info("Skipping zone because it has no reported plants")
+                log.info(
+                    "Added ${permanentPlotIds.size} permanent and ${temporaryPlotIds.size} " +
+                        "temporary plots")
+              } else {
+                log.info("Skipping zone because it has no reported plants")
+              }
             }
           }
+
+          observationStore.populateCumulativeDead(observationId)
+          val startedObservation = observationStore.recordObservationStart(observationId)
+
+          eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
+        } catch (e: PlantingSubzoneFullException) {
+          log.info("Unable to start observation $observationId", e)
+
+          eventPublisher.publishEvent(
+              ObservationNotStartedEvent(observationId, observation.plantingSiteId))
+
+          observationStore.abandonObservation(observationId)
         }
-
-        observationStore.populateCumulativeDead(observationId)
-        val startedObservation = observationStore.recordObservationStart(observationId)
-
-        eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
       }
     }
   }

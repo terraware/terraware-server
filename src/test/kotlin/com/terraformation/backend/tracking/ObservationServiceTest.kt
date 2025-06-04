@@ -42,6 +42,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassD
 import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -69,6 +70,7 @@ import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -511,6 +513,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           updatedSiteHistoryId,
           observationsDao.fetchOneById(observationId)?.plantingSiteHistoryId,
           "Planting site history ID")
+    }
+
+    @Test
+    fun `deletes observation and publishes event if planting site is too small`() {
+      val boundary = rectangle(MONITORING_PLOT_SIZE)
+
+      insertPlantingZone(boundary = boundary, numPermanentPlots = 1, numTemporaryPlots = 1)
+      insertPlantingSubzone(boundary = boundary)
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
+
+      service.startObservation(observationId)
+
+      assertTableEmpty(OBSERVATIONS)
+
+      eventPublisher.assertEventPublished(ObservationNotStartedEvent(observationId, plantingSiteId))
     }
 
     @Test
