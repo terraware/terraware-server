@@ -285,6 +285,10 @@ class WebAppUrls(
     return UriBuilder.fromPath("/accelerator/documents/$documentId").build()
   }
 
+  fun fullContactUs(): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/help-support/contact-us").build()
+  }
+
   /** URL of the mobile app's page in the App Store. */
   val appStore = URI("https://apps.apple.com/us/app/terraware/id1568369900")
 

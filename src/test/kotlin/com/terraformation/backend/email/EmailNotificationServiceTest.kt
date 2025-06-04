@@ -110,6 +110,7 @@ import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
+import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -830,6 +831,20 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertNoMessageSent()
+  }
+
+  @Test
+  fun observationNotStarted() {
+    val event = ObservationNotStartedEvent(ObservationId(1), PlantingSiteId(1))
+
+    service.on(event)
+
+    assertSubjectContains("Not Started")
+    assertSubjectContains("My Site")
+    assertBodyContains("My Site", hasTextPlain = false)
+    assertBodyContains("Contact Us", hasTextPlain = false)
+
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test

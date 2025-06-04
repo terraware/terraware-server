@@ -312,6 +312,15 @@ class ObservationNotScheduled(
     get() = "observation/notScheduled"
 }
 
+class ObservationNotStarted(
+    config: TerrawareServerConfig,
+    val plantingSiteName: String,
+    val contactUsUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/notStarted"
+}
+
 class ObservationPlotReplaced(
     config: TerrawareServerConfig,
     val organizationName: String,
