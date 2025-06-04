@@ -766,6 +766,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun proxyGeoServerGetRequests() {
+    user.recordPermissionChecks {
+      if (!user.canProxyGeoServerGetRequests()) {
+        throw AccessDeniedException("No permission to proxy GET requests to GeoServer")
+      }
+    }
+  }
+
   fun publishReports() {
     user.recordPermissionChecks {
       if (!user.canPublishReports()) {

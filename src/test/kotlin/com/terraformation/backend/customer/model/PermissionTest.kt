@@ -1440,6 +1440,7 @@ internal class PermissionTest : DatabaseTest() {
         manageNotifications = true,
         manageProjectReportConfigs = true,
         notifyUpcomingReports = true,
+        proxyGeoServerGetRequests = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -1856,6 +1857,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModuleEvents = true,
         manageModules = true,
         manageProjectReportConfigs = true,
+        proxyGeoServerGetRequests = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -2113,6 +2115,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModuleEvents = true,
         manageModules = true,
         manageProjectReportConfigs = true,
+        proxyGeoServerGetRequests = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -2354,6 +2357,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
+        proxyGeoServerGetRequests = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -2532,6 +2536,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
+        proxyGeoServerGetRequests = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -3083,6 +3088,7 @@ internal class PermissionTest : DatabaseTest() {
         manageNotifications: Boolean = false,
         manageProjectReportConfigs: Boolean = false,
         notifyUpcomingReports: Boolean = false,
+        proxyGeoServerGetRequests: Boolean = false,
         publishReports: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
@@ -3160,6 +3166,10 @@ internal class PermissionTest : DatabaseTest() {
           "Can manage project report configs")
       assertEquals(
           notifyUpcomingReports, user.canNotifyUpcomingReports(), "Can notify upcoming reports")
+      assertEquals(
+          proxyGeoServerGetRequests,
+          user.canProxyGeoServerGetRequests(),
+          "Can proxy GeoServer GET requests")
       assertEquals(publishReports, user.canPublishReports(), "Can publish reports")
       assertEquals(
           readAllAcceleratorDetails,
