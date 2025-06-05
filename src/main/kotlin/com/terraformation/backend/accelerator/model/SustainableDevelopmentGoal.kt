@@ -27,7 +27,7 @@ enum class SustainableDevelopmentGoal(val displayName: String) {
   @get:JsonValue val sdgNumber: Int = startingDigitRegex.find(displayName)?.value?.toInt()!!
 
   companion object {
-    private val bySdgNumber: Map<Int, SustainableDevelopmentGoal> by lazy {
+    val bySdgNumber: Map<Int, SustainableDevelopmentGoal> by lazy {
       SustainableDevelopmentGoal.entries.associateBy { it.sdgNumber }
     }
 

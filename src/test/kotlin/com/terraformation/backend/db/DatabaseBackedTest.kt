@@ -3,6 +3,8 @@ package com.terraformation.backend.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.model.CarbonCertification
+import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
@@ -286,12 +288,20 @@ import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.daos.FundingEntitiesDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityProjectsDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityUsersDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCertsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectSdgDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportProjectMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportStandardMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportSystemMetricsDao
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonCertsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectSdgRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportProjectMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportStandardMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportSystemMetricsRow
@@ -637,6 +647,10 @@ abstract class DatabaseBackedTest {
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectVoteDecisionDao: ProjectVoteDecisionsDao by lazyDao()
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
+  protected val publishedProjectCarbonCertsDao: PublishedProjectCarbonCertsDao by lazyDao()
+  protected val publishedProjectDetailsDao: PublishedProjectDetailsDao by lazyDao()
+  protected val publishedProjectLandUseDao: PublishedProjectLandUseDao by lazyDao()
+  protected val publishedProjectSdgDao: PublishedProjectSdgDao by lazyDao()
   protected val publishedReportStandardMetricsDao: PublishedReportStandardMetricsDao by lazyDao()
   protected val publishedReportSystemMetricsDao: PublishedReportSystemMetricsDao by lazyDao()
   protected val publishedReportProjectMetricsDao: PublishedReportProjectMetricsDao by lazyDao()
@@ -868,6 +882,114 @@ abstract class DatabaseBackedTest {
     projectAcceleratorDetailsDao.insert(rowWithDefaults)
 
     return rowWithDefaults
+  }
+
+  protected fun insertPublishedProjectDetails(
+      row: PublishedProjectDetailsRow = PublishedProjectDetailsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      accumulationRate: Number? = row.accumulationRate,
+      annualCarbon: Number? = row.annualCarbon,
+      countryCode: String? = row.countryCode,
+      dealDescription: String? = row.dealDescription,
+      dealName: String? = row.dealName,
+      methodologyNumber: String? = row.methodologyNumber,
+      minProjectArea: Number? = row.minProjectArea,
+      numNativeSpecies: Int? = row.numNativeSpecies,
+      perHectareEstimatedBudget: Number? = row.perHectareEstimatedBudget,
+      projectArea: Number? = row.projectArea,
+      projectHighlightPhotoValueId: VariableValueId? =
+          row.projectHighlightPhotoValueId?.let { VariableValueId(it) },
+      projectZoneFigureValueId: VariableValueId? =
+          row.projectZoneFigureValueId?.let { VariableValueId(it) },
+      standard: String? = row.standard,
+      tfReforestableLand: Number? = row.tfReforestableLand,
+      totalExpansionPotential: Number? = row.totalExpansionPotential,
+      totalVcu: Number? = row.totalVcu,
+      verraLink: String? = row.verraLink,
+      sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
+      carbonCertifications: Set<CarbonCertification> = emptySet(),
+      landUseModelHectares: Map<LandUseModelType, Number?> = emptyMap(),
+      publishedBy: UserId = currentUser().userId,
+      publishedTime: Instant = Instant.EPOCH,
+  ): PublishedProjectDetailsRow {
+    val rowWithDefaults =
+        PublishedProjectDetailsRow(
+            projectId = projectId,
+            accumulationRate = accumulationRate?.toBigDecimal(),
+            annualCarbon = annualCarbon?.toBigDecimal(),
+            countryCode = countryCode,
+            dealDescription = dealDescription,
+            dealName = dealName,
+            methodologyNumber = methodologyNumber,
+            minProjectArea = minProjectArea?.toBigDecimal(),
+            numNativeSpecies = numNativeSpecies,
+            perHectareEstimatedBudget = perHectareEstimatedBudget?.toBigDecimal(),
+            projectArea = projectArea?.toBigDecimal(),
+            projectHighlightPhotoValueId = projectHighlightPhotoValueId?.value,
+            projectZoneFigureValueId = projectZoneFigureValueId?.value,
+            standard = standard,
+            tfReforestableLand = tfReforestableLand?.toBigDecimal(),
+            totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
+            totalVcu = totalVcu?.toBigDecimal(),
+            verraLink = verraLink,
+            publishedBy = publishedBy,
+            publishedTime = publishedTime,
+        )
+
+    publishedProjectDetailsDao.insert(rowWithDefaults)
+    sdgList.forEach { insertPublishedProjectSdg(projectId = projectId, sdgNumber = it.sdgNumber) }
+    carbonCertifications.forEach {
+      insertPublishedProjectCarbonCert(projectId = projectId, carbonCertification = it.displayName)
+    }
+    landUseModelHectares.keys.forEach { landType ->
+      insertPublishedProjectLandHectare(
+          projectId = projectId,
+          landUseModelType = landType,
+          landUseHectares = landUseModelHectares[landType])
+    }
+
+    return rowWithDefaults
+  }
+
+  protected fun insertPublishedProjectSdg(
+      row: PublishedProjectSdgRow = PublishedProjectSdgRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      sdgNumber: Int = row.sdgNumber!!,
+  ) {
+    val rowWithDefaults =
+        PublishedProjectSdgRow(
+            projectId = projectId,
+            sdgNumber = sdgNumber,
+        )
+    publishedProjectSdgDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedProjectCarbonCert(
+      row: PublishedProjectCarbonCertsRow = PublishedProjectCarbonCertsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      carbonCertification: String = row.carbonCertification!!,
+  ) {
+    val rowWithDefaults =
+        PublishedProjectCarbonCertsRow(
+            projectId = projectId,
+            carbonCertification = carbonCertification,
+        )
+    publishedProjectCarbonCertsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedProjectLandHectare(
+      row: PublishedProjectLandUseRow = PublishedProjectLandUseRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      landUseModelType: LandUseModelType = row.landUseModelTypeId!!,
+      landUseHectares: Number? = row.landUseModelHectares,
+  ) {
+    val rowWithDefaults =
+        PublishedProjectLandUseRow(
+            projectId = projectId,
+            landUseModelTypeId = landUseModelType,
+            landUseModelHectares = landUseHectares?.toBigDecimal(),
+        )
+    publishedProjectLandUseDao.insert(rowWithDefaults)
   }
 
   protected fun deleteProjectAcceleratorDetails(projectId: ProjectId = inserted.projectId) {
@@ -4264,6 +4386,7 @@ abstract class DatabaseBackedTest {
               perHectareEstimatedBudget to VariableType.Number,
               projectArea to VariableType.Number,
               projectHighlightPhoto to VariableType.Image,
+              projectZoneFigure to VariableType.Image,
               projectType to VariableType.Select,
               riskTrackerLink to VariableType.Link,
               sdgList to VariableType.Select,

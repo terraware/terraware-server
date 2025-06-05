@@ -1441,6 +1441,7 @@ internal class PermissionTest : DatabaseTest() {
         manageProjectReportConfigs = true,
         notifyUpcomingReports = true,
         proxyGeoServerGetRequests = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -1858,6 +1859,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModules = true,
         manageProjectReportConfigs = true,
         proxyGeoServerGetRequests = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -2116,6 +2118,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModules = true,
         manageProjectReportConfigs = true,
         proxyGeoServerGetRequests = true,
+        publishProjectProfileDetails = true,
         publishReports = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -3089,6 +3092,7 @@ internal class PermissionTest : DatabaseTest() {
         manageProjectReportConfigs: Boolean = false,
         notifyUpcomingReports: Boolean = false,
         proxyGeoServerGetRequests: Boolean = false,
+        publishProjectProfileDetails: Boolean = false,
         publishReports: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
@@ -3170,6 +3174,10 @@ internal class PermissionTest : DatabaseTest() {
           proxyGeoServerGetRequests,
           user.canProxyGeoServerGetRequests(),
           "Can proxy GeoServer GET requests")
+      assertEquals(
+          publishProjectProfileDetails,
+          user.canPublishProjectProfileDetails(),
+          "Can publish project profile details")
       assertEquals(publishReports, user.canPublishReports(), "Can publish reports")
       assertEquals(
           readAllAcceleratorDetails,

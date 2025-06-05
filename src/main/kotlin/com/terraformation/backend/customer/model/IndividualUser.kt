@@ -328,6 +328,8 @@ data class IndividualUser(
 
   override fun canProxyGeoServerGetRequests(): Boolean = isReadOnlyOrHigher()
 
+  override fun canPublishProjectProfileDetails() = isAcceleratorAdmin()
+
   override fun canPublishReports() = isAcceleratorAdmin()
 
   override fun canReadAccession(accessionId: AccessionId) =
