@@ -1,6 +1,6 @@
+land_use_model_types
 chat_memory_conversations
 chat_memory_message_types
-land_use_model_types
 projects
 chat_memory_messages
 project_land_use_model_types

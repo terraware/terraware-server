@@ -59,7 +59,6 @@ plant_material_sourcing_methods
 organization_types
 notification_criticalities
 managed_location_types
-land_use_model_types
 growth_forms
 global_roles
 facility_types
@@ -69,5 +68,6 @@ device_template_categories
 conservation_categories
 chat_memory_message_types
 regions
+land_use_model_types
 seed_treatments
 time_zones

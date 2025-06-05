@@ -16,8 +16,8 @@ variable_owners
 documents
 variable_tables
 variable_select_options
-variable_values
 variable_selects
+variable_values
 variables
 variable_manifests
 variable_workflow_statuses

@@ -1,9 +1,13 @@
 published_reports
 funding_entities
+published_project_carbon_certs
+published_project_sdg
 published_report_achievements
 published_report_challenges
 funding_entity_projects
 funding_entity_users
+published_project_land_use
 published_report_project_metrics
 published_report_standard_metrics
 published_report_system_metrics
+published_project_details

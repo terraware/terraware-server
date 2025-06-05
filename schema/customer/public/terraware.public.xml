@@ -15,6 +15,7 @@
       <table name="countries" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="applications_country_code_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
+            <child column="country_code" foreignKey="published_project_details_country_code_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
             <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
@@ -253,6 +254,7 @@
       </table>
       <table name="land_use_model_types" remarks="(Enum) Types of ways a project's land can be used." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="land_use_model_type_id" foreignKey="published_project_land_use_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_land_use"/>
             <child column="land_use_model_type_id" foreignKey="project_land_use_model_types_land_use_model_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_land_use_model_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -498,6 +500,10 @@
             <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
             <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
             <child column="project_id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
+            <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
+            <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
+            <child column="project_id" foreignKey="published_project_sdg_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_sdg"/>
             <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
@@ -857,6 +863,7 @@
             <child column="created_by" foreignKey="funding_entities_created_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
             <child column="modified_by" foreignKey="funding_entities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
             <child column="user_id" foreignKey="funding_entity_users_user_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_users"/>
+            <child column="published_by" foreignKey="published_project_details_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
             <child column="published_by" foreignKey="published_reports_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
             <child column="created_by" foreignKey="batch_details_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="created_by" foreignKey="batch_photos_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>

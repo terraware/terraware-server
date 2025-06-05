@@ -16,9 +16,9 @@ variable_manifest_entries
 documents
 variable_tables
 variable_select_options
-variable_values
 variable_selects
 variable_manifests
+variable_values
 variables
 variable_workflow_statuses
 variable_text_types

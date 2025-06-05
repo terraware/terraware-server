@@ -32,8 +32,8 @@ roles
 organization_types
 notification_criticalities
 managed_location_types
-land_use_model_types
 global_roles
 facility_types
 facility_connection_states
 regions
+land_use_model_types

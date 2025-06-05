@@ -1,8 +1,8 @@
+land_use_model_types
 regions
 facility_connection_states
 facility_types
 global_roles
-land_use_model_types
 managed_location_types
 notification_criticalities
 organization_types

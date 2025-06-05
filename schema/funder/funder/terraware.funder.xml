@@ -52,6 +52,63 @@
             <column ascending="true" name="user_id"/>
          </index>
       </table>
+      <table name="published_project_carbon_certs" remarks="Carbon Certifications for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="carbon_certification" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="carbon_certification" sequenceNumberInPK="2"/>
+         <index name="published_project_carbon_certs_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="carbon_certification"/>
+         </index>
+      </table>
+      <table name="published_project_details" remarks="Published Project Data visible to funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accumulation_rate" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="annual_carbon" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="deal_description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="deal_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="methodology_number" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="min_project_area" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="num_native_species" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="per_hectare_estimated_budget" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="project_area" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="project_highlight_photo_value_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="project_zone_figure_value_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="standard" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="tf_reforestable_land" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="total_expansion_potential" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="total_vcu" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="verra_link" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="19" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <index name="published_project_details_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="published_project_land_use" remarks="Land Use Model Types and hectares of each for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="land_use_model_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="land_use_model_hectares" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="land_use_model_type_id" sequenceNumberInPK="2"/>
+         <index name="published_project_land_use_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="land_use_model_type_id"/>
+         </index>
+      </table>
+      <table name="published_project_sdg" remarks="Sustainable Development Goals for published projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="sdg_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="sdg_number" sequenceNumberInPK="2"/>
+         <index name="published_project_sdg_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="sdg_number"/>
+         </index>
+      </table>
       <table name="published_report_achievements" remarks="Achievements of published reports." schema="funder" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="report_id" foreignKey="published_report_achievements_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>

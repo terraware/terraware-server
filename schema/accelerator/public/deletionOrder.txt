@@ -2,6 +2,6 @@ vector_store
 project_land_use_model_types
 chat_memory_messages
 projects
-land_use_model_types
 chat_memory_message_types
 chat_memory_conversations
+land_use_model_types

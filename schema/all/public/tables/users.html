@@ -356,6 +356,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="published_project_details.published_by references users.id via published_project_details_published_by_fkey"><a href='../../funder/tables/published_project_details.html'>published_project_details</a><span class='relatedKey'>.published_by</span></td>
+                                                <td class="constraint detail">published_project_details_published_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="published_reports.published_by references users.id via published_reports_published_by_fkey"><a href='../../funder/tables/published_reports.html'>published_reports</a><span class='relatedKey'>.published_by</span></td>
                                                 <td class="constraint detail">published_reports_published_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1060,16 +1065,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>users_first_name_check</td>
+                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_auth_id_check</td>
                                     <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>users_first_name_check</td>
-                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

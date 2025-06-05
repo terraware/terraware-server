@@ -1,3 +1,7 @@
+published_project_sdg
+published_project_land_use
+published_project_details
+published_project_carbon_certs
 published_report_system_metrics
 published_report_standard_metrics
 published_report_project_metrics

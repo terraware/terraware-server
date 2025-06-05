@@ -165,6 +165,16 @@
                                                 <td class="constraint detail">variable_workflow_history_max_variable_value_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="published_project_details.project_highlight_photo_value_id references variable_values.id via published_project_details_project_highlight_photo_value_id_fkey"><a href='../../funder/tables/published_project_details.html'>published_project_details</a><span class='relatedKey'>.project_highlight_photo_value_id</span></td>
+                                                <td class="constraint detail">published_project_details_project_highlight_photo_value_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="published_project_details.project_zone_figure_value_id references variable_values.id via published_project_details_project_zone_figure_value_id_fkey"><a href='../../funder/tables/published_project_details.html'>published_project_details</a><span class='relatedKey'>.project_zone_figure_value_id</span></td>
+                                                <td class="constraint detail">published_project_details_project_zone_figure_value_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -498,12 +508,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>variable_values_check</td>
-                                    <td>((number_value IS NULL) OR (variable_type_id &#61; 1))</td>
-                                </tr>
-                                <tr>
                                     <td>text_value_is_text_or_email</td>
                                     <td>((text_value IS NULL) OR (variable_type_id &#61; ANY (ARRAY[2, 9])))</td>
+                                </tr>
+                                <tr>
+                                    <td>variable_values_check</td>
+                                    <td>((number_value IS NULL) OR (variable_type_id &#61; 1))</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -1,3 +1,4 @@
+1277a30b0fa SW-6951 BE Data Structure for Project Profile Publishing (#3125)
 5118dc33aec SW-7033 Send email when observation fails to start (#3156)
 3206a5127b4 SW-7034 Remove observations that can't be started (#3155)
 8df57fd781b Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v4.7.0 (#3154)

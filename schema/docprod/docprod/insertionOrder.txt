@@ -9,8 +9,8 @@ variable_text_types
 variable_workflow_statuses
 variable_manifests
 variables
-variable_selects
 variable_values
+variable_selects
 variable_select_options
 variable_tables
 documents
