@@ -13,7 +13,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
-import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
@@ -39,30 +38,6 @@ class ProjectAcceleratorDetailsStore(
 
     return fetchOneByIdOrNull(projectId, variableValuesModel)
         ?: throw ProjectNotFoundException(projectId)
-  }
-
-  /**
-   * Returns the funder-visible details for a project. If the project doesn't have any details yet,
-   * returns a model with just the non-accelerator-specific fields populated.
-   */
-  fun fetchOneByIdForFunder(
-      projectId: ProjectId,
-      variableValuesModel: ProjectAcceleratorVariableValuesModel,
-  ): FunderProjectDetailsModel {
-    requirePermissions { readProjectFunderDetails(projectId) }
-
-    val projectAcceleratorDetailsModel =
-        fetch(
-                PROJECTS.ID.eq(projectId),
-                { _projectId -> currentUser().canReadProjectFunderDetails(_projectId) },
-            ) {
-              variableValuesModel
-            }
-            .firstOrNull()
-    if (projectAcceleratorDetailsModel == null) {
-      throw ProjectNotFoundException(projectId)
-    }
-    return FunderProjectDetailsModel.of(projectAcceleratorDetailsModel)
   }
 
   /**

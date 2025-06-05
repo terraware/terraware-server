@@ -13,7 +13,6 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
-import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.math.BigDecimal
@@ -165,126 +164,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.fetchOneById(projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId))
-      }
-    }
-  }
-
-  @Nested
-  inner class FetchOneByIdForFunder {
-    @Test
-    fun `returns all details fields visible to Funders`() {
-      insertCohort(name = "Cohort name", phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(name = "Participant name", cohortId = inserted.cohortId)
-      val projectId = insertProject(participantId = inserted.participantId)
-      insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
-      insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
-
-      // To ensure that it works as expected when there are multiple rows
-      insertProject()
-
-      val detailsRow =
-          insertProjectAcceleratorDetails(
-              annualCarbon = BigDecimal(7),
-              applicationReforestableLand = BigDecimal(1),
-              carbonCapacity = BigDecimal(8),
-              confirmedReforestableLand = BigDecimal(2),
-              dealDescription = "description",
-              dealStage = DealStage.Phase0DocReview,
-              dropboxFolderPath = "/dropbox/path",
-              failureRisk = "failure",
-              fileNaming = "naming",
-              googleFolderUrl = "https://google.com/",
-              hubSpotUrl = "https://hubspot.com/",
-              investmentThesis = "thesis",
-              maxCarbonAccumulation = BigDecimal(5),
-              minCarbonAccumulation = BigDecimal(4),
-              numCommunities = 2,
-              numNativeSpecies = 1,
-              perHectareBudget = BigDecimal(6),
-              pipeline = Pipeline.AcceleratorProjects,
-              projectId = projectId,
-              projectLead = "lead",
-              totalCarbon = BigDecimal(9),
-              totalExpansionPotential = BigDecimal(3),
-              whatNeedsToBeTrue = "needs",
-          )
-
-      val variableValues =
-          ProjectAcceleratorVariableValuesModel(
-              annualCarbon = BigDecimal(7),
-              applicationReforestableLand = BigDecimal(1),
-              carbonCapacity = BigDecimal(8),
-              countryCode = "KE",
-              confirmedReforestableLand = BigDecimal(2),
-              dealDescription = "description",
-              dealName = "project deal name",
-              failureRisk = "failure",
-              investmentThesis = "thesis",
-              landUseModelTypes =
-                  setOf(
-                      LandUseModelType.Agroforestry,
-                      LandUseModelType.Mangroves,
-                      LandUseModelType.Silvopasture),
-              landUseModelHectares =
-                  mapOf(
-                      LandUseModelType.Agroforestry to BigDecimal(10),
-                      LandUseModelType.Mangroves to BigDecimal(20)),
-              maxCarbonAccumulation = BigDecimal(5),
-              minCarbonAccumulation = BigDecimal(4),
-              numNativeSpecies = 1,
-              perHectareBudget = BigDecimal(6),
-              projectId = projectId,
-              region = Region.SubSaharanAfrica,
-              totalCarbon = BigDecimal(9),
-              totalExpansionPotential = BigDecimal(3),
-              whatNeedsToBeTrue = "needs",
-          )
-
-      assertEquals(
-          FunderProjectDetailsModel(
-              annualCarbon = detailsRow.annualCarbon,
-              confirmedReforestableLand = detailsRow.confirmedReforestableLand,
-              countryCode = "KE",
-              dealDescription = detailsRow.dealDescription,
-              dealName = "project deal name",
-              landUseModelTypes =
-                  setOf(
-                      LandUseModelType.Agroforestry,
-                      LandUseModelType.Mangroves,
-                      LandUseModelType.Silvopasture),
-              landUseModelHectares =
-                  mapOf(
-                      LandUseModelType.Agroforestry to BigDecimal(10),
-                      LandUseModelType.Mangroves to BigDecimal(20)),
-              numNativeSpecies = detailsRow.numNativeSpecies,
-              perHectareBudget = detailsRow.perHectareBudget,
-              projectId = projectId,
-              totalExpansionPotential = detailsRow.totalExpansionPotential,
-          ),
-          store.fetchOneByIdForFunder(projectId, variableValues))
-    }
-
-    @Test
-    fun `returns empty details if project exists but no details have been saved yet`() {
-      val projectId = insertProject()
-
-      assertEquals(
-          FunderProjectDetailsModel(
-              projectId = projectId,
-          ),
-          store.fetchOneByIdForFunder(
-              projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId)))
-    }
-
-    @Test
-    fun `throws exception if no permission to read funder-related accelerator details`() {
-      val projectId = insertProject()
-
-      every { user.canReadProjectFunderDetails(any()) } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.fetchOneByIdForFunder(
-            projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId))
       }
     }
   }
