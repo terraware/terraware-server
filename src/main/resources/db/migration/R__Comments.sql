@@ -73,6 +73,8 @@ COMMENT ON TABLE device_templates IS 'Canned device configurations for use in ca
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
+COMMENT ON TABLE disclaimers IS 'Disclaimers content and effective dates.';
+
 COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
 
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
@@ -239,6 +241,8 @@ COMMENT ON TABLE users IS 'User identities. A user can be associated with organi
 COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID.';
 COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
+
+COMMENT ON TABLE user_disclaimers IS 'Records of user acceptance of disclaimers.';
 
 COMMENT ON TABLE wood_density_levels IS 'The taxonomic level in the at which a wood density measurement is known';
 
