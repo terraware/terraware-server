@@ -43,11 +43,15 @@ data class FunderUser(
     _projectIds.reset()
   }
 
+  override fun canAcceptCurrentDisclaimer() = true
+
   override fun canDeleteSelf() = true
 
   override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
+
+  override fun canReadCurrentDisclaimer(): Boolean = true
 
   override fun canReadFundingEntity(entityId: FundingEntityId) = fundingEntityId == entityId
 

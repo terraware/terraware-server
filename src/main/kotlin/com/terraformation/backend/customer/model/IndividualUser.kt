@@ -132,6 +132,7 @@ data class IndividualUser(
   }
 
   // Permissions
+  override fun canAcceptCurrentDisclaimer() = false
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
@@ -303,6 +304,8 @@ data class IndividualUser(
 
   override fun canManageDeliverables() = isAcceleratorAdmin()
 
+  override fun canManageDisclaimers() = isSuperAdmin()
+
   override fun canManageDocumentProducer() = isTFExpertOrHigher()
 
   override fun canManageInternalTags() = isSuperAdmin()
@@ -353,6 +356,8 @@ data class IndividualUser(
   override fun canReadCohortParticipants(cohortId: CohortId): Boolean = isReadOnlyOrHigher()
 
   override fun canReadCohorts(): Boolean = isReadOnlyOrHigher()
+
+  override fun canReadCurrentDisclaimer(): Boolean = isSuperAdmin()
 
   override fun canReadDefaultVoters(): Boolean = isReadOnlyOrHigher()
 

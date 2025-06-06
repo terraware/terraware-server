@@ -123,6 +123,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -161,6 +162,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.CountrySubdivisi
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
+import com.terraformation.backend.db.default_schema.tables.daos.DisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.IdentifierSequencesDao
@@ -189,9 +191,11 @@ import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
+import com.terraformation.backend.db.default_schema.tables.daos.UserDisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.default_schema.tables.pojos.DisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.InternalTagsRow
@@ -203,6 +207,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -585,6 +590,7 @@ abstract class DatabaseBackedTest {
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
+  protected val disclaimersDao: DisclaimersDao by lazyDao()
   protected val documentSavedVersionsDao: DocumentSavedVersionsDao by lazyDao()
   protected val documentsDao: DocumentsDao by lazyDao()
   protected val draftPlantingSitesDao: DraftPlantingSitesDao by lazyDao()
@@ -682,6 +688,7 @@ abstract class DatabaseBackedTest {
   protected val timeZonesDao: TimeZonesDao by lazyDao()
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
+  protected val userDisclaimersDao: UserDisclaimersDao by lazyDao()
   protected val userInternalInterestsDao: UserInternalInterestsDao by lazyDao()
   protected val userGlobalRolesDao: UserGlobalRolesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
@@ -1510,6 +1517,19 @@ abstract class DatabaseBackedTest {
         }
 
     return insertedId.also { inserted.userIds.add(it) }
+  }
+
+  fun insertUserDisclaimer(
+      userId: UserId = inserted.userId,
+      disclaimerId: DisclaimerId = inserted.disclaimerId,
+      acceptedOn: Instant = Instant.EPOCH,
+  ) {
+    userDisclaimersDao.insert(
+        UserDisclaimersRow(
+            userId = userId,
+            disclaimerId = disclaimerId,
+            acceptedOn = acceptedOn,
+        ))
   }
 
   fun insertUserInternalInterest(
@@ -2416,6 +2436,22 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
   ) {
     monitoringPlotOverlapsDao.insert(MonitoringPlotOverlapsRow(monitoringPlotId, overlapsPlotId))
+  }
+
+  fun insertDisclaimer(
+      row: DisclaimersRow = DisclaimersRow(),
+      content: String = row.content ?: "Disclaimer",
+      effectiveOn: Instant = row.effectiveOn ?: Instant.EPOCH,
+  ): DisclaimerId {
+    val rowWithDefaults =
+        row.copy(
+            content = content,
+            effectiveOn = effectiveOn,
+        )
+
+    disclaimersDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.disclaimerIds.add(it) }
   }
 
   private var nextDraftPlantingSiteNumber = 1
@@ -4552,6 +4588,7 @@ abstract class DatabaseBackedTest {
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
+    val disclaimerIds = mutableListOf<DisclaimerId>()
     val documentIds = mutableListOf<DocumentId>()
     val documentTemplateIds = mutableListOf<DocumentTemplateId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
@@ -4628,6 +4665,9 @@ abstract class DatabaseBackedTest {
 
     val deviceId
       get() = deviceIds.last()
+
+    val disclaimerId
+      get() = disclaimerIds.last()
 
     val documentId
       get() = documentIds.last()

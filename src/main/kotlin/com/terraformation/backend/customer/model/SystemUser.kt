@@ -109,6 +109,7 @@ class SystemUser(
    * All permission checks always succeed (thanks to defaultPermission) except for operations that
    * should only be performed manually by a system administrator.
    */
+  override fun canAcceptCurrentDisclaimer() = false
 
   override fun canDeleteSeedFundReport(reportId: SeedFundReportId): Boolean = false
 

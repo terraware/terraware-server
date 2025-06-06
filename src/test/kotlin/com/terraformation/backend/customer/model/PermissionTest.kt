@@ -1436,6 +1436,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSupportIssue = true,
         manageDefaultProjectLeads = true,
+        manageDisclaimers = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
         manageProjectReportConfigs = true,
@@ -1448,6 +1449,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readCohortParticipants = true,
         readCohorts = true,
+        readCurrentDisclaimer = true,
         readGlobalRoles = true,
         readModuleEventParticipants = true,
         readInternalTags = true,
@@ -1854,6 +1856,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData = true,
         manageDefaultProjectLeads = true,
         manageDeliverables = true,
+        manageDisclaimers = true,
         manageInternalTags = true,
         manageModuleEvents = true,
         manageModules = true,
@@ -1866,6 +1869,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readCohortParticipants = true,
         readCohorts = true,
+        readCurrentDisclaimer = true,
         readGlobalRoles = true,
         readInternalTags = true,
         readModuleEventParticipants = true,
@@ -2585,7 +2589,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(userId, readUser = true)
-    permissions.expect(deleteSelf = true)
+    permissions.expect(
+        acceptCurrentDisclaimer = true,
+        deleteSelf = true,
+        readCurrentDisclaimer = true,
+    )
     permissions.andNothingElse()
   }
 
@@ -3067,6 +3075,7 @@ internal class PermissionTest : DatabaseTest() {
 
     /** Checks for globally-scoped permissions. */
     fun expect(
+        acceptCurrentDisclaimer: Boolean = false,
         addAnyOrganizationUser: Boolean = false,
         addCohortParticipant: Boolean = false,
         addParticipantProject: Boolean = false,
@@ -3084,6 +3093,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData: Boolean = false,
         manageDefaultProjectLeads: Boolean = false,
         manageDeliverables: Boolean = false,
+        manageDisclaimers: Boolean = false,
         manageInternalTags: Boolean = false,
         manageModuleEvents: Boolean = false,
         manageModuleEventStatuses: Boolean = false,
@@ -3099,6 +3109,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort: Boolean = false,
         readCohortParticipants: Boolean = false,
         readCohorts: Boolean = false,
+        readCurrentDisclaimer: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readModuleEventParticipants: Boolean = false,
@@ -3119,6 +3130,10 @@ internal class PermissionTest : DatabaseTest() {
       val participantId = getDatabaseId(participantIds[0])
       val projectId = getDatabaseId(projectIds[0])
 
+      assertEquals(
+          acceptCurrentDisclaimer,
+          user.canAcceptCurrentDisclaimer(),
+          "Can accept current disclaimer")
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
       assertEquals(
@@ -3156,6 +3171,7 @@ internal class PermissionTest : DatabaseTest() {
           user.canManageDefaultProjectLeads(),
           "Can manage default project leads")
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
+      assertEquals(manageDisclaimers, user.canManageDisclaimers(), "Can manage disclaimers")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageModuleEvents, user.canManageModuleEvents(), "Can manage module events")
       assertEquals(
@@ -3190,6 +3206,8 @@ internal class PermissionTest : DatabaseTest() {
           user.canReadCohortParticipants(cohortId),
           "Can read cohort participants")
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
+      assertEquals(
+          readCurrentDisclaimer, user.canReadCurrentDisclaimer(), "Can read current disclaimer")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(

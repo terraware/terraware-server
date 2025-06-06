@@ -127,6 +127,14 @@ import org.springframework.security.access.AccessDeniedException
  * should make it clear what's going on.
  */
 class PermissionRequirements(private val user: TerrawareUser) {
+  fun acceptCurrentDisclaimer() {
+    user.recordPermissionChecks {
+      if (!user.canAcceptCurrentDisclaimer()) {
+        throw AccessDeniedException("No permission to accept current disclaimer")
+      }
+    }
+  }
+
   fun addCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
     user.recordPermissionChecks {
       if (!user.canAddCohortParticipant(cohortId, participantId)) {
@@ -692,6 +700,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageDisclaimers() {
+    user.recordPermissionChecks {
+      if (!user.canManageDisclaimers()) {
+        throw AccessDeniedException("No permission to manage disclaimers")
+      }
+    }
+  }
+
   fun manageInternalTags() {
     user.recordPermissionChecks {
       if (!user.canManageInternalTags()) {
@@ -859,6 +875,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadCohorts()) {
         throw AccessDeniedException("No permission to read cohorts")
+      }
+    }
+  }
+
+  fun readCurrentDisclaimer() {
+    user.recordPermissionChecks {
+      if (!user.canReadCurrentDisclaimer()) {
+        throw AccessDeniedException("No permission to read current disclaimer")
       }
     }
   }
