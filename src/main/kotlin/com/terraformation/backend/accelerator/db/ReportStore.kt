@@ -63,6 +63,8 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.documentproducer.db.stableVariableValuesMultiset
+import com.terraformation.backend.documentproducer.model.StableIds
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -670,6 +672,9 @@ class ReportStore(
     }
   }
 
+  private val variableValuesField =
+      stableVariableValuesMultiset(REPORTS.PROJECT_ID.asNonNullable(), setOf(StableIds.dealName))
+
   private fun fetchByCondition(
       condition: Condition,
       includeMetrics: Boolean = false
@@ -698,16 +703,13 @@ class ReportStore(
     return dslContext
         .select(
             REPORTS.asterisk(),
-            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
             achievementsMultiset,
             challengesMultiset,
-        )
+            variableValuesField)
         .from(REPORTS)
-        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
-        .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
         .where(condition)
         .orderBy(REPORTS.START_DATE)
         .fetch {
@@ -718,6 +720,7 @@ class ReportStore(
               systemMetricsField = systemMetricsField,
               achievementsField = achievementsMultiset,
               challengesField = challengesMultiset,
+              variableValuesField = variableValuesField,
           )
         }
         .filter { currentUser().canReadReport(it.id) }
