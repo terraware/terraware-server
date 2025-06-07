@@ -269,6 +269,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun acceptCurrentDisclaimer() =
+      allow { acceptCurrentDisclaimer() } ifUser { canAcceptCurrentDisclaimer() }
+
+  @Test
   fun addCohortParticipant() {
     assertThrows<CohortNotFoundException> {
       requirements.addCohortParticipant(cohortId, participantId)
@@ -576,6 +580,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
 
+  @Test fun manageDisclaimers() = allow { manageDisclaimers() } ifUser { canManageDisclaimers() }
+
   @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }
 
   @Test
@@ -651,6 +657,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
+
+  @Test
+  fun readCurrentDisclaimer() =
+      allow { readCurrentDisclaimer() } ifUser { canReadCurrentDisclaimer() }
 
   @Test fun readDelivery() = testRead { readDelivery(deliveryId) }
 

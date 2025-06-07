@@ -330,6 +330,7 @@ val ID_WRAPPERS =
                     "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
+                IdWrapper("DisclaimerId", listOf("disclaimers\\.id", ".*\\.disclaimer_id")),
                 IdWrapper(
                     "FacilityId",
                     listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id")),
