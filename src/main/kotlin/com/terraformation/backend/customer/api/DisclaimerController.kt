@@ -4,7 +4,7 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.DisclaimerStore
-import com.terraformation.backend.customer.model.DisclaimerModel
+import com.terraformation.backend.customer.model.UserDisclaimerModel
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,7 +37,7 @@ data class DisclaimerPayload(
     val acceptedOn: Instant?,
 ) {
   constructor(
-      model: DisclaimerModel
+      model: UserDisclaimerModel
   ) : this(
       content = model.content,
       effectiveOn = model.effectiveOn,

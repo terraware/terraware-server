@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.DisclaimerModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.customer.model.UserDisclaimerModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
@@ -186,7 +187,7 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns current disclaimer depending on time`() {
       switchToUser(funderUserId)
 
-      assertEquals(null, store.fetchCurrentDisclaimer(), "No disclaimer inserted yet")
+      assertNull(store.fetchCurrentDisclaimer(), "No disclaimer inserted yet")
       val disclaimerId1 =
           insertDisclaimer(
               content = "Disclaimer 1",
@@ -208,7 +209,7 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = Instant.ofEpochSecond(3000)
       assertEquals(
-          DisclaimerModel(
+          UserDisclaimerModel(
               id = disclaimerId1,
               content = "Disclaimer 1",
               acceptedOn = Instant.ofEpochSecond(3001),
@@ -219,7 +220,7 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = Instant.ofEpochSecond(6000)
       assertEquals(
-          DisclaimerModel(
+          UserDisclaimerModel(
               id = disclaimerId2,
               content = "Disclaimer 2",
               effectiveOn = Instant.ofEpochSecond(6000),
@@ -275,7 +276,7 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if current disclaimer has already been accepted`() {
+    fun `does nothing if current disclaimer has already been accepted`() {
       switchToUser(funderUserId)
       val disclaimerId =
           insertDisclaimer(
@@ -286,9 +287,15 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           userId = funderUserId,
           disclaimerId = disclaimerId,
           acceptedOn = Instant.ofEpochSecond(3000))
-      clock.instant = Instant.ofEpochSecond(3001)
 
-      assertThrows<IllegalStateException> { store.acceptCurrentDisclaimer() }
+      clock.instant = Instant.ofEpochSecond(6000)
+      store.acceptCurrentDisclaimer()
+
+      assertTableEquals(
+          UserDisclaimersRecord(
+              userId = funderUserId,
+              disclaimerId = disclaimerId,
+              acceptedOn = Instant.ofEpochSecond(3000)))
     }
 
     @Test

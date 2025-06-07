@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.DisclaimerModel
+import com.terraformation.backend.customer.model.UserDisclaimerModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.tables.daos.DisclaimersDao
@@ -10,6 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.references.DISCLAIMERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_DISCLAIMERS
+import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -23,6 +25,7 @@ class DisclaimerStore(
     private val dslContext: DSLContext,
     private val userDisclaimersDao: UserDisclaimersDao,
 ) {
+  private val log = perClassLogger()
 
   fun createDisclaimer(content: String, effectiveOn: Instant): DisclaimerId {
     requirePermissions { manageDisclaimers() }
@@ -77,7 +80,7 @@ class DisclaimerStore(
    * Fetch the latest effective disclaimer. Omits future disclaimers. Null if no effective
    * disclaimer exists.
    */
-  fun fetchCurrentDisclaimer(): DisclaimerModel? {
+  fun fetchCurrentDisclaimer(): UserDisclaimerModel? {
     requirePermissions { readCurrentDisclaimer() }
 
     return with(DISCLAIMERS) {
@@ -95,7 +98,7 @@ class DisclaimerStore(
           .where(DISCLAIMERS.EFFECTIVE_ON.le(clock.instant()))
           .orderBy(EFFECTIVE_ON.desc())
           .limit(1)
-          .fetchOne { DisclaimerModel.of(it) }
+          .fetchOne { UserDisclaimerModel.of(it) }
     }
   }
 
@@ -110,7 +113,10 @@ class DisclaimerStore(
     }
 
     if (currentDisclaimer.acceptedOn != null) {
-      throw IllegalStateException("User has already accepted the current disclaimer.")
+      log.warn(
+          "Disclaimer ${currentDisclaimer.id} has already been accepted by user " +
+              "${currentUser().userId}")
+      return
     }
 
     userDisclaimersDao.insert(
