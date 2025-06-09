@@ -1,3 +1,4 @@
+03e016d1100 SW-7059 Fix divide-by-zero in observation summary (#3166)
 b4a733c43a1 Allow internal users to read published reports (#3165)
 6d2c9e93515 Update database dependencies (#3159)
 99a96d2c730 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.3.+ (#3164)
