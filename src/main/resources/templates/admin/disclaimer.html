@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a href="/admin/disclaimers">Disclaimers</a>
+
+<h2 th:text="|Disclaimer ${disclaimer.id}|">Disclaimer 1</h2>
+
+<p th:text="|Effective On: ${disclaimer.effectiveOn}|">Effective Date: 2025/01/01</p>
+
+<h4>Acceptance</h4>
+
+<p>All dates and times are shown in the UTC timezone.</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Funder Email</th>
+        <th>Accepted On</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="userId : ${funderEmails.keySet()}" class="striped">
+        <td th:text="${funderEmails.get(userId)}">funder@fundingEntity.org</td>
+        <td th:text="${#temporals.format(disclaimer.users.get(userId), 'yyyy-MM-dd HH:mm:ss', 'UTC')}">
+            2025/01/01 00:00:00
+        </td>
+        <td>
+            <form method="POST"
+                  id="delete"
+                  th:action="|/admin/disclaimers/${disclaimer.id}/deleteAcceptance/${userId}|">
+                <input type="submit"
+                       th:disabled="${!disclaimer.users.containsKey(userId)}"
+                       value="Delete Acceptance"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h4>Content</h4>
+<p th:text="|${disclaimer.content}|"
+   style="white-space: pre-wrap;">
+    Disclaimer content
+</p>
+
+</body>

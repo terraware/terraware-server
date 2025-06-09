@@ -4,7 +4,9 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.DisclaimerModel
 import com.terraformation.backend.customer.model.UserDisclaimerModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.DisclaimerNotFoundException
 import com.terraformation.backend.db.default_schema.DisclaimerId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.DisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserDisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DisclaimersRow
@@ -15,6 +17,7 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -46,34 +49,25 @@ class DisclaimerStore(
     disclaimersDao.deleteById(disclaimerId)
   }
 
-  fun fetchAllDisclaimers(): List<DisclaimerModel> {
+  fun deleteDisclaimerAcceptance(disclaimerId: DisclaimerId, userId: UserId) {
     requirePermissions { manageDisclaimers() }
 
-    val usersMultiset =
-        with(USER_DISCLAIMERS) {
-          DSL.multiset(
-                  DSL.select(
-                          USER_ID,
-                          ACCEPTED_ON,
-                      )
-                      .from(this)
-                      .where(DISCLAIMER_ID.eq(DISCLAIMERS.ID)))
-              .convertFrom { result ->
-                result.associate { record -> record[USER_ID]!! to record[ACCEPTED_ON]!! }
-              }
-        }
+    dslContext
+        .deleteFrom(USER_DISCLAIMERS)
+        .where(USER_DISCLAIMERS.USER_ID.eq(userId))
+        .and(USER_DISCLAIMERS.DISCLAIMER_ID.eq(disclaimerId))
+        .execute()
+  }
 
-    return with(DISCLAIMERS) {
-      dslContext
-          .select(
-              ID,
-              CONTENT,
-              EFFECTIVE_ON,
-              usersMultiset,
-          )
-          .from(this)
-          .fetch { DisclaimerModel.of(it, usersMultiset) }
-    }
+  fun fetchAllDisclaimers(): List<DisclaimerModel> {
+    requirePermissions { manageDisclaimers() }
+    return fetchDisclaimersByCondition(DSL.trueCondition())
+  }
+
+  fun fetchOneDisclaimer(disclaimerId: DisclaimerId): DisclaimerModel {
+    requirePermissions { manageDisclaimers() }
+    return fetchDisclaimersByCondition(DISCLAIMERS.ID.eq(disclaimerId)).firstOrNull()
+        ?: throw DisclaimerNotFoundException(disclaimerId)
   }
 
   /**
@@ -125,5 +119,35 @@ class DisclaimerStore(
             userId = currentUser().userId,
             acceptedOn = clock.instant(),
         ))
+  }
+
+  private fun fetchDisclaimersByCondition(condition: Condition): List<DisclaimerModel> {
+    val usersMultiset =
+        with(USER_DISCLAIMERS) {
+          DSL.multiset(
+                  DSL.select(
+                          USER_ID,
+                          ACCEPTED_ON,
+                      )
+                      .from(this)
+                      .where(DISCLAIMER_ID.eq(DISCLAIMERS.ID)))
+              .convertFrom { result ->
+                result.associate { record -> record[USER_ID]!! to record[ACCEPTED_ON]!! }
+              }
+        }
+
+    return with(DISCLAIMERS) {
+      dslContext
+          .select(
+              ID,
+              CONTENT,
+              EFFECTIVE_ON,
+              usersMultiset,
+          )
+          .from(this)
+          .where(condition)
+          .orderBy(EFFECTIVE_ON.desc(), ID)
+          .fetch { DisclaimerModel.of(it, usersMultiset) }
+    }
   }
 }

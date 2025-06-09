@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
@@ -95,6 +96,9 @@ class DeviceManagerNotFoundException(val deviceManagerId: DeviceManagerId) :
 
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
+
+class DisclaimerNotFoundException(val disclaimerId: DisclaimerId) :
+    EntityNotFoundException("Disclaimer $disclaimerId not found")
 
 class EventNotFoundException(val eventId: EventId) :
     EntityNotFoundException("Event $eventId not found")

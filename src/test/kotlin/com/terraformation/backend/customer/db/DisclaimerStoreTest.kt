@@ -7,12 +7,15 @@ import com.terraformation.backend.customer.model.DisclaimerModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.UserDisclaimerModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.DisclaimerNotFoundException
+import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.records.DisclaimersRecord
 import com.terraformation.backend.db.default_schema.tables.records.UserDisclaimersRecord
 import com.terraformation.backend.db.default_schema.tables.references.DISCLAIMERS
+import com.terraformation.backend.db.default_schema.tables.references.USER_DISCLAIMERS
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -104,10 +107,9 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class FetchAllDisclaimers {
-
+  inner class DeleteDisclaimerAcceptance {
     @Test
-    fun `returns list of disclaimers with user opt-in time`() {
+    fun `deletes a user disclaimer record`() {
       insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
 
       val disclaimerId1 =
@@ -115,28 +117,90 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               content = "Disclaimer 1",
               effectiveOn = Instant.ofEpochSecond(3000),
           )
-
       val disclaimerId2 =
           insertDisclaimer(
               content = "Disclaimer 2",
               effectiveOn = Instant.ofEpochSecond(6000),
           )
 
-      val disclaimerId3 =
-          insertDisclaimer(
-              content = "Disclaimer 3",
-              effectiveOn = Instant.ofEpochSecond(9000),
-          )
-
       val funderUserId1 = insertUser(type = UserType.Funder)
       insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(3001))
       insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(6001))
-
       val funderUserId2 = insertUser(type = UserType.Funder)
       insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(3002))
 
+      store.deleteDisclaimerAcceptance(disclaimerId1, funderUserId1)
+
+      assertTableEquals(
+          listOf(
+              UserDisclaimersRecord(
+                  userId = funderUserId2,
+                  disclaimerId = disclaimerId1,
+                  acceptedOn = Instant.ofEpochSecond(3002)),
+              UserDisclaimersRecord(
+                  userId = funderUserId1,
+                  disclaimerId = disclaimerId2,
+                  acceptedOn = Instant.ofEpochSecond(6001))))
+    }
+
+    @Test
+    fun `does nothing if disclaimer or user does not exist`() {
+      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+      store.deleteDisclaimerAcceptance(DisclaimerId(-1), UserId(-1))
+
+      assertTableEmpty(USER_DISCLAIMERS)
+    }
+
+    @Test
+    fun `throws exception for non-super-admins`() {
+      val disclaimerId =
+          insertDisclaimer(
+              content = "Disclaimer",
+              effectiveOn = Instant.ofEpochSecond(3000),
+          )
+
+      val funderUserId1 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId, acceptedOn = Instant.ofEpochSecond(3001))
+
+      assertThrows<AccessDeniedException> {
+        store.deleteDisclaimerAcceptance(disclaimerId, funderUserId1)
+      }
+    }
+  }
+
+  @Nested
+  inner class FetchAllDisclaimers {
+    @Test
+    fun `returns list of disclaimers with user opt-in time`() {
+      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+
+      val disclaimerId1 =
+          insertDisclaimer(
+              content = "Disclaimer 1",
+              effectiveOn = Instant.ofEpochSecond(9000),
+          )
+
+      val disclaimerId2 =
+          insertDisclaimer(
+              content = "Disclaimer 2",
+              effectiveOn = Instant.ofEpochSecond(3000),
+          )
+
+      val disclaimerId3 =
+          insertDisclaimer(
+              content = "Disclaimer 3",
+              effectiveOn = Instant.ofEpochSecond(6000),
+          )
+
+      val funderUserId1 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(9001))
+      insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(3001))
+
+      val funderUserId2 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(9002))
+
       val funderUserId3 = insertUser(type = UserType.Funder)
-      insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(6002))
+      insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(3002))
 
       insertUser(type = UserType.Funder)
 
@@ -145,26 +209,27 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               DisclaimerModel(
                   id = disclaimerId1,
                   content = "Disclaimer 1",
-                  effectiveOn = Instant.ofEpochSecond(3000),
+                  effectiveOn = Instant.ofEpochSecond(9000),
                   users =
                       mapOf(
-                          funderUserId1 to Instant.ofEpochSecond(3001),
-                          funderUserId2 to Instant.ofEpochSecond(3002),
-                      )),
-              DisclaimerModel(
-                  id = disclaimerId2,
-                  content = "Disclaimer 2",
-                  effectiveOn = Instant.ofEpochSecond(6000),
-                  users =
-                      mapOf(
-                          funderUserId1 to Instant.ofEpochSecond(6001),
-                          funderUserId3 to Instant.ofEpochSecond(6002),
+                          funderUserId1 to Instant.ofEpochSecond(9001),
+                          funderUserId2 to Instant.ofEpochSecond(9002),
                       )),
               DisclaimerModel(
                   id = disclaimerId3,
                   content = "Disclaimer 3",
-                  effectiveOn = Instant.ofEpochSecond(9000),
-                  users = emptyMap()))
+                  effectiveOn = Instant.ofEpochSecond(6000),
+                  users = emptyMap()),
+              DisclaimerModel(
+                  id = disclaimerId2,
+                  content = "Disclaimer 2",
+                  effectiveOn = Instant.ofEpochSecond(3000),
+                  users =
+                      mapOf(
+                          funderUserId1 to Instant.ofEpochSecond(3001),
+                          funderUserId3 to Instant.ofEpochSecond(3002),
+                      )),
+          )
 
       assertEquals(expected, store.fetchAllDisclaimers())
     }
@@ -178,6 +243,90 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for non-super-admins`() {
       assertThrows<AccessDeniedException> { store.fetchAllDisclaimers() }
+    }
+  }
+
+  @Nested
+  inner class FetchOneDisclaimer {
+    @Test
+    fun `returns disclaimer with user opt-in time`() {
+      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+
+      val disclaimerId1 =
+          insertDisclaimer(
+              content = "Disclaimer 1",
+              effectiveOn = Instant.ofEpochSecond(9000),
+          )
+
+      val disclaimerId2 =
+          insertDisclaimer(
+              content = "Disclaimer 2",
+              effectiveOn = Instant.ofEpochSecond(3000),
+          )
+
+      val disclaimerId3 =
+          insertDisclaimer(
+              content = "Disclaimer 3",
+              effectiveOn = Instant.ofEpochSecond(6000),
+          )
+
+      val funderUserId1 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(9001))
+      insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(3001))
+
+      val funderUserId2 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId1, acceptedOn = Instant.ofEpochSecond(9002))
+
+      val funderUserId3 = insertUser(type = UserType.Funder)
+      insertUserDisclaimer(disclaimerId = disclaimerId2, acceptedOn = Instant.ofEpochSecond(3002))
+
+      insertUser(type = UserType.Funder)
+
+      assertEquals(
+          DisclaimerModel(
+              id = disclaimerId1,
+              content = "Disclaimer 1",
+              effectiveOn = Instant.ofEpochSecond(9000),
+              users =
+                  mapOf(
+                      funderUserId1 to Instant.ofEpochSecond(9001),
+                      funderUserId2 to Instant.ofEpochSecond(9002),
+                  )),
+          store.fetchOneDisclaimer(disclaimerId1),
+          "Disclaimer 1")
+
+      assertEquals(
+          DisclaimerModel(
+              id = disclaimerId2,
+              content = "Disclaimer 2",
+              effectiveOn = Instant.ofEpochSecond(3000),
+              users =
+                  mapOf(
+                      funderUserId1 to Instant.ofEpochSecond(3001),
+                      funderUserId3 to Instant.ofEpochSecond(3002),
+                  )),
+          store.fetchOneDisclaimer(disclaimerId2),
+          "Disclaimer 2")
+
+      assertEquals(
+          DisclaimerModel(
+              id = disclaimerId3,
+              content = "Disclaimer 3",
+              effectiveOn = Instant.ofEpochSecond(6000),
+              users = emptyMap()),
+          store.fetchOneDisclaimer(disclaimerId3),
+          "Disclaimer 3")
+    }
+
+    @Test
+    fun `throws disclaimer not found exception if disclaimer does not exist`() {
+      insertUserGlobalRole(currentUser().userId, GlobalRole.SuperAdmin)
+      assertThrows<DisclaimerNotFoundException> { store.fetchOneDisclaimer(DisclaimerId(-1)) }
+    }
+
+    @Test
+    fun `throws exception for non-super-admins`() {
+      assertThrows<AccessDeniedException> { store.fetchOneDisclaimer(DisclaimerId(-1)) }
     }
   }
 
