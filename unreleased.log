@@ -1,3 +1,4 @@
+f56f65bf92c SW-6808 Implemented CRUD for disclaimers (#3158)
 03e016d1100 SW-7059 Fix divide-by-zero in observation summary (#3166)
 b4a733c43a1 Allow internal users to read published reports (#3165)
 6d2c9e93515 Update database dependencies (#3159)

@@ -4,6 +4,7 @@ organization_internal_tags
 notifications
 user_preferences
 user_global_roles
+user_disclaimers
 upload_problems
 seed_fund_report_photos
 seed_fund_report_files
@@ -35,5 +36,6 @@ managed_location_types
 global_roles
 facility_types
 facility_connection_states
+disclaimers
 regions
 land_use_model_types

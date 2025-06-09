@@ -268,6 +268,20 @@
          <checkConstraint constraint="(address !~ similar_to_escape(' *'::text))" name="devices_address_check"/>
          <checkConstraint constraint="(protocol !~ similar_to_escape(' *'::text))" name="devices_protocol_check"/>
       </table>
+      <table name="disclaimers" remarks="Disclaimers content and effective dates." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="disclaimer_id" foreignKey="user_disclaimers_disclaimer_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_disclaimers"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="content" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="effective_on" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="disclaimers_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="disclaimers_effective_on_idx" unique="false">
+            <column ascending="true" name="effective_on"/>
+         </index>
+      </table>
       <table name="ecosystem_types" remarks="(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation's &quot;Terrestrial Ecoregions of the World&quot; report." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="ecosystem_type_id" foreignKey="species_ecosystem_types_ecosystem_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_ecosystem_types"/>
@@ -1366,6 +1380,24 @@
             <column ascending="true" name="facility_id"/>
          </index>
       </table>
+      <table name="user_disclaimers" remarks="Records of user acceptance of disclaimers." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="disclaimer_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_disclaimers_disclaimer_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="disclaimers"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="user_disclaimers_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="accepted_on" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="disclaimer_id" sequenceNumberInPK="1"/>
+         <primaryKey column="user_id" sequenceNumberInPK="2"/>
+         <index name="user_disclaimers_pkey" unique="true">
+            <column ascending="true" name="disclaimer_id"/>
+            <column ascending="true" name="user_id"/>
+         </index>
+         <index name="user_disclaimers_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+      </table>
       <table name="user_global_roles" remarks="Which users have which global roles." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
@@ -1501,6 +1533,7 @@
             <child column="created_by" foreignKey="timeseries_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
             <child column="modified_by" foreignKey="timeseries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
             <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+            <child column="user_id" foreignKey="user_disclaimers_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_disclaimers"/>
             <child column="user_id" foreignKey="user_global_roles_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_global_roles"/>
             <child column="user_id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_preferences"/>
             <child column="created_by" foreignKey="accession_quantity_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_quantity_history"/>

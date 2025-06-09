@@ -5,6 +5,7 @@ regions
 chat_memory_message_types
 conservation_categories
 device_template_categories
+disclaimers
 ecosystem_types
 facility_connection_states
 facility_types
@@ -60,6 +61,7 @@ species_growth_forms
 species_plant_material_sourcing_methods
 species_successional_groups
 upload_problems
+user_disclaimers
 user_global_roles
 user_preferences
 notifications
