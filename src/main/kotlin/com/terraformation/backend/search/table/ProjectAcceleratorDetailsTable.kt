@@ -44,6 +44,8 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             integerField("numNativeSpecies", NUM_NATIVE_SPECIES),
             bigDecimalField("perHectareBudget", PER_HECTARE_BUDGET),
             nonLocalizableEnumField("pipeline", PIPELINE_ID),
+            textField("plantingSitesCql", PLANTING_SITES_CQL),
+            textField("projectBoundariesCql", PROJECT_BOUNDARIES_CQL),
             textField("projectLead", PROJECT_LEAD),
             bigDecimalField("totalCarbon", TOTAL_CARBON),
             bigDecimalField("totalExpansionPotential", TOTAL_EXPANSION_POTENTIAL),
