@@ -15,6 +15,8 @@
 
 <h4>Acceptance</h4>
 
+<p>All dates and times are shown in the UTC timezone.</p>
+
 <table>
     <thead>
     <tr>
@@ -44,6 +46,9 @@
 </table>
 
 <h4>Content</h4>
-<p th:text="|${disclaimer.content}|">Disclaimer content</p>
+<p th:text="|${disclaimer.content}|"
+   style="white-space: pre-wrap;">
+    Disclaimer content
+</p>
 
 </body>
