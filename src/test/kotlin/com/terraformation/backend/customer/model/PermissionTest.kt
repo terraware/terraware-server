@@ -1712,6 +1712,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
@@ -1750,6 +1751,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
@@ -1965,6 +1967,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
@@ -2011,6 +2014,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
@@ -2230,6 +2234,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
@@ -2268,6 +2273,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
@@ -2486,6 +2492,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
     )
 
     // Not an admin of this org but can still access accelerator-related functions.
@@ -2500,6 +2507,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        readPublishedReports = true,
     )
 
     permissions.expect(
