@@ -1,3 +1,4 @@
+b4a733c43a1 Allow internal users to read published reports (#3165)
 6d2c9e93515 Update database dependencies (#3159)
 99a96d2c730 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.3.+ (#3164)
 d9240c4cb9d Update dependency com.google.auth:google-auth-library-oauth2-http to v1.37.0 (#3163)
