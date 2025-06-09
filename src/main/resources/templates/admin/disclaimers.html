@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Disclaimers</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>Disclaimer ID</th>
+        <th>Effective Date</th>
+        <th>Number of Acceptance</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="disclaimer : ${disclaimers}" class="striped">
+        <td>
+            <a th:href="|/admin/disclaimers/${disclaimer.id}|" th:text="${disclaimer.id}">123</a>
+        </td>
+        <td th:text="${disclaimer.effectiveOn}">2025/01/01</td>
+        <td th:text="${disclaimer.users.size()}">Disclaimer Number of Acceptance</td>
+        <td>
+            <form method="POST" id="delete" th:action="|/admin/disclaimers/${disclaimer.id}/delete|">
+                <input type="submit" value="Delete"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>New Disclaimer</h3>
+
+<form method="POST" action="/admin/disclaimers">
+    <label>
+        Effective Date
+        <input type="date"
+               name="effectiveDate"
+               required />
+    </label>
+    <br />
+    <label>
+        Content
+        <br />
+        <textarea name="content" rows="4" cols="50">Disclaimer content</textarea>
+    </label>
+    <br />
+    <input type="submit"
+           value="Submit" />
+</form>
+
+</body>
+</html>
