@@ -50,7 +50,7 @@ class AdminDisclaimersController(
     val funderEmails =
         usersDao
             .findAll()
-            .filter { it.userTypeId == UserType.Funder }
+            .filter { it.userTypeId == UserType.Funder && it.deletedTime == null }
             .associate { it.id to it.email }
 
     model.addAttribute("disclaimer", disclaimer)

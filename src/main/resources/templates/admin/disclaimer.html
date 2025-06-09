@@ -27,7 +27,9 @@
     <tbody>
     <tr th:each="userId : ${funderEmails.keySet()}" class="striped">
         <td th:text="${funderEmails.get(userId)}">funder@fundingEntity.org</td>
-        <td th:text="${disclaimer.users.get(userId)}">2025/01/01</td>
+        <td th:text="${#temporals.format(disclaimer.users.get(userId), 'yyyy-MM-dd HH:mm:ss', 'UTC')}">
+            2025/01/01 00:00:00
+        </td>
         <td>
             <form method="POST"
                   id="delete"

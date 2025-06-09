@@ -11,6 +11,9 @@
 
 <h2>Disclaimers</h2>
 
+<p>All dates are shown in the UTC timezone.</p>
+<p>The bolded date refers to the currently active disclaimer.</p>
+
 <table>
     <thead>
     <tr>
@@ -26,7 +29,13 @@
         <td>
             <a th:href="|/admin/disclaimers/${disclaimer.id}|" th:text="${disclaimer.id}">123</a>
         </td>
-        <td th:text="${disclaimer.effectiveOn}">2025/01/01</td>
+        <td>
+            <p th:text="${#temporals.format(disclaimer.effectiveOn, 'yyyy-MM-dd', 'UTC')}"
+               th:style="${disclaimer.id == currentDisclaimerId ? 'font-weight: bold;' : 'font-weight: normal;'}"
+            >
+                2025/01/01 00:00:00
+            </p>
+        </td>
         <td th:text="${disclaimer.users.size()}">Disclaimer Number of Acceptance</td>
         <td>
             <form method="POST" id="delete" th:action="|/admin/disclaimers/${disclaimer.id}/delete|">
