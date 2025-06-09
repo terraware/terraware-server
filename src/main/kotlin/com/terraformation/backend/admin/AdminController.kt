@@ -50,6 +50,7 @@ class AdminController(
     model.addAttribute("canDeleteUsers", currentUser().canDeleteUsers())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("canManageDefaultProjectLeads", currentUser().canManageDefaultProjectLeads())
+    model.addAttribute("canManageDisclaimers", currentUser().canManageDisclaimers())
     model.addAttribute("canManageDocumentProducer", currentUser().canManageDocumentProducer())
     model.addAttribute(
         "canManageHubSpot",
