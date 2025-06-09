@@ -1,0 +1,2 @@
+ALTER TABLE accelerator.project_accelerator_details ADD COLUMN planting_sites_cql TEXT;
+ALTER TABLE accelerator.project_accelerator_details ADD COLUMN project_boundaries_cql TEXT;
