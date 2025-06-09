@@ -215,6 +215,8 @@ interface TerrawareUser : Principal, UserDetails {
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */
 
+  fun canAcceptCurrentDisclaimer(): Boolean = defaultPermission
+
   fun canAddAnyOrganizationUser(): Boolean = defaultPermission
 
   fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
@@ -352,6 +354,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canManageDeliverables(): Boolean = defaultPermission
 
+  fun canManageDisclaimers(): Boolean = defaultPermission
+
   fun canManageDocumentProducer(): Boolean = defaultPermission
 
   fun canManageInternalTags(): Boolean = defaultPermission
@@ -395,6 +399,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canReadCohortParticipants(cohortId: CohortId): Boolean = defaultPermission
 
   fun canReadCohorts(): Boolean = defaultPermission
+
+  fun canReadCurrentDisclaimer(): Boolean = defaultPermission
 
   fun canReadDefaultVoters(): Boolean = defaultPermission
 
