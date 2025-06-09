@@ -101,7 +101,7 @@ class AdminDisclaimersController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      disclaimerStore.deleteDisclaimer(id)
+      disclaimerStore.deleteDisclaimerAcceptance(id, userId)
       redirectAttributes.successMessage = "Deleted disclaimer acceptance."
     } catch (e: Exception) {
       log.error("Failed to delete disclaimer $id acceptance for user $userId", e)
