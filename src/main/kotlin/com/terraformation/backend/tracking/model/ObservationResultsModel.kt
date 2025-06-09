@@ -495,10 +495,15 @@ fun Collection<Int>.calculateStandardDeviation(): Int? {
 }
 
 /**
- * Calculate standard deviation from a pair of (data, weight). Weight must be the number of samples,
- * so we can correctly apply the (n-1) Bessel's correction.
+ * Calculate standard deviation from a collection of pairs of (data, weight). Weight must be the
+ * number of samples, so we can correctly apply the (n-1) Bessel's correction.
  */
 fun Collection<Pair<Int, Int>>.calculateWeightedStandardDeviation(): Int? {
+  if (this.size == 1) {
+    // If there's only one sample, then by definition there's no variance.
+    return 0
+  }
+
   val totalWeights = this.sumOf { it.second }
 
   if (totalWeights <= 0) {
