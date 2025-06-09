@@ -31,9 +31,10 @@
         <td>
             <form method="POST"
                   id="delete"
-                  th:disabled="${!disclaimer.users.containsKey(userId)}"
                   th:action="|/admin/disclaimers/${disclaimer.id}/deleteAcceptance/${userId}|">
-                <input type="submit" value="Delete Acceptance"/>
+                <input type="submit"
+                       th:disabled="${!disclaimer.users.containsKey(userId)}"
+                       value="Delete Acceptance"/>
             </form>
         </td>
     </tr>
