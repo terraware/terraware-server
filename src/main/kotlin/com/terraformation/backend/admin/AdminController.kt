@@ -66,6 +66,8 @@ class AdminController(
     model.addAttribute(
         "canRecalculateMortalityRates", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute(
+        "canRecalculatePopulations", GlobalRole.SuperAdmin in currentUser().globalRoles)
+    model.addAttribute(
         "canSendTestEmail",
         config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())

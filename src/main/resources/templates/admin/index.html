@@ -217,6 +217,23 @@
             <input type="submit" value="Recalculate"/>
         </form>
     </th:block>
+
+    <th:block th:if="${canRecalculatePopulations}">
+        <h3>Recalculate Planting Site Populations</h3>
+
+        <p>
+            This updates the reported plant counts for a planting site based on the total numbers of
+            plants from the withdrawal log.
+        </p>
+
+        <form method="POST" action="/admin/recalculatePopulations">
+            <label>
+                Planting Site ID:
+                <input type="text" name="plantingSiteId"/>
+            </label>
+            <input type="submit" value="Recalculate"/>
+        </form>
+    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
