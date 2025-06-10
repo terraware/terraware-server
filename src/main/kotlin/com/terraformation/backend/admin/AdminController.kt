@@ -62,6 +62,13 @@ class AdminController(
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute(
         "canMigrateSimplePlantingSites", GlobalRole.SuperAdmin in currentUser().globalRoles)
+    model.addAttribute(
+        "canQueryGeoServer",
+        config.geoServer.wfsUrl != null &&
+            currentUser()
+                .globalRoles
+                .intersect(setOf(GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin))
+                .isNotEmpty())
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute(
         "canRecalculateMortalityRates", GlobalRole.SuperAdmin in currentUser().globalRoles)
