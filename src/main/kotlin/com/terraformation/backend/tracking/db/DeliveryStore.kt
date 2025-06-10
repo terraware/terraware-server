@@ -30,6 +30,7 @@ import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import jakarta.inject.Named
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -352,6 +353,91 @@ class DeliveryStore(
                 })
             .execute()
       }
+    }
+  }
+
+  /**
+   * Recalculates the populations of all the species in a site based on the populations of its
+   * planting zones. This is called in cases when the site-level totals become invalid, e.g., after
+   * we've recalculated the subzone-level totals.
+   */
+  private fun recalculateSitePopulations(plantingSiteId: PlantingSiteId) {
+    dslContext.transaction { _ ->
+      with(PLANTING_SITE_POPULATIONS) {
+        dslContext
+            .deleteFrom(PLANTING_SITE_POPULATIONS)
+            .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            .execute()
+
+        dslContext
+            .insertInto(
+                PLANTING_SITE_POPULATIONS,
+                PLANTING_SITE_ID,
+                SPECIES_ID,
+                TOTAL_PLANTS,
+                PLANTS_SINCE_LAST_OBSERVATION)
+            .select(
+                with(PLANTING_ZONE_POPULATIONS) {
+                  DSL.select(
+                          DSL.value(plantingSiteId, PLANTING_SITE_ID),
+                          SPECIES_ID,
+                          DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
+                          DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
+                      )
+                      .from(PLANTING_ZONE_POPULATIONS)
+                      .join(PLANTING_ZONES)
+                      .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+                      .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                      .groupBy(SPECIES_ID)
+                })
+            .execute()
+      }
+    }
+  }
+
+  /**
+   * Recalculates the subzone, zone, and site populations for a planting site to match the plant
+   * totals from plantings. This is used to correct discrepancies between the withdrawal log and the
+   * population data, e.g., because batches were deleted.
+   */
+  fun recalculatePopulationsFromPlantings(plantingSiteId: PlantingSiteId) {
+    if (!dslContext.fetchExists(
+        PLANTING_ZONES, PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))) {
+      throw IllegalArgumentException("Recalculation not supported for simple planting sites")
+    }
+
+    dslContext.transaction { _ ->
+      // Remove any populations that no longer have any plantings, or whose plantings are canceled
+      // out by reassignments to other subzones.
+      dslContext
+          .deleteFrom(PLANTING_SUBZONE_POPULATIONS)
+          .where(PLANTING_SUBZONE_POPULATIONS.plantingSubzones.PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(
+              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.notIn(
+                  DSL.select(PLANTINGS.SPECIES_ID)
+                      .from(PLANTINGS)
+                      .where(
+                          PLANTINGS.PLANTING_SUBZONE_ID.eq(
+                              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+                      .groupBy(PLANTINGS.SPECIES_ID)
+                      .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))))
+          .execute()
+
+      dslContext
+          .update(PLANTING_SUBZONE_POPULATIONS)
+          .set(
+              PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS,
+              DSL.select(DSL.sum(PLANTINGS.NUM_PLANTS).cast(SQLDataType.INTEGER))
+                  .from(PLANTINGS)
+                  .where(
+                      PLANTINGS.PLANTING_SUBZONE_ID.eq(
+                          PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+                  .and(PLANTINGS.SPECIES_ID.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)))
+          .where(PLANTING_SUBZONE_POPULATIONS.plantingSubzones.PLANTING_SITE_ID.eq(plantingSiteId))
+          .execute()
+
+      recalculateZonePopulations(plantingSiteId)
+      recalculateSitePopulations(plantingSiteId)
     }
   }
 

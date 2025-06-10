@@ -24,6 +24,7 @@ import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -77,6 +78,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminPlantingSitesController(
     private val clock: DatabaseBackedClock,
     private val countriesDao: CountriesDao,
+    private val deliveryStore: DeliveryStore,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
     private val observationService: ObservationService,
@@ -726,6 +728,24 @@ class AdminPlantingSitesController(
     } catch (e: Exception) {
       log.warn("Mortality rate recalculation failed", e)
       redirectAttributes.failureMessage = "Failed to recalculate mortality rates: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/recalculatePopulations")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun recalculatePopulations(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+
+    try {
+      deliveryStore.recalculatePopulationsFromPlantings(plantingSiteId)
+      redirectAttributes.successMessage = "Recalculated populations."
+    } catch (e: Exception) {
+      log.error("Failed to recalculate populations", e)
+      redirectAttributes.failureMessage = "Failed to recalculate populations: ${e.message}"
     }
 
     return redirectToAdminHome()
