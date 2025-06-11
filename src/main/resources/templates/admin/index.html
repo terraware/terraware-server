@@ -28,6 +28,9 @@
 
     <h3>Projects, Participants, Cohorts</h3>
 
+        <p th:if="${canQueryGeoServer}">
+            <a href="/admin/geoServer">GeoServer (GIS) maps</a>
+        </p>
         <p th:if="${canManageParticipants}">
             <a href="/admin/participants">Manage participants</a>
         </p>
@@ -100,10 +103,6 @@
 
     <p>
         <a href="/admin/testClock">Test clock adjustment</a>
-    </p>
-
-    <p th:if="${canQueryGeoServer}">
-        <a href="/admin/geoServer">GeoServer</a>
     </p>
 </details>
 

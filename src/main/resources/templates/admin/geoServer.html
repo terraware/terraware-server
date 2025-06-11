@@ -50,12 +50,10 @@
             <label>
                 Feature Type
                 <select name="featureType">
-                    <option value="tf_accelerator:planting_sites"
-                            th:selected="${featureType == 'tf_accelerator:planting_sites'}"
-                        >Planting Sites</option>
-                    <option value="tf_accelerator:project_boundaries"
-                            th:selected="${featureType == 'tf_accelerator:project_boundaries'}"
-                        >Project Boundaries</option>
+                    <option th:each="availableFeatureType : ${availableFeatureTypes}"
+                            th:value="${availableFeatureType}"
+                            th:text="${availableFeatureType.displayName}"
+                            th:selected="${availableFeatureType == featureType}" />
                 </select>
             </label>
             <label>
@@ -72,6 +70,21 @@
             </label>
             <input type="submit" value="Query"/>
         </form>
+
+        <p th:if="${geoJsonResults != null || results != null}">
+            <form method="POST" action="/admin/geoServer/setForProject">
+                <input type="hidden" name="featureType" th:value="${featureType}"/>
+                <input type="hidden" name="filter" th:value="${filter}"/>
+                <input type="hidden" name="resultFormat" th:value="${resultFormat}"/>
+                <label>
+                    Use filter
+                    <code th:text="${filter}">x=y</code>
+                    <th:block th:text="|as ${featureType.displayName} CQL for project ID|"/>
+                    <input type="number" name="projectId" required />
+                    <input type="submit" value="Update Project" />
+                </label>
+            </form>
+        </p>
 
         <th:block th:if="${results != null}">
             <h3>Results</h3>
