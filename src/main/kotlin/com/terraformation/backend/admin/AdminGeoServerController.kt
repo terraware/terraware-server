@@ -3,11 +3,13 @@ package com.terraformation.backend.admin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.gis.geoserver.GeoServerClient
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import java.io.ByteArrayOutputStream
-import org.geotools.geojson.GeoJSON
+import org.geotools.geojson.feature.FeatureJSON
+import org.geotools.geojson.geom.GeometryJSON
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -32,65 +34,46 @@ class AdminGeoServerController(
     val enabled = config.geoServer.wfsUrl != null
     model.addAttribute("enabled", enabled)
     addAttributeIfAbsent(model, "filter", "")
-    addAttributeIfAbsent(model, "cqlProperties", "geom,area_ha,project_id,site,strata,substrata")
-    addAttributeIfAbsent(model, "forceLongLat", true)
-    addAttributeIfAbsent(model, "showMap", false)
-
-    if (enabled) {
-      model.addAttribute(
-          "availableProperties",
-          geoServerClient
-              .describeFeatureType("tf_accelerator:planting_sites")
-              .properties
-              .map { it.name }
-              .sorted()
-              .joinToString(", "))
-    }
+    addAttributeIfAbsent(model, "featureType", "tf_accelerator:planting_sites")
+    addAttributeIfAbsent(model, "resultFormat", CqlQueryResultFormat.Map.toString())
 
     return "/admin/geoServer"
   }
 
+  enum class CqlQueryResultFormat(val srsName: String? = null) {
+    GeoJsonLongLat("EPSG:${SRID.LONG_LAT}"),
+    GeoJsonOriginal,
+    Map("EPSG:${SRID.LONG_LAT}"),
+  }
+
   @PostMapping("/cql")
   fun postCqlQuery(
+      @RequestParam featureType: String,
       @RequestParam filter: String,
-      @RequestParam properties: String? = null,
-      @RequestParam forceLongLat: Boolean = false,
-      @RequestParam showMap: Boolean = false,
+      @RequestParam resultFormat: CqlQueryResultFormat = CqlQueryResultFormat.Map,
       redirectAttributes: RedirectAttributes,
   ): String {
-    // We always need the "fid" property if we're showing the map, since it's used by the
-    // highlighting logic.
-    val requestedProperties =
-        properties?.ifBlank { null }?.split(",")?.map { it.trim() } ?: emptyList()
-    val propertiesWithFid =
-        if (showMap) (requestedProperties + "fid").distinct() else requestedProperties
-
-    val features =
-        geoServerClient.getPlantingSiteFeatures(
-            filter,
-            propertiesWithFid,
-            forceLongLat,
-        )
+    val features = geoServerClient.getFeatures(featureType, filter, null, resultFormat.srsName)
 
     if (!features.isEmpty) {
+      val decimalPlaces = 6
       val outputStream = ByteArrayOutputStream()
-      GeoJSON.write(features, outputStream)
+      FeatureJSON(GeometryJSON(decimalPlaces)).writeFeatureCollection(features, outputStream)
       val jsonTree = objectMapper.readTree(outputStream.toByteArray())
-      val prettyJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonTree)
 
-      if (showMap) {
+      if (resultFormat == CqlQueryResultFormat.Map) {
         redirectAttributes.addFlashAttribute("geoJsonResults", jsonTree)
       } else {
-        redirectAttributes.addFlashAttribute("results", prettyJson)
+        redirectAttributes.addFlashAttribute(
+            "results", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonTree))
       }
     } else {
       redirectAttributes.failureMessage = "Query returned no results."
     }
 
+    redirectAttributes.addFlashAttribute("featureType", featureType)
     redirectAttributes.addFlashAttribute("filter", filter)
-    redirectAttributes.addFlashAttribute("forceLongLat", forceLongLat || showMap)
-    redirectAttributes.addFlashAttribute("cqlProperties", properties)
-    redirectAttributes.addFlashAttribute("showMap", showMap)
+    redirectAttributes.addFlashAttribute("resultFormat", resultFormat.toString())
     redirectAttributes.addFlashAttribute("mapboxToken", mapboxService.generateTemporaryToken())
 
     return redirectToGeoServerHome()

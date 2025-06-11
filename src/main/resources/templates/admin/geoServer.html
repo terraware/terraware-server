@@ -43,33 +43,33 @@
 
     <a href="/admin/">Home</a>
 
-    <h2>GeoServer</h2>
+    <h2>Query GeoServer</h2>
 
     <th:block th:if="${enabled}">
         <form method="POST" action="/admin/geoServer/cql">
-            <h3>CQL Planting Sites Query</h3>
-
+            <label>
+                Feature Type
+                <select name="featureType">
+                    <option value="tf_accelerator:planting_sites"
+                            th:selected="${featureType == 'tf_accelerator:planting_sites'}"
+                        >Planting Sites</option>
+                    <option value="tf_accelerator:project_boundaries"
+                            th:selected="${featureType == 'tf_accelerator:project_boundaries'}"
+                        >Project Boundaries</option>
+                </select>
+            </label>
             <label>
                 Filter
                 <input type="text" size="40" name="filter" th:value="${filter}"/>
             </label>
-            <br/>
             <label>
-                Properties (comma-separated)
-                <input type="text" size="40" name="properties" th:value="${cqlProperties}"/>
-                <small th:text="${availableProperties}"></small>
+                View As
+                <select name="resultFormat">
+                    <option value="Map" th:selected="${resultFormat == 'Map'}">Map</option>
+                    <option value="GeoJsonLongLat" th:selected="${resultFormat == 'GeoJsonLongLat'}">GeoJSON (longitude/latitude)</option>
+                    <option value="GeoJsonOriginal" th:selected="${resultFormat == 'GeoJsonOriginal'}">GeoJSON (original coordinate system)</option>
+                </select>
             </label>
-            <br/>
-            <label>
-                Force long/lat coordinates
-                <input type="checkbox" name="forceLongLat" th:checked="${forceLongLat}"/>
-            </label>
-            <br/>
-            <label>
-                Show results on map
-                <input type="checkbox" name="showMap" th:checked="${showMap}"/>
-            </label>
-            <br/>
             <input type="submit" value="Query"/>
         </form>
 
@@ -250,7 +250,7 @@
 
                 const showPopup = (e, properties) => {
                     let popupContent = '<h4>Feature Properties</h4>';
-                    Object.keys(properties).forEach((key) => {
+                    Object.keys(properties).sort().forEach((key) => {
                         if (properties[key] !== null && properties[key] !== undefined) {
                             popupContent += `<strong>${key}:</strong> ${properties[key]}<br>`;
                         }
