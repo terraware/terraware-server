@@ -427,7 +427,7 @@
             <child column="organization_id" foreignKey="organization_managed_location_types_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_managed_location_types"/>
             <child column="organization_id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_report_settings"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
-            <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
@@ -538,7 +538,7 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
-            <parent column="id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
