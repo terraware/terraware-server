@@ -1,3 +1,4 @@
+c3163fb4cd7 SW-7060 Set project CQL from admin UI (#3174)
 2d8283e9286 SW-7060 Improve GeoServer query UI (#3173)
 105751d38c8 SW-7037 Recalculate site populations from admin UI (#3172)
 87f96b67d3e SW-6901 Admin UI for testing CQL filters (#3171)
