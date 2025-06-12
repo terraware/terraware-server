@@ -7,7 +7,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.SRID
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.java.Java
@@ -45,21 +44,21 @@ class GeoServerClient(
     return descriptions.featureTypes.first().copy(targetPrefix = descriptions.targetPrefix)
   }
 
-  fun getPlantingSiteFeatures(
+  fun getFeatures(
+      featureType: String,
       filter: String,
       properties: List<String>?,
-      forceLongLat: Boolean = false,
+      srsName: String? = null,
   ): FeatureCollection<*, *> {
     return FeatureJSON()
         .readFeatureCollection(
             sendGetRequest<String>(
                 "GetFeature",
                 listOfNotNull(
-                        if (forceLongLat) "srsName" to "EPSG:${SRID.LONG_LAT}" else null,
+                        srsName?.let { "srsName" to it },
                         "cql_filter" to filter,
-                        "typeNames" to "tf_accelerator:planting_sites",
-                        if (properties != null) "propertyName" to properties.joinToString(",")
-                        else null,
+                        "typeNames" to featureType,
+                        properties?.let { "properties" to it.joinToString(",") },
                     )
                     .toMap()))
   }
