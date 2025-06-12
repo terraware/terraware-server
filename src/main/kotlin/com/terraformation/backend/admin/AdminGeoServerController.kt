@@ -1,11 +1,14 @@
 package com.terraformation.backend.admin
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.gis.geoserver.GeoServerClient
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import java.io.ByteArrayOutputStream
 import org.geotools.geojson.feature.FeatureJSON
@@ -28,32 +31,31 @@ class AdminGeoServerController(
     private val geoServerClient: GeoServerClient,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
 ) {
+  private val log = perClassLogger()
+
   @GetMapping
   fun getGeoServerHome(model: Model): String {
     val enabled = config.geoServer.wfsUrl != null
     model.addAttribute("enabled", enabled)
+    model.addAttribute("availableFeatureTypes", FeatureType.entries)
     addAttributeIfAbsent(model, "filter", "")
-    addAttributeIfAbsent(model, "featureType", "tf_accelerator:planting_sites")
+    addAttributeIfAbsent(model, "featureType", FeatureType.PlantingSites)
     addAttributeIfAbsent(model, "resultFormat", CqlQueryResultFormat.Map.toString())
 
     return "/admin/geoServer"
   }
 
-  enum class CqlQueryResultFormat(val srsName: String? = null) {
-    GeoJsonLongLat("EPSG:${SRID.LONG_LAT}"),
-    GeoJsonOriginal,
-    Map("EPSG:${SRID.LONG_LAT}"),
-  }
-
   @PostMapping("/cql")
   fun postCqlQuery(
-      @RequestParam featureType: String,
+      @RequestParam featureType: FeatureType,
       @RequestParam filter: String,
       @RequestParam resultFormat: CqlQueryResultFormat = CqlQueryResultFormat.Map,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val features = geoServerClient.getFeatures(featureType, filter, null, resultFormat.srsName)
+    val features =
+        geoServerClient.getFeatures(featureType.typeName, filter, null, resultFormat.srsName)
 
     if (!features.isEmpty) {
       val decimalPlaces = 6
@@ -79,6 +81,31 @@ class AdminGeoServerController(
     return redirectToGeoServerHome()
   }
 
+  @PostMapping("/setForProject")
+  fun setCqlForProject(
+      @RequestParam projectId: ProjectId,
+      @RequestParam featureType: FeatureType,
+      @RequestParam filter: String,
+      @RequestParam resultFormat: CqlQueryResultFormat,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      projectAcceleratorDetailsService.update(projectId) { details ->
+        when (featureType) {
+          FeatureType.PlantingSites -> details.copy(plantingSitesCql = filter)
+          FeatureType.ProjectBoundaries -> details.copy(projectBoundariesCql = filter)
+        }
+      }
+
+      redirectAttributes.successMessage = "Updated project $projectId."
+    } catch (e: Exception) {
+      log.error("Unable to set CQL for project", e)
+      redirectAttributes.failureMessage = "Failed to set CQL for project: ${e.message}"
+    }
+
+    return postCqlQuery(featureType, filter, resultFormat, redirectAttributes)
+  }
+
   private fun addAttributeIfAbsent(model: Model, name: String, value: Any) {
     if (!model.containsAttribute(name)) {
       model.addAttribute(name, value)
@@ -86,4 +113,15 @@ class AdminGeoServerController(
   }
 
   private fun redirectToGeoServerHome() = "redirect:/admin/geoServer"
+
+  enum class CqlQueryResultFormat(val srsName: String? = null) {
+    GeoJsonLongLat("EPSG:${SRID.LONG_LAT}"),
+    GeoJsonOriginal,
+    Map("EPSG:${SRID.LONG_LAT}"),
+  }
+
+  enum class FeatureType(val displayName: String, val typeName: String) {
+    PlantingSites("Planting Sites", "tf_accelerator:planting_sites"),
+    ProjectBoundaries("Project Boundaries", "tf_accelerator:project_boundaries"),
+  }
 }
