@@ -1977,6 +1977,506 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class UpdateProjectMetricTargets {
+    @Test
+    fun `throws exception for non-organization admin users`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      val metricId = insertProjectMetric()
+      assertThrows<AccessDeniedException> {
+        store.updateProjectMetricTargets(
+            projectId = projectId, metricId = metricId, targets = emptyMap())
+      }
+    }
+
+    @Test
+    fun `throws exception for non TF Experts for updating submitted reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+      val metricId = insertProjectMetric()
+
+      assertThrows<AccessDeniedException> {
+        store.updateProjectMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = emptyMap(),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports in non-editable statuses`() {
+      insertProjectReportConfig()
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+
+      val metricId = insertProjectMetric()
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateProjectMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(submittedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Approved Report") {
+        store.updateProjectMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateProjectMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
+      }
+
+      assertDoesNotThrow("Update submitted flag on") {
+        store.updateProjectMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports not in projects`() {
+      insertProjectReportConfig()
+      val reportId = insertReport()
+      val metricId = insertProjectMetric()
+
+      insertProject()
+      insertProjectReportConfig()
+      val otherReportId = insertReport()
+
+      assertThrows<IllegalStateException> {
+        store.updateProjectMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(reportId to 0, otherReportId to 0))
+      }
+
+      assertDoesNotThrow {
+        store.updateProjectMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(reportId to 0))
+      }
+    }
+
+    @Test
+    fun `upserts report targets`() {
+      insertProjectReportConfig()
+      val reportId1 = insertReport()
+      val reportId2 = insertReport()
+      val reportId3 = insertReport()
+      val reportId4 = insertReport()
+
+      val metricId = insertProjectMetric()
+
+      insertReportProjectMetric(
+          reportId = reportId1,
+          metricId = metricId,
+          target = 100,
+          value = 100,
+          status = ReportMetricStatus.Achieved,
+          progressNotes = "Existing notes",
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId3,
+          metricId = metricId,
+          target = 300,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId4,
+          metricId = metricId,
+          target = 400,
+      )
+
+      clock.instant = Instant.ofEpochSecond(9000)
+      store.updateProjectMetricTargets(
+          projectId = projectId,
+          metricId = metricId,
+          targets =
+              mapOf(
+                  reportId1 to 101,
+                  reportId2 to 201,
+                  reportId3 to null,
+              ))
+
+      assertTableEquals(
+          listOf(
+              ReportProjectMetricsRecord(
+                  reportId = reportId1,
+                  projectMetricId = metricId,
+                  target = 101,
+                  value = 100,
+                  statusId = ReportMetricStatus.Achieved,
+                  progressNotes = "Existing notes",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportProjectMetricsRecord(
+                  reportId = reportId2,
+                  projectMetricId = metricId,
+                  target = 201,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportProjectMetricsRecord(
+                  reportId = reportId3,
+                  projectMetricId = metricId,
+                  target = null,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportProjectMetricsRecord(
+                  reportId = reportId4,
+                  projectMetricId = metricId,
+                  target = 400,
+                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+              ),
+          ))
+    }
+  }
+
+  @Nested
+  inner class UpdateStandardMetricTargets {
+    @Test
+    fun `throws exception for non-organization admin users`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      val metricId = insertStandardMetric()
+      assertThrows<AccessDeniedException> {
+        store.updateStandardMetricTargets(
+            projectId = projectId, metricId = metricId, targets = emptyMap())
+      }
+    }
+
+    @Test
+    fun `throws exception for non TF Experts for updating submitted reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+      val metricId = insertStandardMetric()
+
+      assertThrows<AccessDeniedException> {
+        store.updateStandardMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = emptyMap(),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports in non-editable statuses`() {
+      insertProjectReportConfig()
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+
+      val metricId = insertStandardMetric()
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateStandardMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(submittedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Approved Report") {
+        store.updateStandardMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateStandardMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
+      }
+
+      assertDoesNotThrow("Update submitted flag on") {
+        store.updateStandardMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports not in projects`() {
+      insertProjectReportConfig()
+      val reportId = insertReport()
+
+      insertProject()
+      insertProjectReportConfig()
+      val otherReportId = insertReport()
+
+      val metricId = insertStandardMetric()
+
+      assertThrows<IllegalStateException> {
+        store.updateStandardMetricTargets(
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(reportId to 0, otherReportId to 0))
+      }
+
+      assertDoesNotThrow {
+        store.updateStandardMetricTargets(
+            projectId = projectId, metricId = metricId, targets = mapOf(reportId to 0))
+      }
+    }
+
+    @Test
+    fun `upserts report targets`() {
+      insertProjectReportConfig()
+      val reportId1 = insertReport()
+      val reportId2 = insertReport()
+      val reportId3 = insertReport()
+      val reportId4 = insertReport()
+
+      val metricId = insertStandardMetric()
+
+      insertReportStandardMetric(
+          reportId = reportId1,
+          metricId = metricId,
+          target = 100,
+          value = 100,
+          status = ReportMetricStatus.Achieved,
+          progressNotes = "Existing notes",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId3,
+          metricId = metricId,
+          target = 300,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId4,
+          metricId = metricId,
+          target = 400,
+      )
+
+      clock.instant = Instant.ofEpochSecond(9000)
+      store.updateStandardMetricTargets(
+          projectId = projectId,
+          metricId = metricId,
+          targets =
+              mapOf(
+                  reportId1 to 101,
+                  reportId2 to 201,
+                  reportId3 to null,
+              ))
+
+      assertTableEquals(
+          listOf(
+              ReportStandardMetricsRecord(
+                  reportId = reportId1,
+                  standardMetricId = metricId,
+                  target = 101,
+                  value = 100,
+                  statusId = ReportMetricStatus.Achieved,
+                  progressNotes = "Existing notes",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId2,
+                  standardMetricId = metricId,
+                  target = 201,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId3,
+                  standardMetricId = metricId,
+                  target = null,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId4,
+                  standardMetricId = metricId,
+                  target = 400,
+                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+              ),
+          ))
+    }
+  }
+
+  @Nested
+  inner class UpdateSystemMetricTargets {
+    @Test
+    fun `throws exception for non-organization admin users`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      assertThrows<AccessDeniedException> {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = emptyMap(),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for non TF Experts for updating submitted reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+
+      assertThrows<AccessDeniedException> {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = emptyMap(),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports in non-editable statuses`() {
+      insertProjectReportConfig()
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(submittedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Approved Report") {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(approvedReportId to 0))
+      }
+
+      assertThrows<IllegalStateException>("Submitted Report") {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(notNeededReportId to 0))
+      }
+
+      assertDoesNotThrow("Update submitted flag on") {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
+            updateSubmitted = true,
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception for reports not in projects`() {
+      insertProjectReportConfig()
+      val reportId = insertReport()
+
+      insertProject()
+      insertProjectReportConfig()
+      val otherReportId = insertReport()
+
+      assertThrows<IllegalStateException> {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(reportId to 0, otherReportId to 0))
+      }
+
+      assertDoesNotThrow {
+        store.updateSystemMetricTargets(
+            projectId = projectId,
+            metric = SystemMetric.SeedsCollected,
+            targets = mapOf(reportId to 0))
+      }
+    }
+
+    @Test
+    fun `upserts report targets`() {
+      insertProjectReportConfig()
+      val reportId1 = insertReport()
+      val reportId2 = insertReport()
+      val reportId3 = insertReport()
+      val reportId4 = insertReport()
+
+      insertReportSystemMetric(
+          reportId = reportId1,
+          metric = SystemMetric.SeedsCollected,
+          target = 100,
+          overrideValue = 100,
+          status = ReportMetricStatus.Achieved,
+          progressNotes = "Existing notes",
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId3,
+          metric = SystemMetric.SeedsCollected,
+          target = 300,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId4,
+          metric = SystemMetric.SeedsCollected,
+          target = 400,
+      )
+
+      clock.instant = Instant.ofEpochSecond(9000)
+      store.updateSystemMetricTargets(
+          projectId = projectId,
+          metric = SystemMetric.SeedsCollected,
+          targets =
+              mapOf(
+                  reportId1 to 101,
+                  reportId2 to 201,
+                  reportId3 to null,
+              ))
+
+      assertTableEquals(
+          listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId1,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 101,
+                  overrideValue = 100,
+                  statusId = ReportMetricStatus.Achieved,
+                  progressNotes = "Existing notes",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId2,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 201,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId3,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = null,
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId4,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 400,
+                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = user.userId,
+              ),
+          ))
+    }
+  }
+
+  @Nested
   inner class RefreshSystemMetricValues {
     @Test
     fun `throws Access Denied Exception for non-TFExpert users`() {

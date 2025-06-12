@@ -303,6 +303,20 @@ class ProjectReportsController(
     metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @PostMapping("/targets")
+  @Operation(summary = "Update project metric targets.")
+  fun updateProjectMetricTargets(
+      @PathVariable projectId: ProjectId,
+      @RequestParam
+      @Schema(description = "Update targets for submitted reports. Require TF Experts privileges.")
+      updateSubmitted: Boolean?,
+      @RequestBody payload: UpdateMetricTargetsRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    payload.metric.updateMetricTargets(reportStore, projectId, updateSubmitted ?: false)
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -609,3 +623,5 @@ data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMe
 data class CreateProjectMetricRequestPayload(val metric: NewMetricPayload)
 
 data class UpdateProjectMetricRequestPayload(val metric: ExistingProjectMetricPayload)
+
+data class UpdateMetricTargetsRequestPayload(val metric: UpdateMetricTargetsPayload)

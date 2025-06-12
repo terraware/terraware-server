@@ -361,6 +361,87 @@ class ReportStore(
     }
   }
 
+  fun updateProjectMetricTargets(
+      projectId: ProjectId,
+      metricId: ProjectMetricId,
+      targets: Map<ReportId, Int?> = emptyMap(),
+      updateSubmitted: Boolean = false,
+  ): Int {
+    requirePermissions {
+      if (updateSubmitted) {
+        reviewReports()
+      } else {
+        updateProjectReports(projectId)
+      }
+    }
+
+    val metricExists =
+        dslContext.fetchExists(
+            dslContext
+                .selectOne()
+                .from(PROJECT_METRICS)
+                .where(PROJECT_METRICS.ID.eq(metricId))
+                .and(PROJECT_METRICS.PROJECT_ID.eq(projectId)))
+    if (!metricExists) {
+      throw IllegalStateException(
+          "Project metric $metricId is not associated with project $projectId")
+    }
+
+    val reportIds = targets.keys
+    validateReportsInProject(reportIds, projectId)
+    if (!updateSubmitted) {
+      validateReportsUpdatable(reportIds)
+    }
+
+    return upsertReportMetricTargets(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, metricId, targets)
+  }
+
+  fun updateStandardMetricTargets(
+      projectId: ProjectId,
+      metricId: StandardMetricId,
+      targets: Map<ReportId, Int?> = emptyMap(),
+      updateSubmitted: Boolean = false,
+  ): Int {
+    requirePermissions {
+      if (updateSubmitted) {
+        reviewReports()
+      } else {
+        updateProjectReports(projectId)
+      }
+    }
+
+    val reportIds = targets.keys
+    validateReportsInProject(reportIds, projectId)
+    if (!updateSubmitted) {
+      validateReportsUpdatable(reportIds)
+    }
+
+    return upsertReportMetricTargets(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID, metricId, targets)
+  }
+
+  fun updateSystemMetricTargets(
+      projectId: ProjectId,
+      metric: SystemMetric,
+      targets: Map<ReportId, Int?> = emptyMap(),
+      updateSubmitted: Boolean = false,
+  ): Int {
+    requirePermissions {
+      if (updateSubmitted) {
+        reviewReports()
+      } else {
+        updateProjectReports(projectId)
+      }
+    }
+
+    val reportIds = targets.keys
+    validateReportsInProject(reportIds, projectId)
+    if (!updateSubmitted) {
+      validateReportsUpdatable(reportIds)
+    }
+
+    return upsertReportMetricTargets(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metric, targets)
+  }
+
   fun publishReport(reportId: ReportId) {
     requirePermissions { publishReports() }
 
@@ -592,7 +673,7 @@ class ReportStore(
 
     while (true) {
       if (existingReport.endDate!!.isBefore(desiredReportRow.startDate!!)) {
-        // If existing report date is before the new report date, archive it
+        // If the existing report date is before the new report date, archive it
         if (existingReport.statusId != ReportStatus.NotNeeded) {
           reportRowsToUpdate.add(
               existingReport.copy(
@@ -904,6 +985,49 @@ class ReportStore(
     return rowsUpdated
   }
 
+  private fun <ID : Any> upsertReportMetricTargets(
+      metricIdField: TableField<*, ID?>,
+      metricId: ID,
+      targets: Map<ReportId, Int?>,
+  ): Int {
+    if (targets.isEmpty()) {
+      return 0
+    }
+
+    val table = metricIdField.table!!
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val targetField = table.field("target", Int::class.java)!!
+    val modifiedByField =
+        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))
+    val modifiedTimeField = table.field("modified_time", Instant::class.java)
+
+    var insertQuery = dslContext.insertInto(table).set()
+
+    val iterator = targets.iterator()
+
+    while (iterator.hasNext()) {
+      val (reportId, target) = iterator.next()
+      insertQuery =
+          insertQuery
+              .set(reportIdField, reportId)
+              .set(metricIdField, metricId)
+              .set(targetField, target)
+              .set(modifiedByField, currentUser().userId)
+              .set(modifiedTimeField, clock.instant())
+              .apply {
+                if (iterator.hasNext()) {
+                  this.newRecord()
+                }
+              }
+    }
+
+    val rowsUpdated =
+        insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
+
+    return rowsUpdated
+  }
+
   private fun <ID : Any> publishReportMetrics(
       reportId: ReportId,
       metricIdField: TableField<*, ID?>,
@@ -1110,6 +1234,37 @@ class ReportStore(
         timestampField,
         timezoneField,
     )
+  }
+
+  private fun validateReportsInProject(reportIds: Set<ReportId>, projectId: ProjectId) {
+    val invalidReportIds =
+        dslContext
+            .select(REPORTS.ID)
+            .from(REPORTS)
+            .where(REPORTS.ID.`in`(reportIds))
+            .and(REPORTS.PROJECT_ID.notEqual(projectId))
+            .fetch { it[REPORTS.ID]!! }
+            .toSet()
+
+    if (!invalidReportIds.isEmpty()) {
+      throw IllegalStateException(
+          "Reports ${invalidReportIds.joinToString()} are not in project $projectId.")
+    }
+  }
+
+  private fun validateReportsUpdatable(reportIds: Set<ReportId>) {
+    val invalidReportIds =
+        dslContext
+            .select(REPORTS.ID)
+            .from(REPORTS)
+            .where(REPORTS.ID.`in`(reportIds))
+            .and(REPORTS.STATUS_ID.notIn(ReportStatus.NotSubmitted, ReportStatus.NeedsUpdate))
+            .fetch { it[REPORTS.ID]!! }
+            .toSet()
+
+    if (!invalidReportIds.isEmpty()) {
+      throw IllegalStateException("Reports ${invalidReportIds.joinToString()} are not updatable")
+    }
   }
 
   // Timezone for a planting site. Defaults to planting site, then organization, then UTC
