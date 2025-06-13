@@ -3093,6 +3093,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val today = LocalDate.of(2025, Month.MARCH, 20)
 
       clock.instant = today.toInstant(ZoneId.systemDefault())
+      val annualConfigId = insertProjectReportConfig(frequency = ReportFrequency.Annual)
+      val annualReportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              frequency = ReportFrequency.Annual,
+              quarter = null,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+          )
+
       val configId = insertProjectReportConfig()
       val upcomingReportId =
           insertReport(
@@ -3152,6 +3162,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
+              ReportsRecord(
+                  id = annualReportId,
+                  projectId = projectId,
+                  configId = annualConfigId,
+                  statusId = ReportStatus.NotSubmitted,
+                  reportFrequencyId = ReportFrequency.Annual,
+                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  endDate = LocalDate.of(2025, Month.MARCH, 31),
+                  createdBy = currentUser().userId,
+                  createdTime = Instant.EPOCH,
+                  modifiedBy = currentUser().userId,
+                  modifiedTime = Instant.EPOCH,
+              ),
               ReportsRecord(
                   id = upcomingReportId,
                   projectId = projectId,
