@@ -3148,10 +3148,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       systemUser.run { store.notifyUpcomingReports() }
 
       eventPublisher.assertExactEventsPublished(
-          setOf(
-              AcceleratorReportUpcomingEvent(upcomingReportId),
-              AcceleratorReportUpcomingEvent(overdueReportId),
-          ))
+          setOf(AcceleratorReportUpcomingEvent(upcomingReportId)))
 
       assertTableEquals(
           listOf(
@@ -3183,7 +3180,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = Instant.EPOCH,
                   modifiedBy = currentUser().userId,
                   modifiedTime = Instant.EPOCH,
-                  upcomingNotificationSentTime = clock.instant,
               ),
               ReportsRecord(
                   id = notifiedReportId,

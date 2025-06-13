@@ -247,18 +247,18 @@ class WebAppUrls(
 
   fun fullAcceleratorReport(
       reportId: ReportId,
-      projectId: ProjectId,
+      organizationId: OrganizationId,
   ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/projects/${projectId.value}/reports/${reportId.value}")
+        .path("/reports/${reportId.value}")
+        .queryParam("organizationId", organizationId)
         .build()
   }
 
   fun acceleratorReport(
       reportId: ReportId,
-      projectId: ProjectId,
   ): URI {
-    return UriBuilder.fromPath("/projects/${projectId.value}/reports/${reportId.value}").build()
+    return UriBuilder.fromPath("/reports/${reportId.value}").build()
   }
 
   fun fullFunderReport(

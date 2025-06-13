@@ -591,7 +591,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             notificationTypeId = NotificationType.AcceleratorReportUpcoming,
             title = "2025 Q1 Report Due",
             body = "Your 2025 Q1 Report is due.",
-            localUrl = webAppUrls.acceleratorReport(reportId, projectId),
+            localUrl = webAppUrls.acceleratorReport(reportId),
             organizationId = organizationId,
             userId = admin)
 
