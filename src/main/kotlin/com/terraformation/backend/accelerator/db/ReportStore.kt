@@ -455,7 +455,8 @@ class ReportStore(
                 .from(this)
                 .where(STATUS_ID.eq(ReportStatus.NotSubmitted))
                 .and(UPCOMING_NOTIFICATION_SENT_TIME.isNull)
-                .and(END_DATE.lessOrEqual(today.plusDays(15)))
+                .and(REPORT_FREQUENCY_ID.eq(ReportFrequency.Quarterly))
+                .and(END_DATE.between(today).and(today.plusDays(15)))
                 .forUpdate()
                 .skipLocked()
                 .fetch { it[ID.asNonNullable()] }

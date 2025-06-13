@@ -774,7 +774,7 @@ class EmailNotificationService(
           AcceleratorReportUpcoming(
               config,
               report.prefix,
-              webAppUrls.fullAcceleratorReport(event.reportId, report.projectId).toString()),
+              webAppUrls.fullAcceleratorReport(event.reportId, project.organizationId).toString()),
           roles = setOf(Role.Owner, Role.Admin))
     }
   }
