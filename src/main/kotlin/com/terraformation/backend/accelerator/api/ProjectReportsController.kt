@@ -303,6 +303,28 @@ class ProjectReportsController(
     metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @PostMapping("/targets")
+  @Operation(summary = "Update metric targets.")
+  fun updateMetricTargets(
+      @PathVariable projectId: ProjectId,
+      @RequestParam
+      @Schema(description = "Update targets for submitted reports. Require TF Experts privileges.")
+      updateSubmitted: Boolean?,
+      @RequestBody payload: UpdateMetricTargetsRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateReportTargets(
+        standardMetricTargets =
+            payload.standardMetrics.associate { Pair(it.reportId, it.id) to it.target },
+        systemMetricTargets =
+            payload.systemMetrics.associate { Pair(it.reportId, it.metric) to it.target },
+        projectMetricTargets =
+            payload.projectMetrics.associate { Pair(it.reportId, it.id) to it.target },
+        updateSubmitted = updateSubmitted ?: false,
+    )
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -461,6 +483,12 @@ data class ReportStandardMetricEntriesPayload(
       )
 }
 
+data class ReportStandardMetricTargetPayload(
+    val id: StandardMetricId,
+    val reportId: ReportId,
+    val target: Int?,
+)
+
 data class ReportSystemMetricPayload(
     val metric: SystemMetric,
     val description: String?,
@@ -513,6 +541,12 @@ data class ReportSystemMetricEntriesPayload(
       )
 }
 
+data class ReportSystemMetricTargetPayload(
+    val metric: SystemMetric,
+    val reportId: ReportId,
+    val target: Int?,
+)
+
 data class ReportProjectMetricPayload(
     val id: ProjectMetricId,
     val name: String,
@@ -562,6 +596,12 @@ data class ReportProjectMetricEntriesPayload(
       )
 }
 
+data class ReportProjectMetricTargetPayload(
+    val id: ProjectMetricId,
+    val reportId: ReportId,
+    val target: Int?,
+)
+
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
 )
@@ -609,3 +649,9 @@ data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMe
 data class CreateProjectMetricRequestPayload(val metric: NewMetricPayload)
 
 data class UpdateProjectMetricRequestPayload(val metric: ExistingProjectMetricPayload)
+
+data class UpdateMetricTargetsRequestPayload(
+    val standardMetrics: List<ReportStandardMetricTargetPayload>,
+    val systemMetrics: List<ReportSystemMetricTargetPayload>,
+    val projectMetrics: List<ReportProjectMetricTargetPayload>,
+)

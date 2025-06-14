@@ -361,6 +361,30 @@ class ReportStore(
     }
   }
 
+  fun updateReportTargets(
+      standardMetricTargets: Map<Pair<ReportId, StandardMetricId>, Int?> = emptyMap(),
+      systemMetricTargets: Map<Pair<ReportId, SystemMetric>, Int?> = emptyMap(),
+      projectMetricTargets: Map<Pair<ReportId, ProjectMetricId>, Int?> = emptyMap(),
+      updateSubmitted: Boolean = false,
+  ): Int {
+    requirePermissions {
+      if (updateSubmitted) {
+        reviewReports()
+      } else {
+        val reportIds =
+            standardMetricTargets.keys.map { it.first } +
+                systemMetricTargets.keys.map { it.first } +
+                projectMetricTargets.keys.map { it.first }
+        reportIds.toSet().forEach { updateReport(it) }
+      }
+    }
+
+    return upsertReportMetricTargets(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, systemMetricTargets) +
+        upsertReportMetricTargets(
+            REPORT_STANDARD_METRICS.STANDARD_METRIC_ID, standardMetricTargets) +
+        upsertReportMetricTargets(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, projectMetricTargets)
+  }
+
   fun publishReport(reportId: ReportId) {
     requirePermissions { publishReports() }
 
@@ -891,6 +915,49 @@ class ReportStore(
                   this.set(progressNotesField, entry.progressNotes)
                 }
               }
+              .apply {
+                if (iterator.hasNext()) {
+                  this.newRecord()
+                }
+              }
+    }
+
+    val rowsUpdated =
+        insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
+
+    return rowsUpdated
+  }
+
+  private fun <ID : Any> upsertReportMetricTargets(
+      metricIdField: TableField<*, ID?>,
+      targets: Map<Pair<ReportId, ID>, Int?>,
+  ): Int {
+    if (targets.isEmpty()) {
+      return 0
+    }
+
+    val table = metricIdField.table!!
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val targetField = table.field("target", Int::class.java)!!
+    val modifiedByField =
+        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))
+    val modifiedTimeField = table.field("modified_time", Instant::class.java)
+
+    var insertQuery = dslContext.insertInto(table).set()
+
+    val iterator = targets.iterator()
+
+    while (iterator.hasNext()) {
+      val (reportMetricKey, target) = iterator.next()
+      val (reportId, metricId) = reportMetricKey
+      insertQuery =
+          insertQuery
+              .set(reportIdField, reportId)
+              .set(metricIdField, metricId)
+              .set(targetField, target)
+              .set(modifiedByField, currentUser().userId)
+              .set(modifiedTimeField, clock.instant())
               .apply {
                 if (iterator.hasNext()) {
                   this.newRecord()
