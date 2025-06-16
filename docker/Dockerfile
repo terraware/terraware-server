@@ -21,5 +21,6 @@ CMD [ \
     "java", \
         "-Djava.locale.providers=SPI,CLDR", \
         "--sun-misc-unsafe-memory-access=allow", \
+        "--enable-native-access=ALL-UNNAMED", \
         "org.springframework.boot.loader.launch.JarLauncher" \
 ]
