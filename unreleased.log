@@ -1,3 +1,6 @@
+110bdd6083b Update ktor monorepo to v3.2.0 (#3183)
+9d52fa48886 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.9 (#3180)
+797ea590a49 SW-7083 Allow native access in Docker image (#3184)
 fdf6d2ac66e Update dependency io.swagger.core.v3:swagger-annotations to v2.2.33 (#3182)
 5a6f7556c20 Update dependency types-requests to v2.32.4.20250611 (#3181)
 3620d818cdf Update database dependencies (#3179)
