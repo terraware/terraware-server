@@ -1,1 +1,5 @@
+fdf6d2ac66e Update dependency io.swagger.core.v3:swagger-annotations to v2.2.33 (#3182)
+5a6f7556c20 Update dependency types-requests to v2.32.4.20250611 (#3181)
+3620d818cdf Update database dependencies (#3179)
+2574b0e1df5 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.0 (#3178)
 1a21b09dcf9 Fixed notifications URL and not notify for backdated reports (#3177)
