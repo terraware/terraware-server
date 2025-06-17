@@ -40,6 +40,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSubzoneFullException
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.nearlyCoveredBy
@@ -246,14 +247,18 @@ class AdminPlantingSitesController(
                 val numPermanent = zone.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
-                    zone
-                        .chooseTemporaryPlots(
-                            site.plantingZones
-                                .flatMap { zone -> zone.plantingSubzones.map { it.id } }
-                                .toSet(),
-                            gridOrigin = site.gridOrigin!!,
-                            exclusion = site.exclusion)
-                        .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
+                    try {
+                      zone
+                          .chooseTemporaryPlots(
+                              site.plantingZones
+                                  .flatMap { zone -> zone.plantingSubzones.map { it.id } }
+                                  .toSet(),
+                              gridOrigin = site.gridOrigin!!,
+                              exclusion = site.exclusion)
+                          .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
+                    } catch (e: PlantingSubzoneFullException) {
+                      emptyList()
+                    }
                 val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
 
                 // Temporary plots that, if this were the start of an actual observation, we would
