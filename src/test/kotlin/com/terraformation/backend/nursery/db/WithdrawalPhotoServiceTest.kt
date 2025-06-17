@@ -16,7 +16,6 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.util.ImageUtils
 import io.mockk.Runs
@@ -152,27 +151,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
         "Remaining withdrawal photos")
 
     assertIsEventListener<OrganizationDeletionStartedEvent>(service)
-  }
-
-  @Test
-  fun `handler for WithdrawalDeletionStartedEvent deletes withdrawal photos`() {
-    val otherWithdrawalId = insertNurseryWithdrawal()
-
-    storePhoto()
-    storePhoto()
-    val otherWithdrawalfileId = storePhoto(otherWithdrawalId)
-
-    service.on(WithdrawalDeletionStartedEvent(withdrawalId))
-
-    assertEquals(
-        listOf(otherWithdrawalfileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
-    assertEquals(
-        listOf(
-            WithdrawalPhotosRow(fileId = otherWithdrawalfileId, withdrawalId = otherWithdrawalId)),
-        withdrawalPhotosDao.findAll(),
-        "Remaining withdrawal photos")
-
-    assertIsEventListener<WithdrawalDeletionStartedEvent>(service)
   }
 
   private fun storePhoto(

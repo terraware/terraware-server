@@ -4,12 +4,14 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.records.BatchesRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
-import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import io.mockk.every
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,7 +25,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
   }
 
   @Test
-  fun `deletes history`() {
+  fun `deletes batch and history if batch has no withdrawals`() {
     val batchId = insertBatch(speciesId = speciesId)
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
@@ -40,45 +42,42 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
     assertTableEmpty(BATCHES)
     assertTableEmpty(BATCH_QUANTITY_HISTORY)
+
+    eventPublisher.assertEventPublished(BatchDeletionStartedEvent(batchId))
   }
 
   @Test
-  fun `only deletes withdrawals that did not reference other batches`() {
-    val singleBatchWithdrawlId = insertNurseryWithdrawal()
-    val batchIdToDelete = insertBatch()
+  fun `sets remaining quantities to zero if batch has withdrawals`() {
+    val batchId =
+        insertBatch(
+            germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 4, speciesId = speciesId)
+    insertNurseryWithdrawal()
     insertBatchWithdrawal()
 
-    val multipleBatchWithdrawalId = insertNurseryWithdrawal()
-    insertBatchWithdrawal()
+    store.delete(batchId)
 
-    val remainingBatchId = insertBatch()
-    insertBatchWithdrawal()
+    assertTableEquals(
+        BatchesRecord(
+            id = batchId,
+            version = 2,
+            organizationId = organizationId,
+            facilityId = facilityId,
+            speciesId = speciesId,
+            batchNumber = "1",
+            addedDate = LocalDate.EPOCH,
+            germinatingQuantity = 0,
+            notReadyQuantity = 0,
+            readyQuantity = 0,
+            latestObservedGerminatingQuantity = 0,
+            latestObservedNotReadyQuantity = 0,
+            latestObservedReadyQuantity = 0,
+            latestObservedTime = Instant.EPOCH,
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            modifiedBy = user.userId,
+            modifiedTime = Instant.EPOCH))
 
-    val deleteTime = clock.instant().plusSeconds(60)
-    clock.instant = deleteTime
-
-    val expectedBatchWithdrawals = batchWithdrawalsDao.fetchByBatchId(remainingBatchId)
-    val expectedWithdrawals =
-        listOf(
-            nurseryWithdrawalsDao
-                .fetchOneById(multipleBatchWithdrawalId)!!
-                .copy(modifiedTime = deleteTime))
-
-    store.delete(batchIdToDelete)
-
-    eventPublisher.assertExactEventsPublished(
-        listOf(
-            BatchDeletionStartedEvent(batchIdToDelete),
-            WithdrawalDeletionStartedEvent(singleBatchWithdrawlId)))
-
-    assertEquals(
-        expectedWithdrawals,
-        nurseryWithdrawalsDao.findAll(),
-        "Withdrawal from multiple batches should not be deleted")
-    assertEquals(
-        expectedBatchWithdrawals,
-        batchWithdrawalsDao.findAll(),
-        "Batch withdrawals from other batches should not be deleted")
+    eventPublisher.assertEventNotPublished<BatchDeletionStartedEvent>()
   }
 
   @Test
@@ -148,6 +147,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
     store.delete(batchId)
 
+    // Total dead and total withdrawn are unaffected because they are part of the withdrawal history
     assertEquals(
         SpeciesSummary(
             germinatingQuantity = 100,
@@ -157,9 +157,9 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             lossRate = 25,
             nurseries = summaryBeforeDelete.nurseries,
             speciesId = speciesId,
-            totalDead = 0,
+            totalDead = 50,
             totalQuantity = 500,
-            totalWithdrawn = 0),
+            totalWithdrawn = 50),
         store.getSpeciesSummary(speciesId),
         "Summary after deleting batch")
   }

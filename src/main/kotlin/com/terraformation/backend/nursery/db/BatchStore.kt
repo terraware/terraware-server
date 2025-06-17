@@ -56,7 +56,6 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
-import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
@@ -500,63 +499,25 @@ class BatchStore(
   fun delete(batchId: BatchId) {
     requirePermissions { deleteBatch(batchId) }
 
-    log.info("Deleting batch $batchId")
-
     dslContext.transaction { _ ->
-      eventPublisher.publishEvent(BatchDeletionStartedEvent(batchId))
+      if (!dslContext.fetchExists(BATCH_WITHDRAWALS, BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))) {
+        // The batch has no withdrawals; we can delete it outright with no effect on the nursery's
+        // withdrawal history.
+        log.info("Deleting batch $batchId")
 
-      // If two threads delete batches that share a single withdrawal, the "check if there are other
-      // batches on the withdrawal" logic here has a race condition. We could use "serializable"
-      // transaction isolation to avoid the race, but it's awkward to set isolation levels using
-      // jOOQ's API (see https://github.com/jOOQ/jOOQ/issues/4836) so instead, explicitly lock the
-      // withdrawals.
-      dslContext
-          .selectOne()
-          .from(WITHDRAWALS)
-          .where(
-              WITHDRAWALS.ID.`in`(
-                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
-                      .from(BATCH_WITHDRAWALS)
-                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
-          .forUpdate()
-          .execute()
+        eventPublisher.publishEvent(BatchDeletionStartedEvent(batchId))
 
-      // Withdrawals that are only from this batch should be deleted.
-      val withdrawalIds =
-          dslContext
-              .select(WITHDRAWALS.ID)
-              .from(WITHDRAWALS)
-              .join(BATCH_WITHDRAWALS)
-              .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
-              .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))
-              .andNotExists(
-                  DSL.selectOne()
-                      .from(BATCH_WITHDRAWALS)
-                      .where(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
-                      .and(BATCH_WITHDRAWALS.BATCH_ID.ne(batchId)))
-              .fetch(WITHDRAWALS.ID.asNonNullable())
+        dslContext.deleteFrom(BATCHES).where(BATCHES.ID.eq(batchId)).execute()
+      } else {
+        // "Delete" the batch by setting its remaining quantities to zero. This will cause it to be
+        // filtered out of the list of active batches (deleting it from the inventory list), but
+        // will preserve its withdrawal history.
+        log.info("Emptying batch $batchId")
 
-      if (withdrawalIds.isNotEmpty()) {
-        withdrawalIds.forEach { eventPublisher.publishEvent(WithdrawalDeletionStartedEvent(it)) }
-
-        dslContext.deleteFrom(WITHDRAWALS).where(WITHDRAWALS.ID.`in`(withdrawalIds)).execute()
+        retryVersionedBatchUpdate(batchId) { batch ->
+          updateQuantities(batchId, batch.version, 0, 0, 0, BatchQuantityHistoryType.Observed)
+        }
       }
-
-      // Withdrawals that are from this batch as well as other batches should be considered
-      // modified because we're removing batch withdrawals (and thus changing their quantities).
-      dslContext
-          .update(WITHDRAWALS)
-          .set(WITHDRAWALS.MODIFIED_BY, currentUser().userId)
-          .set(WITHDRAWALS.MODIFIED_TIME, clock.instant())
-          .where(
-              WITHDRAWALS.ID.`in`(
-                  DSL.select(BATCH_WITHDRAWALS.WITHDRAWAL_ID)
-                      .from(BATCH_WITHDRAWALS)
-                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(batchId))))
-          .execute()
-
-      // Cascading delete/update will take care of deleting child objects and clearing references.
-      batchesDao.deleteById(batchId)
     }
   }
 

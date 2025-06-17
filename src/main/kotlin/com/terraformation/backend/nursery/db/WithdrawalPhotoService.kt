@@ -13,7 +13,6 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.io.InputStream
@@ -81,12 +80,6 @@ class WithdrawalPhotoService(
     deleteWhere(
         WITHDRAWAL_PHOTOS.withdrawals.withdrawalsFacilityIdFkey.ORGANIZATION_ID.eq(
             event.organizationId))
-  }
-
-  /** Deletes all the photos from a withdrawal when the withdrawal is deleted. */
-  @EventListener
-  fun on(event: WithdrawalDeletionStartedEvent) {
-    deleteWhere(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(event.withdrawalId))
   }
 
   private fun deleteWhere(condition: Condition) {
