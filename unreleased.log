@@ -1,3 +1,5 @@
+dbda51b33c5 SW-7057 Set quantities to 0 on batch delete (#3186)
+d5dde823856 SW-7083 Handle admin map view of tiny sites (#3185)
 110bdd6083b Update ktor monorepo to v3.2.0 (#3183)
 9d52fa48886 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.9 (#3180)
 797ea590a49 SW-7083 Allow native access in Docker image (#3184)
