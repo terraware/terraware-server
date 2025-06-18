@@ -1,3 +1,4 @@
+2bc8b379d08 SW-7052 Endpoints to update metric targets (#3176)
 dbda51b33c5 SW-7057 Set quantities to 0 on batch delete (#3186)
 d5dde823856 SW-7083 Handle admin map view of tiny sites (#3185)
 110bdd6083b Update ktor monorepo to v3.2.0 (#3183)
