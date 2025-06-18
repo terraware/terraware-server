@@ -2024,7 +2024,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
       }
 
-      assertThrows<IllegalStateException>("Submitted Report") {
+      assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateProjectMetricTargets(
             projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
       }
@@ -2189,7 +2189,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
       }
 
-      assertThrows<IllegalStateException>("Submitted Report") {
+      assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateStandardMetricTargets(
             projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
       }
@@ -2358,7 +2358,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             targets = mapOf(approvedReportId to 0))
       }
 
-      assertThrows<IllegalStateException>("Submitted Report") {
+      assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
