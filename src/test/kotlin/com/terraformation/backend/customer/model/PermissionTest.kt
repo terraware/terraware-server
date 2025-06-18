@@ -633,6 +633,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         updateProject = true,
+        updateProjectReports = true,
     )
 
     permissions.expect(
@@ -901,6 +902,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         updateProject = true,
+        updateProjectReports = true,
     )
 
     permissions.expect(
@@ -1568,6 +1570,7 @@ internal class PermissionTest : DatabaseTest() {
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
     )
@@ -1720,6 +1723,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
@@ -1977,6 +1981,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
@@ -2242,6 +2247,7 @@ internal class PermissionTest : DatabaseTest() {
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
@@ -3559,6 +3565,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject: Boolean = false,
         updateProjectAcceleratorDetails: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
+        updateProjectReports: Boolean = false,
         updateProjectScores: Boolean = false,
         updateProjectVotes: Boolean = false,
         updateSubmissionStatus: Boolean = false,
@@ -3630,6 +3637,10 @@ internal class PermissionTest : DatabaseTest() {
             updateProjectDocumentSettings,
             user.canUpdateProjectDocumentSettings(idInDatabase),
             "Can update project document settings for project $projectId")
+        assertEquals(
+            updateProjectReports,
+            user.canUpdateProjectReports(idInDatabase),
+            "Can update reports for project $projectId")
         assertEquals(
             updateProjectScores,
             user.canUpdateProjectScores(idInDatabase),

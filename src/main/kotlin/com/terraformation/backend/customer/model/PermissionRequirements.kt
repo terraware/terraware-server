@@ -1756,6 +1756,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateProjectReports(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectReports(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update reports for project $projectId")
+      }
+    }
+  }
+
   fun updateProjectScores(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canUpdateProjectScores(projectId)) {
