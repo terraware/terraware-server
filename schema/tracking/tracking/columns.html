@@ -662,9 +662,9 @@
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2482,7 +2482,7 @@
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>biomass_species_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -2547,18 +2547,18 @@
         "comments": ""
     },
     {
-        "tableName": "observation_biomass_quadrat_species",
-        "tableFileName": "observation_biomass_quadrat_species",
+        "tableName": "monitoring_plot_overlaps",
+        "tableFileName": "monitoring_plot_overlaps",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>biomass_species_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ID of the newer monitoring plot.<\/p>"
     },
     {
         "tableName": "planting_subzone_histories",
@@ -3219,18 +3219,18 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plot_overlaps",
-        "tableFileName": "monitoring_plot_overlaps",
+        "tableName": "observation_biomass_quadrat_species",
+        "tableFileName": "observation_biomass_quadrat_species",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>overlaps_plot_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ID of the older monitoring plot.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_coordinates",
@@ -3768,9 +3768,9 @@
         "tableName": "observation_biomass_quadrat_species",
         "tableFileName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "abundance_percent",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -4115,18 +4115,18 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plot_overlaps",
-        "tableFileName": "monitoring_plot_overlaps",
+        "tableName": "observation_biomass_quadrat_species",
+        "tableFileName": "observation_biomass_quadrat_species",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ID of the newer monitoring plot.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "draft_planting_sites",
@@ -4241,18 +4241,18 @@
         "comments": ""
     },
     {
-        "tableName": "observation_biomass_quadrat_species",
-        "tableFileName": "observation_biomass_quadrat_species",
+        "tableName": "monitoring_plot_overlaps",
+        "tableFileName": "monitoring_plot_overlaps",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "abundance_percent",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>overlaps_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ID of the older monitoring plot.<\/p>"
     },
     {
         "tableName": "observed_plot_coordinates",
