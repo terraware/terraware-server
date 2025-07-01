@@ -1,3 +1,4 @@
+3092f99d057 Support disabling JobRunr background thread (#3201)
 1e1c9577f62 SW-7087 Support stdout Logstash logging (#3199)
 47061af2d33 Update dependency software.amazon.awssdk:bom to v2.31.73 (#3197)
 91905dac8f8 Update database dependencies (#3196)
