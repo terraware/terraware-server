@@ -1,3 +1,4 @@
+2360211d9cb SW-7104 Add create/edit/delete funder permsissions to FunderUser (#3198)
 7fcc1b30d82 Update dependency org.commonmark:commonmark to v0.25.0 (#3192)
 f33dce05a20 Update Spring dependencies (#3190)
 81ef3fddd53 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.37.1 (#3191)
