@@ -1,4 +1,51 @@
+<!-- See logback-spring.xml for information about how the profiles work. -->
+
 <configuration>
+  <springProfile name="logstash">
+    <appender name="LOGSTASH" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
+        <providers>
+          <timestamp/>
+          <version/>
+
+          <!-- Standard access log fields -->
+          <contentLength/>
+          <elapsedTime/>
+          <method/>
+          <protocol/>
+          <remoteHost/>
+          <remoteUser/>
+          <requestedUri/>
+          <requestedUrl/>
+          <statusCode/>
+
+          <requestHeaders>
+            <fieldName>headers</fieldName>
+            <lowerCaseHeaderNames>true</lowerCaseHeaderNames>
+            <filter>
+              <include>Referer</include>
+              <include>User-Agent</include>
+            </filter>
+          </requestHeaders>
+
+          <pattern>
+            <omitEmptyFields>true</omitEmptyFields>
+            <pattern>
+              {
+              "authId": "#nullNA{%u}",
+              "email": "#nullNA{%reqAttribute{terrawareEmail}}",
+              "log_type": "access",
+              "message": "%h - %u [%t] \"%r\" %s %b \"%i{Referer}\" \"%i{User-Agent}\"",
+              "requestId": "#nullNA{%reqAttribute{terrawareRequestId}}"
+              }
+            </pattern>
+          </pattern>
+        </providers>
+      </encoder>
+    </appender>
+    <appender-ref ref="LOGSTASH"/>
+  </springProfile>
+
   <springProfile name="jsonlog">
     <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
       <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
@@ -52,7 +99,7 @@
     <appender-ref ref="JSONFILE"/>
   </springProfile>
 
-  <springProfile name="!jsonlog">
+  <springProfile name="!jsonlog &amp; !logstash">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
       <encoder>
         <pattern>combined</pattern>

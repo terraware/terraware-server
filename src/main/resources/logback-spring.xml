@@ -1,6 +1,39 @@
-<!-- Logging configuration. -->
+<!--
+Logging configuration. This uses Spring profiles to control the logging behavior. There
+are two profiles you can use:
+
+logstash - Formats logs as JSON and writes them to stdout. This is suitable when running in
+           ECS or other managed container environments. Application and access logs will be
+           distinguished by the "log_type" field.
+
+jsonlog - Formats logs as JSON and writes them to rolling logfiles, as defined by the LOG_FILE
+          and ACCESS_LOG_FILE environment variables. This is suitable when running on a host
+          where something like the Datadog agent can consume multiple logfiles.
+
+The default behavior, if neither of those profiles is active, is to format log messages as
+human-readable text (for application log messages) and as Apache-style access log lines (for
+access logs) and write them to stdout. This is suitable for dev environments.
+
+Access logging is configured in logback-access-spring.xml; it uses the same profile setup as
+this file.
+-->
+
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+  <springProfile name="logstash">
+    <appender name="LOGSTASH" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <customFields>
+          {"log_type": "application"}
+        </customFields>
+      </encoder>
+    </appender>
+
+    <root level="INFO">
+      <appender-ref ref="LOGSTASH"/>
+    </root>
+  </springProfile>
 
   <springProfile name="jsonlog">
     <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -14,19 +47,17 @@
         <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
       </rollingPolicy>
     </appender>
-  </springProfile>
 
-  <!-- If we aren't logging to a JSON logfile, log to the console, but don't do both. -->
-  <springProfile name="!jsonlog">
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <root level="INFO">
-      <appender-ref ref="CONSOLE"/>
+      <appender-ref ref="JSONFILE"/>
     </root>
   </springProfile>
 
-  <springProfile name="jsonlog">
+  <!-- If we aren't logging JSON, log text to the console, but don't do both. -->
+  <springProfile name="!jsonlog &amp; !logstash">
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <root level="INFO">
-      <appender-ref ref="JSONFILE"/>
+      <appender-ref ref="CONSOLE"/>
     </root>
   </springProfile>
 </configuration>
