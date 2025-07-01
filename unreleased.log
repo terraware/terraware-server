@@ -1,3 +1,4 @@
+47061af2d33 Update dependency software.amazon.awssdk:bom to v2.31.73 (#3197)
 91905dac8f8 Update database dependencies (#3196)
 1ebcabed3d8 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.5.3 (#3195)
 88799ee5cd9 Update dependency io.mockk:mockk to v1.14.4 (#3194)
