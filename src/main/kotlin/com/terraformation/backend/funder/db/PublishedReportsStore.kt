@@ -127,12 +127,7 @@ class PublishedReportsStore(
     val metricTypeField =
         metricTable.field(
             "type_id", SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()))!!
-    val unitField =
-        if (metricTable == PROJECT_METRICS) {
-          metricTable.field("unit", String::class.java)
-        } else {
-          DSL.value(null as String?)
-        }
+    val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
     return DSL.multiset(
             DSL.select(
