@@ -1,3 +1,7 @@
+91905dac8f8 Update database dependencies (#3196)
+1ebcabed3d8 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.5.3 (#3195)
+88799ee5cd9 Update dependency io.mockk:mockk to v1.14.4 (#3194)
+bdd3d9a7852 Update dependency com.opencsv:opencsv to v5.11.2 (#3193)
 2360211d9cb SW-7104 Add create/edit/delete funder permsissions to FunderUser (#3198)
 7fcc1b30d82 Update dependency org.commonmark:commonmark to v0.25.0 (#3192)
 f33dce05a20 Update Spring dependencies (#3190)
