@@ -1609,14 +1609,16 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *fundingEntityIds.toTypedArray(),
-        readFundingEntity = true,
+        updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
         createNotifications = true,
+        deleteFunder = true,
         readUser = true,
         readUserInternalInterests = true,
         updateUserInternalInterests = true,
@@ -1834,6 +1836,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
+        deleteFunder = true,
         readUser = true,
         readUserInternalInterests = true,
         updateUserInternalInterests = true,
@@ -1841,8 +1844,9 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *fundingEntityIds.toTypedArray(),
-        readFundingEntity = true,
+        updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     permissions.expect(
@@ -2099,6 +2103,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
+        deleteFunder = true,
         readUser = true,
         readUserInternalInterests = true,
         updateUserInternalInterests = true,
@@ -2106,8 +2111,9 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *fundingEntityIds.toTypedArray(),
-        readFundingEntity = true,
+        updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     permissions.expect(
@@ -2255,8 +2261,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *fundingEntityIds.toTypedArray(),
-        readFundingEntity = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     // Not an admin of this org but can still access accelerator-related functions.
@@ -2538,8 +2544,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *fundingEntityIds.toTypedArray(),
-        readFundingEntity = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     permissions.expect(
@@ -2592,8 +2598,9 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         userFundingEntityId,
-        readFundingEntity = true,
+        updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
+        readFundingEntity = true,
     )
 
     permissions.expect(
@@ -2602,7 +2609,22 @@ internal class PermissionTest : DatabaseTest() {
         readPublishedReports = true,
     )
 
-    permissions.expect(userId, readUser = true)
+    permissions.expect(
+        userId,
+        deleteFunder = true,
+        readUser = true,
+    )
+
+    val otherFunderSameEntity = insertUser(type = UserType.Funder)
+    insertFundingEntityUser(
+        fundingEntityId = getDatabaseId(userFundingEntityId), userId = otherFunderSameEntity)
+    val otherFunderDiffEntity = insertUser(type = UserType.Funder)
+    insertFundingEntityUser(
+        fundingEntityId = getDatabaseId(otherFundingEntityId), userId = otherFunderDiffEntity)
+
+    permissions.expect(otherFunderSameEntity, deleteFunder = true, readUser = true)
+    permissions.expect(otherFunderDiffEntity)
+
     permissions.expect(
         acceptCurrentDisclaimer = true,
         deleteSelf = true,
@@ -3775,6 +3797,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg userIds: UserId,
         createEntityWithOwner: Boolean = false,
         createNotifications: Boolean = false,
+        deleteFunder: Boolean = false,
         readUser: Boolean = false,
         readUserInternalInterests: Boolean = false,
         updateUserInternalInterests: Boolean = false,
@@ -3788,6 +3811,7 @@ internal class PermissionTest : DatabaseTest() {
             createNotifications,
             user.canCreateNotification(userId),
             "Can create notifications for $userId")
+        assertEquals(deleteFunder, user.canDeleteFunder(userId), "Can delete funder $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
         assertEquals(
             readUserInternalInterests,
@@ -3860,8 +3884,9 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg fundingEntityIds: FundingEntityId,
-        readFundingEntity: Boolean = false,
+        updateFundingEntityUsers: Boolean = false,
         listFundingEntityUsers: Boolean = false,
+        readFundingEntity: Boolean = false,
     ) {
       fundingEntityIds
           .filter { it in uncheckedFundingEntities }
@@ -3876,6 +3901,10 @@ internal class PermissionTest : DatabaseTest() {
                 listFundingEntityUsers,
                 user.canListFundingEntityUsers(idInDatabase),
                 "Can list users for funding entity $entityId")
+            assertEquals(
+                updateFundingEntityUsers,
+                user.canUpdateFundingEntityUsers(idInDatabase),
+                "Can update funding entity users for funding entity $entityId")
 
             uncheckedFundingEntities.remove(entityId)
           }

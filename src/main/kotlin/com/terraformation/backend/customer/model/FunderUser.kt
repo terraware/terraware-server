@@ -47,6 +47,9 @@ data class FunderUser(
 
   override fun canDeleteSelf() = true
 
+  override fun canDeleteFunder(userId: UserId) =
+      permissionStore.fetchFundingEntity(userId) == fundingEntityId
+
   override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
@@ -59,5 +62,9 @@ data class FunderUser(
 
   override fun canReadPublishedReports(projectId: ProjectId) = projectId in projectIds
 
-  override fun canReadUser(userId: UserId) = userId == this.userId
+  override fun canReadUser(userId: UserId) =
+      userId == this.userId || permissionStore.fetchFundingEntity(userId) == fundingEntityId
+
+  override fun canUpdateFundingEntityUsers(fundingEntityId: FundingEntityId) =
+      fundingEntityId == this.fundingEntityId
 }
