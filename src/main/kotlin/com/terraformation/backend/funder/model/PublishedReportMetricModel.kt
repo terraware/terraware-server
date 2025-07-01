@@ -16,4 +16,5 @@ data class PublishedReportMetricModel<ID : Any>(
     val type: MetricType,
     val underperformanceJustification: String?,
     val value: Int?,
+    val unit: String?,
 )

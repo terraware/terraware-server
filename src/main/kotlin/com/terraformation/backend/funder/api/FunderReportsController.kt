@@ -57,6 +57,7 @@ data class PublishedReportMetricPayload(
     val type: MetricType,
     val underperformanceJustification: String?,
     val value: Int?,
+    val unit: String?,
 ) {
   constructor(
       model: PublishedReportMetricModel<*>
@@ -71,6 +72,7 @@ data class PublishedReportMetricPayload(
       type = model.type,
       underperformanceJustification = model.underperformanceJustification,
       value = model.value,
+      unit = model.unit,
   )
 }
 
