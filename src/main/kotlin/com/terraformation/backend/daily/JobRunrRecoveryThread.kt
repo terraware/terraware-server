@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import org.jobrunr.server.BackgroundJobServer
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * up when the database becomes available again. We want the server to recover from transient
  * database problems.
  */
+@ConditionalOnBean(BackgroundJobServer::class)
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @Named
 class JobRunrRecoveryThread(
