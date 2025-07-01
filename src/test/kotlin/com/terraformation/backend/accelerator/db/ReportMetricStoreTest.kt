@@ -206,7 +206,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "3.0",
                 type = MetricType.Activity,
-            )
+                unit = "degrees")
 
         assertEquals(
             ExistingProjectMetricModel(
@@ -218,6 +218,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Project Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "degrees",
             ),
             store.fetchOneProjectMetric(metricId))
       }
@@ -291,6 +292,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         val metricId2 =
@@ -302,6 +304,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "5.0",
                 type = MetricType.Outcome,
+                unit = "meters",
             )
 
         val metricId3 =
@@ -312,6 +315,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "3.0",
                 type = MetricType.Impact,
+                unit = "cm",
             )
 
         // Other project metrics will not be returned
@@ -330,6 +334,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Climate Standard Metric",
                     reference = "3.0",
                     type = MetricType.Activity,
+                    unit = "%",
                 ),
                 ExistingProjectMetricModel(
                     id = metricId3,
@@ -340,6 +345,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "3.0",
                     type = MetricType.Impact,
+                    unit = "cm",
                 ),
                 ExistingProjectMetricModel(
                     id = metricId2,
@@ -350,6 +356,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Community Metric",
                     reference = "5.0",
                     type = MetricType.Outcome,
+                    unit = "meters",
                 ),
             ),
             store.fetchProjectMetricsForProject(projectId))
@@ -484,6 +491,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "meters",
             )
 
         val model =
@@ -496,6 +504,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 reference = "1.0",
                 type = MetricType.Impact,
+                unit = "%",
             )
 
         val newMetricId = store.createProjectMetric(model)
@@ -511,6 +520,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     projectId = projectId,
                     reference = "3.0",
                     typeId = MetricType.Activity,
+                    unit = "meters",
                 ),
                 ProjectMetricsRecord(
                     id = newMetricId,
@@ -521,6 +531,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     projectId = projectId,
                     reference = "1.0",
                     typeId = MetricType.Impact,
+                    unit = "%",
                 )))
       }
 
@@ -623,6 +634,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               reference = "3.0",
               type = MetricType.Activity,
+              unit = "feet",
           )
 
       val updated =
@@ -635,6 +647,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = ProjectId(99), // this field is ignored
               reference = "1.0",
               type = MetricType.Impact,
+              unit = "inches",
           )
 
       store.updateProjectMetric(existingMetricId) { updated }
@@ -650,6 +663,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   reference = "1.0",
                   typeId = MetricType.Impact,
+                  unit = "inches",
               )))
     }
 

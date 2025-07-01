@@ -19,6 +19,7 @@ data class ExistingProjectMetricPayload(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    val unit: String?,
 ) {
   constructor(
       model: ExistingProjectMetricModel
@@ -30,7 +31,9 @@ data class ExistingProjectMetricPayload(
       component = model.component,
       type = model.type,
       reference = model.reference,
-      isPublishable = model.isPublishable)
+      isPublishable = model.isPublishable,
+      unit = model.unit,
+  )
 
   fun toModel(): ExistingProjectMetricModel {
     return ExistingProjectMetricModel(
@@ -42,6 +45,7 @@ data class ExistingProjectMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 }
@@ -86,6 +90,7 @@ data class NewMetricPayload(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    val unit: String? = null,
 ) {
   fun toProjectMetricModel(projectId: ProjectId): NewProjectMetricModel {
     return NewProjectMetricModel(
@@ -97,6 +102,7 @@ data class NewMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 
