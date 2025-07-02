@@ -41,7 +41,8 @@ class FundingProjectsController(
       if (model == null) {
         throw ProjectNotFoundException(projectIds.toList()[0])
       }
-      return GetFundingProjectResponsePayload(details = FunderProjectDetailsPayload(model))
+      val payload = FunderProjectDetailsPayload(model)
+      return GetFundingProjectResponsePayload(details = payload, projects = listOf(payload))
     }
 
     val models = funderProjectService.fetchListByProjectIds(projectIds)
