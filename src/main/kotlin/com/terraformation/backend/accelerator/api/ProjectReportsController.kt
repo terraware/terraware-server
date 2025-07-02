@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -286,19 +287,20 @@ class ProjectReportsController(
   @Operation(summary = "Insert project metric, that the project will report on all future reports.")
   fun createProjectMetric(
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: CreateProjectMetricRequestPayload,
+      @RequestBody @Valid payload: CreateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     metricStore.createProjectMetric(payload.metric.toProjectMetricModel(projectId))
     return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse200
+  @ApiResponse400
   @PostMapping("/metrics/{metricId}")
   @Operation(summary = "Update one project metric by ID.")
   fun updateProjectMetric(
       @PathVariable metricId: ProjectMetricId,
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: UpdateProjectMetricRequestPayload,
+      @RequestBody @Valid payload: UpdateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
@@ -539,7 +541,8 @@ data class ReportProjectMetricPayload(
     val value: Int?,
     val status: ReportMetricStatus?,
     val underperformanceJustification: String?,
-    val progressNotes: String?
+    val progressNotes: String?,
+    val unit: String?,
 ) {
   constructor(
       model: ReportProjectMetricModel
@@ -555,7 +558,9 @@ data class ReportProjectMetricPayload(
       value = model.entry.value,
       status = model.entry.status,
       underperformanceJustification = model.entry.underperformanceJustification,
-      progressNotes = model.entry.progressNotes)
+      progressNotes = model.entry.progressNotes,
+      unit = model.metric.unit,
+  )
 }
 
 data class ReportProjectMetricEntriesPayload(
@@ -620,8 +625,8 @@ data class ListAcceleratorReportConfigResponsePayload(
 data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMetricPayload>) :
     SuccessResponsePayload
 
-data class CreateProjectMetricRequestPayload(val metric: NewMetricPayload)
+data class CreateProjectMetricRequestPayload(@field:Valid val metric: NewMetricPayload)
 
-data class UpdateProjectMetricRequestPayload(val metric: ExistingProjectMetricPayload)
+data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingProjectMetricPayload)
 
 data class UpdateMetricTargetsRequestPayload(val metric: UpdateMetricTargetsPayload)

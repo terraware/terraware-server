@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.ProjectId
+import jakarta.validation.constraints.Size
 
 data class ExistingProjectMetricPayload(
     val id: ProjectMetricId,
@@ -19,6 +20,7 @@ data class ExistingProjectMetricPayload(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String?,
 ) {
   constructor(
       model: ExistingProjectMetricModel
@@ -30,7 +32,9 @@ data class ExistingProjectMetricPayload(
       component = model.component,
       type = model.type,
       reference = model.reference,
-      isPublishable = model.isPublishable)
+      isPublishable = model.isPublishable,
+      unit = model.unit,
+  )
 
   fun toModel(): ExistingProjectMetricModel {
     return ExistingProjectMetricModel(
@@ -42,6 +46,7 @@ data class ExistingProjectMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 }
@@ -86,6 +91,7 @@ data class NewMetricPayload(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String? = null,
 ) {
   fun toProjectMetricModel(projectId: ProjectId): NewProjectMetricModel {
     return NewProjectMetricModel(
@@ -97,6 +103,7 @@ data class NewMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 

@@ -1024,6 +1024,7 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       reference: String = row.reference ?: "1.1",
       type: MetricType = row.typeId ?: MetricType.Impact,
+      unit: String? = row.unit,
   ): ProjectMetricId {
     val rowWithDefaults =
         row.copy(
@@ -1034,6 +1035,7 @@ abstract class DatabaseBackedTest {
             reference = reference,
             projectId = projectId,
             typeId = type,
+            unit = unit,
         )
 
     projectMetricsDao.insert(rowWithDefaults)
