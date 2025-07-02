@@ -36,6 +36,7 @@ enum class SustainableDevelopmentGoal(val displayName: String) {
     fun forJsonValue(value: String): SustainableDevelopmentGoal {
       val sdgNumber = startingDigitRegex.find(value)?.value?.toInt()
       return SustainableDevelopmentGoal.bySdgNumber[sdgNumber]
+          ?: runCatching { SustainableDevelopmentGoal.valueOf(value) }.getOrNull()
           ?: throw IllegalArgumentException("Unknown goal $value")
     }
   }
