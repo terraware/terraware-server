@@ -72,6 +72,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Project Metric 1",
               reference = "1.2.1",
               type = MetricType.Output,
+              unit = "%",
           )
 
       val projectMetricId2 =
@@ -81,6 +82,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Project Metric 2",
               reference = "1.2.11",
               type = MetricType.Outcome,
+              unit = "USD",
           )
 
       val dealName = UUID.randomUUID().toString()
@@ -210,6 +212,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = "progress notes 1",
                               underperformanceJustification = null,
                               value = 40,
+                              unit = "%",
                           ),
                           PublishedReportMetricModel(
                               component = MetricComponent.ProjectObjectives,
@@ -223,6 +226,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = null,
                               underperformanceJustification = null,
                               value = null,
+                              unit = "USD",
                           ),
                       ),
                   projectName = dealName,
@@ -244,6 +248,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = "progress notes 2",
                               underperformanceJustification = "Underperformance justification 2",
                               status = ReportMetricStatus.Unlikely,
+                              unit = null,
                           ),
                           PublishedReportMetricModel(
                               component = MetricComponent.Climate,
@@ -257,6 +262,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = null,
                               underperformanceJustification = null,
                               value = 120,
+                              unit = null,
                           ),
                       ),
                   startDate = LocalDate.of(2025, 1, 1),
@@ -274,6 +280,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = null,
                               underperformanceJustification = "Some plants had died.",
                               value = 5,
+                              unit = null,
                           )),
               )),
           store.fetchPublishedReports(projectId))

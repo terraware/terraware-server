@@ -127,6 +127,7 @@ class PublishedReportsStore(
     val metricTypeField =
         metricTable.field(
             "type_id", SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()))!!
+    val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
     return DSL.multiset(
             DSL.select(
@@ -141,6 +142,7 @@ class PublishedReportsStore(
                     targetField,
                     underperformanceJustificationField,
                     valueField,
+                    unitField,
                 )
                 .from(publishedMetricTable)
                 .join(metricTable)
@@ -161,6 +163,7 @@ class PublishedReportsStore(
                 type = it[metricTypeField],
                 underperformanceJustification = it[underperformanceJustificationField],
                 value = it[valueField],
+                unit = it[unitField],
             )
           }
         }
