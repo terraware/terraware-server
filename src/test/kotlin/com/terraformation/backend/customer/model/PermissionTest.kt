@@ -2607,6 +2607,7 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         readProjectFunderDetails = true,
         readPublishedReports = true,
+        readProject = true,
     )
 
     permissions.expect(
