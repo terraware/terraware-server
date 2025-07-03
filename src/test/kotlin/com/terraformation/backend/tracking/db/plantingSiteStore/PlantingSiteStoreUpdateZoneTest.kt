@@ -45,6 +45,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       plantingZonesDao.insert(initialRow)
       val plantingZoneId = initialRow.id!!
 
+      val newName = "renamed"
       val newErrorMargin = BigDecimal(10)
       val newStudentsT = BigDecimal(11)
       val newVariance = BigDecimal(12)
@@ -57,6 +58,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               errorMargin = newErrorMargin,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
+              name = newName,
               numPermanentPlots = newPermanent,
               numTemporaryPlots = newTemporary,
               studentsT = newStudentsT,
@@ -68,6 +70,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
         it.copy(
             // Editable
             errorMargin = newErrorMargin,
+            name = newName,
             numPermanentPlots = newPermanent,
             numTemporaryPlots = newTemporary,
             studentsT = newStudentsT,
@@ -80,11 +83,29 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
             createdTime = Instant.ofEpochSecond(5000),
             modifiedBy = createdBy,
             modifiedTime = Instant.ofEpochSecond(5000),
-            name = "bogus",
         )
       }
 
       assertEquals(expected, plantingZonesDao.fetchOneById(plantingZoneId))
+    }
+
+    @Test
+    fun `updates full names of subzones if zone is renamed`() {
+      insertPlantingSite()
+      val zoneId1 = insertPlantingZone(name = "initial 1")
+      val subzoneId1 = insertPlantingSubzone(name = "sub 1")
+      val subzoneId2 = insertPlantingSubzone(name = "sub 2")
+      insertPlantingZone(name = "initial 2")
+      val subzoneId3 = insertPlantingSubzone(name = "sub 3")
+
+      store.updatePlantingZone(zoneId1) { it.copy(name = "renamed") }
+
+      assertEquals(
+          mapOf(
+              subzoneId1 to "renamed-sub 1",
+              subzoneId2 to "renamed-sub 2",
+              subzoneId3 to "initial 2-sub 3"),
+          plantingSubzonesDao.findAll().associate { it.id to it.fullName })
     }
 
     @Test

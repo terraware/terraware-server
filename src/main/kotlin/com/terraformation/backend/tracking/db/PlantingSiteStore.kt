@@ -1044,6 +1044,7 @@ class PlantingSiteStore(
           .set(ERROR_MARGIN, edited.errorMargin)
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, edited.name)
           .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
           .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
           .set(STUDENTS_T, edited.studentsT)
@@ -1051,6 +1052,18 @@ class PlantingSiteStore(
           .set(VARIANCE, edited.variance)
           .where(ID.eq(plantingZoneId))
           .execute()
+    }
+
+    if (initial.name != edited.name) {
+      with(PLANTING_SUBZONES) {
+        dslContext
+            .update(PLANTING_SUBZONES)
+            .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .execute()
+      }
     }
   }
 

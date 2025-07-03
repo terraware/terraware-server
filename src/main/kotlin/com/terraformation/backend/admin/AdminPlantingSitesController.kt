@@ -532,6 +532,7 @@ class AdminPlantingSitesController(
   fun updatePlantingZone(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam plantingZoneId: PlantingZoneId,
+      @RequestParam name: String,
       @RequestParam variance: BigDecimal,
       @RequestParam errorMargin: BigDecimal,
       @RequestParam studentsT: BigDecimal,
@@ -544,6 +545,7 @@ class AdminPlantingSitesController(
       plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
         row.copy(
             errorMargin = errorMargin,
+            name = name,
             numPermanentPlots = numPermanent,
             numTemporaryPlots = numTemporary,
             studentsT = studentsT,
