@@ -2248,7 +2248,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "${nextPlantingSubzoneNumber++}",
-      fullName: String = "Z1-$name",
+      fullName: String = "${lastPlantingZonesRow.name}-$name",
       stableId: Any = row.fullName ?: fullName,
       insertHistory: Boolean = true,
   ): PlantingSubzoneId {
