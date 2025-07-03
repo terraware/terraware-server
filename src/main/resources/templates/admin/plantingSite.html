@@ -19,7 +19,7 @@
             display: block;
         }
 
-        table#plotCounts input {
+        table#plotCounts input[type="number"] {
             text-align: right;
         }
 
@@ -243,7 +243,9 @@
 
             <tr th:each="zone : ${site.plantingZones}">
                 <td th:text="${zone.id}">1</td>
-                <td th:text="${zone.name}">XYZ</td>
+                <td>
+                    <input required name="name" th:value="${zone.name}" th:form="|zone-${zone.id}|"/>
+                </td>
                 <td>
                     <input type="number" required min="1" name="targetPlantingDensity" size="8"
                            th:value="${zone.targetPlantingDensity}" th:form="|zone-${zone.id}|"/>
