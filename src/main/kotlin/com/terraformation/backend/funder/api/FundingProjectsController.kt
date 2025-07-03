@@ -7,6 +7,7 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableValueId
@@ -30,11 +31,23 @@ class FundingProjectsController(
 ) {
 
   @ApiResponse200
-  @GetMapping("/{projectId}")
-  @Operation(summary = "Gets project detail information displayable to funders")
-  fun getProject(@PathVariable projectId: ProjectId): GetFundingProjectResponsePayload {
-    val model: FunderProjectDetailsModel = funderProjectService.fetchByProjectId(projectId)
-    return GetFundingProjectResponsePayload(FunderProjectDetailsPayload(model))
+  @GetMapping("/{projectIds}")
+  @Operation(summary = "Get published project details displayable to funders")
+  fun getProjects(@PathVariable projectIds: Set<ProjectId>): GetFundingProjectResponsePayload {
+    // Remove this section once FE is handling the list of projects returned
+    if (projectIds.size == 1) {
+      val model: FunderProjectDetailsModel? =
+          funderProjectService.fetchByProjectId(projectIds.toList()[0])
+      if (model == null) {
+        throw ProjectNotFoundException(projectIds.toList()[0])
+      }
+      val payload = FunderProjectDetailsPayload(model)
+      return GetFundingProjectResponsePayload(details = payload, projects = listOf(payload))
+    }
+
+    val models = funderProjectService.fetchListByProjectIds(projectIds)
+    return GetFundingProjectResponsePayload(
+        projects = models.map { FunderProjectDetailsPayload(it) })
   }
 
   @ApiResponse200
@@ -51,7 +64,9 @@ class FundingProjectsController(
 }
 
 data class GetFundingProjectResponsePayload(
-    val details: FunderProjectDetailsPayload,
+    val projects: List<FunderProjectDetailsPayload> = emptyList(),
+    val details: FunderProjectDetailsPayload? =
+        null, // Remove this property once FE is handling the list of projects returned
 ) : SuccessResponsePayload
 
 data class FunderProjectDetailsPayload(
