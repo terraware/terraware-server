@@ -129,10 +129,10 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                                     areaHa = BigDecimal(50),
                                     boundary = subzoneBoundary1,
                                     id = subzoneHistoryId1,
-                                    fullName = "Z1-Subzone 1",
+                                    fullName = "Zone 1-Subzone 1",
                                     name = "Subzone 1",
                                     plantingSubzoneId = plantingSubzoneId1,
-                                    stableId = StableId("Z1-Subzone 1"),
+                                    stableId = StableId("Zone 1-Subzone 1"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(
@@ -149,10 +149,10 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                                     areaHa = BigDecimal(25),
                                     boundary = subzoneBoundary2,
                                     id = subzoneHistoryId2,
-                                    fullName = "Z1-Subzone 2",
+                                    fullName = "Zone 1-Subzone 2",
                                     name = "Subzone 2",
                                     plantingSubzoneId = null,
-                                    stableId = StableId("Z1-Subzone 2"),
+                                    stableId = StableId("Zone 1-Subzone 2"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(
