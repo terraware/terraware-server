@@ -1038,7 +1038,7 @@ class PlantingSiteStore(
             ?: throw PlantingZoneNotFoundException(plantingZoneId)
     val edited = editFunc(initial)
 
-    dslContext.transaction { _ ->
+    withLockedPlantingSite(initial.plantingSiteId!!) {
       with(PLANTING_ZONES) {
         dslContext
             .update(PLANTING_ZONES)
