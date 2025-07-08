@@ -243,8 +243,9 @@
 
             <tr th:each="zone : ${site.plantingZones}">
                 <td th:text="${zone.id}">1</td>
-                <td>
+                <td title="Zone name edits will not show up in the site's map history; they will be applied retroactively, as if they had been the names in the most recently uploaded shapefile. If you want the old names to appear in the map history, upload a new shapefile instead of renaming the zones here.">
                     <input required name="name" th:value="${zone.name}" th:form="|zone-${zone.id}|"/>
+                    &#9432;
                 </td>
                 <td>
                     <input type="number" required min="1" name="targetPlantingDensity" size="8"

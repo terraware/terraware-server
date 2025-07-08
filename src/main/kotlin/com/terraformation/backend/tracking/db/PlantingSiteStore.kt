@@ -1038,31 +1038,58 @@ class PlantingSiteStore(
             ?: throw PlantingZoneNotFoundException(plantingZoneId)
     val edited = editFunc(initial)
 
-    with(PLANTING_ZONES) {
-      dslContext
-          .update(PLANTING_ZONES)
-          .set(ERROR_MARGIN, edited.errorMargin)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(NAME, edited.name)
-          .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
-          .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
-          .set(STUDENTS_T, edited.studentsT)
-          .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
-          .set(VARIANCE, edited.variance)
-          .where(ID.eq(plantingZoneId))
-          .execute()
-    }
-
-    if (initial.name != edited.name) {
-      with(PLANTING_SUBZONES) {
+    withLockedPlantingSite(initial.plantingSiteId!!) {
+      with(PLANTING_ZONES) {
         dslContext
-            .update(PLANTING_SUBZONES)
-            .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
+            .update(PLANTING_ZONES)
+            .set(ERROR_MARGIN, edited.errorMargin)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
-            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .set(NAME, edited.name)
+            .set(NUM_PERMANENT_PLOTS, edited.numPermanentPlots)
+            .set(NUM_TEMPORARY_PLOTS, edited.numTemporaryPlots)
+            .set(STUDENTS_T, edited.studentsT)
+            .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
+            .set(VARIANCE, edited.variance)
+            .where(ID.eq(plantingZoneId))
             .execute()
+      }
+
+      if (initial.name != edited.name) {
+        with(PLANTING_SUBZONES) {
+          dslContext
+              .update(PLANTING_SUBZONES)
+              .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+              .execute()
+        }
+
+        with(PLANTING_ZONE_HISTORIES) {
+          val plantingZoneHistoryId =
+              dslContext
+                  .select(ID)
+                  .from(PLANTING_ZONE_HISTORIES)
+                  .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+                  .orderBy(ID.desc())
+                  .limit(1)
+                  .fetchSingle(ID)
+
+          dslContext
+              .update(PLANTING_ZONE_HISTORIES)
+              .set(NAME, edited.name)
+              .where(ID.eq(plantingZoneHistoryId))
+              .execute()
+
+          with(PLANTING_SUBZONE_HISTORIES) {
+            dslContext
+                .update(PLANTING_SUBZONE_HISTORIES)
+                .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
+                .where(PLANTING_ZONE_HISTORY_ID.eq(plantingZoneHistoryId))
+                .execute()
+          }
+        }
       }
     }
   }

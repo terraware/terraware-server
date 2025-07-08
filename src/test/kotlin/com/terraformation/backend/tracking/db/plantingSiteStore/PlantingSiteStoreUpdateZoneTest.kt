@@ -2,11 +2,14 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.multiPolygon
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -19,7 +22,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
       val createdBy = insertUser()
-      val plantingSiteId = insertPlantingSite()
+      val plantingSiteId = insertPlantingSite(x = 0)
 
       val initialRow =
           PlantingZonesRow(
@@ -42,8 +45,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               variance = BigDecimal.ZERO,
           )
 
-      plantingZonesDao.insert(initialRow)
-      val plantingZoneId = initialRow.id!!
+      val plantingZoneId = insertPlantingZone(initialRow)
 
       val newName = "renamed"
       val newErrorMargin = BigDecimal(10)
@@ -56,6 +58,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       val expected =
           initialRow.copy(
               errorMargin = newErrorMargin,
+              id = plantingZoneId,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
@@ -91,7 +94,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `updates full names of subzones if zone is renamed`() {
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       val zoneId1 = insertPlantingZone(name = "initial 1")
       val subzoneId1 = insertPlantingSubzone(name = "sub 1")
       val subzoneId2 = insertPlantingSubzone(name = "sub 2")
@@ -106,6 +109,39 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               subzoneId2 to "renamed-sub 2",
               subzoneId3 to "initial 2-sub 3"),
           plantingSubzonesDao.findAll().associate { it.id to it.fullName })
+    }
+
+    @Test
+    fun `updates zone name in current history entry`() {
+      insertPlantingSite(x = 0)
+      val plantingZoneId = insertPlantingZone(name = "initial")
+      insertPlantingSubzone(name = "subzone")
+
+      clock.instant = Instant.ofEpochSecond(1000)
+
+      insertPlantingSiteHistory(createdTime = clock.instant)
+      val newPlantingZoneHistoryId = insertPlantingZoneHistory()
+      val newPlantingSubzoneHistoryId = insertPlantingSubzoneHistory()
+
+      val expectedSiteHistory = dslContext.fetch(PLANTING_SITE_HISTORIES)
+      val expectedZoneHistory =
+          dslContext.fetch(PLANTING_ZONE_HISTORIES).onEach { record ->
+            if (record.id == newPlantingZoneHistoryId) {
+              record.name = "renamed"
+            }
+          }
+      val expectedSubzoneHistory =
+          dslContext.fetch(PLANTING_SUBZONE_HISTORIES).onEach { record ->
+            if (record.id == newPlantingSubzoneHistoryId) {
+              record.fullName = "renamed-subzone"
+            }
+          }
+
+      store.updatePlantingZone(plantingZoneId) { it.copy(name = "renamed") }
+
+      assertTableEquals(expectedSiteHistory, "Planting site histories should not be affected")
+      assertTableEquals(expectedZoneHistory)
+      assertTableEquals(expectedSubzoneHistory)
     }
 
     @Test
