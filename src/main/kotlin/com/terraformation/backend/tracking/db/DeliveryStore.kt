@@ -423,17 +423,28 @@ class DeliveryStore(
                       .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))))
           .execute()
 
+      val sumField = DSL.sum(PLANTINGS.NUM_PLANTS).cast(SQLDataType.INTEGER).`as`("total_plants")
+
       dslContext
-          .update(PLANTING_SUBZONE_POPULATIONS)
-          .set(
+          .insertInto(
+              PLANTING_SUBZONE_POPULATIONS,
+              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
+              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
               PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS,
-              DSL.select(DSL.sum(PLANTINGS.NUM_PLANTS).cast(SQLDataType.INTEGER))
+              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+          .select(
+              DSL.select(
+                      PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID, sumField, DSL.value(0))
                   .from(PLANTINGS)
-                  .where(
-                      PLANTINGS.PLANTING_SUBZONE_ID.eq(
-                          PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
-                  .and(PLANTINGS.SPECIES_ID.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)))
-          .where(PLANTING_SUBZONE_POPULATIONS.plantingSubzones.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .join(PLANTING_SUBZONES)
+                  .on(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                  .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .groupBy(PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID))
+          .onConflict(
+              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
+              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
+          .doUpdate()
+          .set(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, DSL.excluded(sumField))
           .execute()
 
       recalculateZonePopulations(plantingSiteId)
