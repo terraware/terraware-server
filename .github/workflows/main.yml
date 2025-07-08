@@ -166,12 +166,22 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
         tags: tag:github
 
-    - name: Deploy
+    - name: Deploy to EC2
       if: env.IS_CD == 'true'
       env:
         SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
         SSH_USER: ${{ secrets[env.SSH_USER_SECRET_NAME] }}
       run: ./.github/scripts/deploy.sh
+
+    - name: Deploy to ECS
+      if: vars[env.ECS_CLUSTER_VAR_NAME] != '' && vars[env.ECS_SERVICE_VAR_NAME] != ''
+      run: |
+        aws ecs update-service --cluster ${{ vars[env.ECS_CLUSTER_VAR_NAME] }} --service ${{ vars[env.ECS_SERVICE_VAR_NAME] }} --force-new-deployment
+
+    - name: Wait for ECS deployment to become stable
+      if: vars[env.ECS_CLUSTER_VAR_NAME] != '' && vars[env.ECS_SERVICE_VAR_NAME] != ''
+      run: |
+        aws ecs wait services-stable --cluster ${{ vars[env.ECS_CLUSTER_VAR_NAME] }} --service ${{ vars[env.ECS_SERVICE_VAR_NAME] }}
 
     - name: Log into Jira
       if: env.TIER == 'PROD'

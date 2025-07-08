@@ -22,6 +22,8 @@ fi
     echo "COMMIT_SHA=$commit_sha"
     echo "AWS_REGION_SECRET_NAME=${TIER}_AWS_REGION"
     echo "AWS_ROLE_SECRET_NAME=${TIER}_AWS_ROLE"
+    echo "ECS_CLUSTER_VAR_NAME=${TIER}_ECS_CLUSTER"
+    echo "ECS_SERVICE_VAR_NAME=${TIER}_ECS_SERVICE"
 
     if [[ "$IS_CD" == true ]]; then
         echo "DOCKER_TAGS=${docker_image}:$commit_sha,${docker_image}:${TIER}"
