@@ -1,3 +1,4 @@
+7e96abf8cb2 SW-7119 Add support for ECS deployment (#3215)
 9aedf118fb5 SW-6996 Insert new species when recalculating populations (#3214)
 6503ea779de SW-6826 Update history on zone rename (#3213)
 036c3b14579 Update dependency gradle to v8.14.3 (#3212)
