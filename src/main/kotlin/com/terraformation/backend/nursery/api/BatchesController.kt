@@ -234,6 +234,7 @@ data class BatchPayload(
     val facilityId: FacilityId,
     val germinatingQuantity: Int,
     val germinationRate: Int?,
+    val germinationStartedDate: LocalDate?,
     val id: BatchId,
     @Schema(
         description =
@@ -247,6 +248,7 @@ data class BatchPayload(
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
     val readyQuantity: Int,
+    val seedsSownDate: LocalDate?,
     val speciesId: SpeciesId,
     val subLocationIds: Set<SubLocationId>,
     val substrate: BatchSubstrate?,
@@ -271,6 +273,7 @@ data class BatchPayload(
       facilityId = model.facilityId,
       germinatingQuantity = model.germinatingQuantity,
       germinationRate = model.germinationRate,
+      germinationStartedDate = model.germinationStartedDate,
       id = model.id,
       initialBatchId = model.initialBatchId,
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
@@ -280,6 +283,7 @@ data class BatchPayload(
       projectId = model.projectId,
       readyByDate = model.readyByDate,
       readyQuantity = model.readyQuantity,
+      seedsSownDate = model.seedsSownDate,
       speciesId = model.speciesId,
       subLocationIds = model.subLocationIds,
       substrate = model.substrate,
@@ -294,9 +298,11 @@ data class BatchPayload(
 data class CreateBatchRequestPayload(
     val addedDate: LocalDate,
     val facilityId: FacilityId,
+    val germinationStartedDate: LocalDate? = null,
     val notes: String? = null,
     val projectId: ProjectId? = null,
     val readyByDate: LocalDate? = null,
+    val seedsSownDate: LocalDate? = null,
     val speciesId: SpeciesId,
     val subLocationIds: Set<SubLocationId>? = null,
     val substrate: BatchSubstrate? = null,
@@ -312,11 +318,13 @@ data class CreateBatchRequestPayload(
           addedDate = addedDate,
           facilityId = facilityId,
           germinatingQuantity = germinatingQuantity,
+          germinationStartedDate = germinationStartedDate,
           notes = notes,
           notReadyQuantity = notReadyQuantity,
           projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
+          seedsSownDate = seedsSownDate,
           speciesId = speciesId,
           subLocationIds = subLocationIds ?: emptySet(),
           substrate = substrate,
@@ -327,9 +335,11 @@ data class CreateBatchRequestPayload(
 }
 
 data class UpdateBatchRequestPayload(
+    val germinationStartedDate: LocalDate? = null,
     val notes: String?,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
+    val seedsSownDate: LocalDate? = null,
     val subLocationIds: Set<SubLocationId>? = null,
     val substrate: BatchSubstrate? = null,
     val substrateNotes: String? = null,
@@ -339,9 +349,11 @@ data class UpdateBatchRequestPayload(
 ) {
   fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {
     return model.copy(
+        germinationStartedDate = germinationStartedDate,
         notes = notes,
         projectId = projectId,
         readyByDate = readyByDate,
+        seedsSownDate = seedsSownDate,
         subLocationIds = subLocationIds ?: emptySet(),
         substrate = substrate,
         substrateNotes = substrateNotes,

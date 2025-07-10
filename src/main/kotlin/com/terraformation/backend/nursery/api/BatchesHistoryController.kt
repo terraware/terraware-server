@@ -211,6 +211,7 @@ data class BatchHistorySubLocationPayload(
 data class BatchHistoryDetailsEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
+    val germinationStartedDate: LocalDate?,
     val notes: String?,
     @Schema(
         description =
@@ -223,6 +224,7 @@ data class BatchHistoryDetailsEditedPayload(
                 "subsequently renamed or deleted, this name remains the same.")
     val projectName: String?,
     val readyByDate: LocalDate?,
+    val seedsSownDate: LocalDate?,
     val subLocations: List<BatchHistorySubLocationPayload>,
     val substrate: BatchSubstrate?,
     val substrateNotes: String?,
@@ -236,10 +238,12 @@ data class BatchHistoryDetailsEditedPayload(
   ) : this(
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
+      germinationStartedDate = row.germinationStartedDate,
       notes = row.notes,
       projectId = row.projectId,
       projectName = row.projectName,
       readyByDate = row.readyByDate,
+      seedsSownDate = row.seedsSownDate,
       subLocations = subLocationRows?.map { BatchHistorySubLocationPayload(it) } ?: emptyList(),
       substrate = row.substrateId,
       substrateNotes = row.substrateNotes,

@@ -111,7 +111,11 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           )
       batchId3 =
           insertBatch(
-              BatchesRow(readyByDate = LocalDate.of(2022, 10, 2)),
+              BatchesRow(
+                  germinationStartedDate = LocalDate.of(2022, 9, 15),
+                  readyByDate = LocalDate.of(2022, 10, 2),
+                  seedsSownDate = LocalDate.of(2022, 9, 10),
+              ),
               addedDate = LocalDate.of(2022, 9, 3),
               organizationId = organizationId,
               facilityId = facilityId2,
@@ -357,8 +361,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("totalQuantity"),
                   prefix.resolve("totalQuantityWithdrawn"),
                   prefix.resolve("facility_name"),
-                  prefix.resolve("readyByDate"),
                   prefix.resolve("addedDate"),
+                  prefix.resolve("germinationStartedDate"),
+                  prefix.resolve("readyByDate"),
+                  prefix.resolve("seedsSownDate"),
                   prefix.resolve("subLocations.subLocation_id"),
                   prefix.resolve("version"),
               ),
@@ -406,8 +412,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantity" to number(128 + 256),
                       "totalQuantityWithdrawn" to number(0),
                       "facility_name" to "Other Nursery",
-                      "readyByDate" to "2022-10-02",
                       "addedDate" to "2022-09-03",
+                      "germinationStartedDate" to "2022-09-15",
+                      "readyByDate" to "2022-10-02",
+                      "seedsSownDate" to "2022-09-10",
                       "version" to number(1),
                   ),
               )),

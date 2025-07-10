@@ -21,7 +21,9 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
         insertBatch(
             BatchesRow(
                 accessionId = accessionId,
+                germinationStartedDate = LocalDate.of(2023, 5, 15),
                 notes = "Notes",
+                seedsSownDate = LocalDate.of(2023, 5, 10),
                 substrateId = BatchSubstrate.Moss,
                 substrateNotes = "Substrate Notes",
                 treatmentId = SeedTreatment.Chemical,
@@ -57,6 +59,7 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             batchNumber = "23-2-1-008",
             facilityId = facilityId,
             germinatingQuantity = 64,
+            germinationStartedDate = LocalDate.of(2023, 5, 15),
             id = batchId,
             latestObservedGerminatingQuantity = 64,
             latestObservedNotReadyQuantity = 128,
@@ -68,6 +71,7 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             organizationId = organizationId,
             readyByDate = LocalDate.of(2023, 6, 7),
             readyQuantity = 256,
+            seedsSownDate = LocalDate.of(2023, 5, 10),
             speciesId = speciesId,
             subLocationIds = setOf(subLocationId1, subLocationId2),
             substrate = BatchSubstrate.Moss,
