@@ -682,7 +682,7 @@ class ApplicationStore(
       siteAreaHa = totalLandUseArea
     }
 
-    if (problems.size > 0) {
+    if (problems.isNotEmpty()) {
       return problems
     }
 
@@ -708,7 +708,8 @@ class ApplicationStore(
       } else if (siteAreaHa != null) {
         // Third, check minimum hectares requirements
         val minimumHectares =
-            perCountryMinimumHectares[projectCountriesRow.code] ?: defaultMinimumHectares
+            minimumPrescreenHectares(
+                projectCountriesRow.code!!, applicationVariableValues.projectType!!)
 
         if (siteAreaHa < minimumHectares ||
             siteAreaHa > defaultMaximumHectares ||
@@ -716,7 +717,10 @@ class ApplicationStore(
             totalLandUseArea > defaultMaximumHectares) {
           problems.add(
               messages.applicationPreScreenFailureBadSize(
-                  projectCountriesRow.name!!, minimumHectares, defaultMaximumHectares))
+                  applicationVariableValues.projectType!!,
+                  projectCountriesRow.name!!,
+                  minimumHectares,
+                  defaultMaximumHectares))
         }
       }
     }
@@ -737,5 +741,22 @@ class ApplicationStore(
     }
 
     return problems
+  }
+
+  private fun minimumPrescreenHectares(
+      countryCode: String,
+      projectType: PreScreenProjectType
+  ): Int {
+    return when (countryCode) {
+      "GH" -> 3000
+      "PH",
+      "ID" ->
+          if (projectType == PreScreenProjectType.Mangrove) {
+            1000
+          } else {
+            3000
+          }
+      else -> 15000
+    }
   }
 }

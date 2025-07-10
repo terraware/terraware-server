@@ -1,6 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
+import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -49,8 +50,14 @@ class Messages {
     return messageSource.getMessage(code, args, currentLocale())
   }
 
-  fun applicationPreScreenFailureBadSize(country: String, minimum: Int, maximum: Int) =
-      getMessage("applicationPreScreen.failure.badSize", country, minimum, maximum)
+  fun applicationPreScreenFailureBadSize(
+      projectType: PreScreenProjectType,
+      country: String,
+      minimum: Int,
+      maximum: Int
+  ) =
+      getMessage(
+          "applicationPreScreen.failure.badSize", projectType.name, country, minimum, maximum)
 
   fun applicationPreScreenBoundaryInNoCountry() =
       getMessage("applicationPreScreen.failure.boundaryInNoCountry")
