@@ -56,8 +56,15 @@ class Messages {
       minimum: Int,
       maximum: Int
   ) =
-      getMessage(
-          "applicationPreScreen.failure.badSize", projectType.name, country, minimum, maximum)
+      when (projectType) {
+        PreScreenProjectType.Mangrove ->
+            getMessage("applicationPreScreen.failure.badSize.mangrove", country, minimum, maximum)
+        PreScreenProjectType.Terrestrial ->
+            getMessage(
+                "applicationPreScreen.failure.badSize.terrestrial", country, minimum, maximum)
+        PreScreenProjectType.Mixed ->
+            getMessage("applicationPreScreen.failure.badSize.mixed", country, minimum, maximum)
+      }
 
   fun applicationPreScreenBoundaryInNoCountry() =
       getMessage("applicationPreScreen.failure.boundaryInNoCountry")
