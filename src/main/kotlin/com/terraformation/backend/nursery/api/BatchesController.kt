@@ -335,9 +335,11 @@ data class CreateBatchRequestPayload(
 }
 
 data class UpdateBatchRequestPayload(
+    val germinationStartedDate: LocalDate? = null,
     val notes: String?,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
+    val seedsSownDate: LocalDate? = null,
     val subLocationIds: Set<SubLocationId>? = null,
     val substrate: BatchSubstrate? = null,
     val substrateNotes: String? = null,
@@ -347,9 +349,11 @@ data class UpdateBatchRequestPayload(
 ) {
   fun applyChanges(model: ExistingBatchModel): ExistingBatchModel {
     return model.copy(
+        germinationStartedDate = germinationStartedDate,
         notes = notes,
         projectId = projectId,
         readyByDate = readyByDate,
+        seedsSownDate = seedsSownDate,
         subLocationIds = subLocationIds ?: emptySet(),
         substrate = substrate,
         substrateNotes = substrateNotes,
