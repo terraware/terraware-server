@@ -152,11 +152,10 @@ springdoc:
     with-credentials: true
   writer-with-order-by-keys: true
 
-org:
-  jobrunr:
-    background-job-server:
-      # All terraware-server instances can run scheduled jobs.
-      enabled: true
+jobrunr:
+  background-job-server:
+    # All terraware-server instances can run scheduled jobs.
+    enabled: true
 
 logging:
   level:
