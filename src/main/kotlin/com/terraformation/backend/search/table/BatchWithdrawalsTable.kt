@@ -1,6 +1,6 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.search.SearchTable
@@ -18,10 +18,10 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          batches.asSingleValueSublist("batch", BATCH_WITHDRAWALS.BATCH_ID.eq(BATCH_SUMMARIES.ID)),
+          batches.asSingleValueSublist("batch", BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID)),
           batches.asSingleValueSublist(
               "destinationBatch",
-              BATCH_WITHDRAWALS.DESTINATION_BATCH_ID.eq(BATCH_SUMMARIES.ID),
+              BATCH_WITHDRAWALS.DESTINATION_BATCH_ID.eq(BATCHES.ID),
               isRequired = false),
           nurseryWithdrawals.asSingleValueSublist(
               "withdrawal", BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID)),
@@ -41,7 +41,7 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val inheritsVisibilityFrom: SearchTable = tables.batches
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query.join(BATCH_SUMMARIES).on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCH_SUMMARIES.ID))
+    return query.join(BATCHES).on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))
   }
 
   override val defaultOrderFields: List<OrderField<*>> =

@@ -15,7 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
-import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
@@ -36,7 +36,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
-          batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCH_SUMMARIES.PROJECT_ID)),
+          batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCHES.PROJECT_ID)),
           countries.asSingleValueSublist("country", PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           documents.asMultiValueSublist("documents", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
           draftPlantingSites.asMultiValueSublist(

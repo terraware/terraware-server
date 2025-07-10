@@ -4,7 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.nursery.tables.references.BATCH_SUMMARIES
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -30,8 +30,8 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
       listOf(
           batches.asMultiValueSublist(
               "batches",
-              FACILITY_INVENTORIES.FACILITY_ID.eq(BATCH_SUMMARIES.FACILITY_ID)
-                  .and(FACILITY_INVENTORIES.SPECIES_ID.eq(BATCH_SUMMARIES.SPECIES_ID))),
+              FACILITY_INVENTORIES.FACILITY_ID.eq(BATCHES.FACILITY_ID)
+                  .and(FACILITY_INVENTORIES.SPECIES_ID.eq(BATCHES.SPECIES_ID))),
           facilities.asSingleValueSublist(
               "facility", FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID)),
           species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),

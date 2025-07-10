@@ -306,7 +306,6 @@ val ID_WRAPPERS =
                     "BatchId",
                     listOf(
                         "batches\\.id",
-                        "batch_summaries\\.id",
                         "batch_withdrawals\\.destination_batch_id",
                         ".*\\.batch_id",
                         ".*\\.initial_batch_id")),
