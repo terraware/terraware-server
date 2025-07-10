@@ -1307,10 +1307,10 @@
 <text text-anchor="start" x="1100.5" y="-3169.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="919.5,-3139 919.5,-3161 1139.5,-3161 1139.5,-3139 919.5,-3139"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="924.5" y="-3156"/>
-<text text-anchor="start" x="976.5" y="-3147.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="962.5" y="-3147.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="919.5,-3117 919.5,-3139 1139.5,-3139 1139.5,-3117 919.5,-3117"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="924.5" y="-3134"/>
-<text text-anchor="start" x="976.5" y="-3125.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="962.5" y="-3125.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="919.5,-3099 919.5,-3117 1139.5,-3117 1139.5,-3099 919.5,-3099"/>
 <text text-anchor="start" x="922.5" y="-3105.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="919.5,-3081 919.5,-3099 1013.5,-3099 1013.5,-3081 919.5,-3081"/>

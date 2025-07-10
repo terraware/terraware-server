@@ -742,6 +742,40 @@
                                     </td>
                                     <td><p>Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="germination_started_date">germination_started_date</span></td>
+                                    <td>date</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Date when sown seeds first started germinating.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="seeds_sown_date">seeds_sown_date</span></td>
+                                    <td>date</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Date when newly-arrived seeds were first sown.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -843,24 +877,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>batches_notes_check</td>
-                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_version_check</td>
-                                    <td>(version &gt; 0)</td>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>batches_latest_observed_germinating_quantity_check</td>
                                     <td>(latest_observed_germinating_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_not_ready_quantity_check</td>
-                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>batches_version_check</td>
+                                    <td>(version &gt; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>batches_germinating_quantity_check</td>
@@ -871,8 +901,12 @@
                                     <td>(ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
+                                    <td>batches_not_ready_quantity_check</td>
+                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_notes_check</td>
+                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

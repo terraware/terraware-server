@@ -26,6 +26,8 @@
             <parent column="id" foreignKey="batch_details_history_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_treatments"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="treatment_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="germination_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="seeds_sown_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batch_details_history_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -138,9 +140,9 @@
             <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
+            <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -257,6 +259,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="total_germination_candidates" nullable="true" remarks="Total number of seedlings that have been candidates for moving from Germinating to Not Ready status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="total_lost" nullable="true" remarks="Total number of non-germinating (Not Ready and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="total_loss_candidates" nullable="true" remarks="Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="germination_started_date" nullable="true" remarks="Date when sown seeds first started germinating." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="seeds_sown_date" nullable="true" remarks="Date when newly-arrived seeds were first sown." size="13" type="date" typeCode="91"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batches_pkey" unique="true">
             <column ascending="true" name="id"/>
