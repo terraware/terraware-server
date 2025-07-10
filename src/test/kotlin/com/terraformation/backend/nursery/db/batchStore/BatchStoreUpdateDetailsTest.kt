@@ -55,9 +55,11 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
 
     store.updateDetails(batchId, 1) {
       it.copy(
+          germinationStartedDate = LocalDate.of(2021, 12, 2),
           notes = "new notes",
           projectId = newProjectId,
           readyByDate = LocalDate.of(2022, 1, 1),
+          seedsSownDate = LocalDate.of(2022, 11, 18),
           subLocationIds = setOf(newSubLocationId1, newSubLocationId2),
           substrate = BatchSubstrate.Moss,
           substrateNotes = "New substrate notes",
@@ -70,10 +72,12 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
+            germinationStartedDate = LocalDate.of(2021, 12, 2),
             notes = "new notes",
             modifiedTime = updateTime,
             projectId = newProjectId,
             readyByDate = LocalDate.of(2022, 1, 1),
+            seedsSownDate = LocalDate.of(2022, 11, 18),
             substrateId = BatchSubstrate.Moss,
             substrateNotes = "New substrate notes",
             treatmentId = SeedTreatment.Light,
@@ -93,10 +97,12 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
                 batchId = batchId,
                 createdBy = user.userId,
                 createdTime = updateTime,
+                germinationStartedDate = LocalDate.of(2021, 12, 2),
                 notes = "new notes",
                 readyByDate = LocalDate.of(2022, 1, 1),
                 projectId = newProjectId,
                 projectName = "New Project",
+                seedsSownDate = LocalDate.of(2022, 11, 18),
                 substrateId = BatchSubstrate.Moss,
                 substrateNotes = "New substrate notes",
                 treatmentId = SeedTreatment.Light,

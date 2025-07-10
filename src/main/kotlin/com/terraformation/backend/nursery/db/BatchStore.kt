@@ -386,10 +386,12 @@ class BatchStore(
                 batchId = batchId,
                 createdBy = currentUser().userId,
                 createdTime = clock.instant(),
+                germinationStartedDate = updatedBatch.germinationStartedDate,
                 notes = updatedBatch.notes,
                 readyByDate = updatedBatch.readyByDate,
                 projectId = updatedBatch.projectId,
                 projectName = project?.name,
+                seedsSownDate = updatedBatch.seedsSownDate,
                 substrateId = updatedBatch.substrate,
                 substrateNotes = updatedBatch.substrateNotes,
                 treatmentId = updatedBatch.treatment,
@@ -411,8 +413,10 @@ class BatchStore(
 
     updateVersionedBatch(batchId, version, successFunc) {
       it.set(NOTES, updatedBatch.notes)
+          .set(GERMINATION_STARTED_DATE, updatedBatch.germinationStartedDate)
           .set(PROJECT_ID, updatedBatch.projectId)
           .set(READY_BY_DATE, updatedBatch.readyByDate)
+          .set(SEEDS_SOWN_DATE, updatedBatch.seedsSownDate)
           .set(SUBSTRATE_ID, updatedBatch.substrate)
           .set(SUBSTRATE_NOTES, updatedBatch.substrateNotes)
           .set(TREATMENT_ID, updatedBatch.treatment)
