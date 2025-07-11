@@ -18,6 +18,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -204,3 +205,10 @@ jobs:
       with:
         issueList: ./docs/jiralist.txt
         transition: "Released to Production from Done"
+
+    - name: Notify that merged PR has been deployed to staging
+      if: env.MERGED_PR_NUMBER != '' && github.ref == 'refs/heads/main'
+      uses: thollander/actions-comment-pull-request@v3
+      with:
+        pr-number: ${{ env.MERGED_PR_NUMBER }}
+        message: Staging deployment complete.
