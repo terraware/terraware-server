@@ -16,6 +16,7 @@ import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
+import com.terraformation.backend.funder.model.PublishedProjectNameModel
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.net.URI
@@ -46,6 +47,31 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setup() {
     insertOrganization(timeZone = ZoneOffset.UTC)
     projectId = insertProject()
+  }
+
+  @Nested
+  inner class FetchAll {
+    @Test
+    fun `can retrieve all projects`() {
+      val projectId1 = projectId
+      insertPublishedProjectDetails(dealName = "Published Details 1")
+      val projectId2 = insertProject(name = "Published 2")
+      insertPublishedProjectDetails(dealName = "Published Details 2")
+      insertProject(name = "Unpublished")
+
+      val expected =
+          listOf(
+              PublishedProjectNameModel(
+                  projectId = projectId1,
+                  dealName = "Published Details 1",
+              ),
+              PublishedProjectNameModel(
+                  projectId = projectId2,
+                  dealName = "Published Details 2",
+              ),
+          )
+      assertEquals(expected, store.fetchAll(), "Fetch ALl should return published projects from db")
+    }
   }
 
   @Nested

@@ -1206,6 +1206,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readPublishedProjects() {
+    user.recordPermissionChecks {
+      if (!user.canReadPublishedProjects()) {
+        throw AccessDeniedException("No permission to read published projects")
+      }
+    }
+  }
+
   fun readPublishedReports(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadPublishedReports(projectId)) {

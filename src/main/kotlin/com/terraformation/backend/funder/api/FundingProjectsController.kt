@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.funder.FunderProjectService
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
+import com.terraformation.backend.funder.model.PublishedProjectNameModel
 import io.swagger.v3.oas.annotations.Operation
 import java.math.BigDecimal
 import java.net.URI
@@ -29,6 +30,14 @@ import org.springframework.web.bind.annotation.RestController
 class FundingProjectsController(
     private val funderProjectService: FunderProjectService,
 ) {
+
+  @ApiResponse200
+  @GetMapping
+  @Operation(summary = "Get a list of all published projects")
+  fun getAllProjects(): GetPublishedProjectResponsePayload {
+    val models = funderProjectService.fetchAll()
+    return GetPublishedProjectResponsePayload(projects = models.map { PublishedProjectPayload(it) })
+  }
 
   @ApiResponse200
   @GetMapping("/{projectIds}")
@@ -68,6 +77,22 @@ data class GetFundingProjectResponsePayload(
     val details: FunderProjectDetailsPayload? =
         null, // Remove this property once FE is handling the list of projects returned
 ) : SuccessResponsePayload
+
+data class GetPublishedProjectResponsePayload(
+    val projects: List<PublishedProjectPayload> = emptyList()
+) : SuccessResponsePayload
+
+data class PublishedProjectPayload(
+    val dealName: String?,
+    val projectId: ProjectId,
+) {
+  constructor(
+      model: PublishedProjectNameModel
+  ) : this(
+      dealName = model.dealName,
+      projectId = model.projectId,
+  )
+}
 
 data class FunderProjectDetailsPayload(
     val accumulationRate: BigDecimal?,
