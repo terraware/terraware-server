@@ -131,7 +131,7 @@ internal abstract class AccessionModelTest {
       purpose: WithdrawalPurpose =
           if (viabilityTestId != null) WithdrawalPurpose.ViabilityTesting
           else WithdrawalPurpose.Other,
-      createdTime: Instant = clock.instant(),
+      createdTime: Instant? = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
       estimatedCount: Int? =

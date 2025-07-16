@@ -24,6 +24,10 @@ inline fun <reified T> milligrams(quantity: Int): T {
   return quantity(quantity, SeedQuantityUnits.Milligrams)
 }
 
+inline fun <reified T> milligrams(quantity: BigDecimal): T {
+  return quantity(quantity, SeedQuantityUnits.Milligrams)
+}
+
 inline fun <reified T> kilograms(quantity: BigDecimal): T {
   return quantity(quantity, SeedQuantityUnits.Kilograms)
 }

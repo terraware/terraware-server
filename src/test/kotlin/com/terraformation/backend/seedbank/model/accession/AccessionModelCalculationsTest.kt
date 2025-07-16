@@ -124,6 +124,34 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
+    fun `withdrawal of estimated seed count sets remaining quantity to zero when other withdrawal is the same date`() {
+      // Regression test: the values here are from an accession that couldn't be fully withdrawn
+      // due to the way we were sorting new withdrawals and prior withdrawal(s) with the same date
+      val accession =
+          accession(
+                  remaining = milligrams(BigDecimal("35959.3072")),
+                  subsetCount = 100,
+                  subsetWeight = milligrams(BigDecimal("1652.58")),
+                  latestObservedTime = yesterdayInstant,
+                  latestObservedQuantity = milligrams(BigDecimal("46965.49")),
+                  withdrawals = listOf(withdrawal(seeds(666), date = today)))
+              .withCalculatedValues()
+
+      assertEquals(2176, accession.estimatedSeedCount)
+      val afterWithdrawal =
+          accession.addWithdrawal(
+              withdrawal(
+                  seeds(accession.estimatedSeedCount!!),
+                  id = null,
+                  createdTime = null,
+                  date = today,
+              ))
+
+      assertEquals(milligrams(0), afterWithdrawal.remaining)
+      assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
+    }
+
+    @Test
     fun `total withdrawal count is null for weight-based withdrawals without subset info`() {
       val accession = accession(remaining = grams(10)).withCalculatedValues()
       val afterWithdrawal = accession.addWithdrawal(withdrawal(grams(1), id = null))
