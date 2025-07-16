@@ -413,8 +413,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun isProjectInAccelerator(projectId: ProjectId?): Boolean =
       projectId != null &&
-          dslContext.fetchExists(
-              PROJECT_ACCELERATOR_DETAILS, PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId))
+          (dslContext.fetchExists(
+              PROJECT_ACCELERATOR_DETAILS, PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId)) ||
+              dslContext.fetchExists(PROJECTS, PROJECTS.participants.COHORT_ID.isNotNull))
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

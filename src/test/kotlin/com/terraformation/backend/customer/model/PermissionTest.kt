@@ -201,8 +201,9 @@ internal class PermissionTest : DatabaseTest() {
 
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
 
-  private inline fun <reified T> List<T>.forOrg4() =
-      filterStartsWith("4") // accelerator organization
+  private inline fun <reified T> List<T>.forOrgs(orgIds: List<Int>) = filterToArray { item ->
+    orgIds.any { orgId -> item.toString().startsWith(orgId.toString()) }
+  }
 
   private inline fun <reified T> List<T>.forFacility1000() = filterStartsWith("1000")
 
@@ -2680,22 +2681,22 @@ internal class PermissionTest : DatabaseTest() {
 
     // accelerator project/org details
     permissions.expect(
-        *accessionIds.forOrg4(),
+        *accessionIds.forOrgs(listOf(3, 4)),
         readAccession = true,
     )
 
     permissions.expect(
-        *batchIds.forOrg4(),
+        *batchIds.forOrgs(listOf(3, 4)),
         readBatch = true,
     )
 
     permissions.expect(
-        *deliveryIds.forOrg4(),
+        *deliveryIds.forOrgs(listOf(3, 4)),
         readDelivery = true,
     )
 
     permissions.expect(
-        *draftPlantingSiteIds.forOrg4(),
+        *draftPlantingSiteIds.forOrgs(listOf(1, 3, 4)),
         readDraftPlantingSite = true,
     )
 
@@ -2705,52 +2706,52 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *facilityIds.forOrg4(),
+        *facilityIds.forOrgs(listOf(3, 4)),
         readFacility = true,
     )
 
     permissions.expect(
-        *monitoringPlotIds.forOrg4(),
+        *monitoringPlotIds.forOrgs(listOf(3, 4)),
         readMonitoringPlot = true,
     )
 
     permissions.expect(
-        *observationIds.forOrg4(),
+        *observationIds.forOrgs(listOf(3, 4)),
         readObservation = true,
     )
 
     permissions.expect(
-        *plantingIds.forOrg4(),
+        *plantingIds.forOrgs(listOf(3, 4)),
         readPlanting = true,
     )
 
     permissions.expect(
-        *plantingSiteIds.forOrg4(),
+        *plantingSiteIds.forOrgs(listOf(3, 4)),
         readPlantingSite = true,
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg4(),
+        *plantingSubzoneIds.forOrgs(listOf(3, 4)),
         readPlantingSubzone = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg4(),
+        *plantingZoneIds.forOrgs(listOf(3, 4)),
         readPlantingZone = true,
     )
 
     permissions.expect(
-        *subLocationIds.forOrg4(),
+        *subLocationIds.forOrgs(listOf(3, 4)),
         readSubLocation = true,
     )
 
     permissions.expect(
-        *viabilityTestIds.forOrg4(),
+        *viabilityTestIds.forOrgs(listOf(3, 4)),
         readViabilityTest = true,
     )
 
     permissions.expect(
-        *withdrawalIds.forOrg4(),
+        *withdrawalIds.forOrgs(listOf(3, 4)),
         readWithdrawal = true,
     )
 
