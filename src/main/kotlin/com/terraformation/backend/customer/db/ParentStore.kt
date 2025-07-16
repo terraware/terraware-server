@@ -19,6 +19,7 @@ import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULE
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.asNonNullable
@@ -127,6 +128,10 @@ class ParentStore(private val dslContext: DSLContext) {
           .orderBy(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID)
           .fetch(FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID.asNonNullable())
 
+  fun getOrganizationId(accessionId: AccessionId): OrganizationId? {
+    return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities.ORGANIZATION_ID)
+  }
+
   fun getOrganizationId(applicationId: ApplicationId): OrganizationId? =
       fetchFieldById(applicationId, APPLICATIONS.ID, APPLICATIONS.projects.ORGANIZATION_ID)
 
@@ -188,9 +193,8 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(submissionId: SubmissionId): OrganizationId? =
       fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.projects.ORGANIZATION_ID)
 
-  fun getOrganizationId(accessionId: AccessionId): OrganizationId? {
-    return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities.ORGANIZATION_ID)
-  }
+  fun getOrganizationId(uploadId: UploadId): OrganizationId? =
+      fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.ORGANIZATION_ID)
 
   fun getPlantingSiteId(monitoringPlotId: MonitoringPlotId): PlantingSiteId? =
       fetchFieldById(
@@ -202,11 +206,51 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
+  fun getProjectId(accessionId: AccessionId): ProjectId? =
+      fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.PROJECT_ID)
+
+  fun getProjectId(batchId: BatchId): ProjectId? =
+      fetchFieldById(batchId, BATCHES.ID, BATCHES.PROJECT_ID)
+
+  fun getProjectId(deliveryId: DeliveryId): ProjectId? =
+      fetchFieldById(deliveryId, DELIVERIES.ID, DELIVERIES.plantingSites.PROJECT_ID)
+
+  fun getProjectId(draftPlantingSiteId: DraftPlantingSiteId): ProjectId? =
+      fetchFieldById(draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.PROJECT_ID)
+
+  fun getProjectId(monitoringPlotId: MonitoringPlotId): ProjectId? =
+      fetchFieldById(
+          monitoringPlotId,
+          MONITORING_PLOTS.ID,
+          MONITORING_PLOTS.plantingSubzones.plantingSites.PROJECT_ID)
+
+  fun getProjectId(observationId: ObservationId): ProjectId? =
+      fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.plantingSites.PROJECT_ID)
+
+  fun getProjectId(plantingId: PlantingId): ProjectId? =
+      fetchFieldById(plantingId, PLANTINGS.ID, PLANTINGS.plantingSites.PROJECT_ID)
+
+  fun getProjectId(plantingSiteId: PlantingSiteId): ProjectId? =
+      fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.PROJECT_ID)
+
+  fun getProjectId(plantingSubzoneId: PlantingSubzoneId): ProjectId? =
+      fetchFieldById(
+          plantingSubzoneId, PLANTING_SUBZONES.ID, PLANTING_SUBZONES.plantingSites.PROJECT_ID)
+
+  fun getProjectId(plantingZoneId: PlantingZoneId): ProjectId? =
+      fetchFieldById(plantingZoneId, PLANTING_ZONES.ID, PLANTING_ZONES.plantingSites.PROJECT_ID)
+
   fun getProjectId(reportId: ReportId): ProjectId? =
       fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)
 
+  fun getProjectId(seedFundReportId: SeedFundReportId): ProjectId? =
+      fetchFieldById(seedFundReportId, SEED_FUND_REPORTS.ID, SEED_FUND_REPORTS.PROJECT_ID)
+
   fun getProjectId(submissionId: SubmissionId): ProjectId? =
       fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.PROJECT_ID)
+
+  fun getProjectId(viabilityTestId: ViabilityTestId): ProjectId? =
+      fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.PROJECT_ID)
 
   fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
     return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities.CONNECTION_STATE_ID)
@@ -355,14 +399,22 @@ class ParentStore(private val dslContext: DSLContext) {
           .fetch()
           .isNotEmpty
 
-  fun hasApplications(organizationId: OrganizationId): Boolean =
-      dslContext.fetchExists(APPLICATIONS, APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId))
+  fun hasApplications(organizationId: OrganizationId?): Boolean =
+      organizationId != null &&
+          dslContext.fetchExists(
+              APPLICATIONS, APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId))
 
-  fun hasInternalTag(organizationId: OrganizationId, internalTag: InternalTagId): Boolean =
-      dslContext.fetchExists(
-          ORGANIZATION_INTERNAL_TAGS,
-          ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(organizationId),
-          ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag))
+  fun hasInternalTag(organizationId: OrganizationId?, internalTag: InternalTagId): Boolean =
+      organizationId != null &&
+          dslContext.fetchExists(
+              ORGANIZATION_INTERNAL_TAGS,
+              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(organizationId),
+              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag))
+
+  fun isProjectInAccelerator(projectId: ProjectId?): Boolean =
+      projectId != null &&
+          dslContext.fetchExists(
+              PROJECT_ACCELERATOR_DETAILS, PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId))
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

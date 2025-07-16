@@ -1775,6 +1775,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       number: String? = row.number ?: "${nextAccessionNumber++}",
+      projectId: ProjectId? = row.projectId,
       receivedDate: LocalDate? = row.receivedDate,
       speciesId: SpeciesId? = row.speciesId,
       stateId: AccessionState = row.stateId ?: AccessionState.Processing,
@@ -1793,6 +1794,7 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
             stateId = stateId,
             treesCollectedFrom = treesCollectedFrom,
+            projectId = projectId,
         )
 
     accessionsDao.insert(rowWithDefaults)
