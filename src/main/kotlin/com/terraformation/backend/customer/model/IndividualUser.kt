@@ -280,7 +280,8 @@ data class IndividualUser(
 
   override fun canListAutomations(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canListFacilities(organizationId: OrganizationId) = isMember(organizationId)
+  override fun canListFacilities(organizationId: OrganizationId) =
+      isGlobalReader(organizationId) || isMember(organizationId)
 
   override fun canListFundingEntityUsers(entityId: FundingEntityId) = isReadOnlyOrHigher()
 
@@ -336,7 +337,8 @@ data class IndividualUser(
   override fun canPublishReports() = isAcceleratorAdmin()
 
   override fun canReadAccession(accessionId: AccessionId) =
-      isMember(parentStore.getFacilityId(accessionId))
+      canReadAcceleratorProject(parentStore.getProjectId(accessionId)) ||
+          isMember(parentStore.getFacilityId(accessionId))
 
   override fun canReadAllAcceleratorDetails() = isReadOnlyOrHigher()
 
@@ -348,7 +350,9 @@ data class IndividualUser(
   override fun canReadAutomation(automationId: AutomationId) =
       isMember(parentStore.getFacilityId(automationId))
 
-  override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
+  override fun canReadBatch(batchId: BatchId) =
+      canReadAcceleratorProject(parentStore.getProjectId(batchId)) ||
+          isMember(parentStore.getFacilityId(batchId))
 
   override fun canReadCohort(cohortId: CohortId) =
       isReadOnlyOrHigher() || parentStore.exists(cohortId, userId)
@@ -362,7 +366,8 @@ data class IndividualUser(
   override fun canReadDefaultVoters(): Boolean = isReadOnlyOrHigher()
 
   override fun canReadDelivery(deliveryId: DeliveryId) =
-      isMember(parentStore.getOrganizationId(deliveryId))
+      canReadAcceleratorProject(parentStore.getProjectId(deliveryId)) ||
+          isMember(parentStore.getOrganizationId(deliveryId))
 
   override fun canReadDevice(deviceId: DeviceId) = isMember(parentStore.getFacilityId(deviceId))
 
@@ -378,9 +383,11 @@ data class IndividualUser(
   override fun canReadDocument(documentId: DocumentId) = isReadOnlyOrHigher()
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
-      isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
+      canReadAcceleratorProject(parentStore.getProjectId(draftPlantingSiteId)) ||
+          isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
-  override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
+  override fun canReadFacility(facilityId: FacilityId) =
+      isMember(facilityId) || isGlobalReader(parentStore.getOrganizationId(facilityId))
 
   override fun canReadFundingEntity(entityId: FundingEntityId) = canReadFundingEntities()
 
@@ -407,7 +414,8 @@ data class IndividualUser(
   }
 
   override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId) =
-      isMember(parentStore.getOrganizationId(monitoringPlotId))
+      canReadAcceleratorProject(parentStore.getProjectId(monitoringPlotId)) ||
+          isMember(parentStore.getOrganizationId(monitoringPlotId))
 
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
@@ -415,7 +423,8 @@ data class IndividualUser(
   override fun canReadInternalTags() = isReadOnlyOrHigher()
 
   override fun canReadObservation(observationId: ObservationId) =
-      isMember(parentStore.getOrganizationId(observationId))
+      canReadAcceleratorProject(parentStore.getProjectId(observationId)) ||
+          isMember(parentStore.getOrganizationId(observationId))
 
   override fun canReadOrganization(organizationId: OrganizationId) =
       isMember(organizationId) || isGlobalReader(organizationId)
@@ -442,20 +451,26 @@ data class IndividualUser(
   ) = isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(participantProjectSpeciesId))
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
-      isMember(parentStore.getOrganizationId(plantingId))
+      canReadAcceleratorProject(parentStore.getProjectId(plantingId)) ||
+          isMember(parentStore.getOrganizationId(plantingId))
 
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
-      isMember(parentStore.getOrganizationId(plantingSiteId))
+      canReadAcceleratorProject(parentStore.getProjectId(plantingSiteId)) ||
+          isMember(parentStore.getOrganizationId(plantingSiteId))
 
   override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) =
-      isMember(parentStore.getOrganizationId(plantingSubzoneId))
+      canReadAcceleratorProject(parentStore.getProjectId(plantingSubzoneId)) ||
+          isMember(parentStore.getOrganizationId(plantingSubzoneId))
 
   override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
-      isMember(parentStore.getOrganizationId(plantingZoneId))
+      canReadAcceleratorProject(parentStore.getProjectId(plantingZoneId)) ||
+          isMember(parentStore.getOrganizationId(plantingZoneId))
 
   override fun canReadProject(projectId: ProjectId): Boolean {
     val organizationId = parentStore.getOrganizationId(projectId) ?: return false
-    return isMember(organizationId) || isGlobalReader(organizationId)
+    return isMember(organizationId) ||
+        canReadAcceleratorProject(projectId) ||
+        isGlobalReader(organizationId)
   }
 
   override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean =
@@ -468,7 +483,9 @@ data class IndividualUser(
 
   override fun canReadProjectModules(projectId: ProjectId): Boolean {
     val organizationId = parentStore.getOrganizationId(projectId) ?: return false
-    return isMember(organizationId) || isGlobalReader(organizationId)
+    return isMember(organizationId) ||
+        canReadAcceleratorProject(projectId) ||
+        isGlobalReader(organizationId)
   }
 
   override fun canReadProjectReportConfigs() = isReadOnlyOrHigher()
@@ -494,8 +511,10 @@ data class IndividualUser(
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
 
-  override fun canReadSubLocation(subLocationId: SubLocationId) =
-      isMember(parentStore.getFacilityId(subLocationId))
+  override fun canReadSubLocation(subLocationId: SubLocationId): Boolean {
+    val facilityId = parentStore.getFacilityId(subLocationId) ?: return false
+    return isMember(facilityId) || isGlobalReader(parentStore.getOrganizationId(facilityId))
+  }
 
   override fun canReadSubmission(submissionId: SubmissionId) =
       isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(submissionId))
@@ -511,10 +530,13 @@ data class IndividualUser(
   override fun canReadUserInternalInterests(userId: UserId) = isTFExpertOrHigher()
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
-      isMember(parentStore.getFacilityId(viabilityTestId))
+      canReadAcceleratorProject(parentStore.getProjectId(viabilityTestId)) ||
+          isMember(parentStore.getFacilityId(viabilityTestId))
 
-  override fun canReadWithdrawal(withdrawalId: WithdrawalId) =
-      isMember(parentStore.getFacilityId(withdrawalId))
+  override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean {
+    val facilityId = parentStore.getFacilityId(withdrawalId) ?: return false
+    return isMember(facilityId) || isGlobalReader(parentStore.getOrganizationId(facilityId))
+  }
 
   override fun canRegenerateAllDeviceManagerTokens() = isSuperAdmin()
 
@@ -702,7 +724,8 @@ data class IndividualUser(
 
   override fun canUpdateUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
 
-  override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
+  override fun canUploadPhoto(accessionId: AccessionId) =
+      isMember(parentStore.getFacilityId(accessionId))
 
   private fun isSuperAdmin(): Boolean {
     recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
@@ -729,6 +752,10 @@ data class IndividualUser(
             GlobalRole.AcceleratorAdmin,
             GlobalRole.SuperAdmin)
         .any { it in globalRoles }
+  }
+
+  private fun canReadAcceleratorProject(projectId: ProjectId?): Boolean {
+    return isReadOnlyOrHigher() && parentStore.isProjectInAccelerator(projectId)
   }
 
   private fun isOwner(organizationId: OrganizationId?) =
@@ -803,7 +830,7 @@ data class IndividualUser(
       } ?: false
 
   /** Returns true if one of the user's global roles allows them to read an organization. */
-  private fun isGlobalReader(organizationId: OrganizationId) =
+  private fun isGlobalReader(organizationId: OrganizationId?) =
       GlobalRole.SuperAdmin in globalRoles ||
           (isReadOnlyOrHigher() &&
               (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||

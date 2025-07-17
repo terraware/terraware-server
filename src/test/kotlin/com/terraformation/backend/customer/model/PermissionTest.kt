@@ -147,7 +147,7 @@ internal class PermissionTest : DatabaseTest() {
   private val seedFundReportIds = listOf(SeedFundReportId(1), SeedFundReportId(3))
   private val speciesIds = listOf(SpeciesId(1), SpeciesId(3), SpeciesId(4))
 
-  private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
+  private val facilityIds = listOf(1000, 1001, 3000, 4000).map { FacilityId(it.toLong()) }
   private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
   private val monitoringPlotIds = facilityIds.map { MonitoringPlotId(it.value) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
@@ -201,6 +201,10 @@ internal class PermissionTest : DatabaseTest() {
 
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
 
+  private inline fun <reified T> List<T>.forOrgs(orgIds: List<Int>) = filterToArray { item ->
+    orgIds.any { orgId -> item.toString().startsWith(orgId.toString()) }
+  }
+
   private inline fun <reified T> List<T>.forFacility1000() = filterStartsWith("1000")
 
   private val mappedIds = mutableMapOf<Any, Any>()
@@ -250,6 +254,24 @@ internal class PermissionTest : DatabaseTest() {
       insertOrganizationUser(otherUserId, getDatabaseId(organizationId), createdBy = userId)
     }
 
+    cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }
+
+    participantIds.forEach { participantId ->
+      putDatabaseId(
+          participantId,
+          insertParticipant(
+              createdBy = userId, cohortId = getDatabaseId(CohortId(participantId.value))))
+    }
+
+    projectIds.forEach { projectId ->
+      putDatabaseId(
+          projectId,
+          insertProject(
+              createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
+              participantId = getDatabaseId(ParticipantId(projectId.value / 1000))))
+    }
+
     facilityIds.forEach { facilityId ->
       val organizationIdInDatabase = getDatabaseId(OrganizationId(facilityId.value / 1000))
       val speciesIdInDatabase = getDatabaseId(SpeciesId(facilityId.value / 1000))
@@ -260,7 +282,13 @@ internal class PermissionTest : DatabaseTest() {
       putDatabaseId(DeviceId(facilityId.value), insertDevice(createdBy = userId))
       putDatabaseId(AutomationId(facilityId.value), insertAutomation(createdBy = userId))
 
-      putDatabaseId(AccessionId(facilityId.value), insertAccession(createdBy = userId))
+      putDatabaseId(
+          AccessionId(facilityId.value),
+          insertAccession(
+              createdBy = userId,
+              facilityId = getDatabaseId(facilityId),
+              projectId = getDatabaseId(ProjectId(facilityId.value)),
+          ))
       val viabilityTestsRow =
           ViabilityTestsRow(
               accessionId = inserted.accessionId, seedsSown = 1, testType = ViabilityTestType.Lab)
@@ -272,7 +300,8 @@ internal class PermissionTest : DatabaseTest() {
           insertBatch(
               createdBy = userId,
               organizationId = organizationIdInDatabase,
-              speciesId = speciesIdInDatabase))
+              speciesId = speciesIdInDatabase,
+              projectId = getDatabaseId(ProjectId(facilityId.value))))
       putDatabaseId(
           WithdrawalId(facilityId.value),
           insertNurseryWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant))
@@ -309,11 +338,14 @@ internal class PermissionTest : DatabaseTest() {
           plantingSiteId,
           insertPlantingSite(
               createdBy = userId,
-              organizationId = getDatabaseId(OrganizationId(plantingSiteId.value / 1000))))
+              organizationId = getDatabaseId(OrganizationId(plantingSiteId.value / 1000)),
+              projectId = getDatabaseId(ProjectId(plantingSiteId.value))))
       putDatabaseId(
           DeliveryId(plantingSiteId.value),
           insertDelivery(
-              createdBy = userId, withdrawalId = getDatabaseId(WithdrawalId(plantingSiteId.value))))
+              createdBy = userId,
+              withdrawalId = getDatabaseId(WithdrawalId(plantingSiteId.value)),
+              plantingSiteId = getDatabaseId(plantingSiteId)))
       putDatabaseId(
           PlantingId(plantingSiteId.value),
           insertPlanting(
@@ -352,7 +384,8 @@ internal class PermissionTest : DatabaseTest() {
           draftPlantingSiteId,
           insertDraftPlantingSite(
               createdBy = userId,
-              organizationId = getDatabaseId(OrganizationId(draftPlantingSiteId.value / 1000))))
+              organizationId = getDatabaseId(OrganizationId(draftPlantingSiteId.value / 1000)),
+              projectId = getDatabaseId(ProjectId(draftPlantingSiteId.value))))
     }
 
     seedFundReportIds.forEach { reportId ->
@@ -367,24 +400,6 @@ internal class PermissionTest : DatabaseTest() {
           insertObservation(
               plantingSiteId = getDatabaseId(PlantingSiteId(observationId.value)),
               state = ObservationState.Upcoming))
-    }
-
-    cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }
-
-    participantIds.forEach { participantId ->
-      putDatabaseId(
-          participantId,
-          insertParticipant(
-              createdBy = userId, cohortId = getDatabaseId(CohortId(participantId.value))))
-    }
-
-    projectIds.forEach { projectId ->
-      putDatabaseId(
-          projectId,
-          insertProject(
-              createdBy = userId,
-              organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
-              participantId = getDatabaseId(ParticipantId(projectId.value / 1000))))
     }
 
     moduleIds.forEach { moduleId ->
@@ -473,6 +488,7 @@ internal class PermissionTest : DatabaseTest() {
         createDevice = true,
         createSubLocation = true,
         listAutomations = true,
+        readFacility = true,
         sendAlert = true,
         updateFacility = true,
     )
@@ -748,6 +764,7 @@ internal class PermissionTest : DatabaseTest() {
         createDevice = true,
         createSubLocation = true,
         listAutomations = true,
+        readFacility = true,
         sendAlert = true,
         updateFacility = true,
     )
@@ -957,6 +974,7 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createBatch = true,
         listAutomations = true,
+        readFacility = true,
     )
 
     permissions.expect(
@@ -1130,6 +1148,7 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createBatch = true,
         listAutomations = true,
+        readFacility = true,
     )
 
     permissions.expect(
@@ -1287,6 +1306,7 @@ internal class PermissionTest : DatabaseTest() {
         createAutomation = true,
         createDevice = true,
         listAutomations = true,
+        readFacility = true,
         sendAlert = true,
     )
 
@@ -1354,6 +1374,7 @@ internal class PermissionTest : DatabaseTest() {
         createDevice = true,
         createSubLocation = true,
         listAutomations = true,
+        readFacility = true,
         sendAlert = true,
         updateFacility = true,
     )
@@ -1737,6 +1758,7 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         addTerraformationContact = true,
         createReport = true,
+        listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
@@ -1995,6 +2017,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         OrganizationId(3),
         addTerraformationContact = true,
+        listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationUser = true,
@@ -2006,6 +2029,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         OrganizationId(4),
         addTerraformationContact = true,
+        listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
@@ -2269,6 +2293,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         OrganizationId(4),
         addTerraformationContact = true,
+        listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
@@ -2414,6 +2439,7 @@ internal class PermissionTest : DatabaseTest() {
   @Test
   fun `read only user has correct privileges`() {
     insertUserGlobalRole(userId, GlobalRole.ReadOnly)
+    insertProjectAcceleratorDetails(projectId = getDatabaseId(ProjectId(4000)))
 
     val permissions = PermissionsTracker()
 
@@ -2431,29 +2457,35 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        OrganizationId(2),
+        readOrganizationDeliverables = true,
+    )
+
+    permissions.expect(
+        OrganizationId(3),
+        listFacilities = true,
+        listOrganizationUsers = true,
+        readOrganization = true,
+        readOrganizationDeliverables = true,
+        readOrganizationUser = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
-        createDelivery = false,
-        createObservation = false,
-        deletePlantingSite = false,
-        movePlantingSiteToAnyOrg = false,
         readPlantingSite = true,
         scheduleAdHocObservation = true,
-        scheduleObservation = false,
-        updatePlantingSite = false,
         updatePlantingSiteProject = true,
     )
 
     permissions.expect(
         *observationIds.forOrg1(),
-        manageObservation = false,
         readObservation = true,
-        replaceObservationPlot = false,
-        rescheduleObservation = false,
         updateObservation = true,
     )
 
     permissions.expect(
         OrganizationId(4),
+        listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
@@ -2488,7 +2520,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *participantProjectSpeciesIds.forOrg1(),
+        *participantProjectSpeciesIds.toTypedArray(),
         readParticipantProjectSpecies = true,
     )
 
@@ -2499,6 +2531,19 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        readDefaultVoters = true,
+        readInternalVariableWorkflowDetails = true,
+        readProject = true,
+        readProjectAcceleratorDetails = true,
+        readProjectDeliverables = true,
+        readProjectFunderDetails = true,
+        readProjectModules = true,
+        readProjectScores = true,
+        readProjectVotes = true,
+        readPublishedReports = true,
+    )
+    permissions.expect(
+        ProjectId(3000),
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2532,8 +2577,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        SpeciesId(3),
-        SpeciesId(4),
+        *speciesIds.toTypedArray(),
         readSpecies = true,
     )
 
@@ -2546,6 +2590,169 @@ internal class PermissionTest : DatabaseTest() {
         *fundingEntityIds.toTypedArray(),
         listFundingEntityUsers = true,
         readFundingEntity = true,
+    )
+
+    permissions.expect(
+        *accessionIds.forOrg1(),
+        readAccession = true,
+        updateAccessionProject = true,
+        uploadPhoto = true,
+    )
+
+    permissions.expect(
+        *automationIds.forOrg1(),
+        readAutomation = true,
+    )
+
+    permissions.expect(
+        *batchIds.forOrg1(),
+        deleteBatch = true,
+        readBatch = true,
+        updateBatch = true,
+    )
+
+    permissions.expect(
+        *deliveryIds.forOrg1(),
+        readDelivery = true,
+        updateDelivery = true,
+    )
+
+    permissions.expect(
+        *deviceManagerIds.toTypedArray(),
+        readDeviceManager = true,
+    )
+
+    permissions.expect(
+        *deviceIds.forOrg1(),
+        readDevice = true,
+        readTimeseries = true,
+    )
+
+    permissions.expect(
+        *facilityIds.forOrg1(),
+        createAccession = true,
+        createBatch = true,
+        listAutomations = true,
+        readFacility = true,
+    )
+
+    permissions.expect(
+        *monitoringPlotIds.forOrg1(),
+        readMonitoringPlot = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrg1(),
+        readPlanting = true,
+    )
+
+    permissions.expect(
+        *plantingSubzoneIds.forOrg1(),
+        readPlantingSubzone = true,
+        updatePlantingSubzoneCompleted = true,
+    )
+
+    permissions.expect(
+        *plantingZoneIds.forOrg1(),
+        readPlantingZone = true,
+    )
+
+    permissions.expect(
+        *subLocationIds.forOrg1(),
+        SubLocationId(3000),
+        readSubLocation = true,
+    )
+
+    permissions.expect(
+        *viabilityTestIds.forOrg1(),
+        readViabilityTest = true,
+    )
+
+    permissions.expect(
+        *withdrawalIds.forOrg1(),
+        createWithdrawalPhoto = true,
+        readWithdrawal = true,
+    )
+
+    permissions.expect(
+        WithdrawalId(3000),
+        readWithdrawal = true,
+    )
+
+    // accelerator project/org details
+    permissions.expect(
+        *accessionIds.forOrgs(listOf(3, 4)),
+        readAccession = true,
+    )
+
+    permissions.expect(
+        *batchIds.forOrgs(listOf(3, 4)),
+        readBatch = true,
+    )
+
+    permissions.expect(
+        *deliveryIds.forOrgs(listOf(3, 4)),
+        readDelivery = true,
+    )
+
+    permissions.expect(
+        *draftPlantingSiteIds.forOrgs(listOf(1, 3, 4)),
+        readDraftPlantingSite = true,
+    )
+
+    permissions.expect(
+        FacilityId(3000), // org has application
+        readFacility = true,
+    )
+
+    permissions.expect(
+        *facilityIds.forOrgs(listOf(3, 4)),
+        readFacility = true,
+    )
+
+    permissions.expect(
+        *monitoringPlotIds.forOrgs(listOf(3, 4)),
+        readMonitoringPlot = true,
+    )
+
+    permissions.expect(
+        *observationIds.forOrgs(listOf(3, 4)),
+        readObservation = true,
+    )
+
+    permissions.expect(
+        *plantingIds.forOrgs(listOf(3, 4)),
+        readPlanting = true,
+    )
+
+    permissions.expect(
+        *plantingSiteIds.forOrgs(listOf(3, 4)),
+        readPlantingSite = true,
+    )
+
+    permissions.expect(
+        *plantingSubzoneIds.forOrgs(listOf(3, 4)),
+        readPlantingSubzone = true,
+    )
+
+    permissions.expect(
+        *plantingZoneIds.forOrgs(listOf(3, 4)),
+        readPlantingZone = true,
+    )
+
+    permissions.expect(
+        *subLocationIds.forOrgs(listOf(3, 4)),
+        readSubLocation = true,
+    )
+
+    permissions.expect(
+        *viabilityTestIds.forOrgs(listOf(3, 4)),
+        readViabilityTest = true,
+    )
+
+    permissions.expect(
+        *withdrawalIds.forOrgs(listOf(3, 4)),
+        readWithdrawal = true,
     )
 
     permissions.expect(
@@ -2583,6 +2790,7 @@ internal class PermissionTest : DatabaseTest() {
         updateGlobalRoles = false,
         updateParticipant = false,
     )
+    permissions.andNothingElse()
 
     // Read Only can't apply any global roles to a user
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.AcceleratorAdmin)))
@@ -2904,6 +3112,7 @@ internal class PermissionTest : DatabaseTest() {
         createDevice: Boolean = false,
         createSubLocation: Boolean = false,
         listAutomations: Boolean = false,
+        readFacility: Boolean = false,
         sendAlert: Boolean = false,
         updateFacility: Boolean = false,
     ) {
@@ -2934,6 +3143,8 @@ internal class PermissionTest : DatabaseTest() {
             listAutomations,
             user.canListAutomations(idInDatabase),
             "Can list automations at facility $facilityId")
+        assertEquals(
+            readFacility, user.canReadFacility(idInDatabase), "Can read facility $facilityId")
         assertEquals(
             sendAlert, user.canSendAlert(idInDatabase), "Can send alert for facility $facilityId")
         assertEquals(
