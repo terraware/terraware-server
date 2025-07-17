@@ -4,10 +4,12 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.funder.db.PublishedProjectDetailsStore
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
+import com.terraformation.backend.funder.model.PublishedProjectNameModel
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,8 +38,26 @@ class FunderProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     projectId = insertProject()
 
     val existingDetails = FunderProjectDetailsModel(projectId = projectId)
+    val existingProject = PublishedProjectNameModel(projectId = projectId)
 
     every { publishedProjectDetailsStore.fetchOneById(projectId) } returns existingDetails
+    every { publishedProjectDetailsStore.fetchAll() } returns listOf(existingProject)
+  }
+
+  @Nested
+  inner class FetchAll {
+    @Test
+    fun `throws error if user can't read published projects`() {
+      assertThrows<AccessDeniedException> { service.fetchAll() }
+    }
+
+    @Test
+    fun `does not throw error if user can read project funder details`() {
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+
+      // actual values are tested in other tests
+      assertDoesNotThrow { service.fetchAll() }
+    }
   }
 
   @Nested

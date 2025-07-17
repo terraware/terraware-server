@@ -12,6 +12,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_SDG
 import com.terraformation.backend.funder.event.FunderProjectProfilePublishedEvent
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
+import com.terraformation.backend.funder.model.PublishedProjectNameModel
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
@@ -24,6 +25,13 @@ class PublishedProjectDetailsStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
+
+  fun fetchAll(): List<PublishedProjectNameModel> {
+    return with(PUBLISHED_PROJECT_DETAILS) {
+      dslContext.select(PROJECT_ID, DEAL_NAME).from(this).fetch { PublishedProjectNameModel.of(it) }
+    }
+  }
+
   fun fetchOneById(projectId: ProjectId): FunderProjectDetailsModel? {
     // convert the list to a set
     val sdgList =
