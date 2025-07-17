@@ -714,8 +714,9 @@ class ApplicationStore(
           applicationVariableValues.landUseModelHectares[LandUseModelType.Mangroves]?.toDouble()
               ?: 0.0
 
-      if ((totalLandUseArea < minimumHectares || totalLandUseArea > defaultMaximumHectares) &&
-          (minimumMangroveHectares?.let { mangroveLandUseArea < it } ?: true)) {
+      if (!(totalLandUseArea >= minimumHectares ||
+          minimumMangroveHectares?.let { mangroveLandUseArea >= it } ?: false) ||
+          totalLandUseArea > defaultMaximumHectares) {
         problems.add(
             messages.applicationPreScreenFailureBadSize(
                 projectCountriesRow.name!!,

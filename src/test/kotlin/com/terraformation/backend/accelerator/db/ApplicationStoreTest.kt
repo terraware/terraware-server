@@ -1264,38 +1264,26 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `detects boundary size above maximum`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) }
-      val applicationId = insertApplication(boundary = boundary)
-
-      val result = store.submit(applicationId, validVariables(boundary))
-
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
-          result.problems)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
-    }
-
-    @Test
     fun `detects land use hectares above maximum`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 16000) }
+      val boundary = Turtle(point(122, 11.25)).makePolygon { rectangle(10000, 8000) }
       val applicationId = insertApplication(boundary = boundary)
 
       val result =
           store.submit(
               applicationId,
               ApplicationVariableValues(
-                  countryCode = "US",
+                  countryCode = "PH",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(60000),
-                          LandUseModelType.Mangroves to BigDecimal(60000)),
+                          LandUseModelType.Agroforestry to BigDecimal(60000),
+                          LandUseModelType.Mangroves to BigDecimal(2000)),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
+          listOf(messages.applicationPreScreenFailureBadSize("Philippines", 3000, 100000, 1000)),
           result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
