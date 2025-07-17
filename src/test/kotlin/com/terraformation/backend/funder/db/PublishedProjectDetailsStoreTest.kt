@@ -70,7 +70,7 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   dealName = "Published Details 2",
               ),
           )
-      assertEquals(expected, store.fetchAll(), "Fetch ALl should return published projects from db")
+      assertEquals(expected, store.fetchAll(), "Fetch All should return published projects from db")
     }
   }
 
