@@ -8,7 +8,7 @@ import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
-import com.terraformation.backend.util.compareNullsFirst
+import com.terraformation.backend.util.compareNullsLast
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -94,7 +94,7 @@ data class WithdrawalModel(
     return if (dateComparison != 0) {
       dateComparison
     } else {
-      val idComparison = id?.value.compareNullsFirst(other.id?.value)
+      val idComparison = id?.value.compareNullsLast(other.id?.value)
       if (idComparison != 0) {
         idComparison
       } else {

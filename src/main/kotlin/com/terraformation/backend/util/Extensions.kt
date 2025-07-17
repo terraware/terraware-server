@@ -46,12 +46,12 @@ fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
  */
 fun <T> Field<T>.eqOrIsNull(value: T) = if (value != null) eq(value) else isNull
 
-/** Compares two comparable values, treating null values as less than non-null ones. */
-fun <T : Comparable<T>> T?.compareNullsFirst(other: T?): Int {
+/** Compares two comparable values, treating null values as greater than non-null ones. */
+fun <T : Comparable<T>> T?.compareNullsLast(other: T?): Int {
   return when {
     this != null && other != null -> this.compareTo(other)
-    this != null && other == null -> 1
-    this == null && other != null -> -1
+    this != null && other == null -> -1
+    this == null && other != null -> 1
     else -> 0
   }
 }
