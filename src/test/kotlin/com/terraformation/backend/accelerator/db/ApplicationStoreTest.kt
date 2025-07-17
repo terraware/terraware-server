@@ -1166,42 +1166,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     @MethodSource(
         "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
     @ParameterizedTest
-    fun `detects boundary size below minimum`(
-        country: String,
-        origin: Point,
-        projectType: PreScreenProjectType,
-        minHectares: Int
-    ) {
-      insertProject()
-      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
-      val countryCode = countriesDao.fetchOneByName(country)?.code
-      val applicationId = insertApplication(boundary = boundary, internalName = country)
-
-      val result =
-          store.submit(
-              applicationId,
-              validVariables(boundary).copy(countryCode = countryCode, projectType = projectType))
-
-      assertEquals(
-          listOf(
-              messages.applicationPreScreenFailureBadSize(
-                  projectType, country, minHectares, 100000)),
-          result.problems,
-          country)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
-    }
-
-    @MethodSource(
-        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
-    @ParameterizedTest
     fun `detects land use hectares below minimum`(
         country: String,
         origin: Point,
-        projectType: PreScreenProjectType,
-        minHectares: Int
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
     ) {
       insertProject()
-      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares + 10) }
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
       val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
@@ -1211,18 +1183,84 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               ApplicationVariableValues(
                   countryCode = countryCode,
                   landUseModelHectares =
-                      mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
+                      mapOf(LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10)),
                   numSpeciesToBePlanted = 500,
-                  projectType = projectType,
+                  projectType = PreScreenProjectType.Mixed,
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
           listOf(
               messages.applicationPreScreenFailureBadSize(
-                  projectType, country, minHectares, 100000)),
+                  country, minTotalHectares, 100000, minMangroveHectares)),
           result.problems,
           country)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
+    }
+
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `passes minimum land use hectares with total hectares`(
+        country: String,
+        origin: Point,
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
+    ) {
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
+
+      val result =
+          store.submit(
+              applicationId,
+              ApplicationVariableValues(
+                  countryCode = countryCode,
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10),
+                          LandUseModelType.Mangroves to BigDecimal(10)),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
+
+      assertEquals(emptyList<String>(), result.problems, country)
+      assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
+    }
+
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `passes minimum land use hectares with mangrove hectares`(
+        country: String,
+        origin: Point,
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
+    ) {
+      if (minMangroveHectares == null) {
+        return
+      }
+
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
+
+      val result =
+          store.submit(
+              applicationId,
+              ApplicationVariableValues(
+                  countryCode = countryCode,
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.NativeForest to BigDecimal(10),
+                          LandUseModelType.Mangroves to BigDecimal(minMangroveHectares)),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
+
+      assertEquals(emptyList<String>(), result.problems, country)
+      assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
     }
 
     @Test
@@ -1233,9 +1271,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result = store.submit(applicationId, validVariables(boundary))
 
       assertEquals(
-          listOf(
-              messages.applicationPreScreenFailureBadSize(
-                  PreScreenProjectType.Terrestrial, "United States", 15000, 100000)),
+          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
           result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
@@ -1259,9 +1295,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
-          listOf(
-              messages.applicationPreScreenFailureBadSize(
-                  PreScreenProjectType.Mixed, "United States", 15000, 100000)),
+          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
           result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
@@ -1275,32 +1309,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
-    }
-
-    @Test
-    fun `detects monoculture land use too high`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
-      val boundaryArea = boundary.calculateAreaHectares()
-      val halfArea = boundaryArea / BigDecimal.TWO
-      val applicationId = insertApplication(boundary = boundary)
-
-      val result =
-          store.submit(
-              applicationId,
-              ApplicationVariableValues(
-                  countryCode = "US",
-                  landUseModelHectares =
-                      mapOf(
-                          LandUseModelType.Monoculture to halfArea,
-                          LandUseModelType.NativeForest to halfArea,
-                      ),
-                  numSpeciesToBePlanted = 500,
-                  projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(1000)))
-
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureMonocultureTooHigh(10)), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1326,8 +1334,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              messages.applicationPreScreenFailureBadSize(
-                  PreScreenProjectType.Terrestrial, "United States", 15000, 100000),
+              messages.applicationPreScreenFailureBadSize("United States", 15000, 100000),
               messages.applicationPreScreenFailureTooFewSpecies(10)),
           result.problems,
           "Pre-Screen problems from submitting")
@@ -1697,18 +1704,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     @JvmStatic
     fun siteLocationsAndSizes() =
         listOf(
-            Arguments.of("Ghana", point(-1.5, 7.25), PreScreenProjectType.Terrestrial, 3000),
-            Arguments.of("Ghana", point(-1.5, 7.25), PreScreenProjectType.Mixed, 3000),
-            Arguments.of("Ghana", point(-1.5, 7.25), PreScreenProjectType.Mangrove, 3000),
-            Arguments.of("Philippines", point(122, 11.25), PreScreenProjectType.Terrestrial, 3000),
-            Arguments.of("Philippines", point(122, 11.25), PreScreenProjectType.Mixed, 3000),
-            Arguments.of("Philippines", point(122, 11.25), PreScreenProjectType.Mangrove, 1000),
-            Arguments.of("Indonesia", point(114, -0.8), PreScreenProjectType.Terrestrial, 3000),
-            Arguments.of("Indonesia", point(114, -0.8), PreScreenProjectType.Mixed, 3000),
-            Arguments.of("Indonesia", point(114, -0.8), PreScreenProjectType.Mangrove, 1000),
-            Arguments.of("United States", point(-100, 41), PreScreenProjectType.Terrestrial, 15000),
-            Arguments.of("United States", point(-100, 41), PreScreenProjectType.Mixed, 15000),
-            Arguments.of("United States", point(-100, 41), PreScreenProjectType.Mangrove, 15000),
+            Arguments.of("Ghana", point(-1.5, 7.25), 3000, null),
+            Arguments.of("Philippines", point(122, 11.25), 3000, 1000),
+            Arguments.of("Indonesia", point(114, -0.8), 15000, 1000),
+            Arguments.of("United States", point(-100, 41), 15000, null),
         )
   }
 }

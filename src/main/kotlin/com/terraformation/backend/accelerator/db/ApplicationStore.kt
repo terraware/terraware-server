@@ -36,7 +36,6 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.geotools.api.feature.simple.SimpleFeature
@@ -58,12 +57,17 @@ class ApplicationStore(
 ) {
   private val defaultMinimumHectares = 15000
   private val defaultMaximumHectares = 100000
-  private val perCountryMinimumHectares =
+
+  private val perCountryMinimumTotalHectares =
       mapOf(
-          "CO" to 3000,
           "GH" to 3000,
-          "KE" to 3000,
-          "TZ" to 3000,
+          "PH" to 3000,
+      )
+
+  private val perCountryMinimumMagroveHectares =
+      mapOf(
+          "ID" to 1000,
+          "PH" to 1000,
       )
 
   /** Internal name country prefix used when country can't be determined from boundary. */
@@ -660,14 +664,11 @@ class ApplicationStore(
     val problems = mutableListOf<String>()
 
     var boundaryCountryCode: String? = null
-    var siteAreaHa: Double? = null
 
     val totalLandUseArea =
         applicationVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
 
     if (application.boundary != null) {
-      siteAreaHa = application.boundary.calculateAreaHectares().toDouble()
-
       val countries = countryDetector.getCountries(application.boundary)
       when (countries.size) {
         0 -> problems.add(messages.applicationPreScreenBoundaryInNoCountry())
@@ -677,9 +678,6 @@ class ApplicationStore(
     } else if (boundarySubmission == null ||
         boundarySubmission.status != SubmissionStatus.Completed) {
       problems.add(messages.applicationPreScreenFailureNoBoundary())
-    } else {
-      // User uploaded files there were not parsed. Use total land use area as site area.
-      siteAreaHa = totalLandUseArea
     }
 
     if (problems.isNotEmpty()) {
@@ -705,32 +703,25 @@ class ApplicationStore(
         problems.add(
             messages.applicationPreScreenFailureMismatchCountries(
                 boundaryCountriesRow.name!!, projectCountriesRow.name!!))
-      } else if (siteAreaHa != null) {
-        // Third, check minimum hectares requirements
-        val minimumHectares =
-            minimumPrescreenHectares(
-                projectCountriesRow.code!!, applicationVariableValues.projectType!!)
-
-        if (siteAreaHa < minimumHectares ||
-            siteAreaHa > defaultMaximumHectares ||
-            totalLandUseArea < minimumHectares ||
-            totalLandUseArea > defaultMaximumHectares) {
-          problems.add(
-              messages.applicationPreScreenFailureBadSize(
-                  applicationVariableValues.projectType!!,
-                  projectCountriesRow.name!!,
-                  minimumHectares,
-                  defaultMaximumHectares))
-        }
       }
-    }
 
-    if (siteAreaHa != null) {
-      val monocultureArea =
-          applicationVariableValues.landUseModelHectares[LandUseModelType.Monoculture]
-      if (monocultureArea != null &&
-          monocultureArea.toDouble() > totalLandUseArea * monocultureMaxPercent / 100.0) {
-        problems.add(messages.applicationPreScreenFailureMonocultureTooHigh(monocultureMaxPercent))
+      // Third, check minimum hectares requirements
+      val minimumHectares =
+          perCountryMinimumTotalHectares[projectCountriesRow.code!!] ?: defaultMinimumHectares
+      val minimumMangroveHectares = perCountryMinimumMagroveHectares[projectCountriesRow.code!!]
+
+      val mangroveLandUseArea =
+          applicationVariableValues.landUseModelHectares[LandUseModelType.Mangroves]?.toDouble()
+              ?: 0.0
+
+      if ((totalLandUseArea < minimumHectares || totalLandUseArea > defaultMaximumHectares) &&
+          (minimumMangroveHectares?.let { mangroveLandUseArea < it } ?: true)) {
+        problems.add(
+            messages.applicationPreScreenFailureBadSize(
+                projectCountriesRow.name!!,
+                minimumHectares,
+                defaultMaximumHectares,
+                minimumMangroveHectares))
       }
     }
 
@@ -741,22 +732,5 @@ class ApplicationStore(
     }
 
     return problems
-  }
-
-  private fun minimumPrescreenHectares(
-      countryCode: String,
-      projectType: PreScreenProjectType
-  ): Int {
-    return when (countryCode) {
-      "GH" -> 3000
-      "PH",
-      "ID" ->
-          if (projectType == PreScreenProjectType.Mangrove) {
-            1000
-          } else {
-            3000
-          }
-      else -> 15000
-    }
   }
 }

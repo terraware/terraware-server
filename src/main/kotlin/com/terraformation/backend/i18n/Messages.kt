@@ -1,7 +1,6 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
-import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -51,19 +50,20 @@ class Messages {
   }
 
   fun applicationPreScreenFailureBadSize(
-      projectType: PreScreenProjectType,
       country: String,
-      minimum: Int,
-      maximum: Int
+      totalMinimum: Int,
+      totalMaximum: Int,
+      mangroveMinimum: Int? = null,
   ) =
-      when (projectType) {
-        PreScreenProjectType.Mangrove ->
-            getMessage("applicationPreScreen.failure.badSize.mangrove", country, minimum, maximum)
-        PreScreenProjectType.Terrestrial ->
-            getMessage(
-                "applicationPreScreen.failure.badSize.terrestrial", country, minimum, maximum)
-        PreScreenProjectType.Mixed ->
-            getMessage("applicationPreScreen.failure.badSize.mixed", country, minimum, maximum)
+      if (mangroveMinimum == null) {
+        getMessage("applicationPreScreen.failure.badSize", country, totalMinimum, totalMaximum)
+      } else {
+        getMessage(
+            "applicationPreScreen.failure.badSize.mangrove",
+            country,
+            totalMinimum,
+            mangroveMinimum,
+            totalMaximum)
       }
 
   fun applicationPreScreenBoundaryInNoCountry() =
