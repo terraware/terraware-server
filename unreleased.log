@@ -1,6 +1,1 @@
-c35a1b34119 SW-7164 Create FetchAll Published Projects Endpoint (#3228)
-6654ee7a41c SW-7138 Add Permission Grants for Read Only Users (#3230)
-1f3072e13ae SW-7172 Make null ids greater than non-null for same-date withdrawal sorting (#3229)
-18b75d491d9 SW-7102 Comment on PR when staging deploy finishes (#3224)
-0f1a9df2833 Set GitHub environment in workflow (#3225)
-cff035e4bc0 Upgrade to JobRunr 8.0.0 (#3222)
+25ae49afb97 SW-7141 Updated with new pre-screen checks (#3217)
