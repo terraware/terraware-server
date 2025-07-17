@@ -1166,32 +1166,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     @MethodSource(
         "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
     @ParameterizedTest
-    fun `detects boundary size below minimum`(country: String, origin: Point, minHectares: Int) {
-      insertProject()
-      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
-      val countryCode = countriesDao.fetchOneByName(country)?.code
-      val applicationId = insertApplication(boundary = boundary, internalName = country)
-
-      val result =
-          store.submit(applicationId, validVariables(boundary).copy(countryCode = countryCode))
-
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
-          result.problems,
-          country)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
-    }
-
-    @MethodSource(
-        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
-    @ParameterizedTest
     fun `detects land use hectares below minimum`(
         country: String,
         origin: Point,
-        minHectares: Int
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
     ) {
       insertProject()
-      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares + 10) }
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
       val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
@@ -1201,51 +1183,107 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               ApplicationVariableValues(
                   countryCode = countryCode,
                   landUseModelHectares =
-                      mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
+                      mapOf(LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10)),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
+          listOf(
+              messages.applicationPreScreenFailureBadSize(
+                  country, minTotalHectares, 100000, minMangroveHectares)),
           result.problems,
           country)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
     }
 
-    @Test
-    fun `detects boundary size above maximum`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) }
-      val applicationId = insertApplication(boundary = boundary)
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `passes minimum land use hectares with total hectares`(
+        country: String,
+        origin: Point,
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
+    ) {
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
 
-      val result = store.submit(applicationId, validVariables(boundary))
+      val result =
+          store.submit(
+              applicationId,
+              ApplicationVariableValues(
+                  countryCode = countryCode,
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10),
+                          LandUseModelType.Mangroves to BigDecimal(10)),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
 
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
-          result.problems)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+      assertEquals(emptyList<String>(), result.problems, country)
+      assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
+    }
+
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `passes minimum land use hectares with mangrove hectares`(
+        country: String,
+        origin: Point,
+        minTotalHectares: Int,
+        minMangroveHectares: Int?,
+    ) {
+      if (minMangroveHectares == null) {
+        return
+      }
+
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minTotalHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
+
+      val result =
+          store.submit(
+              applicationId,
+              ApplicationVariableValues(
+                  countryCode = countryCode,
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.NativeForest to BigDecimal(10),
+                          LandUseModelType.Mangroves to BigDecimal(minMangroveHectares)),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
+
+      assertEquals(emptyList<String>(), result.problems, country)
+      assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
     }
 
     @Test
     fun `detects land use hectares above maximum`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 16000) }
+      val boundary = Turtle(point(122, 11.25)).makePolygon { rectangle(10000, 8000) }
       val applicationId = insertApplication(boundary = boundary)
 
       val result =
           store.submit(
               applicationId,
               ApplicationVariableValues(
-                  countryCode = "US",
+                  countryCode = "PH",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(60000),
-                          LandUseModelType.Mangroves to BigDecimal(60000)),
+                          LandUseModelType.Agroforestry to BigDecimal(60000),
+                          LandUseModelType.Mangroves to BigDecimal(2000)),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
-          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
+          listOf(messages.applicationPreScreenFailureBadSize("Philippines", 3000, 100000, 1000)),
           result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
@@ -1259,32 +1297,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
-    }
-
-    @Test
-    fun `detects monoculture land use too high`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
-      val boundaryArea = boundary.calculateAreaHectares()
-      val halfArea = boundaryArea / BigDecimal.TWO
-      val applicationId = insertApplication(boundary = boundary)
-
-      val result =
-          store.submit(
-              applicationId,
-              ApplicationVariableValues(
-                  countryCode = "US",
-                  landUseModelHectares =
-                      mapOf(
-                          LandUseModelType.Monoculture to halfArea,
-                          LandUseModelType.NativeForest to halfArea,
-                      ),
-                  numSpeciesToBePlanted = 500,
-                  projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(1000)))
-
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureMonocultureTooHigh(10)), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1680,11 +1692,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     @JvmStatic
     fun siteLocationsAndSizes() =
         listOf(
-            Arguments.of("Colombia", point(-75, 3), 3000),
-            Arguments.of("Ghana", point(-1.5, 7.25), 3000),
-            Arguments.of("Kenya", point(37, 1), 3000),
-            Arguments.of("Tanzania", point(34, -8), 3000),
-            Arguments.of("United States", point(-100, 41), 15000),
+            Arguments.of("Ghana", point(-1.5, 7.25), 3000, null),
+            Arguments.of("Philippines", point(122, 11.25), 3000, 1000),
+            Arguments.of("Indonesia", point(114, -0.8), 15000, 1000),
+            Arguments.of("United States", point(-100, 41), 15000, null),
         )
   }
 }

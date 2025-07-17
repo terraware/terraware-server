@@ -49,8 +49,22 @@ class Messages {
     return messageSource.getMessage(code, args, currentLocale())
   }
 
-  fun applicationPreScreenFailureBadSize(country: String, minimum: Int, maximum: Int) =
-      getMessage("applicationPreScreen.failure.badSize", country, minimum, maximum)
+  fun applicationPreScreenFailureBadSize(
+      country: String,
+      totalMinimum: Int,
+      totalMaximum: Int,
+      mangroveMinimum: Int? = null,
+  ) =
+      if (mangroveMinimum == null) {
+        getMessage("applicationPreScreen.failure.badSize", country, totalMinimum, totalMaximum)
+      } else {
+        getMessage(
+            "applicationPreScreen.failure.badSize.mangrove",
+            country,
+            totalMinimum,
+            mangroveMinimum,
+            totalMaximum)
+      }
 
   fun applicationPreScreenBoundaryInNoCountry() =
       getMessage("applicationPreScreen.failure.boundaryInNoCountry")
