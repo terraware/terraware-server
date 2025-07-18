@@ -29,15 +29,14 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
             VariableValueId(it)
           },
           stableIdField("stableId", PROJECT_VARIABLE_VALUES.STABLE_ID),
-          //          textField(
-          //              "variableType",
-          //              DSL.field(
-          //                  DSL.select(VARIABLE_TYPES.NAME)
-          //                      .from(VARIABLE_TYPES)
-          //                      .join(VARIABLE_VALUES)
-          //                      .on(VARIABLE_VALUES.VARIABLE_TYPE_ID.eq(VARIABLE_TYPES.ID))
-          //
-          // .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
+          enumField(
+              "variableType",
+              DSL.field(
+                  DSL.select(VARIABLE_VALUES.VARIABLE_TYPE_ID)
+                      .from(VARIABLE_VALUES)
+                      .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID))),
+              false,
+          ),
           textField(
               "textValue",
               DSL.field(
@@ -50,13 +49,12 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
                   DSL.select(VARIABLE_VALUES.NUMBER_VALUE)
                       .from(VARIABLE_VALUES)
                       .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
-          //          dateField(
-          //              "dateValue",
-          //              DSL.field(
-          //                  DSL.select(VARIABLE_VALUES.DATE_VALUE)
-          //                      .from(VARIABLE_VALUES)
-          //
-          // .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
+          dateField(
+              "dateValue",
+              DSL.field(
+                  DSL.select(VARIABLE_VALUES.DATE_VALUE)
+                      .from(VARIABLE_VALUES)
+                      .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
       )
 
   override fun conditionForVisibility(): Condition {

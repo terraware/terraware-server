@@ -242,7 +242,7 @@ abstract class SearchTable {
       axis: CoordinateField.Companion.Axis
   ) = CoordinateField(fieldName, databaseField, vertexIndex, axis, this, true, true)
 
-  fun dateField(fieldName: String, databaseField: TableField<*, LocalDate?>) =
+  fun dateField(fieldName: String, databaseField: Field<LocalDate?>) =
       DateField(fieldName, databaseField, this)
 
   fun doubleField(fieldName: String, databaseField: Field<Double?>) =
@@ -250,7 +250,7 @@ abstract class SearchTable {
 
   inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
       fieldName: String,
-      databaseField: TableField<*, T?>,
+      databaseField: Field<T?>,
       localize: Boolean = true,
   ) = EnumField(fieldName, databaseField, this, T::class.java, localize)
 
