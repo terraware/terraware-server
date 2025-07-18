@@ -7,13 +7,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import org.jooq.Condition
-import org.jooq.TableField
+import org.jooq.Field
 import org.jooq.impl.DSL
 
 /** Search field for columns that have dates without times or timezones. */
 class DateField(
     override val fieldName: String,
-    override val databaseField: TableField<*, LocalDate?>,
+    override val databaseField: Field<LocalDate?>,
     override val table: SearchTable,
 ) : SingleColumnSearchField<LocalDate>() {
   override val supportedFilterTypes: Set<SearchFilterType>
