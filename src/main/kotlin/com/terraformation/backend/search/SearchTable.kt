@@ -2,6 +2,7 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.LocalizableEnum
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
@@ -18,6 +19,7 @@ import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.NonLocalizableEnumField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.StableIdField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
@@ -257,6 +259,11 @@ abstract class SearchTable {
 
   fun <T : Any> idWrapperField(fieldName: String, databaseField: Field<T?>, fromLong: (Long) -> T) =
       IdWrapperField(fieldName, databaseField, this, fromLong)
+
+  fun stableIdField(
+      fieldName: String,
+      databaseField: Field<StableId?>,
+  ) = StableIdField(fieldName, databaseField, this)
 
   fun integerField(fieldName: String, databaseField: Field<Int?>, localize: Boolean = true) =
       IntegerField(fieldName, databaseField, this, localize)
