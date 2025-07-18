@@ -621,6 +621,8 @@ COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accel
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
 
+COMMENT ON VIEW accelerator.project_variable_values IS 'Latest Variable Value and Variable for projects by stable_id';
+
 COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
 COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted. ';
 
@@ -747,10 +749,10 @@ COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding
 COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
 COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 
-COMMENT ON TABLE funder.published_project_carbon_certs  IS 'Carbon Certifications for published projects.';
+COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
-COMMENT ON TABLE funder.published_project_land_use  IS 'Land Use Model Types and hectares of each for published projects.';
-COMMENT ON TABLE funder.published_project_sdg  IS 'Sustainable Development Goals for published projects.';
+COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
+COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals for published projects.';
 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
 
