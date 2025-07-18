@@ -82,6 +82,7 @@ class SearchTables(clock: Clock) {
   val speciesSuccessionalGroups = SpeciesSuccessionalGroupsTable(this)
   val subLocations = SubLocationsTable(this)
   val users = UsersTable(this)
+  val variableSelectOptions = VariableSelectOptionsTable(this)
   val viabilityTestResults = ViabilityTestResultsTable(this)
   val viabilityTests = ViabilityTestsTable(this)
   val withdrawals = WithdrawalsTable(this)
