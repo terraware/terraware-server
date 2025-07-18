@@ -188,6 +188,60 @@ jobs:
       run: |
         aws ecs wait services-stable --cluster ${{ vars[env.ECS_CLUSTER_VAR_NAME] }} --service ${{ vars[env.ECS_SERVICE_VAR_NAME] }}
 
+    - name: Get current and last version tags
+      if: env.TIER == 'PROD'
+      id: versions
+      run: |
+        git fetch --tags --depth=1
+        THIS_VERSION=`git tag --list --sort=creatordate 'v[0-9]*' | tail -n1`
+        LAST_VERSION=`git tag --list --sort=creatordate 'v[0-9]*' | tail -n2 | head -n1`
+        echo "this_version=${THIS_VERSION}" >> $GITHUB_OUTPUT
+        echo "last_version=${LAST_VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Generate changelog
+      if: env.TIER == 'PROD'
+      id: changelog
+      run: |
+        LAST_VERSION=${{ steps.versions.outputs.last_version }}
+        THIS_VERSION=${{ steps.versions.outputs.this_version }}
+        MAX_DEPTH=500
+        STEP=50
+        CURRENT_DEPTH=$STEP
+
+        while true; do
+          echo "Fetching with depth=$CURRENT_DEPTH"
+          git fetch --tags --depth=$CURRENT_DEPTH
+
+          if git rev-parse "$LAST_VERSION" >/dev/null 2>&1; then
+            echo "✅ Found last version $LAST_VERSION"
+            break
+          fi
+
+          if [ "$CURRENT_DEPTH" -ge "$MAX_DEPTH" ]; then
+            echo "❌ Could not find last version $LAST_VERSION"
+            exit 1
+          fi
+
+          CURRENT_DEPTH=$((CURRENT_DEPTH + STEP))
+        done
+        LOG=$(git log $LAST_VERSION..$THIS_VERSION --pretty=format:"%s")
+        {
+          echo 'changelog<<EOF'
+          echo "$LOG"
+          echo 'EOF'
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Post release notes on Slack
+      if: env.TIER == 'PROD'
+      uses: slackapi/slack-github-action@v2.1.1
+      with:
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: webhook-trigger
+        payload: |
+          "release_notes": ${{ toJSON(steps.changelog.outputs.changelog) }},
+          "release_repository": "${{ github.repository }}",
+          "release_version": "${{ steps.versions.outputs.this_version }}",
+
     - name: Log into Jira
       if: env.TIER == 'PROD'
       uses: atlassian/gajira-login@master
