@@ -118,7 +118,7 @@ dependencies {
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.20")
-  implementation("org.apache.tika:tika-core:3.2.0")
+  implementation("org.apache.tika:tika-core:3.2.1")
   implementation("org.commonmark:commonmark:0.25.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
