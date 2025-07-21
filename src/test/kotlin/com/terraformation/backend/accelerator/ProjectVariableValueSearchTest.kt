@@ -49,10 +49,13 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     val textStableId = "123"
     val numberStableId = "456"
     val dateStableId = "789"
+    val linkStableId = "101"
     val oldVariableId = insertVariable(stableId = textStableId)
     val newVariableId = insertVariable(stableId = textStableId, replacesVariableId = oldVariableId)
     val otherVariableId = insertVariable(stableId = numberStableId, type = VariableType.Number)
     val dateVariableId = insertVariable(stableId = dateStableId, type = VariableType.Date)
+    val oldLinkVariableId = insertVariable(stableId = linkStableId, type = VariableType.Link)
+    val newLinkVariableId = insertVariable(stableId = linkStableId, type = VariableType.Link)
 
     insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarOldVal")
     insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarNewVal")
@@ -69,6 +72,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
             variableId = dateVariableId,
             projectId = projectId,
             dateValue = LocalDate.of(2024, 1, 2))
+    insertLinkValue(variableId = oldLinkVariableId, url = "https://www.oldVariable.com")
+    insertLinkValue(variableId = newLinkVariableId, url = "https://www.oldValue.com")
+    val newLinkValueId =
+        insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
 
     val prefix = SearchFieldPrefix(searchTables.projectVariableValues)
     val fields =
@@ -80,12 +87,21 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "variableType",
                 "textValue",
                 "numberValue",
+                "linkValue",
                 "dateValue")
             .map { prefix.resolve(it) }
 
     val expected =
         SearchResults(
             listOf(
+                mapOf(
+                    "projectId" to "$projectId",
+                    "stableId" to linkStableId,
+                    "variableId" to "$newLinkVariableId",
+                    "variableValueId" to "$newLinkValueId",
+                    "variableType" to "Link",
+                    "linkValue" to "https://www.newValue.com",
+                ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to textStableId,
@@ -109,7 +125,8 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableValueId" to "$dateValueId",
                     "variableType" to "Date",
                     "dateValue" to "2024-01-02",
-                )),
+                ),
+            ),
             cursor = null)
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }

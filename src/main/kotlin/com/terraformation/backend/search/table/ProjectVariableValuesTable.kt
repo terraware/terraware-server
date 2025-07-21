@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTIONS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTION_VALUES
@@ -73,6 +74,14 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
                   DSL.select(VARIABLE_VALUES.DATE_VALUE)
                       .from(VARIABLE_VALUES)
                       .where(VARIABLE_VALUES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
+          textField(
+              "linkValue",
+              DSL.field(
+                  DSL.select(VARIABLE_LINK_VALUES.URL)
+                      .from(VARIABLE_LINK_VALUES)
+                      .where(
+                          VARIABLE_LINK_VALUES.VARIABLE_VALUE_ID.eq(
+                              PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID)))),
           booleanField(
               "isMultiSelect",
               DSL.field(
