@@ -169,8 +169,8 @@ configurations.configureEach {
 tasks.register("downloadDependencies") {
   fun ConfigurationContainer.resolveAll() =
       this.filter {
-            it.isCanBeResolved && it !is DeprecatableConfiguration && !it.name.contains("Metadata")
-          }
+        it.isCanBeResolved && it !is DeprecatableConfiguration && !it.name.contains("Metadata")
+      }
           .forEach { it.resolve() }
 
   doLast {
@@ -182,18 +182,18 @@ tasks.register("downloadDependencies") {
 testing {
   suites {
     val test by
-        getting(JvmTestSuite::class) {
-          useJUnitJupiter()
+    getting(JvmTestSuite::class) {
+      useJUnitJupiter()
 
-          targets {
-            all {
-              testTask.configure {
-                systemProperty("java.locale.providers", "SPI,CLDR")
-                testLogging { exceptionFormat = TestExceptionFormat.FULL }
-              }
-            }
+      targets {
+        all {
+          testTask.configure {
+            systemProperty("java.locale.providers", "SPI,CLDR")
+            testLogging { exceptionFormat = TestExceptionFormat.FULL }
           }
         }
+      }
+    }
   }
 }
 
@@ -269,7 +269,7 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion = JavaLanguageVersion.of(24) }
+  toolchain { languageVersion = JavaLanguageVersion.of(23) }
   targetCompatibility = JavaVersion.VERSION_23
 }
 
@@ -340,7 +340,8 @@ openApi {
 
     // Spring Boot Devtools aren't useful for a one-shot server run, and they add log output.
     classpath.setFrom(
-        sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name })
+        sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name },
+    )
   }
 
   apiDocsUrl = "http://localhost:$listenPort/v3/api-docs.yaml"
