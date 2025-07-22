@@ -1,2 +1,5 @@
+e952bb9b5b2 Update java in github actions to 24 (#3241)
+d334379b121 Update dependency org.apache.tika:tika-core to v3.2.1 (#3227)
+a4bcd2a65af Update plugin com.diffplug.spotless to v7.1.0 (#3223)
 c98e07c81b4 SW-1142 Added post to Slack script to CD pipeline (#3234)
 25ae49afb97 SW-7141 Updated with new pre-screen checks (#3217)
