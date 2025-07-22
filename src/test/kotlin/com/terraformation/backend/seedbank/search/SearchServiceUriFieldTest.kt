@@ -40,7 +40,7 @@ internal class SearchServiceUriFieldTest : SearchServiceTest() {
     val fields = listOf(prefix.resolve("id"), prefix.resolve("meetingUrl"))
     val sortOrder = fields.map { SearchSortField(it) }
 
-    val result = searchService.search(prefix, fields, NoConditionNode(), sortOrder)
+    val result = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), sortOrder)
     val expected = SearchResults(listOf(searchResult1, searchResult2, searchResult3), cursor = null)
 
     assertEquals(expected, result)
@@ -55,9 +55,9 @@ internal class SearchServiceUriFieldTest : SearchServiceTest() {
     val criteria2 = FieldNode(prefix.resolve("meetingUrl"), listOf("formation"))
     val criteria3 = FieldNode(prefix.resolve("meetingUrl"), listOf(null))
 
-    val result1 = searchService.search(prefix, fields, criteria1)
-    val result2 = searchService.search(prefix, fields, criteria2)
-    val result3 = searchService.search(prefix, fields, criteria3)
+    val result1 = searchService.search(prefix, fields, mapOf(prefix to criteria1))
+    val result2 = searchService.search(prefix, fields, mapOf(prefix to criteria2))
+    val result3 = searchService.search(prefix, fields, mapOf(prefix to criteria3))
 
     val expected1 = SearchResults(listOf(searchResult1, searchResult2), cursor = null)
     val expected2 = SearchResults(listOf(searchResult1))

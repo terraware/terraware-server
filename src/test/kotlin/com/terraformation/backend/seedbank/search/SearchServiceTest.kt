@@ -179,6 +179,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val facilityIdCriterion = FieldNode(facilityIdField, listOf("$facilityId"))
     val fullCriteria = AndNode(listOf(criteria, facilityIdCriterion))
 
-    return searchService.search(rootPrefix, fullFieldList, fullCriteria, sortOrder, cursor, limit)
+    return searchService.search(
+        rootPrefix, fullFieldList, mapOf(rootPrefix to fullCriteria), sortOrder, cursor, limit)
   }
 }

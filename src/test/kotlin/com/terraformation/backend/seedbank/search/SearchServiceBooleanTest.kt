@@ -19,7 +19,9 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
     val sortOrder = fields.map { SearchSortField(it) }
 
     val result =
-        Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode(), sortOrder) }
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), sortOrder)
+        }
 
     val expected =
         SearchResults(
@@ -36,7 +38,8 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
     val fields = listOf(prefix.resolve("id"))
     val criteria = FieldNode(prefix.resolve("rare"), listOf("true".toGibberish()))
 
-    val result = Locales.GIBBERISH.use { searchService.search(prefix, fields, criteria) }
+    val result =
+        Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to criteria)) }
 
     val expected = SearchResults(listOf(mapOf("id" to "$speciesId2")))
 
