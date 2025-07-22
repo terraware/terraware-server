@@ -1,3 +1,5 @@
+8b6366b3f63 Update dependency io.mockk:mockk to v1.14.5 (#3236)
+467fbe30ca2 Update database dependencies (#3226)
 e952bb9b5b2 Update java in github actions to 24 (#3241)
 d334379b121 Update dependency org.apache.tika:tika-core to v3.2.1 (#3227)
 a4bcd2a65af Update plugin com.diffplug.spotless to v7.1.0 (#3223)
