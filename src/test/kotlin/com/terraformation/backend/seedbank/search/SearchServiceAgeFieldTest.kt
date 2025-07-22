@@ -61,7 +61,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
         searchService.search(
             rootPrefix,
             listOf(idField, ageMonthsField, ageYearsField, collectedDateField),
-            searchNode,
+            mapOf(rootPrefix to searchNode),
             listOf(sortField))
 
     assertEquals(expected, actual)
@@ -86,7 +86,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
         searchService.search(
             rootPrefix,
             listOf(idField, ageMonthsField, collectedDateField),
-            searchNode,
+            mapOf(rootPrefix to searchNode),
             listOf(sortField))
 
     assertEquals(expected, actual)
@@ -111,7 +111,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
         searchService.search(
             rootPrefix,
             listOf(idField, ageYearsField, collectedDateField),
-            searchNode,
+            mapOf(rootPrefix to searchNode),
             listOf(sortField))
 
     assertEquals(expected, actual)
@@ -124,7 +124,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     val searchNode = FieldNode(ageMonthsField, listOf(null))
 
     val expected = SearchResults(listOf(mapOf("id" to "$accessionId1")))
-    val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+    val actual = searchService.search(rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode))
 
     assertEquals(expected, actual)
   }
@@ -136,7 +136,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     val searchNode = FieldNode(ageMonthsField, listOf("0"))
 
     val expected = SearchResults(listOf(mapOf("id" to "$accessionId1")))
-    val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+    val actual = searchService.search(rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode))
 
     assertEquals(expected, actual)
   }
@@ -155,7 +155,9 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
 
     val expected =
         SearchResults(listOf(mapOf("id" to "$accessionId2"), mapOf("id" to "$accessionId1")))
-    val actual = searchService.search(rootPrefix, listOf(idField), searchNode, listOf(sortField))
+    val actual =
+        searchService.search(
+            rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode), listOf(sortField))
 
     assertEquals(expected, actual)
   }
@@ -168,7 +170,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     val searchNode = FieldNode(ageMonthsField, listOf(null, "2"), SearchFilterType.Range)
 
     val expected = SearchResults(listOf(mapOf("id" to "$accessionId2")))
-    val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+    val actual = searchService.search(rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode))
 
     assertEquals(expected, actual)
   }
@@ -181,7 +183,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     val searchNode = FieldNode(ageMonthsField, listOf("3", null), SearchFilterType.Range)
 
     val expected = SearchResults(listOf(mapOf("id" to "$accessionId1")))
-    val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+    val actual = searchService.search(rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode))
 
     assertEquals(expected, actual)
   }
@@ -191,7 +193,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     val searchNode = FieldNode(ageMonthsField, listOf("-1"))
 
     assertThrows<IllegalArgumentException> {
-      searchService.search(rootPrefix, listOf(idField), searchNode)
+      searchService.search(rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode))
     }
   }
 

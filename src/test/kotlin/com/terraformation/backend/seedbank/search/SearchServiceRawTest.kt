@@ -18,7 +18,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
         listOf(rootPrefix.resolve("estimatedCount"), rootPrefix.resolve("estimatedCount(raw)"))
     val criteria = FieldNode(accessionIdField, listOf("$accessionId1"))
 
-    val result = searchService.search(rootPrefix, fields, criteria)
+    val result = searchService.search(rootPrefix, fields, mapOf(rootPrefix to criteria))
 
     val expected =
         SearchResults(listOf(mapOf("estimatedCount" to "12,000", "estimatedCount(raw)" to "12000")))
@@ -56,7 +56,10 @@ internal class SearchServiceRawTest : SearchServiceTest() {
                 FieldNode(rawTotalWeightField, listOf("5000")),
             ))
 
-    val result = Locales.GIBBERISH.use { searchService.search(rootPrefix, fields, criteria) }
+    val result =
+        Locales.GIBBERISH.use {
+          searchService.search(rootPrefix, fields, mapOf(rootPrefix to criteria))
+        }
 
     val expected =
         SearchResults(
