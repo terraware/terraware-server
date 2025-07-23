@@ -1,3 +1,4 @@
+526dc3ae39e SW-7184 Add variable value options to search api (#3235)
 c66af63a50d SW-7177 Add Scalar Variable Values to Search Api (#3233)
 8b6366b3f63 Update dependency io.mockk:mockk to v1.14.5 (#3236)
 467fbe30ca2 Update database dependencies (#3226)
