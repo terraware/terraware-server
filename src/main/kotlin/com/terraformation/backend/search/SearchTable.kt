@@ -2,6 +2,7 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.LocalizableEnum
+import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
@@ -18,6 +19,7 @@ import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.NonLocalizableEnumField
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.StableIdField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
@@ -240,7 +242,7 @@ abstract class SearchTable {
       axis: CoordinateField.Companion.Axis
   ) = CoordinateField(fieldName, databaseField, vertexIndex, axis, this, true, true)
 
-  fun dateField(fieldName: String, databaseField: TableField<*, LocalDate?>) =
+  fun dateField(fieldName: String, databaseField: Field<LocalDate?>) =
       DateField(fieldName, databaseField, this)
 
   fun doubleField(fieldName: String, databaseField: Field<Double?>) =
@@ -248,7 +250,7 @@ abstract class SearchTable {
 
   inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
       fieldName: String,
-      databaseField: TableField<*, T?>,
+      databaseField: Field<T?>,
       localize: Boolean = true,
   ) = EnumField(fieldName, databaseField, this, T::class.java, localize)
 
@@ -257,6 +259,11 @@ abstract class SearchTable {
 
   fun <T : Any> idWrapperField(fieldName: String, databaseField: Field<T?>, fromLong: (Long) -> T) =
       IdWrapperField(fieldName, databaseField, this, fromLong)
+
+  fun stableIdField(
+      fieldName: String,
+      databaseField: Field<StableId?>,
+  ) = StableIdField(fieldName, databaseField, this)
 
   fun integerField(fieldName: String, databaseField: Field<Int?>, localize: Boolean = true) =
       IntegerField(fieldName, databaseField, this, localize)
