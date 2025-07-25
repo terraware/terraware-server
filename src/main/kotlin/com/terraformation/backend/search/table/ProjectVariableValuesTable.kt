@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTIONS
@@ -48,6 +49,14 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
             VariableValueId(it)
           },
           stableIdField("stableId", PROJECT_VARIABLE_VALUES.STABLE_ID),
+          textField(
+              "variableName",
+              DSL.field(
+                  DSL.select(VARIABLES.NAME)
+                      .from(VARIABLES)
+                      .where(VARIABLES.ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_ID)),
+              ),
+          ),
           enumField(
               "variableType",
               DSL.field(
