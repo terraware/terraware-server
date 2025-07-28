@@ -43,6 +43,20 @@ interface HasSearchNode {
   }
 }
 
+interface HasSearchCriteria : HasSearchNode {
+  val sublistSearch: List<SublistSearchPayload>?
+
+  fun toSearchCriteria(prefix: SearchFieldPrefix): Map<SearchFieldPrefix, SearchNode> {
+    val criteria = mutableMapOf(prefix to toSearchNode(prefix))
+    sublistSearch?.forEach {
+      prefix.relativeSublistPrefix(it.prefix)?.let { prefix ->
+        criteria[prefix] = it.search.toSearchNode(prefix)
+      }
+    }
+    return criteria
+  }
+}
+
 data class SearchSortOrderElement(
     val field: String,
     @Schema(
