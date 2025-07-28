@@ -43,8 +43,10 @@ interface HasSearchNode {
   }
 }
 
+data class PrefixedSearch(val prefix: String, val search: SearchNodePayload)
+
 interface HasSearchCriteria : HasSearchNode {
-  val sublistSearch: List<SublistSearchPayload>?
+  val sublistSearch: List<PrefixedSearch>?
 
   fun toSearchCriteria(prefix: SearchFieldPrefix): Map<SearchFieldPrefix, SearchNode> {
     val criteria = mutableMapOf(prefix to toSearchNode(prefix))

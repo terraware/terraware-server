@@ -208,7 +208,7 @@ data class SearchRequestPayload(
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
                            { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
     override val search: SearchNodePayload? = null,
-    override val sublistSearch: List<SublistSearchPayload>? = null,
+    override val sublistSearch: List<PrefixedSearch>? = null,
     @Schema(
         description =
             "Maximum number of top-level search results to return. The system may impose a limit " +
@@ -225,8 +225,3 @@ data class SearchRequestPayload(
                 "returned in the response to a previous search.")
     val cursor: String? = null,
 ) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchCriteria
-
-data class SublistSearchPayload(
-    val prefix: String,
-    override val search: SearchNodePayload,
-) : HasSearchNode
