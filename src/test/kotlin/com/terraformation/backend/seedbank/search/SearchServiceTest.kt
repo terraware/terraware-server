@@ -51,11 +51,13 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val tables = SearchTables(clock)
   protected val accessionsTable = tables.accessions
   protected val rootPrefix = SearchFieldPrefix(root = accessionsTable)
+  protected val bagsPrefix = rootPrefix.relativeSublistPrefix("bags")!!
   protected val accessionIdField = rootPrefix.resolve("id")
   protected val accessionNumberField = rootPrefix.resolve("accessionNumber")
   protected val activeField = rootPrefix.resolve("active")
   protected val bagNumberField = rootPrefix.resolve("bagNumber")
   protected val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
+  protected val bagNumberSublistField = rootPrefix.resolve("bags.number")
   protected val collectionSiteNameField = rootPrefix.resolve("collectionSiteName")
   protected val facilityIdField = rootPrefix.resolve("facility.id")
   protected val processingNotesField = rootPrefix.resolve("processingNotes")
@@ -170,6 +172,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE,
+      sublistCriteria: Map<SearchFieldPrefix, SearchNode> = emptyMap(),
   ): SearchResults {
     val fullFieldList =
         setOf(
@@ -180,6 +183,11 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fullCriteria = AndNode(listOf(criteria, facilityIdCriterion))
 
     return searchService.search(
-        rootPrefix, fullFieldList, mapOf(rootPrefix to fullCriteria), sortOrder, cursor, limit)
+        rootPrefix,
+        fullFieldList,
+        mapOf(rootPrefix to fullCriteria) + sublistCriteria,
+        sortOrder,
+        cursor,
+        limit)
   }
 }
