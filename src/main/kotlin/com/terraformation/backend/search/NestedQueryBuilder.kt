@@ -5,7 +5,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
 import kotlin.random.Random
-import kotlin.random.nextInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
