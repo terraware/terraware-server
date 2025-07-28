@@ -797,13 +797,7 @@ class NestedQueryBuilder(
     val sublistName = relativeField.sublists.first().name
 
     return sublistQueryBuilders.computeIfAbsent(sublistName) {
-      val queryBuilder = NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
-      if (criteria != null) {
-        // We only want to add the sublist condition once per sublist
-        queryBuilder.addCondition(
-            filterResults(SearchFieldPrefix(relativeField.searchTable), criteria))
-      }
-      queryBuilder
+      NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
     }
   }
 

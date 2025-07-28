@@ -71,22 +71,11 @@ class SearchController(
     val rootPrefix = resolvePrefix(payload.prefix)
     val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
 
-    val criteria =
-        payload.sublistSearch
-            ?.associate {
-              // todo add a relativeTo method on SearchFieldPrefix, or something like that
-              // todo this still requires a prefix that isn't quite right
-              val prefix = rootPrefix.resolve(it.prefix).prefix
-              prefix to it.search.toSearchNode(prefix)
-            }
-            ?.toMutableMap() ?: mutableMapOf()
-    criteria[rootPrefix] = payload.toSearchNode(rootPrefix)
-
     return SearchResponsePayload(
         searchService.search(
             rootPrefix,
             payload.fields.map { rootPrefix.resolve(it) },
-            criteria,
+            mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
             count))
@@ -219,7 +208,6 @@ data class SearchRequestPayload(
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
                            { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
     override val search: SearchNodePayload? = null,
-    val sublistSearch: List<SublistSearchPayload>? = null,
     @Schema(
         description =
             "Maximum number of top-level search results to return. The system may impose a limit " +
@@ -236,8 +224,3 @@ data class SearchRequestPayload(
                 "returned in the response to a previous search.")
     val cursor: String? = null,
 ) : HasSearchFields, HasSearchNode, HasSortOrder
-
-data class SublistSearchPayload(
-    val prefix: String,
-    override val search: SearchNodePayload,
-) : HasSearchNode
