@@ -99,7 +99,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Phase match search with empty phrase should return empty list`() {
+    fun `Phrase match search with empty phrase should return empty list`() {
       insertSpecies(scientificName = "Koa")
       insertSpecies(scientificName = "Koaia")
       insertSpecies(scientificName = "Koa Acacia")
@@ -118,7 +118,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Phase match search returns every result that has the exact phrase in text`() {
+    fun `Phrase match search returns every result that has the exact phrase in text`() {
       val speciesKoa = insertSpecies(scientificName = "Koa")
       insertSpecies(scientificName = "Koaia")
       val speciesKoaAcacia = insertSpecies(scientificName = "Koa Acacia")
@@ -148,7 +148,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Phase match search returns results containing multi-word phrase`() {
+    fun `Phrase match search returns results containing multi-word phrase`() {
       insertSpecies(scientificName = "Apple")
       insertSpecies(scientificName = "Green Apple")
       insertSpecies(scientificName = "Red Apple")
