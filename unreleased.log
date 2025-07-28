@@ -1,1 +1,7 @@
+24a1b91041f Update plugin com.diffplug.spotless to v7.2.1 (#3243)
+aa83829f816 Update geoToolsVersion to v33.2 (#3239)
+6b6b97c1051 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.1 (#3247)
+25e9d53c405 Update dependency commons-codec:commons-codec to v1.19.0 (#3242)
+28f8a6e1acf Update ktor monorepo to v3.2.2 (#3238)
+6cbd94f6bde Update Spring dependencies (#3237)
 d35eb38b969 Add variable name to search api (#3244)
