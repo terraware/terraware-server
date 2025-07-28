@@ -143,7 +143,6 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
-import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -332,14 +331,9 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.BagId
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
-import com.terraformation.backend.db.seedbank.ViabilityTestResultId
-import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
-import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
-import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalId as SeedbankWithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose as SeedbankWithdrawalPurpose
 import com.terraformation.backend.db.seedbank.keys.ACCESSION_PKEY
@@ -353,9 +347,6 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestResultsDa
 import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow as SeedbankWithdrawalsRow
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
@@ -1809,82 +1800,6 @@ abstract class DatabaseBackedTest {
     accessionsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.accessionIds.add(it) }
-  }
-
-  private var nextBagNumber = 1
-
-  fun insertBag(
-      row: BagsRow = BagsRow(),
-      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
-      bagNumber: String = row.bagNumber ?: "${nextBagNumber++}",
-  ): BagId {
-    val rowWithDefaults = row.copy(bagNumber = bagNumber, accessionId = accessionId)
-
-    bagsDao.insert(rowWithDefaults)
-
-    return rowWithDefaults.id!!.also { inserted.bagsIds.add(it) }
-  }
-
-  fun insertViabilityTest(
-      row: ViabilityTestsRow = ViabilityTestsRow(),
-      accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
-      testType: ViabilityTestType? = row.testType ?: ViabilityTestType.Lab,
-      seedTypeId: ViabilityTestSeedType? = row.seedTypeId,
-      substrateId: ViabilityTestSubstrate? = row.substrateId,
-      treatmentId: SeedTreatment? = row.treatmentId,
-      seedsSown: Int? = row.seedsSown,
-      notes: String? = row.notes,
-      staffResponsible: String? = row.staffResponsible,
-      totalSeedsGerminated: Int? = row.totalSeedsGerminated,
-      totalPercentGerminated: Int? = row.totalPercentGerminated,
-      startDate: LocalDate? = row.startDate,
-      endDate: LocalDate? = row.endDate,
-      seedsCompromised: Int? = row.seedsCompromised,
-      seedsEmpty: Int? = row.seedsEmpty,
-      seedsFilled: Int? = row.seedsFilled,
-  ): ViabilityTestId {
-    val rowWithDefaults =
-        row.copy(
-            accessionId = accessionId,
-            testType = testType,
-            seedTypeId = seedTypeId,
-            substrateId = substrateId,
-            treatmentId = treatmentId,
-            seedsSown = seedsSown,
-            notes = notes,
-            staffResponsible = staffResponsible,
-            totalSeedsGerminated = totalSeedsGerminated,
-            totalPercentGerminated = totalPercentGerminated,
-            startDate = startDate,
-            endDate = endDate,
-            seedsCompromised = seedsCompromised,
-            seedsEmpty = seedsEmpty,
-            seedsFilled = seedsFilled,
-        )
-
-    viabilityTestsDao.insert(rowWithDefaults)
-
-    return rowWithDefaults.id!!.also { inserted.viabilityTestIds.add(it) }
-  }
-
-  private var nextViabilityTestResultsNumber: Int = 1
-
-  fun insertViabilityTestResult(
-      row: ViabilityTestResultsRow = ViabilityTestResultsRow(),
-      viabilityTestId: ViabilityTestId = row.testId ?: inserted.viabilityTestId,
-      recordingDate: LocalDate = row.recordingDate ?: LocalDate.EPOCH,
-      seedsGerminated: Int = row.seedsGerminated ?: nextViabilityTestResultsNumber++,
-  ): ViabilityTestResultId {
-    val rowWithDefaults =
-        row.copy(
-            testId = viabilityTestId,
-            recordingDate = recordingDate,
-            seedsGerminated = seedsGerminated,
-        )
-
-    viabilityTestResultsDao.insert(rowWithDefaults)
-
-    return rowWithDefaults.id!!.also { inserted.viabilityTestResultIds.add(it) }
   }
 
   private var nextBatchNumber: Int = 1
@@ -4675,7 +4590,6 @@ abstract class DatabaseBackedTest {
     val applicationHistoryIds = mutableListOf<ApplicationHistoryId>()
     val applicationIds = mutableListOf<ApplicationId>()
     val automationIds = mutableListOf<AutomationId>()
-    val bagsIds = mutableListOf<BagId>()
     val batchIds = mutableListOf<BatchId>()
     val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
     val cohortIds = mutableListOf<CohortId>()
@@ -4728,8 +4642,6 @@ abstract class DatabaseBackedTest {
     val variableManifestIds = mutableListOf<VariableManifestId>()
     val variableValueIds = mutableListOf<VariableValueId>()
     val variableWorkflowHistoryIds = mutableListOf<VariableWorkflowHistoryId>()
-    val viabilityTestIds = mutableListOf<ViabilityTestId>()
-    val viabilityTestResultIds = mutableListOf<ViabilityTestResultId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
 
     val accessionId
@@ -4743,9 +4655,6 @@ abstract class DatabaseBackedTest {
 
     val automationId
       get() = automationIds.last()
-
-    val bagId
-      get() = bagsIds.last()
 
     val batchId
       get() = batchIds.last()
@@ -4893,12 +4802,6 @@ abstract class DatabaseBackedTest {
 
     val variableWorkflowHistoryId
       get() = variableWorkflowHistoryIds.last()
-
-    val viabilityTestId
-      get() = viabilityTestIds.last()
-
-    val viabilityTestResultId
-      get() = viabilityTestResultIds.last()
 
     val withdrawalId
       get() = withdrawalIds.last()
