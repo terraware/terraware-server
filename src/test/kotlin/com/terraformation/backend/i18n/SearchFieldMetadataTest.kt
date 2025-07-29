@@ -4,6 +4,7 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.SearchTables
 import java.time.Clock
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -68,6 +69,7 @@ class SearchFieldMetadataTest {
 
     return SearchTables::class
         .memberProperties
+        .filter { it.visibility == KVisibility.PUBLIC }
         .mapNotNull { it.get(tables) as? SearchTable }
         .flatMap { table -> table.fields.mapNotNull { func(table, it) } }
   }

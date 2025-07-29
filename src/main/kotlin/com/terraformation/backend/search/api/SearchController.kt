@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RestController
 class SearchController(
     private val clock: Clock,
     private val messages: Messages,
-    tables: SearchTables,
-    private val searchService: SearchService
+    private val searchService: SearchService,
+    private val searchTables: SearchTables
 ) {
-  private val organizationsTable = tables.organizations
+  private val organizationsTable = searchTables.organizations
 
   @Operation(summary = "Searches for data matching a supplied set of search criteria.")
   @PostMapping
@@ -153,7 +153,7 @@ class SearchController(
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
     val table =
         if (prefix != null) {
-          organizationsTable.resolveTable(prefix)
+          searchTables[prefix] ?: organizationsTable.resolveTable(prefix)
         } else {
           organizationsTable
         }
@@ -167,9 +167,10 @@ data class SearchRequestPayload(
         description =
             "Prefix for field names. This determines how field names are interpreted, and also " +
                 "how results are structured. Each element in the \"results\" array in the " +
-                "response will be an instance of whatever entity the prefix points to. Always " +
-                "evaluated starting from the \"organizations\" level. If not present, the search " +
-                "will return a list of organizations.",
+                "response will be an instance of whatever entity the prefix points to. This may " +
+                "be a dotted sublist name starting from the \"organizations\" level, or the name " +
+                "of a search table. If not present, the search will return a list of " +
+                "organizations.",
         example = "facilities.accessions")
     val prefix: String? = null,
     @NotEmpty

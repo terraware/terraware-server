@@ -3,9 +3,12 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.search.SearchTable
 import jakarta.inject.Named
 import java.time.Clock
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.declaredMemberProperties
 
 /**
- * Manages the hierarchy of [SearchTable]s.
+ * Manages the hierarchy of [SearchTable]s. This can be used to look up search tables, either using
+ * property references (`searchTables.batches`) or using name indexes (`searchTables["batches"]`).
  *
  * Search table initialization is complicated by the fact that there are circular references among
  * tables. For example, the `projects` table has a multi-value sublist `sites` that refers to the
@@ -86,4 +89,15 @@ class SearchTables(clock: Clock) {
   val viabilityTestResults = ViabilityTestResultsTable(this)
   val viabilityTests = ViabilityTestsTable(this)
   val withdrawals = WithdrawalsTable(this)
+
+  private val tablesByName: Map<String, SearchTable> by lazy {
+    SearchTables::class
+        .declaredMemberProperties
+        .filter { property ->
+          property.visibility == KVisibility.PUBLIC && property.get(this) is SearchTable
+        }
+        .associate { property -> property.name to property.get(this) as SearchTable }
+  }
+
+  operator fun get(name: String): SearchTable? = tablesByName[name]
 }
