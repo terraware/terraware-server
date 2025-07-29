@@ -61,6 +61,10 @@ spring:
       jsonColumnType: "JSONB"
       uuidColumnType: "UUID"
 
+  h2:
+    console:
+      enabled: false
+
   jackson:
     default-property-inclusion: non_absent
 
