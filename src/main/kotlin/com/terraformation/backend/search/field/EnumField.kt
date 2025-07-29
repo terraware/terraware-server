@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /**
@@ -22,7 +21,7 @@ import org.jooq.impl.DSL
  */
 class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     override val fieldName: String,
-    override val databaseField: TableField<*, T?>,
+    override val databaseField: Field<T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
     override val localize: Boolean = true,

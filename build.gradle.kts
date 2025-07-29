@@ -21,9 +21,9 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "7.0.15"
-  id("com.diffplug.spotless") version "7.0.4"
-  id("org.springframework.boot") version "3.5.3"
+  id("dev.monosoul.jooq-docker") version "7.0.19"
+  id("com.diffplug.spotless") version "7.2.1"
+  id("org.springframework.boot") version "3.5.4"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -107,7 +107,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.11.2")
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
-  implementation("commons-codec:commons-codec:1.18.0")
+  implementation("commons-codec:commons-codec:1.19.0")
   implementation("commons-validator:commons-validator:1.10.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.0")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
@@ -118,7 +118,7 @@ dependencies {
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.20")
-  implementation("org.apache.tika:tika-core:3.2.0")
+  implementation("org.apache.tika:tika-core:3.2.1")
   implementation("org.commonmark:commonmark:0.25.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -129,7 +129,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.0.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.0.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
@@ -140,14 +140,14 @@ dependencies {
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
-  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.6.0")
+  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.6.1")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.1")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.14.4")
+  testImplementation("io.mockk:mockk:1.14.5")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
   testImplementation("org.junit.platform:junit-platform-launcher")
