@@ -1,3 +1,4 @@
+68b8012a5dd Update dependency mypy to v1.17.0 (#3232)
 88b781d0d2a Updated translations from Phrase (#3231)
 a2ed5deb99e Update database dependencies (#3245)
 24a1b91041f Update plugin com.diffplug.spotless to v7.2.1 (#3243)
