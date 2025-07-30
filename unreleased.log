@@ -1,3 +1,4 @@
+90f4fe4e3d2 Allow table names as search prefixes (#3253)
 88dd4fea699 Disable H2 console (#3252)
 68b8012a5dd Update dependency mypy to v1.17.0 (#3232)
 88b781d0d2a Updated translations from Phrase (#3231)
