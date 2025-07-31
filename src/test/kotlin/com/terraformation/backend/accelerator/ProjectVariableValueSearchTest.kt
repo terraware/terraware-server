@@ -275,7 +275,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "textValue" to "OtherValue",
                 ),
             ))
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
