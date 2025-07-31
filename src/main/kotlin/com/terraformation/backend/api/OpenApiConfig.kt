@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.auth.KeycloakInfo
+import com.terraformation.backend.search.SearchTable
+import com.terraformation.backend.search.table.SearchTables
 import io.swagger.v3.core.util.RefUtils
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme
 import jakarta.inject.Named
 import java.time.ZoneId
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubtypeOf
@@ -59,6 +62,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
     fixFieldSchemas(openApi)
     addSecurityScheme(openApi)
     addDiscriminatorsForSealedInterfaces(openApi)
+    enumerateSearchPrefixes(openApi)
   }
 
   private fun addSecurityScheme(openApi: OpenAPI) {
@@ -278,6 +282,20 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
         }
       }
     }
+  }
+
+  /** Adds a list of valid values to the "prefix" field of SearchRequestPayload. */
+  private fun enumerateSearchPrefixes(openApi: OpenAPI) {
+    val searchTableType = SearchTable::class.createType()
+    val searchTableNames =
+        SearchTables::class
+            .declaredMemberProperties
+            .filter { it.returnType.isSubtypeOf(searchTableType) }
+            .map { it.name }
+
+    val searchPayloadPrefix =
+        openApi.components.schemas["SearchRequestPayload"]!!.properties["prefix"] as StringSchema
+    searchTableNames.forEach { searchPayloadPrefix.addEnumItem(it) }
   }
 
   /**
