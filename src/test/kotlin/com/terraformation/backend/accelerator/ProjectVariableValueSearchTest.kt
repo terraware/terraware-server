@@ -50,6 +50,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     val numberStableId = "456"
     val dateStableId = "789"
     val linkStableId = "101"
+    val listStableId = "112"
     val oldVariableId = insertVariable(stableId = textStableId)
     val newVariableId = insertVariable(stableId = textStableId, replacesVariableId = oldVariableId)
     val otherVariableId = insertVariable(stableId = numberStableId, type = VariableType.Number)
@@ -60,6 +61,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
             stableId = linkStableId,
             type = VariableType.Link,
             replacesVariableId = oldLinkVariableId)
+    val oldListVariableId = insertVariable(stableId = listStableId, isList = true)
+    val newListVariableId =
+        insertVariable(
+            stableId = listStableId, isList = true, replacesVariableId = oldListVariableId)
 
     insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarOldVal")
     insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarNewVal")
@@ -80,6 +85,28 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     insertLinkValue(variableId = newLinkVariableId, url = "https://www.oldValue.com")
     val newLinkValueId =
         insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
+    insertValue(
+        variableId = oldListVariableId,
+        projectId = projectId,
+        textValue = "OldListValue1",
+        listPosition = 0)
+    insertValue(
+        variableId = oldListVariableId,
+        projectId = projectId,
+        textValue = "OldListValue2",
+        listPosition = 1)
+    val listVal1 =
+        insertValue(
+            variableId = newListVariableId,
+            projectId = projectId,
+            textValue = "NewListValue1",
+            listPosition = 0)
+    val listVal2 =
+        insertValue(
+            variableId = newListVariableId,
+            projectId = projectId,
+            textValue = "NewListValue2",
+            listPosition = 1)
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields =
@@ -88,11 +115,14 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "stableId",
                 "variableId",
                 "variableType",
+                "isList",
                 "variableValues.variableValueId",
                 "variableValues.textValue",
                 "variableValues.numberValue",
+                "variableValues.dateValue",
                 "variableValues.linkUrl",
-                "variableValues.dateValue")
+                "variableValues.listPosition",
+            )
             .map { prefix.resolve(it) }
 
     val expected =
@@ -103,20 +133,44 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "stableId" to linkStableId,
                     "variableId" to "$newLinkVariableId",
                     "variableType" to "Link",
+                    "isList" to "false",
                     "variableValues" to
                         listOf(
                             mapOf(
+                                "listPosition" to "0",
                                 "variableValueId" to "$newLinkValueId",
                                 "linkUrl" to "https://www.newValue.com")),
+                ),
+                mapOf(
+                    "projectId" to "$projectId",
+                    "stableId" to listStableId,
+                    "variableId" to "$newListVariableId",
+                    "variableType" to "Text",
+                    "isList" to "true",
+                    "variableValues" to
+                        listOf(
+                            mapOf(
+                                "listPosition" to "0",
+                                "variableValueId" to "$listVal1",
+                                "textValue" to "NewListValue1",
+                            ),
+                            mapOf(
+                                "listPosition" to "1",
+                                "variableValueId" to "$listVal2",
+                                "textValue" to "NewListValue2",
+                            ),
+                        ),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to textStableId,
                     "variableId" to "$newVariableId",
                     "variableType" to "Text",
+                    "isList" to "false",
                     "variableValues" to
                         listOf(
                             mapOf(
+                                "listPosition" to "0",
                                 "variableValueId" to "$newVarNewValueId",
                                 "textValue" to "NewVarNewVal")),
                 ),
@@ -125,25 +179,32 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "stableId" to numberStableId,
                     "variableId" to "$otherVariableId",
                     "variableType" to "Number",
+                    "isList" to "false",
                     "variableValues" to
                         listOf(
                             mapOf(
-                                "variableValueId" to "$otherValueId", "numberValue" to "456,456")),
+                                "listPosition" to "0",
+                                "variableValueId" to "$otherValueId",
+                                "numberValue" to "456.456")),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to dateStableId,
                     "variableId" to "$dateVariableId",
                     "variableType" to "Date",
+                    "isList" to "false",
                     "variableValues" to
                         listOf(
                             mapOf(
-                                "variableValueId" to "$dateValueId", "dateValue" to "2024-01-02")),
+                                "listPosition" to "0",
+                                "variableValueId" to "$dateValueId",
+                                "dateValue" to "2024-01-02")),
                 ),
             ),
-            cursor = null)
+            cursor = null,
+        )
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual = searchService.search(prefix, fields, NoConditionNode())
 
     assertJsonEquals(expected, actual)
   }
@@ -180,6 +241,34 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         ))))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `old variable with value doesn't show up when new version does not have value`() {
+    val projectId = insertProject()
+    val stableId = "123"
+    val oldVariableId = insertVariable(stableId = stableId)
+    insertVariable(stableId = stableId, replacesVariableId = oldVariableId)
+    insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldStuff")
+
+    val referenceStableId = "456"
+    val referenceVariableId = insertVariable(stableId = referenceStableId)
+    insertValue(variableId = referenceVariableId, projectId = projectId)
+
+    val prefix = SearchFieldPrefix(searchTables.projectVariables)
+    val fields = listOf("projectId", "stableId").map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "projectId" to "$projectId",
+                    "stableId" to referenceStableId,
+                )),
+            cursor = null)
+    val actual = searchService.search(prefix, fields, NoConditionNode())
 
     assertJsonEquals(expected, actual)
   }
