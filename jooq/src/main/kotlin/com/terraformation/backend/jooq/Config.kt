@@ -502,10 +502,6 @@ val EMBEDDABLES =
             .withTables("project_variables")
             .withColumns("project_id", "stable_id"),
         EmbeddableDefinitionType()
-            .withName("project_variable_value_id")
-            .withTables("project_variable_values")
-            .withColumns("project_id", "variable_value_id"),
-        EmbeddableDefinitionType()
             .withName("species_ecosystem_id")
             .withTables("public.species_ecosystem_types")
             .withColumns("species_id", "ecosystem_type_id"),

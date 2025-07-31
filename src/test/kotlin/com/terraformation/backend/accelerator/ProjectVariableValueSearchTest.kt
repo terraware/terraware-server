@@ -66,47 +66,26 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
         insertVariable(
             stableId = listStableId, isList = true, replacesVariableId = oldListVariableId)
 
-    insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarOldVal")
-    insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldVarNewVal")
-    insertValue(variableId = newVariableId, projectId = projectId, textValue = "NewVarOldVal")
-    val newVarNewValueId =
-        insertValue(variableId = newVariableId, projectId = projectId, textValue = "NewVarNewVal")
+    insertValue(variableId = oldVariableId, textValue = "OldVarOldVal")
+    insertValue(variableId = oldVariableId, textValue = "OldVarNewVal")
+    insertValue(variableId = newVariableId, textValue = "NewVarOldVal")
+    val newVarNewValueId = insertValue(variableId = newVariableId, textValue = "NewVarNewVal")
     val otherValueId =
-        insertValue(
-            variableId = otherVariableId,
-            projectId = projectId,
-            numberValue = BigDecimal("456.456"))
-    val dateValueId =
-        insertValue(
-            variableId = dateVariableId,
-            projectId = projectId,
-            dateValue = LocalDate.of(2024, 1, 2))
+        insertValue(variableId = otherVariableId, numberValue = BigDecimal("456.456"))
+
+    val dateValueId = insertValue(variableId = dateVariableId, dateValue = LocalDate.of(2024, 1, 2))
+
     insertLinkValue(variableId = oldLinkVariableId, url = "https://www.oldVariable.com")
     insertLinkValue(variableId = newLinkVariableId, url = "https://www.oldValue.com")
     val newLinkValueId =
         insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
-    insertValue(
-        variableId = oldListVariableId,
-        projectId = projectId,
-        textValue = "OldListValue1",
-        listPosition = 0)
-    insertValue(
-        variableId = oldListVariableId,
-        projectId = projectId,
-        textValue = "OldListValue2",
-        listPosition = 1)
+
+    insertValue(variableId = oldListVariableId, textValue = "OldListValue1", listPosition = 0)
+    insertValue(variableId = oldListVariableId, textValue = "OldListValue2", listPosition = 1)
     val listVal1 =
-        insertValue(
-            variableId = newListVariableId,
-            projectId = projectId,
-            textValue = "NewListValue1",
-            listPosition = 0)
+        insertValue(variableId = newListVariableId, textValue = "NewListValue1", listPosition = 0)
     val listVal2 =
-        insertValue(
-            variableId = newListVariableId,
-            projectId = projectId,
-            textValue = "NewListValue2",
-            listPosition = 1)
+        insertValue(variableId = newListVariableId, textValue = "NewListValue2", listPosition = 1)
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields =
@@ -116,12 +95,12 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "variableId",
                 "variableType",
                 "isList",
-                "variableValues.variableValueId",
-                "variableValues.textValue",
-                "variableValues.numberValue",
-                "variableValues.dateValue",
-                "variableValues.linkUrl",
-                "variableValues.listPosition",
+                "values.variableValueId",
+                "values.textValue",
+                "values.numberValue",
+                "values.dateValue",
+                "values.linkUrl",
+                "values.listPosition",
             )
             .map { prefix.resolve(it) }
 
@@ -134,7 +113,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newLinkVariableId",
                     "variableType" to "Link",
                     "isList" to "false",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "listPosition" to "0",
@@ -147,7 +126,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newListVariableId",
                     "variableType" to "Text",
                     "isList" to "true",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "listPosition" to "0",
@@ -167,7 +146,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newVariableId",
                     "variableType" to "Text",
                     "isList" to "false",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "listPosition" to "0",
@@ -180,7 +159,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$otherVariableId",
                     "variableType" to "Number",
                     "isList" to "false",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "listPosition" to "0",
@@ -193,7 +172,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$dateVariableId",
                     "variableType" to "Date",
                     "isList" to "false",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "listPosition" to "0",
@@ -214,12 +193,12 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject()
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
-    val valueId1 = insertValue(variableId = variableId1, projectId = projectId)
-    val valueId2 = insertValue(variableId = variableId2, projectId = projectId)
+    val valueId1 = insertValue(variableId = variableId1)
+    val valueId2 = insertValue(variableId = variableId2)
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields =
-        listOf("id", "variables.variableId", "variables.variableValues.variableValueId").map {
+        listOf("id", "variables.variableId", "variables.values.variableValueId").map {
           prefix.resolve(it)
         }
 
@@ -232,11 +211,11 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "variableId" to "$variableId1",
-                                "variableValues" to listOf(mapOf("variableValueId" to "$valueId1")),
+                                "values" to listOf(mapOf("variableValueId" to "$valueId1")),
                             ),
                             mapOf(
                                 "variableId" to "$variableId2",
-                                "variableValues" to listOf(mapOf("variableValueId" to "$valueId2")),
+                                "values" to listOf(mapOf("variableValueId" to "$valueId2")),
                             ),
                         ))))
 
@@ -251,11 +230,11 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     val stableId = "123"
     val oldVariableId = insertVariable(stableId = stableId)
     insertVariable(stableId = stableId, replacesVariableId = oldVariableId)
-    insertValue(variableId = oldVariableId, projectId = projectId, textValue = "OldStuff")
+    insertValue(variableId = oldVariableId, textValue = "OldStuff")
 
     val referenceStableId = "456"
     val referenceVariableId = insertVariable(stableId = referenceStableId)
-    insertValue(variableId = referenceVariableId, projectId = projectId)
+    insertValue(variableId = referenceVariableId)
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields = listOf("projectId", "stableId").map { prefix.resolve(it) }
@@ -279,17 +258,16 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
     val projectId1 = insertProject()
     val variableId1 = insertVariable()
-    val valueId1 =
-        insertValue(variableId = variableId1, projectId = projectId1, textValue = "Visible")
+    val valueId1 = insertValue(variableId = variableId1, textValue = "Visible")
 
     val otherOrgId = insertOrganization()
-    val otherProject = insertProject(organizationId = otherOrgId)
+    insertProject(organizationId = otherOrgId)
     val otherVariableId = insertVariable()
-    insertValue(variableId = otherVariableId, projectId = otherProject, textValue = "Not visible")
+    insertValue(variableId = otherVariableId, textValue = "Not visible")
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields =
-        listOf("id", "variables.variableId", "variables.variableValues.variableValueId").map {
+        listOf("id", "variables.variableId", "variables.values.variableValueId").map {
           prefix.resolve(it)
         }
 
@@ -302,7 +280,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "variableId" to "$variableId1",
-                                "variableValues" to listOf(mapOf("variableValueId" to "$valueId1")),
+                                "values" to listOf(mapOf("variableValueId" to "$valueId1")),
                             )))))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
@@ -338,7 +316,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "variables.projectId",
                 "variables.stableId",
                 "variables.variableId",
-                "variables.variableValues.variableValueId")
+                "variables.values.variableValueId")
             .map { prefix.resolve(it) }
 
     val expected =

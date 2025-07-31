@@ -22,7 +22,7 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           projectVariableValues.asMultiValueSublist(
-              "variableValues",
+              "values",
               PROJECT_VARIABLES.VARIABLE_ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_ID)
                   .and(PROJECT_VARIABLES.PROJECT_ID.eq(PROJECT_VARIABLE_VALUES.PROJECT_ID))),
       )
@@ -31,12 +31,12 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          idWrapperField("projectId", PROJECT_VARIABLES.PROJECT_ID) { ProjectId(it) },
-          idWrapperField("variableId", PROJECT_VARIABLES.VARIABLE_ID) { VariableId(it) },
-          stableIdField("stableId", PROJECT_VARIABLES.STABLE_ID),
-          textField("variableName", PROJECT_VARIABLES.NAME),
           booleanField("isList", PROJECT_VARIABLES.IS_LIST),
           booleanField("isMultiSelect", PROJECT_VARIABLES.IS_MULTI_SELECT),
+          idWrapperField("projectId", PROJECT_VARIABLES.PROJECT_ID) { ProjectId(it) },
+          stableIdField("stableId", PROJECT_VARIABLES.STABLE_ID),
+          idWrapperField("variableId", PROJECT_VARIABLES.VARIABLE_ID) { VariableId(it) },
+          textField("variableName", PROJECT_VARIABLES.NAME),
           enumField("variableType", PROJECT_VARIABLES.VARIABLE_TYPE_ID, false),
       )
 

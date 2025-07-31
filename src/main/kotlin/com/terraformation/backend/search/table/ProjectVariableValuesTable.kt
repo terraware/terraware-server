@@ -18,7 +18,7 @@ import org.jooq.impl.DSL
 
 class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = PROJECT_VARIABLE_VALUES.PROJECT_VARIABLE_VALUE_ID
+    get() = PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
@@ -39,17 +39,17 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          dateField("dateValue", PROJECT_VARIABLE_VALUES.DATE_VALUE),
+          textField("linkTitle", PROJECT_VARIABLE_VALUES.LINK_TITLE),
+          uriField("linkUrl", PROJECT_VARIABLE_VALUES.LINK_URL),
+          integerField("listPosition", PROJECT_VARIABLE_VALUES.LIST_POSITION),
+          bigDecimalField("numberValue", PROJECT_VARIABLE_VALUES.NUMBER_VALUE),
           idWrapperField("projectId", PROJECT_VARIABLE_VALUES.PROJECT_ID) { ProjectId(it) },
+          textField("textValue", PROJECT_VARIABLE_VALUES.TEXT_VALUE),
           idWrapperField("variableId", PROJECT_VARIABLE_VALUES.VARIABLE_ID) { VariableId(it) },
           idWrapperField("variableValueId", PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID) {
             VariableValueId(it)
           },
-          integerField("listPosition", PROJECT_VARIABLE_VALUES.LIST_POSITION),
-          textField("textValue", PROJECT_VARIABLE_VALUES.TEXT_VALUE),
-          bigDecimalField("numberValue", PROJECT_VARIABLE_VALUES.NUMBER_VALUE),
-          dateField("dateValue", PROJECT_VARIABLE_VALUES.DATE_VALUE),
-          uriField("linkUrl", PROJECT_VARIABLE_VALUES.LINK_URL),
-          textField("linkTitle", PROJECT_VARIABLE_VALUES.LINK_TITLE),
       )
 
   override fun conditionForVisibility(): Condition {

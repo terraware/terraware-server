@@ -74,9 +74,9 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                 "variableId",
                 "variableType",
                 "isMultiSelect",
-                "variableValues.options.id",
-                "variableValues.options.name",
-                "variableValues.options.position")
+                "values.options.id",
+                "values.options.name",
+                "values.options.position")
             .map { prefix.resolve(it) }
 
     val expected =
@@ -86,7 +86,7 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newSingleVariableId",
                     "variableType" to "Select",
                     "isMultiSelect" to "false",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "options" to
@@ -100,7 +100,7 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newMultiVariableId",
                     "variableType" to "Select",
                     "isMultiSelect" to "true",
-                    "variableValues" to
+                    "values" to
                         listOf(
                             mapOf(
                                 "options" to

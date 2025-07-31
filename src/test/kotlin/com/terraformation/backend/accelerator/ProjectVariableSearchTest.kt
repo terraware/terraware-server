@@ -34,8 +34,7 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+    insertOrganizationUser(userId = inserted.userId, role = Role.Admin)
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -62,11 +61,9 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
             replacesVariableId = oldLinkVariableId)
 
     // Add a connection between the project and each variable
-    insertValue(variableId = newVariableId, projectId = projectId, textValue = "NewVarOldVal")
-    insertValue(
-        variableId = otherVariableId, projectId = projectId, numberValue = BigDecimal("456.456"))
-    insertValue(
-        variableId = dateVariableId, projectId = projectId, dateValue = LocalDate.of(2024, 1, 2))
+    insertValue(variableId = newVariableId, textValue = "NewVarOldVal")
+    insertValue(variableId = otherVariableId, numberValue = BigDecimal("456.456"))
+    insertValue(variableId = dateVariableId, dateValue = LocalDate.of(2024, 1, 2))
     insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
@@ -115,12 +112,12 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `can retrieve nested variableValues from projects`() {
+  fun `can retrieve nested variables from projects`() {
     val projectId = insertProject()
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
-    insertValue(variableId = variableId1, projectId = projectId)
-    insertValue(variableId = variableId2, projectId = projectId)
+    insertValue(variableId = variableId1)
+    insertValue(variableId = variableId2)
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields = listOf("id", "variables.variableId").map { prefix.resolve(it) }
@@ -151,12 +148,12 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
 
     val projectId1 = insertProject()
     val variableId1 = insertVariable()
-    insertValue(variableId = variableId1, projectId = projectId1, textValue = "Visible")
+    insertValue(variableId = variableId1, textValue = "Visible")
 
     val otherOrgId = insertOrganization()
-    val otherProject = insertProject(organizationId = otherOrgId)
+    insertProject(organizationId = otherOrgId)
     val otherVariableId = insertVariable()
-    insertValue(variableId = otherVariableId, projectId = otherProject, textValue = "Not visible")
+    insertValue(variableId = otherVariableId, textValue = "Not visible")
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields = listOf("id", "variables.variableId").map { prefix.resolve(it) }

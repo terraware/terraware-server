@@ -5,11 +5,10 @@ WITH latest_variables AS (SELECT stable_id,
                                  MAX(id) as variable_id
                           FROM docprod.variables
                           GROUP BY stable_id),
-     project_variables AS (SELECT project_id,
-                                  lv.variable_id
+     project_variables AS (SELECT DISTINCT project_id,
+                                           lv.variable_id
                            FROM docprod.variable_values vv
-                                    JOIN latest_variables lv ON lv.variable_id = vv.variable_id
-                           GROUP BY project_id, lv.variable_id)
+                                    JOIN latest_variables lv ON lv.variable_id = vv.variable_id)
 SELECT ap.project_id,
        lv.stable_id,
        lv.variable_id,
@@ -41,12 +40,10 @@ SELECT vv.project_id,
        vlv.url   as link_url,
        vlv.title as link_title
 FROM docprod.variable_values vv
-         JOIN latest_values lv on (
-    lv.project_id = vv.project_id
-        AND lv.variable_id = vv.variable_id
-        AND lv.list_position = vv.list_position
-        AND lv.variable_value_id = vv.id
+    JOIN latest_values lv ON (
+        (lv.project_id, lv.variable_id, lv.list_position, lv.variable_value_id) =
+        (vv.project_id, vv.variable_id, vv.list_position, vv.id)
     )
          LEFT JOIN docprod.variable_link_values vlv ON vlv.variable_value_id = vv.id
-WHERE vv.is_deleted <> true
+WHERE NOT vv.is_deleted
 ;
