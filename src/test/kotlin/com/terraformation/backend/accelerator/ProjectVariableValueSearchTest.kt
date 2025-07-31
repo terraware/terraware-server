@@ -253,6 +253,31 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `deleted values exclude the variables fully`() {
+    insertProject()
+    val variableId1 = insertVariable()
+    val variableId2 = insertVariable()
+    insertValue(variableId = variableId1, textValue = "Value1")
+    insertValue(variableId = variableId1, textValue = "Value2", isDeleted = true)
+    insertValue(variableId = variableId2, textValue = "OtherValue")
+
+    val prefix = SearchFieldPrefix(searchTables.projectVariableValues)
+    val fields = listOf("variableId", "textValue").map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "variableId" to "$variableId2",
+                    "textValue" to "OtherValue",
+                ),
+            ))
+    val actual = searchService.search(prefix, fields, NoConditionNode())
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
   fun `returns only variables of projects visible to non-accelerator admin users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
 
