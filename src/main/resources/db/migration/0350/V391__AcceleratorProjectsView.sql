@@ -16,6 +16,5 @@ FROM (SELECT p.id    as project_id,
                          ON p.id = pad.project_id) as accelerator_projects
 WHERE application_id IS NOT NULL
    OR participant_id IS NOT NULL
-   OR cohort_id IS NOT NULL
    OR has_org_accelerator_tag IS TRUE
 ;
