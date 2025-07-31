@@ -270,19 +270,19 @@ import org.jooq.impl.DSL
  * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
  * (returning a result with two bags).
  *
- * Our product decision is to do the latter. Search criteria control which top-level results are
- * returned, but each result includes the full set of values for all its fields. When you search for
- * bag "A", what you're really telling the system is that you want all _accessions_ that have a bag
- * called "A". And for each accession that matches the search criteria, you get back the full list
- * of bags.
+ * Our product decision was originally to do the latter. Search criteria would control which
+ * top-level results are returned, but each result includes the full set of values for all its
+ * fields. When you search for bag "A", what you're really telling the system is that you want all
+ * _accessions_ that have a bag called "A". And for each accession that matches the search criteria,
+ * you get back the full list of bags.
  *
- * That's relevant here because it changes what the SQL looks like: we don't apply any search
- * criteria to the multiset subqueries, because we want to return the full set of data for any
- * accessions that match the criteria.
+ * That's relevant here because it changes what the SQL looks like: for non-prefixed search
+ * criteria, we don't apply any search criteria to the multiset subqueries, because we want to
+ * return the full set of data for any accessions that match the criteria.
  *
- * Instead, user-supplied search criteria are turned into a subquery which is used to generate a
- * list of accession IDs. The nested query then selects the values of all the requested fields for
- * the accessions on that list. The subquery is constructed in [filterResults].
+ * Instead, user-supplied, non-prefixed search criteria are turned into a subquery which is used to
+ * generate a list of accession IDs. The nested query then selects the values of all the requested
+ * fields for the accessions on that list. The subquery is constructed in [filterResults].
  *
  * In the above example, the query is structured like this (pseudocode):
  * ```
@@ -299,6 +299,39 @@ import org.jooq.impl.DSL
  * ```
  *
  * The key point is that the multiset will contain _all_ the bags for the accession.
+ *
+ * Since the time that the above product decision was made, support has been added for multiset
+ * filtering as well. Adding search criteria with a non-top-level prefix controls which values in a
+ * multiset get returned, without affecting which top-level results are returned.
+ *
+ * Continuing the above example schema, suppose you have two accessions, with a structure like so:
+ * ```yaml
+ * accessions:
+ *   - id: 1
+ *     bags:
+ *       - number: "A"
+ *       - number: "B"
+ *   - id: 2
+ *     bags:
+ *       - number: "Y"
+ *       - number: "Z"
+ * ```
+ *
+ * If the user requests a filter with a prefix of `accessions.bags` to have a `number` of "A", then
+ * the results will contain both accessions, with Accession 1 having a bags list of only "A", and
+ * Accession 2 having an empty bags list (which is returned as no bags).
+ *
+ * In this multiset filter example, the query is structured like this (pseudocode):
+ * ```
+ * SELECT accessions.id,
+ *        MULTISET(SELECT bags.number
+ *                 FROM bags
+ *                 WHERE accessions.id = bags.accession_id
+ *                 AND bags.number = 'A')
+ * FROM accessions
+ * ```
+ *
+ * Both types of filtering are supported and can be used independently or in conjunction.
  *
  * ## Ordering
  *
@@ -711,8 +744,11 @@ class NestedQueryBuilder(
   }
 
   /**
-   * Adds a field to the list of fields the caller wants to get back in the search results. If the
-   * field is in a sublist, adds it to the sublist query, creating the query if needed.
+   * Adds a field to the list of fields the caller wants to get back in the search results.
+   *
+   * If the field is in a sublist, adds it to the sublist query, creating the query if needed. If
+   * the [fieldPath] matches a prefix in the [criteria] map, the sublist query will filter based on
+   * that [SearchNode].
    */
   private fun addSelectField(
       fieldPath: SearchFieldPath,
@@ -785,7 +821,11 @@ class NestedQueryBuilder(
     }
   }
 
-  /** Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed. */
+  /**
+   * Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed.
+   *
+   * If [criteria] is specified, filter the sublist with that [SearchNode].
+   */
   private fun getSublistQuery(
       relativeField: SearchFieldPath,
       criteria: SearchNode? = null,

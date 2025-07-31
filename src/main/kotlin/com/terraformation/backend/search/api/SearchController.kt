@@ -208,6 +208,7 @@ data class SearchRequestPayload(
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
                            { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
     override val search: SearchNodePayload? = null,
+    // todo document
     override val filters: List<PrefixedSearch>? = null,
     @Schema(
         description =
