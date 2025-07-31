@@ -180,7 +180,8 @@ class AccessionService(
     @Suppress("UNCHECKED_CAST")
     val query =
         searchService
-            .buildQuery(accessionsPrefix, listOf(accessionIdField), criteria)
+            .buildQuery(
+                accessionsPrefix, listOf(accessionIdField), mapOf(accessionsPrefix to criteria))
             .toSelectQuery() as Select<Record1<AccessionId?>>
 
     return accessionStore.getSummaryStatistics(query)

@@ -106,7 +106,10 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
             ),
             cursor = null)
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -137,7 +140,10 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                             ),
                         ))))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -169,7 +175,10 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                                 "variableId" to "$variableId1",
                             )))))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -239,7 +248,8 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                 FieldNode(prefix.resolve("id"), listOf(projectId1.toString())),
                 FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3)),
             ))
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, search) }
+    val actual =
+        Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to search)) }
 
     assertJsonEquals(expected, actual)
   }

@@ -183,7 +183,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
             cursor = null,
         )
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -219,7 +219,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             ),
                         ))))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -247,7 +250,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "stableId" to referenceStableId,
                 )),
             cursor = null)
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -272,7 +275,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "textValue" to "OtherValue",
                 ),
             ))
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -308,7 +311,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                                 "values" to listOf(mapOf("variableValueId" to "$valueId1")),
                             )))))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -378,7 +384,8 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 FieldNode(prefix.resolve("id"), listOf(projectId1.toString())),
                 FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3)),
             ))
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, search) }
+    val actual =
+        Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to search)) }
 
     assertJsonEquals(expected, actual)
   }

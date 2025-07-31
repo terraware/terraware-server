@@ -117,7 +117,7 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                             ))),
             ))
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -135,12 +135,12 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
 
     val prefix1 = SearchFieldPrefix(searchTables.projectVariableValues)
     val fields1 = listOf("options.id", "options.name").map { prefix1.resolve(it) }
-    val actual1 = searchService.search(prefix1, fields1, NoConditionNode())
+    val actual1 = searchService.search(prefix1, fields1, mapOf(prefix1 to NoConditionNode()))
     assertJsonEquals(expected, actual1)
 
     val prefix2 = SearchFieldPrefix(searchTables.variableSelectOptions)
     val fields2 = listOf("id", "name").map { prefix2.resolve(it) }
-    val actual2 = searchService.search(prefix2, fields2, NoConditionNode())
+    val actual2 = searchService.search(prefix2, fields2, mapOf(prefix2 to NoConditionNode()))
     assertJsonEquals(expected, actual2)
   }
 }

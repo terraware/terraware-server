@@ -87,7 +87,10 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                     "recordingUrl" to "https://recording.google.com",
                 )))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -110,7 +113,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -132,7 +135,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf("id" to "$otherEvent", "module" to mapOf("id" to "$otherModule"))),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -180,7 +183,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -224,7 +227,9 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
     val actual =
         searchService.search(
-            prefix, fields, FieldNode(prefix.resolve("projects.id"), listOf("$project1")))
+            prefix,
+            fields,
+            mapOf(prefix to FieldNode(prefix.resolve("projects.id"), listOf("$project1"))))
 
     assertJsonEquals(expected, actual)
   }
@@ -264,7 +269,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -311,7 +316,9 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf("id" to "$event2"),
                             mapOf("id" to "$event3")),
                 )))
-    val projectActual = searchService.search(projectPrefix, projectFields, NoConditionNode())
+    val projectActual =
+        searchService.search(
+            projectPrefix, projectFields, mapOf(projectPrefix to NoConditionNode()))
 
     val eventPrefix = SearchFieldPrefix(searchTables.events)
     val eventFields = listOf("id").map { eventPrefix.resolve(it) }
@@ -319,7 +326,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(mapOf("id" to "$event1"), mapOf("id" to "$event2"), mapOf("id" to "$event3")),
             null)
-    val eventActual = searchService.search(eventPrefix, eventFields, NoConditionNode())
+    val eventActual =
+        searchService.search(eventPrefix, eventFields, mapOf(eventPrefix to NoConditionNode()))
 
     assertJsonEquals(projectExpected, projectActual, "search for events by project prefix")
     assertJsonEquals(eventExpected, eventActual, "search for events by event prefix")

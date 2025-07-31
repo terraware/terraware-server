@@ -75,7 +75,7 @@ class SearchController(
         searchService.search(
             rootPrefix,
             payload.fields.map { rootPrefix.resolve(it) },
-            payload.toSearchNode(rootPrefix),
+            mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
             count))
@@ -100,7 +100,7 @@ class SearchController(
         searchService.search(
             rootPrefix,
             fields,
-            payload.toSearchNode(rootPrefix),
+            mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
             count)
@@ -143,7 +143,7 @@ class SearchController(
                   searchService.fetchValues(
                       rootPrefix,
                       searchField,
-                      payload.toSearchNode(rootPrefix),
+                      mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
                       payload.cursor,
                       count)
               FieldValuesPayload(fetchResult, fetchResult.size > count)

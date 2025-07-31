@@ -135,7 +135,10 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -158,7 +161,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "module_id" to "${inserted.moduleId}",
                 )))
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -204,7 +207,9 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
     val actual =
         searchService.search(
-            prefix, fields, FieldNode(prefix.resolve("project.id"), listOf("$projectId")))
+            prefix,
+            fields,
+            mapOf(prefix to FieldNode(prefix.resolve("project.id"), listOf("$projectId"))))
 
     assertJsonEquals(expected, actual)
   }
@@ -231,7 +236,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf("id" to "$deliverableWithoutSubmissions"),
                         ))))
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -249,7 +254,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$moduleEndDate"),
             )),
-        searchService.search(prefix, fields, NoConditionNode()),
+        searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
         "Search project deliverables with module end date")
 
     val cohortDueDate = moduleEndDate.plusDays(5)
@@ -259,7 +264,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$cohortDueDate"),
             )),
-        searchService.search(prefix, fields, NoConditionNode()),
+        searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
         "Search project deliverables with cohort due date override")
 
     val projectDueDate = moduleEndDate.plusDays(5)
@@ -269,7 +274,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$projectDueDate"),
             )),
-        searchService.search(prefix, fields, NoConditionNode()),
+        searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
         "Search project deliverables with project due date override")
   }
 
@@ -321,7 +326,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }

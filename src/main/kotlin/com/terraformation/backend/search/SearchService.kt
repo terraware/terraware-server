@@ -27,20 +27,24 @@ class SearchService(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 
   /** Returns a condition that filters search results based on a list of criteria. */
-  private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
+  private fun filterResults(
+      rootPrefix: SearchFieldPrefix,
+      criteria: Map<SearchFieldPrefix, SearchNode>
+  ): Condition {
     // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
     // the visibility check on the root table, but not on parent tables.
     val rootTable = rootPrefix.root
+    val rootCriterion = criteria[rootPrefix] ?: return DSL.trueCondition()
     val conditions =
         listOfNotNull(
-            criteria.toCondition(),
+            rootCriterion.toCondition(),
             rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
 
     val primaryKey = rootTable.primaryKey
 
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(rootTable.fromTable), rootPrefix, criteria)
+                DSL.select(primaryKey).from(rootTable.fromTable), rootPrefix, rootCriterion)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -77,7 +81,7 @@ class SearchService(private val dslContext: DSLContext) {
   fun search(
       rootPrefix: SearchFieldPrefix,
       fields: Collection<SearchFieldPath>,
-      criteria: SearchNode,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE,
@@ -87,7 +91,7 @@ class SearchService(private val dslContext: DSLContext) {
     //       and pass them to skip(). For now, just treat the cursor as an offset.
     val offset = cursor?.toIntOrNull() ?: 0
 
-    val exactCriteria = criteria.toExactSearch()
+    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
     if (exactCriteria != criteria) {
       val exactResults =
           search(rootPrefix, fields, exactCriteria, sortOrder, cursor, limit, distinct)
@@ -113,7 +117,7 @@ class SearchService(private val dslContext: DSLContext) {
   fun buildQuery(
       rootPrefix: SearchFieldPrefix,
       fields: Collection<SearchFieldPath>,
-      criteria: SearchNode,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
       sortOrder: List<SearchSortField> = emptyList(),
   ): NestedQueryBuilder {
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
@@ -127,7 +131,7 @@ class SearchService(private val dslContext: DSLContext) {
   private fun runQuery(
       rootPrefix: SearchFieldPrefix,
       fields: Collection<SearchFieldPath>,
-      criteria: SearchNode,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
       sortOrder: List<SearchSortField>,
       limit: Int,
       offset: Int = 0,
@@ -168,7 +172,7 @@ class SearchService(private val dslContext: DSLContext) {
   fun fetchValues(
       rootPrefix: SearchFieldPrefix,
       fieldPath: SearchFieldPath,
-      criteria: SearchNode,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
       cursor: String? = null,
       limit: Int = 50,
   ): List<String?> {
@@ -177,7 +181,7 @@ class SearchService(private val dslContext: DSLContext) {
     }
 
     val offset = cursor?.toIntOrNull() ?: 0
-    val exactCriteria = criteria.toExactSearch()
+    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
 
     val exactResults =
         runQuery(
@@ -200,6 +204,7 @@ class SearchService(private val dslContext: DSLContext) {
               criteria,
               listOf(SearchSortField(fieldPath)),
               limit = limit,
+              offset = offset,
               distinct = true,
           )
         }

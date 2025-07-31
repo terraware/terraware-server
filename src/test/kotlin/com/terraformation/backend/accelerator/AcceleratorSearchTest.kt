@@ -138,7 +138,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                 )))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -162,7 +163,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf("name" to "Organization 2"),
             ))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -180,7 +182,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val expected = SearchResults(listOf(mapOf("name" to "Organization 1")))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -197,7 +200,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val expected = SearchResults(listOf(mapOf("name" to "Project 1")))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -216,7 +220,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val expected = SearchResults(listOf(mapOf("name" to "Project 1")))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -235,7 +240,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val expected = SearchResults(listOf(mapOf("name" to "Organization 1")))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, condition))
+    assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to condition)))
   }
 
   @Test
@@ -263,7 +268,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                     "name" to "Project 1",
                 )))
 
-    assertJsonEquals(expected, searchService.search(prefix, fields, NoConditionNode()))
+    assertJsonEquals(
+        expected, searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())))
   }
 
   @Test
@@ -287,7 +293,10 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                     "landUseModelTypes_landUseModelType" to "Monoculture".toGibberish(),
                 )))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
 
     assertJsonEquals(expected, actual)
   }
@@ -338,7 +347,9 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         searchService.search(
             prefix,
             fields,
-            FieldNode(prefix.resolve("cohortModules.cohort_id"), listOf("$cohortId1")))
+            mapOf(
+                prefix to
+                    FieldNode(prefix.resolve("cohortModules.cohort_id"), listOf("$cohortId1"))))
 
     assertJsonEquals(expected, actual)
   }
@@ -404,7 +415,9 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val actual =
         searchService.search(
-            prefix, fields, FieldNode(prefix.resolve("name"), listOf("Cohort 1 $suffix")))
+            prefix,
+            fields,
+            mapOf(prefix to FieldNode(prefix.resolve("name"), listOf("Cohort 1 $suffix"))))
 
     assertJsonEquals(expected, actual)
   }
@@ -451,7 +464,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                 )))
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }

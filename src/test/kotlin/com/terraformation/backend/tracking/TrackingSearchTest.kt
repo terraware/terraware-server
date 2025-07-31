@@ -688,7 +688,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             )
             .map { prefix.resolve(it) }
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
   }
@@ -703,7 +703,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
 
     val expected = SearchResults(emptyList())
-    val actual = searchService.search(prefix, listOf(prefix.resolve("id")), NoConditionNode())
+    val actual =
+        searchService.search(
+            prefix, listOf(prefix.resolve("id")), mapOf(prefix to NoConditionNode()))
 
     assertEquals(expected, actual)
   }
