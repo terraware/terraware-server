@@ -66,6 +66,21 @@ data class SearchFieldPrefix(
   val searchTable: SearchTable
     get() = sublistField?.searchTable ?: root
 
+  /** Only works with (and is useful for) nested sublists, not flattened */
+  fun relativeSublistPrefix(relativePath: String): SearchFieldPrefix? {
+    val sublistNames = relativePath.split(NESTED_SUBLIST_DELIMITER)
+
+    var newPrefix = this.copy()
+    for (sublistName in sublistNames) {
+      val updated = newPrefix.withSublistOrNull(sublistName, false)
+      if (updated == null) {
+        return null
+      }
+      newPrefix = updated
+    }
+    return newPrefix
+  }
+
   /**
    * Resolves a period-delimited path string relative to this prefix
    *
