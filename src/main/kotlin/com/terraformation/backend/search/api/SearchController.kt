@@ -208,7 +208,7 @@ data class SearchRequestPayload(
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
                            { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
     override val search: SearchNodePayload? = null,
-    override val sublistSearch: List<PrefixedSearch>? = null,
+    override val filters: List<PrefixedSearch>? = null,
     @Schema(
         description =
             "Maximum number of top-level search results to return. The system may impose a limit " +
