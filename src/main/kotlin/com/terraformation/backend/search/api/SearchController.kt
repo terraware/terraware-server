@@ -208,6 +208,18 @@ data class SearchRequestPayload(
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
                            { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
     override val search: SearchNodePayload? = null,
+    @Schema(
+        description =
+            "Search criteria to apply, only to the specified prefix. If the prefix is an empty " +
+                "string, apply the search to all results. If prefix is a sublist (no matter how " +
+                "nested), apply the search to the sublist results without affecting the top level " +
+                "results.",
+        example =
+            // This value is parsed by the schema generator and rendered as JSON or YAML, so its
+            // formatting is irrelevant.
+            """[
+                  { "prefix": "species", "search": { "operation": "field", "field": "name", "values": ["Species Name"] } },
+                  { "prefix": "viabilityTests.viabilityTestResults", "search": { "operation": "field", "field": "seedsGerminated", "type": "Range", "values": ["30", "40"] } } ]""")
     override val filters: List<PrefixedSearch>? = null,
     @Schema(
         description =
