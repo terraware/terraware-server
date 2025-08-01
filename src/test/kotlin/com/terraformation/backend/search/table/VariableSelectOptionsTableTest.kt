@@ -13,7 +13,6 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -69,15 +68,15 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
     insertSelectValue(
         variableId = newMultiVariableId, optionIds = setOf(newMultiOption1, newMultiOption2))
 
-    val prefix = SearchFieldPrefix(searchTables.projectVariableValues)
+    val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields =
         listOf(
                 "variableId",
                 "variableType",
                 "isMultiSelect",
-                "options.id",
-                "options.name",
-                "options.position")
+                "values.options.id",
+                "values.options.name",
+                "values.options.position")
             .map { prefix.resolve(it) }
 
     val expected =
@@ -87,29 +86,35 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$newSingleVariableId",
                     "variableType" to "Select",
                     "isMultiSelect" to "false",
-                    "options" to
+                    "values" to
                         listOf(
                             mapOf(
-                                "id" to "$newOption1",
-                                "name" to "New option 1",
-                                "position" to "2")),
-                ),
+                                "options" to
+                                    listOf(
+                                        mapOf(
+                                            "id" to "$newOption1",
+                                            "name" to "New option 1",
+                                            "position" to "2")),
+                            ))),
                 mapOf(
                     "variableId" to "$newMultiVariableId",
                     "variableType" to "Select",
                     "isMultiSelect" to "true",
-                    "options" to
+                    "values" to
                         listOf(
                             mapOf(
-                                "id" to "$newMultiOption1",
-                                "name" to "New multi option 1",
-                                "position" to "6"),
-                            mapOf(
-                                "id" to "$newMultiOption2",
-                                "name" to "New multi option 2",
-                                "position" to "7"),
-                        ),
-                ),
+                                "options" to
+                                    listOf(
+                                        mapOf(
+                                            "id" to "$newMultiOption1",
+                                            "name" to "New multi option 1",
+                                            "position" to "6"),
+                                        mapOf(
+                                            "id" to "$newMultiOption2",
+                                            "name" to "New multi option 2",
+                                            "position" to "7"),
+                                    ),
+                            ))),
             ))
 
     val actual = searchService.search(prefix, fields, NoConditionNode())

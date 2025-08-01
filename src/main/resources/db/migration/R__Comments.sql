@@ -539,6 +539,8 @@ COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each speci
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
+COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, by any of the definitions. The 3 definitions at the time of creation were: having an application, having a participant, or the project''s org having an internal tag of "Accelerator".';
+
 COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';
 
 COMMENT ON TABLE accelerator.application_module_statuses IS '(Enum) Possible statuses of individual modules in an application.';
@@ -621,7 +623,9 @@ COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accel
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
 
-COMMENT ON VIEW accelerator.project_variable_values IS 'Latest Variable Value and Variable for projects by stable_id';
+COMMENT ON VIEW accelerator.project_variables IS 'Latest Variables for projects. Only includes accelerator projects, and includes all accelerator projects, whether or not they have values for any variables.';
+
+COMMENT ON VIEW accelerator.project_variable_values IS 'Latest Variable Values for projects, excluding deleted. Only includes accelerator projects, and includes all accelerator projects, whether or not they have values for any variables.';
 
 COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
 COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted. ';

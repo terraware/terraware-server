@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
+class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -34,8 +34,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+    insertOrganizationUser(userId = inserted.userId, role = Role.Admin)
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -43,14 +42,13 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `returns variable values for project, ignoring old values`() {
+  fun `returns variables for project, ignoring old variables`() {
     val projectId = insertProject()
 
     val textStableId = "123"
     val numberStableId = "456"
     val dateStableId = "789"
     val linkStableId = "101"
-    val listStableId = "112"
     val oldVariableId = insertVariable(stableId = textStableId)
     val newVariableId = insertVariable(stableId = textStableId, replacesVariableId = oldVariableId)
     val otherVariableId = insertVariable(stableId = numberStableId, type = VariableType.Number)
@@ -61,31 +59,12 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
             stableId = linkStableId,
             type = VariableType.Link,
             replacesVariableId = oldLinkVariableId)
-    val oldListVariableId = insertVariable(stableId = listStableId, isList = true)
-    val newListVariableId =
-        insertVariable(
-            stableId = listStableId, isList = true, replacesVariableId = oldListVariableId)
 
-    insertValue(variableId = oldVariableId, textValue = "OldVarOldVal")
-    insertValue(variableId = oldVariableId, textValue = "OldVarNewVal")
+    // Add a connection between the project and each variable
     insertValue(variableId = newVariableId, textValue = "NewVarOldVal")
-    val newVarNewValueId = insertValue(variableId = newVariableId, textValue = "NewVarNewVal")
-    val otherValueId =
-        insertValue(variableId = otherVariableId, numberValue = BigDecimal("456.456"))
-
-    val dateValueId = insertValue(variableId = dateVariableId, dateValue = LocalDate.of(2024, 1, 2))
-
-    insertLinkValue(variableId = oldLinkVariableId, url = "https://www.oldVariable.com")
-    insertLinkValue(variableId = newLinkVariableId, url = "https://www.oldValue.com")
-    val newLinkValueId =
-        insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
-
-    insertValue(variableId = oldListVariableId, textValue = "OldListValue1", listPosition = 0)
-    insertValue(variableId = oldListVariableId, textValue = "OldListValue2", listPosition = 1)
-    val listVal1 =
-        insertValue(variableId = newListVariableId, textValue = "NewListValue1", listPosition = 0)
-    val listVal2 =
-        insertValue(variableId = newListVariableId, textValue = "NewListValue2", listPosition = 1)
+    insertValue(variableId = otherVariableId, numberValue = BigDecimal("456.456"))
+    insertValue(variableId = dateVariableId, dateValue = LocalDate.of(2024, 1, 2))
+    insertLinkValue(variableId = newLinkVariableId, url = "https://www.newValue.com")
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields =
@@ -94,13 +73,6 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "stableId",
                 "variableId",
                 "variableType",
-                "isList",
-                "values.variableValueId",
-                "values.textValue",
-                "values.numberValue",
-                "values.dateValue",
-                "values.linkUrl",
-                "values.listPosition",
             )
             .map { prefix.resolve(it) }
 
@@ -112,95 +84,43 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "stableId" to linkStableId,
                     "variableId" to "$newLinkVariableId",
                     "variableType" to "Link",
-                    "isList" to "false",
-                    "values" to
-                        listOf(
-                            mapOf(
-                                "listPosition" to "0",
-                                "variableValueId" to "$newLinkValueId",
-                                "linkUrl" to "https://www.newValue.com")),
-                ),
-                mapOf(
-                    "projectId" to "$projectId",
-                    "stableId" to listStableId,
-                    "variableId" to "$newListVariableId",
-                    "variableType" to "Text",
-                    "isList" to "true",
-                    "values" to
-                        listOf(
-                            mapOf(
-                                "listPosition" to "0",
-                                "variableValueId" to "$listVal1",
-                                "textValue" to "NewListValue1",
-                            ),
-                            mapOf(
-                                "listPosition" to "1",
-                                "variableValueId" to "$listVal2",
-                                "textValue" to "NewListValue2",
-                            ),
-                        ),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to textStableId,
                     "variableId" to "$newVariableId",
                     "variableType" to "Text",
-                    "isList" to "false",
-                    "values" to
-                        listOf(
-                            mapOf(
-                                "listPosition" to "0",
-                                "variableValueId" to "$newVarNewValueId",
-                                "textValue" to "NewVarNewVal")),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to numberStableId,
                     "variableId" to "$otherVariableId",
                     "variableType" to "Number",
-                    "isList" to "false",
-                    "values" to
-                        listOf(
-                            mapOf(
-                                "listPosition" to "0",
-                                "variableValueId" to "$otherValueId",
-                                "numberValue" to "456.456")),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to dateStableId,
                     "variableId" to "$dateVariableId",
                     "variableType" to "Date",
-                    "isList" to "false",
-                    "values" to
-                        listOf(
-                            mapOf(
-                                "listPosition" to "0",
-                                "variableValueId" to "$dateValueId",
-                                "dateValue" to "2024-01-02")),
                 ),
             ),
-            cursor = null,
-        )
+            cursor = null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
 
     assertJsonEquals(expected, actual)
   }
 
   @Test
-  fun `can retrieve nested variableValues from projects`() {
+  fun `can retrieve nested variables from projects`() {
     val projectId = insertProject()
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
-    val valueId1 = insertValue(variableId = variableId1)
-    val valueId2 = insertValue(variableId = variableId2)
+    insertValue(variableId = variableId1)
+    insertValue(variableId = variableId2)
 
     val prefix = SearchFieldPrefix(searchTables.projects)
-    val fields =
-        listOf("id", "variables.variableId", "variables.values.variableValueId").map {
-          prefix.resolve(it)
-        }
+    val fields = listOf("id", "variables.variableId").map { prefix.resolve(it) }
 
     val expected =
         SearchResults(
@@ -211,68 +131,13 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "variableId" to "$variableId1",
-                                "values" to listOf(mapOf("variableValueId" to "$valueId1")),
                             ),
                             mapOf(
                                 "variableId" to "$variableId2",
-                                "values" to listOf(mapOf("variableValueId" to "$valueId2")),
                             ),
                         ))))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
-
-    assertJsonEquals(expected, actual)
-  }
-
-  @Test
-  fun `old variable with value doesn't show up when new version does not have value`() {
-    val projectId = insertProject()
-    val stableId = "123"
-    val oldVariableId = insertVariable(stableId = stableId)
-    insertVariable(stableId = stableId, replacesVariableId = oldVariableId)
-    insertValue(variableId = oldVariableId, textValue = "OldStuff")
-
-    val referenceStableId = "456"
-    val referenceVariableId = insertVariable(stableId = referenceStableId)
-    insertValue(variableId = referenceVariableId)
-
-    val prefix = SearchFieldPrefix(searchTables.projectVariables)
-    val fields = listOf("projectId", "stableId").map { prefix.resolve(it) }
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf(
-                    "projectId" to "$projectId",
-                    "stableId" to referenceStableId,
-                )),
-            cursor = null)
-    val actual = searchService.search(prefix, fields, NoConditionNode())
-
-    assertJsonEquals(expected, actual)
-  }
-
-  @Test
-  fun `deleted values exclude the variables fully`() {
-    insertProject()
-    val variableId1 = insertVariable()
-    val variableId2 = insertVariable()
-    insertValue(variableId = variableId1, textValue = "Value1")
-    insertValue(variableId = variableId1, textValue = "Value2", isDeleted = true)
-    insertValue(variableId = variableId2, textValue = "OtherValue")
-
-    val prefix = SearchFieldPrefix(searchTables.projectVariableValues)
-    val fields = listOf("variableId", "textValue").map { prefix.resolve(it) }
-
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf(
-                    "variableId" to "$variableId2",
-                    "textValue" to "OtherValue",
-                ),
-            ))
-    val actual = searchService.search(prefix, fields, NoConditionNode())
 
     assertJsonEquals(expected, actual)
   }
@@ -283,7 +148,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
     val projectId1 = insertProject()
     val variableId1 = insertVariable()
-    val valueId1 = insertValue(variableId = variableId1, textValue = "Visible")
+    insertValue(variableId = variableId1, textValue = "Visible")
 
     val otherOrgId = insertOrganization()
     insertProject(organizationId = otherOrgId)
@@ -291,10 +156,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
     insertValue(variableId = otherVariableId, textValue = "Not visible")
 
     val prefix = SearchFieldPrefix(searchTables.projects)
-    val fields =
-        listOf("id", "variables.variableId", "variables.values.variableValueId").map {
-          prefix.resolve(it)
-        }
+    val fields = listOf("id", "variables.variableId").map { prefix.resolve(it) }
 
     val expected =
         SearchResults(
@@ -305,7 +167,6 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "variableId" to "$variableId1",
-                                "values" to listOf(mapOf("variableValueId" to "$valueId1")),
                             )))))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
@@ -341,7 +202,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "variables.projectId",
                 "variables.stableId",
                 "variables.variableId",
-                "variables.values.variableValueId")
+                "variables.variableValueId")
             .map { prefix.resolve(it) }
 
     val expected =
