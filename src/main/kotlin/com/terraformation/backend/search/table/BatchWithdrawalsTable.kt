@@ -33,6 +33,8 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
     listOf(
         integerField(
             "germinatingQuantityWithdrawn", BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN),
+        integerField(
+            "hardeningOffQuantityWithdrawn", BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN),
         integerField("notReadyQuantityWithdrawn", BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN),
         integerField("readyQuantityWithdrawn", BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN),
     )
