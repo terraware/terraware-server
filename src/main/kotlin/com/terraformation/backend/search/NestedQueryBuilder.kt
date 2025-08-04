@@ -263,18 +263,24 @@ import org.jooq.impl.DSL
  *
  * ## Search criteria
  *
- * Say you have an accession with two bags, "A" and "B". The user does a search with a root table of
- * `accessions` and asks for results containing bag "A".
+ * Search criteria is passed in using a map of search prefix to search node. Each entry's prefix
+ * specifies where to apply its search node, with an empty prefix (aka root table prefix)
+ * determining which top level results to return, and each sublist prefix determining how to filter
+ * the results in the sublists of the top level results. The easiest way to understand this is via
+ * examples.
  *
- * There are two ways that could work, neither of them wrong: treat the search criterion as a filter
- * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
- * (returning a result with two bags).
+ * Say you have multiple accessions, one of which has two bags, "A" and "B". The user does a search
+ * with a prefix on the root table of `accessions` and asks for results containing bag "A".
  *
- * Our product decision was originally to do the latter. Search criteria would control which
- * top-level results are returned, but each result includes the full set of values for all its
- * fields. When you search for bag "A", what you're really telling the system is that you want all
- * _accessions_ that have a bag called "A". And for each accession that matches the search criteria,
- * you get back the full list of bags.
+ * There are two ways this can be specified: request all accessions and for each only return a list
+ * of bags that have number "A" (or an empty list if the accession does not have that), or request
+ * only accessions that contain a bag "A" but return all bags for each accession returned.
+ *
+ * In most instances, you will want the latter. Search criteria without a prefix filters out the
+ * final results, but each result includes the full set of values for all the specified fields. When
+ * you search without a prefix (aka a prefix of the root table) for bag "A", what you're really
+ * telling the system is that you want all _accessions_ that have a bag called "A". And for each
+ * accession that matches the search criteria, you get back the full list of bags.
  *
  * That's relevant here because it changes what the SQL looks like: for non-prefixed search
  * criteria, we don't apply any search criteria to the multiset subqueries, because we want to
@@ -298,11 +304,11 @@ import org.jooq.impl.DSL
  *     WHERE bags.number = 'A')
  * ```
  *
- * The key point is that the multiset will contain _all_ the bags for the accession.
+ * The key point is that the multiset will contain _all_ the bags for the accession in this
+ * scenario.
  *
- * Since the time that the above product decision was made, support has been added for multiset
- * filtering as well. Adding search criteria with a non-top-level prefix controls which values in a
- * multiset get returned, without affecting which top-level results are returned.
+ * Alternatively, adding search criteria with a prefix controls which values in a multiset get
+ * returned, without affecting which top-level results are returned.
  *
  * Continuing the above example schema, suppose you have two accessions, with a structure like so:
  * ```yaml
@@ -331,7 +337,8 @@ import org.jooq.impl.DSL
  * FROM accessions
  * ```
  *
- * Both types of filtering are supported and can be used independently or in conjunction.
+ * Both types of filtering can be used independently or in conjunction to return the desired
+ * results.
  *
  * ## Ordering
  *
