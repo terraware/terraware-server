@@ -1,3 +1,4 @@
+7ecfe5aaf6a Update dependency gradle to v9 (#3266)
 444027c4c28 SW-7201 Make Project Variable Views support list variables and projects without values (#3256)
 f04f2a79a5d Update dependency com.google.apis:google-api-services-drive to v3-rev20250723-2.0.0 (#3246)
 dd12482bdb9 Update dependency com.opencsv:opencsv to v5.12.0 (#3254)
