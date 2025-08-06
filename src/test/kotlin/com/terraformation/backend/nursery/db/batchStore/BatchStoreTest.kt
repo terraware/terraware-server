@@ -65,6 +65,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
           germinatingQuantity = 0,
           notReadyQuantity = 1,
           readyQuantity = 2,
+          hardeningOffQuantity = 3,
           speciesId = speciesId,
       )
 }

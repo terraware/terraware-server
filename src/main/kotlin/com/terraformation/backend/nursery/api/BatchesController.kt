@@ -129,6 +129,7 @@ class BatchesController(
         version = payload.version,
         germinating = payload.germinatingQuantity,
         notReady = payload.notReadyQuantity,
+        hardeningOff = payload.hardeningOffQuantity,
         ready = payload.readyQuantity,
         historyType = BatchQuantityHistoryType.Observed)
 
@@ -235,6 +236,7 @@ data class BatchPayload(
     val germinatingQuantity: Int,
     val germinationRate: Int?,
     val germinationStartedDate: LocalDate?,
+    val hardeningOffQuantity: Int,
     val id: BatchId,
     @Schema(
         description =
@@ -274,6 +276,7 @@ data class BatchPayload(
       germinatingQuantity = model.germinatingQuantity,
       germinationRate = model.germinationRate,
       germinationStartedDate = model.germinationStartedDate,
+      hardeningOffQuantity = model.hardeningOffQuantity,
       id = model.id,
       initialBatchId = model.initialBatchId,
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
@@ -310,6 +313,7 @@ data class CreateBatchRequestPayload(
     val treatment: SeedTreatment? = null,
     val treatmentNotes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
+    @Min(0) val hardeningOffQuantity: Int = 0,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
 ) {
@@ -319,6 +323,7 @@ data class CreateBatchRequestPayload(
           facilityId = facilityId,
           germinatingQuantity = germinatingQuantity,
           germinationStartedDate = germinationStartedDate,
+          hardeningOffQuantity = hardeningOffQuantity,
           notes = notes,
           notReadyQuantity = notReadyQuantity,
           projectId = projectId,
@@ -365,6 +370,7 @@ data class UpdateBatchRequestPayload(
 
 data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
+    @Min(0) val hardeningOffQuantity: Int = 0,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,

@@ -134,6 +134,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             lossRate = 80,
             totalGerminating = 1 + 4,
             totalNotReady = 2 + 5,
+            totalHardeningOff = 0,
             totalReady = 3 + 6,
             totalWithdrawnByPurpose =
                 mapOf(
@@ -152,6 +153,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             lossRate = 85,
             totalGerminating = 1 + 4 + 7,
             totalNotReady = 2 + 5 + 8,
+            totalHardeningOff = 0,
             totalReady = 3 + 6 + 9,
             totalWithdrawnByPurpose =
                 mapOf(

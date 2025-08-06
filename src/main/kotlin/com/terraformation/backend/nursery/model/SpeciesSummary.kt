@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 data class SpeciesSummary(
     val germinatingQuantity: Long,
     val germinationRate: Int?,
+    val hardeningOffQuantity: Long,
     val lossRate: Int?,
     val notReadyQuantity: Long,
     val nurseries: List<FacilitiesRow>,

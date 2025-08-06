@@ -17,11 +17,16 @@ data class BatchWithdrawalModel(
     val batchId: BatchId,
     val destinationBatchId: BatchId? = null,
     val germinatingQuantityWithdrawn: Int,
+    val hardeningOffQuantityWithdrawn: Int = 0,
     val notReadyQuantityWithdrawn: Int,
     val readyQuantityWithdrawn: Int,
 ) {
   val totalWithdrawn: Int
-    get() = germinatingQuantityWithdrawn + notReadyQuantityWithdrawn + readyQuantityWithdrawn
+    get() =
+        germinatingQuantityWithdrawn +
+            notReadyQuantityWithdrawn +
+            hardeningOffQuantityWithdrawn +
+            readyQuantityWithdrawn
 }
 
 /**
@@ -67,6 +72,7 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
         batchId = batchId!!,
         destinationBatchId = destinationBatchId,
         germinatingQuantityWithdrawn = germinatingQuantityWithdrawn!!,
+        hardeningOffQuantityWithdrawn = hardeningOffQuantityWithdrawn!!,
         notReadyQuantityWithdrawn = notReadyQuantityWithdrawn!!,
         readyQuantityWithdrawn = readyQuantityWithdrawn!!,
     )

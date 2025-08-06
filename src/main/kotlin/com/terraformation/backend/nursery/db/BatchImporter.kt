@@ -135,6 +135,7 @@ class BatchImporter(
             germinatingQuantity = germinatingQuantity,
             notReadyQuantity = seedlingQuantity,
             readyQuantity = 0,
+            hardeningOffQuantity = 0,
             speciesId = speciesId,
             subLocationIds = subLocationNames.mapNotNull { subLocationIds[it] }.toSet(),
         ))

@@ -27,11 +27,11 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `calculates germination and loss rate if all withdrawn and no manual edits`() {
     runScenario(
-        initial = Quantities(100, 15, 15),
-        transfer = Quantities(12, 10, 0),
-        dead = Quantities(10, 6, 10),
-        other = Quantities(0, 0, 10),
-        current = Quantities(0, 45, 27),
+        initial = Quantities(100, 15, 0, 15),
+        transfer = Quantities(12, 10, 0, 0),
+        dead = Quantities(10, 6, 0, 10),
+        other = Quantities(0, 0, 0, 10),
+        current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = 89,
         expectedLossRate = 18)
   }
@@ -39,12 +39,12 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `calculates loss rate but not germination rate if germinating seedlings still present`() {
     runScenario(
-        initial = Quantities(100, 25, 25),
-        outPlant = Quantities(0, 0, 23),
-        transfer = Quantities(13, 0, 0),
-        dead = Quantities(10, 6, 10),
-        other = Quantities(0, 8, 7),
-        current = Quantities(1, 45, 27),
+        initial = Quantities(100, 25, 0, 25),
+        outPlant = Quantities(0, 0, 0, 23),
+        transfer = Quantities(13, 0, 0, 0),
+        dead = Quantities(10, 6, 0, 10),
+        other = Quantities(0, 8, 0, 7),
+        current = Quantities(1, 45, 0, 27),
         expectedGerminationRate = null,
         expectedLossRate = 14)
   }
@@ -52,12 +52,12 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `calculates loss rate but not germination rate if germinating quantity has been edited`() {
     runScenario(
-        initial = Quantities(100, 15, 15),
-        transfer = Quantities(13, 10, 0),
-        dead = Quantities(10, 6, 10),
-        other = Quantities(0, 0, 12),
-        manualEdits = Quantities(3, 0, 0),
-        current = Quantities(0, 45, 27),
+        initial = Quantities(100, 15, 0, 15),
+        transfer = Quantities(13, 10, 0, 0),
+        dead = Quantities(10, 6, 0, 10),
+        other = Quantities(0, 0, 0, 12),
+        manualEdits = Quantities(3, 0, 0, 0),
+        current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = null,
         expectedLossRate = 18)
   }
@@ -65,12 +65,12 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `does not calculate either rate if not ready quantity has been edited`() {
     runScenario(
-        initial = Quantities(100, 15, 15),
-        transfer = Quantities(13, 10, 0),
-        dead = Quantities(10, 6, 10),
-        other = Quantities(0, 0, 12),
-        manualEdits = Quantities(0, 3, 0),
-        current = Quantities(0, 45, 27),
+        initial = Quantities(100, 15, 0, 15),
+        transfer = Quantities(13, 10, 0, 0),
+        dead = Quantities(10, 6, 0, 10),
+        other = Quantities(0, 0, 0, 12),
+        manualEdits = Quantities(0, 3, 0, 0),
+        current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = null,
         expectedLossRate = null)
   }
@@ -78,8 +78,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `loss rate is 0 at initial creation if there are non-germinating seedlings`() {
     runScenario(
-        initial = Quantities(10, 10, 10),
-        current = Quantities(10, 10, 10),
+        initial = Quantities(10, 10, 0, 10),
+        current = Quantities(10, 10, 0, 10),
         expectedGerminationRate = null,
         expectedLossRate = 0)
   }
@@ -87,8 +87,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `loss rate is not calculated at initial creation if there are only germinating seedlings`() {
     runScenario(
-        initial = Quantities(10, 0, 0),
-        current = Quantities(10, 0, 0),
+        initial = Quantities(10, 0, 0, 0),
+        current = Quantities(10, 0, 0, 0),
         expectedGerminationRate = null,
         expectedLossRate = null)
   }
@@ -97,12 +97,12 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   fun `removes existing rates if quantities are manually edited`() {
     val batchId =
         runScenario(
-            initial = Quantities(10, 10, 10),
-            current = Quantities(0, 20, 10),
+            initial = Quantities(10, 10, 0, 10),
+            current = Quantities(0, 20, 0, 10),
             expectedGerminationRate = 100,
             expectedLossRate = 0)
 
-    addManualEdits(batchId, Quantities(0, 1, 0))
+    addManualEdits(batchId, Quantities(0, 1, 0, 0))
 
     assertNull(store.fetchOneById(batchId).germinationRate, "Germination rate after manual edit")
     assertNull(store.fetchOneById(batchId).lossRate, "Loss rate after manual edit")
@@ -110,8 +110,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
   @Test
   fun `removes existing rates if more seedlings added via nursery transfer`() {
-    val sourceBatchId = createBatch(Quantities(100, 100, 100))
-    val withdrawal = addTransfer(sourceBatchId, Quantities(10, 10, 10))
+    val sourceBatchId = createBatch(Quantities(100, 100, 0, 100))
+    val withdrawal = addTransfer(sourceBatchId, Quantities(10, 10, 0, 10))
     val batchId = withdrawal.batchWithdrawals.first().destinationBatchId!!
 
     store.changeStatuses(batchId, 10, 0)
@@ -120,7 +120,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     assertEquals(100, beforeTransfer.germinationRate, "Germination rate before second transfer")
     assertEquals(0, beforeTransfer.lossRate, "Loss rate before second transfer")
 
-    addTransfer(sourceBatchId, Quantities(0, 1, 0))
+    addTransfer(sourceBatchId, Quantities(0, 1, 0, 0))
 
     val afterTransfer = store.fetchOneById(batchId)
     assertNull(afterTransfer.germinationRate, "Germination rate after second transfer")
@@ -130,9 +130,9 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   @Test
   fun `germination rate not calculated if all germinating seedlings withdrawn`() {
     runScenario(
-        initial = Quantities(10, 1, 0),
-        other = Quantities(10, 0, 0),
-        current = Quantities(0, 1, 0),
+        initial = Quantities(10, 1, 0, 0),
+        other = Quantities(10, 0, 0, 0),
+        current = Quantities(0, 1, 0, 0),
         expectedGerminationRate = null,
         expectedLossRate = 0)
   }
@@ -169,9 +169,13 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         initial.notReady + (manualEdits?.notReady ?: 0) -
             operations.sumOf { it.notReady } -
             current.notReady + germinatingChangeNeeded
+    val hardeningOffChangeNeeded =
+        initial.hardeningOff + (manualEdits?.hardeningOff ?: 0) -
+            operations.sumOf { it.hardeningOff } -
+            current.hardeningOff + germinatingChangeNeeded
 
     assertTrue(
-        germinatingChangeNeeded >= 0 && notReadyChangeNeeded >= 0,
+        germinatingChangeNeeded >= 0 && notReadyChangeNeeded >= 0 && hardeningOffChangeNeeded >= 0,
         "Cannot arrive at current numbers given initial and withdrawal quantities")
 
     val batchId = createBatch(initial)
@@ -191,6 +195,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     assertEquals(current.germinating, result.germinatingQuantity, "Current germinating quantity")
     assertEquals(current.notReady, result.notReadyQuantity, "Current not ready quantity")
+    assertEquals(
+        current.hardeningOff, result.hardeningOffQuantity, "Current hardening off quantity")
     assertEquals(current.ready, result.readyQuantity, "Current ready quantity")
     assertEquals(expectedGerminationRate, result.germinationRate, "Germination rate")
     assertEquals(expectedLossRate, result.lossRate, "Loss rate")
@@ -205,6 +211,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 addedDate = LocalDate.EPOCH,
                 facilityId = facilityId,
                 germinatingQuantity = initial.germinating,
+                hardeningOffQuantity = initial.hardeningOff,
                 notReadyQuantity = initial.notReady,
                 readyQuantity = initial.ready,
                 speciesId = speciesId,
@@ -227,6 +234,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         batch.version,
         batch.germinatingQuantity + quantityDeltas.germinating,
         batch.notReadyQuantity + quantityDeltas.notReady,
+        batch.hardeningOffQuantity + quantityDeltas.hardeningOff,
         batch.readyQuantity + quantityDeltas.ready,
         BatchQuantityHistoryType.Observed)
   }
@@ -244,7 +252,9 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                     batchId = batchId,
                     germinatingQuantityWithdrawn = quantities.germinating,
                     notReadyQuantityWithdrawn = quantities.notReady,
-                    readyQuantityWithdrawn = quantities.ready)),
+                    hardeningOffQuantityWithdrawn = quantities.hardeningOff,
+                    readyQuantityWithdrawn = quantities.ready,
+                )),
         destinationFacilityId = destinationFacilityId,
         facilityId = facilityId,
         id = null,
@@ -253,5 +263,10 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     )
   }
 
-  private class Quantities(val germinating: Int, val notReady: Int, val ready: Int)
+  private class Quantities(
+      val germinating: Int,
+      val notReady: Int,
+      val hardeningOff: Int,
+      val ready: Int,
+  )
 }
