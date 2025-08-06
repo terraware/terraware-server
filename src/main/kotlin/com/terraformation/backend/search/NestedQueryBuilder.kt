@@ -263,7 +263,7 @@ import org.jooq.impl.DSL
  *
  * ## Search criteria
  *
- * Search criteria is passed in using a map of search prefix to search node. Each entry's prefix
+ * Search criteria are passed in using a map of search prefix to search node. Each entry's prefix
  * specifies where to apply its search node, with an empty prefix (aka root table prefix)
  * determining which top level results to return, and each sublist prefix determining how to filter
  * the results in the sublists of the top level results. The easiest way to understand this is via
