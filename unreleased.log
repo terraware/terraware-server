@@ -1,2 +1,3 @@
+585cd268c61 SW-7192 Add relativeSublistPrefix and tests to support sublist queries (#3250)
 6c1a8d372a1 SW-7192 Pass criteria map and move searchService methods to NestedQueryBuilder (#3249)
 c5b628de7ad SW-7192 Change criteria in search service to be a map of prefix to SearchNode (#3248)
