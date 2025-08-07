@@ -148,11 +148,13 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val englishResult =
         Locale.ENGLISH.use {
-          searchService.search(prefix, listOf(field), NoConditionNode(), listOf(sortOrder))
+          searchService.search(
+              prefix, listOf(field), mapOf(prefix to NoConditionNode()), listOf(sortOrder))
         }
     val swedishResult =
         Locale.forLanguageTag("se").use {
-          searchService.search(prefix, listOf(field), NoConditionNode(), listOf(sortOrder))
+          searchService.search(
+              prefix, listOf(field), mapOf(prefix to NoConditionNode()), listOf(sortOrder))
         }
 
     assertEquals(englishExpected, englishResult, "English should put Å before K")
@@ -203,7 +205,9 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
     val result =
         Locales.GIBBERISH.use {
           searchService.search(
-              countryPrefix, listOf(countryCodeField, countryNameField), searchNode)
+              countryPrefix,
+              listOf(countryCodeField, countryNameField),
+              mapOf(countryPrefix to searchNode))
         }
 
     val expected = SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)))
@@ -215,7 +219,9 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   fun `exact search on localizable text fields is accent-insensitive`() {
     val searchNode = FieldNode(countryNameField, listOf("cote d’ivoire"), SearchFilterType.Exact)
 
-    val result = searchService.search(countryPrefix, listOf(countryNameField), searchNode)
+    val result =
+        searchService.search(
+            countryPrefix, listOf(countryNameField), mapOf(countryPrefix to searchNode))
 
     val expected = SearchResults(listOf(mapOf("name" to "Côte d’Ivoire")))
 
@@ -235,7 +241,10 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
     val result =
         Locales.GIBBERISH.use {
           searchService.search(
-              countryPrefix, listOf(countryNameField), searchNode, listOf(sortField))
+              countryPrefix,
+              listOf(countryNameField),
+              mapOf(countryPrefix to searchNode),
+              listOf(sortField))
         }
 
     val expected =

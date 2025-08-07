@@ -82,7 +82,10 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                     "workshopDescription" to "Workshop ideas",
                 )))
 
-    val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+    val actual =
+        Locales.GIBBERISH.use {
+          searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+        }
     assertJsonEquals(expected, actual)
   }
 
@@ -178,7 +181,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
     assertJsonEquals(expected, actual)
   }
 
@@ -223,7 +226,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
             ),
             null)
 
-    val actual = searchService.search(prefix, fields, NoConditionNode())
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
     assertJsonEquals(expected, actual)
   }
 }

@@ -165,7 +165,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facilityInventories.readyQuantity"),
                   prefix.resolve("facilityInventories.totalQuantity"),
               ),
-              FieldNode(prefix.resolve("organization_id"), listOf("$organizationId")),
+              mapOf(
+                  prefix to
+                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
               listOf(
                   SearchSortField(prefix.resolve("species_id")),
                   SearchSortField(prefix.resolve("facilityInventories.facility_id")),
@@ -240,7 +242,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("totalQuantity"),
                   prefix.resolve("totalSpecies"),
               ),
-              FieldNode(prefix.resolve("organization_id"), listOf("$organizationId")),
+              mapOf(
+                  prefix to
+                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
               listOf(SearchSortField(prefix.resolve("facility_id"))))
 
       assertEquals(
@@ -301,7 +305,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
               ),
-              FieldNode(prefix.resolve("facility_id"), listOf("$facilityId2")))
+              mapOf(prefix to FieldNode(prefix.resolve("facility_id"), listOf("$facilityId2"))))
 
       assertEquals(
           SearchResults(
@@ -368,7 +372,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("subLocations.subLocation_id"),
                   prefix.resolve("version"),
               ),
-              FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")))
+              mapOf(prefix to FieldNode(prefix.resolve("species_id"), listOf("$speciesId1"))))
 
       assertEquals(
           SearchResults(
@@ -436,11 +440,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("id"),
                   prefix.resolve("project_name"),
               ),
-              AndNode(
-                  listOf(
-                      FieldNode(
-                          prefix.resolve("facility_organization_id"), listOf("$organizationId")),
-                      FieldNode(prefix.resolve("project_id"), listOf(null)))))
+              mapOf(
+                  prefix to
+                      AndNode(
+                          listOf(
+                              FieldNode(
+                                  prefix.resolve("facility_organization_id"),
+                                  listOf("$organizationId")),
+                              FieldNode(prefix.resolve("project_id"), listOf(null))))))
 
       assertEquals(
           SearchResults(
@@ -611,7 +618,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   ),
               ))
 
-      val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
 
       assertJsonEquals(expected, actual)
     }
@@ -661,7 +668,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "undoesWithdrawalId" to "$withdrawalId",
                   )))
 
-      val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
 
       assertJsonEquals(expected, actual)
     }
@@ -699,7 +706,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           searchService.search(
               prefix,
               fields,
-              FieldNode(prefix.resolve("species_id"), listOf("$speciesId1")),
+              mapOf(prefix to FieldNode(prefix.resolve("species_id"), listOf("$speciesId1"))),
               orderBy)
 
       assertJsonEquals(expected, actual)
@@ -727,7 +734,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           searchService.search(
               prefix,
               fields,
-              FieldNode(prefix.resolve("organization_id"), listOf("$organizationId")),
+              mapOf(
+                  prefix to
+                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
               orderBy)
 
       assertJsonEquals(expected, actual)

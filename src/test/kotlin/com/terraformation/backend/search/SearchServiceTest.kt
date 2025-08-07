@@ -61,7 +61,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Exact)
 
-      assertJsonEquals(expected, searchService.search(prefix, fields, conditions))
+      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }
 
     @Test
@@ -95,7 +95,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koaa"), SearchFilterType.Fuzzy)
 
-      assertJsonEquals(expected, searchService.search(prefix, fields, conditions))
+      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }
 
     @Test
@@ -112,7 +112,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf(""), SearchFilterType.PhraseMatch)
 
-      assertJsonEquals(SearchResults(emptyList()), searchService.search(prefix, fields, conditions))
+      assertJsonEquals(
+          SearchResults(emptyList()),
+          searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }
 
     @Test
@@ -142,7 +144,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.PhraseMatch)
 
-      assertJsonEquals(expected, searchService.search(prefix, fields, conditions))
+      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }
 
     @Test
@@ -189,7 +191,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           FieldNode(
               prefix.resolve("scientificName"), listOf("Apple Tree"), SearchFilterType.PhraseMatch)
 
-      assertJsonEquals(expected, searchService.search(prefix, fields, conditions))
+      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }
   }
 }
