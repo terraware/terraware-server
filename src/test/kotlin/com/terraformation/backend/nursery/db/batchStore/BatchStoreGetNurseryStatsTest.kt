@@ -8,6 +8,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 
 internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
+
   @Test
   fun `rolls up multiple species and withdrawals for facility or organization`() {
     every { user.canReadFacility(any()) } returns true
@@ -23,6 +24,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             germinatingQuantity = 1,
             notReadyQuantity = 2,
             readyQuantity = 3,
+            hardeningOffQuantity = 4,
             totalGerminated = 100,
             totalGerminationCandidates = 200,
             totalLost = 300,
@@ -34,6 +36,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             germinatingQuantity = 4,
             notReadyQuantity = 5,
             readyQuantity = 6,
+            hardeningOffQuantity = 7,
             totalLost = 500,
             totalLossCandidates = 600)
 
@@ -42,38 +45,44 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         batchId = batchId1,
         germinatingQuantityWithdrawn = 10,
         notReadyQuantityWithdrawn = 11,
-        readyQuantityWithdrawn = 12)
+        readyQuantityWithdrawn = 12,
+        hardeningOffQuantityWithdrawn = 13)
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 13,
         notReadyQuantityWithdrawn = 14,
-        readyQuantityWithdrawn = 15)
+        readyQuantityWithdrawn = 15,
+        hardeningOffQuantityWithdrawn = 16)
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 16,
         notReadyQuantityWithdrawn = 17,
-        readyQuantityWithdrawn = 18)
+        readyQuantityWithdrawn = 18,
+        hardeningOffQuantityWithdrawn = 19)
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 19,
         notReadyQuantityWithdrawn = 20,
-        readyQuantityWithdrawn = 21)
+        readyQuantityWithdrawn = 21,
+        hardeningOffQuantityWithdrawn = 22)
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 22,
         notReadyQuantityWithdrawn = 23,
-        readyQuantityWithdrawn = 24)
+        readyQuantityWithdrawn = 24,
+        hardeningOffQuantityWithdrawn = 25)
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 25,
         notReadyQuantityWithdrawn = 26,
-        readyQuantityWithdrawn = 27)
+        readyQuantityWithdrawn = 27,
+        hardeningOffQuantityWithdrawn = 28)
 
     insertBatch(
         facilityId = otherNurseryId,
@@ -81,6 +90,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantity = 7,
         notReadyQuantity = 8,
         readyQuantity = 9,
+        hardeningOffQuantity = 10,
         totalGerminated = 700,
         totalGerminationCandidates = 800,
         totalLost = 900,
@@ -89,13 +99,15 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 28,
         notReadyQuantityWithdrawn = 29,
-        readyQuantityWithdrawn = 30)
+        readyQuantityWithdrawn = 30,
+        hardeningOffQuantityWithdrawn = 31)
 
     insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 31,
         notReadyQuantityWithdrawn = 32,
-        readyQuantityWithdrawn = 33)
+        readyQuantityWithdrawn = 33,
+        hardeningOffQuantityWithdrawn = 34)
 
     // Withdrawal that is undone should not affect stats.
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
@@ -103,7 +115,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         batchId = batchId1,
         germinatingQuantityWithdrawn = 34,
         notReadyQuantityWithdrawn = 35,
-        readyQuantityWithdrawn = 36)
+        readyQuantityWithdrawn = 36,
+        hardeningOffQuantityWithdrawn = 37)
     insertNurseryWithdrawal(
         facilityId = facilityId,
         purpose = WithdrawalPurpose.Undo,
@@ -112,7 +125,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         batchId = batchId1,
         germinatingQuantityWithdrawn = -34,
         notReadyQuantityWithdrawn = -35,
-        readyQuantityWithdrawn = -36)
+        readyQuantityWithdrawn = -36,
+        hardeningOffQuantityWithdrawn = -37)
 
     // Batch in other organization's facility should not affect stats.
     insertOrganization()
@@ -122,6 +136,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantity = 1000,
         notReadyQuantity = 2000,
         readyQuantity = 3000,
+        hardeningOffQuantity = 4000,
         totalGerminated = 10000,
         totalGerminationCandidates = 20000,
         totalLost = 30000,
@@ -134,12 +149,13 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             lossRate = 80,
             totalGerminating = 1 + 4,
             totalNotReady = 2 + 5,
-            totalHardeningOff = 0,
+            totalHardeningOff = 4 + 7,
             totalReady = 3 + 6,
             totalWithdrawnByPurpose =
                 mapOf(
-                    WithdrawalPurpose.Dead to 20L + 21L + 23L + 24L + 26L + 27L,
-                    WithdrawalPurpose.OutPlant to 11L + 12L + 14L + 15L + 17L + 18L,
+                    WithdrawalPurpose.Dead to 20L + 21L + 22L + 23L + 24L + 25L + 26L + 27L + 28L,
+                    WithdrawalPurpose.OutPlant to
+                        11L + 12L + 13L + 14L + 15L + 16L + 17L + 18L + 19L,
                     WithdrawalPurpose.NurseryTransfer to 0L,
                     WithdrawalPurpose.Other to 0L,
                 )),
@@ -153,12 +169,14 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             lossRate = 85,
             totalGerminating = 1 + 4 + 7,
             totalNotReady = 2 + 5 + 8,
-            totalHardeningOff = 0,
+            totalHardeningOff = 4 + 7 + 10,
             totalReady = 3 + 6 + 9,
             totalWithdrawnByPurpose =
                 mapOf(
-                    WithdrawalPurpose.Dead to 20L + 21L + 23L + 24L + 26L + 27L + 32L + 33L,
-                    WithdrawalPurpose.OutPlant to 11L + 12L + 14L + 15L + 17L + 18L + 29L + 30L,
+                    WithdrawalPurpose.Dead to
+                        20L + 21L + 22L + 23L + 24L + 25L + 26L + 27L + 28L + 32L + 33L + 34L,
+                    WithdrawalPurpose.OutPlant to
+                        11L + 12L + 13L + 14L + 15L + 16L + 17L + 18L + 19L + 29L + 30L + 31L,
                     WithdrawalPurpose.NurseryTransfer to 0L,
                     WithdrawalPurpose.Other to 0L,
                 )),

@@ -78,7 +78,7 @@ class AccessionService(
    * Withdraws seeds from a seed bank and creates a new seedling batch at a nursery.
    *
    * Withdrawal details are pulled from [batch], with the withdrawal quantity set to the sum of the
-   * batch's germinating, not-ready, and ready quantities.
+   * batch's germinating, not-ready, hardening-off and ready quantities.
    *
    * @return The updated accession model and the newly-created batch with its ID populated.
    */
@@ -104,7 +104,11 @@ class AccessionService(
           accession.facilityId, batch.facilityId)
     }
 
-    val totalSeeds = batch.germinatingQuantity + batch.notReadyQuantity + batch.readyQuantity
+    val totalSeeds =
+        batch.germinatingQuantity +
+            batch.notReadyQuantity +
+            batch.hardeningOffQuantity +
+            batch.readyQuantity
 
     if (totalSeeds <= 0) {
       throw IllegalArgumentException("Transfers must include at least 1 seed")

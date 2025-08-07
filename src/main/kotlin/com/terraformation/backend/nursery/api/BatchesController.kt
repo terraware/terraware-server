@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
@@ -147,15 +148,7 @@ class BatchesController(
       @PathVariable("id") id: BatchId,
       @RequestBody payload: ChangeBatchStatusRequestPayload
   ): BatchResponsePayload {
-    val (previousPhase, newPhase) =
-        when (payload.operation) {
-          ChangeBatchStatusOperation.GerminatingToNotReady ->
-              NurseryBatchPhase.Germinating to NurseryBatchPhase.NotReady
-          ChangeBatchStatusOperation.NotReadyToReady ->
-              NurseryBatchPhase.NotReady to NurseryBatchPhase.Ready
-        }
-
-    batchStore.changeStatuses(id, previousPhase, newPhase, payload.quantity)
+    batchStore.changeStatuses(id, payload.initialPhase, payload.finalPhase, payload.quantity)
 
     return getBatch(id)
   }
@@ -383,17 +376,40 @@ data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 )
 
-enum class ChangeBatchStatusOperation {
-  GerminatingToNotReady,
-  NotReadyToReady,
+enum class ChangeBatchStatusOperation(
+    val fromPhase: NurseryBatchPhase,
+    val toPhase: NurseryBatchPhase
+) {
+  GerminatingToNotReady(NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady),
+  NotReadyToReady(NurseryBatchPhase.NotReady, NurseryBatchPhase.Ready)
 }
 
 data class ChangeBatchStatusRequestPayload(
     @Schema(description = "Which status change to apply.")
-    val operation: ChangeBatchStatusOperation,
+    val operation: ChangeBatchStatusOperation? = null,
     @Schema(description = "Number of seedlings to move from one status to the next.")
     val quantity: Int,
-)
+    @Schema(description = "Which status to move seedlings from.")
+    val previousPhase: NurseryBatchPhase? = null,
+    @Schema(description = "Which status to move seedlings to.")
+    val newPhase: NurseryBatchPhase? = null,
+) {
+  val initialPhase: NurseryBatchPhase
+    @JsonIgnore
+    get() =
+        previousPhase
+            ?: operation?.fromPhase
+            ?: throw IllegalStateException(
+                "Either operation or previousPhase and newPhase must be specified.")
+
+  val finalPhase: NurseryBatchPhase
+    @JsonIgnore
+    get() =
+        newPhase
+            ?: operation?.toPhase
+            ?: throw IllegalStateException(
+                "Either operation or previousPhase and newPhase must be specified.")
+}
 
 data class BatchPhotoPayload(val id: FileId)
 

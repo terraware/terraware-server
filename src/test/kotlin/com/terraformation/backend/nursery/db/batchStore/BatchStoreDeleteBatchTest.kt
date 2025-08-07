@@ -36,6 +36,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             germinatingQuantity = 1,
             notReadyQuantity = 2,
             readyQuantity = 3,
+            hardeningOffQuantity = 4,
             version = 1))
 
     store.delete(batchId)
@@ -50,7 +51,11 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
   fun `sets remaining quantities to zero if batch has withdrawals`() {
     val batchId =
         insertBatch(
-            germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 4, speciesId = speciesId)
+            germinatingQuantity = 1,
+            notReadyQuantity = 2,
+            hardeningOffQuantity = 3,
+            readyQuantity = 4,
+            speciesId = speciesId)
     insertNurseryWithdrawal()
     insertBatchWithdrawal()
 
@@ -113,7 +118,9 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
         totalLossCandidates = 100,
         totalLost = 25,
         notReadyQuantity = 200,
-        readyQuantity = 300)
+        readyQuantity = 300,
+        hardeningOffQuantity = 400,
+    )
 
     val batchId =
         insertBatch(
@@ -125,26 +132,30 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             totalLossCandidates = 100,
             totalLost = 0,
             notReadyQuantity = 2,
-            readyQuantity = 3)
+            readyQuantity = 3,
+            hardeningOffQuantity = 4,
+        )
     insertNurseryWithdrawal(purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 10,
         readyQuantityWithdrawn = 20,
-        notReadyQuantityWithdrawn = 30)
+        notReadyQuantityWithdrawn = 30,
+        hardeningOffQuantityWithdrawn = 40,
+    )
 
     val summaryBeforeDelete =
         SpeciesSummary(
             germinatingQuantity = 101,
             germinationRate = 58,
-            hardeningOffQuantity = 0,
+            hardeningOffQuantity = 404,
             notReadyQuantity = 202,
             readyQuantity = 303,
             lossRate = 13,
             nurseries = listOf(FacilitiesRow(id = facilityId, name = "Nursery")),
             speciesId = speciesId,
-            totalDead = 50,
-            totalQuantity = 505,
-            totalWithdrawn = 50)
+            totalDead = 90,
+            totalQuantity = 909,
+            totalWithdrawn = 90)
     assertEquals(
         summaryBeforeDelete, store.getSpeciesSummary(speciesId), "Summary before deleting batch")
 
@@ -155,15 +166,15 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
         SpeciesSummary(
             germinatingQuantity = 100,
             germinationRate = 50,
-            hardeningOffQuantity = 0,
+            hardeningOffQuantity = 400,
             notReadyQuantity = 200,
             readyQuantity = 300,
             lossRate = 25,
             nurseries = summaryBeforeDelete.nurseries,
             speciesId = speciesId,
-            totalDead = 50,
-            totalQuantity = 500,
-            totalWithdrawn = 50),
+            totalDead = 90,
+            totalQuantity = 900,
+            totalWithdrawn = 90),
         store.getSpeciesSummary(speciesId),
         "Summary after deleting batch")
   }
