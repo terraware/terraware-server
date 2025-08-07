@@ -4,13 +4,15 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
-import org.apache.naming.SelectorContext.prefix
+import kotlin.random.Random
+import kotlin.random.nextInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.RecordMapper
+import org.jooq.Select
 import org.jooq.SelectJoinStep
 import org.jooq.SelectSeekStepN
 import org.jooq.SortField
@@ -281,7 +283,7 @@ import org.jooq.impl.DSL
  *
  * Instead, user-supplied search criteria are turned into a subquery which is used to generate a
  * list of accession IDs. The nested query then selects the values of all the requested fields for
- * the accessions on that list. The subquery is constructed in [SearchService.filterResults].
+ * the accessions on that list. The subquery is constructed in [filterResults].
  *
  * In the above example, the query is structured like this (pseudocode):
  * ```
@@ -576,9 +578,12 @@ class NestedQueryBuilder(
    *
    * @throws IllegalStateException The query has already been rendered.
    */
-  fun addSelectFields(fields: Collection<SearchFieldPath>) {
+  fun addSelectFields(
+      fields: Collection<SearchFieldPath>,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
+  ) {
     assertNotRendered()
-    fields.forEach { addSelectField(it) }
+    fields.forEach { addSelectField(it, criteria) }
   }
 
   /**
@@ -710,7 +715,10 @@ class NestedQueryBuilder(
    * Adds a field to the list of fields the caller wants to get back in the search results. If the
    * field is in a sublist, adds it to the sublist query, creating the query if needed.
    */
-  private fun addSelectField(fieldPath: SearchFieldPath) {
+  private fun addSelectField(
+      fieldPath: SearchFieldPath,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
+  ) {
     val relativeField = fieldPath.relativeTo(prefix)
 
     if (relativeField.searchField is AliasField && !relativeField.isNested) {
@@ -730,7 +738,8 @@ class NestedQueryBuilder(
     } else if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
-      getSublistQuery(relativeField).addSelectField(fieldPath)
+      val sublistQuery = getSublistQuery(relativeField, criteria[fieldPath.prefix])
+      sublistQuery.addSelectField(fieldPath, criteria)
       selectFieldPositions.computeIfAbsent(sublistName) { nextSelectFieldPosition++ }
     } else {
       val searchField = fieldPath.searchField
@@ -778,7 +787,10 @@ class NestedQueryBuilder(
   }
 
   /** Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed. */
-  private fun getSublistQuery(relativeField: SearchFieldPath): NestedQueryBuilder {
+  private fun getSublistQuery(
+      relativeField: SearchFieldPath,
+      criteria: SearchNode? = null,
+  ): NestedQueryBuilder {
     if (!relativeField.isNested) {
       throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
     }
@@ -1060,5 +1072,108 @@ class NestedQueryBuilder(
     } else {
       throw IllegalArgumentException("BUG! $relativeField has no sublist")
     }
+  }
+
+  /** Returns a condition that filters search results based on a list of criteria. */
+  fun filterResults(
+      rootPrefix: SearchFieldPrefix,
+      criteria: SearchNode? = null,
+  ): Condition {
+    // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
+    // the visibility check on the root table, but not on parent tables.
+    val rootTable = rootPrefix.root
+    val rootCriterion = criteria ?: NoConditionNode()
+    val conditions =
+        listOfNotNull(
+            rootCriterion.toCondition(),
+            rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
+
+    val primaryKey = rootTable.primaryKey
+
+    val random = Random.nextInt()
+    val alias = "${rootTable.fromTable.name}_${random}"
+
+    val subquery =
+        joinWithSecondaryTables(
+                DSL.select(primaryKey).from(rootTable.fromTable.`as`(alias)),
+                rootPrefix,
+                rootCriterion)
+            .where(conditions)
+
+    // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
+    // would require adding the primary key class as a type parameter in tons of places throughout
+    // the search code. (Try it if you're bored; you'll see it quickly spirals out of control!)
+    // The tiny amount of extra type safety we'd gain isn't worth the amount of boilerplate it'd
+    // require, especially since the primary key type isn't known at compile time anyway.
+    @Suppress("UNCHECKED_CAST")
+    return primaryKey.`in`(subquery as Select<Nothing>)
+  }
+
+  /**
+   * Joins a query with any additional tables that are needed in order to determine which results
+   * the user has the ability to see. This is needed when the query's root prefix points at a table
+   * that doesn't include enough information to do visibility filtering.
+   *
+   * This can potentially join with multiple additional tables if the required information is more
+   * than one hop away in the graph of search tables.
+   *
+   * The resulting query will include all the tables that will be referenced by
+   * [conditionForVisibility].
+   *
+   * @param referencedTables Which tables are already referenced in the query. This method will not
+   *   join with these tables. Should not include tables that are only referenced in subqueries.
+   */
+  private fun <T : Record> joinForVisibility(
+      query: SelectJoinStep<T>,
+      referencedTables: Set<SearchTable>,
+      searchTable: SearchTable
+  ): SelectJoinStep<T> {
+    val inheritsVisibilityFrom = searchTable.inheritsVisibilityFrom ?: return query
+
+    return if (inheritsVisibilityFrom in referencedTables) {
+      // We've already joined with the next table in the chain, so no need to do it again. But we
+      // might still need to join with additional tables beyond the next one.
+      joinForVisibility(query, referencedTables, inheritsVisibilityFrom)
+    } else {
+      // The query doesn't already include the table we need to join with from this one in order to
+      // evaluate visibility; join with it and then see if there are additional tables that also
+      joinForVisibility(
+          searchTable.joinForVisibility(query),
+          referencedTables + inheritsVisibilityFrom,
+          inheritsVisibilityFrom)
+    }
+  }
+
+  /**
+   * Returns a condition that checks whether the user is able to view a particular search result.
+   *
+   * The condition can refer to columns in any tables that are added by [joinForVisibility].
+   */
+  private fun conditionForVisibility(searchTable: SearchTable): Condition? {
+    return searchTable.conditionForVisibility()
+        ?: searchTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) }
+  }
+
+  /**
+   * Adds JOIN clauses to a query to join the root table with any other tables referenced by a list
+   * of [SearchField] s. This is not used for nested fields.
+   *
+   * This handles indirect references; if a field is in a table that is two foreign-key hops away
+   * from `accession`, the intermediate table is included here too.
+   */
+  private fun <T : Record> joinWithSecondaryTables(
+      selectFrom: SelectJoinStep<T>,
+      rootPrefix: SearchFieldPrefix,
+      criteria: SearchNode,
+  ): SelectJoinStep<T> {
+    val referencedSublists = criteria.referencedSublists().distinctBy { it.searchTable }
+    val referencedTables = referencedSublists.map { it.searchTable }.toSet()
+
+    val joinedQuery =
+        referencedSublists.fold(selectFrom) { query, sublist ->
+          query.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
+        }
+
+    return joinForVisibility(joinedQuery, referencedTables, rootPrefix.root)
   }
 }
