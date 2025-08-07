@@ -9,6 +9,7 @@ import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -109,12 +110,36 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   }
 
   @Test
+  fun `hardening off quantity affects both rates`() {
+    runScenario(
+        initial = Quantities(100, 0, 15, 15),
+        transfer = Quantities(12, 0, 10, 0),
+        dead = Quantities(10, 0, 6, 10),
+        other = Quantities(0, 0, 0, 10),
+        current = Quantities(0, 0, 45, 27),
+        expectedGerminationRate = 89,
+        expectedLossRate = 18)
+  }
+
+  @Test
+  fun `all phase changes are taken into account when calculating rates`() {
+    runScenario(
+        initial = Quantities(100, 30, 15, 15),
+        transfer = Quantities(12, 8, 10, 0),
+        dead = Quantities(10, 11, 5, 10),
+        other = Quantities(0, 3, 0, 10),
+        current = Quantities(0, 14, 45, 22),
+        expectedGerminationRate = 89,
+        expectedLossRate = 24)
+  }
+
+  @Test
   fun `removes existing rates if more seedlings added via nursery transfer`() {
     val sourceBatchId = createBatch(Quantities(100, 100, 0, 100))
     val withdrawal = addTransfer(sourceBatchId, Quantities(10, 10, 0, 10))
     val batchId = withdrawal.batchWithdrawals.first().destinationBatchId!!
 
-    store.changeStatuses(batchId, 10, 0)
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 10)
 
     val beforeTransfer = store.fetchOneById(batchId)
     assertEquals(100, beforeTransfer.germinationRate, "Germination rate before second transfer")
@@ -172,7 +197,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     val hardeningOffChangeNeeded =
         initial.hardeningOff + (manualEdits?.hardeningOff ?: 0) -
             operations.sumOf { it.hardeningOff } -
-            current.hardeningOff + germinatingChangeNeeded
+            current.hardeningOff + notReadyChangeNeeded
 
     assertTrue(
         germinatingChangeNeeded >= 0 && notReadyChangeNeeded >= 0 && hardeningOffChangeNeeded >= 0,
@@ -182,9 +207,13 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     manualEdits?.let { addManualEdits(batchId, it) }
 
-    // Do this in two steps to mimic how the web app would behave.
-    store.changeStatuses(batchId, germinatingChangeNeeded, 0)
-    store.changeStatuses(batchId, 0, notReadyChangeNeeded)
+    // Do this in three steps to mimic how the web app would behave.
+    store.changeStatuses(
+        batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, germinatingChangeNeeded)
+    store.changeStatuses(
+        batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.HardeningOff, notReadyChangeNeeded)
+    store.changeStatuses(
+        batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, hardeningOffChangeNeeded)
 
     outPlant?.let { store.withdraw(newWithdrawalModel(batchId, it, WithdrawalPurpose.OutPlant)) }
     transfer?.let { addTransfer(batchId, it) }
