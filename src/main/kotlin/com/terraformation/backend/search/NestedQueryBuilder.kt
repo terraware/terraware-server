@@ -263,26 +263,32 @@ import org.jooq.impl.DSL
  *
  * ## Search criteria
  *
- * Say you have an accession with two bags, "A" and "B". The user does a search with a root table of
- * `accessions` and asks for results containing bag "A".
+ * Search criteria are passed in using a map of search prefix to search node. Each entry's prefix
+ * specifies where to apply its search node, with an empty prefix (aka root table prefix)
+ * determining which top level results to return, and each sublist prefix determining how to filter
+ * the results in the sublists of the top level results. The easiest way to understand this is via
+ * examples.
  *
- * There are two ways that could work, neither of them wrong: treat the search criterion as a filter
- * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
- * (returning a result with two bags).
+ * Say you have multiple accessions, one of which has two bags, "A" and "B". The user does a search
+ * with a prefix on the root table of `accessions` and asks for results containing bag "A".
  *
- * Our product decision is to do the latter. Search criteria control which top-level results are
- * returned, but each result includes the full set of values for all its fields. When you search for
- * bag "A", what you're really telling the system is that you want all _accessions_ that have a bag
- * called "A". And for each accession that matches the search criteria, you get back the full list
- * of bags.
+ * There are two ways this can be specified: request all accessions and for each only return a list
+ * of bags that have number "A" (or an empty list if the accession does not have that), or request
+ * only accessions that contain a bag "A" but return all bags for each accession returned.
  *
- * That's relevant here because it changes what the SQL looks like: we don't apply any search
- * criteria to the multiset subqueries, because we want to return the full set of data for any
- * accessions that match the criteria.
+ * In most instances, you will want the latter. Search criteria without a prefix filters out the
+ * final results, but each result includes the full set of values for all the specified fields. When
+ * you search without a prefix (aka a prefix of the root table) for bag "A", what you're really
+ * telling the system is that you want all _accessions_ that have a bag called "A". And for each
+ * accession that matches the search criteria, you get back the full list of bags.
  *
- * Instead, user-supplied search criteria are turned into a subquery which is used to generate a
- * list of accession IDs. The nested query then selects the values of all the requested fields for
- * the accessions on that list. The subquery is constructed in [filterResults].
+ * That's relevant here because it changes what the SQL looks like: for non-prefixed search
+ * criteria, we don't apply any search criteria to the multiset subqueries, because we want to
+ * return the full set of data for any accessions that match the criteria.
+ *
+ * Instead, user-supplied, non-prefixed search criteria are turned into a subquery which is used to
+ * generate a list of accession IDs. The nested query then selects the values of all the requested
+ * fields for the accessions on that list. The subquery is constructed in [filterResults].
  *
  * In the above example, the query is structured like this (pseudocode):
  * ```
@@ -298,7 +304,41 @@ import org.jooq.impl.DSL
  *     WHERE bags.number = 'A')
  * ```
  *
- * The key point is that the multiset will contain _all_ the bags for the accession.
+ * The key point is that the multiset will contain _all_ the bags for the accession in this
+ * scenario.
+ *
+ * Alternatively, adding search criteria with a prefix controls which values in a multiset get
+ * returned, without affecting which top-level results are returned.
+ *
+ * Continuing the above example schema, suppose you have two accessions, with a structure like so:
+ * ```yaml
+ * accessions:
+ *   - id: 1
+ *     bags:
+ *       - number: "A"
+ *       - number: "B"
+ *   - id: 2
+ *     bags:
+ *       - number: "Y"
+ *       - number: "Z"
+ * ```
+ *
+ * If the user requests a filter with a prefix of `accessions.bags` to have a `number` of "A", then
+ * the results will contain both accessions, with Accession 1 having a bags list of only "A", and
+ * Accession 2 having an empty bags list (which is returned as no bags).
+ *
+ * In this multiset filter example, the query is structured like this (pseudocode):
+ * ```
+ * SELECT accessions.id,
+ *        MULTISET(SELECT bags.number
+ *                 FROM bags
+ *                 WHERE accessions.id = bags.accession_id
+ *                 AND bags.number = 'A')
+ * FROM accessions
+ * ```
+ *
+ * Both types of filtering can be used independently or in conjunction to return the desired
+ * results.
  *
  * ## Ordering
  *
@@ -711,8 +751,11 @@ class NestedQueryBuilder(
   }
 
   /**
-   * Adds a field to the list of fields the caller wants to get back in the search results. If the
-   * field is in a sublist, adds it to the sublist query, creating the query if needed.
+   * Adds a field to the list of fields the caller wants to get back in the search results.
+   *
+   * If the field is in a sublist, adds it to the sublist query, creating the query if needed. If
+   * the [fieldPath] matches a prefix in the [criteria] map, the sublist query will filter based on
+   * that [SearchNode].
    */
   private fun addSelectField(
       fieldPath: SearchFieldPath,
@@ -785,7 +828,11 @@ class NestedQueryBuilder(
     }
   }
 
-  /** Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed. */
+  /**
+   * Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed.
+   *
+   * If [criteria] is specified, filter the sublist with that [SearchNode].
+   */
   private fun getSublistQuery(
       relativeField: SearchFieldPath,
       criteria: SearchNode? = null,
