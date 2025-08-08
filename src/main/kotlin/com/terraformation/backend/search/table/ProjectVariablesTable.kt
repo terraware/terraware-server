@@ -31,13 +31,18 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          idWrapperField("id", PROJECT_VARIABLES.VARIABLE_ID) { VariableId(it) },
           booleanField("isList", PROJECT_VARIABLES.IS_LIST),
           booleanField("isMultiSelect", PROJECT_VARIABLES.IS_MULTI_SELECT),
+          textField("name", PROJECT_VARIABLES.NAME),
           idWrapperField("projectId", PROJECT_VARIABLES.PROJECT_ID) { ProjectId(it) },
           stableIdField("stableId", PROJECT_VARIABLES.STABLE_ID),
-          idWrapperField("variableId", PROJECT_VARIABLES.VARIABLE_ID) { VariableId(it) },
-          textField("variableName", PROJECT_VARIABLES.NAME),
-          enumField("variableType", PROJECT_VARIABLES.VARIABLE_TYPE_ID, false),
+          enumField("type", PROJECT_VARIABLES.VARIABLE_TYPE_ID, false),
+          idWrapperField("variableId", PROJECT_VARIABLES.VARIABLE_ID) {
+            VariableId(it)
+          }, // alias for id
+          textField("variableName", PROJECT_VARIABLES.NAME), // alias for name
+          enumField("variableType", PROJECT_VARIABLES.VARIABLE_TYPE_ID, false), // alias for type
       )
 
   override fun conditionForVisibility(): Condition {
