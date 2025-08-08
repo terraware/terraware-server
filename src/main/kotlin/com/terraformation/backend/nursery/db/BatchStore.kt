@@ -61,6 +61,7 @@ import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewBatchModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
@@ -490,30 +491,56 @@ class BatchStore(
     }
   }
 
+  private fun calculateNewQuantities(
+      batch: ExistingBatchModel,
+      previousPhase: NurseryBatchPhase,
+      newPhase: NurseryBatchPhase,
+      quantityToChange: Int,
+  ): Map<NurseryBatchPhase, Int> {
+    val quantities =
+        mutableMapOf(
+            NurseryBatchPhase.Germinating to batch.germinatingQuantity,
+            NurseryBatchPhase.NotReady to batch.notReadyQuantity,
+            NurseryBatchPhase.HardeningOff to batch.hardeningOffQuantity,
+            NurseryBatchPhase.Ready to batch.readyQuantity)
+
+    val startingQuantity = quantities[previousPhase]!!
+    if (startingQuantity < quantityToChange) {
+      throw BatchInventoryInsufficientException(batch.id)
+    }
+
+    quantities[previousPhase] = startingQuantity - quantityToChange
+    quantities[newPhase] = quantities[newPhase]!! + quantityToChange
+
+    return quantities
+  }
+
   fun changeStatuses(
       batchId: BatchId,
-      germinatingQuantityToChange: Int,
-      notReadyQuantityToChange: Int
+      previousPhase: NurseryBatchPhase,
+      newPhase: NurseryBatchPhase,
+      quantityToChange: Int
   ) {
     requirePermissions { updateBatch(batchId) }
 
-    if (germinatingQuantityToChange == 0 && notReadyQuantityToChange == 0) {
+    if (quantityToChange == 0 || previousPhase == newPhase) {
       return
     }
 
+    if (previousPhase > newPhase) {
+      throw BatchPhaseReversalNotAllowedException(batchId)
+    }
+
     retryVersionedBatchUpdate(batchId) { batch ->
-      if (batch.germinatingQuantity < germinatingQuantityToChange ||
-          batch.notReadyQuantity < notReadyQuantityToChange) {
-        throw BatchInventoryInsufficientException(batchId)
-      }
+      val newQuantities = calculateNewQuantities(batch, previousPhase, newPhase, quantityToChange)
 
       updateQuantities(
           batchId,
           batch.version,
-          batch.germinatingQuantity - germinatingQuantityToChange,
-          batch.notReadyQuantity - notReadyQuantityToChange + germinatingQuantityToChange,
-          0,
-          batch.readyQuantity + notReadyQuantityToChange,
+          newQuantities[NurseryBatchPhase.Germinating]!!,
+          newQuantities[NurseryBatchPhase.NotReady]!!,
+          newQuantities[NurseryBatchPhase.HardeningOff]!!,
+          newQuantities[NurseryBatchPhase.Ready]!!,
           BatchQuantityHistoryType.StatusChanged,
       )
     }

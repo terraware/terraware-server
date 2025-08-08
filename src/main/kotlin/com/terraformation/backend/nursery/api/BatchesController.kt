@@ -1,6 +1,5 @@
 package com.terraformation.backend.nursery.api
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
@@ -35,6 +34,7 @@ import com.terraformation.backend.nursery.db.BatchPhotoService
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.NewBatchModel
+import com.terraformation.backend.nursery.model.NurseryBatchPhase
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -147,8 +147,15 @@ class BatchesController(
       @PathVariable("id") id: BatchId,
       @RequestBody payload: ChangeBatchStatusRequestPayload
   ): BatchResponsePayload {
-    batchStore.changeStatuses(
-        id, payload.germinatingQuantityToChange, payload.notReadyQuantityToChange)
+    val (previousPhase, newPhase) =
+        when (payload.operation) {
+          ChangeBatchStatusOperation.GerminatingToNotReady ->
+              NurseryBatchPhase.Germinating to NurseryBatchPhase.NotReady
+          ChangeBatchStatusOperation.NotReadyToReady ->
+              NurseryBatchPhase.NotReady to NurseryBatchPhase.Ready
+        }
+
+    batchStore.changeStatuses(id, previousPhase, newPhase, payload.quantity)
 
     return getBatch(id)
   }
@@ -386,25 +393,7 @@ data class ChangeBatchStatusRequestPayload(
     val operation: ChangeBatchStatusOperation,
     @Schema(description = "Number of seedlings to move from one status to the next.")
     val quantity: Int,
-) {
-  val germinatingQuantityToChange
-    @JsonIgnore
-    get() =
-        if (operation == ChangeBatchStatusOperation.GerminatingToNotReady) {
-          quantity
-        } else {
-          0
-        }
-
-  val notReadyQuantityToChange
-    @JsonIgnore
-    get() =
-        if (operation == ChangeBatchStatusOperation.NotReadyToReady) {
-          quantity
-        } else {
-          0
-        }
-}
+)
 
 data class BatchPhotoPayload(val id: FileId)
 
