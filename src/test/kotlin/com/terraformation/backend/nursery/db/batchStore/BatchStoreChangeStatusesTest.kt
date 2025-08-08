@@ -41,6 +41,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
     assertEquals(
         before.copy(
             germinatingQuantity = 8,
+            hardeningOffQuantity = 0,
             notReadyQuantity = 15,
             readyQuantity = 37,
             totalLost = 0,
@@ -58,6 +59,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 8,
+                hardeningOffQuantity = 0,
                 notReadyQuantity = 15,
                 readyQuantity = 37,
                 version = 2,

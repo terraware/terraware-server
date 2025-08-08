@@ -255,8 +255,10 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 batchNumber = "1",
                 facilityId = batchSlot.captured.facilityId,
                 germinatingQuantity = batchSlot.captured.germinatingQuantity,
+                hardeningOffQuantity = batchSlot.captured.hardeningOffQuantity,
                 id = batchId,
                 latestObservedGerminatingQuantity = batchSlot.captured.germinatingQuantity,
+                latestObservedHardeningOffQuantity = batchSlot.captured.hardeningOffQuantity,
                 latestObservedNotReadyQuantity = batchSlot.captured.notReadyQuantity,
                 latestObservedReadyQuantity = batchSlot.captured.readyQuantity,
                 latestObservedTime = Instant.EPOCH,
@@ -291,6 +293,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   notes = "Notes",
                   notReadyQuantity = 2,
                   readyQuantity = 3,
+                  hardeningOffQuantity = 0,
                   speciesId = null))
 
       assertEquals(seeds(4), updatedAccession.remaining, "Seeds remaining")
@@ -313,6 +316,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 1,
               notReadyQuantity = 2,
               readyQuantity = 3,
+              hardeningOffQuantity = 0,
               speciesId = null)
 
       val (accession, batch) = service.createNurseryTransfer(accessionId, newBatch)
@@ -353,6 +357,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   germinatingQuantity = 1,
                   notReadyQuantity = 2,
                   readyQuantity = 3,
+                  hardeningOffQuantity = 0,
                   speciesId = null))
 
       assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3)), accession.remaining)
@@ -371,6 +376,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
                 readyQuantity = 0,
+                hardeningOffQuantity = 0,
                 speciesId = null))
       }
     }
@@ -388,6 +394,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
                 readyQuantity = 0,
+                hardeningOffQuantity = 0,
                 speciesId = null))
       }
     }
@@ -403,6 +410,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1000,
                 notReadyQuantity = 2000,
                 readyQuantity = 3000,
+                hardeningOffQuantity = 0,
                 speciesId = null))
       }
     }
@@ -421,6 +429,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
                 readyQuantity = 0,
+                hardeningOffQuantity = 0,
                 speciesId = null))
       }
     }
@@ -438,6 +447,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1,
                 notReadyQuantity = 0,
                 readyQuantity = 0,
+                hardeningOffQuantity = 0,
                 speciesId = null))
       }
     }

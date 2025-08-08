@@ -33,6 +33,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         germinating = 1,
         notReady = 2,
         ready = 3,
+        hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Observed)
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -42,13 +43,15 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             germinatingQuantity = 1,
             notReadyQuantity = 2,
             readyQuantity = 3,
+            hardeningOffQuantity = 4,
             latestObservedGerminatingQuantity = 1,
             latestObservedNotReadyQuantity = 2,
             latestObservedReadyQuantity = 3,
+            latestObservedHardeningOffQuantity = 4,
             latestObservedTime = updateTime,
             modifiedTime = updateTime,
             totalLost = 0,
-            totalLossCandidates = 5,
+            totalLossCandidates = 9,
             version = 2),
         after)
   }
@@ -63,6 +66,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         germinating = 1,
         notReady = 2,
         ready = 3,
+        hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Computed)
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -72,8 +76,9 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             germinatingQuantity = 1,
             notReadyQuantity = 2,
             readyQuantity = 3,
+            hardeningOffQuantity = 4,
             totalLost = 0,
-            totalLossCandidates = 5,
+            totalLossCandidates = 9,
             modifiedTime = updateTime,
             version = 2),
         after)
@@ -87,6 +92,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         germinating = 1,
         notReady = 2,
         ready = 3,
+        hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Computed)
 
     assertEquals(
@@ -99,6 +105,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 germinatingQuantity = 1,
                 notReadyQuantity = 2,
                 readyQuantity = 3,
+                hardeningOffQuantity = 4,
                 version = 2,
             ),
         ),
@@ -110,7 +117,11 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
     val before =
         batchesDao
             .fetchOneById(batchId)!!
-            .copy(germinatingQuantity = 1, notReadyQuantity = 2, readyQuantity = 3)
+            .copy(
+                germinatingQuantity = 1,
+                notReadyQuantity = 2,
+                readyQuantity = 3,
+                hardeningOffQuantity = 4)
     batchesDao.update(before)
 
     store.updateQuantities(
@@ -119,6 +130,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         germinating = 1,
         notReady = 2,
         ready = 3,
+        hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Observed)
 
     assertEquals(before, batchesDao.fetchOneById(batchId))
@@ -134,6 +146,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
           germinating = 1,
           notReady = 1,
           ready = 1,
+          hardeningOff = 1,
           historyType = BatchQuantityHistoryType.Observed)
     }
   }

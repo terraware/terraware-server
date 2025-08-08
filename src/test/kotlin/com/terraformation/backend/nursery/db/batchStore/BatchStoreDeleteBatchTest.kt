@@ -136,6 +136,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
         SpeciesSummary(
             germinatingQuantity = 101,
             germinationRate = 58,
+            hardeningOffQuantity = 0,
             notReadyQuantity = 202,
             readyQuantity = 303,
             lossRate = 13,
@@ -154,6 +155,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
         SpeciesSummary(
             germinatingQuantity = 100,
             germinationRate = 50,
+            hardeningOffQuantity = 0,
             notReadyQuantity = 200,
             readyQuantity = 300,
             lossRate = 25,

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class BatchStoreCreateBatchTest : BatchStoreTest() {
+
   @Test
   fun `creates new batches`() {
     val subLocationId1 = insertSubLocation()
@@ -38,6 +39,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 facilityId = facilityId,
                 germinatingQuantity = 0,
                 germinationStartedDate = LocalDate.of(2022, 2, 20),
+                hardeningOffQuantity = 4,
                 notes = "notes",
                 notReadyQuantity = 1,
                 readyByDate = LocalDate.of(2022, 3, 4),
@@ -62,10 +64,12 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             facilityId = facilityId,
             germinatingQuantity = 0,
             germinationStartedDate = LocalDate.of(2022, 2, 20),
+            hardeningOffQuantity = 4,
             id = returnedModel.id,
             latestObservedGerminatingQuantity = 0,
             latestObservedNotReadyQuantity = 1,
             latestObservedReadyQuantity = 2,
+            latestObservedHardeningOffQuantity = 4,
             latestObservedTime = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
             lossRate = 0,
             modifiedBy = user.userId,
@@ -93,6 +97,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
                 readyQuantity = 2,
+                hardeningOffQuantity = 4,
                 version = 1,
             ),
         )
@@ -163,6 +168,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
                 readyQuantity = 2,
+                hardeningOffQuantity = 4,
                 speciesId = speciesId,
             )
             .toModel()
@@ -189,6 +195,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
                 readyQuantity = 2,
+                hardeningOffQuantity = 4,
                 speciesId = speciesId,
             )
             .toModel()
@@ -214,6 +221,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
                 readyQuantity = 2,
+                hardeningOffQuantity = 4,
                 speciesId = speciesId,
             )
             .toModel()

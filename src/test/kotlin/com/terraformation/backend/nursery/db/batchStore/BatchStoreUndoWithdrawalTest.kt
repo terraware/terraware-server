@@ -36,8 +36,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             germinatingQuantity = 10,
             notReadyQuantity = 20,
             readyQuantity = 30,
+            hardeningOffQuantity = 40,
             totalLost = 0,
-            totalLossCandidates = 20 + 30)
+            totalLossCandidates = 20 + 30 + 40)
     batch2Id =
         insertBatch(
             speciesId = speciesId,
@@ -45,8 +46,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             germinatingQuantity = 40,
             notReadyQuantity = 50,
             readyQuantity = 60,
+            hardeningOffQuantity = 70,
             totalLost = 0,
-            totalLossCandidates = 50 + 60)
+            totalLossCandidates = 50 + 60 + 70)
 
     every { user.canReadWithdrawal(any()) } returns true
   }
@@ -61,8 +63,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         makeInitialWithdrawal(
             batchWithdrawals =
                 listOf(
-                    BatchWithdrawalModel(batch1Id, null, 1, 2, 3),
-                    BatchWithdrawalModel(batch2Id, null, 4, 5, 6)))
+                    BatchWithdrawalModel(batch1Id, null, 1, 4, 2, 3),
+                    BatchWithdrawalModel(batch2Id, null, 4, 7, 5, 6)))
 
     clock.instant = clock.instant.plus(2, ChronoUnit.DAYS)
 
@@ -72,6 +74,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         germinating = 100,
         notReady = 110,
         ready = 120,
+        hardeningOff = 130,
         historyType = BatchQuantityHistoryType.Observed)
 
     val batch2AfterQuantityEdit = store.fetchOneById(batch2Id)
@@ -84,8 +87,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         ExistingWithdrawalModel(
             batchWithdrawals =
                 listOf(
-                    BatchWithdrawalModel(batch1Id, null, -1, -2, -3),
-                    BatchWithdrawalModel(batch2Id, null, -4, -5, -6),
+                    BatchWithdrawalModel(batch1Id, null, -1, -4, -2, -3),
+                    BatchWithdrawalModel(batch2Id, null, -4, -7, -5, -6),
                 ),
             facilityId = facilityId,
             id = undoWithdrawal.id,
@@ -119,6 +122,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 germinatingQuantity = 10,
                 notReadyQuantity = 20,
                 readyQuantity = 30,
+                hardeningOffQuantity = 40,
                 withdrawalId = undoWithdrawal.id,
                 version = 3,
             )),
@@ -174,7 +178,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                   batchId = batch1Id,
                   germinatingQuantityWithdrawn = 1,
                   notReadyQuantityWithdrawn = 2,
-                  readyQuantityWithdrawn = 3)),
+                  readyQuantityWithdrawn = 3,
+                  hardeningOffQuantityWithdrawn = 4)),
       destinationFacilityId: FacilityId? = null,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
       withdrawnDate: LocalDate = LocalDate.EPOCH,

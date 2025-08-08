@@ -44,8 +44,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             germinatingQuantity = 10,
             notReadyQuantity = 20,
             readyQuantity = 30,
+            hardeningOffQuantity = 40,
             totalLost = 0,
-            totalLossCandidates = 20 + 30)
+            totalLossCandidates = 20 + 30 + 40)
     species1Batch2Id =
         insertBatch(
             speciesId = speciesId,
@@ -53,8 +54,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             germinatingQuantity = 40,
             notReadyQuantity = 50,
             readyQuantity = 60,
+            hardeningOffQuantity = 70,
             totalLost = 0,
-            totalLossCandidates = 50 + 60)
+            totalLossCandidates = 50 + 60 + 70)
     species2Batch1Id =
         insertBatch(
             speciesId = speciesId2,
@@ -62,8 +64,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             germinatingQuantity = 70,
             notReadyQuantity = 80,
             readyQuantity = 90,
+            hardeningOffQuantity = 100,
             totalLost = 0,
-            totalLossCandidates = 80 + 90)
+            totalLossCandidates = 80 + 90 + 100)
   }
 
   @Test
@@ -89,17 +92,20 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 1,
                             notReadyQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 3),
+                            readyQuantityWithdrawn = 3,
+                            hardeningOffQuantityWithdrawn = 4),
                         BatchWithdrawalModel(
                             batchId = species1Batch2Id,
                             germinatingQuantityWithdrawn = 4,
                             notReadyQuantityWithdrawn = 5,
-                            readyQuantityWithdrawn = 6),
+                            readyQuantityWithdrawn = 6,
+                            hardeningOffQuantityWithdrawn = 7),
                         BatchWithdrawalModel(
                             batchId = species2Batch1Id,
                             germinatingQuantityWithdrawn = 7,
                             notReadyQuantityWithdrawn = 8,
-                            readyQuantityWithdrawn = 9))))
+                            readyQuantityWithdrawn = 9,
+                            hardeningOffQuantityWithdrawn = 10))))
 
     assertAll(
         {
@@ -109,7 +115,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
-                      totalLossCandidates = 20 + 30 - 2 - 3,
+                      hardeningOffQuantity = 40 - 4,
+                      totalLossCandidates = 20 + 30 + 40 - 2 - 3 - 4,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -117,7 +124,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 40 - 4,
                       notReadyQuantity = 50 - 5,
                       readyQuantity = 60 - 6,
-                      totalLossCandidates = 50 + 60 - 5 - 6,
+                      hardeningOffQuantity = 70 - 7,
+                      totalLossCandidates = 50 + 60 + 70 - 5 - 6 - 7,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -125,7 +133,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 70 - 7,
                       notReadyQuantity = 80 - 8,
                       readyQuantity = 90 - 9,
-                      totalLossCandidates = 80 + 90 - 8 - 9,
+                      hardeningOffQuantity = 100 - 10,
+                      totalLossCandidates = 80 + 90 + 100 - 8 - 9 - 10,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -148,17 +157,20 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       batchId = species1Batch1Id,
                       germinatingQuantity = 9,
                       notReadyQuantity = 18,
-                      readyQuantity = 27),
+                      readyQuantity = 27,
+                      hardeningOffQuantity = 36),
                   newHistoryRow.copy(
                       batchId = species1Batch2Id,
                       germinatingQuantity = 36,
                       notReadyQuantity = 45,
-                      readyQuantity = 54),
+                      readyQuantity = 54,
+                      hardeningOffQuantity = 63),
                   newHistoryRow.copy(
                       batchId = species2Batch1Id,
                       germinatingQuantity = 63,
                       notReadyQuantity = 72,
-                      readyQuantity = 81)),
+                      readyQuantity = 81,
+                      hardeningOffQuantity = 90)),
               batchQuantityHistoryDao
                   .findAll()
                   .map { it.copy(id = null) }
@@ -208,7 +220,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 100000,
                             notReadyQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 3))))
+                            readyQuantityWithdrawn = 3,
+                            hardeningOffQuantityWithdrawn = 4))))
 
     assertAll(
         {
@@ -243,7 +256,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       withdrawalId = withdrawal.id,
                       germinatingQuantityWithdrawn = 100000,
                       notReadyQuantityWithdrawn = 2,
-                      readyQuantityWithdrawn = 3)),
+                      readyQuantityWithdrawn = 3,
+                      hardeningOffQuantityWithdrawn = 4)),
               batchWithdrawalsDao.findAll(),
               "Should have inserted batch withdrawals row")
         },
@@ -281,7 +295,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 1,
                             notReadyQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 3))))
+                            readyQuantityWithdrawn = 3,
+                            hardeningOffQuantityWithdrawn = 4))))
 
     assertAll(
         {
@@ -292,7 +307,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   germinatingQuantity = 10 - 1,
                   notReadyQuantity = 20 - 2,
                   readyQuantity = 30 - 3,
-                  totalLossCandidates = 20 + 30 - 2 - 3,
+                  hardeningOffQuantity = 40 - 4,
+                  totalLossCandidates = 20 + 30 + 40 - 2 - 3 - 4,
               ),
               batchesDao.fetchOneById(species1Batch1Id),
               "Should have deducted withdrawn quantities from batch")
@@ -309,6 +325,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 9,
                       notReadyQuantity = 18,
                       readyQuantity = 27,
+                      hardeningOffQuantity = 36,
                       version = 2,
                   ),
               ),
@@ -338,7 +355,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       withdrawalId = withdrawal.id,
                       germinatingQuantityWithdrawn = 1,
                       notReadyQuantityWithdrawn = 2,
-                      readyQuantityWithdrawn = 3)),
+                      readyQuantityWithdrawn = 3,
+                      hardeningOffQuantityWithdrawn = 4)),
               batchWithdrawalsDao.findAll(),
               "Should have inserted batch withdrawals row")
         },
@@ -359,6 +377,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             germinatingQuantity = 10,
             notReadyQuantity = 20,
             readyQuantity = 30,
+            hardeningOffQuantity = 40,
             version = 1))
 
     val initialSummary = store.getSpeciesSummary(speciesId)
@@ -375,17 +394,19 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                         batchId = species1Batch1Id,
                         germinatingQuantityWithdrawn = 1,
                         notReadyQuantityWithdrawn = 2,
-                        readyQuantityWithdrawn = 3))))
+                        readyQuantityWithdrawn = 3,
+                        hardeningOffQuantityWithdrawn = 4))))
 
     assertEquals(
         initialSummary.copy(
             germinatingQuantity = initialSummary.germinatingQuantity - 1,
             notReadyQuantity = initialSummary.notReadyQuantity - 2,
             readyQuantity = initialSummary.readyQuantity - 3,
-            lossRate = (5 * 100 / initialSummary.totalQuantity).toInt(),
-            totalDead = 5,
-            totalQuantity = initialSummary.totalQuantity - 5,
-            totalWithdrawn = 5,
+            hardeningOffQuantity = initialSummary.hardeningOffQuantity - 4,
+            lossRate = (9 * 100 / initialSummary.totalQuantity).toInt(),
+            totalDead = 9,
+            totalQuantity = initialSummary.totalQuantity - 9,
+            totalWithdrawn = 9,
         ),
         store.getSpeciesSummary(speciesId))
   }
@@ -405,12 +426,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 0,
                           notReadyQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 1),
+                          readyQuantityWithdrawn = 1,
+                          hardeningOffQuantityWithdrawn = 0),
                       BatchWithdrawalModel(
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 0,
                           notReadyQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 1))))
+                          readyQuantityWithdrawn = 1,
+                          hardeningOffQuantityWithdrawn = 0))))
     }
   }
 
@@ -429,7 +452,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 1000,
                           notReadyQuantityWithdrawn = 2000,
-                          readyQuantityWithdrawn = 3000))))
+                          readyQuantityWithdrawn = 3000,
+                          hardeningOffQuantityWithdrawn = 4000))))
     }
   }
 
@@ -446,12 +470,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 1,
-                          readyQuantityWithdrawn = 1),
+                          readyQuantityWithdrawn = 1,
+                          hardeningOffQuantityWithdrawn = 1),
                       BatchWithdrawalModel(
                           batchId = species1Batch2Id,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 1,
-                          readyQuantityWithdrawn = 1),
+                          readyQuantityWithdrawn = 1,
+                          hardeningOffQuantityWithdrawn = 1),
                   ),
               facilityId = facilityId,
               id = null,
@@ -475,12 +501,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 1,
-                          readyQuantityWithdrawn = 1),
+                          readyQuantityWithdrawn = 1,
+                          hardeningOffQuantityWithdrawn = 1),
                       BatchWithdrawalModel(
                           batchId = otherFacilityBatchId,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 0),
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0),
                   ),
               facilityId = facilityId,
               id = null,
@@ -516,17 +544,20 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 1,
                             notReadyQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 3),
+                            readyQuantityWithdrawn = 3,
+                            hardeningOffQuantityWithdrawn = 4),
                         BatchWithdrawalModel(
                             batchId = species1Batch2Id,
                             germinatingQuantityWithdrawn = 4,
                             notReadyQuantityWithdrawn = 5,
-                            readyQuantityWithdrawn = 6),
+                            readyQuantityWithdrawn = 6,
+                            hardeningOffQuantityWithdrawn = 7),
                         BatchWithdrawalModel(
                             batchId = species2Batch1Id,
                             germinatingQuantityWithdrawn = 10,
                             notReadyQuantityWithdrawn = 11,
-                            readyQuantityWithdrawn = 12))),
+                            readyQuantityWithdrawn = 12,
+                            hardeningOffQuantityWithdrawn = 13))),
             newReadyByDate)
 
     // The order the new batches get created is undefined, so either new batch ID/number could
@@ -546,7 +577,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
-                      totalLossCandidates = 20 + 30 - 2 - 3,
+                      hardeningOffQuantity = 40 - 4,
+                      totalLossCandidates = 20 + 30 + 40 - 2 - 3 - 4,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -554,7 +586,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 40 - 4,
                       notReadyQuantity = 50 - 5,
                       readyQuantity = 60 - 6,
-                      totalLossCandidates = 50 + 60 - 5 - 6,
+                      hardeningOffQuantity = 70 - 7,
+                      totalLossCandidates = 50 + 60 + 70 - 5 - 6 - 7,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -562,7 +595,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 70 - 10,
                       notReadyQuantity = 80 - 11,
                       readyQuantity = 90 - 12,
-                      totalLossCandidates = 80 + 90 - 11 - 12,
+                      hardeningOffQuantity = 100 - 13,
+                      totalLossCandidates = 80 + 90 + 100 - 11 - 12 - 13,
                       modifiedTime = withdrawalTime,
                       version = 2,
                   ),
@@ -595,9 +629,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
                       readyQuantity = 3,
+                      hardeningOffQuantity = 4,
                       latestObservedGerminatingQuantity = 1,
                       latestObservedNotReadyQuantity = 2,
                       latestObservedReadyQuantity = 3,
+                      latestObservedHardeningOffQuantity = 4,
                       speciesId = speciesId,
                   ),
                   newBatch.copy(
@@ -607,9 +643,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 4,
                       notReadyQuantity = 5,
                       readyQuantity = 6,
+                      hardeningOffQuantity = 7,
                       latestObservedGerminatingQuantity = 4,
                       latestObservedNotReadyQuantity = 5,
                       latestObservedReadyQuantity = 6,
+                      latestObservedHardeningOffQuantity = 7,
                       speciesId = speciesId,
                   ),
                   newBatch.copy(
@@ -619,9 +657,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10,
                       notReadyQuantity = 11,
                       readyQuantity = 12,
+                      hardeningOffQuantity = 13,
                       latestObservedGerminatingQuantity = 10,
                       latestObservedNotReadyQuantity = 11,
                       latestObservedReadyQuantity = 12,
+                      latestObservedHardeningOffQuantity = 13,
                       speciesId = speciesId2,
                   ),
               ),
@@ -639,6 +679,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 1,
                       notReadyQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
+                      hardeningOffQuantityWithdrawn = 4,
                       withdrawalId = withdrawal.id),
                   BatchWithdrawalsRow(
                       batchId = species1Batch2Id,
@@ -646,6 +687,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 4,
                       notReadyQuantityWithdrawn = 5,
                       readyQuantityWithdrawn = 6,
+                      hardeningOffQuantityWithdrawn = 7,
                       withdrawalId = withdrawal.id),
                   BatchWithdrawalsRow(
                       batchId = species2Batch1Id,
@@ -653,6 +695,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 10,
                       notReadyQuantityWithdrawn = 11,
                       readyQuantityWithdrawn = 12,
+                      hardeningOffQuantityWithdrawn = 13,
                       withdrawalId = withdrawal.id),
               ),
               batchWithdrawalsDao.findAll().sortedBy { it.germinatingQuantityWithdrawn },
@@ -679,6 +722,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
                       readyQuantity = 3,
+                      hardeningOffQuantity = 4,
                       version = 1,
                   ),
                   destinationBatchHistoryRow.copy(
@@ -686,6 +730,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 4,
                       notReadyQuantity = 5,
                       readyQuantity = 6,
+                      hardeningOffQuantity = 7,
                       version = 1,
                   ),
                   originBatchHistoryRow.copy(
@@ -693,6 +738,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
+                      hardeningOffQuantity = 40 - 4,
                       version = 2,
                   ),
                   destinationBatchHistoryRow.copy(
@@ -700,6 +746,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10,
                       notReadyQuantity = 11,
                       readyQuantity = 12,
+                      hardeningOffQuantity = 13,
                       version = 1,
                   ),
                   originBatchHistoryRow.copy(
@@ -707,6 +754,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 40 - 4,
                       notReadyQuantity = 50 - 5,
                       readyQuantity = 60 - 6,
+                      hardeningOffQuantity = 70 - 7,
                       version = 2,
                   ),
                   originBatchHistoryRow.copy(
@@ -714,6 +762,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 70 - 10,
                       notReadyQuantity = 80 - 11,
                       readyQuantity = 90 - 12,
+                      hardeningOffQuantity = 100 - 13,
                       version = 2,
                   ),
               ),
@@ -767,12 +816,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                         batchId = species1Batch1Id,
                         germinatingQuantityWithdrawn = 0,
                         notReadyQuantityWithdrawn = 0,
-                        readyQuantityWithdrawn = 1),
+                        readyQuantityWithdrawn = 1,
+                        hardeningOffQuantityWithdrawn = 0),
                     BatchWithdrawalModel(
                         batchId = species1Batch2Id,
                         germinatingQuantityWithdrawn = 0,
                         notReadyQuantityWithdrawn = 0,
-                        readyQuantityWithdrawn = 2))))
+                        readyQuantityWithdrawn = 2,
+                        hardeningOffQuantityWithdrawn = 0))))
 
     val newBatches =
         batchesDao.fetchByFacilityId(destinationFacilityId).associate {
@@ -810,7 +861,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 1,
                             notReadyQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 3))),
+                            readyQuantityWithdrawn = 3,
+                            hardeningOffQuantityWithdrawn = 4))),
             newReadyByDate)
 
     val secondWithdrawalTime = ZonedDateTime.of(2023, 2, 2, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -830,7 +882,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             batchId = species1Batch1Id,
                             germinatingQuantityWithdrawn = 4,
                             notReadyQuantityWithdrawn = 5,
-                            readyQuantityWithdrawn = 6))),
+                            readyQuantityWithdrawn = 6,
+                            hardeningOffQuantityWithdrawn = 7))),
             newReadyByDate)
 
     val newBatch = batchesDao.fetchByFacilityId(destinationFacilityId).first()
@@ -842,7 +895,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   germinatingQuantity = 10 - 1 - 4,
                   notReadyQuantity = 20 - 2 - 5,
                   readyQuantity = 30 - 3 - 6,
-                  totalLossCandidates = 20 + 30 - 2 - 5 - 3 - 6,
+                  hardeningOffQuantity = 40 - 4 - 7,
+                  totalLossCandidates = 20 + 30 + 40 - 2 - 5 - 3 - 6 - 4 - 7,
                   modifiedTime = secondWithdrawalTime,
                   version = 3,
               ),
@@ -871,9 +925,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1 + 4,
                       notReadyQuantity = 2 + 5,
                       readyQuantity = 3 + 6,
+                      hardeningOffQuantity = 4 + 7,
                       latestObservedGerminatingQuantity = 1,
                       latestObservedNotReadyQuantity = 2,
                       latestObservedReadyQuantity = 3,
+                      latestObservedHardeningOffQuantity = 4,
                       version = 2),
               ),
               batchesDao.fetchByFacilityId(destinationFacilityId),
@@ -888,6 +944,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 1,
                       notReadyQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
+                      hardeningOffQuantityWithdrawn = 4,
                       withdrawalId = firstWithdrawal.id),
                   BatchWithdrawalsRow(
                       batchId = species1Batch1Id,
@@ -895,6 +952,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 4,
                       notReadyQuantityWithdrawn = 5,
                       readyQuantityWithdrawn = 6,
+                      hardeningOffQuantityWithdrawn = 7,
                       withdrawalId = secondWithdrawal.id),
               ),
               batchWithdrawalsDao.findAll().sortedBy { it.germinatingQuantityWithdrawn },
@@ -911,6 +969,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1,
                       notReadyQuantity = 2,
                       readyQuantity = 3,
+                      hardeningOffQuantity = 4,
                       withdrawalId = firstWithdrawal.id,
                       version = 1,
                   ),
@@ -922,6 +981,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 1 + 4,
                       notReadyQuantity = 2 + 5,
                       readyQuantity = 3 + 6,
+                      hardeningOffQuantity = 4 + 7,
                       withdrawalId = secondWithdrawal.id,
                       version = 2,
                   ),
@@ -933,6 +993,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1,
                       notReadyQuantity = 20 - 2,
                       readyQuantity = 30 - 3,
+                      hardeningOffQuantity = 40 - 4,
                       withdrawalId = firstWithdrawal.id,
                       version = 2,
                   ),
@@ -944,6 +1005,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 10 - 1 - 4,
                       notReadyQuantity = 20 - 2 - 5,
                       readyQuantity = 30 - 3 - 6,
+                      hardeningOffQuantity = 40 - 4 - 7,
                       withdrawalId = secondWithdrawal.id,
                       version = 3,
                   ),
@@ -994,7 +1056,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 0)),
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0)),
               destinationFacilityId = otherOrgFacilityId,
               facilityId = facilityId,
               id = null,
@@ -1019,7 +1082,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 1,
                           notReadyQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 0)),
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0)),
               destinationFacilityId = destinationFacilityId,
               facilityId = facilityId,
               id = null,
