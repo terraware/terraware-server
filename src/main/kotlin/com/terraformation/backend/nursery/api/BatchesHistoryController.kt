@@ -263,7 +263,7 @@ data class BatchHistoryQuantityEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
     val germinatingQuantity: Int,
-    val hardeningOffQuantity: Int = 0,
+    val hardeningOffQuantity: Int,
     val notReadyQuantity: Int,
     val readyQuantity: Int,
     override val version: Int,
