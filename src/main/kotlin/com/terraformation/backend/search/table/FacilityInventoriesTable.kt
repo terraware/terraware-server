@@ -45,6 +45,10 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
       listOf(
           longField(
               "germinatingQuantity", FACILITY_INVENTORIES.GERMINATING_QUANTITY, nullable = false),
+          longField(
+              "hardeningOffQuantity",
+              FACILITY_INVENTORIES.HARDENING_OFF_QUANTITY,
+              nullable = false),
           longField("notReadyQuantity", FACILITY_INVENTORIES.NOT_READY_QUANTITY, nullable = false),
           longField("readyQuantity", FACILITY_INVENTORIES.READY_QUANTITY, nullable = false),
           longField("totalQuantity", FACILITY_INVENTORIES.TOTAL_QUANTITY, nullable = false),

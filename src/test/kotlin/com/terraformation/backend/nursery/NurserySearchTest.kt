@@ -95,6 +95,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 1,
               notReadyQuantity = 2,
               readyQuantity = 4,
+              hardeningOffQuantity = 8,
               speciesId = speciesId1,
           )
       insertBatchSubLocation()
@@ -106,6 +107,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 8,
               notReadyQuantity = 16,
               readyQuantity = 32,
+              hardeningOffQuantity = 64,
               speciesId = speciesId1,
               version = 2,
           )
@@ -122,6 +124,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 64,
               notReadyQuantity = 128,
               readyQuantity = 256,
+              hardeningOffQuantity = 512,
               speciesId = speciesId1,
           )
       batchId4 =
@@ -132,6 +135,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 512,
               notReadyQuantity = 1024,
               readyQuantity = 2048,
+              hardeningOffQuantity = 4096,
               speciesId = speciesId2,
           )
       org2BatchId =
@@ -142,6 +146,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 4096,
               notReadyQuantity = 8192,
               readyQuantity = 16384,
+              hardeningOffQuantity = 32768,
               speciesId = org2SpeciesId,
           )
     }
@@ -155,12 +160,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   prefix.resolve("species_id"),
                   prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("hardeningOffQuantity"),
                   prefix.resolve("notReadyQuantity"),
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
                   prefix.resolve("facilityInventories.facility_id"),
                   prefix.resolve("facilityInventories.facility_name"),
                   prefix.resolve("facilityInventories.germinatingQuantity"),
+                  prefix.resolve("facilityInventories.hardeningOffQuantity"),
                   prefix.resolve("facilityInventories.notReadyQuantity"),
                   prefix.resolve("facilityInventories.readyQuantity"),
                   prefix.resolve("facilityInventories.totalQuantity"),
@@ -179,43 +186,48 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "species_id" to "$speciesId1",
                       "germinatingQuantity" to number(1 + 8 + 64),
+                      "hardeningOffQuantity" to number(8 + 64 + 512),
                       "notReadyQuantity" to number(2 + 16 + 128),
                       "readyQuantity" to number(4 + 32 + 256),
-                      "totalQuantity" to number(2 + 4 + 16 + 32 + 128 + 256),
+                      "totalQuantity" to number(2 + 4 + 8 + 16 + 32 + 64 + 128 + 256 + 512),
                       "facilityInventories" to
                           listOf(
                               mapOf(
                                   "facility_id" to "$facilityId",
                                   "facility_name" to "Nursery",
                                   "germinatingQuantity" to number(1 + 8),
+                                  "hardeningOffQuantity" to number(8 + 64),
                                   "notReadyQuantity" to number(2 + 16),
                                   "readyQuantity" to number(4 + 32),
-                                  "totalQuantity" to number(2 + 4 + 16 + 32),
+                                  "totalQuantity" to number(2 + 4 + 8 + 16 + 32 + 64),
                               ),
                               mapOf(
                                   "facility_id" to "$facilityId2",
                                   "facility_name" to "Other Nursery",
                                   "germinatingQuantity" to number(64),
+                                  "hardeningOffQuantity" to number(512),
                                   "notReadyQuantity" to number(128),
                                   "readyQuantity" to number(256),
-                                  "totalQuantity" to number(128 + 256),
+                                  "totalQuantity" to number(128 + 256 + 512),
                               ),
                           )),
                   mapOf(
                       "species_id" to "$speciesId2",
                       "germinatingQuantity" to number(512),
+                      "hardeningOffQuantity" to number(4096),
                       "notReadyQuantity" to number(1024),
                       "readyQuantity" to number(2048),
-                      "totalQuantity" to number(1024 + 2048),
+                      "totalQuantity" to number(1024 + 2048 + 4096),
                       "facilityInventories" to
                           listOf(
                               mapOf(
                                   "facility_id" to "$facilityId",
                                   "facility_name" to "Nursery",
                                   "germinatingQuantity" to number(512),
+                                  "hardeningOffQuantity" to number(4096),
                                   "notReadyQuantity" to number(1024),
                                   "readyQuantity" to number(2048),
-                                  "totalQuantity" to number(1024 + 2048),
+                                  "totalQuantity" to number(1024 + 2048 + 4096),
                               ),
                           )),
               )),
@@ -237,6 +249,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facilityInventories.species_id"),
                   prefix.resolve("facilityInventories.species_scientificName"),
                   prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("hardeningOffQuantity"),
                   prefix.resolve("notReadyQuantity"),
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
@@ -254,6 +267,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_id" to "$facilityId",
                       "facility_name" to "Nursery",
                       "germinatingQuantity" to number(1 + 8 + 512),
+                      "hardeningOffQuantity" to number(8 + 64 + 4096),
                       "notReadyQuantity" to number(2 + 16 + 1024),
                       "readyQuantity" to number(4 + 32 + 2048),
                       "facilityInventories" to
@@ -267,13 +281,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "species_scientificName" to "Species 2",
                               ),
                           ),
-                      "totalQuantity" to number(2 + 4 + 16 + 32 + 1024 + 2048),
+                      "totalQuantity" to number(2 + 4 + 8 + 16 + 32 + 64 + 1024 + 2048 + 4096),
                       "totalSpecies" to number(2),
                   ),
                   mapOf(
                       "facility_id" to "$facilityId2",
                       "facility_name" to "Other Nursery",
                       "germinatingQuantity" to number(64),
+                      "hardeningOffQuantity" to number(512),
                       "notReadyQuantity" to number(128),
                       "readyQuantity" to number(256),
                       "facilityInventories" to
@@ -283,7 +298,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "species_scientificName" to "Species 1",
                               ),
                           ),
-                      "totalQuantity" to number(128 + 256),
+                      "totalQuantity" to number(128 + 256 + 512),
                       "totalSpecies" to number(1),
                   ),
               )),
@@ -301,6 +316,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facility_id"),
                   prefix.resolve("facility_name"),
                   prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("hardeningOffQuantity"),
                   prefix.resolve("notReadyQuantity"),
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
@@ -315,9 +331,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_id" to "$facilityId2",
                       "facility_name" to "Other Nursery",
                       "germinatingQuantity" to number(64),
+                      "hardeningOffQuantity" to number(512),
                       "notReadyQuantity" to number(128),
                       "readyQuantity" to number(256),
-                      "totalQuantity" to number(128 + 256)))),
+                      "totalQuantity" to number(128 + 256 + 512)))),
           results)
     }
 
@@ -329,12 +346,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           germinatingQuantityWithdrawn = 512,
           notReadyQuantityWithdrawn = 1024,
           readyQuantityWithdrawn = 2048,
+          hardeningOffQuantityWithdrawn = 4096,
       )
       insertBatchWithdrawal(
           batchId = batchId2,
           germinatingQuantityWithdrawn = 4096,
           notReadyQuantityWithdrawn = 8192,
           readyQuantityWithdrawn = 16384,
+          hardeningOffQuantityWithdrawn = 32768,
       )
 
       insertNurseryWithdrawal(facilityId = facilityId)
@@ -343,6 +362,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           germinatingQuantityWithdrawn = 32768,
           notReadyQuantityWithdrawn = 65536,
           readyQuantityWithdrawn = 131072,
+          hardeningOffQuantityWithdrawn = 262144,
       )
       insertBatchWithdrawal(
           batchId =
@@ -350,6 +370,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           germinatingQuantityWithdrawn = 262144,
           notReadyQuantityWithdrawn = 524288,
           readyQuantityWithdrawn = 1048576,
+          hardeningOffQuantityWithdrawn = 2097152,
       )
 
       val prefix = SearchFieldPrefix(root = searchTables.batches)
@@ -360,6 +381,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("id"),
                   prefix.resolve("batchNumber"),
                   prefix.resolve("germinatingQuantity"),
+                  prefix.resolve("hardeningOffQuantity"),
                   prefix.resolve("notReadyQuantity"),
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
@@ -381,10 +403,11 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "id" to "$batchId1",
                       "batchNumber" to "1",
                       "germinatingQuantity" to number(1),
+                      "hardeningOffQuantity" to number(8),
                       "notReadyQuantity" to number(2),
                       "readyQuantity" to number(4),
-                      "totalQuantity" to number(2 + 4),
-                      "totalQuantityWithdrawn" to number(1024 + 2048),
+                      "totalQuantity" to number(2 + 4 + 8),
+                      "totalQuantityWithdrawn" to number(1024 + 2048 + 4096),
                       "facility_name" to "Nursery",
                       "addedDate" to "2021-03-04",
                       "subLocations" to
@@ -399,10 +422,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "id" to "$batchId2",
                       "batchNumber" to "2",
                       "germinatingQuantity" to number(8),
+                      "hardeningOffQuantity" to number(64),
                       "notReadyQuantity" to number(16),
                       "readyQuantity" to number(32),
-                      "totalQuantity" to number(16 + 32),
-                      "totalQuantityWithdrawn" to number(8192 + 16384 + 65536 + 131072),
+                      "totalQuantity" to number(16 + 32 + 64),
+                      "totalQuantityWithdrawn" to
+                          number(8192 + 16384 + 32768 + 65536 + 131072 + 262144),
                       "facility_name" to "Nursery",
                       "addedDate" to "2022-09-02",
                       "version" to number(2),
@@ -411,9 +436,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "id" to "$batchId3",
                       "batchNumber" to "3",
                       "germinatingQuantity" to number(64),
+                      "hardeningOffQuantity" to number(512),
                       "notReadyQuantity" to number(128),
                       "readyQuantity" to number(256),
-                      "totalQuantity" to number(128 + 256),
+                      "totalQuantity" to number(128 + 256 + 512),
                       "totalQuantityWithdrawn" to number(0),
                       "facility_name" to "Other Nursery",
                       "addedDate" to "2022-09-03",
@@ -486,6 +512,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           batchId = facility1Species1BatchId,
           destinationBatchId = batchId3,
           readyQuantityWithdrawn = 1,
+          hardeningOffQuantityWithdrawn = 3,
       )
       insertBatchWithdrawal(
           batchId = facility1Species2BatchId,
@@ -579,7 +606,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hasReassignments" to "false",
                       "id" to "$nurseryTransferWithdrawalId",
                       "purpose" to WithdrawalPurpose.NurseryTransfer.getDisplayName(Locale.ENGLISH),
-                      "totalWithdrawn" to number(3),
+                      "totalWithdrawn" to number(6),
                       "withdrawnDate" to "2021-01-01",
                   ),
                   mapOf(

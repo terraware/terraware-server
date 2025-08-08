@@ -46,7 +46,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
                   DSL.select(
                           DSL.sum(
                               BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN.plus(
-                                  BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN)))
+                                      BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN)
+                                  .plus(BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN)))
                       .from(BATCH_WITHDRAWALS)
                       .where(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID)))
               .cast(SQLDataType.BIGINT),
@@ -60,6 +61,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         integerField("germinatingQuantity", BATCHES.GERMINATING_QUANTITY),
         integerField("germinationRate", BATCHES.GERMINATION_RATE),
         dateField("germinationStartedDate", BATCHES.GERMINATION_STARTED_DATE),
+        integerField("hardeningOffQuantity", BATCHES.HARDENING_OFF_QUANTITY),
         idWrapperField("id", BATCHES.ID, ::BatchId),
         idWrapperField("initialBatchId", BATCHES.INITIAL_BATCH_ID, ::BatchId),
         integerField("lossRate", BATCHES.LOSS_RATE),
@@ -70,7 +72,10 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         dateField("seedsSownDate", BATCHES.SEEDS_SOWN_DATE),
         enumField("substrate", BATCHES.SUBSTRATE_ID),
         textField("substrateNotes", BATCHES.SUBSTRATE_NOTES),
-        integerField("totalQuantity", BATCHES.READY_QUANTITY.plus(BATCHES.NOT_READY_QUANTITY)),
+        integerField(
+            "totalQuantity",
+            BATCHES.READY_QUANTITY.plus(BATCHES.NOT_READY_QUANTITY)
+                .plus(BATCHES.HARDENING_OFF_QUANTITY)),
         enumField("treatment", BATCHES.TREATMENT_ID),
         textField("treatmentNotes", BATCHES.TREATMENT_NOTES),
         longField("totalQuantityWithdrawn", totalQuantityWithdrawnField, nullable = false),
