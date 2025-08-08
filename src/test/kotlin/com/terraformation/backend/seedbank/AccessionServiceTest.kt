@@ -293,12 +293,12 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   notes = "Notes",
                   notReadyQuantity = 2,
                   readyQuantity = 3,
-                  hardeningOffQuantity = 0,
+                  hardeningOffQuantity = 4,
                   speciesId = null))
 
-      assertEquals(seeds(4), updatedAccession.remaining, "Seeds remaining")
+      assertEquals(seeds(0), updatedAccession.remaining, "Seeds remaining")
       assertEquals(1, updatedAccession.withdrawals.size, "Number of withdrawals")
-      assertEquals(seeds(6), updatedAccession.withdrawals[0].withdrawn, "Size of new withdrawal")
+      assertEquals(seeds(10), updatedAccession.withdrawals[0].withdrawn, "Size of new withdrawal")
       assertEquals("Notes", updatedAccession.withdrawals[0].notes, "Notes")
       assertEquals(date, updatedAccession.withdrawals[0].date, "Withdrawal date")
       assertEquals(batchId, updatedAccession.withdrawals[0].batchId, "Batch ID")
@@ -316,7 +316,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 1,
               notReadyQuantity = 2,
               readyQuantity = 3,
-              hardeningOffQuantity = 0,
+              hardeningOffQuantity = 4,
               speciesId = null)
 
       val (accession, batch) = service.createNurseryTransfer(accessionId, newBatch)
@@ -357,10 +357,10 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   germinatingQuantity = 1,
                   notReadyQuantity = 2,
                   readyQuantity = 3,
-                  hardeningOffQuantity = 0,
+                  hardeningOffQuantity = 4,
                   speciesId = null))
 
-      assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3)), accession.remaining)
+      assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3 + 4)), accession.remaining)
     }
 
     @Test
@@ -410,7 +410,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 germinatingQuantity = 1000,
                 notReadyQuantity = 2000,
                 readyQuantity = 3000,
-                hardeningOffQuantity = 0,
+                hardeningOffQuantity = 4000,
                 speciesId = null))
       }
     }
