@@ -238,6 +238,23 @@
                                     </td>
                                     <td><p>If the withdrawal was a nursery transfer, the batch that was created as a result. A withdrawal can have more than one originating batch; if they are of the same species, only one destination batch will be created and there will be multiple rows with the same <code>destination_batch_id</code>. May be null if the batch was subsequently deleted.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="hardening_off_quantity_withdrawn">hardening_off_quantity_withdrawn</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>0</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Number of hardening-off seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

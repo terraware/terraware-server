@@ -2267,7 +2267,7 @@
 <text text-anchor="start" x="855" y="-2225.02" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="663,-2194.82 663,-2216.82 894,-2216.82 894,-2194.82 663,-2194.82"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="668" y="-2211.82"/>
-<text text-anchor="start" x="720" y="-2203.02" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="719" y="-2203.02" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="663,-2176.82 663,-2194.82 894,-2194.82 894,-2176.82 663,-2176.82"/>
 <text text-anchor="start" x="666" y="-2183.02" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="663,-2158.82 663,-2176.82 763,-2176.82 763,-2158.82 663,-2158.82"/>

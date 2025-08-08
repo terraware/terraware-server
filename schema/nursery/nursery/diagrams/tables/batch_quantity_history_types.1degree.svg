@@ -21,20 +21,20 @@
 <text text-anchor="start" x="493.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="351.5,-161 351.5,-183 532.5,-183 532.5,-161 351.5,-161"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="356.5" y="-178"/>
-<text text-anchor="start" x="383.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="382.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="transparent" points="351.5,-139 351.5,-161 532.5,-161 532.5,-139 351.5,-139"/>
 <polygon fill="none" stroke="black" points="351.5,-139 351.5,-161 532.5,-161 532.5,-139 351.5,-139"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="356.5" y="-156"/>
-<text text-anchor="start" x="383.5" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
+<text text-anchor="start" x="382.5" y="-147.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
 <polygon fill="none" stroke="black" points="351.5,-117 351.5,-139 532.5,-139 532.5,-117 351.5,-117"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="356.5" y="-134"/>
-<text text-anchor="start" x="383.5" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">history_type_id</text>
+<text text-anchor="start" x="382.5" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">history_type_id</text>
 <polygon fill="none" stroke="black" points="351.5,-95 351.5,-117 532.5,-117 532.5,-95 351.5,-95"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="356.5" y="-112"/>
-<text text-anchor="start" x="383.5" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
+<text text-anchor="start" x="382.5" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">withdrawal_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="351.5,-73 351.5,-95 532.5,-95 532.5,-73 351.5,-73"/>
 <polygon fill="none" stroke="black" points="351.5,-73 351.5,-95 532.5,-95 532.5,-73 351.5,-73"/>
-<text text-anchor="start" x="383.5" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">version</text>
+<text text-anchor="start" x="382.5" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">version</text>
 <polygon fill="none" stroke="black" points="351.5,-55 351.5,-73 532.5,-73 532.5,-55 351.5,-55"/>
 <text text-anchor="start" x="354.5" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="351.5,-37 351.5,-55 439.5,-55 439.5,-37 351.5,-37"/>

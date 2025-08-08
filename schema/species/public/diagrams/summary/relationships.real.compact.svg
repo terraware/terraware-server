@@ -38,9 +38,9 @@
 </g>
 </g>
 <!-- species -->
-<g id="node3" class="node">
+<g id="node2" class="node">
 <title>species</title>
-<g id="a_node3"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
+<g id="a_node2"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="278.5,-932 278.5,-1122 458.5,-1122 458.5,-932 278.5,-932"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="278.5,-1100 278.5,-1122 458.5,-1122 458.5,-1100 278.5,-1100"/>
 <polygon fill="none" stroke="black" points="278.5,-1100 278.5,-1122 458.5,-1122 458.5,-1100 278.5,-1100"/>
@@ -118,40 +118,6 @@
 <path fill="none" stroke="black" d="M565.85,-1905C520.64,-1905 504.17,-1905 452.5,-1905"/>
 <polygon fill="black" stroke="black" points="572.5,-1905 580.5,-1908.6 576.5,-1905 580.5,-1905 580.5,-1905 580.5,-1905 576.5,-1905 580.5,-1901.4 572.5,-1905 572.5,-1905"/>
 <ellipse fill="none" stroke="black" cx="569.3" cy="-1905" rx="3.2" ry="3.2"/>
-</g>
-<!-- species_growth_forms -->
-<g id="node2" class="node">
-<title>species_growth_forms</title>
-<g id="a_node2"><a xlink:href="../../tables/species_growth_forms.html" xlink:title="species_growth_forms" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="600,-1648 600,-1732 775,-1732 775,-1648 600,-1648"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="600.5,-1710 600.5,-1732 775.5,-1732 775.5,-1710 600.5,-1710"/>
-<polygon fill="none" stroke="black" points="600.5,-1710 600.5,-1732 775.5,-1732 775.5,-1710 600.5,-1710"/>
-<text text-anchor="start" x="605.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species_growth_forms</text>
-<text text-anchor="start" x="736.5" y="-1718.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="600.5,-1688 600.5,-1710 775.5,-1710 775.5,-1688 600.5,-1688"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="605.5" y="-1705"/>
-<text text-anchor="start" x="632.5" y="-1696.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="600.5,-1666 600.5,-1688 775.5,-1688 775.5,-1666 600.5,-1666"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="605.5" y="-1683"/>
-<text text-anchor="start" x="632.5" y="-1674.2" font-family="Helvetica,sans-Serif" font-size="11.00">growth_form_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="600.5,-1648 600.5,-1666 685.5,-1666 685.5,-1648 600.5,-1648"/>
-<polygon fill="none" stroke="black" points="600.5,-1648 600.5,-1666 685.5,-1666 685.5,-1648 600.5,-1648"/>
-<text text-anchor="start" x="603.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="685.5,-1648 685.5,-1666 730.5,-1666 730.5,-1648 685.5,-1648"/>
-<polygon fill="none" stroke="black" points="685.5,-1648 685.5,-1666 730.5,-1666 730.5,-1648 685.5,-1648"/>
-<text text-anchor="start" x="720.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="730.5,-1648 730.5,-1666 775.5,-1666 775.5,-1648 730.5,-1648"/>
-<polygon fill="none" stroke="black" points="730.5,-1648 730.5,-1666 775.5,-1666 775.5,-1648 730.5,-1648"/>
-<text text-anchor="start" x="765.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- species_growth_forms&#45;&gt;species -->
-<g id="edge12" class="edge">
-<title>species_growth_forms:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M584.9,-1697.67C556.46,-1691.95 548.3,-1668.34 532,-1637 475.31,-1528.02 582.34,-1089 459.5,-1089"/>
-<polygon fill="black" stroke="black" points="591.53,-1698.27 599.17,-1702.59 595.52,-1698.64 599.5,-1699 599.5,-1699 599.5,-1699 595.52,-1698.64 599.83,-1695.41 591.53,-1698.27 591.53,-1698.27"/>
-<ellipse fill="none" stroke="black" cx="588.35" cy="-1697.98" rx="3.2" ry="3.2"/>
 </g>
 <!-- conservation_categories -->
 <g id="node7" class="node">
@@ -252,6 +218,40 @@
 <path fill="none" stroke="black" d="M262.85,-979C233.83,-979 221.57,-979 186.5,-979"/>
 <polygon fill="black" stroke="black" points="269.5,-979 277.5,-982.6 273.5,-979 277.5,-979 277.5,-979 277.5,-979 273.5,-979 277.5,-975.4 269.5,-979 269.5,-979"/>
 <ellipse fill="none" stroke="black" cx="266.3" cy="-979" rx="3.2" ry="3.2"/>
+</g>
+<!-- species_growth_forms -->
+<g id="node3" class="node">
+<title>species_growth_forms</title>
+<g id="a_node3"><a xlink:href="../../tables/species_growth_forms.html" xlink:title="species_growth_forms" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="600,-1648 600,-1732 775,-1732 775,-1648 600,-1648"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="600.5,-1710 600.5,-1732 775.5,-1732 775.5,-1710 600.5,-1710"/>
+<polygon fill="none" stroke="black" points="600.5,-1710 600.5,-1732 775.5,-1732 775.5,-1710 600.5,-1710"/>
+<text text-anchor="start" x="605.5" y="-1719.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">species_growth_forms</text>
+<text text-anchor="start" x="736.5" y="-1718.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="600.5,-1688 600.5,-1710 775.5,-1710 775.5,-1688 600.5,-1688"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="605.5" y="-1705"/>
+<text text-anchor="start" x="632.5" y="-1696.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="600.5,-1666 600.5,-1688 775.5,-1688 775.5,-1666 600.5,-1666"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="605.5" y="-1683"/>
+<text text-anchor="start" x="632.5" y="-1674.2" font-family="Helvetica,sans-Serif" font-size="11.00">growth_form_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="600.5,-1648 600.5,-1666 685.5,-1666 685.5,-1648 600.5,-1648"/>
+<polygon fill="none" stroke="black" points="600.5,-1648 600.5,-1666 685.5,-1666 685.5,-1648 600.5,-1648"/>
+<text text-anchor="start" x="603.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="685.5,-1648 685.5,-1666 730.5,-1666 730.5,-1648 685.5,-1648"/>
+<polygon fill="none" stroke="black" points="685.5,-1648 685.5,-1666 730.5,-1666 730.5,-1648 685.5,-1648"/>
+<text text-anchor="start" x="720.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="730.5,-1648 730.5,-1666 775.5,-1666 775.5,-1648 730.5,-1648"/>
+<polygon fill="none" stroke="black" points="730.5,-1648 730.5,-1666 775.5,-1666 775.5,-1648 730.5,-1648"/>
+<text text-anchor="start" x="765.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- species_growth_forms&#45;&gt;species -->
+<g id="edge12" class="edge">
+<title>species_growth_forms:w&#45;&gt;species:e</title>
+<path fill="none" stroke="black" d="M584.9,-1697.67C556.46,-1691.95 548.3,-1668.34 532,-1637 475.31,-1528.02 582.34,-1089 459.5,-1089"/>
+<polygon fill="black" stroke="black" points="591.53,-1698.27 599.17,-1702.59 595.52,-1698.64 599.5,-1699 599.5,-1699 599.5,-1699 595.52,-1698.64 599.83,-1695.41 591.53,-1698.27 591.53,-1698.27"/>
+<ellipse fill="none" stroke="black" cx="588.35" cy="-1697.98" rx="3.2" ry="3.2"/>
 </g>
 <!-- ecosystem_types -->
 <g id="node4" class="node">
@@ -631,44 +631,44 @@
 <g id="node19" class="node">
 <title>nursery.batches</title>
 <g id="a_node19"><a xlink:href="../../../nursery/tables/batches.html" xlink:title="nursery.batches" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="562.5,-1753 562.5,-1855 812.5,-1855 812.5,-1753 562.5,-1753"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="562.5,-1833 562.5,-1855 812.5,-1855 812.5,-1833 562.5,-1833"/>
-<polygon fill="none" stroke="black" points="562.5,-1833 562.5,-1855 812.5,-1855 812.5,-1833 562.5,-1833"/>
-<text text-anchor="start" x="567.5" y="-1842.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batches</text>
-<text text-anchor="start" x="773.5" y="-1841.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="562.5,-1811 562.5,-1833 812.5,-1833 812.5,-1811 562.5,-1811"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="567.5" y="-1828"/>
-<text text-anchor="start" x="582.5" y="-1819.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
-<polygon fill="none" stroke="black" points="562.5,-1789 562.5,-1811 812.5,-1811 812.5,-1789 562.5,-1789"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="567.5" y="-1806"/>
-<text text-anchor="start" x="582.5" y="-1797.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="562.5,-1771 562.5,-1789 812.5,-1789 812.5,-1771 562.5,-1771"/>
-<text text-anchor="start" x="565.5" y="-1777.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="562.5,-1753 562.5,-1771 671.5,-1771 671.5,-1753 562.5,-1753"/>
-<polygon fill="none" stroke="black" points="562.5,-1753 562.5,-1771 671.5,-1771 671.5,-1753 562.5,-1753"/>
-<text text-anchor="start" x="565.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="671.5,-1753 671.5,-1771 755.5,-1771 755.5,-1753 671.5,-1753"/>
-<polygon fill="none" stroke="black" points="671.5,-1753 671.5,-1771 755.5,-1771 755.5,-1753 671.5,-1753"/>
-<text text-anchor="start" x="718.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="755.5,-1753 755.5,-1771 812.5,-1771 812.5,-1753 755.5,-1753"/>
-<polygon fill="none" stroke="black" points="755.5,-1753 755.5,-1771 812.5,-1771 812.5,-1753 755.5,-1753"/>
-<text text-anchor="start" x="802.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="558,-1753 558,-1855 817,-1855 817,-1753 558,-1753"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="558.5,-1833 558.5,-1855 817.5,-1855 817.5,-1833 558.5,-1833"/>
+<polygon fill="none" stroke="black" points="558.5,-1833 558.5,-1855 817.5,-1855 817.5,-1833 558.5,-1833"/>
+<text text-anchor="start" x="563.5" y="-1842.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batches</text>
+<text text-anchor="start" x="778.5" y="-1841.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="558.5,-1811 558.5,-1833 817.5,-1833 817.5,-1811 558.5,-1811"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="563.5" y="-1828"/>
+<text text-anchor="start" x="578.5" y="-1819.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<polygon fill="none" stroke="black" points="558.5,-1789 558.5,-1811 817.5,-1811 817.5,-1789 558.5,-1789"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="563.5" y="-1806"/>
+<text text-anchor="start" x="578.5" y="-1797.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="558.5,-1771 558.5,-1789 817.5,-1789 817.5,-1771 558.5,-1771"/>
+<text text-anchor="start" x="561.5" y="-1777.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="558.5,-1753 558.5,-1771 672.5,-1771 672.5,-1753 558.5,-1753"/>
+<polygon fill="none" stroke="black" points="558.5,-1753 558.5,-1771 672.5,-1771 672.5,-1753 558.5,-1753"/>
+<text text-anchor="start" x="561.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="672.5,-1753 672.5,-1771 758.5,-1771 758.5,-1753 672.5,-1753"/>
+<polygon fill="none" stroke="black" points="672.5,-1753 672.5,-1771 758.5,-1771 758.5,-1753 672.5,-1753"/>
+<text text-anchor="start" x="721.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="758.5,-1753 758.5,-1771 817.5,-1771 817.5,-1753 758.5,-1753"/>
+<polygon fill="none" stroke="black" points="758.5,-1753 758.5,-1771 817.5,-1771 817.5,-1753 758.5,-1753"/>
+<text text-anchor="start" x="807.5" y="-1759.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- nursery.batches&#45;&gt;species -->
 <g id="edge4" class="edge">
 <title>nursery.batches:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M547.22,-1797.83C415.49,-1754.91 613.97,-1089 459.5,-1089"/>
-<polygon fill="black" stroke="black" points="553.59,-1798.8 560.96,-1803.56 557.55,-1799.4 561.5,-1800 561.5,-1800 561.5,-1800 557.55,-1799.4 562.04,-1796.44 553.59,-1798.8 553.59,-1798.8"/>
-<ellipse fill="none" stroke="black" cx="550.43" cy="-1798.32" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M544.88,-1792.96C484.47,-1719.12 534.57,-1089 459.5,-1089"/>
+<polygon fill="black" stroke="black" points="550.51,-1796.1 555.75,-1803.14 554.01,-1798.05 557.5,-1800 557.5,-1800 557.5,-1800 554.01,-1798.05 559.25,-1796.86 550.51,-1796.1 550.51,-1796.1"/>
+<ellipse fill="none" stroke="black" cx="547.72" cy="-1794.55" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batches&#45;&gt;organizations -->
 <g id="edge3" class="edge">
 <title>nursery.batches:w&#45;&gt;organizations:e</title>
-<path fill="none" stroke="black" d="M546.91,-1821.77C226.1,-1811.28 335.6,-1451.15 238,-1132 221.21,-1077.09 247.92,-878 190.5,-878"/>
-<polygon fill="black" stroke="black" points="553.5,-1821.87 561.44,-1825.6 557.5,-1821.94 561.5,-1822 561.5,-1822 561.5,-1822 557.5,-1821.94 561.56,-1818.4 553.5,-1821.87 553.5,-1821.87"/>
-<ellipse fill="none" stroke="black" cx="550.3" cy="-1821.82" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M542.94,-1821.77C222.92,-1811.27 334.62,-1450.67 238,-1132 221.34,-1077.05 247.92,-878 190.5,-878"/>
+<polygon fill="black" stroke="black" points="549.5,-1821.87 557.44,-1825.6 553.5,-1821.94 557.5,-1822 557.5,-1822 557.5,-1822 553.5,-1821.94 557.56,-1818.4 549.5,-1821.87 549.5,-1821.87"/>
+<ellipse fill="none" stroke="black" cx="546.3" cy="-1821.82" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.planting_site_populations -->
 <g id="node20" class="node">

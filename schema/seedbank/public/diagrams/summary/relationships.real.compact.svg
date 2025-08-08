@@ -844,64 +844,64 @@
 <g id="node24" class="node">
 <title>nursery.batches</title>
 <g id="a_node24"><a xlink:href="../../../nursery/tables/batches.html" xlink:title="nursery.batches" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="528.5,-1175 528.5,-1321 778.5,-1321 778.5,-1175 528.5,-1175"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="528.5,-1299 528.5,-1321 778.5,-1321 778.5,-1299 528.5,-1299"/>
-<polygon fill="none" stroke="black" points="528.5,-1299 528.5,-1321 778.5,-1321 778.5,-1299 528.5,-1299"/>
-<text text-anchor="start" x="533.5" y="-1308.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batches</text>
-<text text-anchor="start" x="739.5" y="-1307.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="528.5,-1277 528.5,-1299 778.5,-1299 778.5,-1277 528.5,-1277"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="533.5" y="-1294"/>
-<text text-anchor="start" x="548.5" y="-1285.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
-<polygon fill="none" stroke="black" points="528.5,-1255 528.5,-1277 778.5,-1277 778.5,-1255 528.5,-1255"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="533.5" y="-1272"/>
-<text text-anchor="start" x="548.5" y="-1263.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
-<polygon fill="none" stroke="black" points="528.5,-1233 528.5,-1255 778.5,-1255 778.5,-1233 528.5,-1233"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="533.5" y="-1250"/>
-<text text-anchor="start" x="548.5" y="-1241.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="528.5,-1211 528.5,-1233 778.5,-1233 778.5,-1211 528.5,-1211"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="533.5" y="-1228"/>
-<text text-anchor="start" x="548.5" y="-1219.2" font-family="Helvetica,sans-Serif" font-size="11.00">treatment_id</text>
-<polygon fill="none" stroke="black" points="528.5,-1193 528.5,-1211 778.5,-1211 778.5,-1193 528.5,-1193"/>
-<text text-anchor="start" x="531.5" y="-1199.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="528.5,-1175 528.5,-1193 637.5,-1193 637.5,-1175 528.5,-1175"/>
-<polygon fill="none" stroke="black" points="528.5,-1175 528.5,-1193 637.5,-1193 637.5,-1175 528.5,-1175"/>
-<text text-anchor="start" x="531.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="637.5,-1175 637.5,-1193 721.5,-1193 721.5,-1175 637.5,-1175"/>
-<polygon fill="none" stroke="black" points="637.5,-1175 637.5,-1193 721.5,-1193 721.5,-1175 637.5,-1175"/>
-<text text-anchor="start" x="684.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="721.5,-1175 721.5,-1193 778.5,-1193 778.5,-1175 721.5,-1175"/>
-<polygon fill="none" stroke="black" points="721.5,-1175 721.5,-1193 778.5,-1193 778.5,-1175 721.5,-1175"/>
-<text text-anchor="start" x="768.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="524,-1175 524,-1321 783,-1321 783,-1175 524,-1175"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="524.5,-1299 524.5,-1321 783.5,-1321 783.5,-1299 524.5,-1299"/>
+<polygon fill="none" stroke="black" points="524.5,-1299 524.5,-1321 783.5,-1321 783.5,-1299 524.5,-1299"/>
+<text text-anchor="start" x="529.5" y="-1308.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batches</text>
+<text text-anchor="start" x="744.5" y="-1307.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="524.5,-1277 524.5,-1299 783.5,-1299 783.5,-1277 524.5,-1277"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="529.5" y="-1294"/>
+<text text-anchor="start" x="544.5" y="-1285.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<polygon fill="none" stroke="black" points="524.5,-1255 524.5,-1277 783.5,-1277 783.5,-1255 524.5,-1255"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="529.5" y="-1272"/>
+<text text-anchor="start" x="544.5" y="-1263.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<polygon fill="none" stroke="black" points="524.5,-1233 524.5,-1255 783.5,-1255 783.5,-1233 524.5,-1233"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="529.5" y="-1250"/>
+<text text-anchor="start" x="544.5" y="-1241.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="524.5,-1211 524.5,-1233 783.5,-1233 783.5,-1211 524.5,-1211"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="529.5" y="-1228"/>
+<text text-anchor="start" x="544.5" y="-1219.2" font-family="Helvetica,sans-Serif" font-size="11.00">treatment_id</text>
+<polygon fill="none" stroke="black" points="524.5,-1193 524.5,-1211 783.5,-1211 783.5,-1193 524.5,-1193"/>
+<text text-anchor="start" x="527.5" y="-1199.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="524.5,-1175 524.5,-1193 638.5,-1193 638.5,-1175 524.5,-1175"/>
+<polygon fill="none" stroke="black" points="524.5,-1175 524.5,-1193 638.5,-1193 638.5,-1175 524.5,-1175"/>
+<text text-anchor="start" x="527.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="638.5,-1175 638.5,-1193 724.5,-1193 724.5,-1175 638.5,-1175"/>
+<polygon fill="none" stroke="black" points="638.5,-1175 638.5,-1193 724.5,-1193 724.5,-1175 638.5,-1175"/>
+<text text-anchor="start" x="687.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="724.5,-1175 724.5,-1193 783.5,-1193 783.5,-1175 724.5,-1175"/>
+<polygon fill="none" stroke="black" points="724.5,-1175 724.5,-1193 783.5,-1193 783.5,-1175 724.5,-1175"/>
+<text text-anchor="start" x="773.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- nursery.batches&#45;&gt;seed_treatments -->
 <g id="edge13" class="edge">
 <title>nursery.batches:w&#45;&gt;seed_treatments:e</title>
-<path fill="none" stroke="black" d="M513.33,-1225.12C426.85,-1266.77 528.43,-1711 422.5,-1711"/>
-<polygon fill="black" stroke="black" points="519.69,-1223.72 528.27,-1225.52 523.59,-1222.86 527.5,-1222 527.5,-1222 527.5,-1222 523.59,-1222.86 526.73,-1218.48 519.69,-1223.72 519.69,-1223.72"/>
-<ellipse fill="none" stroke="black" cx="516.56" cy="-1224.41" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M509.38,-1225.12C423.37,-1266.77 528.26,-1711 422.5,-1711"/>
+<polygon fill="black" stroke="black" points="515.69,-1223.73 524.28,-1225.52 519.59,-1222.86 523.5,-1222 523.5,-1222 523.5,-1222 519.59,-1222.86 522.72,-1218.48 515.69,-1223.73 515.69,-1223.73"/>
+<ellipse fill="none" stroke="black" cx="512.56" cy="-1224.42" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batches&#45;&gt;facilities -->
 <g id="edge10" class="edge">
 <title>nursery.batches:w&#45;&gt;facilities:e</title>
-<path fill="none" stroke="black" d="M512.98,-1268.03C455.34,-1286.07 505.16,-1418 430.5,-1418"/>
-<polygon fill="black" stroke="black" points="519.58,-1267.11 528,-1269.57 523.54,-1266.56 527.5,-1266 527.5,-1266 527.5,-1266 523.54,-1266.56 527,-1262.43 519.58,-1267.11 519.58,-1267.11"/>
-<ellipse fill="none" stroke="black" cx="516.41" cy="-1267.55" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M509.19,-1268.03C452.57,-1286.07 504.28,-1418 430.5,-1418"/>
+<polygon fill="black" stroke="black" points="515.58,-1267.13 524.01,-1269.56 519.54,-1266.56 523.5,-1266 523.5,-1266 523.5,-1266 519.54,-1266.56 522.99,-1262.44 515.58,-1267.13 515.58,-1267.13"/>
+<ellipse fill="none" stroke="black" cx="512.41" cy="-1267.58" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batches&#45;&gt;organizations -->
 <g id="edge11" class="edge">
 <title>nursery.batches:w&#45;&gt;organizations:e</title>
-<path fill="none" stroke="black" d="M513.09,-1285.7C494.28,-1278.88 490.34,-1258.72 465,-1250 416.13,-1233.19 273.2,-1256.68 234,-1223 175.98,-1173.15 265,-1057 188.5,-1057"/>
-<polygon fill="black" stroke="black" points="519.6,-1286.74 526.93,-1291.55 523.55,-1287.37 527.5,-1288 527.5,-1288 527.5,-1288 523.55,-1287.37 528.07,-1284.45 519.6,-1286.74 519.6,-1286.74"/>
-<ellipse fill="none" stroke="black" cx="516.44" cy="-1286.23" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M509.09,-1285.39C492.04,-1278.29 488.7,-1258.55 465,-1250 416.38,-1232.46 273.2,-1256.68 234,-1223 175.98,-1173.15 265,-1057 188.5,-1057"/>
+<polygon fill="black" stroke="black" points="515.63,-1286.58 522.86,-1291.54 519.56,-1287.29 523.5,-1288 523.5,-1288 523.5,-1288 519.56,-1287.29 524.14,-1284.46 515.63,-1286.58 515.63,-1286.58"/>
+<ellipse fill="none" stroke="black" cx="512.48" cy="-1286.01" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batches&#45;&gt;species -->
 <g id="edge12" class="edge">
 <title>nursery.batches:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M513.21,-1240.93C422.68,-1198.15 552.82,-722 440.5,-722"/>
-<polygon fill="black" stroke="black" points="519.68,-1242.32 526.74,-1247.52 523.59,-1243.16 527.5,-1244 527.5,-1244 527.5,-1244 523.59,-1243.16 528.26,-1240.48 519.68,-1242.32 519.68,-1242.32"/>
-<ellipse fill="none" stroke="black" cx="516.55" cy="-1241.65" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M509.25,-1240.93C419.15,-1198.15 552.68,-722 440.5,-722"/>
+<polygon fill="black" stroke="black" points="515.68,-1242.32 522.74,-1247.52 519.59,-1243.16 523.5,-1244 523.5,-1244 523.5,-1244 519.59,-1243.16 524.26,-1240.48 515.68,-1242.32 515.68,-1242.32"/>
+<ellipse fill="none" stroke="black" cx="512.55" cy="-1241.64" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.monitoring_plots -->
 <g id="node25" class="node">

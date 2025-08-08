@@ -107,6 +107,7 @@
             <parent column="id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="version" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="hardening_off_quantity" nullable="true" remarks="New number of hardening-off seedlings in the batch." size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batch_quantity_history_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -140,9 +141,9 @@
             <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
             <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -181,6 +182,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="destination_batch_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the batch that was created as a result. A withdrawal can have more than one originating batch; if they are of the same species, only one destination batch will be created and there will be multiple rows with the same `destination_batch_id`. May be null if the batch was subsequently deleted." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="hardening_off_quantity_withdrawn" nullable="true" remarks="Number of hardening-off seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="withdrawal_id" sequenceNumberInPK="2"/>
          <index name="batch_withdrawals_pkey" unique="true">
@@ -261,6 +263,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="total_loss_candidates" nullable="true" remarks="Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="germination_started_date" nullable="true" remarks="Date when sown seeds first started germinating." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="seeds_sown_date" nullable="true" remarks="Date when newly-arrived seeds were first sown." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="35" name="hardening_off_quantity" nullable="true" remarks="Number of hardening-off seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="36" name="latest_observed_hardening_off_quantity" nullable="true" remarks="Latest user-observed number of hardening-off seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="batches_pkey" unique="true">
             <column ascending="true" name="id"/>
