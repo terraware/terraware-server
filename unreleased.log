@@ -1,3 +1,4 @@
+a75b2652226 SW-7210 Update BatchStore to handle hardening off status (#3269)
 c52207d00ba SW-7209 Add Hardening-Off to search api (#3268)
 87ac39eeb51 SW-7208 Add Hardening-Off nursery phase to database (#3267)
 ae4a7da5855 Create alias fields for project variables (#3272)

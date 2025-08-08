@@ -815,7 +815,7 @@
                                     <td><span id="hardening_off_quantity">hardening_off_quantity</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>0</td>
                                     <td>
@@ -832,7 +832,7 @@
                                     <td><span id="latest_observed_hardening_off_quantity">latest_observed_hardening_off_quantity</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>0</td>
                                     <td>
@@ -946,6 +946,22 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batches_ready_quantity_check</td>
+                                    <td>(ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_not_ready_quantity_check</td>
+                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_latest_observed_germinating_quantity_check</td>
+                                    <td>(latest_observed_germinating_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
                                     <td>batches_notes_check</td>
                                     <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
@@ -954,28 +970,12 @@
                                     <td>(version &gt; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_germinating_quantity_check</td>
-                                    <td>(latest_observed_germinating_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_ready_quantity_check</td>
-                                    <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>batches_germinating_quantity_check</td>
                                     <td>(germinating_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_not_ready_quantity_check</td>
-                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_ready_quantity_check</td>
-                                    <td>(ready_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>batches_latest_observed_ready_quantity_check</td>
+                                    <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>
