@@ -527,7 +527,7 @@ class BatchStore(
       return
     }
 
-    if (previousPhase.value > newPhase.value) {
+    if (previousPhase > newPhase) {
       throw BatchPhaseReversalNotAllowedException(batchId)
     }
 
