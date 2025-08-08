@@ -1,3 +1,4 @@
+c52207d00ba SW-7209 Add Hardening-Off to search api (#3268)
 87ac39eeb51 SW-7208 Add Hardening-Off nursery phase to database (#3267)
 ae4a7da5855 Create alias fields for project variables (#3272)
 b6310334278 SW-7192 Add documentation for sublist filtering in search api (#3257)
