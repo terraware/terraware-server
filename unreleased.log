@@ -1,3 +1,5 @@
+c7066a4cb0f Updated translations from Phrase (#3273)
+3f9e3e5aacc SW-7210 Add remaining logic changes for hardening off (#3271)
 3945e430f34 SW-7210 Allow changeStatuses to accept all phases (#3270)
 a75b2652226 SW-7210 Update BatchStore to handle hardening off status (#3269)
 c52207d00ba SW-7209 Add Hardening-Off to search api (#3268)
