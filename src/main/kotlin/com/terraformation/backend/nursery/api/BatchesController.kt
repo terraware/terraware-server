@@ -129,7 +129,7 @@ class BatchesController(
         batchId = id,
         version = payload.version,
         germinating = payload.germinatingQuantity,
-        notReady = payload.notReadyQuantity,
+        activeGrowth = payload.notReadyQuantity,
         hardeningOff = payload.hardeningOffQuantity ?: 0,
         ready = payload.readyQuantity,
         historyType = BatchQuantityHistoryType.Observed)
@@ -282,7 +282,7 @@ data class BatchPayload(
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
       lossRate = model.lossRate,
       notes = model.notes,
-      notReadyQuantity = model.notReadyQuantity,
+      notReadyQuantity = model.activeGrowthQuantity,
       projectId = model.projectId,
       readyByDate = model.readyByDate,
       readyQuantity = model.readyQuantity,
@@ -325,7 +325,7 @@ data class CreateBatchRequestPayload(
           germinationStartedDate = germinationStartedDate,
           hardeningOffQuantity = hardeningOffQuantity,
           notes = notes,
-          notReadyQuantity = notReadyQuantity,
+          activeGrowthQuantity = notReadyQuantity,
           projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
@@ -380,8 +380,8 @@ enum class ChangeBatchStatusOperation(
     val fromPhase: NurseryBatchPhase,
     val toPhase: NurseryBatchPhase
 ) {
-  GerminatingToNotReady(NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady),
-  NotReadyToReady(NurseryBatchPhase.NotReady, NurseryBatchPhase.Ready)
+  GerminatingToNotReady(NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth),
+  NotReadyToReady(NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.Ready)
 }
 
 data class ChangeBatchStatusRequestPayload(

@@ -11,7 +11,7 @@ internal class BatchStoreGetActiveSpeciesTest : BatchStoreTest() {
 
     insertBatch(speciesId = speciesId, germinatingQuantity = 1)
     val speciesId2 = insertSpecies()
-    insertBatch(speciesId = speciesId2, notReadyQuantity = 1)
+    insertBatch(speciesId = speciesId2, activeGrowthQuantity = 1)
     val speciesId3 = insertSpecies()
     insertBatch(speciesId = speciesId3, readyQuantity = 1)
 

@@ -234,8 +234,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                               // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
                               mortalityRate = 22,
                               name = "Nursery",
-                              // inventory (200 not-ready, 300 ready) +
-                              // outplanting withdrawals (20 not-ready, 30 ready)
+                              // inventory (200 active-growth, 300 ready) +
+                              // outplanting withdrawals (20 active-growth, 30 ready)
                               totalPlantsPropagated = 550,
                           ),
                       ),
@@ -384,8 +384,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                               mortalityRate = 22,
                               name = "Facility 1",
                               // Project-level total only counts one of the four samples:
-                              //   inventory (200 not-ready, 300 ready) +
-                              //   outplanting withdrawals (20 not-ready, 30 ready)
+                              //   inventory (200 active-growth, 300 ready) +
+                              //   outplanting withdrawals (20 active-growth, 30 ready)
                               totalPlantsPropagatedForProject = 550,
                               // Org-level total counts all three samples for this nursery (same
                               // numbers as above for each sample).
@@ -682,7 +682,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       insertBatch(
           facilityId = firstNursery,
           germinatingQuantity = 50,
-          notReadyQuantity = 60,
+          activeGrowthQuantity = 60,
           readyQuantity = 70,
           speciesId = speciesId,
       )
@@ -808,9 +808,9 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                                   // 152 dead / (628 remaining + 200 total withdrawn) = 18.4%
                                   mortalityRate = 18,
                                   name = "Facility 2",
-                                  // initial batch (60 not-ready, 70 ready) +
-                                  // insertSampleWithdrawals batch (200 not-ready, 300 ready) +
-                                  // outplanting withdrawals (20 not-ready, 30 ready)
+                                  // initial batch (60 active-growth, 70 ready) +
+                                  // insertSampleWithdrawals batch (200 active-growth, 300 ready) +
+                                  // outplanting withdrawals (20 active-growth, 30 ready)
                                   totalPlantsPropagated = 680,
                               ),
                               SeedFundReportBodyModelV1.Nursery(
@@ -997,17 +997,17 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     insertBatch(
         facilityId = nurseryId,
         germinatingQuantity = 100,
-        notReadyQuantity = 200,
+        activeGrowthQuantity = 200,
         projectId = projectId,
         readyQuantity = 300,
         speciesId = speciesId,
     )
 
     insertNurseryWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.Dead)
-    insertBatchWithdrawal(readyQuantityWithdrawn = 100, notReadyQuantityWithdrawn = 52)
+    insertBatchWithdrawal(readyQuantityWithdrawn = 100, activeGrowthQuantityWithdrawn = 52)
 
     insertNurseryWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
-    insertBatchWithdrawal(readyQuantityWithdrawn = 20, notReadyQuantityWithdrawn = 30)
+    insertBatchWithdrawal(readyQuantityWithdrawn = 20, activeGrowthQuantityWithdrawn = 30)
     insertDelivery(plantingSiteId = plantingSiteId)
     insertPlanting(plantingSiteId = plantingSiteId, speciesId = speciesId)
   }

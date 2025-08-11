@@ -68,7 +68,7 @@ data class CreateNurseryTransferRequestPayload(
           facilityId = destinationFacilityId,
           germinatingQuantity = germinatingQuantity,
           notes = notes,
-          notReadyQuantity = notReadyQuantity,
+          activeGrowthQuantity = notReadyQuantity,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           hardeningOffQuantity = hardeningOffQuantity ?: 0,

@@ -56,7 +56,7 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
           batchId = batchId,
           version = 1,
           germinating = 1,
-          notReady = 1,
+          activeGrowth = 1,
           hardeningOff = 1,
           ready = 1,
           historyType = BatchQuantityHistoryType.Observed)

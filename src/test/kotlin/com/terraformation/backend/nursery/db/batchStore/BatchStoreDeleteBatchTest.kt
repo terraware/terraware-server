@@ -52,7 +52,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     val batchId =
         insertBatch(
             germinatingQuantity = 1,
-            notReadyQuantity = 2,
+            activeGrowthQuantity = 2,
             hardeningOffQuantity = 3,
             readyQuantity = 4,
             speciesId = speciesId)
@@ -117,7 +117,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
         lossRate = 25,
         totalLossCandidates = 100,
         totalLost = 25,
-        notReadyQuantity = 200,
+        activeGrowthQuantity = 200,
         readyQuantity = 300,
         hardeningOffQuantity = 400,
     )
@@ -131,7 +131,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             lossRate = 0,
             totalLossCandidates = 100,
             totalLost = 0,
-            notReadyQuantity = 2,
+            activeGrowthQuantity = 2,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
         )
@@ -139,7 +139,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 10,
         readyQuantityWithdrawn = 20,
-        notReadyQuantityWithdrawn = 30,
+        activeGrowthQuantityWithdrawn = 30,
         hardeningOffQuantityWithdrawn = 40,
     )
 
@@ -148,7 +148,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             germinatingQuantity = 101,
             germinationRate = 58,
             hardeningOffQuantity = 404,
-            notReadyQuantity = 202,
+            activeGrowthQuantity = 202,
             readyQuantity = 303,
             lossRate = 13,
             nurseries = listOf(FacilitiesRow(id = facilityId, name = "Nursery")),
@@ -167,7 +167,7 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             germinatingQuantity = 100,
             germinationRate = 50,
             hardeningOffQuantity = 400,
-            notReadyQuantity = 200,
+            activeGrowthQuantity = 200,
             readyQuantity = 300,
             lossRate = 25,
             nurseries = summaryBeforeDelete.nurseries,

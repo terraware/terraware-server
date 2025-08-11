@@ -78,7 +78,7 @@ class AccessionService(
    * Withdraws seeds from a seed bank and creates a new seedling batch at a nursery.
    *
    * Withdrawal details are pulled from [batch], with the withdrawal quantity set to the sum of the
-   * batch's germinating, not-ready, hardening-off and ready quantities.
+   * batch's germinating, active-growth, hardening-off and ready quantities.
    *
    * @return The updated accession model and the newly-created batch with its ID populated.
    */
@@ -106,7 +106,7 @@ class AccessionService(
 
     val totalSeeds =
         batch.germinatingQuantity +
-            batch.notReadyQuantity +
+            batch.activeGrowthQuantity +
             batch.hardeningOffQuantity +
             batch.readyQuantity
 

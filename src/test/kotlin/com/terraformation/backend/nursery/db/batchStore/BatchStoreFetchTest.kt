@@ -32,7 +32,7 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             batchNumber = "23-2-1-008",
             germinatingQuantity = 64,
             hardeningOffQuantity = 512,
-            notReadyQuantity = 128,
+            activeGrowthQuantity = 128,
             readyByDate = LocalDate.of(2023, 6, 7),
             readyQuantity = 256,
             speciesId = speciesId,
@@ -45,11 +45,13 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
 
     insertNurseryWithdrawal()
     insertBatchWithdrawal(
-        germinatingQuantityWithdrawn = 1, notReadyQuantityWithdrawn = 2, readyQuantityWithdrawn = 4)
+        germinatingQuantityWithdrawn = 1,
+        activeGrowthQuantityWithdrawn = 2,
+        readyQuantityWithdrawn = 4)
     insertNurseryWithdrawal()
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 8,
-        notReadyQuantityWithdrawn = 16,
+        activeGrowthQuantityWithdrawn = 16,
         readyQuantityWithdrawn = 32)
 
     val expected =
@@ -65,12 +67,12 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             id = batchId,
             latestObservedGerminatingQuantity = 64,
             latestObservedHardeningOffQuantity = 512,
-            latestObservedNotReadyQuantity = 128,
+            latestObservedActiveGrowthQuantity = 128,
             latestObservedReadyQuantity = 256,
             latestObservedTime = Instant.EPOCH,
             lossRate = 0,
             notes = "Notes",
-            notReadyQuantity = 128,
+            activeGrowthQuantity = 128,
             organizationId = organizationId,
             readyByDate = LocalDate.of(2023, 6, 7),
             readyQuantity = 256,

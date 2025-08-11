@@ -85,7 +85,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                       BatchWithdrawalModel(
                           batchId,
                           germinatingQuantityWithdrawn = 0,
-                          notReadyQuantityWithdrawn = 0,
+                          activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 1)),
               facilityId = facilityId,
               id = null,
@@ -106,7 +106,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                       BatchWithdrawalModel(
                           batchId,
                           germinatingQuantityWithdrawn = 0,
-                          notReadyQuantityWithdrawn = 0,
+                          activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 1)),
               facilityId = facilityId,
               id = null,
@@ -121,19 +121,19 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
         insertBatch(
             speciesId = speciesId1,
             germinatingQuantity = 20,
-            notReadyQuantity = 20,
+            activeGrowthQuantity = 20,
             readyQuantity = 20)
     val species1Batch2 =
         insertBatch(
             speciesId = speciesId1,
             germinatingQuantity = 20,
-            notReadyQuantity = 20,
+            activeGrowthQuantity = 20,
             readyQuantity = 20)
     val species2Batch1 =
         insertBatch(
             speciesId = speciesId2,
             germinatingQuantity = 20,
-            notReadyQuantity = 20,
+            activeGrowthQuantity = 20,
             readyQuantity = 20)
 
     val withdrawal =
@@ -144,17 +144,17 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                         BatchWithdrawalModel(
                             species1Batch1,
                             germinatingQuantityWithdrawn = 1,
-                            notReadyQuantityWithdrawn = 2,
+                            activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 4),
                         BatchWithdrawalModel(
                             species1Batch2,
                             germinatingQuantityWithdrawn = 0,
-                            notReadyQuantityWithdrawn = 0,
+                            activeGrowthQuantityWithdrawn = 0,
                             readyQuantityWithdrawn = 8),
                         BatchWithdrawalModel(
                             species2Batch1,
                             germinatingQuantityWithdrawn = 0,
-                            notReadyQuantityWithdrawn = 0,
+                            activeGrowthQuantityWithdrawn = 0,
                             readyQuantityWithdrawn = 16),
                     ),
                 facilityId = facilityId,
@@ -194,7 +194,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                           BatchWithdrawalModel(
                               batchId,
                               germinatingQuantityWithdrawn = 0,
-                              notReadyQuantityWithdrawn = 0,
+                              activeGrowthQuantityWithdrawn = 0,
                               readyQuantityWithdrawn = 4,
                           ),
                       ),
@@ -226,7 +226,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
           insertBatch(
               speciesId = speciesId1,
               germinatingQuantity = 10,
-              notReadyQuantity = 20,
+              activeGrowthQuantity = 20,
               hardeningOffQuantity = 30,
               readyQuantity = 40)
       val withdrawal =
@@ -237,7 +237,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                           BatchWithdrawalModel(
                               batchId,
                               germinatingQuantityWithdrawn = 1,
-                              notReadyQuantityWithdrawn = 2,
+                              activeGrowthQuantityWithdrawn = 2,
                               hardeningOffQuantityWithdrawn = 3,
                               readyQuantityWithdrawn = 4,
                           ),

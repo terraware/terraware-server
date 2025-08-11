@@ -4390,13 +4390,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         batchId = batchId1,
         withdrawalId = otherWithdrawalId,
         germinatingQuantityWithdrawn = 1,
-        notReadyQuantityWithdrawn = 2,
+        activeGrowthQuantityWithdrawn = 2,
     )
     insertBatchWithdrawal(
         batchId = batchId2,
         withdrawalId = otherWithdrawalId,
         germinatingQuantityWithdrawn = 4,
-        notReadyQuantityWithdrawn = 3,
+        activeGrowthQuantityWithdrawn = 3,
     )
 
     val deadWithdrawalId =
@@ -4424,14 +4424,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         withdrawalId = nurseryTransferWithdrawalId,
         readyQuantityWithdrawn = 100,
         germinatingQuantityWithdrawn = 100,
-        notReadyQuantityWithdrawn = 100,
+        activeGrowthQuantityWithdrawn = 100,
     )
     insertBatchWithdrawal(
         batchId = batchId2,
         withdrawalId = nurseryTransferWithdrawalId,
         readyQuantityWithdrawn = 100,
         germinatingQuantityWithdrawn = 100,
-        notReadyQuantityWithdrawn = 100,
+        activeGrowthQuantityWithdrawn = 100,
     )
 
     // These two will not be counted

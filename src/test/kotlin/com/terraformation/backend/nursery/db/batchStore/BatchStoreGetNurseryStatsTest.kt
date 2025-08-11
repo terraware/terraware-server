@@ -22,7 +22,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             facilityId = facilityId,
             speciesId = speciesId,
             germinatingQuantity = 1,
-            notReadyQuantity = 2,
+            activeGrowthQuantity = 2,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
             totalGerminated = 100,
@@ -34,7 +34,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             facilityId = facilityId,
             speciesId = speciesId2,
             germinatingQuantity = 4,
-            notReadyQuantity = 5,
+            activeGrowthQuantity = 5,
             readyQuantity = 6,
             hardeningOffQuantity = 7,
             totalLost = 500,
@@ -44,13 +44,13 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 10,
-        notReadyQuantityWithdrawn = 11,
+        activeGrowthQuantityWithdrawn = 11,
         readyQuantityWithdrawn = 12,
         hardeningOffQuantityWithdrawn = 13)
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 13,
-        notReadyQuantityWithdrawn = 14,
+        activeGrowthQuantityWithdrawn = 14,
         readyQuantityWithdrawn = 15,
         hardeningOffQuantityWithdrawn = 16)
 
@@ -58,7 +58,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 16,
-        notReadyQuantityWithdrawn = 17,
+        activeGrowthQuantityWithdrawn = 17,
         readyQuantityWithdrawn = 18,
         hardeningOffQuantityWithdrawn = 19)
 
@@ -66,13 +66,13 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 19,
-        notReadyQuantityWithdrawn = 20,
+        activeGrowthQuantityWithdrawn = 20,
         readyQuantityWithdrawn = 21,
         hardeningOffQuantityWithdrawn = 22)
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 22,
-        notReadyQuantityWithdrawn = 23,
+        activeGrowthQuantityWithdrawn = 23,
         readyQuantityWithdrawn = 24,
         hardeningOffQuantityWithdrawn = 25)
 
@@ -80,7 +80,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 25,
-        notReadyQuantityWithdrawn = 26,
+        activeGrowthQuantityWithdrawn = 26,
         readyQuantityWithdrawn = 27,
         hardeningOffQuantityWithdrawn = 28)
 
@@ -88,7 +88,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         facilityId = otherNurseryId,
         speciesId = speciesId,
         germinatingQuantity = 7,
-        notReadyQuantity = 8,
+        activeGrowthQuantity = 8,
         readyQuantity = 9,
         hardeningOffQuantity = 10,
         totalGerminated = 700,
@@ -98,14 +98,14 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 28,
-        notReadyQuantityWithdrawn = 29,
+        activeGrowthQuantityWithdrawn = 29,
         readyQuantityWithdrawn = 30,
         hardeningOffQuantityWithdrawn = 31)
 
     insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 31,
-        notReadyQuantityWithdrawn = 32,
+        activeGrowthQuantityWithdrawn = 32,
         readyQuantityWithdrawn = 33,
         hardeningOffQuantityWithdrawn = 34)
 
@@ -114,7 +114,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = 34,
-        notReadyQuantityWithdrawn = 35,
+        activeGrowthQuantityWithdrawn = 35,
         readyQuantityWithdrawn = 36,
         hardeningOffQuantityWithdrawn = 37)
     insertNurseryWithdrawal(
@@ -124,7 +124,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = -34,
-        notReadyQuantityWithdrawn = -35,
+        activeGrowthQuantityWithdrawn = -35,
         readyQuantityWithdrawn = -36,
         hardeningOffQuantityWithdrawn = -37)
 
@@ -134,7 +134,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
     insertSpecies()
     insertBatch(
         germinatingQuantity = 1000,
-        notReadyQuantity = 2000,
+        activeGrowthQuantity = 2000,
         readyQuantity = 3000,
         hardeningOffQuantity = 4000,
         totalGerminated = 10000,
@@ -148,7 +148,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             germinationRate = 50,
             lossRate = 80,
             totalGerminating = 1 + 4,
-            totalNotReady = 2 + 5,
+            totalActiveGrowth = 2 + 5,
             totalHardeningOff = 4 + 7,
             totalReady = 3 + 6,
             totalWithdrawnByPurpose =
@@ -168,7 +168,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             germinationRate = 80,
             lossRate = 85,
             totalGerminating = 1 + 4 + 7,
-            totalNotReady = 2 + 5 + 8,
+            totalActiveGrowth = 2 + 5 + 8,
             totalHardeningOff = 4 + 7 + 10,
             totalReady = 3 + 6 + 9,
             totalWithdrawnByPurpose =
