@@ -32,6 +32,8 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> by lazy {
     listOf(
         integerField(
+            "activeGrowthQuantityWithdrawn", BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN),
+        integerField(
             "germinatingQuantityWithdrawn", BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN),
         integerField(
             "hardeningOffQuantityWithdrawn", BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN),

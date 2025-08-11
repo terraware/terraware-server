@@ -56,6 +56,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
+        integerField("activeGrowthQuantity", BATCHES.ACTIVE_GROWTH_QUANTITY),
         dateField("addedDate", BATCHES.ADDED_DATE),
         upperCaseTextField("batchNumber", BATCHES.BATCH_NUMBER),
         integerField("germinatingQuantity", BATCHES.GERMINATING_QUANTITY),

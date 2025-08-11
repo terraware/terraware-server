@@ -39,6 +39,7 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
+          longField("activeGrowthQuantity", INVENTORIES.ACTIVE_GROWTH_QUANTITY, nullable = false),
           longField("germinatingQuantity", INVENTORIES.GERMINATING_QUANTITY, nullable = false),
           longField("hardeningOffQuantity", INVENTORIES.HARDENING_OFF_QUANTITY, nullable = false),
           longField("notReadyQuantity", INVENTORIES.ACTIVE_GROWTH_QUANTITY, nullable = false),
