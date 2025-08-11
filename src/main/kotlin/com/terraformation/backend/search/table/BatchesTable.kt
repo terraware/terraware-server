@@ -46,7 +46,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
                   DSL.select(
                           DSL.sum(
                               BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN.plus(
-                                      BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN)
+                                      BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN)
                                   .plus(BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN)))
                       .from(BATCH_WITHDRAWALS)
                       .where(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID)))
@@ -66,7 +66,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         idWrapperField("initialBatchId", BATCHES.INITIAL_BATCH_ID, ::BatchId),
         integerField("lossRate", BATCHES.LOSS_RATE),
         textField("notes", BATCHES.NOTES),
-        integerField("notReadyQuantity", BATCHES.NOT_READY_QUANTITY),
+        integerField("notReadyQuantity", BATCHES.ACTIVE_GROWTH_QUANTITY),
         dateField("readyByDate", BATCHES.READY_BY_DATE),
         integerField("readyQuantity", BATCHES.READY_QUANTITY),
         dateField("seedsSownDate", BATCHES.SEEDS_SOWN_DATE),
@@ -74,7 +74,7 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         textField("substrateNotes", BATCHES.SUBSTRATE_NOTES),
         integerField(
             "totalQuantity",
-            BATCHES.READY_QUANTITY.plus(BATCHES.NOT_READY_QUANTITY)
+            BATCHES.READY_QUANTITY.plus(BATCHES.ACTIVE_GROWTH_QUANTITY)
                 .plus(BATCHES.HARDENING_OFF_QUANTITY)),
         enumField("treatment", BATCHES.TREATMENT_ID),
         textField("treatmentNotes", BATCHES.TREATMENT_NOTES),

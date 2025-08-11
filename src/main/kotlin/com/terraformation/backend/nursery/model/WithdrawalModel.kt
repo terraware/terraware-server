@@ -73,7 +73,7 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
         destinationBatchId = destinationBatchId,
         germinatingQuantityWithdrawn = germinatingQuantityWithdrawn!!,
         hardeningOffQuantityWithdrawn = hardeningOffQuantityWithdrawn!!,
-        notReadyQuantityWithdrawn = notReadyQuantityWithdrawn!!,
+        notReadyQuantityWithdrawn = activeGrowthQuantityWithdrawn!!,
         readyQuantityWithdrawn = readyQuantityWithdrawn!!,
     )
 

@@ -45,7 +45,9 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
               FACILITY_INVENTORY_TOTALS.HARDENING_OFF_QUANTITY,
               nullable = false),
           longField(
-              "notReadyQuantity", FACILITY_INVENTORY_TOTALS.NOT_READY_QUANTITY, nullable = false),
+              "notReadyQuantity",
+              FACILITY_INVENTORY_TOTALS.ACTIVE_GROWTH_QUANTITY,
+              nullable = false),
           longField("readyQuantity", FACILITY_INVENTORY_TOTALS.READY_QUANTITY, nullable = false),
           longField("totalQuantity", FACILITY_INVENTORY_TOTALS.TOTAL_QUANTITY, nullable = false),
           longField("totalSpecies", FACILITY_INVENTORY_TOTALS.TOTAL_SPECIES, nullable = false),

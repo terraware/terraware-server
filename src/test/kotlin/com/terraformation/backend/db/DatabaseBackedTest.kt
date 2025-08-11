@@ -1897,7 +1897,7 @@ abstract class DatabaseBackedTest {
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       hardeningOffQuantity: Int = row.hardeningOffQuantity ?: 0,
-      notReadyQuantity: Int = row.notReadyQuantity ?: 0,
+      notReadyQuantity: Int = row.activeGrowthQuantity ?: 0,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       readyQuantity: Int = row.readyQuantity ?: 0,
@@ -1908,11 +1908,18 @@ abstract class DatabaseBackedTest {
       germinationRate: Int? = row.germinationRate,
       totalGerminated: Int? = row.totalGerminated,
       totalGerminationCandidates: Int? = row.totalGerminationCandidates,
-      lossRate: Int? = row.lossRate ?: if (notReadyQuantity > 0 || readyQuantity > 0) 0 else null,
-      totalLost: Int? = row.totalLost ?: if (notReadyQuantity > 0 || readyQuantity > 0) 0 else null,
+      lossRate: Int? =
+          row.lossRate
+              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+              else null,
+      totalLost: Int? =
+          row.totalLost
+              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+              else null,
       totalLossCandidates: Int? =
           row.totalLossCandidates
-              ?: if (notReadyQuantity > 0 || readyQuantity > 0) notReadyQuantity + readyQuantity
+              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0)
+                  notReadyQuantity + hardeningOffQuantity + readyQuantity
               else null,
   ): BatchId {
     val effectiveGerminationRate =
@@ -1932,6 +1939,7 @@ abstract class DatabaseBackedTest {
 
     val rowWithDefaults =
         row.copy(
+            activeGrowthQuantity = notReadyQuantity,
             addedDate = addedDate,
             batchNumber = batchNumber,
             createdBy = createdBy,
@@ -1942,9 +1950,9 @@ abstract class DatabaseBackedTest {
             hardeningOffQuantity = hardeningOffQuantity,
             totalGerminated = totalGerminated,
             totalGerminationCandidates = totalGerminationCandidates,
+            latestObservedActiveGrowthQuantity = notReadyQuantity,
             latestObservedGerminatingQuantity = germinatingQuantity,
             latestObservedHardeningOffQuantity = hardeningOffQuantity,
-            latestObservedNotReadyQuantity = notReadyQuantity,
             latestObservedReadyQuantity = readyQuantity,
             latestObservedTime = createdTime,
             lossRate = effectiveLossRate,
@@ -1952,7 +1960,6 @@ abstract class DatabaseBackedTest {
             totalLossCandidates = totalLossCandidates,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
-            notReadyQuantity = notReadyQuantity,
             organizationId = organizationId,
             projectId = projectId,
             readyQuantity = readyQuantity,
@@ -2068,17 +2075,17 @@ abstract class DatabaseBackedTest {
       destinationBatchId: BatchId? = row.destinationBatchId,
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       hardeningOffQuantityWithdrawn: Int = row.hardeningOffQuantityWithdrawn ?: 0,
-      notReadyQuantityWithdrawn: Int = row.notReadyQuantityWithdrawn ?: 0,
+      notReadyQuantityWithdrawn: Int = row.activeGrowthQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
       withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId
   ) {
     val rowWithDefaults =
         row.copy(
+            activeGrowthQuantityWithdrawn = notReadyQuantityWithdrawn,
             batchId = batchId,
             destinationBatchId = destinationBatchId,
             germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,
             hardeningOffQuantityWithdrawn = hardeningOffQuantityWithdrawn,
-            notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
             readyQuantityWithdrawn = readyQuantityWithdrawn,
             withdrawalId = withdrawalId,
         )

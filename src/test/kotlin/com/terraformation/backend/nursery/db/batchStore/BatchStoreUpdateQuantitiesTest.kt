@@ -41,11 +41,11 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
     assertEquals(
         before.copy(
             germinatingQuantity = 1,
-            notReadyQuantity = 2,
+            activeGrowthQuantity = 2,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
             latestObservedGerminatingQuantity = 1,
-            latestObservedNotReadyQuantity = 2,
+            latestObservedActiveGrowthQuantity = 2,
             latestObservedReadyQuantity = 3,
             latestObservedHardeningOffQuantity = 4,
             latestObservedTime = updateTime,
@@ -74,7 +74,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
     assertEquals(
         before.copy(
             germinatingQuantity = 1,
-            notReadyQuantity = 2,
+            activeGrowthQuantity = 2,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
             totalLost = 0,
@@ -103,7 +103,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 1,
-                notReadyQuantity = 2,
+                activeGrowthQuantity = 2,
                 readyQuantity = 3,
                 hardeningOffQuantity = 4,
                 version = 2,
@@ -119,7 +119,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             .fetchOneById(batchId)!!
             .copy(
                 germinatingQuantity = 1,
-                notReadyQuantity = 2,
+                activeGrowthQuantity = 2,
                 readyQuantity = 3,
                 hardeningOffQuantity = 4)
     batchesDao.update(before)

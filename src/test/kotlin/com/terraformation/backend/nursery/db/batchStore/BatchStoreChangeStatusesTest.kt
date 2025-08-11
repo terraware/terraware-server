@@ -47,10 +47,10 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
         before.copy(
             germinatingQuantity = 8,
             hardeningOffQuantity = 42,
-            notReadyQuantity = 15,
+            activeGrowthQuantity = 15,
             readyQuantity = 35,
             totalLost = 0,
-            // moved 2 seeds from germinating to not-ready
+            // moved 2 seeds from germinating to active-growth
             totalLossCandidates = 92,
             modifiedTime = updateTime,
             version = 4),
@@ -60,34 +60,34 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
         listOf(
             BatchQuantityHistoryRow(
                 batchId = batchId,
+                activeGrowthQuantity = 22,
                 historyTypeId = BatchQuantityHistoryType.StatusChanged,
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 8,
                 hardeningOffQuantity = 40,
-                notReadyQuantity = 22,
                 readyQuantity = 30,
                 version = 2,
             ),
             BatchQuantityHistoryRow(
                 batchId = batchId,
+                activeGrowthQuantity = 15,
                 historyTypeId = BatchQuantityHistoryType.StatusChanged,
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 8,
                 hardeningOffQuantity = 47,
-                notReadyQuantity = 15,
                 readyQuantity = 30,
                 version = 3,
             ),
             BatchQuantityHistoryRow(
                 batchId = batchId,
+                activeGrowthQuantity = 15,
                 historyTypeId = BatchQuantityHistoryType.StatusChanged,
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 8,
                 hardeningOffQuantity = 42,
-                notReadyQuantity = 15,
                 readyQuantity = 35,
                 version = 4,
             ),
@@ -105,8 +105,8 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
 
     assertEquals(
         before.copy(
+            activeGrowthQuantity = 20,
             germinatingQuantity = 7,
-            notReadyQuantity = 20,
             hardeningOffQuantity = 43,
             readyQuantity = 30,
             totalLost = 0,
@@ -119,11 +119,11 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
         listOf(
             BatchQuantityHistoryRow(
                 batchId = batchId,
+                activeGrowthQuantity = 20,
                 historyTypeId = BatchQuantityHistoryType.StatusChanged,
                 createdBy = user.userId,
                 createdTime = updateTime,
                 germinatingQuantity = 7,
-                notReadyQuantity = 20,
                 hardeningOffQuantity = 43,
                 readyQuantity = 30,
                 version = 2,
@@ -182,7 +182,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
     assertThrows<BatchInventoryInsufficientException>("Not Ready") {
       store.changeStatuses(batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.Ready, 50)
     }
-    assertThrows<BatchInventoryInsufficientException>("Not Ready") {
+    assertThrows<BatchInventoryInsufficientException>("Hardening Off") {
       store.changeStatuses(batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, 50)
     }
   }
