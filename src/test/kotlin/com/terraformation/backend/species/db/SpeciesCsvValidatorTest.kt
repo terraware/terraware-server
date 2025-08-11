@@ -350,7 +350,7 @@ internal class SpeciesCsvValidatorTest {
   @Test
   fun `accepts localized values for enumerated fields`() {
     val gibberishTrue = "true".toGibberish()
-    val gibberishShrub = "Shrub or Tree".toGibberish()
+    val gibberishShrub = "Shrub".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
     val gibberishEarlySecondary = "Early secondary".toGibberish()
