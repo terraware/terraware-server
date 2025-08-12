@@ -512,42 +512,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>withdrawal_photos_photo_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.file_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/files.html'>files</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>withdrawal_photos_withdrawal_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.withdrawal_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>batches_treatment_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -728,6 +692,42 @@
                                         <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>withdrawal_photos_photo_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.file_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/files.html'>files</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>withdrawal_photos_withdrawal_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.withdrawal_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>batch_details_history_substrate_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -885,7 +885,7 @@
                                     <tr>
                                         <td><a href='tables/batch_withdrawals.html'>batch_withdrawals</a></td>
                                         <td>quantity_signs_consistent</td>
-                                        <td>(((germinating_quantity_withdrawn &lt;&#61; 0) AND (not_ready_quantity_withdrawn &lt;&#61; 0) AND (ready_quantity_withdrawn &lt;&#61; 0)) OR ((germinating_quantity_withdrawn &gt;&#61; 0) AND (not_ready_quantity_withdrawn &gt;&#61; 0) AND (ready_quantity_withdrawn &gt;&#61; 0)))</td>
+                                        <td>(((germinating_quantity_withdrawn &lt;&#61; 0) AND (active_growth_quantity_withdrawn &lt;&#61; 0) AND (ready_quantity_withdrawn &lt;&#61; 0)) OR ((germinating_quantity_withdrawn &gt;&#61; 0) AND (active_growth_quantity_withdrawn &gt;&#61; 0) AND (ready_quantity_withdrawn &gt;&#61; 0)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batch_quantity_history.html'>batch_quantity_history</a></td>
@@ -895,7 +895,7 @@
                                     <tr>
                                         <td><a href='tables/batch_quantity_history.html'>batch_quantity_history</a></td>
                                         <td>batch_quantity_history_not_ready_quantity_check</td>
-                                        <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                        <td>(active_growth_quantity &gt;&#61; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batch_quantity_history.html'>batch_quantity_history</a></td>
@@ -930,7 +930,7 @@
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>
                                         <td>batches_latest_observed_not_ready_quantity_check</td>
-                                        <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
+                                        <td>(latest_observed_active_growth_quantity &gt;&#61; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>
@@ -940,7 +940,7 @@
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>
                                         <td>batches_not_ready_quantity_check</td>
-                                        <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                        <td>(active_growth_quantity &gt;&#61; 0)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batches.html'>batches</a></td>

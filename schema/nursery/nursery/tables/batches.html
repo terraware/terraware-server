@@ -303,7 +303,7 @@
                                     <td><p>Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="not_ready_quantity">not_ready_quantity</span></td>
+                                    <td><span id="active_growth_quantity">active_growth_quantity</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -317,7 +317,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of not-ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
+                                    <td><p>Number of active-growth-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="ready_quantity">ready_quantity</span></td>
@@ -354,7 +354,7 @@
                                     <td><p>Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="latest_observed_not_ready_quantity">latest_observed_not_ready_quantity</span></td>
+                                    <td><span id="latest_observed_active_growth_quantity">latest_observed_active_growth_quantity</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -368,7 +368,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Latest user-observed number of not-ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
+                                    <td><p>Latest user-observed number of active-growth-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="latest_observed_ready_quantity">latest_observed_ready_quantity</span></td>
@@ -689,7 +689,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Total number of seedlings that have moved from Germinating to Not Ready status over the lifetime of the batch. This is the numerator for the germination rate calculation.</p></td>
+                                    <td><p>Total number of seedlings that have moved from Germinating to Active Growth status over the lifetime of the batch. This is the numerator for the germination rate calculation.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="total_germination_candidates">total_germination_candidates</span></td>
@@ -706,7 +706,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Total number of seedlings that have been candidates for moving from Germinating to Not Ready status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation.</p></td>
+                                    <td><p>Total number of seedlings that have been candidates for moving from Germinating to Active Growth status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="total_lost">total_lost</span></td>
@@ -723,7 +723,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Total number of non-germinating (Not Ready and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation.</p></td>
+                                    <td><p>Total number of non-germinating (Active Growth and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="total_loss_candidates">total_loss_candidates</span></td>
@@ -740,7 +740,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation.</p></td>
+                                    <td><p>Total number of non-germinating (Active Growth and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="germination_started_date">germination_started_date</span></td>
@@ -911,20 +911,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batches_latest_observed_not_ready_quantity_check</td>
+                                    <td>(latest_observed_active_growth_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
                                     <td>batches_version_check</td>
                                     <td>(version &gt; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_notes_check</td>
-                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_germinating_quantity_check</td>
-                                    <td>(germinating_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batches_ready_quantity_check</td>
-                                    <td>(ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>batches_latest_observed_germinating_quantity_check</td>
@@ -935,12 +927,20 @@
                                     <td>(latest_observed_ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
-                                    <td>batches_latest_observed_not_ready_quantity_check</td>
-                                    <td>(latest_observed_not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>batches_germinating_quantity_check</td>
+                                    <td>(germinating_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_ready_quantity_check</td>
+                                    <td>(ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>batches_notes_check</td>
+                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>batches_not_ready_quantity_check</td>
-                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>(active_growth_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

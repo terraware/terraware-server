@@ -234,7 +234,7 @@
                                     <td><p>New number of germinating seedlings in the batch.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="not_ready_quantity">not_ready_quantity</span></td>
+                                    <td><span id="active_growth_quantity">active_growth_quantity</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -248,7 +248,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>New number of not-ready-for-planting seedlings in the batch.</p></td>
+                                    <td><p>New number of active-growth-for-planting seedlings in the batch.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="ready_quantity">ready_quantity</span></td>
@@ -400,16 +400,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>batch_quantity_history_ready_quantity_check</td>
+                                    <td>(ready_quantity &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
                                     <td>batch_quantity_history_not_ready_quantity_check</td>
-                                    <td>(not_ready_quantity &gt;&#61; 0)</td>
+                                    <td>(active_growth_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 <tr>
                                     <td>batch_quantity_history_germinating_quantity_check</td>
                                     <td>(germinating_quantity &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>batch_quantity_history_ready_quantity_check</td>
-                                    <td>(ready_quantity &gt;&#61; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

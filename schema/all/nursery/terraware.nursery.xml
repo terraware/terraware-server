@@ -101,7 +101,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="When the change in quantities happened. &quot;Created&quot; here refers to the history row, not the batch." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="germinating_quantity" nullable="false" remarks="New number of germinating seedlings in the batch." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="not_ready_quantity" nullable="false" remarks="New number of not-ready-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="active_growth_quantity" nullable="false" remarks="New number of active-growth-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="ready_quantity" nullable="false" remarks="New number of ready-for-planting seedlings in the batch." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="withdrawal_id" nullable="true" remarks="If this change in quantity was due to a withdrawal from the batch, the withdrawal's ID." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
@@ -120,7 +120,7 @@
             <column ascending="true" name="version"/>
          </index>
          <checkConstraint constraint="(germinating_quantity &gt;= 0)" name="batch_quantity_history_germinating_quantity_check"/>
-         <checkConstraint constraint="(not_ready_quantity &gt;= 0)" name="batch_quantity_history_not_ready_quantity_check"/>
+         <checkConstraint constraint="(active_growth_quantity &gt;= 0)" name="batch_quantity_history_not_ready_quantity_check"/>
          <checkConstraint constraint="(ready_quantity &gt;= 0)" name="batch_quantity_history_ready_quantity_check"/>
       </table>
       <table name="batch_quantity_history_types" remarks="(Enum) Types of operations that can result in changes to remaining quantities of seedling batches." schema="nursery" type="TABLE">
@@ -141,9 +141,9 @@
             <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
             <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
-            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
@@ -177,7 +177,7 @@
             <parent column="id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="germinating_quantity_withdrawn" nullable="false" remarks="Number of germinating seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="not_ready_quantity_withdrawn" nullable="false" remarks="Number of not-ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="active_growth_quantity_withdrawn" nullable="false" remarks="Number of active-growth-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="ready_quantity_withdrawn" nullable="false" remarks="Number of ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="destination_batch_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the batch that was created as a result. A withdrawal can have more than one originating batch; if they are of the same species, only one destination batch will be created and there will be multiple rows with the same `destination_batch_id`. May be null if the batch was subsequently deleted." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batch_withdrawals_destination_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
@@ -195,7 +195,7 @@
          <index name="batch_withdrawals_withdrawal_id_idx" unique="false">
             <column ascending="true" name="withdrawal_id"/>
          </index>
-         <checkConstraint constraint="(((germinating_quantity_withdrawn &lt;= 0) AND (not_ready_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (not_ready_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0)))" name="quantity_signs_consistent"/>
+         <checkConstraint constraint="(((germinating_quantity_withdrawn &lt;= 0) AND (active_growth_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (active_growth_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0)))" name="quantity_signs_consistent"/>
       </table>
       <table name="batches" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
@@ -222,10 +222,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="batch_number" nullable="false" remarks="User-friendly unique (per organization) identifier for the batch. Not used internally or in API; &quot;id&quot; is the internal identifier." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="added_date" nullable="false" remarks="User-supplied date the batch was added to the nursery's inventory." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="germinating_quantity" nullable="false" remarks="Number of germinating seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="not_ready_quantity" nullable="false" remarks="Number of not-ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="active_growth_quantity" nullable="false" remarks="Number of active-growth-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="ready_quantity" nullable="false" remarks="Number of ready-for-planting seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="latest_observed_germinating_quantity" nullable="false" remarks="Latest user-observed number of germinating seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="latest_observed_not_ready_quantity" nullable="false" remarks="Latest user-observed number of not-ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="latest_observed_active_growth_quantity" nullable="false" remarks="Latest user-observed number of active-growth-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="latest_observed_ready_quantity" nullable="false" remarks="Latest user-observed number of ready-for-planting seedlings currently available in inventory. Withdrawals do not cause this to decrease." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="latest_observed_time" nullable="false" remarks="When the latest user observation of seedling quantities took place." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="Which user initially created the batch." size="19" type="int8" typeCode="-5">
@@ -257,10 +257,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="initial_batch_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="batches_initial_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="total_germinated" nullable="true" remarks="Total number of seedlings that have moved from Germinating to Not Ready status over the lifetime of the batch. This is the numerator for the germination rate calculation." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="total_germination_candidates" nullable="true" remarks="Total number of seedlings that have been candidates for moving from Germinating to Not Ready status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="total_lost" nullable="true" remarks="Total number of non-germinating (Not Ready and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="total_loss_candidates" nullable="true" remarks="Total number of non-germinating (Not Ready and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="total_germinated" nullable="true" remarks="Total number of seedlings that have moved from Germinating to Active Growth status over the lifetime of the batch. This is the numerator for the germination rate calculation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="total_germination_candidates" nullable="true" remarks="Total number of seedlings that have been candidates for moving from Germinating to Active Growth status. This includes seedlings that are already germinated and germinating seedlings that were withdrawn as Dead, but does not include germinating seedlings that were withdrawn for other reasons. This is the denominator for the germination rate calculation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="total_lost" nullable="true" remarks="Total number of non-germinating (Active Growth and Ready) seedlings that have been withdrawn as Dead. This is the numerator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="total_loss_candidates" nullable="true" remarks="Total number of non-germinating (Active Growth and Ready) seedlings that have been candidates for being withdrawn as dead. This includes seedlings that are still in the batch, seedlings that were withdrawn for outplanting, and seedlings that were already withdrawn as dead, but does not include germinating seedlings or seedlings that were withdrawn for other reasons. This is the denominator for the loss rate calculation." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="germination_started_date" nullable="true" remarks="Date when sown seeds first started germinating." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="seeds_sown_date" nullable="true" remarks="Date when newly-arrived seeds were first sown." size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="35" name="hardening_off_quantity" nullable="false" remarks="Number of hardening-off seedlings currently available in inventory. Withdrawals cause this to decrease." size="10" type="int4" typeCode="4"/>
@@ -292,9 +292,9 @@
          </index>
          <checkConstraint constraint="(germinating_quantity &gt;= 0)" name="batches_germinating_quantity_check"/>
          <checkConstraint constraint="(latest_observed_germinating_quantity &gt;= 0)" name="batches_latest_observed_germinating_quantity_check"/>
-         <checkConstraint constraint="(latest_observed_not_ready_quantity &gt;= 0)" name="batches_latest_observed_not_ready_quantity_check"/>
+         <checkConstraint constraint="(latest_observed_active_growth_quantity &gt;= 0)" name="batches_latest_observed_not_ready_quantity_check"/>
          <checkConstraint constraint="(latest_observed_ready_quantity &gt;= 0)" name="batches_latest_observed_ready_quantity_check"/>
-         <checkConstraint constraint="(not_ready_quantity &gt;= 0)" name="batches_not_ready_quantity_check"/>
+         <checkConstraint constraint="(active_growth_quantity &gt;= 0)" name="batches_not_ready_quantity_check"/>
          <checkConstraint constraint="(notes !~ similar_to_escape(' *'::text))" name="batches_notes_check"/>
          <checkConstraint constraint="(ready_quantity &gt;= 0)" name="batches_ready_quantity_check"/>
          <checkConstraint constraint="(version &gt; 0)" name="batches_version_check"/>

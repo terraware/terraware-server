@@ -417,16 +417,16 @@
                                     <td>((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8))</td>
                                 </tr>
                                 <tr>
-                                    <td>cannot_have_both_text_and_reference</td>
-                                    <td>((text_value IS NULL) OR (used_variable_id IS NULL))</td>
+                                    <td>variable_section_default_values_variable_type_id_check</td>
+                                    <td>(variable_type_id &#61; 8)</td>
                                 </tr>
                                 <tr>
                                     <td>must_have_text_or_reference</td>
                                     <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
                                 </tr>
                                 <tr>
-                                    <td>variable_section_default_values_variable_type_id_check</td>
-                                    <td>(variable_type_id &#61; 8)</td>
+                                    <td>cannot_have_both_text_and_reference</td>
+                                    <td>((text_value IS NULL) OR (used_variable_id IS NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>

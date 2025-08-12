@@ -183,7 +183,7 @@
                                     <td><p>Number of germinating seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="not_ready_quantity_withdrawn">not_ready_quantity_withdrawn</span></td>
+                                    <td><span id="active_growth_quantity_withdrawn">active_growth_quantity_withdrawn</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -197,7 +197,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of not-ready-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.</p></td>
+                                    <td><p>Number of active-growth-for-planting seedlings that were withdrawn from this batch. This is not necessarily the total number of seedlings in the withdrawal as a whole since a withdrawal can come from multiple batches.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="ready_quantity_withdrawn">ready_quantity_withdrawn</span></td>
@@ -333,7 +333,7 @@
                                 <tbody>
                                 <tr>
                                     <td>quantity_signs_consistent</td>
-                                    <td>(((germinating_quantity_withdrawn &lt;&#61; 0) AND (not_ready_quantity_withdrawn &lt;&#61; 0) AND (ready_quantity_withdrawn &lt;&#61; 0)) OR ((germinating_quantity_withdrawn &gt;&#61; 0) AND (not_ready_quantity_withdrawn &gt;&#61; 0) AND (ready_quantity_withdrawn &gt;&#61; 0)))</td>
+                                    <td>(((germinating_quantity_withdrawn &lt;&#61; 0) AND (active_growth_quantity_withdrawn &lt;&#61; 0) AND (ready_quantity_withdrawn &lt;&#61; 0)) OR ((germinating_quantity_withdrawn &gt;&#61; 0) AND (active_growth_quantity_withdrawn &gt;&#61; 0) AND (ready_quantity_withdrawn &gt;&#61; 0)))</td>
                                 </tr>
                                 </tbody>
                             </table>
