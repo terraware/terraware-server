@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
@@ -177,7 +178,10 @@ class WithdrawalsController(
 data class BatchWithdrawalPayload(
     val batchId: BatchId,
     @Schema(defaultValue = "0") @Min(0) val germinatingQuantityWithdrawn: Int? = null,
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantityWithdrawn: Int,
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0)
+    @JsonAlias("notReadyQuantityWithdrawn")
+    val activeGrowthQuantityWithdrawn: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantityWithdrawn: Int,
 ) {
   constructor(
@@ -185,7 +189,7 @@ data class BatchWithdrawalPayload(
   ) : this(
       batchId = model.batchId,
       germinatingQuantityWithdrawn = model.germinatingQuantityWithdrawn,
-      notReadyQuantityWithdrawn = model.activeGrowthQuantityWithdrawn,
+      activeGrowthQuantityWithdrawn = model.activeGrowthQuantityWithdrawn,
       readyQuantityWithdrawn = model.readyQuantityWithdrawn,
   )
 
@@ -193,9 +197,12 @@ data class BatchWithdrawalPayload(
       BatchWithdrawalModel(
           batchId = batchId,
           germinatingQuantityWithdrawn = germinatingQuantityWithdrawn ?: 0,
-          activeGrowthQuantityWithdrawn = notReadyQuantityWithdrawn,
+          activeGrowthQuantityWithdrawn = activeGrowthQuantityWithdrawn,
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
+
+  val notReadyQuantityWithdrawn: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantityWithdrawn
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

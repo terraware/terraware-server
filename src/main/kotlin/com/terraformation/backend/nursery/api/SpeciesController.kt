@@ -38,6 +38,7 @@ data class SpeciesSummaryNurseryPayload(
 }
 
 data class SpeciesSummaryPayload(
+    val activeGrowthQuantity: Long,
     val germinatingQuantity: Long,
     val germinationRate: Int?,
     @Schema(
@@ -45,7 +46,6 @@ data class SpeciesSummaryPayload(
         minimum = "0",
         maximum = "100")
     val lossRate: Int?,
-    val notReadyQuantity: Long,
     val nurseries: List<SpeciesSummaryNurseryPayload>,
     val readyQuantity: Long,
     val speciesId: SpeciesId,
@@ -60,10 +60,10 @@ data class SpeciesSummaryPayload(
   constructor(
       summary: SpeciesSummary
   ) : this(
+      activeGrowthQuantity = summary.activeGrowthQuantity,
       germinatingQuantity = summary.germinatingQuantity,
       germinationRate = summary.germinationRate,
       lossRate = summary.lossRate,
-      notReadyQuantity = summary.activeGrowthQuantity,
       nurseries = summary.nurseries.map { SpeciesSummaryNurseryPayload(it) },
       readyQuantity = summary.readyQuantity,
       speciesId = summary.speciesId,
@@ -71,6 +71,9 @@ data class SpeciesSummaryPayload(
       totalQuantity = summary.totalQuantity,
       totalWithdrawn = summary.totalWithdrawn,
   )
+
+  val notReadyQuantity: Long // for backwards compatibility in response payloads
+    get() = activeGrowthQuantity
 }
 
 data class GetSpeciesSummaryResponsePayload(val summary: SpeciesSummaryPayload) :

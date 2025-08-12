@@ -22,8 +22,8 @@ def isoformat(timestamp: int) -> str:
 
 def generate_batch_withdrawal(batch_id):
     return {
+        "activeGrowthQuantityWithdrawn": 0,
         "batchId": batch_id,
-        "notReadyQuantityWithdrawn": 0,
         "readyQuantityWithdrawn": 1,
     }
 

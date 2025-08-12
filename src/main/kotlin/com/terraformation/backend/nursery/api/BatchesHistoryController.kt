@@ -260,11 +260,11 @@ data class BatchHistoryDetailsEditedPayload(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description = "A manual edit of a batch's remaining quantities.")
 data class BatchHistoryQuantityEditedPayload(
+    val activeGrowthQuantity: Int,
     override val createdBy: UserId,
     override val createdTime: Instant,
     val germinatingQuantity: Int,
     val hardeningOffQuantity: Int,
-    val notReadyQuantity: Int,
     val readyQuantity: Int,
     override val version: Int,
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
@@ -275,10 +275,13 @@ data class BatchHistoryQuantityEditedPayload(
       createdTime = row.createdTime!!,
       germinatingQuantity = row.germinatingQuantity!!,
       hardeningOffQuantity = row.hardeningOffQuantity!!,
-      notReadyQuantity = row.activeGrowthQuantity!!,
+      activeGrowthQuantity = row.activeGrowthQuantity!!,
       readyQuantity = row.readyQuantity!!,
       version = row.version!!,
   )
+
+  val notReadyQuantity: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantity
 
   val type
     @Schema(allowableValues = ["QuantityEdited"]) get() = "QuantityEdited"
@@ -291,25 +294,28 @@ data class BatchHistoryQuantityEditedPayload(
             "values here are the total quantities remaining after the status change, not the " +
             "number of seedlings whose statuses were changed.")
 data class BatchHistoryStatusChangedPayload(
+    val activeGrowthQuantity: Int,
     override val createdBy: UserId,
     override val createdTime: Instant,
     val germinatingQuantity: Int,
     val hardeningOffQuantity: Int = 0,
-    val notReadyQuantity: Int,
     val readyQuantity: Int,
     override val version: Int,
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       row: BatchQuantityHistoryRow
   ) : this(
+      activeGrowthQuantity = row.activeGrowthQuantity!!,
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
       germinatingQuantity = row.germinatingQuantity!!,
       hardeningOffQuantity = row.hardeningOffQuantity!!,
-      notReadyQuantity = row.activeGrowthQuantity!!,
       readyQuantity = row.readyQuantity!!,
       version = row.version!!,
   )
+
+  val notReadyQuantity: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantity
 
   val type
     @Schema(allowableValues = ["StatusChanged"]) get() = "StatusChanged"
@@ -320,12 +326,12 @@ data class BatchHistoryStatusChangedPayload(
     description =
         "A nursery transfer withdrawal from another batch that added seedlings to this batch.")
 data class BatchHistoryIncomingWithdrawalPayload(
+    val activeGrowthQuantityAdded: Int,
     override val createdBy: UserId,
     override val createdTime: Instant,
     val fromBatchId: BatchId,
     val germinatingQuantityAdded: Int,
     val hardeningOffQuantity: Int = 0,
-    val notReadyQuantityAdded: Int,
     val readyQuantityAdded: Int,
     override val version: Int,
     val withdrawalId: WithdrawalId,
@@ -336,17 +342,20 @@ data class BatchHistoryIncomingWithdrawalPayload(
       batchWithdrawalsRow: BatchWithdrawalsRow,
       withdrawalsRow: WithdrawalsRow,
   ) : this(
+      activeGrowthQuantityAdded = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       createdBy = historyRow.createdBy!!,
       createdTime = historyRow.createdTime!!,
       fromBatchId = batchWithdrawalsRow.batchId!!,
       germinatingQuantityAdded = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
       hardeningOffQuantity = batchWithdrawalsRow.hardeningOffQuantityWithdrawn!!,
-      notReadyQuantityAdded = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       readyQuantityAdded = batchWithdrawalsRow.readyQuantityWithdrawn!!,
       version = historyRow.version!!,
       withdrawalId = historyRow.withdrawalId!!,
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
+
+  val notReadyQuantityAdded: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantityAdded
 
   val type
     @Schema(allowableValues = ["IncomingWithdrawal"]) get() = "IncomingWithdrawal"
@@ -358,11 +367,11 @@ data class BatchHistoryIncomingWithdrawalPayload(
         "A withdrawal that removed seedlings from this batch. This does not include the full " +
             "details of the withdrawal; they can be retrieved using the withdrawal ID.")
 data class BatchHistoryOutgoingWithdrawalPayload(
+    val activeGrowthQuantityWithdrawn: Int,
     override val createdBy: UserId,
     override val createdTime: Instant,
     val germinatingQuantityWithdrawn: Int,
     val hardeningOffQuantity: Int = 0,
-    val notReadyQuantityWithdrawn: Int,
     val purpose: WithdrawalPurpose,
     val readyQuantityWithdrawn: Int,
     override val version: Int,
@@ -374,17 +383,20 @@ data class BatchHistoryOutgoingWithdrawalPayload(
       batchWithdrawalsRow: BatchWithdrawalsRow,
       withdrawalsRow: WithdrawalsRow
   ) : this(
+      activeGrowthQuantityWithdrawn = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       createdBy = historyRow.createdBy!!,
       createdTime = historyRow.createdTime!!,
       germinatingQuantityWithdrawn = batchWithdrawalsRow.germinatingQuantityWithdrawn!!,
       hardeningOffQuantity = batchWithdrawalsRow.hardeningOffQuantityWithdrawn!!,
-      notReadyQuantityWithdrawn = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       purpose = withdrawalsRow.purposeId!!,
       readyQuantityWithdrawn = batchWithdrawalsRow.readyQuantityWithdrawn!!,
       version = historyRow.version!!,
       withdrawalId = batchWithdrawalsRow.withdrawalId!!,
       withdrawnDate = withdrawalsRow.withdrawnDate!!,
   )
+
+  val notReadyQuantityWithdrawn: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantityWithdrawn
 
   val type
     @Schema(allowableValues = ["OutgoingWithdrawal"]) get() = "OutgoingWithdrawal"

@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.api
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.SeedBankAppEndpoint
@@ -50,7 +51,8 @@ data class CreateNurseryTransferRequestPayload(
     val notes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
-    val notReadyQuantity: Int,
+    @JsonAlias("notReadyQuantity")
+    val activeGrowthQuantity: Int,
     val readyByDate: LocalDate? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
@@ -68,7 +70,7 @@ data class CreateNurseryTransferRequestPayload(
           facilityId = destinationFacilityId,
           germinatingQuantity = germinatingQuantity,
           notes = notes,
-          activeGrowthQuantity = notReadyQuantity,
+          activeGrowthQuantity = activeGrowthQuantity,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           hardeningOffQuantity = hardeningOffQuantity ?: 0,

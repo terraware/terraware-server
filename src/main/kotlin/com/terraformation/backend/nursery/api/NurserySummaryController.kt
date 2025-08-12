@@ -32,6 +32,7 @@ class NurserySummaryController(
 }
 
 data class OrganizationNurserySummaryPayload(
+    val activeGrowthQuantity: Long,
     val germinatingQuantity: Long,
     val germinationRate: Int?,
     @Schema(
@@ -39,7 +40,6 @@ data class OrganizationNurserySummaryPayload(
         minimum = "0",
         maximum = "100")
     val lossRate: Int?,
-    val notReadyQuantity: Long,
     val readyQuantity: Long,
     @Schema(description = "Total number of plants that have been withdrawn due to death.")
     val totalDead: Long,
@@ -51,15 +51,18 @@ data class OrganizationNurserySummaryPayload(
   constructor(
       stats: NurseryStats
   ) : this(
+      activeGrowthQuantity = stats.totalActiveGrowth,
       germinatingQuantity = stats.totalGerminating,
       germinationRate = stats.germinationRate,
       lossRate = stats.lossRate,
-      notReadyQuantity = stats.totalActiveGrowth,
       readyQuantity = stats.totalReady,
       totalDead = stats.totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L,
       totalQuantity = stats.totalInventory,
       totalWithdrawn = stats.totalWithdrawn,
   )
+
+  val notReadyQuantity: Long // for backwards compatibility in response payloads
+    get() = activeGrowthQuantity
 }
 
 data class GetOrganizationNurserySummaryResponsePayload(
