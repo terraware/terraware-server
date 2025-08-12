@@ -35,11 +35,11 @@ def generate_upcoming_date() -> Optional[date]:
 
 def create_batch(client: TerrawareClient, facility_id: int, species_ids: List[int]):
     create_payload = {
+        "activeGrowthQuantity": randint(1, 20),
         "addedDate": str(generate_recent_date()),
         "facilityId": facility_id,
         "germinatingQuantity": randint(1, 10) if randint(0, 3) == 0 else 0,
         "notes": generate_notes(),
-        "notReadyQuantity": randint(1, 20),
         "readyByDate": str(generate_upcoming_date()) if randint(0, 1) == 0 else None,
         "readyQuantity": randint(1, 20),
         "speciesId": random.choice(species_ids),
@@ -55,7 +55,7 @@ def main():
         "-f",
         type=int,
         help="Generate batches at this facility. Default is to pick the first nursery "
-        + "facility accessible by the user.",
+             + "facility accessible by the user.",
     )
     parser.add_argument(
         "--number", "-n", type=int, default=10, help="Number of batches to create."

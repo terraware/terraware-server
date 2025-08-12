@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
@@ -129,7 +130,7 @@ class BatchesController(
         batchId = id,
         version = payload.version,
         germinating = payload.germinatingQuantity,
-        activeGrowth = payload.notReadyQuantity,
+        activeGrowth = payload.activeGrowthQuantity,
         hardeningOff = payload.hardeningOffQuantity ?: 0,
         ready = payload.readyQuantity,
         historyType = BatchQuantityHistoryType.Observed)
@@ -230,6 +231,7 @@ data class BatchPayload(
             "If this batch was created via a seed withdrawal, the accession number associated to " +
                 "the seed accession it came from.")
     val accessionNumber: String?,
+    val activeGrowthQuantity: Int,
     val addedDate: LocalDate,
     val batchNumber: String,
     val facilityId: FacilityId,
@@ -246,7 +248,6 @@ data class BatchPayload(
     val latestObservedTime: Instant,
     val lossRate: Int?,
     val notes: String?,
-    val notReadyQuantity: Int,
     val projectId: ProjectId?,
     val readyByDate: LocalDate?,
     val readyQuantity: Int,
@@ -270,6 +271,7 @@ data class BatchPayload(
   ) : this(
       accessionId = model.accessionId,
       accessionNumber = model.accessionNumber,
+      activeGrowthQuantity = model.activeGrowthQuantity,
       addedDate = model.addedDate,
       batchNumber = model.batchNumber,
       facilityId = model.facilityId,
@@ -282,7 +284,6 @@ data class BatchPayload(
       latestObservedTime = model.latestObservedTime.truncatedTo(ChronoUnit.SECONDS),
       lossRate = model.lossRate,
       notes = model.notes,
-      notReadyQuantity = model.activeGrowthQuantity,
       projectId = model.projectId,
       readyByDate = model.readyByDate,
       readyQuantity = model.readyQuantity,
@@ -296,6 +297,9 @@ data class BatchPayload(
       treatmentNotes = model.treatmentNotes,
       version = model.version,
   )
+
+  val notReadyQuantity: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantity
 }
 
 data class CreateBatchRequestPayload(
@@ -314,7 +318,10 @@ data class CreateBatchRequestPayload(
     val treatmentNotes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
     @Min(0) val hardeningOffQuantity: Int = 0,
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0)
+    @JsonAlias("notReadyQuantity")
+    val activeGrowthQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
 ) {
   fun toModel() =
@@ -325,7 +332,7 @@ data class CreateBatchRequestPayload(
           germinationStartedDate = germinationStartedDate,
           hardeningOffQuantity = hardeningOffQuantity,
           notes = notes,
-          activeGrowthQuantity = notReadyQuantity,
+          activeGrowthQuantity = activeGrowthQuantity,
           projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
@@ -371,7 +378,10 @@ data class UpdateBatchRequestPayload(
 data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
     @Min(0) val hardeningOffQuantity: Int? = 0,
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0)
+    @JsonAlias("notReadyQuantity")
+    val activeGrowthQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
 )
