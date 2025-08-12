@@ -63,7 +63,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
           addedDate = LocalDate.now(clock),
           facilityId = facilityId,
           germinatingQuantity = 0,
-          notReadyQuantity = 1,
+          activeGrowthQuantity = 1,
           readyQuantity = 2,
           hardeningOffQuantity = 3,
           speciesId = speciesId,

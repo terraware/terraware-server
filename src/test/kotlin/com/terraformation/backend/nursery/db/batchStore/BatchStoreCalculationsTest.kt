@@ -64,7 +64,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   }
 
   @Test
-  fun `does not calculate either rate if not ready quantity has been edited`() {
+  fun `does not calculate either rate if active growth quantity has been edited`() {
     runScenario(
         initial = Quantities(100, 15, 0, 15),
         transfer = Quantities(13, 10, 0, 0),
@@ -139,7 +139,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     val withdrawal = addTransfer(sourceBatchId, Quantities(10, 10, 0, 10))
     val batchId = withdrawal.batchWithdrawals.first().destinationBatchId!!
 
-    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 10)
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 10)
 
     val beforeTransfer = store.fetchOneById(batchId)
     assertEquals(100, beforeTransfer.germinationRate, "Germination rate before second transfer")
@@ -190,17 +190,19 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         initial.germinating + (manualEdits?.germinating ?: 0) -
             operations.sumOf { it.germinating } -
             current.germinating
-    val notReadyChangeNeeded =
-        initial.notReady + (manualEdits?.notReady ?: 0) -
-            operations.sumOf { it.notReady } -
-            current.notReady + germinatingChangeNeeded
+    val activeGrowthChangeNeeded =
+        initial.activeGrowth + (manualEdits?.activeGrowth ?: 0) -
+            operations.sumOf { it.activeGrowth } -
+            current.activeGrowth + germinatingChangeNeeded
     val hardeningOffChangeNeeded =
         initial.hardeningOff + (manualEdits?.hardeningOff ?: 0) -
             operations.sumOf { it.hardeningOff } -
-            current.hardeningOff + notReadyChangeNeeded
+            current.hardeningOff + activeGrowthChangeNeeded
 
     assertTrue(
-        germinatingChangeNeeded >= 0 && notReadyChangeNeeded >= 0 && hardeningOffChangeNeeded >= 0,
+        germinatingChangeNeeded >= 0 &&
+            activeGrowthChangeNeeded >= 0 &&
+            hardeningOffChangeNeeded >= 0,
         "Cannot arrive at current numbers given initial and withdrawal quantities")
 
     val batchId = createBatch(initial)
@@ -209,9 +211,15 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     // Do this in three steps to mimic how the web app would behave.
     store.changeStatuses(
-        batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, germinatingChangeNeeded)
+        batchId,
+        NurseryBatchPhase.Germinating,
+        NurseryBatchPhase.ActiveGrowth,
+        germinatingChangeNeeded)
     store.changeStatuses(
-        batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.HardeningOff, notReadyChangeNeeded)
+        batchId,
+        NurseryBatchPhase.ActiveGrowth,
+        NurseryBatchPhase.HardeningOff,
+        activeGrowthChangeNeeded)
     store.changeStatuses(
         batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, hardeningOffChangeNeeded)
 
@@ -223,7 +231,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
     val result = store.fetchOneById(batchId)
 
     assertEquals(current.germinating, result.germinatingQuantity, "Current germinating quantity")
-    assertEquals(current.notReady, result.notReadyQuantity, "Current not ready quantity")
+    assertEquals(
+        current.activeGrowth, result.activeGrowthQuantity, "Current active growth quantity")
     assertEquals(
         current.hardeningOff, result.hardeningOffQuantity, "Current hardening off quantity")
     assertEquals(current.ready, result.readyQuantity, "Current ready quantity")
@@ -241,7 +250,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 facilityId = facilityId,
                 germinatingQuantity = initial.germinating,
                 hardeningOffQuantity = initial.hardeningOff,
-                notReadyQuantity = initial.notReady,
+                activeGrowthQuantity = initial.activeGrowth,
                 readyQuantity = initial.ready,
                 speciesId = speciesId,
             ),
@@ -262,7 +271,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         batchId,
         batch.version,
         batch.germinatingQuantity + quantityDeltas.germinating,
-        batch.notReadyQuantity + quantityDeltas.notReady,
+        batch.activeGrowthQuantity + quantityDeltas.activeGrowth,
         batch.hardeningOffQuantity + quantityDeltas.hardeningOff,
         batch.readyQuantity + quantityDeltas.ready,
         BatchQuantityHistoryType.Observed)
@@ -280,7 +289,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                 BatchWithdrawalModel(
                     batchId = batchId,
                     germinatingQuantityWithdrawn = quantities.germinating,
-                    notReadyQuantityWithdrawn = quantities.notReady,
+                    activeGrowthQuantityWithdrawn = quantities.activeGrowth,
                     hardeningOffQuantityWithdrawn = quantities.hardeningOff,
                     readyQuantityWithdrawn = quantities.ready,
                 )),
@@ -294,7 +303,7 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
   private class Quantities(
       val germinating: Int,
-      val notReady: Int,
+      val activeGrowth: Int,
       val hardeningOff: Int,
       val ready: Int,
   )

@@ -25,7 +25,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
     batchId =
         insertBatch(
             germinatingQuantity = 10,
-            notReadyQuantity = 20,
+            activeGrowthQuantity = 20,
             readyQuantity = 30,
             hardeningOffQuantity = 40,
             speciesId = speciesId)
@@ -37,8 +37,8 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
   fun `updates quantities and creates history entry`() {
     val before = batchesDao.fetchOneById(batchId)!!
 
-    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 2)
-    store.changeStatuses(batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.HardeningOff, 7)
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 2)
+    store.changeStatuses(batchId, NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.HardeningOff, 7)
     store.changeStatuses(batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, 5)
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -135,7 +135,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
   fun `does not update quantities or create history entry if no statuses are changed`() {
     val before = batchesDao.fetchOneById(batchId)
 
-    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 0)
+    store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 0)
 
     assertEquals(before, batchesDao.fetchOneById(batchId))
     assertTableEmpty(BATCH_QUANTITY_HISTORY)
@@ -145,7 +145,8 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
   fun `does not update quantities or create history entry if phases are the same`() {
     val before = batchesDao.fetchOneById(batchId)
 
-    store.changeStatuses(batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.NotReady, 10)
+    store.changeStatuses(
+        batchId, NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.ActiveGrowth, 10)
 
     assertEquals(before, batchesDao.fetchOneById(batchId))
     assertTableEmpty(BATCH_QUANTITY_HISTORY)
@@ -154,7 +155,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
   @Test
   fun `throws exception if phases move in reverse`() {
     assertThrows<BatchPhaseReversalNotAllowedException> {
-      store.changeStatuses(batchId, NurseryBatchPhase.Ready, NurseryBatchPhase.NotReady, 1)
+      store.changeStatuses(batchId, NurseryBatchPhase.Ready, NurseryBatchPhase.ActiveGrowth, 1)
     }
     assertThrows<BatchPhaseReversalNotAllowedException> {
       store.changeStatuses(batchId, NurseryBatchPhase.Ready, NurseryBatchPhase.HardeningOff, 2)
@@ -170,17 +171,19 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
     every { user.canUpdateBatch(any()) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 1)
+      store.changeStatuses(
+          batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 1)
     }
   }
 
   @Test
   fun `throws exception if not enough seedlings to satisfy request`() {
     assertThrows<BatchInventoryInsufficientException>("Germinating") {
-      store.changeStatuses(batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.NotReady, 50)
+      store.changeStatuses(
+          batchId, NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth, 50)
     }
-    assertThrows<BatchInventoryInsufficientException>("Not Ready") {
-      store.changeStatuses(batchId, NurseryBatchPhase.NotReady, NurseryBatchPhase.Ready, 50)
+    assertThrows<BatchInventoryInsufficientException>("Active Growth") {
+      store.changeStatuses(batchId, NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.Ready, 50)
     }
     assertThrows<BatchInventoryInsufficientException>("Hardening Off") {
       store.changeStatuses(batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, 50)

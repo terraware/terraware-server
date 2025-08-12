@@ -63,7 +63,7 @@ data class SpeciesSummaryPayload(
       germinatingQuantity = summary.germinatingQuantity,
       germinationRate = summary.germinationRate,
       lossRate = summary.lossRate,
-      notReadyQuantity = summary.notReadyQuantity,
+      notReadyQuantity = summary.activeGrowthQuantity,
       nurseries = summary.nurseries.map { SpeciesSummaryNurseryPayload(it) },
       readyQuantity = summary.readyQuantity,
       speciesId = summary.speciesId,

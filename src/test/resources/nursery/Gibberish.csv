@@ -6,6 +6,6 @@ Genus species ",Species (Common Name),"Germinating Quantity
 
 If you have any seeds that are germinating of this species in your nursery input that quantity here. Only enter numbers or an error will occur during upload. ","Seedling Quantity
 
-This number will add inventory with the ""not ready"" status in Terraware. Only enter numbers or an error will occur during upload. ","Stored Date*
+This number will add inventory with the ""active growth"" status in Terraware. Only enter numbers or an error will occur during upload. ","Stored Date*
 Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Sub-Location
 Scientific name, Common name ,"123 456",2,2022-01-01,Location 1

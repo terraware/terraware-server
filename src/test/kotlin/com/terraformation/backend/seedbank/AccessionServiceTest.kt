@@ -259,11 +259,11 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 id = batchId,
                 latestObservedGerminatingQuantity = batchSlot.captured.germinatingQuantity,
                 latestObservedHardeningOffQuantity = batchSlot.captured.hardeningOffQuantity,
-                latestObservedNotReadyQuantity = batchSlot.captured.notReadyQuantity,
+                latestObservedActiveGrowthQuantity = batchSlot.captured.activeGrowthQuantity,
                 latestObservedReadyQuantity = batchSlot.captured.readyQuantity,
                 latestObservedTime = Instant.EPOCH,
                 notes = batchSlot.captured.notes,
-                notReadyQuantity = batchSlot.captured.notReadyQuantity,
+                activeGrowthQuantity = batchSlot.captured.activeGrowthQuantity,
                 organizationId = organizationId,
                 readyByDate = batchSlot.captured.readyByDate,
                 readyQuantity = batchSlot.captured.readyQuantity,
@@ -291,7 +291,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   facilityId = nurseryFacilityId,
                   germinatingQuantity = 1,
                   notes = "Notes",
-                  notReadyQuantity = 2,
+                  activeGrowthQuantity = 2,
                   readyQuantity = 3,
                   hardeningOffQuantity = 4,
                   speciesId = null))
@@ -314,7 +314,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
               addedDate = date,
               facilityId = nurseryFacilityId,
               germinatingQuantity = 1,
-              notReadyQuantity = 2,
+              activeGrowthQuantity = 2,
               readyQuantity = 3,
               hardeningOffQuantity = 4,
               speciesId = null)
@@ -355,7 +355,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   addedDate = LocalDate.EPOCH.plusDays(1),
                   facilityId = nurseryFacilityId,
                   germinatingQuantity = 1,
-                  notReadyQuantity = 2,
+                  activeGrowthQuantity = 2,
                   readyQuantity = 3,
                   hardeningOffQuantity = 4,
                   speciesId = null))
@@ -374,7 +374,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
-                notReadyQuantity = 0,
+                activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
                 speciesId = null))
@@ -392,7 +392,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
-                notReadyQuantity = 0,
+                activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
                 speciesId = null))
@@ -408,7 +408,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 addedDate = LocalDate.EPOCH.plusDays(1),
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1000,
-                notReadyQuantity = 2000,
+                activeGrowthQuantity = 2000,
                 readyQuantity = 3000,
                 hardeningOffQuantity = 4000,
                 speciesId = null))
@@ -427,7 +427,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
-                notReadyQuantity = 0,
+                activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
                 speciesId = null))
@@ -445,7 +445,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 addedDate = LocalDate.EPOCH,
                 facilityId = nurseryFacilityId,
                 germinatingQuantity = 1,
-                notReadyQuantity = 0,
+                activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
                 speciesId = null))

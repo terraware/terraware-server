@@ -12,7 +12,7 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
     insertBatchWithdrawal(
         batchId = batchId,
         germinatingQuantityWithdrawn = 1,
-        notReadyQuantityWithdrawn = 2,
+        activeGrowthQuantityWithdrawn = 2,
         readyQuantityWithdrawn = 4,
         withdrawalId = withdrawalId,
     )

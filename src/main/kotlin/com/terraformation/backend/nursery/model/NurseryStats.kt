@@ -13,9 +13,9 @@ data class NurseryStats(
     val facilityId: FacilityId?,
     val germinationRate: Int?,
     val lossRate: Int?,
+    val totalActiveGrowth: Long,
     val totalGerminating: Long,
     val totalHardeningOff: Long,
-    val totalNotReady: Long,
     val totalReady: Long,
     val totalWithdrawnByPurpose: Map<WithdrawalPurpose, Long>,
 ) {
@@ -38,7 +38,7 @@ data class NurseryStats(
 
   /** The total number of plants currently in inventory. */
   val totalInventory: Long
-    get() = totalNotReady + totalHardeningOff + totalReady
+    get() = totalActiveGrowth + totalHardeningOff + totalReady
 
   val totalPlantsPropagated: Long
     get() = (totalWithdrawnByPurpose[WithdrawalPurpose.OutPlant] ?: 0L) + totalInventory

@@ -185,7 +185,7 @@ data class BatchWithdrawalPayload(
   ) : this(
       batchId = model.batchId,
       germinatingQuantityWithdrawn = model.germinatingQuantityWithdrawn,
-      notReadyQuantityWithdrawn = model.notReadyQuantityWithdrawn,
+      notReadyQuantityWithdrawn = model.activeGrowthQuantityWithdrawn,
       readyQuantityWithdrawn = model.readyQuantityWithdrawn,
   )
 
@@ -193,7 +193,7 @@ data class BatchWithdrawalPayload(
       BatchWithdrawalModel(
           batchId = batchId,
           germinatingQuantityWithdrawn = germinatingQuantityWithdrawn ?: 0,
-          notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
+          activeGrowthQuantityWithdrawn = notReadyQuantityWithdrawn,
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
 }

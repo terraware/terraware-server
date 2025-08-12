@@ -54,7 +54,7 @@ data class OrganizationNurserySummaryPayload(
       germinatingQuantity = stats.totalGerminating,
       germinationRate = stats.germinationRate,
       lossRate = stats.lossRate,
-      notReadyQuantity = stats.totalNotReady,
+      notReadyQuantity = stats.totalActiveGrowth,
       readyQuantity = stats.totalReady,
       totalDead = stats.totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L,
       totalQuantity = stats.totalInventory,

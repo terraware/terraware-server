@@ -34,7 +34,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             speciesId = speciesId,
             batchNumber = "21-2-1-011",
             germinatingQuantity = 10,
-            notReadyQuantity = 20,
+            activeGrowthQuantity = 20,
             readyQuantity = 30,
             hardeningOffQuantity = 40,
             totalLost = 0,
@@ -44,7 +44,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             speciesId = speciesId,
             batchNumber = "21-2-1-012",
             germinatingQuantity = 40,
-            notReadyQuantity = 50,
+            activeGrowthQuantity = 50,
             readyQuantity = 60,
             hardeningOffQuantity = 70,
             totalLost = 0,
@@ -63,8 +63,20 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         makeInitialWithdrawal(
             batchWithdrawals =
                 listOf(
-                    BatchWithdrawalModel(batch1Id, null, 1, 4, 2, 3),
-                    BatchWithdrawalModel(batch2Id, null, 4, 7, 5, 6)))
+                    BatchWithdrawalModel(
+                        batchId = batch1Id,
+                        destinationBatchId = null,
+                        germinatingQuantityWithdrawn = 1,
+                        hardeningOffQuantityWithdrawn = 4,
+                        activeGrowthQuantityWithdrawn = 2,
+                        readyQuantityWithdrawn = 3),
+                    BatchWithdrawalModel(
+                        batchId = batch2Id,
+                        destinationBatchId = null,
+                        germinatingQuantityWithdrawn = 4,
+                        hardeningOffQuantityWithdrawn = 7,
+                        activeGrowthQuantityWithdrawn = 5,
+                        readyQuantityWithdrawn = 6)))
 
     clock.instant = clock.instant.plus(2, ChronoUnit.DAYS)
 
@@ -72,7 +84,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         batchId = batch2Id,
         version = 2,
         germinating = 100,
-        notReady = 110,
+        activeGrowth = 110,
         ready = 120,
         hardeningOff = 130,
         historyType = BatchQuantityHistoryType.Observed)
@@ -87,8 +99,20 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         ExistingWithdrawalModel(
             batchWithdrawals =
                 listOf(
-                    BatchWithdrawalModel(batch1Id, null, -1, -4, -2, -3),
-                    BatchWithdrawalModel(batch2Id, null, -4, -7, -5, -6),
+                    BatchWithdrawalModel(
+                        batchId = batch1Id,
+                        destinationBatchId = null,
+                        germinatingQuantityWithdrawn = -1,
+                        hardeningOffQuantityWithdrawn = -4,
+                        activeGrowthQuantityWithdrawn = -2,
+                        readyQuantityWithdrawn = -3),
+                    BatchWithdrawalModel(
+                        batchId = batch2Id,
+                        destinationBatchId = null,
+                        germinatingQuantityWithdrawn = -4,
+                        hardeningOffQuantityWithdrawn = -7,
+                        activeGrowthQuantityWithdrawn = -5,
+                        readyQuantityWithdrawn = -6),
                 ),
             facilityId = facilityId,
             id = undoWithdrawal.id,
@@ -177,7 +201,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
               BatchWithdrawalModel(
                   batchId = batch1Id,
                   germinatingQuantityWithdrawn = 1,
-                  notReadyQuantityWithdrawn = 2,
+                  activeGrowthQuantityWithdrawn = 2,
                   readyQuantityWithdrawn = 3,
                   hardeningOffQuantityWithdrawn = 4)),
       destinationFacilityId: FacilityId? = null,

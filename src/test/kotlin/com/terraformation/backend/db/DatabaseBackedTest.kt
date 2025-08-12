@@ -1891,13 +1891,13 @@ abstract class DatabaseBackedTest {
 
   fun insertBatch(
       row: BatchesRow = BatchesRow(),
+      activeGrowthQuantity: Int = row.activeGrowthQuantity ?: 0,
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       hardeningOffQuantity: Int = row.hardeningOffQuantity ?: 0,
-      notReadyQuantity: Int = row.activeGrowthQuantity ?: 0,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       readyQuantity: Int = row.readyQuantity ?: 0,
@@ -1910,16 +1910,16 @@ abstract class DatabaseBackedTest {
       totalGerminationCandidates: Int? = row.totalGerminationCandidates,
       lossRate: Int? =
           row.lossRate
-              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
               else null,
       totalLost: Int? =
           row.totalLost
-              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
+              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0) 0
               else null,
       totalLossCandidates: Int? =
           row.totalLossCandidates
-              ?: if (notReadyQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0)
-                  notReadyQuantity + hardeningOffQuantity + readyQuantity
+              ?: if (activeGrowthQuantity > 0 || hardeningOffQuantity > 0 || readyQuantity > 0)
+                  activeGrowthQuantity + hardeningOffQuantity + readyQuantity
               else null,
   ): BatchId {
     val effectiveGerminationRate =
@@ -1939,7 +1939,7 @@ abstract class DatabaseBackedTest {
 
     val rowWithDefaults =
         row.copy(
-            activeGrowthQuantity = notReadyQuantity,
+            activeGrowthQuantity = activeGrowthQuantity,
             addedDate = addedDate,
             batchNumber = batchNumber,
             createdBy = createdBy,
@@ -1950,7 +1950,7 @@ abstract class DatabaseBackedTest {
             hardeningOffQuantity = hardeningOffQuantity,
             totalGerminated = totalGerminated,
             totalGerminationCandidates = totalGerminationCandidates,
-            latestObservedActiveGrowthQuantity = notReadyQuantity,
+            latestObservedActiveGrowthQuantity = activeGrowthQuantity,
             latestObservedGerminatingQuantity = germinatingQuantity,
             latestObservedHardeningOffQuantity = hardeningOffQuantity,
             latestObservedReadyQuantity = readyQuantity,
@@ -2071,17 +2071,17 @@ abstract class DatabaseBackedTest {
 
   fun insertBatchWithdrawal(
       row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
+      activeGrowthQuantityWithdrawn: Int = row.activeGrowthQuantityWithdrawn ?: 0,
       batchId: BatchId = row.batchId ?: inserted.batchId,
       destinationBatchId: BatchId? = row.destinationBatchId,
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       hardeningOffQuantityWithdrawn: Int = row.hardeningOffQuantityWithdrawn ?: 0,
-      notReadyQuantityWithdrawn: Int = row.activeGrowthQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
       withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId
   ) {
     val rowWithDefaults =
         row.copy(
-            activeGrowthQuantityWithdrawn = notReadyQuantityWithdrawn,
+            activeGrowthQuantityWithdrawn = activeGrowthQuantityWithdrawn,
             batchId = batchId,
             destinationBatchId = destinationBatchId,
             germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,

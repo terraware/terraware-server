@@ -31,7 +31,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         batchId = batchId,
         version = 1,
         germinating = 1,
-        notReady = 2,
+        activeGrowth = 2,
         ready = 3,
         hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Observed)
@@ -64,7 +64,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         batchId = batchId,
         version = 1,
         germinating = 1,
-        notReady = 2,
+        activeGrowth = 2,
         ready = 3,
         hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Computed)
@@ -90,7 +90,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         batchId = batchId,
         version = 1,
         germinating = 1,
-        notReady = 2,
+        activeGrowth = 2,
         ready = 3,
         hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Computed)
@@ -128,7 +128,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         batchId = batchId,
         version = 1,
         germinating = 1,
-        notReady = 2,
+        activeGrowth = 2,
         ready = 3,
         hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Observed)
@@ -144,7 +144,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
           batchId = batchId,
           version = 0,
           germinating = 1,
-          notReady = 1,
+          activeGrowth = 1,
           ready = 1,
           hardeningOff = 1,
           historyType = BatchQuantityHistoryType.Observed)
