@@ -7,6 +7,7 @@ import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.DocumentsUpdate
+import com.terraformation.backend.email.model.GenericEmail
 import com.terraformation.backend.log.perClassLogger
 import jakarta.validation.constraints.NotBlank
 import org.springframework.stereotype.Controller
@@ -41,12 +42,20 @@ class AdminEmailController(
       @NotBlank @RequestParam emailName: String,
       @RequestParam recipient: String?,
       @RequestParam sendToAll: Boolean?,
+      @RequestParam emailBody: String?,
+      @RequestParam subject: String?,
       redirectAttributes: RedirectAttributes,
   ): String {
 
     val emailNameResult =
         when (emailName) {
           "DocumentsUpdate" -> DocumentsUpdate(config)
+          "GenericEmail" -> {
+            if (emailBody == null || subject == null) {
+              throw IllegalArgumentException("emailBody and subject are required for GenericEmail")
+            }
+            GenericEmail(config, emailBody, subject)
+          }
           else -> throw IllegalArgumentException("Invalid test email name $emailName")
         }
 

@@ -534,3 +534,12 @@ class AcceleratorReportPublished(
   override val templateDir: String
     get() = "acceleratorReport/published"
 }
+
+class GenericEmail(
+    config: TerrawareServerConfig,
+    val emailBody: String,
+    val subject: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "generic"
+}
