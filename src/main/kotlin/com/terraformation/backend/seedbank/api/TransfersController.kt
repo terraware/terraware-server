@@ -46,7 +46,7 @@ data class CreateNurseryTransferRequestPayload(
     @Min(0) //
     val germinatingQuantity: Int,
     @Min(0) //
-    val hardeningOffQuantity: Int = 0,
+    val hardeningOffQuantity: Int? = 0,
     val notes: String? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
@@ -71,7 +71,7 @@ data class CreateNurseryTransferRequestPayload(
           notReadyQuantity = notReadyQuantity,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
-          hardeningOffQuantity = hardeningOffQuantity,
+          hardeningOffQuantity = hardeningOffQuantity ?: 0,
           speciesId = null,
       )
 }

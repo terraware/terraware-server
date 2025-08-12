@@ -130,7 +130,7 @@ class BatchesController(
         version = payload.version,
         germinating = payload.germinatingQuantity,
         notReady = payload.notReadyQuantity,
-        hardeningOff = payload.hardeningOffQuantity,
+        hardeningOff = payload.hardeningOffQuantity ?: 0,
         ready = payload.readyQuantity,
         historyType = BatchQuantityHistoryType.Observed)
 
@@ -370,7 +370,7 @@ data class UpdateBatchRequestPayload(
 
 data class UpdateBatchQuantitiesRequestPayload(
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
-    @Min(0) val hardeningOffQuantity: Int = 0,
+    @Min(0) val hardeningOffQuantity: Int? = 0,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val notReadyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
     @JsonSetter(nulls = Nulls.FAIL) val version: Int,
