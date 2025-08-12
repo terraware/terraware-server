@@ -184,9 +184,6 @@ data class BatchWithdrawalPayload(
     val activeGrowthQuantityWithdrawn: Int,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantityWithdrawn: Int,
 ) {
-  val notReadyQuantityWithdrawn: Int // for backwards compatibility in response payloads
-    get() = activeGrowthQuantityWithdrawn
-
   constructor(
       model: BatchWithdrawalModel
   ) : this(
@@ -203,6 +200,9 @@ data class BatchWithdrawalPayload(
           activeGrowthQuantityWithdrawn = activeGrowthQuantityWithdrawn,
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
+
+  val notReadyQuantityWithdrawn: Int // for backwards compatibility in response payloads
+    get() = activeGrowthQuantityWithdrawn
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
