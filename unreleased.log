@@ -1,3 +1,4 @@
+ed26ebc1641 SW-7214 Update Search Api to support Active Growth phases (#3281)
 b7783b0a849 SW-7213 Rename Not Ready DB columns to Active Growth (#3280)
 2dd505df252 Make hardening off optional in api (#3286)
 3b04a015693 SW-6240 Remove Shrub or Tree from CSV templates (#3283)
