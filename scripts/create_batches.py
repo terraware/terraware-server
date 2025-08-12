@@ -55,7 +55,7 @@ def main():
         "-f",
         type=int,
         help="Generate batches at this facility. Default is to pick the first nursery "
-             + "facility accessible by the user.",
+        + "facility accessible by the user.",
     )
     parser.add_argument(
         "--number", "-n", type=int, default=10, help="Number of batches to create."
