@@ -244,7 +244,7 @@ class BatchStore(
           germinatingQuantity = rowWithDefaults.germinatingQuantity!!,
           hardeningOffQuantity = rowWithDefaults.hardeningOffQuantity!!,
           historyType = BatchQuantityHistoryType.Observed,
-          notReadyQuantity = rowWithDefaults.notReadyQuantity!!,
+          notReadyQuantity = rowWithDefaults.activeGrowthQuantity!!,
           readyQuantity = rowWithDefaults.readyQuantity!!,
           version = 1,
           withdrawalId = withdrawalId,
@@ -297,7 +297,7 @@ class BatchStore(
             .select(
                 WITHDRAWALS.PURPOSE_ID,
                 DSL.sum(
-                    BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
+                    BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN.plus(
                         BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN.plus(
                             BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))))
             .from(BATCHES)
@@ -337,7 +337,7 @@ class BatchStore(
         germinationRate = germinationRate?.roundToInt(),
         hardeningOffQuantity = inventory?.hardeningOffQuantity ?: 0,
         lossRate = lossRate?.roundToInt(),
-        notReadyQuantity = inventory?.notReadyQuantity ?: 0,
+        notReadyQuantity = inventory?.activeGrowthQuantity ?: 0,
         nurseries = nurseries,
         readyQuantity = inventory?.readyQuantity ?: 0,
         speciesId = speciesId,
@@ -473,13 +473,13 @@ class BatchStore(
       updateVersionedBatch(batchId, version, successFunc) { update ->
         update
             .set(GERMINATING_QUANTITY, germinating)
-            .set(NOT_READY_QUANTITY, notReady)
+            .set(ACTIVE_GROWTH_QUANTITY, notReady)
             .set(HARDENING_OFF_QUANTITY, hardeningOff)
             .set(READY_QUANTITY, ready)
             .let {
               if (historyType == BatchQuantityHistoryType.Observed) {
                 it.set(LATEST_OBSERVED_GERMINATING_QUANTITY, germinating)
-                    .set(LATEST_OBSERVED_NOT_READY_QUANTITY, notReady)
+                    .set(LATEST_OBSERVED_ACTIVE_GROWTH_QUANTITY, notReady)
                     .set(LATEST_OBSERVED_HARDENING_OFF_QUANTITY, hardeningOff)
                     .set(LATEST_OBSERVED_READY_QUANTITY, ready)
                     .set(LATEST_OBSERVED_TIME, clock.instant())
@@ -689,7 +689,7 @@ class BatchStore(
                         germinatingQuantityWithdrawn = batchWithdrawal.germinatingQuantityWithdrawn,
                         hardeningOffQuantityWithdrawn =
                             batchWithdrawal.hardeningOffQuantityWithdrawn,
-                        notReadyQuantityWithdrawn = batchWithdrawal.notReadyQuantityWithdrawn,
+                        activeGrowthQuantityWithdrawn = batchWithdrawal.notReadyQuantityWithdrawn,
                         readyQuantityWithdrawn = batchWithdrawal.readyQuantityWithdrawn)
                 val nurseryTimeZone = parentStore.getEffectiveTimeZone(batchId)
 
@@ -888,7 +888,7 @@ class BatchStore(
             destinationBatch.id!!,
             destinationBatch.version!!,
             destinationBatch.germinatingQuantity!! + batchWithdrawal.germinatingQuantityWithdrawn,
-            destinationBatch.notReadyQuantity!! + batchWithdrawal.notReadyQuantityWithdrawn,
+            destinationBatch.activeGrowthQuantity!! + batchWithdrawal.notReadyQuantityWithdrawn,
             destinationBatch.hardeningOffQuantity!! + batchWithdrawal.hardeningOffQuantityWithdrawn,
             destinationBatch.readyQuantity!! + batchWithdrawal.readyQuantityWithdrawn,
             BatchQuantityHistoryType.Computed,
@@ -988,7 +988,7 @@ class BatchStore(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             readyQuantity = readyQuantity,
-            notReadyQuantity = notReadyQuantity,
+            activeGrowthQuantity = notReadyQuantity,
             germinatingQuantity = germinatingQuantity,
             hardeningOffQuantity = hardeningOffQuantity,
             version = version,
@@ -1023,7 +1023,7 @@ class BatchStore(
         .select(
             DSL.sum(
                 BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN.plus(
-                    BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
+                    BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN.plus(
                         BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN.plus(
                             BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN)))))
         .from(BATCH_WITHDRAWALS)
@@ -1047,7 +1047,7 @@ class BatchStore(
                     .and(
                         DSL.or(
                             BATCHES.GERMINATING_QUANTITY.gt(0),
-                            BATCHES.NOT_READY_QUANTITY.gt(0),
+                            BATCHES.ACTIVE_GROWTH_QUANTITY.gt(0),
                             BATCHES.HARDENING_OFF_QUANTITY.gt(0),
                             BATCHES.READY_QUANTITY.gt(0)))))
         .orderBy(SPECIES.ID)
@@ -1072,7 +1072,7 @@ class BatchStore(
 
     val sumField =
         DSL.sum(
-            BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
+            BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN.plus(
                 BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN.plus(
                     BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN)))
     val undoneWithdrawals = WITHDRAWALS.`as`("undone_withdrawals")
@@ -1110,7 +1110,7 @@ class BatchStore(
         dslContext
             .select(
                 DSL.sum(BATCHES.GERMINATING_QUANTITY),
-                DSL.sum(BATCHES.NOT_READY_QUANTITY),
+                DSL.sum(BATCHES.ACTIVE_GROWTH_QUANTITY),
                 DSL.sum(BATCHES.HARDENING_OFF_QUANTITY),
                 DSL.sum(BATCHES.READY_QUANTITY),
                 aggregateGerminationRateField,
@@ -1203,12 +1203,12 @@ class BatchStore(
             .select(
                 BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID,
                 BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY,
-                BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY,
+                BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY,
                 BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY,
                 BATCH_QUANTITY_HISTORY.READY_QUANTITY,
                 BATCH_WITHDRAWALS.BATCH_ID,
                 BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN,
-                BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN,
+                BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN,
                 BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN,
                 BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN,
                 WITHDRAWALS.PURPOSE_ID,
@@ -1252,7 +1252,8 @@ class BatchStore(
           current[BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN] ?: 0
       val hardeningOffQuantityWithdrawn =
           current[BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN] ?: 0
-      val notReadyQuantityWithdrawn = (current[BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN] ?: 0)
+      val notReadyQuantityWithdrawn =
+          (current[BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN] ?: 0)
       val readyQuantityWithdrawn = current[BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN] ?: 0
 
       if (current[BATCH_QUANTITY_HISTORY.HISTORY_TYPE_ID] == BatchQuantityHistoryType.Observed) {
@@ -1263,8 +1264,8 @@ class BatchStore(
                     previous[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY])
         hasManualNotReadyEdit =
             hasManualNotReadyEdit ||
-                (current[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY] !=
-                    previous[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY])
+                (current[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY] !=
+                    previous[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY])
         hasManualHardeningOffEdit =
             hasManualHardeningOffEdit ||
                 (current[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY] !=
@@ -1310,12 +1311,12 @@ class BatchStore(
 
     val initialGerminating = initialEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
     val initialHardeningOff = initialEvent[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!
-    val initialNotReady = initialEvent[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY]!!
+    val initialNotReady = initialEvent[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY]!!
     val initialReady = initialEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!!
     val currentGerminating = latestEvent[BATCH_QUANTITY_HISTORY.GERMINATING_QUANTITY]!!
     val currentHardening = latestEvent[BATCH_QUANTITY_HISTORY.HARDENING_OFF_QUANTITY]!!
     val currentNonGerminating =
-        latestEvent[BATCH_QUANTITY_HISTORY.NOT_READY_QUANTITY]!! +
+        latestEvent[BATCH_QUANTITY_HISTORY.ACTIVE_GROWTH_QUANTITY]!! +
             latestEvent[BATCH_QUANTITY_HISTORY.READY_QUANTITY]!! +
             currentHardening
 

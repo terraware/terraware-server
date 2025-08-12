@@ -120,7 +120,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 createdBy = user.userId,
                 createdTime = clock.instant,
                 germinatingQuantity = 10,
-                notReadyQuantity = 20,
+                activeGrowthQuantity = 20,
                 readyQuantity = 30,
                 hardeningOffQuantity = 40,
                 withdrawalId = undoWithdrawal.id,

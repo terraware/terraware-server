@@ -227,6 +227,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
               speciesId = speciesId1,
               germinatingQuantity = 10,
               notReadyQuantity = 20,
+              hardeningOffQuantity = 30,
               readyQuantity = 40)
       val withdrawal =
           service.withdraw(
@@ -237,6 +238,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                               batchId,
                               germinatingQuantityWithdrawn = 1,
                               notReadyQuantityWithdrawn = 2,
+                              hardeningOffQuantityWithdrawn = 3,
                               readyQuantityWithdrawn = 4,
                           ),
                       ),
@@ -252,10 +254,11 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
 
       val batchesRow = batchesDao.fetchOneById(batchId)!!
       assertEquals(
-          listOf(10, 20, 40),
+          listOf(10, 20, 30, 40),
           listOf(
               batchesRow.germinatingQuantity,
-              batchesRow.notReadyQuantity,
+              batchesRow.activeGrowthQuantity,
+              batchesRow.hardeningOffQuantity,
               batchesRow.readyQuantity),
           "Batch quantities after withdrawal")
     }

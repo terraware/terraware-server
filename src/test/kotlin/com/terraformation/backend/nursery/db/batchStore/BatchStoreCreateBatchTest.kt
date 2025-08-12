@@ -58,6 +58,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedRow =
         BatchesRow(
             addedDate = addedDate,
+            activeGrowthQuantity = 1,
             batchNumber = "22-2-1-001",
             createdBy = user.userId,
             createdTime = clock.instant(),
@@ -66,8 +67,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             germinationStartedDate = LocalDate.of(2022, 2, 20),
             hardeningOffQuantity = 4,
             id = returnedModel.id,
+            latestObservedActiveGrowthQuantity = 1,
             latestObservedGerminatingQuantity = 0,
-            latestObservedNotReadyQuantity = 1,
             latestObservedReadyQuantity = 2,
             latestObservedHardeningOffQuantity = 4,
             latestObservedTime = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
@@ -75,7 +76,6 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             notes = "notes",
-            notReadyQuantity = 1,
             organizationId = organizationId,
             readyByDate = LocalDate.of(2022, 3, 4),
             readyQuantity = 2,
@@ -91,11 +91,11 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
         listOf(
             BatchQuantityHistoryRow(
                 batchId = returnedModel.id,
+                activeGrowthQuantity = 1,
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 historyTypeId = BatchQuantityHistoryType.Observed,
                 germinatingQuantity = 0,
-                notReadyQuantity = 1,
                 readyQuantity = 2,
                 hardeningOffQuantity = 4,
                 version = 1,

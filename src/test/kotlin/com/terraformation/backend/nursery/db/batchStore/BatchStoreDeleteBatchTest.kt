@@ -30,11 +30,11 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
             batchId = batchId,
+            activeGrowthQuantity = 2,
             historyTypeId = BatchQuantityHistoryType.Observed,
             createdBy = user.userId,
             createdTime = clock.instant(),
             germinatingQuantity = 1,
-            notReadyQuantity = 2,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
             version = 1))
@@ -71,12 +71,12 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             batchNumber = "1",
             addedDate = LocalDate.EPOCH,
             germinatingQuantity = 0,
+            activeGrowthQuantity = 0,
             hardeningOffQuantity = 0,
-            notReadyQuantity = 0,
             readyQuantity = 0,
             latestObservedGerminatingQuantity = 0,
+            latestObservedActiveGrowthQuantity = 0,
             latestObservedHardeningOffQuantity = 0,
-            latestObservedNotReadyQuantity = 0,
             latestObservedReadyQuantity = 0,
             latestObservedTime = Instant.EPOCH,
             createdBy = user.userId,
