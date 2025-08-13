@@ -131,10 +131,10 @@ class BatchImporter(
     batchStore.create(
         NewBatchModel(
             addedDate = storedDate,
+            activeGrowthQuantity = seedlingQuantity,
             facilityId = facilityId,
             germinatingQuantity = germinatingQuantity,
             hardeningOffQuantity = 0,
-            activeGrowthQuantity = seedlingQuantity,
             readyQuantity = 0,
             speciesId = speciesId,
             subLocationIds = subLocationNames.mapNotNull { subLocationIds[it] }.toSet(),

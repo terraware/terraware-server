@@ -327,12 +327,12 @@ data class CreateBatchRequestPayload(
   fun toModel() =
       NewBatchModel(
           addedDate = addedDate,
+          activeGrowthQuantity = activeGrowthQuantity,
           facilityId = facilityId,
           germinatingQuantity = germinatingQuantity,
           germinationStartedDate = germinationStartedDate,
           hardeningOffQuantity = hardeningOffQuantity,
           notes = notes,
-          activeGrowthQuantity = activeGrowthQuantity,
           projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,

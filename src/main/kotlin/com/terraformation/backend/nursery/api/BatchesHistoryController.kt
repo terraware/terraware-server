@@ -271,11 +271,11 @@ data class BatchHistoryQuantityEditedPayload(
   constructor(
       row: BatchQuantityHistoryRow
   ) : this(
+      activeGrowthQuantity = row.activeGrowthQuantity!!,
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
       germinatingQuantity = row.germinatingQuantity!!,
       hardeningOffQuantity = row.hardeningOffQuantity!!,
-      activeGrowthQuantity = row.activeGrowthQuantity!!,
       readyQuantity = row.readyQuantity!!,
       version = row.version!!,
   )

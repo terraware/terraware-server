@@ -13,12 +13,14 @@ internal class BatchStoreGetActiveSpeciesTest : BatchStoreTest() {
     val speciesId2 = insertSpecies()
     insertBatch(speciesId = speciesId2, activeGrowthQuantity = 1)
     val speciesId3 = insertSpecies()
-    insertBatch(speciesId = speciesId3, readyQuantity = 1)
+    insertBatch(speciesId = speciesId3, hardeningOffQuantity = 1)
+    val speciesId4 = insertSpecies()
+    insertBatch(speciesId = speciesId4, readyQuantity = 1)
 
     val expected = speciesDao.findAll().sortedBy { it.id }
 
-    val speciesId4 = insertSpecies()
-    insertBatch(speciesId = speciesId4)
+    val speciesId5 = insertSpecies()
+    insertBatch(speciesId = speciesId5)
 
     val actual = store.getActiveSpecies(facilityId)
 

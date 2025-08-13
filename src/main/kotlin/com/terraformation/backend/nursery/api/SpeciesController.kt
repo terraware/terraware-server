@@ -41,6 +41,7 @@ data class SpeciesSummaryPayload(
     val activeGrowthQuantity: Long,
     val germinatingQuantity: Long,
     val germinationRate: Int?,
+    val hardeningOffQuantity: Long,
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
@@ -63,6 +64,7 @@ data class SpeciesSummaryPayload(
       activeGrowthQuantity = summary.activeGrowthQuantity,
       germinatingQuantity = summary.germinatingQuantity,
       germinationRate = summary.germinationRate,
+      hardeningOffQuantity = summary.hardeningOffQuantity,
       lossRate = summary.lossRate,
       nurseries = summary.nurseries.map { SpeciesSummaryNurseryPayload(it) },
       readyQuantity = summary.readyQuantity,

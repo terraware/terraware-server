@@ -231,12 +231,13 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                               buildStartedDateEditable = false,
                               capacity = 1000,
                               id = nurseryId,
-                              // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
-                              mortalityRate = 22,
+                              // 152 dead / (898 remaining + 242 total withdrawn) = 13.3%
+                              mortalityRate = 13,
                               name = "Nursery",
-                              // inventory (200 active-growth, 300 ready) +
-                              // outplanting withdrawals (20 active-growth, 30 ready)
-                              totalPlantsPropagated = 550,
+                              // inventory (200 active-growth, 300 ready, 400 hardening-off) +
+                              // outplanting withdrawals (20 active-growth, 30 ready, 40
+                              // hardening-off)
+                              totalPlantsPropagated = 990,
                           ),
                       ),
                   organizationName = "Organization 1",
@@ -380,16 +381,17 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                               buildStartedDateEditable = false,
                               capacity = 1000,
                               id = projectNurseryId,
-                              // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
-                              mortalityRate = 22,
+                              // 152 dead / (898 remaining + 242 total withdrawn) = 13.3%
+                              mortalityRate = 13,
                               name = "Facility 1",
                               // Project-level total only counts one of the four samples:
-                              //   inventory (200 active-growth, 300 ready) +
-                              //   outplanting withdrawals (20 active-growth, 30 ready)
-                              totalPlantsPropagatedForProject = 550,
+                              //   inventory (200 active-growth, 300 ready, 400 hardening-off) +
+                              //   outplanting withdrawals (20 active-growth, 30 ready, 40
+                              // hardening-off)
+                              totalPlantsPropagatedForProject = 990,
                               // Org-level total counts all three samples for this nursery (same
                               // numbers as above for each sample).
-                              totalPlantsPropagated = 1650,
+                              totalPlantsPropagated = 2970,
                           ),
                       ),
                   organizationName = "Organization 1",
@@ -684,6 +686,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
           germinatingQuantity = 50,
           activeGrowthQuantity = 60,
           readyQuantity = 70,
+          hardeningOffQuantity = 80,
           speciesId = speciesId,
       )
       val withdrawalId = insertNurseryWithdrawal(facilityId = firstNursery)
@@ -805,13 +808,15 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
                               initialBody.nurseries[0].copy(
                                   buildCompletedDate = LocalDate.of(2023, 1, 15),
                                   buildCompletedDateEditable = false,
-                                  // 152 dead / (628 remaining + 200 total withdrawn) = 18.4%
-                                  mortalityRate = 18,
+                                  // 152 dead / (1088 remaining + 242 total withdrawn) = 11.3%
+                                  mortalityRate = 11,
                                   name = "Facility 2",
-                                  // initial batch (60 active-growth, 70 ready) +
-                                  // insertSampleWithdrawals batch (200 active-growth, 300 ready) +
-                                  // outplanting withdrawals (20 active-growth, 30 ready)
-                                  totalPlantsPropagated = 680,
+                                  // initial batch (60 active-growth, 70 ready, 80 hardening-off) +
+                                  // insertSampleWithdrawals batch (200 active-growth, 300 ready,
+                                  // 400 hardening-off) +
+                                  // outplanting withdrawals (20 active-growth, 30 ready, 40
+                                  // hardening-off)
+                                  totalPlantsPropagated = 1200,
                               ),
                               SeedFundReportBodyModelV1.Nursery(
                                   id = secondNursery,
@@ -998,6 +1003,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
         facilityId = nurseryId,
         germinatingQuantity = 100,
         activeGrowthQuantity = 200,
+        hardeningOffQuantity = 400,
         projectId = projectId,
         readyQuantity = 300,
         speciesId = speciesId,
@@ -1007,7 +1013,10 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     insertBatchWithdrawal(readyQuantityWithdrawn = 100, activeGrowthQuantityWithdrawn = 52)
 
     insertNurseryWithdrawal(facilityId = nurseryId, purpose = WithdrawalPurpose.OutPlant)
-    insertBatchWithdrawal(readyQuantityWithdrawn = 20, activeGrowthQuantityWithdrawn = 30)
+    insertBatchWithdrawal(
+        readyQuantityWithdrawn = 20,
+        activeGrowthQuantityWithdrawn = 30,
+        hardeningOffQuantityWithdrawn = 40)
     insertDelivery(plantingSiteId = plantingSiteId)
     insertPlanting(plantingSiteId = plantingSiteId, speciesId = speciesId)
   }

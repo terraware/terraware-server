@@ -35,6 +35,7 @@ data class OrganizationNurserySummaryPayload(
     val activeGrowthQuantity: Long,
     val germinatingQuantity: Long,
     val germinationRate: Int?,
+    val hardeningOffQuantity: Long,
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
@@ -54,6 +55,7 @@ data class OrganizationNurserySummaryPayload(
       activeGrowthQuantity = stats.totalActiveGrowth,
       germinatingQuantity = stats.totalGerminating,
       germinationRate = stats.germinationRate,
+      hardeningOffQuantity = stats.totalHardeningOff,
       lossRate = stats.lossRate,
       readyQuantity = stats.totalReady,
       totalDead = stats.totalWithdrawnByPurpose[WithdrawalPurpose.Dead] ?: 0L,
