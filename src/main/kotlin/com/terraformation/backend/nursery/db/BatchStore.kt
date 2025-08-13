@@ -240,11 +240,11 @@ class BatchStore(
       batchesDao.insert(rowWithDefaults)
 
       insertQuantityHistoryRow(
+          activeGrowthQuantity = rowWithDefaults.activeGrowthQuantity!!,
           batchId = rowWithDefaults.id!!,
           germinatingQuantity = rowWithDefaults.germinatingQuantity!!,
           hardeningOffQuantity = rowWithDefaults.hardeningOffQuantity!!,
           historyType = BatchQuantityHistoryType.Observed,
-          activeGrowthQuantity = rowWithDefaults.activeGrowthQuantity!!,
           readyQuantity = rowWithDefaults.readyQuantity!!,
           version = 1,
           withdrawalId = withdrawalId,

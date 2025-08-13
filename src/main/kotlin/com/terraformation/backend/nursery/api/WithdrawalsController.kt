@@ -176,20 +176,22 @@ class WithdrawalsController(
 }
 
 data class BatchWithdrawalPayload(
-    val batchId: BatchId,
-    @Schema(defaultValue = "0") @Min(0) val germinatingQuantityWithdrawn: Int? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0)
     @JsonAlias("notReadyQuantityWithdrawn")
     val activeGrowthQuantityWithdrawn: Int,
+    val batchId: BatchId,
+    @Schema(defaultValue = "0") @Min(0) val germinatingQuantityWithdrawn: Int? = null,
+    @Schema(defaultValue = "0") @Min(0) val hardeningOffQuantityWithdrawn: Int? = null,
     @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantityWithdrawn: Int,
 ) {
   constructor(
       model: BatchWithdrawalModel
   ) : this(
+      activeGrowthQuantityWithdrawn = model.activeGrowthQuantityWithdrawn,
       batchId = model.batchId,
       germinatingQuantityWithdrawn = model.germinatingQuantityWithdrawn,
-      activeGrowthQuantityWithdrawn = model.activeGrowthQuantityWithdrawn,
+      hardeningOffQuantityWithdrawn = model.hardeningOffQuantityWithdrawn,
       readyQuantityWithdrawn = model.readyQuantityWithdrawn,
   )
 
@@ -198,6 +200,7 @@ data class BatchWithdrawalPayload(
           batchId = batchId,
           germinatingQuantityWithdrawn = germinatingQuantityWithdrawn ?: 0,
           activeGrowthQuantityWithdrawn = activeGrowthQuantityWithdrawn,
+          hardeningOffQuantityWithdrawn = hardeningOffQuantityWithdrawn ?: 0,
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
 

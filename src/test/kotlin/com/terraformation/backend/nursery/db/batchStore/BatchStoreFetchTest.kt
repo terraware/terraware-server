@@ -47,12 +47,14 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 1,
         activeGrowthQuantityWithdrawn = 2,
-        readyQuantityWithdrawn = 4)
+        readyQuantityWithdrawn = 4,
+        hardeningOffQuantityWithdrawn = 8)
     insertNurseryWithdrawal()
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 8,
         activeGrowthQuantityWithdrawn = 16,
-        readyQuantityWithdrawn = 32)
+        readyQuantityWithdrawn = 32,
+        hardeningOffQuantityWithdrawn = 64)
 
     val expected =
         ExistingBatchModel(
@@ -83,7 +85,7 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
             substrateNotes = "Substrate Notes",
             treatment = SeedTreatment.Chemical,
             treatmentNotes = "Treatment Notes",
-            totalWithdrawn = 63,
+            totalWithdrawn = 135,
             version = 1,
         )
 

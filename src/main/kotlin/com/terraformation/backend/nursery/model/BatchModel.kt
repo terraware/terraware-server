@@ -41,6 +41,7 @@ data class NewBatchModel(
   fun toRow() =
       BatchesRow(
           accessionId = accessionId,
+          activeGrowthQuantity = activeGrowthQuantity,
           addedDate = addedDate,
           batchNumber = batchNumber,
           facilityId = facilityId,
@@ -53,7 +54,6 @@ data class NewBatchModel(
           latestObservedHardeningOffQuantity = hardeningOffQuantity,
           latestObservedReadyQuantity = readyQuantity,
           notes = notes,
-          activeGrowthQuantity = activeGrowthQuantity,
           projectId = projectId,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
@@ -117,9 +117,9 @@ data class ExistingBatchModel(
       hardeningOffQuantity = row.hardeningOffQuantity!!,
       id = row.id!!,
       initialBatchId = row.initialBatchId,
+      latestObservedActiveGrowthQuantity = row.latestObservedActiveGrowthQuantity!!,
       latestObservedGerminatingQuantity = row.latestObservedGerminatingQuantity!!,
       latestObservedHardeningOffQuantity = row.latestObservedHardeningOffQuantity!!,
-      latestObservedActiveGrowthQuantity = row.latestObservedActiveGrowthQuantity!!,
       latestObservedReadyQuantity = row.latestObservedReadyQuantity!!,
       latestObservedTime = row.latestObservedTime!!,
       lossRate = row.lossRate,

@@ -41,6 +41,10 @@ class TransfersController(
 }
 
 data class CreateNurseryTransferRequestPayload(
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0) //
+    @JsonAlias("notReadyQuantity")
+    val activeGrowthQuantity: Int,
     val date: LocalDate,
     val destinationFacilityId: FacilityId,
     @JsonSetter(nulls = Nulls.FAIL)
@@ -49,10 +53,6 @@ data class CreateNurseryTransferRequestPayload(
     @Min(0) //
     val hardeningOffQuantity: Int? = 0,
     val notes: String? = null,
-    @JsonSetter(nulls = Nulls.FAIL)
-    @Min(0) //
-    @JsonAlias("notReadyQuantity")
-    val activeGrowthQuantity: Int,
     val readyByDate: LocalDate? = null,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0) //
@@ -67,10 +67,10 @@ data class CreateNurseryTransferRequestPayload(
   fun toNewBatchModel() =
       NewBatchModel(
           addedDate = date,
+          activeGrowthQuantity = activeGrowthQuantity,
           facilityId = destinationFacilityId,
           germinatingQuantity = germinatingQuantity,
           notes = notes,
-          activeGrowthQuantity = activeGrowthQuantity,
           readyByDate = readyByDate,
           readyQuantity = readyQuantity,
           hardeningOffQuantity = hardeningOffQuantity ?: 0,

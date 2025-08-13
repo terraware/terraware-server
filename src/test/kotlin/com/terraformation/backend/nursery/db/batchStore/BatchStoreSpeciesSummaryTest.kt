@@ -13,13 +13,14 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
         batchId = batchId,
         germinatingQuantityWithdrawn = 1,
         activeGrowthQuantityWithdrawn = 2,
+        hardeningOffQuantityWithdrawn = 3,
         readyQuantityWithdrawn = 4,
         withdrawalId = withdrawalId,
     )
 
     val summary = store.getSpeciesSummary(speciesId)
 
-    assertEquals(6, summary.totalWithdrawn, "Total withdrawn")
+    assertEquals(9, summary.totalWithdrawn, "Total withdrawn")
   }
 
   @Test

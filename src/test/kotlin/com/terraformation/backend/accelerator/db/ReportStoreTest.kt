@@ -4288,6 +4288,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 addedDate = getRandomDate(reportStartDate, reportEndDate),
                 activeGrowthQuantity = 15,
                 germinatingQuantity = 7,
+                hardeningOffQuantity = 4,
                 readyQuantity = 3,
                 totalLost = 100,
                 speciesId = speciesId,
@@ -4301,6 +4302,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 addedDate = getRandomDate(reportStartDate, reportEndDate),
                 activeGrowthQuantity = 4,
                 germinatingQuantity = 3,
+                hardeningOffQuantity = 1,
                 readyQuantity = 2,
                 totalLost = 100,
                 speciesId = otherSpeciesId,
@@ -4315,6 +4317,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 addedDate = getRandomDate(reportStartDate, reportEndDate),
                 activeGrowthQuantity = 100,
                 germinatingQuantity = 100,
+                hardeningOffQuantity = 100,
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
@@ -4329,6 +4332,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 addedDate = reportStartDate.minusDays(1),
                 activeGrowthQuantity = 100,
                 germinatingQuantity = 100,
+                hardeningOffQuantity = 100,
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
@@ -4391,12 +4395,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         withdrawalId = otherWithdrawalId,
         germinatingQuantityWithdrawn = 1,
         activeGrowthQuantityWithdrawn = 2,
+        hardeningOffQuantityWithdrawn = 3,
     )
     insertBatchWithdrawal(
         batchId = batchId2,
         withdrawalId = otherWithdrawalId,
         germinatingQuantityWithdrawn = 4,
         activeGrowthQuantityWithdrawn = 3,
+        hardeningOffQuantityWithdrawn = 2,
     )
 
     val deadWithdrawalId =
@@ -4425,6 +4431,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         readyQuantityWithdrawn = 100,
         germinatingQuantityWithdrawn = 100,
         activeGrowthQuantityWithdrawn = 100,
+        hardeningOffQuantityWithdrawn = 100,
     )
     insertBatchWithdrawal(
         batchId = batchId2,
@@ -4432,6 +4439,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         readyQuantityWithdrawn = 100,
         germinatingQuantityWithdrawn = 100,
         activeGrowthQuantityWithdrawn = 100,
+        hardeningOffQuantityWithdrawn = 100,
     )
 
     // These two will not be counted
