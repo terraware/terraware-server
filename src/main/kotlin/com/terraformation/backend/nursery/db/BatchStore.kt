@@ -504,13 +504,17 @@ class BatchStore(
             NurseryBatchPhase.HardeningOff to batch.hardeningOffQuantity,
             NurseryBatchPhase.Ready to batch.readyQuantity)
 
-    val startingQuantity = quantities[previousPhase]!!
+    val convertedPreviousPhase =
+        if (previousPhase == NurseryBatchPhase.NotReady) NurseryBatchPhase.ActiveGrowth
+        else previousPhase
+    val convertedNewPhase =
+        if (newPhase == NurseryBatchPhase.NotReady) NurseryBatchPhase.ActiveGrowth else newPhase
+
+    val startingQuantity = quantities[convertedPreviousPhase]!!
     if (startingQuantity < quantityToChange) {
       throw BatchInventoryInsufficientException(batch.id)
     }
 
-    val convertedNewPhase =
-        if (newPhase == NurseryBatchPhase.NotReady) NurseryBatchPhase.ActiveGrowth else newPhase
     quantities[previousPhase] = startingQuantity - quantityToChange
     quantities[convertedNewPhase] = quantities[convertedNewPhase]!! + quantityToChange
 
