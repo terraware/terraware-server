@@ -1,3 +1,5 @@
+b4cf0ef4f8a SW-7160 Add simple generic email sender to admin UI (#3285)
+2f3396bae58 Updated translations from Phrase (#3288)
 294f69999b9 Allow NotReady as previousPhase for changeStatus (#3289)
 e65ed576e02 SW-7217 Update api to accept ActiveGrowth or NotReady and respond with both (#3284)
 8ced3823760 Change internal references from Not Ready to Active Growth (#3282)
