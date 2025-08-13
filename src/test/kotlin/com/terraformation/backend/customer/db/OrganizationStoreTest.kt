@@ -563,16 +563,19 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `addUser throws exception adding a second Terraformation Contact when permitted`() {
+  fun `addUser allows multiple Terraformation Contacts when permitted to add`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = insertUser()
-    val anotherUserId = insertUser()
+    val userId1 = insertUser()
+    val userId2 = insertUser()
 
-    store.addUser(organizationId, newUserId, Role.TerraformationContact)
-    assertThrows<RuntimeException> {
-      store.addUser(organizationId, anotherUserId, Role.TerraformationContact)
-    }
+    store.addUser(organizationId, userId1, Role.TerraformationContact)
+    store.addUser(organizationId, userId2, Role.TerraformationContact)
+
+    val model1 = store.fetchUser(organizationId, userId1)
+    val model2 = store.fetchUser(organizationId, userId2)
+    assertEquals(Role.TerraformationContact, model1.role, "Should have Terraformation Contact role")
+    assertEquals(Role.TerraformationContact, model2.role, "Should have Terraformation Contact role")
   }
 
   @Test
