@@ -16,7 +16,17 @@
     <label for="emailName">Email to Send</label>
     <select name="emailName" id="emailName">
         <option th:value="DocumentsUpdate">Documents Update (EULA, TOS, Privacy update)</option>
+        <option th:value="GenericEmail">Generic Email</option>
     </select>
+    <br/>
+    <div id="genericEmailFields" style="display: none;">
+        <label for="subject">Subject</label>
+        <input type="text" name="subject" id="subject"/>
+        <br/>
+        <label for="emailBody">Email Body</label>
+        <textarea name="emailBody" id="emailBody" rows="10" cols="50"></textarea>
+        <br/>
+    </div>
     <input type="submit" value=" Send Test Email "/>
 </form>
 
@@ -27,14 +37,24 @@
 <script>
     const sendToAllCheckbox = document.getElementById('sendToAll');
     const recipientInput = document.getElementById('recipient');
+    const emailNameSelect = document.getElementById('emailName');
+    const genericEmailFields = document.getElementById('genericEmailFields');
 
-    sendToAllCheckbox.addEventListener('change', function() {
+    sendToAllCheckbox.addEventListener('change', function () {
         if (sendToAllCheckbox.checked) {
             recipientInput.removeAttribute('required');
             recipientInput.disabled = true;
         } else {
             recipientInput.setAttribute('required', true);
             recipientInput.disabled = false;
+        }
+    });
+
+    emailNameSelect.addEventListener('change', function () {
+        if (emailNameSelect.value === 'GenericEmail') {
+            genericEmailFields.style.display = 'block';
+        } else {
+            genericEmailFields.style.display = 'none';
         }
     });
 </script>

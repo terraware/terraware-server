@@ -1,0 +1,17 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.GenericEmail" --> -->
+<mjml>
+    <mj-include path="../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03" padding-top="24px" padding-bottom="24px">
+                ${emailBody?no_esc}
+                </mj-text>
+                <mj-include path="../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
