@@ -15,6 +15,7 @@ import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -576,6 +577,18 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val model2 = store.fetchUser(organizationId, userId2)
     assertEquals(Role.TerraformationContact, model1.role, "Should have Terraformation Contact role")
     assertEquals(Role.TerraformationContact, model2.role, "Should have Terraformation Contact role")
+  }
+
+  @Test
+  fun `addUser throws exception if user is already in org`() {
+    every { user.canAddTerraformationContact(organizationId) } returns true
+
+    val userId = insertUser()
+
+    store.addUser(organizationId, userId, Role.Contributor)
+    assertThrows<UserAlreadyInOrganizationException> {
+      store.addUser(organizationId, userId, Role.Contributor)
+    }
   }
 
   @Test

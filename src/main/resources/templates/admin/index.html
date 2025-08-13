@@ -28,32 +28,32 @@
 
     <h3>Projects, Participants, Cohorts</h3>
 
-        <p th:if="${canQueryGeoServer}">
-            <a href="/admin/geoServer">GeoServer (GIS) maps</a>
-        </p>
-        <p th:if="${canManageParticipants}">
-            <a href="/admin/participants">Manage participants</a>
-        </p>
-        <p th:if="${canReadCohorts}">
-            <a href="/admin/cohorts">Manage cohorts</a>
-        </p>
-        <p th:if="${canManageDefaultProjectLeads}">
-            <a href="/admin/defaultProjectLeads">Manage default project leads for regions</a>
-        </p>
-        <p th:if="${canUpdateDefaultVoters}">
-            <a href="/admin/voters">Manage project voters</a>
-        </p>
-        <p th:if="${canImportGlobalSpeciesData}">
-            <a href="/admin/pdh">Import PDH data into Terraware</a>
-        </p>
+    <p th:if="${canQueryGeoServer}">
+        <a href="/admin/geoServer">GeoServer (GIS) maps</a>
+    </p>
+    <p th:if="${canManageParticipants}">
+        <a href="/admin/participants">Manage participants</a>
+    </p>
+    <p th:if="${canReadCohorts}">
+        <a href="/admin/cohorts">Manage cohorts</a>
+    </p>
+    <p th:if="${canManageDefaultProjectLeads}">
+        <a href="/admin/defaultProjectLeads">Manage default project leads for regions</a>
+    </p>
+    <p th:if="${canUpdateDefaultVoters}">
+        <a href="/admin/voters">Manage project voters</a>
+    </p>
+    <p th:if="${canImportGlobalSpeciesData}">
+        <a href="/admin/pdh">Import PDH data into Terraware</a>
+    </p>
 
-        <th:block th:if="${canManageDocumentProducer}">
-            <h3>Document Producer</h3>
+    <th:block th:if="${canManageDocumentProducer}">
+        <h3>Document Producer</h3>
 
-            <p>
-                <a href="/admin/document-producer">Manage Document Templates and Variables</a>
-            </p>
-        </th:block>
+        <p>
+            <a href="/admin/document-producer">Manage Document Templates and Variables</a>
+        </p>
+    </th:block>
 </details>
 
 <details id="configuration" class="section">
@@ -78,13 +78,14 @@
 
         <p>You can download the data
             <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
-            Use a <code>file://</code> URL to load the data from a file on the server's local filesystem.
+            Use a <code>file://</code> URL to load the data from a file on the server's local
+            filesystem.
         </p>
 
         <form method="POST" enctype="multipart/form-data" action="importGbif">
             <label for="gbifUrl">URL of backbone.zip</label>
-            <input id="gbifUrl" type="url" name="url" required />
-            <input type="submit" value="Import" />
+            <input id="gbifUrl" type="url" name="url" required/>
+            <input type="submit" value="Import"/>
             (can take several minutes)
         </form>
     </div>
@@ -121,13 +122,13 @@
         <h2>Add Organization User</h2>
 
         <p>
-            If the role is "Terraformation Contact" and the organization already has a Terraformation
-            contact, the existing contact will be replaced by the new one.
+            If the role is "Terraformation Contact," the user will be added as an additional
+            Terraformation Contact to the organization.
         </p>
 
         <form method="POST" action="/admin/addOrganizationUser">
             <label for="addUserEmail">Email (user must already exist)</label>
-            <input id="addUserEmail" type="email" name="email" required />
+            <input id="addUserEmail" type="email" name="email" required/>
             <label for="addUserOrganizationId">Organization</label>
             <select id="addUserOrganizationId" name="organizationId">
                 <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
@@ -154,9 +155,9 @@
 
         <form method="POST" action="/admin/users/delete">
             <label for="deleteUserEmail">Email (user must already exist)</label>
-            <input id="deleteUserEmail" type="email" name="email" required />
+            <input id="deleteUserEmail" type="email" name="email" required/>
             <label for="deleteUserConfirm">Confirm for deleting user (This is irreversible)</label>
-            <input id="deleteUserConfirm" type="checkbox" name="confirm" />
+            <input id="deleteUserConfirm" type="checkbox" name="confirm"/>
             <input type="submit" value="Delete User"/>
         </form>
     </th:block>
@@ -196,7 +197,7 @@
         </p>
 
         <form method="POST" action="/admin/migrateSimplePlantingSites">
-            <input type="submit" value="Migrate Simple Planting Sites" />
+            <input type="submit" value="Migrate Simple Planting Sites"/>
         </form>
     </th:block>
 
