@@ -515,7 +515,7 @@ class BatchStore(
       throw BatchInventoryInsufficientException(batch.id)
     }
 
-    quantities[previousPhase] = startingQuantity - quantityToChange
+    quantities[convertedPreviousPhase] = startingQuantity - quantityToChange
     quantities[convertedNewPhase] = quantities[convertedNewPhase]!! + quantityToChange
 
     return quantities
