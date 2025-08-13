@@ -1,6 +1,16 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <style>
+        #quill-editor {
+            height: 300px;
+        }
+    </style>
+</head>
+
 <body>
 <span th:replace="~{/admin/header :: top}"/>
 <a href="/admin/">Home</a>
@@ -24,7 +34,9 @@
         <input type="text" name="subject" id="subject"/>
         <br/>
         <label for="emailBody">Email Body</label>
-        <textarea name="emailBody" id="emailBody" rows="10" cols="50"></textarea>
+        <div id="quill-editor"></div>
+        <!-- Hidden textarea to store Quill content -->
+        <textarea name="emailBody" id="emailBody" style="display: none;"></textarea>
         <br/>
     </div>
     <input type="submit" value=" Send Test Email "/>
@@ -39,6 +51,7 @@
     const recipientInput = document.getElementById('recipient');
     const emailNameSelect = document.getElementById('emailName');
     const genericEmailFields = document.getElementById('genericEmailFields');
+    let quillEditor = null;
 
     sendToAllCheckbox.addEventListener('change', function () {
         if (sendToAllCheckbox.checked) {
@@ -53,6 +66,27 @@
     emailNameSelect.addEventListener('change', function () {
         if (emailNameSelect.value === 'GenericEmail') {
             genericEmailFields.style.display = 'block';
+            if (!quillEditor) {
+                quillEditor = new Quill('#quill-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{'header': [1, 2, 3, false]}],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{'list': 'ordered'}, {'list': 'bullet'}],
+                            [{'script': 'sub'}, {'script': 'super'}],
+                            [{'color': []}, {'background': []}],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Compose your email here...'
+                });
+
+                // Update the hidden textarea when form is submitted
+                document.querySelector('form').addEventListener('submit', function (e) {
+                    document.querySelector('#emailBody').value = quillEditor.getSemanticHTML();
+                });
+            }
         } else {
             genericEmailFields.style.display = 'none';
         }
