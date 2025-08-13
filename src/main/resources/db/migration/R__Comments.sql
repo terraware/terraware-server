@@ -148,7 +148,7 @@ COMMENT ON TABLE project_land_use_model_types IS 'Which projects have which type
 
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
-COMMENT ON TABLE project_user_roles IS '(Enum) Roles a user is allowed to have on a project.';
+COMMENT ON TABLE project_internal_roles IS '(Enum) Roles a user is allowed to have on a project.';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 

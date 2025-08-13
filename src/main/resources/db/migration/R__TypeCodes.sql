@@ -407,7 +407,7 @@ VALUES (1, 'Delivery'),
        (4, 'Undo')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO project_user_roles (id, name)
+INSERT INTO project_internal_roles (id, name)
 VALUES (1, 'Project Lead'),
        (2, 'Restoration Lead'),
        (3, 'Social Lead'),

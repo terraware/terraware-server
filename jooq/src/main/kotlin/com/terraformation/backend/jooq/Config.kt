@@ -149,7 +149,8 @@ val ENUM_TABLES =
                 EnumTable("organization_types", isLocalizable = false),
                 EnumTable("plant_material_sourcing_methods"),
                 EnumTable(
-                    "project_user_roles", listOf("project_internal_roles\\.project_user_role_id")),
+                    "project_internal_roles",
+                    listOf("project_internal_roles\\.project_user_role_id")),
                 EnumTable(
                     "regions",
                     listOf(
@@ -498,7 +499,7 @@ val EMBEDDABLES =
         EmbeddableDefinitionType()
             .withName("project_internal_user_id")
             .withTables("project_internal_users")
-            .withColumns("project_id", "user_id", "role_id"),
+            .withColumns("project_id", "user_id"),
         EmbeddableDefinitionType()
             .withName("project_land_use_model_type_id")
             .withTables("project_land_use_model_types")
