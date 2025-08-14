@@ -8,7 +8,7 @@ CREATE TABLE project_internal_roles
 
 CREATE TABLE project_internal_users
 (
-    project_id           BIGINT NOT NULL REFERENCES projects,
+    project_id           BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE,
     user_id              BIGINT NOT NULL REFERENCES users,
     project_user_role_id INTEGER REFERENCES project_internal_roles,
     role_name            TEXT,
