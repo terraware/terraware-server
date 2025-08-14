@@ -1,3 +1,4 @@
+22bd19cb4f6 Add missing hardening-off status to payloads, cleanup (#3294)
 a517460b1c9 SW-7160 Add support for hyperlinks to generic emails (#3291)
 3a48d0ff206 SW-7160 Add WYSIWYG editor for generic email (#3287)
 b4cf0ef4f8a SW-7160 Add simple generic email sender to admin UI (#3285)
