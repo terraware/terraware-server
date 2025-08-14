@@ -51,9 +51,10 @@ class AdminVotersController(
 
     val defaultVoters = defaultVoterStore.findAll()
     val users =
-        defaultVoters
-            .union(projectVoters.values.reduce { acc, userIds -> acc.union(userIds) })
-            .map { userStore.fetchOneById(it) }
+        userStore
+            .fetchManyById(
+                defaultVoters.union(
+                    projectVoters.values.reduce { acc, userIds -> acc.union(userIds) }))
             .associateBy { it.userId }
 
     model.addAttribute("selectedEmail", email)
