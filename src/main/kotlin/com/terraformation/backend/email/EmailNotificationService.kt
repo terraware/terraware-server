@@ -848,9 +848,9 @@ class EmailNotificationService(
       model: EmailTemplateModel,
       fallBackToSupport: Boolean = true,
   ) {
-    val user = userStore.getTerraformationContactUser(organization.id)
-    if (user != null) {
-      emailService.sendUserNotification(user, model, false)
+    val users = userStore.getTerraformationContactUsers(organization.id)
+    if (users.isNotEmpty()) {
+      users.forEach { emailService.sendUserNotification(it, model, false) }
     } else if (fallBackToSupport && InternalTagIds.Accelerator in organization.internalTags) {
       emailService.sendSupportNotification(model)
       emailService.sendSupportNotification(
@@ -880,14 +880,12 @@ class EmailNotificationService(
               .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
               .toMutableSet()
 
-      val tfContact = userStore.getTerraformationContactUser(organizationId)
+      val tfContacts = userStore.getTerraformationContactUsers(organizationId)
 
-      // The TF contact will not have access to the accelerator console, this email notification
-      // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
+      // The TF contacts will not have access to the accelerator console, this email notification
+      // gives the contacts an opportunity to acquire global roles. Ideally we won't be sending
       // these emails.
-      if (tfContact != null) {
-        recipients.add(tfContact)
-      }
+      tfContacts.forEach { recipients.add(it) }
 
       recipients.forEach { user -> emailService.sendUserNotification(user, model, false) }
     }

@@ -48,11 +48,8 @@ class AdminOrganizationsController(
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val plantingSites = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
     val reports = seedFundReportStore.fetchMetadataByOrganization(organizationId)
-    val tfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
-    val tfContact = if (tfContactUserId != null) userStore.fetchOneById(tfContactUserId) else null
     val isSuperAdmin = GlobalRole.SuperAdmin in currentUser().globalRoles
 
-    model.addAttribute("canAssignTerraformationContact", isSuperAdmin)
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
         "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
@@ -65,7 +62,6 @@ class AdminOrganizationsController(
     model.addAttribute("organization", organization)
     model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("reports", reports)
-    model.addAttribute("terraformationContact", tfContact)
 
     return "/admin/organization"
   }

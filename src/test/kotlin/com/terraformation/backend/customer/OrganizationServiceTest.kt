@@ -22,6 +22,7 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
@@ -41,7 +42,6 @@ import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -303,17 +303,18 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(email = "tfcontact@terraformation.com")
     val organizationId = insertOrganization()
 
-    assertNull(
-        organizationStore.fetchTerraformationContact(organizationId),
-        "Should not find a Terraformation Contact")
+    assertEquals(
+        emptyList<UserId>(),
+        organizationStore.fetchTerraformationContacts(organizationId),
+        "Should not find Terraformation Contacts")
 
     every { user.canAddTerraformationContact(organizationId) } returns true
 
     val result = service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
     assertNotNull(result, "Should have a valid result")
     assertEquals(
-        organizationStore.fetchTerraformationContact(organizationId),
-        result,
+        organizationStore.fetchTerraformationContacts(organizationId),
+        listOf(result),
         "Should find a matching Terraformation Contact")
   }
 
@@ -332,13 +333,16 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         service.assignTerraformationContact("tfcontactnew@terraformation.com", organizationId)
     assertNotNull(newContactId, "Should have a valid new result")
     assertEquals(
-        organizationStore.fetchTerraformationContact(organizationId),
-        initialContactId,
-        "Should find a matching Terraformation Contact")
+        organizationStore.fetchTerraformationContacts(organizationId),
+        listOf(initialContactId, newContactId),
+        "Should find all matching Terraformation Contacts")
 
     val contact = organizationStore.fetchUser(organizationId, newContactId)
     assertEquals(
         Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
+    val newContact = organizationStore.fetchUser(organizationId, newContactId)
+    assertEquals(
+        Role.TerraformationContact, newContact.role, "Should have Terraformation Contact role")
   }
 
   @Test
@@ -359,12 +363,15 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         service.assignTerraformationContact("admin@terraformation.com", organizationId)
     assertEquals(adminUserId, reassignedUserId, "Should reassign role on existing user")
     assertEquals(
-        organizationStore.fetchTerraformationContact(organizationId),
-        initialContactId,
-        "Should find a matching Terraformation Contact")
+        organizationStore.fetchTerraformationContacts(organizationId),
+        listOf(initialContactId, reassignedUserId),
+        "Should find all matching Terraformation Contacts")
 
     val contact = organizationStore.fetchUser(organizationId, initialContactId)
     assertEquals(
         Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
+    val reassigned = organizationStore.fetchUser(organizationId, reassignedUserId)
+    assertEquals(
+        Role.TerraformationContact, reassigned.role, "Should have Terraformation Contact role")
   }
 }
