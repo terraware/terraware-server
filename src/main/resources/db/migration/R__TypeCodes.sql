@@ -407,6 +407,20 @@ VALUES (1, 'Delivery'),
        (4, 'Undo')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO project_internal_roles (id, name)
+VALUES (1, 'Project Lead'),
+       (2, 'Restoration Lead'),
+       (3, 'Social Lead'),
+       (4, 'GIS Lead'),
+       (5, 'Carbon Lead'),
+       (6, 'Phase Lead'),
+       (7, 'Regional Expert'),
+       (8, 'Project Finance Lead'),
+       (9, 'Climate Impact Lead'),
+       (10, 'Legal Lead'),
+       (11, 'Consultant')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.recorded_plant_statuses (id, name)
 VALUES (1, 'Live'),
        (2, 'Dead'),
