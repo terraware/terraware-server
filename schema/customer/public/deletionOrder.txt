@@ -1,5 +1,6 @@
 app_versions
 organization_users
+project_internal_users
 organization_internal_tags
 notifications
 user_preferences
@@ -30,6 +31,7 @@ upload_statuses
 upload_problem_types
 seed_fund_report_statuses
 roles
+project_internal_roles
 organization_types
 notification_criticalities
 managed_location_types

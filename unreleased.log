@@ -1,3 +1,4 @@
+a4bf399efa1 SW-7254 Update data model for TF Contacts updates (#3292)
 0d7df54275b Update actions/checkout action to v5 (#3296)
 7b21f4f3d30 Fix property name in payload to add Added (#3295)
 22bd19cb4f6 Add missing hardening-off status to payloads, cleanup (#3294)

@@ -5,6 +5,7 @@ app_versions
 organization_users
 automations
 species_problems
+project_internal_users
 organization_internal_tags
 notifications
 user_preferences
@@ -56,6 +57,7 @@ species_native_categories
 seed_storage_behaviors
 seed_fund_report_statuses
 roles
+project_internal_roles
 plant_material_sourcing_methods
 organization_types
 notification_criticalities

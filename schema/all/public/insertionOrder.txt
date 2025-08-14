@@ -15,6 +15,7 @@ managed_location_types
 notification_criticalities
 organization_types
 plant_material_sourcing_methods
+project_internal_roles
 roles
 seed_fund_report_statuses
 seed_storage_behaviors
@@ -66,6 +67,7 @@ user_global_roles
 user_preferences
 notifications
 organization_internal_tags
+project_internal_users
 species_problems
 automations
 organization_users

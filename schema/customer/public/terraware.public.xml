@@ -411,9 +411,6 @@
             <column ascending="true" name="user_id"/>
             <column ascending="true" name="organization_id"/>
          </index>
-         <index name="organization_users_contact_uk" unique="true">
-            <column ascending="true" name="organization_id"/>
-         </index>
          <index name="organization_users_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
          </index>
@@ -469,6 +466,35 @@
          <checkConstraint constraint="((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6)))" name="other_type_details_only_for_other"/>
       </table>
+      <table name="project_internal_roles" remarks="(Enum) Roles a user is allowed to have on a project." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="project_user_role_id" foreignKey="project_internal_users_project_user_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="project_internal_roles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="project_internal_users" remarks="Which users have which internal roles on a project." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_user_role_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_internal_users_project_user_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_roles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="role_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="user_id" sequenceNumberInPK="2"/>
+         <index name="project_internal_users_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="user_id"/>
+         </index>
+         <checkConstraint constraint="((project_user_role_id IS NULL) &lt;&gt; (role_name IS NULL))" name="project_internal_users_role_exclusive"/>
+      </table>
       <table name="project_land_use_model_types" remarks="Which projects have which types of land use models." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
@@ -521,6 +547,7 @@
             <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
+            <child column="project_id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_internal_users"/>
             <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
             <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
             <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
@@ -919,6 +946,7 @@
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="user_id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
             <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>

@@ -7,6 +7,7 @@ global_roles
 managed_location_types
 notification_criticalities
 organization_types
+project_internal_roles
 roles
 seed_fund_report_statuses
 upload_problem_types
@@ -37,5 +38,6 @@ user_global_roles
 user_preferences
 notifications
 organization_internal_tags
+project_internal_users
 organization_users
 app_versions
