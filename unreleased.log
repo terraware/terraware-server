@@ -1,3 +1,4 @@
+aa0b6c81aee SW-7255 Update tf contacts retrieval to return all (#3297)
 91979d2768b SW-7255 Allow for multiple tf contacts in an org (#3293)
 a4bf399efa1 SW-7254 Update data model for TF Contacts updates (#3292)
 0d7df54275b Update actions/checkout action to v5 (#3296)
