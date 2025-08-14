@@ -527,8 +527,8 @@ class OrganizationStore(
     return Role.entries.associateWith { countByRoleId[it] ?: 0 }
   }
 
-  /** Fetches the Terraformation Contact role user in an organization, if one exists. */
-  fun fetchTerraformationContact(organizationId: OrganizationId): UserId? {
+  /** Fetches the Terraformation Contact role users in an organization, if one exists. */
+  fun fetchTerraformationContacts(organizationId: OrganizationId): List<UserId> {
     requirePermissions { listOrganizationUsers(organizationId) }
     return dslContext
         .select(ORGANIZATION_USERS.USER_ID)
@@ -536,8 +536,8 @@ class OrganizationStore(
         .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
         .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.TerraformationContact))
         .orderBy(ORGANIZATION_USERS.USER_ID)
-        .limit(1)
-        .fetchOne(ORGANIZATION_USERS.USER_ID)
+        .fetch(ORGANIZATION_USERS.USER_ID)
+        .filterNotNull()
   }
 
   /**

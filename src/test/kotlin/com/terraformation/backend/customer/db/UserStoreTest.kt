@@ -907,22 +907,29 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns terraformation contact user if one exists`() {
+    fun `returns terraformation contact users if any exists`() {
       every { user.canListOrganizationUsers(any()) } returns true
 
-      val tfContact =
-          insertUser(email = "tfcontact@terraformation.com", emailNotificationsEnabled = true)
+      val tfContact1 =
+          insertUser(email = "tfcontact1@terraformation.com", emailNotificationsEnabled = true)
+      val tfContact2 =
+          insertUser(email = "tfcontact2@terraformation.com", emailNotificationsEnabled = true)
 
-      insertOrganizationUser(tfContact, role = Role.TerraformationContact)
+      insertOrganizationUser(tfContact1, role = Role.TerraformationContact)
+      insertOrganizationUser(tfContact2, role = Role.TerraformationContact)
+
       assertEquals(
-          userStore.getTerraformationContactUser(organizationId)?.email,
-          "tfcontact@terraformation.com")
+          userStore.getTerraformationContactUsers(organizationId).map { it.email },
+          listOf("tfcontact1@terraformation.com", "tfcontact2@terraformation.com"))
     }
 
     @Test
-    fun `returns no terraformation contact user if one does not exist`() {
+    fun `returns no terraformation contact users if one does not exist`() {
       every { user.canListOrganizationUsers(any()) } returns true
-      assertNull(userStore.getTerraformationContactUser(organizationId))
+      assertEquals(
+          userStore.getTerraformationContactUsers(organizationId).size,
+          0,
+          "Should be no Terraformation Contact users")
     }
   }
 

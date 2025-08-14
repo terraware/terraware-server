@@ -413,9 +413,12 @@ internal class EmailNotificationServiceTest {
 
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
-  private val tfContactUserId = UserId(5)
-  private val tfContactEmail = "tfcontact@terraformation.com"
-  private val tfContactUser = userForEmail(tfContactEmail)
+  private val tfContactUserId1 = UserId(5)
+  private val tfContactUserId2 = UserId(50)
+  private val tfContactEmail1 = "tfcontact1@terraformation.com"
+  private val tfContactEmail2 = "tfcontact2@terraformation.com"
+  private val tfContactUser1 = userForEmail(tfContactEmail1)
+  private val tfContactUser2 = userForEmail(tfContactEmail2)
 
   private val sectionOwnerUserId = UserId(6)
   private val sectionOwnerEmail = "owner@terraformation.com"
@@ -488,16 +491,17 @@ internal class EmailNotificationServiceTest {
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
     every { userInternalInterestsStore.conditionForUsers(any()) } returns DSL.trueCondition()
-    every { userStore.getTerraformationContactUser(any()) } returns null
+    every { userStore.getTerraformationContactUsers(any()) } returns emptyList()
     every { userStore.fetchByFundingEntityId(fundingEntity.id) } returns listOf(funderUser)
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
     every {
       userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
-    } returns listOf(tfContactUser)
+    } returns listOf(tfContactUser1, tfContactUser2)
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
-    every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every { userStore.fetchOneById(tfContactUserId1) } returns tfContactUser1
+    every { userStore.fetchOneById(tfContactUserId2) } returns tfContactUser2
     every { userStore.fetchOneById(sectionOwnerUserId) } returns sectionOwnerUser
     every { userStore.fetchOneById(funderUserId) } returns funderUser
     every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), any()) } returns
@@ -522,7 +526,8 @@ internal class EmailNotificationServiceTest {
           userForEmail(answer.invocation.args[0] as String)
         }
 
-    listOf(user, adminUser, sectionOwnerUser, tfContactUser).forEach { targetUser ->
+    listOf(user, adminUser, sectionOwnerUser, tfContactUser1, tfContactUser2).forEach { targetUser
+      ->
       val funcSlot = CapturingSlot<() -> Any>()
       every { targetUser.recordPermissionChecks(capture(funcSlot)) } answers { funcSlot.captured() }
     }
@@ -711,7 +716,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("September 1, 2023", "Start date")
     assertBodyContains("September 30, 2023", "End date")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -739,7 +744,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("October 1, 2023", "New start date")
     assertBodyContains("October 31, 2023", "New end date")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -790,7 +795,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationNotScheduledNotification with TFContact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
@@ -801,7 +807,7 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains("has not scheduled an observation")
     assertBodyContains("but the organization has not scheduled one")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -849,7 +855,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationMonitoringPlotReplaced with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event =
         ObservationPlotReplacedEvent(
@@ -863,7 +870,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("justification given is: Just because")
     assertBodyContains("duration for the change is: Long-Term/Permanent")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -902,7 +909,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonScheduled with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event =
         PlantingSeasonScheduledEvent(
@@ -919,7 +927,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("My Site")
     assertBodyContains("2023-01-01 through 2023-03-03")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -938,7 +946,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonRescheduled with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event =
         PlantingSeasonRescheduledEvent(
@@ -958,7 +967,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("was scheduled for 2023-01-01 through 2023-03-03")
     assertBodyContains("is scheduled for 2023-01-02 through 2023-03-04")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -1019,7 +1028,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `PlantingSeasonNotScheduledSupport with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
 
@@ -1030,13 +1040,13 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains("not scheduled")
     assertBodyContains("My Site")
     assertBodyContains("missing a planting season")
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
   @Test
   fun `PlantingSeasonNotScheduledSupport without Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns null
+    every { userStore.getTerraformationContactUsers(any()) } returns emptyList()
 
     val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
 
@@ -1069,7 +1079,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectAdded with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
 
@@ -1082,7 +1093,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(project.name)
     assertBodyContains("added to")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -1117,7 +1128,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectRemoved with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
 
@@ -1130,7 +1142,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(project.name)
     assertBodyContains("removed from")
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
@@ -1171,7 +1183,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectSpeciesAddedToProject with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event =
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
@@ -1186,7 +1199,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
 
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
 
   @Test
@@ -1208,7 +1221,8 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectSpeciesEditedToProject with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event =
         ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
@@ -1222,19 +1236,20 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
 
   @Test
   fun `rateLimitedAcceleratorReportSubmittedEvent should notify global role users and TFContact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
     val event = RateLimitedAcceleratorReportSubmittedEvent(acceleratorReportId)
     service.on(event)
     val message = sentMessageWithSubject("2025 Q1 Report Submitted for")
     assertSubjectContains(report.prefix, message = message)
     assertBodyContains(report.prefix, message = message)
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
 
   @Test
@@ -1268,19 +1283,21 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `applicationSubmittedEvent should notify global role users and TFContact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
     val event = ApplicationSubmittedEvent(applicationId)
     service.on(event)
     val message = sentMessageWithSubject("Application submitted for")
     assertSubjectContains(organization.name, message = message)
     assertBodyContains(organization.name, message = message)
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
 
   @Test
   fun `deliverableReadyForReview with Terraformation contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
 
     val event = DeliverableReadyForReviewEvent(deliverable.deliverableId, project.id)
 
@@ -1290,13 +1307,15 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains(participant.name, message = message)
     assertBodyContains(participant.name, message = message)
 
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
 
   @Test
   fun `deliverableReadyForReview does not over-notify Terraformation contact that has a global role`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchWithGlobalRoles() } returns
+        listOf(acceleratorUser, tfContactUser1, tfContactUser2)
 
     val event = DeliverableReadyForReviewEvent(deliverable.deliverableId, project.id)
 
@@ -1306,10 +1325,11 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains(participant.name, message = message)
     assertBodyContains(participant.name, message = message)
 
-    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
 
-    // check that we haven't over-notified the TF contact
-    verify(exactly = 1) { emailService.sendUserNotification(tfContactUser, any(), any()) }
+    // check that we haven't over-notified the TF contacts
+    verify(exactly = 1) { emailService.sendUserNotification(tfContactUser1, any(), any()) }
+    verify(exactly = 1) { emailService.sendUserNotification(tfContactUser2, any(), any()) }
   }
 
   @Test
@@ -1391,8 +1411,9 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSiteMapEdited with Terraformation Contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    every { userStore.getTerraformationContactUsers(any()) } returns
+        listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
 
     val siteName = "Test Site"
     val existingModel =
@@ -1418,14 +1439,14 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains(siteName, message = message)
     assertBodyContains("13.2 hectares have been removed from the", message = message)
 
-    assertRecipientsEqual(setOf(tfContactEmail))
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
 
   @Test
   fun `plantingSiteMapEdited without Terraformation Contact`() {
-    every { userStore.getTerraformationContactUser(any()) } returns null
+    every { userStore.getTerraformationContactUsers(any()) } returns emptyList()
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
 
     val siteName = "Test Site"

@@ -308,6 +308,10 @@ class UserStore(
         ?: throw UserNotFoundException(userId)
   }
 
+  fun fetchManyById(userIds: Collection<UserId>): List<TerrawareUser> {
+    return usersDao.fetchById(*userIds.toTypedArray()).map { rowToModel(it) }
+  }
+
   /** Returns the details for the user with a given user ID, if they have permission to do so. */
   fun fetchOneByIdAccelerator(userId: UserId): TerrawareUser {
     requirePermissions { readUser(userId) }
@@ -728,11 +732,13 @@ class UserStore(
     }
   }
 
-  /** Returns TF contact for an organization */
-  fun getTerraformationContactUser(organizationId: OrganizationId): IndividualUser? {
-    val tfContactId = organizationStore.fetchTerraformationContact(organizationId) ?: return null
-    return fetchOneById(tfContactId) as? IndividualUser
-        ?: throw IllegalArgumentException("Terraformation Contact user must be an individual user")
+  /** Returns TF contacts for an organization */
+  fun getTerraformationContactUsers(organizationId: OrganizationId): List<IndividualUser> {
+    val tfContactIds = organizationStore.fetchTerraformationContacts(organizationId)
+    return fetchManyById(tfContactIds).map { user ->
+      user as? IndividualUser
+          ?: throw IllegalArgumentException("Terraformation Contact users must be individual users")
+    }
   }
 
   private fun rowToIndividualUser(usersRow: UsersRow): IndividualUser {

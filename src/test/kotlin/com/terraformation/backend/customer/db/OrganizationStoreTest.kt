@@ -592,25 +592,25 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchTerraformationContact returns the user id of Terraformation Contact`() {
+  fun `fetchTerraformationContacts returns the user id of Terraformation Contact`() {
     assertEquals(
-        null,
-        store.fetchTerraformationContact(organizationId),
+        0,
+        store.fetchTerraformationContacts(organizationId).size,
         "Should not find a Terraformation Contact")
 
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     assertEquals(
-        tfContact.userId,
-        store.fetchTerraformationContact(organizationId),
-        "Should find a Terraformation Contact")
+        listOf(tfContact.userId),
+        store.fetchTerraformationContacts(organizationId),
+        "Should find the Terraformation Contact")
   }
 
   @Test
-  fun `fetchTerraformationContact throws exception if no permission to list organization users`() {
+  fun `fetchTerraformationContacts throws exception if no permission to list organization users`() {
     every { user.canListOrganizationUsers(organizationId) } returns false
 
-    assertThrows<AccessDeniedException> { store.fetchTerraformationContact(organizationId) }
+    assertThrows<AccessDeniedException> { store.fetchTerraformationContacts(organizationId) }
   }
 
   @Test

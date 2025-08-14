@@ -61,8 +61,12 @@ class AcceleratorOrganizationsController(
 
     return ListAcceleratorOrganizationsResponsePayload(
         organizations.map { (organization, projects) ->
+          val contacts = userStore.getTerraformationContactUsers(organization.id)
           AcceleratorOrganizationPayload(
-              organization, projects, userStore.getTerraformationContactUser(organization.id))
+              organization,
+              projects,
+              contacts,
+          )
         })
   }
 
@@ -104,17 +108,19 @@ data class AcceleratorOrganizationPayload(
     val id: OrganizationId,
     val name: String,
     val projects: List<AcceleratorProjectPayload>,
-    val tfContactUser: TerraformationContactUserPayload?,
+    val tfContactUser: TerraformationContactUserPayload?, // for backwards compatibility
+    val tfContactUsers: List<TerraformationContactUserPayload> = emptyList(),
 ) {
   constructor(
       model: OrganizationModel,
       projects: List<ExistingProjectModel>,
-      tfContactUser: IndividualUser? = null,
+      tfContactUsers: List<IndividualUser> = emptyList(),
   ) : this(
       model.id,
       model.name,
       projects.map { AcceleratorProjectPayload(it) },
-      tfContactUser?.let { TerraformationContactUserPayload(it) },
+      tfContactUsers.firstOrNull()?.let { TerraformationContactUserPayload(it) },
+      tfContactUsers.map { TerraformationContactUserPayload(it) },
   )
 }
 

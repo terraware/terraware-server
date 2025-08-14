@@ -647,11 +647,8 @@ class AppNotificationService(
               .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
               .toMutableSet()
 
-      val tfContact = userStore.getTerraformationContactUser(organizationId)
-
-      if (tfContact != null) {
-        recipients.add(tfContact)
-      }
+      val tfContacts = userStore.getTerraformationContactUsers(organizationId)
+      tfContacts.forEach { recipients.add(it) }
 
       dslContext.transaction { _ ->
         recipients.forEach { user ->
