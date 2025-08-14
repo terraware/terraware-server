@@ -20,7 +20,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
@@ -319,53 +318,53 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `removes existing Terraformation Contact and assigns a new one`() {
+  fun `adds a new Terraformation Contact without removing existing one`() {
     insertUser(email = "tfcontact@terraformation.com")
     insertUser(email = "tfcontactnew@terraformation.com")
     val organizationId = insertOrganization()
 
     every { user.canAddTerraformationContact(organizationId) } returns true
-    every { user.canRemoveTerraformationContact(organizationId) } returns true
 
-    val userToRemove =
+    val initialContactId =
         service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
-    assertNotNull(userToRemove, "Should have a valid result")
-    val reassignedUser =
+    assertNotNull(initialContactId, "Should have a valid result")
+    val newContactId =
         service.assignTerraformationContact("tfcontactnew@terraformation.com", organizationId)
-    assertNotNull(reassignedUser, "Should have a valid new result")
+    assertNotNull(newContactId, "Should have a valid new result")
     assertEquals(
         organizationStore.fetchTerraformationContact(organizationId),
-        reassignedUser,
+        initialContactId,
         "Should find a matching Terraformation Contact")
-    assertThrows<UserNotFoundException> {
-      organizationStore.fetchUser(organizationId, userToRemove)
-    }
+
+    val contact = organizationStore.fetchUser(organizationId, newContactId)
+    assertEquals(
+        Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
   }
 
   @Test
-  fun `removes existing Terraformation Contact and sets the role for reassigned Terraformation Contact if user already exists`() {
+  fun `sets the role for a Terraformation Contact if user already exists and doesn't remove existing`() {
     insertUser(email = "tfcontact@terraformation.com")
     val organizationId = insertOrganization()
 
     every { user.canAddTerraformationContact(organizationId) } returns true
-    every { user.canRemoveTerraformationContact(organizationId) } returns true
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Admin) } returns true
 
-    val adminUser = service.addUser("admin@terraformation.com", organizationId, Role.Admin)
-    assertNotNull(adminUser, "Should have a valid result")
-    val userToRemove =
+    val adminUserId = service.addUser("admin@terraformation.com", organizationId, Role.Admin)
+    assertNotNull(adminUserId, "Should have a valid result")
+    val initialContactId =
         service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
-    assertNotNull(userToRemove, "Should have a valid result")
-    val reassignedUser =
+    assertNotNull(initialContactId, "Should have a valid result")
+    val reassignedUserId =
         service.assignTerraformationContact("admin@terraformation.com", organizationId)
-    assertEquals(adminUser, reassignedUser, "Should reassign role on existing user")
+    assertEquals(adminUserId, reassignedUserId, "Should reassign role on existing user")
     assertEquals(
         organizationStore.fetchTerraformationContact(organizationId),
-        reassignedUser,
+        initialContactId,
         "Should find a matching Terraformation Contact")
-    assertThrows<UserNotFoundException> {
-      organizationStore.fetchUser(organizationId, userToRemove)
-    }
+
+    val contact = organizationStore.fetchUser(organizationId, initialContactId)
+    assertEquals(
+        Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
   }
 }
