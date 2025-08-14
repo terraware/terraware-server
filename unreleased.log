@@ -1,3 +1,4 @@
+0d7df54275b Update actions/checkout action to v5 (#3296)
 7b21f4f3d30 Fix property name in payload to add Added (#3295)
 22bd19cb4f6 Add missing hardening-off status to payloads, cleanup (#3294)
 a517460b1c9 SW-7160 Add support for hyperlinks to generic emails (#3291)
