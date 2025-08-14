@@ -536,8 +536,7 @@ class OrganizationStore(
         .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
         .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.TerraformationContact))
         .orderBy(ORGANIZATION_USERS.USER_ID)
-        .fetch(ORGANIZATION_USERS.USER_ID)
-        .filterNotNull()
+        .fetch(ORGANIZATION_USERS.USER_ID.asNonNullable())
   }
 
   /**

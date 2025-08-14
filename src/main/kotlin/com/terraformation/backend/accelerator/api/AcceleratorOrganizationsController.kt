@@ -62,11 +62,7 @@ class AcceleratorOrganizationsController(
     return ListAcceleratorOrganizationsResponsePayload(
         organizations.map { (organization, projects) ->
           val contacts = userStore.getTerraformationContactUsers(organization.id)
-          AcceleratorOrganizationPayload(
-              organization,
-              projects,
-              contacts,
-          )
+          AcceleratorOrganizationPayload(organization, projects, contacts)
         })
   }
 

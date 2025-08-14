@@ -22,6 +22,7 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
@@ -303,8 +304,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     val organizationId = insertOrganization()
 
     assertEquals(
-        0,
-        organizationStore.fetchTerraformationContacts(organizationId).size,
+        emptyList<UserId>(),
+        organizationStore.fetchTerraformationContacts(organizationId),
         "Should not find Terraformation Contacts")
 
     every { user.canAddTerraformationContact(organizationId) } returns true

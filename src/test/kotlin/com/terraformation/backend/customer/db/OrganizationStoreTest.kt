@@ -594,8 +594,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchTerraformationContacts returns the user id of Terraformation Contact`() {
     assertEquals(
-        0,
-        store.fetchTerraformationContacts(organizationId).size,
+        emptyList<UserId>(),
+        store.fetchTerraformationContacts(organizationId),
         "Should not find a Terraformation Contact")
 
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
