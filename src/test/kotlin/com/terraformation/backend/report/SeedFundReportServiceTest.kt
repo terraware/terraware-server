@@ -146,7 +146,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao),
-        ProjectStore(clock, dslContext, publisher, projectsDao),
+        ProjectStore(clock, dslContext, publisher, projectsDao, projectInternalUsersDao),
         seedFundReportRenderer,
         seedFundReportStore,
         scheduler,

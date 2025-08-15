@@ -31,7 +31,7 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
     ParticipantService(
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
-        ProjectStore(clock, dslContext, eventPublisher, projectsDao))
+        ProjectStore(clock, dslContext, eventPublisher, projectsDao, projectInternalUsersDao))
   }
 
   @BeforeEach
