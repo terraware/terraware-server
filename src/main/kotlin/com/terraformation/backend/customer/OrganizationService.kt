@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
@@ -176,6 +177,17 @@ class OrganizationService(
     // Schedule the actual deletion via JobRunr rather than just spawning a thread so it will be
     // retried if the server is killed before it finishes.
     scheduler.enqueue<OrganizationService> { deleteAbandonedOrganization(organizationId) }
+  }
+
+  @EventListener
+  fun on(event: ProjectInternalUserAddedEvent) {
+    val userId = event.userId
+    val organizationId = event.organizationId
+    val role = event.role
+
+    if (ProjectService.roleShouldBeTfContact(role)) {
+      assignTerraformationContact(userId, organizationId)
+    }
   }
 
   /**
