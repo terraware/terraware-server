@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -363,6 +364,71 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectInternalRoleId = null,
               roleName = "A Different Role",
           ))
+      eventPublisher.assertExactEventsPublished(
+          listOf(
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead),
+              ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId),
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, role = ProjectInternalRole.Consultant),
+              ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId),
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, roleName = "A Different Role"),
+          ),
+          "Should have published events in specific order")
+    }
+  }
+
+  @Nested
+  inner class RemoveInternalUser {
+    @Test
+    fun `throws exception if no permission`() {
+      deleteOrganizationUser()
+      assertThrows<ProjectNotFoundException> { store.removeInternalUser(projectId, user.userId) }
+    }
+
+    @Test
+    fun `removes internal user with role`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.ProjectLead)
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should have no internal users")
+
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+    }
+
+    @Test
+    fun `removes internal user with roleName`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertProjectInternalUser(projectId = projectId, roleName = "TheBestRole")
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should have no internal users")
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+    }
+
+    @Test
+    fun `no event published if user wasn't already on project`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should still have no internal users")
+      eventPublisher.assertEventNotPublished<ProjectInternalUserRemovedEvent>()
     }
   }
 

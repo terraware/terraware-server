@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -121,17 +122,15 @@ class ProjectStore(
       role: ProjectInternalRole? = null,
       roleName: String? = null
   ) {
-    requirePermissions { addProjectInternalUser(projectId) }
+    requirePermissions { updateProjectInternalUsers(projectId) }
 
-    val organizationId: OrganizationId =
-        dslContext
-            .select(PROJECTS.ORGANIZATION_ID)
-            .from(PROJECTS)
-            .where(PROJECTS.ID.eq(projectId))
-            .fetchOne(PROJECTS.ORGANIZATION_ID) ?: throw ProjectNotFoundException(projectId)
+    val organizationId = fetchOrgIdByProjectId(projectId)
 
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
+        val projectUserExists =
+            dslContext.fetchExists(this, PROJECT_ID.eq(projectId).and(USER_ID.eq(userId)))
+
         dslContext
             .insertInto(this)
             .set(PROJECT_ID, projectId)
@@ -143,10 +142,35 @@ class ProjectStore(
             .set(PROJECT_INTERNAL_ROLE_ID, role)
             .set(ROLE_NAME, roleName)
             .execute()
-      }
 
-      eventPublisher.publishEvent(
-          ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName))
+        if (projectUserExists) {
+          eventPublisher.publishEvent(
+              ProjectInternalUserRemovedEvent(projectId, organizationId, userId))
+        }
+        eventPublisher.publishEvent(
+            ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName))
+      }
+    }
+  }
+
+  fun removeInternalUser(projectId: ProjectId, userId: UserId) {
+    requirePermissions { updateProjectInternalUsers(projectId) }
+
+    val organizationId = fetchOrgIdByProjectId(projectId)
+    dslContext.transaction { _ ->
+      with(PROJECT_INTERNAL_USERS) {
+        val rowsDeleted =
+            dslContext
+                .deleteFrom(this)
+                .where(PROJECT_ID.eq(projectId))
+                .and(USER_ID.eq(userId))
+                .execute()
+
+        if (rowsDeleted > 0) {
+          eventPublisher.publishEvent(
+              ProjectInternalUserRemovedEvent(projectId, organizationId, userId))
+        }
+      }
     }
   }
 
@@ -198,5 +222,13 @@ class ProjectStore(
           ParticipantProjectAddedEvent(
               addedBy = currentUser().userId, participantId = participantId, projectId = projectId))
     }
+  }
+
+  private fun fetchOrgIdByProjectId(projectId: ProjectId): OrganizationId {
+    return dslContext
+        .select(PROJECTS.ORGANIZATION_ID)
+        .from(PROJECTS)
+        .where(PROJECTS.ID.eq(projectId))
+        .fetchOne(PROJECTS.ORGANIZATION_ID) ?: throw ProjectNotFoundException(projectId)
   }
 }
