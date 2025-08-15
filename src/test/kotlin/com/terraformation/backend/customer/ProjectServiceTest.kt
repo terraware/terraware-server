@@ -283,7 +283,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `happy path`() {
-      every { user.canAddProjectInternalUser(any()) } returns true
+      every { user.canUpdateProjectInternalUsers(any()) } returns true
       val userId = insertUser()
       insertUserGlobalRole(userId = userId, role = GlobalRole.ReadOnly)
       service.addInternalUserRole(projectId, userId, ProjectInternalRole.GISLead)
