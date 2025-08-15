@@ -165,15 +165,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateProjectInternalUsers(projectId: ProjectId) {
-    user.recordPermissionChecks {
-      if (!user.canUpdateProjectInternalUsers(projectId)) {
-        readProject(projectId)
-        throw AccessDeniedException("No permission to update internal users on project $projectId")
-      }
-    }
-  }
-
   fun addTerraformationContact(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canAddTerraformationContact(organizationId)) {
@@ -1769,6 +1760,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateProjectDocumentSettings(projectId)) {
         readProject(projectId)
         throw AccessDeniedException("No permission to update project document settings $projectId")
+      }
+    }
+  }
+
+  fun updateProjectInternalUsers(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectInternalUsers(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update internal users on project $projectId")
       }
     }
   }

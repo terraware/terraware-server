@@ -145,8 +145,6 @@ data class IndividualUser(
   override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
       isAcceleratorAdmin()
 
-  override fun canUpdateProjectInternalUsers(projectId: ProjectId) = isTFExpertOrHigher()
-
   override fun canAddTerraformationContact(organizationId: OrganizationId) = isTFExpertOrHigher()
 
   // all users can count their unread notifications
@@ -698,6 +696,8 @@ data class IndividualUser(
       isTFExpertOrHigher()
 
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
+
+  override fun canUpdateProjectInternalUsers(projectId: ProjectId) = isTFExpertOrHigher()
 
   override fun canUpdateProjectReports(projectId: ProjectId): Boolean =
       isAdminOrHigher(parentStore.getOrganizationId(projectId))
