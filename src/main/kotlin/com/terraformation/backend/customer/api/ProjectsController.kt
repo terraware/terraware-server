@@ -140,12 +140,26 @@ class ProjectsController(
   }
 
   @Operation(summary = "Assign a global user as a specific role for a project.")
-  @PutMapping("/{id}/assignRole")
-  fun assignRole(
+  @PutMapping("/{id}/userRoles")
+  fun assignInternalRole(
       @PathVariable id: ProjectId,
       @RequestBody payload: AssignProjectInternalUserRequestPayload
   ): SimpleSuccessResponsePayload {
     projectService.addInternalUserRole(id, payload.userId, payload.role, payload.roleName)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(
+      summary = "Remove a global user as an internal role for a project.",
+      description =
+          "If the user's role also created a tf contact for the organization, this is also removed.")
+  @DeleteMapping("/{id}/userRoles/{userId}")
+  fun removeInternalRole(
+      @PathVariable id: ProjectId,
+      @PathVariable userId: UserId,
+  ): SimpleSuccessResponsePayload {
+    projectStore.removeInternalUser(id, userId)
 
     return SimpleSuccessResponsePayload()
   }
