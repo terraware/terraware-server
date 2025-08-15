@@ -128,9 +128,6 @@ class ProjectStore(
 
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
-        val projectUserExists =
-            dslContext.fetchExists(this, PROJECT_ID.eq(projectId).and(USER_ID.eq(userId)))
-
         dslContext
             .insertInto(this)
             .set(PROJECT_ID, projectId)
@@ -143,10 +140,6 @@ class ProjectStore(
             .set(ROLE_NAME, roleName)
             .execute()
 
-        if (projectUserExists) {
-          eventPublisher.publishEvent(
-              ProjectInternalUserRemovedEvent(projectId, organizationId, userId))
-        }
         eventPublisher.publishEvent(
             ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName))
       }

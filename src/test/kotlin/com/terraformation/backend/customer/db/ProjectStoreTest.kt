@@ -368,10 +368,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ProjectInternalUserAddedEvent(
                   projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead),
-              ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId),
               ProjectInternalUserAddedEvent(
                   projectId, organizationId, user.userId, role = ProjectInternalRole.Consultant),
-              ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId),
               ProjectInternalUserAddedEvent(
                   projectId, organizationId, user.userId, roleName = "A Different Role"),
           ),
