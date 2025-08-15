@@ -153,7 +153,7 @@ class ProjectsController(
   @Operation(
       summary = "Remove a global user as an internal role for a project.",
       description =
-          "If the user's role also created a tf contact for the organization, this is also removed.")
+          "Does not remove Terraformation Contact even if assigned role caused them to be added.")
   @DeleteMapping("/{id}/userRoles/{userId}")
   fun removeInternalRole(
       @PathVariable id: ProjectId,
