@@ -320,14 +320,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun addProjectInternalUser() {
-    assertThrows<ProjectNotFoundException> { requirements.addProjectInternalUser(projectId) }
+  fun updateProjectInternalUsers() {
+    assertThrows<ProjectNotFoundException> { requirements.updateProjectInternalUsers(projectId) }
 
     grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.addProjectInternalUser(projectId) }
+    assertThrows<AccessDeniedException> { requirements.updateProjectInternalUsers(projectId) }
 
-    grant { user.canAddProjectInternalUser(projectId) }
-    requirements.addProjectInternalUser(projectId)
+    grant { user.canUpdateProjectInternalUsers(projectId) }
+    requirements.updateProjectInternalUsers(projectId)
   }
 
   @Test

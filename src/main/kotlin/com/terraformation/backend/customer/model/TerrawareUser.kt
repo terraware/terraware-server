@@ -225,7 +225,7 @@ interface TerrawareUser : Principal, UserDetails {
   fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean =
       defaultPermission
 
-  fun canAddProjectInternalUser(projectId: ProjectId): Boolean = defaultPermission
+  fun canUpdateProjectInternalUsers(projectId: ProjectId): Boolean = defaultPermission
 
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = defaultPermission
 

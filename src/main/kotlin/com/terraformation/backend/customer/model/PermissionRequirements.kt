@@ -165,11 +165,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun addProjectInternalUser(projectId: ProjectId) {
+  fun updateProjectInternalUsers(projectId: ProjectId) {
     user.recordPermissionChecks {
-      if (!user.canAddProjectInternalUser(projectId)) {
+      if (!user.canUpdateProjectInternalUsers(projectId)) {
         readProject(projectId)
-        throw AccessDeniedException("No permission to add internal user to project $projectId")
+        throw AccessDeniedException("No permission to update internal users on project $projectId")
       }
     }
   }
