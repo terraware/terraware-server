@@ -4,13 +4,22 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
+import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -21,15 +30,19 @@ import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 
 class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
+
+  @Autowired private lateinit var config: TerrawareServerConfig
 
   private val clock = TestClock()
   private val identifierGenerator: IdentifierGenerator by lazy {
@@ -83,6 +96,20 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao,
         ),
+        ProjectStore(clock, dslContext, publisher, projectsDao, projectInternalUsersDao),
+        UserStore(
+            clock,
+            config,
+            dslContext,
+            mockk(),
+            InMemoryKeycloakAdminClient(),
+            dummyKeycloakInfo(),
+            mockk(),
+            parentStore,
+            PermissionStore(dslContext),
+            publisher,
+            usersDao,
+        ),
     )
   }
 
@@ -133,6 +160,13 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
     insertOrganization()
     insertFacility()
+  }
+
+  @Test
+  fun `Role should be tf contact`() {
+    assertTrue { ProjectService.roleShouldBeTfContact(ProjectInternalRole.ProjectLead) }
+    assertTrue { ProjectService.roleShouldBeTfContact(ProjectInternalRole.RestorationLead) }
+    assertFalse { ProjectService.roleShouldBeTfContact(ProjectInternalRole.Consultant) }
   }
 
   @Nested
@@ -235,6 +269,31 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
         service.assignProject(
             projectId, emptyList(), emptyList(), listOf(plantingSiteId1, otherOrgPlantingSiteId))
       }
+    }
+  }
+
+  @Nested
+  inner class AddInternalUserRole {
+    @Test
+    fun `throws exception if user has no globalRoles`() {
+      assertThrows<IllegalStateException> {
+        service.addInternalUserRole(projectId, user.userId, ProjectInternalRole.RegionalExpert)
+      }
+    }
+
+    @Test
+    fun `happy path`() {
+      every { user.canAddProjectInternalUser(any()) } returns true
+      val userId = insertUser()
+      insertUserGlobalRole(userId = userId, role = GlobalRole.ReadOnly)
+      service.addInternalUserRole(projectId, userId, ProjectInternalRole.GISLead)
+
+      assertTableEquals(
+          ProjectInternalUsersRecord(
+              projectId = projectId,
+              userId = userId,
+              projectInternalRoleId = ProjectInternalRole.GISLead,
+          ))
     }
   }
 }

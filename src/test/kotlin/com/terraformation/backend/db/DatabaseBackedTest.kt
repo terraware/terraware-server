@@ -138,6 +138,7 @@ import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
@@ -174,6 +175,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationMana
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectLandUseModelTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -202,6 +204,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.InternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseModelTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
@@ -653,6 +656,7 @@ abstract class DatabaseBackedTest {
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
+  protected val projectInternalUsersDao: ProjectInternalUsersDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectMetricsDao: ProjectMetricsDao by lazyDao()
   protected val projectOverallScoresDao: ProjectOverallScoresDao by lazyDao()
@@ -900,6 +904,26 @@ abstract class DatabaseBackedTest {
         )
 
     projectAcceleratorDetailsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults
+  }
+
+  protected fun insertProjectInternalUser(
+      row: ProjectInternalUsersRow = ProjectInternalUsersRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      userId: UserId = row.userId ?: inserted.userId,
+      role: ProjectInternalRole? = row.projectInternalRoleId,
+      roleName: String? = row.roleName,
+  ): ProjectInternalUsersRow {
+    val rowWithDefaults =
+        ProjectInternalUsersRow(
+            projectId = projectId,
+            userId = userId,
+            projectInternalRoleId = role,
+            roleName = roleName,
+        )
+
+    projectInternalUsersDao.insert(rowWithDefaults)
 
     return rowWithDefaults
   }

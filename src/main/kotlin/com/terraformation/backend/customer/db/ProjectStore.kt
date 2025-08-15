@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -14,9 +15,14 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -29,6 +35,7 @@ class ProjectStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val projectsDao: ProjectsDao,
+    private val projectInternalUsersDao: ProjectInternalUsersDao,
 ) {
   fun fetchOneById(projectId: ProjectId): ExistingProjectModel {
     requirePermissions { readProject(projectId) }
@@ -106,6 +113,47 @@ class ProjectStore(
         eventPublisher.publishEvent(ProjectRenamedEvent(projectId, existing.name, updated.name))
       }
     }
+  }
+
+  fun addInternalUser(
+      projectId: ProjectId,
+      userId: UserId,
+      role: ProjectInternalRole? = null,
+      roleName: String? = null
+  ) {
+    requirePermissions { addProjectInternalUser(projectId) }
+
+    val organizationId: OrganizationId =
+        dslContext
+            .select(PROJECTS.ORGANIZATION_ID)
+            .from(PROJECTS)
+            .where(PROJECTS.ID.eq(projectId))
+            .fetchOne(PROJECTS.ORGANIZATION_ID) ?: throw ProjectNotFoundException(projectId)
+
+    dslContext.transaction { _ ->
+      with(PROJECT_INTERNAL_USERS) {
+        dslContext
+            .insertInto(this)
+            .set(PROJECT_ID, projectId)
+            .set(USER_ID, userId)
+            .set(PROJECT_INTERNAL_ROLE_ID, role)
+            .set(ROLE_NAME, roleName)
+            .onConflict(PROJECT_ID, USER_ID)
+            .doUpdate()
+            .set(PROJECT_INTERNAL_ROLE_ID, role)
+            .set(ROLE_NAME, roleName)
+            .execute()
+      }
+
+      eventPublisher.publishEvent(
+          ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName))
+    }
+  }
+
+  fun fetchInternalUsers(projectId: ProjectId): List<ProjectInternalUsersRow> {
+    requirePermissions { readProject(projectId) }
+
+    return projectInternalUsersDao.fetchByProjectId(projectId)
   }
 
   /**
