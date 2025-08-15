@@ -150,7 +150,7 @@ val ENUM_TABLES =
                 EnumTable("plant_material_sourcing_methods"),
                 EnumTable(
                     "project_internal_roles",
-                    listOf("project_internal_roles\\.project_user_role_id")),
+                    listOf("project_internal_users\\.project_internal_role_id")),
                 EnumTable(
                     "regions",
                     listOf(
