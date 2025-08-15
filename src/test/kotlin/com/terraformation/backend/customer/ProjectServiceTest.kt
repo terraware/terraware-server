@@ -96,7 +96,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao,
         ),
-        ProjectStore(clock, dslContext, publisher, projectsDao, projectInternalUsersDao),
+        ProjectStore(
+            clock, dslContext, publisher, parentStore, projectsDao, projectInternalUsersDao),
         UserStore(
             clock,
             config,
@@ -160,13 +161,6 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
     insertOrganization()
     insertFacility()
-  }
-
-  @Test
-  fun `Role should be tf contact`() {
-    assertTrue { ProjectService.roleShouldBeTfContact(ProjectInternalRole.ProjectLead) }
-    assertTrue { ProjectService.roleShouldBeTfContact(ProjectInternalRole.RestorationLead) }
-    assertFalse { ProjectService.roleShouldBeTfContact(ProjectInternalRole.Consultant) }
   }
 
   @Nested

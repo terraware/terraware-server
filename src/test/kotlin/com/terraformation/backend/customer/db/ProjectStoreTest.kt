@@ -38,8 +38,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val store: ProjectStore by lazy {
-    ProjectStore(clock, dslContext, eventPublisher, projectsDao, projectInternalUsersDao)
+    ProjectStore(
+        clock, dslContext, eventPublisher, parentStore, projectsDao, projectInternalUsersDao)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -301,6 +303,14 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws exception if no project`() {
+      assertThrows<ProjectNotFoundException> {
+        store.addInternalUser(
+            ProjectId(Long.MAX_VALUE), user.userId, ProjectInternalRole.ProjectLead)
+      }
+    }
+
+    @Test
     fun `throws exception if role and roleName are specified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       assertThrows<DataIntegrityViolationException> {
@@ -383,6 +393,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no permission`() {
       deleteOrganizationUser()
       assertThrows<ProjectNotFoundException> { store.removeInternalUser(projectId, user.userId) }
+    }
+
+    @Test
+    fun `throws exception if no project`() {
+      assertThrows<ProjectNotFoundException> {
+        store.removeInternalUser(ProjectId(Long.MAX_VALUE), user.userId)
+      }
     }
 
     @Test
