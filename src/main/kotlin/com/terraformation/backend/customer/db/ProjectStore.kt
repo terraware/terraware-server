@@ -35,6 +35,7 @@ class ProjectStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val parentStore: ParentStore,
     private val projectsDao: ProjectsDao,
     private val projectInternalUsersDao: ProjectInternalUsersDao,
 ) {
@@ -124,7 +125,8 @@ class ProjectStore(
   ) {
     requirePermissions { updateProjectInternalUsers(projectId) }
 
-    val organizationId = fetchOrgIdByProjectId(projectId)
+    val organizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
 
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
@@ -149,7 +151,8 @@ class ProjectStore(
   fun removeInternalUser(projectId: ProjectId, userId: UserId) {
     requirePermissions { updateProjectInternalUsers(projectId) }
 
-    val organizationId = fetchOrgIdByProjectId(projectId)
+    val organizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
         val rowsDeleted =
@@ -215,13 +218,5 @@ class ProjectStore(
           ParticipantProjectAddedEvent(
               addedBy = currentUser().userId, participantId = participantId, projectId = projectId))
     }
-  }
-
-  private fun fetchOrgIdByProjectId(projectId: ProjectId): OrganizationId {
-    return dslContext
-        .select(PROJECTS.ORGANIZATION_ID)
-        .from(PROJECTS)
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne(PROJECTS.ORGANIZATION_ID) ?: throw ProjectNotFoundException(projectId)
   }
 }

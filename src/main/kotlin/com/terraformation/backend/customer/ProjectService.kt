@@ -23,16 +23,6 @@ class ProjectService(
     private val projectStore: ProjectStore,
     private val userStore: UserStore,
 ) {
-  companion object {
-    /** These ProjectInternalRoles should also become TF Contacts. */
-    private val TF_CONTACT_PROJECT_ROLES =
-        setOf(ProjectInternalRole.ProjectLead, ProjectInternalRole.RestorationLead)
-
-    fun roleShouldBeTfContact(role: ProjectInternalRole?): Boolean {
-      return role in TF_CONTACT_PROJECT_ROLES
-    }
-  }
-
   fun assignProject(
       projectId: ProjectId,
       accessionIds: Collection<AccessionId>,
@@ -54,7 +44,7 @@ class ProjectService(
   ) {
     val user = userStore.fetchOneById(userId)
     if (user.globalRoles.isEmpty()) {
-      throw IllegalStateException("Only global users can be added as project internal roles.")
+      throw IllegalStateException("User has no global roles.")
     }
 
     projectStore.addInternalUser(projectId, userId, role, roleName)

@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.model.ParticipantModel
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
@@ -26,12 +27,13 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val service: ParticipantService by lazy {
     ParticipantService(
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
-        ProjectStore(clock, dslContext, eventPublisher, projectsDao, projectInternalUsersDao))
+        ProjectStore(
+            clock, dslContext, eventPublisher, parentStore, projectsDao, projectInternalUsersDao))
   }
 
   @BeforeEach
