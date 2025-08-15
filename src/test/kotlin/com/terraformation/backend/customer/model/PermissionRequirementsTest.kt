@@ -320,6 +320,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateProjectInternalUsers() {
+    assertThrows<ProjectNotFoundException> { requirements.updateProjectInternalUsers(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.updateProjectInternalUsers(projectId) }
+
+    grant { user.canUpdateProjectInternalUsers(projectId) }
+    requirements.updateProjectInternalUsers(projectId)
+  }
+
+  @Test
   fun addTerraformationContact() =
       allow { addTerraformationContact(organizationId) } ifUser
           {

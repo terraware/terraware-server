@@ -1764,6 +1764,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateProjectInternalUsers(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectInternalUsers(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update internal users on project $projectId")
+      }
+    }
+  }
+
   fun updateProjectReports(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canUpdateProjectReports(projectId)) {

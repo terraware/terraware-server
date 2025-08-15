@@ -621,6 +621,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = defaultPermission
 
+  fun canUpdateProjectInternalUsers(projectId: ProjectId): Boolean = defaultPermission
+
   fun canUpdateProjectReports(projectId: ProjectId): Boolean = defaultPermission
 
   fun canUpdateProjectScores(projectId: ProjectId): Boolean = defaultPermission
