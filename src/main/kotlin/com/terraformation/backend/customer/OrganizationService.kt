@@ -185,7 +185,7 @@ class OrganizationService(
     val organizationId = event.organizationId
     val role = event.role
 
-    if (ProjectService.roleShouldBeTfContact(role)) {
+    if (role?.shouldBeTfContact() == true) {
       assignTerraformationContact(userId, organizationId)
     }
   }
