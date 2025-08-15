@@ -165,6 +165,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun addProjectInternalUser(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canAddProjectInternalUser(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to add internal user to project $projectId")
+      }
+    }
+  }
+
   fun addTerraformationContact(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canAddTerraformationContact(organizationId)) {
