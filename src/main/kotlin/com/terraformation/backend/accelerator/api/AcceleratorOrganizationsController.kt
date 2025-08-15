@@ -67,7 +67,7 @@ class AcceleratorOrganizationsController(
   }
 
   @Operation(
-      summary = "Assign a user as the Terraformation contact for an organization.",
+      summary = "Assign a user as a Terraformation contact for an organization.",
       description = "The user will be added to the organization if they are not already a member.")
   @PutMapping("/{organizationId}/tfContact")
   fun assignTerraformationContact(
