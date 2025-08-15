@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
@@ -21,6 +22,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundForEmailException
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
@@ -202,6 +204,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `event listeners are annotated correctly`() {
     assertIsEventListener<OrganizationAbandonedEvent>(service)
     assertIsEventListener<UserDeletionStartedEvent>(service)
+    assertIsEventListener<ProjectInternalUserAddedEvent>(service)
   }
 
   @Test
@@ -230,6 +233,40 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertTableEmpty(ORGANIZATIONS, "Scheduled job should have deleted organization")
 
     publisher.assertEventPublished(OrganizationDeletionStartedEvent(organizationId))
+  }
+
+  @Test
+  fun `ProjectInternalUserAddedEvent listener assigns tf contact when supposed to (and adds user to org)`() {
+    val organizationId = insertOrganization()
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    val userId = insertUser()
+    val projectId = insertProject()
+    val event =
+        ProjectInternalUserAddedEvent(
+            projectId, organizationId, userId, role = ProjectInternalRole.RestorationLead)
+    service.on(event)
+
+    val user =
+        organizationStore.fetchUser(
+            organizationId, userId) // would fail if user wasn't also added to org
+    assertEquals(Role.TerraformationContact, user.role, "Should have Terraformation Contact role")
+  }
+
+  @Test
+  fun `ProjectInternalUserAddedEvent listener does not assign tf contact when not supposed to`() {
+    val organizationId = insertOrganization()
+    val userId = insertUser()
+    insertOrganizationUser(userId = userId)
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    val projectId = insertProject()
+    val event =
+        ProjectInternalUserAddedEvent(
+            projectId, organizationId, userId, role = ProjectInternalRole.ClimateImpactLead)
+    service.on(event)
+
+    val user = organizationStore.fetchUser(organizationId, userId)
+    assertNotEquals(
+        Role.TerraformationContact, user.role, "Should not have Terraformation Contact role")
   }
 
   @Test

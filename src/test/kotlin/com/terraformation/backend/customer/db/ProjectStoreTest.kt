@@ -23,6 +23,7 @@ import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
 import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
@@ -403,8 +404,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `removes internal user with role`() {
+    fun `removes internal user with role, doesn't remove TF Contact`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.TerraformationContact)
       insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.ProjectLead)
 
       store.removeInternalUser(projectId, user.userId)
@@ -416,6 +419,17 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+
+      assertTableEquals(
+          OrganizationUsersRecord(
+              userId = user.userId,
+              organizationId = organizationId,
+              roleId = Role.TerraformationContact,
+              createdTime = clock.instant,
+              modifiedTime = clock.instant,
+              createdBy = user.userId,
+              modifiedBy = user.userId,
+          ))
     }
 
     @Test
