@@ -204,7 +204,9 @@ data class BatchWithdrawalPayload(
           readyQuantityWithdrawn = readyQuantityWithdrawn,
       )
 
-  val notReadyQuantityWithdrawn: Int // for backwards compatibility in response payloads
+  val notReadyQuantityWithdrawn:
+      Int? // for backwards compatibility in response payloads. This is optional so that request
+    // payloads don't require it
     get() = activeGrowthQuantityWithdrawn
 }
 
