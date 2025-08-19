@@ -1,3 +1,4 @@
+fdd5353b805 SW-7256 Add permissions check for addInternalUser (#3302)
 12e73c2170c SW-7256 Rename column from user to internal to match table (#3301)
 6fb2fcc5c1b Update dependency com.google.api-client:google-api-client to v2.8.1 (#3306)
 b1c8c778132 Update database dependencies (#3305)
