@@ -128,20 +128,20 @@ class ProjectsController(
     return SimpleSuccessResponsePayload()
   }
 
-  @Operation(summary = "Get all internal project users for a project.")
-  @GetMapping("/{id}/userRoles")
-  fun getUserRoles(@PathVariable id: ProjectId): ListProjectUserRolesResponsePayload {
+  @Operation(summary = "Get all internal users for a project.")
+  @GetMapping("/{id}/internalUsers")
+  fun getInternalUsers(@PathVariable id: ProjectId): ListProjectInternalUsersResponsePayload {
     val projectInternalUsers =
         projectStore.fetchInternalUsers(projectId = id).associateBy { it.userId }
     val users = userStore.fetchManyById(projectInternalUsers.keys.filterNotNull())
 
-    return ListProjectUserRolesResponsePayload(
-        users.map { ProjectUserRoleResponsePayload(it, projectInternalUsers[it.userId]!!) })
+    return ListProjectInternalUsersResponsePayload(
+        users.map { ProjectInternalUserResponsePayload(it, projectInternalUsers[it.userId]!!) })
   }
 
-  @Operation(summary = "Assign a global user as a specific role for a project.")
-  @PutMapping("/{id}/userRoles")
-  fun assignInternalRole(
+  @Operation(summary = "Assign a user with global roles with an internal role for a project.")
+  @PutMapping("/{id}/internalUsers")
+  fun assignInternalUser(
       @PathVariable id: ProjectId,
       @RequestBody payload: AssignProjectInternalUserRequestPayload
   ): SimpleSuccessResponsePayload {
@@ -151,11 +151,11 @@ class ProjectsController(
   }
 
   @Operation(
-      summary = "Remove a global user as an internal role for a project.",
+      summary = "Remove a user with global roles as an internal user for a project.",
       description =
           "Does not remove Terraformation Contact even if assigned role caused them to be added.")
-  @DeleteMapping("/{id}/userRoles/{userId}")
-  fun removeInternalRole(
+  @DeleteMapping("/{id}/internalUsers/{userId}")
+  fun removeInternalUser(
       @PathVariable id: ProjectId,
       @PathVariable userId: UserId,
   ): SimpleSuccessResponsePayload {
@@ -228,7 +228,7 @@ data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessRespo
 
 data class ListProjectsResponsePayload(val projects: List<ProjectPayload>) : SuccessResponsePayload
 
-data class ProjectUserRoleResponsePayload(
+data class ProjectInternalUserResponsePayload(
     val userId: UserId,
     val email: String,
     val firstName: String?,
@@ -249,5 +249,6 @@ data class ProjectUserRoleResponsePayload(
   )
 }
 
-data class ListProjectUserRolesResponsePayload(val users: List<ProjectUserRoleResponsePayload>) :
-    SuccessResponsePayload
+data class ListProjectInternalUsersResponsePayload(
+    val users: List<ProjectInternalUserResponsePayload>
+) : SuccessResponsePayload
