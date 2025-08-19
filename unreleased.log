@@ -1,3 +1,4 @@
+bd5335a4ee6 SW-7263 Include Used Up in accession summary stats (#3311)
 094b5d17226 SW-7265 Add Admin UI to Delete Org Users (#3307)
 ae31f170f28 SW-7256 Add endpoint for project internal users, and assign TF Contacts when applicable (#3304)
 4e180bef9d9 SW-7256 Store/Service updates for project internal users (#3303)
