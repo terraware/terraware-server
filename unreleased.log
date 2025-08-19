@@ -1,3 +1,4 @@
+ae31f170f28 SW-7256 Add endpoint for project internal users, and assign TF Contacts when applicable (#3304)
 4e180bef9d9 SW-7256 Store/Service updates for project internal users (#3303)
 fdd5353b805 SW-7256 Add permissions check for addInternalUser (#3302)
 12e73c2170c SW-7256 Rename column from user to internal to match table (#3301)
