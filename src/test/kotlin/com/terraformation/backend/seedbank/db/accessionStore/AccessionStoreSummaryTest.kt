@@ -52,6 +52,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             AccessionState.Drying to 2,
             AccessionState.InStorage to 3,
             AccessionState.Processing to 0,
+            AccessionState.UsedUp to 2,
         ),
         store.countByState(facilityId),
         "Counts for single facility")
@@ -63,6 +64,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             AccessionState.Drying to 2,
             AccessionState.InStorage to 3,
             AccessionState.Processing to 2,
+            AccessionState.UsedUp to 3,
         ),
         store.countByState(organizationId),
         "Counts for organization")

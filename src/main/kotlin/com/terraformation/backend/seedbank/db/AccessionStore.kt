@@ -899,21 +899,13 @@ class AccessionStore(
             .select(ACCESSIONS.STATE_ID, DSL.count())
             .from(ACCESSIONS)
             .where(condition)
-            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
             .groupBy(ACCESSIONS.STATE_ID)
 
-    val sql = query.getSQL(ParamType.INLINED)
-
-    val totals =
-        log.debugWithTiming("Accession state summary query: $sql") {
-          query.fetchMap(ACCESSIONS.STATE_ID, DSL.count())
-        }
+    val totals = query.fetchMap(ACCESSIONS.STATE_ID, DSL.count())
 
     // The query results won't include states with no accessions, but we want to return the full
     // list with counts of 0.
-    return AccessionState.activeValues
-        .filter { it.isV2Compatible }
-        .associateWith { totals[it] ?: 0 }
+    return AccessionState.entries.filter { it.isV2Compatible }.associateWith { totals[it] ?: 0 }
   }
 
   fun getSummaryStatistics(facilityId: FacilityId): AccessionSummaryStatistics {
