@@ -104,6 +104,8 @@ class AdminOrganizationsController(
       val user = userStore.fetchByEmail(email)
       if (user != null) {
         organizationStore.removeUser(organizationId, user.userId)
+        redirectAttributes.successMessage =
+            "User ${user.userId} removed from organization $organizationId"
       } else {
         redirectAttributes.failureMessage = "User $email does not exist"
       }

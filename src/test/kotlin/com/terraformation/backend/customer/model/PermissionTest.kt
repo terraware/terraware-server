@@ -1764,6 +1764,8 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        removeOrganizationSelf = true,
+        removeOrganizationUser = true,
         removeTerraformationContact = true,
     )
 
