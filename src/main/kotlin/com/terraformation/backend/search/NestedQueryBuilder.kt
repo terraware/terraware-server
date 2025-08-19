@@ -4,7 +4,6 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
-import kotlin.random.Random
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -1128,15 +1127,15 @@ class NestedQueryBuilder(
   }
 
   /**
-   * Returns a condition that filters search results based on a list of criteria.
+   * Returns a condition that filters search results based on [criteria].
    *
-   * Aliasing the table name can cause slow search results if used on high level subqueries. It
-   * should only be added to subqueries inside multisets, so [includeAlias] is false by default.
+   * If this is for a sublist filter, then fewer left joins are needed for the
+   * `joinWithSecondaryTable`. [isSublistFilter] controls this.
    */
   fun filterResults(
       rootPrefix: SearchFieldPrefix,
       criteria: SearchNode? = null,
-      includeAlias: Boolean = false,
+      isSublistFilter: Boolean = false,
   ): Condition {
     // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
     // the visibility check on the root table, but not on parent tables.
@@ -1149,12 +1148,15 @@ class NestedQueryBuilder(
 
     val primaryKey = rootTable.primaryKey
 
-    val random = Random.nextInt()
-    val alias = "${rootTable.fromTable.name}_${random}"
-    val fromTable = if (includeAlias) rootTable.fromTable.`as`(alias) else rootTable.fromTable
+    // the criteria for a sublist filter will already be in conditions instead of the secondary
+    // table joins since the conditions don't need the table joined
+    val secondaryTablesCriteria = if (isSublistFilter) NoConditionNode() else rootCriterion
 
     val subquery =
-        joinWithSecondaryTables(DSL.select(primaryKey).from(fromTable), rootPrefix, rootCriterion)
+        joinWithSecondaryTables(
+                DSL.select(primaryKey).from(rootTable.fromTable),
+                rootPrefix,
+                secondaryTablesCriteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
