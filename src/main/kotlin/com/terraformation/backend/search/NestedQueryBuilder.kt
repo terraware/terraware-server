@@ -4,7 +4,6 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
-import kotlin.random.Random
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -1143,14 +1142,9 @@ class NestedQueryBuilder(
 
     val primaryKey = rootTable.primaryKey
 
-    val random = Random.nextInt()
-    val alias = "${rootTable.fromTable.name}_${random}"
-
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(rootTable.fromTable.`as`(alias)),
-                rootPrefix,
-                rootCriterion)
+                DSL.select(primaryKey).from(rootTable.fromTable), rootPrefix, rootCriterion)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
