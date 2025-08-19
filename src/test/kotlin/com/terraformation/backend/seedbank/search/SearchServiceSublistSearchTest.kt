@@ -12,10 +12,8 @@ import com.terraformation.backend.search.SearchSortField
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-@Disabled("Disabled until aliases on subfilters works")
 internal class SearchServiceSublistSearchTest : SearchServiceTest() {
   val epochPlusOne: LocalDate = LocalDate.EPOCH.plusDays(1)
   val epochPlusTwo: LocalDate = LocalDate.EPOCH.plusDays(2)
