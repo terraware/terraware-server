@@ -117,7 +117,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "organizations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"organization_type_id":w -> "organization_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_internal_users":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_internal_users":"project_user_role_id":w -> "project_internal_roles":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_internal_users":"project_internal_role_id":w -> "project_internal_roles":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_internal_users":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"land_use_model_type_id":w -> "land_use_model_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];

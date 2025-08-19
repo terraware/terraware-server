@@ -915,13 +915,13 @@
 <text text-anchor="start" x="1505.5" y="-3060.32" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="1368.5,-3030.12 1368.5,-3052.12 1544.5,-3052.12 1544.5,-3030.12 1368.5,-3030.12"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1373.5" y="-3047.12"/>
-<text text-anchor="start" x="1400.5" y="-3038.32" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="1396.5" y="-3038.32" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="1368.5,-3008.12 1368.5,-3030.12 1544.5,-3030.12 1544.5,-3008.12 1368.5,-3008.12"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1373.5" y="-3025.12"/>
-<text text-anchor="start" x="1400.5" y="-3016.32" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
+<text text-anchor="start" x="1396.5" y="-3016.32" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
 <polygon fill="none" stroke="black" points="1368.5,-2986.12 1368.5,-3008.12 1544.5,-3008.12 1544.5,-2986.12 1368.5,-2986.12"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1373.5" y="-3003.12"/>
-<text text-anchor="start" x="1400.5" y="-2994.32" font-family="Helvetica,sans-Serif" font-size="11.00">project_user_role_id</text>
+<text text-anchor="start" x="1396.5" y="-2994.32" font-family="Helvetica,sans-Serif" font-size="11.00">project_internal_role_id</text>
 <polygon fill="none" stroke="black" points="1368.5,-2968.12 1368.5,-2986.12 1544.5,-2986.12 1544.5,-2968.12 1368.5,-2968.12"/>
 <text text-anchor="start" x="1371.5" y="-2974.32" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="1368.5,-2950.12 1368.5,-2968.12 1454.5,-2968.12 1454.5,-2950.12 1368.5,-2950.12"/>

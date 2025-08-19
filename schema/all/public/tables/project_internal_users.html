@@ -166,7 +166,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="project_user_role_id">project_user_role_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="project_internal_role_id">project_internal_role_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -179,7 +179,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="project_internal_users.project_user_role_id references project_internal_roles.id via project_internal_users_project_user_role_id_fkey"><a href='project_internal_roles.html'>project_internal_roles</a><span class='relatedKey'>.id</span></td>
+                                                <td title="project_internal_users.project_internal_role_id references project_internal_roles.id via project_internal_users_project_user_role_id_fkey"><a href='project_internal_roles.html'>project_internal_roles</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">project_internal_users_project_user_role_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -270,7 +270,7 @@
                                 <tbody>
                                 <tr>
                                     <td>project_internal_users_role_exclusive</td>
-                                    <td>((project_user_role_id IS NULL) &lt;&gt; (role_name IS NULL))</td>
+                                    <td>((project_internal_role_id IS NULL) &lt;&gt; (role_name IS NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>
