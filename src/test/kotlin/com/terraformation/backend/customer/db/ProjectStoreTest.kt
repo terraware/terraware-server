@@ -6,6 +6,8 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
+import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
@@ -17,14 +19,18 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
@@ -32,8 +38,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val store: ProjectStore by lazy {
-    ProjectStore(clock, dslContext, eventPublisher, projectsDao)
+    ProjectStore(
+        clock, dslContext, eventPublisher, parentStore, projectsDao, projectInternalUsersDao)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -281,6 +289,185 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<ProjectNameInUseException> {
         store.update(projectId2) { it.copy(name = "Existing name") }
       }
+    }
+  }
+
+  @Nested
+  inner class AddInternalUser {
+    @Test
+    fun `throws exception if no permission`() {
+      deleteOrganizationUser()
+      assertThrows<ProjectNotFoundException> {
+        store.addInternalUser(projectId, user.userId, ProjectInternalRole.ProjectLead)
+      }
+    }
+
+    @Test
+    fun `throws exception if no project`() {
+      assertThrows<ProjectNotFoundException> {
+        store.addInternalUser(
+            ProjectId(Long.MAX_VALUE), user.userId, ProjectInternalRole.ProjectLead)
+      }
+    }
+
+    @Test
+    fun `throws exception if role and roleName are specified`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      assertThrows<DataIntegrityViolationException> {
+        store.addInternalUser(projectId, user.userId, ProjectInternalRole.ProjectLead, "SomeRole")
+      }
+    }
+
+    @Test
+    fun `adds internal user with role`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUser() // other user doesn't get added
+
+      store.addInternalUser(projectId, user.userId, ProjectInternalRole.ProjectLead)
+
+      assertEquals(
+          listOf(ProjectInternalUsersRow(projectId, user.userId, ProjectInternalRole.ProjectLead)),
+          store.fetchInternalUsers(projectId),
+          "Should have added user to internal users")
+
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserAddedEvent(
+              projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead))
+    }
+
+    @Test
+    fun `adds internal user with roleName`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUser() // other user doesn't get added
+
+      store.addInternalUser(projectId, user.userId, roleName = "TheBestRole")
+
+      assertEquals(
+          listOf(ProjectInternalUsersRow(projectId, user.userId, roleName = "TheBestRole")),
+          store.fetchInternalUsers(projectId),
+          "Should have added user to internal users")
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserAddedEvent(
+              projectId, organizationId, user.userId, roleName = "TheBestRole"))
+    }
+
+    @Test
+    fun `updates role if called more than once`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      store.addInternalUser(projectId, user.userId, ProjectInternalRole.ProjectLead)
+      store.addInternalUser(projectId, user.userId, ProjectInternalRole.Consultant)
+
+      assertTableEquals(
+          ProjectInternalUsersRecord(
+              projectId = projectId,
+              userId = user.userId,
+              projectInternalRoleId = ProjectInternalRole.Consultant,
+          ))
+
+      store.addInternalUser(projectId, user.userId, roleName = "A Different Role")
+
+      assertTableEquals(
+          ProjectInternalUsersRecord(
+              projectId = projectId,
+              userId = user.userId,
+              projectInternalRoleId = null,
+              roleName = "A Different Role",
+          ))
+      eventPublisher.assertExactEventsPublished(
+          listOf(
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead),
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, role = ProjectInternalRole.Consultant),
+              ProjectInternalUserAddedEvent(
+                  projectId, organizationId, user.userId, roleName = "A Different Role"),
+          ),
+          "Should have published events in specific order")
+    }
+  }
+
+  @Nested
+  inner class RemoveInternalUser {
+    @Test
+    fun `throws exception if no permission`() {
+      deleteOrganizationUser()
+      assertThrows<ProjectNotFoundException> { store.removeInternalUser(projectId, user.userId) }
+    }
+
+    @Test
+    fun `throws exception if no project`() {
+      assertThrows<ProjectNotFoundException> {
+        store.removeInternalUser(ProjectId(Long.MAX_VALUE), user.userId)
+      }
+    }
+
+    @Test
+    fun `removes internal user with role`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.ProjectLead)
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should have no internal users")
+
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+    }
+
+    @Test
+    fun `removes internal user with roleName`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertProjectInternalUser(projectId = projectId, roleName = "TheBestRole")
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should have no internal users")
+      eventPublisher.assertEventPublished(
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+    }
+
+    @Test
+    fun `no event published if user wasn't already on project`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      store.removeInternalUser(projectId, user.userId)
+
+      assertEquals(
+          emptyList<ProjectInternalUsersRow>(),
+          store.fetchInternalUsers(projectId),
+          "Should still have no internal users")
+      eventPublisher.assertEventNotPublished<ProjectInternalUserRemovedEvent>()
+    }
+  }
+
+  @Nested
+  inner class FetchInternalUsers {
+    @Test
+    fun `throws exception if no permission`() {
+      deleteOrganizationUser()
+      assertThrows<ProjectNotFoundException> { store.fetchInternalUsers(projectId) }
+    }
+
+    @Test
+    fun `returns internal users`() {
+      insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.ProjectLead)
+      val userId2 = insertUser()
+      insertProjectInternalUser(roleName = "Rock Star")
+
+      assertEquals(
+          listOf(
+              ProjectInternalUsersRow(projectId, user.userId, ProjectInternalRole.ProjectLead),
+              ProjectInternalUsersRow(projectId, userId2, roleName = "Rock Star"),
+          ),
+          store.fetchInternalUsers(projectId),
+          "Should have 2 internal users")
     }
   }
 
