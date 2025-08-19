@@ -8,14 +8,18 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.ProjectService
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -39,6 +43,7 @@ class ProjectsController(
     private val projectCohortFetcher: ProjectCohortFetcher,
     private val projectService: ProjectService,
     private val projectStore: ProjectStore,
+    private val userStore: UserStore,
 ) {
   @GetMapping
   @Operation(summary = "Lists accessible projects.")
@@ -122,6 +127,42 @@ class ProjectsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @Operation(summary = "Get all internal users for a project.")
+  @GetMapping("/{id}/internalUsers")
+  fun getInternalUsers(@PathVariable id: ProjectId): ListProjectInternalUsersResponsePayload {
+    val projectInternalUsers =
+        projectStore.fetchInternalUsers(projectId = id).associateBy { it.userId }
+    val users = userStore.fetchManyById(projectInternalUsers.keys.filterNotNull())
+
+    return ListProjectInternalUsersResponsePayload(
+        users.map { ProjectInternalUserResponsePayload(it, projectInternalUsers[it.userId]!!) })
+  }
+
+  @Operation(summary = "Assign a user with global roles with an internal role for a project.")
+  @PutMapping("/{id}/internalUsers")
+  fun assignInternalUser(
+      @PathVariable id: ProjectId,
+      @RequestBody payload: AssignProjectInternalUserRequestPayload
+  ): SimpleSuccessResponsePayload {
+    projectService.addInternalUserRole(id, payload.userId, payload.role, payload.roleName)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(
+      summary = "Remove a user with global roles as an internal user for a project.",
+      description =
+          "Does not remove Terraformation Contact even if assigned role caused them to be added.")
+  @DeleteMapping("/{id}/internalUsers/{userId}")
+  fun removeInternalUser(
+      @PathVariable id: ProjectId,
+      @PathVariable userId: UserId,
+  ): SimpleSuccessResponsePayload {
+    projectStore.removeInternalUser(id, userId)
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -162,6 +203,12 @@ data class AssignProjectRequestPayload(
     val plantingSiteIds: List<PlantingSiteId>?,
 )
 
+data class AssignProjectInternalUserRequestPayload(
+    val userId: UserId,
+    val role: ProjectInternalRole? = null,
+    val roleName: String? = null
+)
+
 data class CreateProjectRequestPayload(
     val description: String?,
     val name: String,
@@ -180,3 +227,28 @@ data class UpdateProjectRequestPayload(
 data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessResponsePayload
 
 data class ListProjectsResponsePayload(val projects: List<ProjectPayload>) : SuccessResponsePayload
+
+data class ProjectInternalUserResponsePayload(
+    val userId: UserId,
+    val email: String,
+    val firstName: String?,
+    val lastName: String?,
+    val role: ProjectInternalRole? = null,
+    val roleName: String? = null
+) {
+  constructor(
+      user: TerrawareUser,
+      projectInternalUser: ProjectInternalUsersRow
+  ) : this(
+      userId = user.userId,
+      email = user.email,
+      firstName = user.firstName,
+      lastName = user.lastName,
+      role = projectInternalUser.projectInternalRoleId,
+      roleName = projectInternalUser.roleName,
+  )
+}
+
+data class ListProjectInternalUsersResponsePayload(
+    val users: List<ProjectInternalUserResponsePayload>
+) : SuccessResponsePayload
