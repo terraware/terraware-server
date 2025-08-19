@@ -94,5 +94,28 @@ class AdminOrganizationsController(
     return redirectToAdminHome()
   }
 
+  @PostMapping("/removeOrganizationUser")
+  fun removeOrganizationUser(
+      @RequestParam organizationId: OrganizationId,
+      @NotBlank @RequestParam email: String,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      val user = userStore.fetchByEmail(email)
+      if (user != null) {
+        organizationStore.removeUser(organizationId, user.userId)
+        redirectAttributes.successMessage =
+            "User ${user.userId} removed from organization $organizationId"
+      } else {
+        redirectAttributes.failureMessage = "User $email does not exist"
+      }
+    } catch (e: Exception) {
+      log.warn("Failed to remove user from organization", e)
+      redirectAttributes.failureMessage = "Removing user failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
   private fun redirectToAdminHome() = "redirect:/admin/"
 }

@@ -543,7 +543,8 @@ data class IndividualUser(
   override fun canRegenerateAllDeviceManagerTokens() = isSuperAdmin()
 
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
-    return isMember(organizationId) && (userId == this.userId || isAdminOrHigher(organizationId))
+    return isSuperAdmin() ||
+        (isMember(organizationId) && (userId == this.userId || isAdminOrHigher(organizationId)))
   }
 
   override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isTFExpertOrHigher()

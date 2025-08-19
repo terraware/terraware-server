@@ -149,6 +149,22 @@
         </form>
     </th:block>
 
+    <th:block th:if="${canRemoveOrganizationUser}">
+        <h2>Remove Organization User</h2>
+
+        <form method="POST" action="/admin/removeOrganizationUser">
+            <label for="removeOrgUserEmail">Email (user must already exist)</label>
+            <input id="removeOrgUserEmail" type="email" name="email" required/>
+            <label for="removeOrgUserOrganizationId">Organization</label>
+            <select id="removeOrgUserOrganizationId" name="organizationId">
+                <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
+                        th:text="|${organization.name} (${organization.id})|">
+                    My Org (123)
+                </option>
+            </select>
+            <input type="submit" value="Remove User from Org"/>
+        </form>
+    </th:block>
 
     <th:block th:if="${canDeleteUsers}">
         <h2>Delete User</h2>
