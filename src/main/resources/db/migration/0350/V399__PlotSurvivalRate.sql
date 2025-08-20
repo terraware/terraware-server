@@ -1,16 +1,7 @@
-CREATE PROCEDURE add_survival_rate_column(table_name TEXT) AS $$
-    BEGIN
-        EXECUTE 'ALTER TABLE tracking.' || table_name || '
-                ADD COLUMN survival_rate INTEGER';
-    END;
-$$ LANGUAGE plpgsql;
-
-CALL add_survival_rate_column('observed_plot_species_totals');
-CALL add_survival_rate_column('observed_subzone_species_totals');
-CALL add_survival_rate_column('observed_zone_species_totals');
-CALL add_survival_rate_column('observed_site_species_totals');
-
-DROP PROCEDURE add_survival_rate_column;
+ALTER TABLE tracking.observed_plot_species_totals    ADD COLUMN survival_rate INTEGER;
+ALTER TABLE tracking.observed_subzone_species_totals ADD COLUMN survival_rate INTEGER;
+ALTER TABLE tracking.observed_zone_species_totals    ADD COLUMN survival_rate INTEGER;
+ALTER TABLE tracking.observed_site_species_totals    ADD COLUMN survival_rate INTEGER;
 
 CREATE TABLE tracking.t0_plot
 (
@@ -26,8 +17,12 @@ CREATE TABLE tracking.t0_plot
         (observation_id IS NOT NULL AND estimated_planting_density IS NULL AND species_id IS NULL)
     ),
 
-    CONSTRAINT unique_plot_observation UNIQUE (monitoring_plot_id, observation_id),
-
     CONSTRAINT unique_plot_species UNIQUE (monitoring_plot_id, species_id)
-
 );
+
+CREATE UNIQUE INDEX ON tracking.t0_plot (monitoring_plot_id)
+WHERE observation_id IS NOT NULL;
+
+CREATE INDEX ON tracking.t0_plot (monitoring_plot_id);
+CREATE INDEX ON tracking.t0_plot (observation_id);
+CREATE INDEX ON tracking.t0_plot (species_id);
