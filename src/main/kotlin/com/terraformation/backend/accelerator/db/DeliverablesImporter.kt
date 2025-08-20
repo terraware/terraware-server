@@ -117,7 +117,8 @@ class DeliverablesImporter(
                   val variable = variableStore.fetchByStableId(StableId(stableId))
                   if (variable == null) {
                     addError(
-                        "Deliverable $deliverableId references variable $stableId which doesn't exist")
+                        "Deliverable $deliverableId references variable $stableId which doesn't exist"
+                    )
                   }
                   variable
                 }
@@ -141,7 +142,8 @@ class DeliverablesImporter(
         if (deliverableType == null) {
           if (values[COLUMN_DELIVERABLE_TYPE] != null) {
             addError(
-                "Category \"${values[COLUMN_DELIVERABLE_TYPE]}\" invalid. Valid categories: $validDeliverableTypes")
+                "Category \"${values[COLUMN_DELIVERABLE_TYPE]}\" invalid. Valid categories: $validDeliverableTypes"
+            )
           } else {
             addError("Missing deliverable type.")
           }
@@ -158,12 +160,14 @@ class DeliverablesImporter(
         } else if (moduleId !in validModuleIds) {
           addError(
               "Unknown module ID $moduleId; if this is a new module, upload the revised module " +
-                  "list first and try again")
+                  "list first and try again"
+          )
         }
         if (category == null) {
           if (values[COLUMN_CATEGORY] != null) {
             addError(
-                "Category \"${values[COLUMN_CATEGORY]}\" invalid. Valid categories: $validDeliverableCategories")
+                "Category \"${values[COLUMN_CATEGORY]}\" invalid. Valid categories: $validDeliverableCategories"
+            )
           } else {
             addError("Missing category.")
           }
@@ -172,12 +176,14 @@ class DeliverablesImporter(
           addError("Missing deliverable name")
         }
 
-        if (deliverableId != null &&
-            deliverableType != null &&
-            moduleId != null &&
-            moduleId in validModuleIds &&
-            category != null &&
-            name != null) {
+        if (
+            deliverableId != null &&
+                deliverableType != null &&
+                moduleId != null &&
+                moduleId in validModuleIds &&
+                category != null &&
+                name != null
+        ) {
           with(DELIVERABLES) {
             dslContext
                 .insertInto(DELIVERABLES)
@@ -252,7 +258,8 @@ class DeliverablesImporter(
       if (leftOverNegativePositions.isNotEmpty()) {
         throw CsvImportFailedException(
             emptyList(),
-            "Deleting deliverables isn't supported yet. Missing IDs: $leftOverNegativePositions")
+            "Deleting deliverables isn't supported yet. Missing IDs: $leftOverNegativePositions",
+        )
       }
     }
 

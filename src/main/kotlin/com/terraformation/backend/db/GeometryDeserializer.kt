@@ -63,7 +63,8 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
         throw JsonParseException(
             jp,
             "Expected geometry type ${subclass.simpleName}, was ${geom.geometryType}",
-            jp.currentLocation())
+            jp.currentLocation(),
+        )
       }
     }
   }

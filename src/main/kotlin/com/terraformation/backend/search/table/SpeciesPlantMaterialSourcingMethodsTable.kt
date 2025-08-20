@@ -17,7 +17,9 @@ class SpeciesPlantMaterialSourcingMethodsTable(private val tables: SearchTables)
     with(tables) {
       listOf(
           species.asSingleValueSublist(
-              "species", SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID)),
+              "species",
+              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID),
+          ),
       )
     }
   }
@@ -26,7 +28,8 @@ class SpeciesPlantMaterialSourcingMethodsTable(private val tables: SearchTables)
       listOf(
           enumField(
               "plantMaterialSourcingMethod",
-              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID),
+              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
+          ),
       )
 
   override val inheritsVisibilityFrom: SearchTable

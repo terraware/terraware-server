@@ -31,7 +31,8 @@ internal class ImageUtilsTest {
         {
           SizedInputStream(
               ByteArrayInputStream(ImageUtilsTest.photoData),
-              ImageUtilsTest.photoData.size.toLong())
+              ImageUtilsTest.photoData.size.toLong(),
+          )
         }
   }
 

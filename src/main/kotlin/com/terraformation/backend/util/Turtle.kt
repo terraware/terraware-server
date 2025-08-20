@@ -123,7 +123,9 @@ class Turtle(
 
   private fun getCoordinate(): Coordinate {
     return Coordinate(
-        calculator.startingPosition.getOrdinate(0), calculator.startingPosition.getOrdinate(1))
+        calculator.startingPosition.getOrdinate(0),
+        calculator.startingPosition.getOrdinate(1),
+    )
   }
 
   private fun move(azimuth: Double, meters: Number) {

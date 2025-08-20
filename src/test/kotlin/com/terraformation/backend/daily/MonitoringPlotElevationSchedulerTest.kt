@@ -20,7 +20,11 @@ class MonitoringPlotElevationSchedulerTest {
 
   val scheduler: MonitoringPlotElevationScheduler by lazy {
     MonitoringPlotElevationScheduler(
-        dummyTerrawareServerConfig(), mapboxService, plantingSiteStore, SystemUser(mockk()))
+        dummyTerrawareServerConfig(),
+        mapboxService,
+        plantingSiteStore,
+        SystemUser(mockk()),
+    )
   }
 
   @BeforeEach
@@ -79,7 +83,8 @@ class MonitoringPlotElevationSchedulerTest {
               MonitoringPlotId(1) to BigDecimal(1.5),
               MonitoringPlotId(2) to BigDecimal(2.5),
               MonitoringPlotId(3) to BigDecimal(3.5),
-          ))
+          )
+      )
     }
   }
 }

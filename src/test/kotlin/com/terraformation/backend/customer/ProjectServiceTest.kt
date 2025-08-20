@@ -97,7 +97,13 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             plantingZonesDao,
         ),
         ProjectStore(
-            clock, dslContext, publisher, parentStore, projectsDao, projectInternalUsersDao),
+            clock,
+            dslContext,
+            publisher,
+            parentStore,
+            projectsDao,
+            projectInternalUsersDao,
+        ),
         UserStore(
             clock,
             config,
@@ -136,7 +142,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     insertBatch(
         facilityId = otherOrgNurseryFacilityId,
         organizationId = otherOrganizationId,
-        speciesId = otherOrgSpeciesId)
+        speciesId = otherOrgSpeciesId,
+    )
   }
   private val otherOrgNurseryFacilityId by lazy {
     insertFacility(type = FacilityType.Nursery, organizationId = otherOrganizationId)
@@ -175,7 +182,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
           projectId,
           listOf(accessionId1, accessionId2),
           listOf(batchId1, batchId2),
-          listOf(plantingSiteId1, plantingSiteId2))
+          listOf(plantingSiteId1, plantingSiteId2),
+      )
 
       assertEquals(
           setOf(
@@ -184,7 +192,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
               nonSelectedAccessionId to null,
           ),
           accessionsDao.findAll().map { it.id to it.projectId }.toSet(),
-          "Accession projects")
+          "Accession projects",
+      )
 
       assertEquals(
           setOf(
@@ -193,7 +202,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
               nonSelectedBatchId to null,
           ),
           batchesDao.findAll().map { it.id to it.projectId }.toSet(),
-          "Batch projects")
+          "Batch projects",
+      )
 
       assertEquals(
           setOf(
@@ -202,7 +212,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
               nonSelectedPlantingSiteId to null,
           ),
           plantingSitesDao.findAll().map { it.id to it.projectId }.toSet(),
-          "Planting site projects")
+          "Planting site projects",
+      )
     }
 
     @Test
@@ -227,7 +238,11 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if accession and project are from different organizations`() {
       assertThrows<ProjectInDifferentOrganizationException> {
         service.assignProject(
-            projectId, listOf(accessionId1, otherOrgAccessionId), emptyList(), emptyList())
+            projectId,
+            listOf(accessionId1, otherOrgAccessionId),
+            emptyList(),
+            emptyList(),
+        )
       }
     }
 
@@ -244,7 +259,11 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if batch and project are from different organizations`() {
       assertThrows<ProjectInDifferentOrganizationException> {
         service.assignProject(
-            projectId, emptyList(), listOf(batchId1, otherOrgBatchId), emptyList())
+            projectId,
+            emptyList(),
+            listOf(batchId1, otherOrgBatchId),
+            emptyList(),
+        )
       }
     }
 
@@ -261,7 +280,11 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if planting site and project are from different organizations`() {
       assertThrows<ProjectInDifferentOrganizationException> {
         service.assignProject(
-            projectId, emptyList(), emptyList(), listOf(plantingSiteId1, otherOrgPlantingSiteId))
+            projectId,
+            emptyList(),
+            emptyList(),
+            listOf(plantingSiteId1, otherOrgPlantingSiteId),
+        )
       }
     }
   }
@@ -287,7 +310,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               userId = userId,
               projectInternalRoleId = ProjectInternalRole.GISLead,
-          ))
+          )
+      )
     }
   }
 }

@@ -54,8 +54,10 @@ data class WithdrawalModel<ID : WithdrawalId?>(
       throw IllegalArgumentException("Withdrawals must come from at least one batch")
     }
 
-    if (undoesWithdrawalId != null && purpose != WithdrawalPurpose.Undo ||
-        undoesWithdrawalId == null && purpose == WithdrawalPurpose.Undo) {
+    if (
+        undoesWithdrawalId != null && purpose != WithdrawalPurpose.Undo ||
+            undoesWithdrawalId == null && purpose == WithdrawalPurpose.Undo
+    ) {
       throw IllegalArgumentException("Must specify original withdrawal ID if purpose is Undo")
     }
   }
@@ -79,7 +81,7 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
 
 fun WithdrawalsRow.toModel(
     batchWithdrawals: List<BatchWithdrawalsRow>,
-    undoneByWithdrawalId: WithdrawalId? = null
+    undoneByWithdrawalId: WithdrawalId? = null,
 ): ExistingWithdrawalModel =
     ExistingWithdrawalModel(
         batchWithdrawals = batchWithdrawals.map { it.toModel() },

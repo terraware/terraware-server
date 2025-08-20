@@ -95,7 +95,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 speciesName = "Species to merge",
                 statusId = RecordedPlantStatus.Live,
             ),
-        ))
+        )
+    )
   }
 
   @Test
@@ -117,18 +118,22 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 certaintyId = RecordedSpeciesCertainty.Known,
                 gpsCoordinates = gpsCoordinates,
                 speciesId = speciesId,
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Dead),
-        ))
+                statusId = RecordedPlantStatus.Dead,
+            ),
+        ),
+    )
 
     clock.instant = Instant.ofEpochSecond(1)
 
@@ -147,18 +152,22 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 certaintyId = RecordedSpeciesCertainty.Known,
                 gpsCoordinates = gpsCoordinates,
                 speciesId = speciesId,
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Dead),
-        ))
+                statusId = RecordedPlantStatus.Dead,
+            ),
+        ),
+    )
 
     val expectedPlotsBeforeMerge =
         listOf(
@@ -267,18 +276,22 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 certaintyId = RecordedSpeciesCertainty.Known,
                 gpsCoordinates = gpsCoordinates,
                 speciesId = speciesId,
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Live),
+                statusId = RecordedPlantStatus.Live,
+            ),
             RecordedPlantsRow(
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = gpsCoordinates,
                 speciesName = "Merge",
-                statusId = RecordedPlantStatus.Dead),
-        ))
+                statusId = RecordedPlantStatus.Dead,
+            ),
+        ),
+    )
 
     clock.instant = Instant.ofEpochSecond(1)
 
@@ -355,14 +368,22 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 1, speciesId = speciesId1),
+                                        abundancePercent = 1,
+                                        speciesId = speciesId1,
+                                    ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 2, speciesId = speciesId2),
+                                        abundancePercent = 2,
+                                        speciesId = speciesId2,
+                                    ),
                                     // This will be merged with the speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 4, speciesName = "Other 1"),
+                                        abundancePercent = 4,
+                                        speciesName = "Other 1",
+                                    ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 8, speciesName = "Other 2"),
+                                        abundancePercent = 8,
+                                        speciesName = "Other 2",
+                                    ),
                                 ),
                         ),
                     ObservationPlotPosition.NorthwestCorner to
@@ -370,10 +391,14 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 16, speciesId = speciesId1),
+                                        abundancePercent = 16,
+                                        speciesId = speciesId1,
+                                    ),
                                     // This will be merged with the speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 32, speciesName = "Other 1"),
+                                        abundancePercent = 32,
+                                        speciesName = "Other 1",
+                                    ),
                                 ),
                         ),
                     ObservationPlotPosition.SoutheastCorner to
@@ -381,9 +406,13 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 51, speciesId = speciesId1),
+                                        abundancePercent = 51,
+                                        speciesId = speciesId1,
+                                    ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 52, speciesName = "Other 2"),
+                                        abundancePercent = 52,
+                                        speciesName = "Other 2",
+                                    ),
                                 ),
                         ),
                     ObservationPlotPosition.SouthwestCorner to
@@ -392,7 +421,9 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                                 setOf(
                                     // This should turn into a speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 53, speciesName = "Other 1"),
+                                        abundancePercent = 53,
+                                        speciesName = "Other 1",
+                                    ),
                                 ),
                         ),
                 ),
@@ -401,13 +432,25 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             species =
                 setOf(
                     BiomassSpeciesModel(
-                        isInvasive = false, isThreatened = true, speciesId = speciesId1),
+                        isInvasive = false,
+                        isThreatened = true,
+                        speciesId = speciesId1,
+                    ),
                     BiomassSpeciesModel(
-                        isInvasive = false, isThreatened = true, speciesId = speciesId2),
+                        isInvasive = false,
+                        isThreatened = true,
+                        speciesId = speciesId2,
+                    ),
                     BiomassSpeciesModel(
-                        isInvasive = true, isThreatened = false, scientificName = "Other 1"),
+                        isInvasive = true,
+                        isThreatened = false,
+                        scientificName = "Other 1",
+                    ),
                     BiomassSpeciesModel(
-                        isInvasive = false, isThreatened = false, scientificName = "Other 2"),
+                        isInvasive = false,
+                        isThreatened = false,
+                        scientificName = "Other 2",
+                    ),
                 ),
             plotId = null,
             trees =
@@ -460,7 +503,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                         treeGrowthForm = TreeGrowthForm.Tree,
                     ),
                 ),
-        ))
+        ),
+    )
 
     val recordedTreesBeforeMerge = dslContext.fetch(RECORDED_TREES)
 
@@ -481,7 +525,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           } else {
             record
           }
-        })
+        }
+    )
 
     assertTableEquals(
         setOf(
@@ -498,20 +543,32 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             quadratSpeciesRecord(ObservationPlotPosition.SoutheastCorner, biomassOtherId2, 52),
             // This started out as an "Other 1" entry.
             quadratSpeciesRecord(ObservationPlotPosition.SouthwestCorner, biomassSpeciesId1, 53),
-        ))
+        )
+    )
 
     assertTableEquals(
         setOf(
             // In the original data, "Species 1" is invasive and "Other 1" is threatened.
             observationSpeciesRecord(
-                biomassSpeciesId1, speciesId1, isInvasive = true, isThreatened = true),
+                biomassSpeciesId1,
+                speciesId1,
+                isInvasive = true,
+                isThreatened = true,
+            ),
             observationSpeciesRecord(
-                biomassSpeciesId2, speciesId2, isInvasive = false, isThreatened = true),
+                biomassSpeciesId2,
+                speciesId2,
+                isInvasive = false,
+                isThreatened = true,
+            ),
             observationSpeciesRecord(
                 biomassOtherId2,
                 speciesName = "Other 2",
                 isInvasive = false,
-                isThreatened = false)))
+                isThreatened = false,
+            ),
+        )
+    )
   }
 
   @Test
@@ -536,13 +593,22 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 1, speciesName = "Other")))),
+                                        abundancePercent = 1,
+                                        speciesName = "Other",
+                                    )
+                                )
+                        )
+                ),
             smallTreeCountRange = 1 to 20,
             soilAssessment = "Dirty",
             species =
                 setOf(
                     BiomassSpeciesModel(
-                        isInvasive = true, isThreatened = false, scientificName = "Other")),
+                        isInvasive = true,
+                        isThreatened = false,
+                        scientificName = "Other",
+                    )
+                ),
             plotId = null,
             trees =
                 listOf(
@@ -556,7 +622,11 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                         speciesName = "Other",
                         treeNumber = 1,
                         trunkNumber = 1,
-                        treeGrowthForm = TreeGrowthForm.Tree))))
+                        treeGrowthForm = TreeGrowthForm.Tree,
+                    )
+                ),
+        ),
+    )
 
     val quadratSpeciesBeforeMerge = dslContext.fetch(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
     val recordedTreesBeforeMerge = dslContext.fetch(RECORDED_TREES)
@@ -570,7 +640,9 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             scientificName = null,
-            speciesId = speciesId))
+            speciesId = speciesId,
+        )
+    )
 
     // Other tables should be unmodified because we updated the biomass species in place.
     assertTableEquals(quadratSpeciesBeforeMerge)
@@ -627,7 +699,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           totalExisting = totalExisting,
           mortalityRate = mortalityRate,
           cumulativeDead = cumulativeDead,
-          permanentLive = permanentLive)
+          permanentLive = permanentLive,
+      )
 
   private fun ObservedPlotSpeciesTotalsRecord.toSite(
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId
@@ -643,22 +716,28 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           totalExisting = totalExisting,
           mortalityRate = mortalityRate,
           cumulativeDead = cumulativeDead,
-          permanentLive = permanentLive)
+          permanentLive = permanentLive,
+      )
 
   private fun quadratSpeciesRecord(
       position: ObservationPlotPosition,
       biomassSpeciesId: BiomassSpeciesId,
-      abundancePercent: Int
+      abundancePercent: Int,
   ) =
       ObservationBiomassQuadratSpeciesRecord(
-          observationId, monitoringPlotId, position, biomassSpeciesId, abundancePercent)
+          observationId,
+          monitoringPlotId,
+          position,
+          biomassSpeciesId,
+          abundancePercent,
+      )
 
   private fun observationSpeciesRecord(
       id: BiomassSpeciesId,
       speciesId: SpeciesId? = null,
       speciesName: String? = null,
       isInvasive: Boolean = false,
-      isThreatened: Boolean = false
+      isThreatened: Boolean = false,
   ) =
       ObservationBiomassSpeciesRecord(
           id = id,

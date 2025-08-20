@@ -46,7 +46,8 @@ class ProjectAcceleratorDetailsController(
   fun listProjectAcceleratorDetails(): ListProjectAcceleratorDetailsResponsePayload {
     val models = projectAcceleratorDetailsService.fetchAllParticipantProjectDetails()
     return ListProjectAcceleratorDetailsResponsePayload(
-        models.map { ProjectAcceleratorDetailsPayload(it) })
+        models.map { ProjectAcceleratorDetailsPayload(it) }
+    )
   }
 
   @ApiResponse200
@@ -69,7 +70,7 @@ class ProjectAcceleratorDetailsController(
   @PutMapping("/{projectId}")
   fun updateProjectAcceleratorDetails(
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: UpdateProjectAcceleratorDetailsRequestPayload
+      @RequestBody payload: UpdateProjectAcceleratorDetailsRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectAcceleratorDetailsService.update(projectId, payload::applyTo)
 
@@ -210,7 +211,8 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     @Schema(
         description =
             "Path on Dropbox to use for sensitive document storage. Ignored if the user does not " +
-                "have permission to update project document settings.")
+                "have permission to update project document settings."
+    )
     val dropboxFolderPath: String?,
     val failureRisk: String?,
     val gisReportsLink: URI? = null,
@@ -218,7 +220,8 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     @Schema(
         description =
             "URL of Google Drive folder to use for non-sensitive document storage. Ignored if " +
-                "the user does not have permission to update project document settings.")
+                "the user does not have permission to update project document settings."
+    )
     val googleFolderUrl: URI?,
     val hubSpotUrl: URI?,
     val investmentThesis: String?,

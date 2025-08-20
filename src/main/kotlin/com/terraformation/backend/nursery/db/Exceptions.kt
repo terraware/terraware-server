@@ -21,18 +21,20 @@ class BatchStaleException(val batchId: BatchId, val requestedVersion: Int) :
 
 class CrossOrganizationNurseryTransferNotAllowedException(
     val facilityId: FacilityId,
-    val destinationFacilityId: FacilityId
+    val destinationFacilityId: FacilityId,
 ) :
     MismatchedStateException(
         "Cannot transfer from facility $facilityId to facility $destinationFacilityId because " +
-            "they are in different organizations")
+            "they are in different organizations"
+    )
 
 class UndoOfNurseryTransferNotAllowedException(val withdrawalId: WithdrawalId) :
     MismatchedStateException("Cannot undo nursery transfer withdrawal $withdrawalId")
 
 class UndoOfUndoNotAllowedException(val withdrawalId: WithdrawalId) :
     MismatchedStateException(
-        "Cannot undo withdrawal $withdrawalId that was an undo of another withdrawal")
+        "Cannot undo withdrawal $withdrawalId that was an undo of another withdrawal"
+    )
 
 class WithdrawalAlreadyUndoneException(val withdrawalId: WithdrawalId) :
     MismatchedStateException("Withdrawal $withdrawalId has already been undone")

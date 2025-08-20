@@ -46,7 +46,7 @@ data class UploadModel(
 ) {
   constructor(
       row: UploadsRow,
-      problemRows: List<UploadProblemsRow>
+      problemRows: List<UploadProblemsRow>,
   ) : this(
       contentType =
           row.contentType ?: throw IllegalArgumentException("Content type must be non-null"),

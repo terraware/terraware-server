@@ -55,7 +55,9 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     return DSL.or(
         listOfNotNull(
             if (enumInstances.isNotEmpty()) databaseField.`in`(enumInstances) else null,
-            if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+            if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+        )
+    )
   }
 
   /**

@@ -99,7 +99,10 @@ internal class LiveBalenaClientExternalTest {
 
     every { config.balena } returns
         TerrawareServerConfig.BalenaConfig(
-            apiKey = apiKey, enabled = true, fleetIds = listOf(fleetId))
+            apiKey = apiKey,
+            enabled = true,
+            fleetIds = listOf(fleetId),
+        )
   }
 
   @AfterAll
@@ -107,13 +110,17 @@ internal class LiveBalenaClientExternalTest {
     if (createdDevice) {
       log.info("Deleting device $deviceId")
       client.sendRequest<Unit>(
-          "${LiveBalenaClient.DEVICE_PATH}($deviceId)", method = HttpMethod.Delete)
+          "${LiveBalenaClient.DEVICE_PATH}($deviceId)",
+          method = HttpMethod.Delete,
+      )
     }
 
     if (createdFleet && fleetId > -1) {
       log.info("Deleting fleet $fleetId")
       client.sendRequest<Unit>(
-          "${LiveBalenaClient.FLEET_PATH}($fleetId)", method = HttpMethod.Delete)
+          "${LiveBalenaClient.FLEET_PATH}($fleetId)",
+          method = HttpMethod.Delete,
+      )
       fleetId = -1
     }
   }
@@ -182,11 +189,13 @@ internal class LiveBalenaClientExternalTest {
     assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
-        "Facility ID after initial configuration")
+        "Facility ID after initial configuration",
+    )
     assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
-        "Refresh token after initial configuration")
+        "Refresh token after initial configuration",
+    )
 
     assertThrows<BalenaVariableExistsException> {
       client.configureDeviceManager(deviceId, FacilityId(2), "new_token")
@@ -195,11 +204,13 @@ internal class LiveBalenaClientExternalTest {
     assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
-        "Facility ID after duplicate configuration attempt")
+        "Facility ID after duplicate configuration attempt",
+    )
     assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
-        "Refresh token after duplicate configuration attempt")
+        "Refresh token after duplicate configuration attempt",
+    )
   }
 
   @Test
@@ -212,22 +223,26 @@ internal class LiveBalenaClientExternalTest {
     assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
-        "Facility ID after initial configuration")
+        "Facility ID after initial configuration",
+    )
     assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
-        "Refresh token after initial configuration")
+        "Refresh token after initial configuration",
+    )
 
     client.configureDeviceManager(deviceId, FacilityId(2), "new_token", true)
 
     assertEquals(
         "2",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
-        "Facility ID after duplicate configuration attempt")
+        "Facility ID after duplicate configuration attempt",
+    )
     assertEquals(
         "new_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
-        "Refresh token after duplicate configuration attempt")
+        "Refresh token after duplicate configuration attempt",
+    )
   }
 
   @Test
@@ -240,18 +255,21 @@ internal class LiveBalenaClientExternalTest {
     assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
-        "Facility ID after retry")
+        "Facility ID after retry",
+    )
     assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
-        "Refresh token after retry")
+        "Refresh token after retry",
+    )
   }
 
   private fun createFleet(fleetName: String): Long {
     val response =
         client.sendRequest<Map<String, Any?>>(
             LiveBalenaClient.FLEET_PATH,
-            body = mapOf("app_name" to fleetName, "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG))
+            body = mapOf("app_name" to fleetName, "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG),
+        )
     val fleetId = response["id"].toString().toLong()
 
     log.info("Created fleet $fleetId")
@@ -271,7 +289,9 @@ internal class LiveBalenaClientExternalTest {
             body =
                 mapOf(
                     "belongs_to__application" to fleetId,
-                    "is_of__device_type" to raspberryPiDeviceTypeId))
+                    "is_of__device_type" to raspberryPiDeviceTypeId,
+                ),
+        )
 
     val deviceId = response.id
     log.info("Created device $deviceId")
@@ -282,7 +302,9 @@ internal class LiveBalenaClientExternalTest {
             mapOf(
                 "device" to deviceId,
                 "tag_key" to LiveBalenaClient.SENSOR_KIT_ID_TAG_KEY,
-                "value" to sensorKitId))
+                "value" to sensorKitId,
+            ),
+    )
 
     return deviceId
   }
@@ -291,7 +313,9 @@ internal class LiveBalenaClientExternalTest {
     val envVarId = client.getDeviceEnvironmentVarId(deviceId, name)
     if (envVarId != null) {
       client.sendRequest<Unit>(
-          "${LiveBalenaClient.DEVICE_ENV_VAR_PATH}($envVarId)", method = HttpMethod.Delete)
+          "${LiveBalenaClient.DEVICE_ENV_VAR_PATH}($envVarId)",
+          method = HttpMethod.Delete,
+      )
     }
   }
 

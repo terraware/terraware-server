@@ -93,8 +93,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         DSL.and(
             OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
             OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
-            maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) }),
-        limit)
+            maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) },
+        ),
+        limit,
+    )
   }
 
   fun fetchByOrganizationId(
@@ -107,8 +109,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return fetchByCondition(
         DSL.and(
             OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
-            OBSERVATIONS.IS_AD_HOC.eq(isAdHoc)),
-        limit)
+            OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
+        ),
+        limit,
+    )
   }
 
   /**
@@ -143,7 +147,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private fun plantingSiteSummary(
       plantingSiteId: PlantingSiteId,
-      completedObservations: List<ObservationResultsModel>
+      completedObservations: List<ObservationResultsModel>,
   ): ObservationRollupResultsModel? {
     val allSubzoneIdsByZoneIds =
         dslContext
@@ -205,7 +209,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     )
                     .from(this)
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
-                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID)))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+            )
             .convertFrom { result ->
               result
                   .map {
@@ -230,7 +235,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     )
                     .from(this)
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
-                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID)))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+            )
             .convertFrom { result -> result.associate { it[POSITION_ID]!! to it[DESCRIPTION] } }
       }
 
@@ -247,7 +253,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     .join(OBSERVATION_BIOMASS_SPECIES)
                     .on(BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
-                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID)))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+            )
             .convertFrom { result ->
               result
                   .groupBy { it[POSITION_ID]!! }
@@ -257,7 +264,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           BiomassQuadratSpeciesModel(
                               abundancePercent = it[ABUNDANCE_PERCENT]!!,
                               speciesId = it[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
-                              speciesName = it[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME])
+                              speciesName = it[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
+                          )
                         }
                         .toSet()
                   }
@@ -289,7 +297,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     .on(BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
-                    .orderBy(TREE_NUMBER, TRUNK_NUMBER))
+                    .orderBy(TREE_NUMBER, TRUNK_NUMBER)
+            )
             .convertFrom { result ->
               result.map {
                 ExistingRecordedTreeModel(
@@ -335,7 +344,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     )
                     .from(this)
                     .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                    .orderBy(MONITORING_PLOT_ID))
+                    .orderBy(MONITORING_PLOT_ID)
+            )
             .convertFrom { result ->
               result.map { record ->
                 val quadratDescriptions = record[biomassQuadratDetailsMultiset]
@@ -344,7 +354,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     ObservationPlotPosition.entries.associateWith {
                       BiomassQuadratModel(
                           description = quadratDescriptions[it],
-                          species = quadratSpecies[it] ?: emptySet())
+                          species = quadratSpecies[it] ?: emptySet(),
+                      )
                     }
 
                 ExistingBiomassDetailsModel(
@@ -376,11 +387,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               DSL.select(
                       OBSERVED_PLOT_COORDINATES.ID,
                       coordinatesGpsField,
-                      OBSERVED_PLOT_COORDINATES.POSITION_ID)
+                      OBSERVED_PLOT_COORDINATES.POSITION_ID,
+                  )
                   .from(OBSERVED_PLOT_COORDINATES)
                   .where(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                   .and(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(OBSERVED_PLOT_COORDINATES.POSITION_ID))
+                  .orderBy(OBSERVED_PLOT_COORDINATES.POSITION_ID)
+          )
           .convertFrom { result ->
             result.map { record ->
               ObservedPlotCoordinatesModel(
@@ -404,7 +417,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .from(OBSERVATION_PHOTOS)
                   .where(OBSERVATION_PHOTOS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                   .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(OBSERVATION_PHOTOS.FILE_ID))
+                  .orderBy(OBSERVATION_PHOTOS.FILE_ID)
+          )
           .convertFrom { result ->
             result.map { record ->
               ObservationMonitoringPlotPhotoModel(
@@ -443,7 +457,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   Int?,
                   Int?,
                   Int?,
-                  Int?>>
+                  Int?,
+              >
+          >
   ): Field<List<ObservationSpeciesResultsModel>> {
     return DSL.multiset(query).convertFrom { results ->
       results.map { record ->
@@ -479,10 +495,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .from(OBSERVATION_PLOT_CONDITIONS)
                   .where(
                       OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID.eq(
-                          OBSERVATION_PLOTS.OBSERVATION_ID))
+                          OBSERVATION_PLOTS.OBSERVATION_ID
+                      )
+                  )
                   .and(
                       OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID.eq(
-                          OBSERVATION_PLOTS.MONITORING_PLOT_ID)))
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                      )
+                  )
+          )
           .convertFrom { results ->
             results.map { record -> record[OBSERVATION_PLOT_CONDITIONS.CONDITION_ID]!! }.toSet()
           }
@@ -492,7 +513,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               DSL.select(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID)
                   .from(MONITORING_PLOT_OVERLAPS)
                   .where(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID))
+                  .orderBy(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID)
+          )
           .convertFrom { results ->
             results.map { record -> record[MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID]!! }.toSet()
           }
@@ -502,7 +524,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               DSL.select(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID)
                   .from(MONITORING_PLOT_OVERLAPS)
                   .where(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID))
+                  .orderBy(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID)
+          )
           .convertFrom { results ->
             results.map { record -> record[MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID]!! }.toSet()
           }
@@ -526,7 +549,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .from(OBSERVED_PLOT_SPECIES_TOTALS)
                 .where(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                .orderBy(SPECIES_ID, SPECIES_NAME))
+                .orderBy(SPECIES_ID, SPECIES_NAME)
+        )
       }
 
   private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
@@ -553,21 +577,27 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       monitoringPlotOverlapsMultiset,
                       monitoringPlotSpeciesMultiset,
                       coordinatesMultiset,
-                      photosMultiset)
+                      photosMultiset,
+                  )
                   .from(OBSERVATION_PLOTS)
                   .join(MONITORING_PLOTS)
                   .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                   .join(MONITORING_PLOT_HISTORIES)
                   .on(
                       OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                          MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID))
+                          MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                      )
+                  )
                   .leftJoin(USERS)
                   .on(OBSERVATION_PLOTS.CLAIMED_BY.eq(USERS.ID))
                   .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                   .and(
                       MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID))
-                  .and(condition))
+                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                      )
+                  )
+                  .and(condition)
+          )
           .convertFrom { results ->
             results.map { record ->
               val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
@@ -624,7 +654,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private val plantingSubzoneMonitoringPlotMultiset =
       monitoringPlotMultiset(
-          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(PLANTING_SUBZONE_HISTORIES.ID))
+          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(PLANTING_SUBZONE_HISTORIES.ID)
+      )
 
   private val plantingSubzoneSpeciesMultiset =
       with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
@@ -643,7 +674,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
                 .where(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID))
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                .orderBy(SPECIES_ID, SPECIES_NAME))
+                .orderBy(SPECIES_ID, SPECIES_NAME)
+        )
       }
 
   private val plantingSubzoneMultiset =
@@ -666,14 +698,23 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                               .join(OBSERVATION_PLOTS)
                               .on(
                                   MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(
-                                      OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+                                      OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                                  )
+                              )
                               .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                               .and(
                                   PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(
-                                      PLANTING_ZONE_HISTORIES.ID))
+                                      PLANTING_ZONE_HISTORIES.ID
+                                  )
+                              )
                               .and(
                                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID)))))
+                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                  )
+                              )
+                      )
+                  )
+          )
           .convertFrom { results ->
             results.map { record ->
               val monitoringPlots = record[plantingSubzoneMonitoringPlotMultiset]
@@ -769,7 +810,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .from(OBSERVED_ZONE_SPECIES_TOTALS)
                 .where(PLANTING_ZONE_ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID))
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                .orderBy(SPECIES_ID, SPECIES_NAME))
+                .orderBy(SPECIES_ID, SPECIES_NAME)
+        )
       }
 
   private val zonePlantingCompletedField =
@@ -779,10 +821,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .from(PLANTING_SUBZONES)
                   .where(
                       PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(
-                          PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID))
+                          PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID
+                      )
+                  )
                   .and(
                       PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
-                          .or(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))))
+                          .or(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull)
+                  )
+          )
+      )
 
   private val plantingZoneMultiset =
       DSL.multiset(
@@ -797,7 +844,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .from(PLANTING_ZONE_HISTORIES)
                   .where(
                       PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID))
+                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                      )
+                  )
                   .and(
                       PLANTING_ZONE_HISTORIES.ID.`in`(
                           DSL.select(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID)
@@ -805,15 +854,24 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                               .join(MONITORING_PLOT_HISTORIES)
                               .on(
                                   OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                      MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID))
+                                      MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                                  )
+                              )
                               .join(PLANTING_SUBZONE_HISTORIES)
                               .on(
                                   MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(
-                                      PLANTING_SUBZONE_HISTORIES.ID))
+                                      PLANTING_SUBZONE_HISTORIES.ID
+                                  )
+                              )
                               .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                               .and(
                                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID)))))
+                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                  )
+                              )
+                      )
+                  )
+          )
           .convertFrom { results ->
             results.map { record ->
               val areaHa = record[PLANTING_ZONE_HISTORIES.AREA_HA]!!
@@ -911,7 +969,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 )
                 .from(OBSERVED_SITE_SPECIES_TOTALS)
                 .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                .orderBy(SPECIES_ID, SPECIES_NAME))
+                .orderBy(SPECIES_ID, SPECIES_NAME)
+        )
       }
 
   private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
@@ -929,7 +988,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             PLANTING_SITE_HISTORIES.AREA_HA,
             PLANTING_SITE_HISTORIES.ID,
             plantingSiteSpeciesMultiset,
-            plantingZoneMultiset)
+            plantingZoneMultiset,
+        )
         .from(OBSERVATIONS)
         .leftJoin(PLANTING_SITE_HISTORIES)
         .on(OBSERVATIONS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))

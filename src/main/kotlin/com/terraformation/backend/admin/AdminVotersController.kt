@@ -47,14 +47,17 @@ class AdminVotersController(
             { it.projectId },
             { project ->
               voteStore.fetchAllVotes(project.projectId, project.phase).map { it.userId }.toSet()
-            })
+            },
+        )
 
     val defaultVoters = defaultVoterStore.findAll()
     val users =
         userStore
             .fetchManyById(
                 defaultVoters.union(
-                    projectVoters.values.reduce { acc, userIds -> acc.union(userIds) }))
+                    projectVoters.values.reduce { acc, userIds -> acc.union(userIds) }
+                )
+            )
             .associateBy { it.userId }
 
     model.addAttribute("selectedEmail", email)

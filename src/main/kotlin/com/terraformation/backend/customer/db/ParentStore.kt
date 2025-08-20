@@ -143,11 +143,17 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
       fetchFieldById(
-          deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.facilities.ORGANIZATION_ID)
+          deviceManagerId,
+          DEVICE_MANAGERS.ID,
+          DEVICE_MANAGERS.facilities.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(draftPlantingSiteId: DraftPlantingSiteId): OrganizationId? =
       fetchFieldById(
-          draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.ORGANIZATION_ID)
+          draftPlantingSiteId,
+          DRAFT_PLANTING_SITES.ID,
+          DRAFT_PLANTING_SITES.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
@@ -162,7 +168,8 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(
           participantProjectSpeciesId,
           PARTICIPANT_PROJECT_SPECIES.ID,
-          PARTICIPANT_PROJECT_SPECIES.projects.ORGANIZATION_ID)
+          PARTICIPANT_PROJECT_SPECIES.projects.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(plantingId: PlantingId): OrganizationId? =
       fetchFieldById(plantingId, PLANTINGS.ID, PLANTINGS.plantingSites.ORGANIZATION_ID)
@@ -172,11 +179,17 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(plantingSubzoneId: PlantingSubzoneId): OrganizationId? =
       fetchFieldById(
-          plantingSubzoneId, PLANTING_SUBZONES.ID, PLANTING_SUBZONES.plantingSites.ORGANIZATION_ID)
+          plantingSubzoneId,
+          PLANTING_SUBZONES.ID,
+          PLANTING_SUBZONES.plantingSites.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(plantingZoneId: PlantingZoneId): OrganizationId? =
       fetchFieldById(
-          plantingZoneId, PLANTING_ZONES.ID, PLANTING_ZONES.plantingSites.ORGANIZATION_ID)
+          plantingZoneId,
+          PLANTING_ZONES.ID,
+          PLANTING_ZONES.plantingSites.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
       fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
@@ -198,7 +211,10 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getPlantingSiteId(monitoringPlotId: MonitoringPlotId): PlantingSiteId? =
       fetchFieldById(
-          monitoringPlotId, MONITORING_PLOTS.ID, MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID)
+          monitoringPlotId,
+          MONITORING_PLOTS.ID,
+          MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID,
+      )
 
   fun getPlantingSiteId(observationId: ObservationId): PlantingSiteId? =
       fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.PLANTING_SITE_ID)
@@ -222,7 +238,8 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(
           monitoringPlotId,
           MONITORING_PLOTS.ID,
-          MONITORING_PLOTS.plantingSubzones.plantingSites.PROJECT_ID)
+          MONITORING_PLOTS.plantingSubzones.plantingSites.PROJECT_ID,
+      )
 
   fun getProjectId(observationId: ObservationId): ProjectId? =
       fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.plantingSites.PROJECT_ID)
@@ -235,7 +252,10 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getProjectId(plantingSubzoneId: PlantingSubzoneId): ProjectId? =
       fetchFieldById(
-          plantingSubzoneId, PLANTING_SUBZONES.ID, PLANTING_SUBZONES.plantingSites.PROJECT_ID)
+          plantingSubzoneId,
+          PLANTING_SUBZONES.ID,
+          PLANTING_SUBZONES.plantingSites.PROJECT_ID,
+      )
 
   fun getProjectId(plantingZoneId: PlantingZoneId): ProjectId? =
       fetchFieldById(plantingZoneId, PLANTING_ZONES.ID, PLANTING_ZONES.plantingSites.PROJECT_ID)
@@ -281,28 +301,31 @@ class ParentStore(private val dslContext: DSLContext) {
           accessionId,
           ACCESSIONS.ID,
           DSL.coalesce(
-              ACCESSIONS.facilities.TIME_ZONE, ACCESSIONS.facilities.organizations.TIME_ZONE))
-          ?: ZoneOffset.UTC
+              ACCESSIONS.facilities.TIME_ZONE,
+              ACCESSIONS.facilities.organizations.TIME_ZONE,
+          ),
+      ) ?: ZoneOffset.UTC
 
   fun getEffectiveTimeZone(batchId: BatchId): ZoneId =
       fetchFieldById(
           batchId,
           BATCHES.ID,
-          DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE))
-          ?: ZoneOffset.UTC
+          DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
 
   fun getEffectiveTimeZone(facilityId: FacilityId): ZoneId =
       fetchFieldById(
           facilityId,
           FACILITIES.ID,
-          DSL.coalesce(FACILITIES.TIME_ZONE, FACILITIES.organizations.TIME_ZONE)) ?: ZoneOffset.UTC
+          DSL.coalesce(FACILITIES.TIME_ZONE, FACILITIES.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
 
   fun getEffectiveTimeZone(plantingSiteId: PlantingSiteId): ZoneId =
       fetchFieldById(
           plantingSiteId,
           PLANTING_SITES.ID,
-          DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE))
-          ?: ZoneOffset.UTC
+          DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
@@ -402,20 +425,24 @@ class ParentStore(private val dslContext: DSLContext) {
   fun hasApplications(organizationId: OrganizationId?): Boolean =
       organizationId != null &&
           dslContext.fetchExists(
-              APPLICATIONS, APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId))
+              APPLICATIONS,
+              APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId),
+          )
 
   fun hasInternalTag(organizationId: OrganizationId?, internalTag: InternalTagId): Boolean =
       organizationId != null &&
           dslContext.fetchExists(
               ORGANIZATION_INTERNAL_TAGS,
               ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(organizationId),
-              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag))
+              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag),
+          )
 
   fun isProjectInAccelerator(projectId: ProjectId?): Boolean =
       projectId != null &&
           (dslContext.fetchExists(
-              PROJECT_ACCELERATOR_DETAILS, PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId)) ||
-              dslContext.fetchExists(PROJECTS, PROJECTS.participants.COHORT_ID.isNotNull))
+              PROJECT_ACCELERATOR_DETAILS,
+              PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId),
+          ) || dslContext.fetchExists(PROJECTS, PROJECTS.participants.COHORT_ID.isNotNull))
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
@@ -424,7 +451,7 @@ class ParentStore(private val dslContext: DSLContext) {
   private fun <C, P, R : Record> fetchFieldById(
       id: C,
       idField: TableField<R, C>,
-      fieldToFetch: Field<P>
+      fieldToFetch: Field<P>,
   ): P? {
     return dslContext
         .select(fieldToFetch)

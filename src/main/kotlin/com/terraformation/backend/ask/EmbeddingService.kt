@@ -81,7 +81,8 @@ class EmbeddingService(
           | text/.*
           """
               .trimIndent(),
-          RegexOption.COMMENTS)
+          RegexOption.COMMENTS,
+      )
 
   private val projectIdField = DSL.jsonbGetAttributeAsText(VECTOR_STORE.METADATA, "projectId")
 
@@ -97,9 +98,12 @@ class EmbeddingService(
         .where(
             PROJECTS.ID.`in`(
                 DSL.select(
-                        DSL.cast(projectIdField, SQLDataType.BIGINT).convertFrom { ProjectId(it) })
+                        DSL.cast(projectIdField, SQLDataType.BIGINT).convertFrom { ProjectId(it) }
+                    )
                     .from(VECTOR_STORE)
-                    .where(projectIdField.isNotNull)))
+                    .where(projectIdField.isNotNull)
+            )
+        )
         .orderBy(PROJECTS.ID)
         .fetch { ExistingProjectModel.of(it) }
   }
@@ -109,7 +113,8 @@ class EmbeddingService(
     requirePermissions { readAllAcceleratorDetails() }
 
     return dslContext.fetchExists(
-        DSL.selectOne().from(VECTOR_STORE).where(projectIdField.eq("$projectId")))
+        DSL.selectOne().from(VECTOR_STORE).where(projectIdField.eq("$projectId"))
+    )
   }
 
   /**
@@ -127,7 +132,9 @@ class EmbeddingService(
         }
     val projectDetails =
         projectAcceleratorDetailsStore.fetchOneById(
-            projectId, acceleratorProjectVariableValuesService.fetchValues(projectId))
+            projectId,
+            acceleratorProjectVariableValuesService.fetchValues(projectId),
+        )
 
     val baseMetadata = makeMetadata(organization, project)
 
@@ -140,11 +147,13 @@ class EmbeddingService(
 
               Document(
                   renderVariableValue(variable, valuesByVariableId),
-                  makeMetadata(organization, project, variable))
+                  makeMetadata(organization, project, variable),
+              )
             } +
             Document(
                 "Here is some accelerator-related information about the project:\n$projectDetails",
-                baseMetadata)
+                baseMetadata,
+            )
 
     vectorStore.delete(FilterExpressionBuilder().eq("projectId", projectId).build())
 
@@ -190,7 +199,8 @@ class EmbeddingService(
     } catch (e: Exception) {
       log.error(
           "Unable to update embeddings for project ${event.projectId} variable ${event.variableId}",
-          e)
+          e,
+      )
     }
   }
 
@@ -198,7 +208,7 @@ class EmbeddingService(
   fun embedDeliverableDocument(
       projectId: ProjectId,
       deliverableId: DeliverableId,
-      submissionDocumentId: SubmissionDocumentId
+      submissionDocumentId: SubmissionDocumentId,
   ) {
     systemUser.run {
       val project = projectStore.fetchOneById(projectId)
@@ -212,7 +222,11 @@ class EmbeddingService(
 
       if (submissionDocument.documentStore == DocumentStore.Google) {
         embedGoogleDriveFile(
-            projectId, deliverable, submissionDocument, makeMetadata(organization, project))
+            projectId,
+            deliverable,
+            submissionDocument,
+            makeMetadata(organization, project),
+        )
       }
     }
   }
@@ -230,15 +244,18 @@ class EmbeddingService(
                   projectId,
                   variableIds = variableIds,
                   includeDeletedValues = false,
-                  includeReplacedVariables = false)
+                  includeReplacedVariables = false,
+              )
               .groupBy { it.variableId }
 
       vectorStore.delete(
           FilterExpressionBuilder()
               .and(
                   FilterExpressionBuilder().eq("projectId", projectId),
-                  FilterExpressionBuilder().eq("variableId", variable.id))
-              .build())
+                  FilterExpressionBuilder().eq("variableId", variable.id),
+              )
+              .build()
+      )
 
       // Only store new embeddings if the variable has a value. If the previous value was deleted,
       // there won't be a value any more and we will have already removed the old embedding.
@@ -248,7 +265,8 @@ class EmbeddingService(
         val document =
             Document(
                 renderVariableValue(variable, valuesByVariableId),
-                makeMetadata(organization, project, variable))
+                makeMetadata(organization, project, variable),
+            )
 
         vectorStore.add(listOf(document))
       } else {
@@ -260,7 +278,7 @@ class EmbeddingService(
   private fun makeMetadata(
       organization: OrganizationModel,
       project: ExistingProjectModel,
-      variable: Variable? = null
+      variable: Variable? = null,
   ): Map<String, Any> {
     return listOfNotNull(
             "organizationId" to organization.id,
@@ -276,7 +294,7 @@ class EmbeddingService(
 
   private fun renderVariableValue(
       variable: Variable,
-      valuesByVariableId: Map<VariableId, List<ExistingValue>>
+      valuesByVariableId: Map<VariableId, List<ExistingValue>>,
   ): String {
     return if (variable is TableVariable) {
       renderTableAsMarkdown(variable, valuesByVariableId)
@@ -357,7 +375,8 @@ class EmbeddingService(
       baseMetadata: Map<String, Any?>,
   ) {
     log.info(
-        "Embedding project $projectId deliverable ${deliverable.id} file ${submissionDocument.name}")
+        "Embedding project $projectId deliverable ${deliverable.id} file ${submissionDocument.name}"
+    )
 
     val metadata =
         baseMetadata +
@@ -383,7 +402,8 @@ class EmbeddingService(
           TikaDocumentReader(
                   InputStreamResource {
                     googleDriveWriter.downloadFile(submissionDocument.location)
-                  })
+                  }
+              )
               .read()
               .filter { it.isText }
               .map { document -> document.mutate().metadata(metadata).build() }
@@ -395,7 +415,8 @@ class EmbeddingService(
         log.error(
             "Project $projectId deliverable ${deliverable.id} submission document " +
                 "${submissionDocument.id} ${submissionDocument.name} is referenced in Terraware " +
-                "but does not appear to exist in Google Drive.")
+                "but does not appear to exist in Google Drive."
+        )
         // Don't throw the exception; we want the embedding process to continue with other files.
       } else {
         throw e
@@ -404,7 +425,8 @@ class EmbeddingService(
       if (e.cause is UnsupportedFormatException) {
         log.info(
             "Unsupported file format for project $projectId deliverable ${deliverable.id} " +
-                "submission document ${submissionDocument.id} ${submissionDocument.name}")
+                "submission document ${submissionDocument.id} ${submissionDocument.name}"
+        )
       } else {
         throw e
       }

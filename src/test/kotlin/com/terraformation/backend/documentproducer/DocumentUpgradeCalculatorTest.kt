@@ -56,7 +56,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
   private val variableValueStore: VariableValueStore by lazy {
     VariableValueStore(
@@ -69,7 +70,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         variableSectionValuesDao,
         variableSelectOptionValuesDao,
         variableValuesDao,
-        variableValueTableRowsDao)
+        variableValueTableRowsDao,
+    )
   }
 
   @BeforeEach
@@ -93,8 +95,10 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     insertVariableManifestEntry(
         insertNumberVariable(
             insertVariable(type = VariableType.Number, replacesVariableId = oldVariableId),
-            minValue = BigDecimal.TEN),
-        manifestId = newManifestId)
+            minValue = BigDecimal.TEN,
+        ),
+        manifestId = newManifestId,
+    )
 
     assertEquals(emptyList<ValueOperation>(), calculateOperations(newManifestId))
   }
@@ -110,19 +114,23 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     val newVariableId =
         insertVariableManifestEntry(
             insertTextVariable(
-                insertVariable(type = VariableType.Text, replacesVariableId = oldVariableId)),
-            manifestId = newManifestId)
+                insertVariable(type = VariableType.Text, replacesVariableId = oldVariableId)
+            ),
+            manifestId = newManifestId,
+        )
 
     assertEquals(
         listOf(AppendValueOperation(NewTextValue(newValueProps(newVariableId), "1.23456"))),
-        calculateOperations(newManifestId))
+        calculateOperations(newManifestId),
+    )
   }
 
   @Test
   fun `appends valid list items in same order as original list`() {
     val oldVariableId =
         insertVariableManifestEntry(
-            insertNumberVariable(insertVariable(type = VariableType.Number, isList = true)))
+            insertNumberVariable(insertVariable(type = VariableType.Number, isList = true))
+        )
 
     insertValue(variableId = oldVariableId, listPosition = 0, numberValue = BigDecimal(0))
     insertValue(variableId = oldVariableId, listPosition = 1, numberValue = BigDecimal(1))
@@ -134,23 +142,32 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         insertVariableManifestEntry(
             insertNumberVariable(
                 insertVariable(
-                    type = VariableType.Number, isList = true, replacesVariableId = oldVariableId),
-                maxValue = BigDecimal.TEN),
-            manifestId = newManifestId)
+                    type = VariableType.Number,
+                    isList = true,
+                    replacesVariableId = oldVariableId,
+                ),
+                maxValue = BigDecimal.TEN,
+            ),
+            manifestId = newManifestId,
+        )
 
     assertEquals(
         listOf(
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 0), BigDecimal(0))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 0), BigDecimal(0))
+            ),
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 1), BigDecimal(1))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 1), BigDecimal(1))
+            ),
             // List position is preserved across value conversion, so we expect to skip position 2
             // here; it is ignored by append operations so this won't result in a hole in the final
             // result.
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 3), BigDecimal(3))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 3), BigDecimal(3))
+            ),
         ),
-        calculateOperations(newManifestId))
+        calculateOperations(newManifestId),
+    )
   }
 
   @Test
@@ -160,7 +177,9 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     val firstSectionVariableId =
         insertVariableManifestEntry(
             insertSectionVariable(
-                insertVariable(name = "Title Section", type = VariableType.Section)))
+                insertVariable(name = "Title Section", type = VariableType.Section)
+            )
+        )
 
     // A project document is created for the manifest
     insertProject()
@@ -168,7 +187,10 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
     // Some project values are added to the document section
     insertSectionValue(
-        firstSectionVariableId, listPosition = 0, textValue = "This is the title section.")
+        firstSectionVariableId,
+        listPosition = 0,
+        textValue = "This is the title section.",
+    )
 
     // A new manifest for the document template is uploaded, and a new section has been added
     val secondManifestId = insertVariableManifest()
@@ -176,9 +198,12 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
     val secondSectionVariableId =
         insertSectionVariable(
-            insertVariable(name = "Subtitle Section", type = VariableType.Section))
+            insertVariable(name = "Subtitle Section", type = VariableType.Section)
+        )
     insertDefaultSectionValue(
-        textValue = "This new section has default text", variableId = secondSectionVariableId)
+        textValue = "This new section has default text",
+        variableId = secondSectionVariableId,
+    )
     insertVariableManifestEntry(variableId = secondSectionVariableId)
 
     // The user upgrades their project document to the latest version of the document template's
@@ -189,9 +214,16 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             AppendValueOperation(
                 NewSectionValue(
                     BaseVariableValueProperties(
-                        null, inserted.projectId, 0, secondSectionVariableId, null),
+                        null,
+                        inserted.projectId,
+                        0,
+                        secondSectionVariableId,
+                        null,
+                    ),
                     SectionValueText("This new section has default text"),
-                )))
+                )
+            )
+        )
 
     assertEquals(expected, actual)
   }
@@ -214,15 +246,21 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     val newTableVariableId =
         insertVariableManifestEntry(
             insertTableVariable(
-                insertVariable(type = VariableType.Table, replacesVariableId = oldTableVariableId)),
-            manifestId = newManifestId)
+                insertVariable(type = VariableType.Table, replacesVariableId = oldTableVariableId)
+            ),
+            manifestId = newManifestId,
+        )
     val newTableUpdatedColumnId =
         insertVariableManifestEntry(
             insertNumberVariable(
                 insertVariable(
-                    type = VariableType.Number, replacesVariableId = oldTableOutdatedColumnId),
-                minValue = BigDecimal.TEN),
-            manifestId = newManifestId)
+                    type = VariableType.Number,
+                    replacesVariableId = oldTableOutdatedColumnId,
+                ),
+                minValue = BigDecimal.TEN,
+            ),
+            manifestId = newManifestId,
+        )
     insertTableColumn(newTableVariableId, newTableUpdatedColumnId)
 
     val documentId = insertDocument(variableManifestId = oldManifestId)
@@ -235,7 +273,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         insertValue(
             variableId = oldTableOutdatedColumnId,
             numberValue = BigDecimal(50),
-            citation = "citation")
+            citation = "citation",
+        )
     insertValueTableRow(oldRowVal1Col2, oldTableRowId1)
 
     val oldTableRowId2 = insertValue(variableId = oldTableVariableId, listPosition = 1)
@@ -255,7 +294,10 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
             AppendValueOperation(
                 NewNumberValue(
-                    newValueProps(newTableUpdatedColumnId, citation = "citation"), BigDecimal(50))),
+                    newValueProps(newTableUpdatedColumnId, citation = "citation"),
+                    BigDecimal(50),
+                )
+            ),
             // Delete value from deleted column
             DeleteValueOperation(inserted.projectId, oldRowVal1Col2),
             // Empty row because the old one didn't have any values to carry forward.
@@ -263,7 +305,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             // Delete value from deleted column
             DeleteValueOperation(inserted.projectId, oldRowVal2Col2),
         ),
-        calculateOperations(newManifestId, documentId))
+        calculateOperations(newManifestId, documentId),
+    )
   }
 
   @Test
@@ -284,20 +327,31 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     insertSectionValue(
         firstSectionVariableId,
         listPosition = 0,
-        textValue = "We must consider the value of this variable: ")
+        textValue = "We must consider the value of this variable: ",
+    )
     insertSectionValue(
-        firstSectionVariableId, listPosition = 1, usedVariableId = unmodifiedVariableId)
+        firstSectionVariableId,
+        listPosition = 1,
+        usedVariableId = unmodifiedVariableId,
+    )
     insertSectionValue(
-        firstSectionVariableId, listPosition = 2, textValue = ", additionally, this variable: ")
+        firstSectionVariableId,
+        listPosition = 2,
+        textValue = ", additionally, this variable: ",
+    )
     val outdatedVariableValueId =
         insertSectionValue(
-            firstSectionVariableId, listPosition = 3, usedVariableId = outdatedVariableId)
+            firstSectionVariableId,
+            listPosition = 3,
+            usedVariableId = outdatedVariableId,
+        )
 
     // The variable is updated to a new version in the all variables upload
     val updatedVariableId =
         insertTextVariable(
             id = insertVariable(type = VariableType.Text, replacesVariableId = outdatedVariableId),
-            textType = VariableTextType.MultiLine)
+            textType = VariableTextType.MultiLine,
+        )
 
     // A new manifest for the document template is uploaded
     val secondManifestId = insertVariableManifest()
@@ -315,11 +369,15 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                         inserted.projectId,
                         3,
                         firstSectionVariableId,
-                        null),
+                        null,
+                    ),
                     SectionValueVariable(
                         updatedVariableId,
                         VariableUsageType.Injection,
-                        VariableInjectionDisplayStyle.Block))),
+                        VariableInjectionDisplayStyle.Block,
+                    ),
+                )
+            ),
         )
 
     assertEquals(expected, actual)
@@ -332,24 +390,36 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         insertVariableManifestEntry(insertSectionVariable(), manifestId = oldManifestId)
     val subSectionVariableId =
         insertVariableManifestEntry(
-            insertSectionVariable(parentId = parentSectionVariableId), manifestId = oldManifestId)
+            insertSectionVariable(parentId = parentSectionVariableId),
+            manifestId = oldManifestId,
+        )
 
     val newManifestId = insertVariableManifest()
     val newParentSectionVariableId =
         insertVariableManifestEntry(
             insertSectionVariable(
                 insertVariable(
-                    type = VariableType.Section, replacesVariableId = parentSectionVariableId)),
-            manifestId = newManifestId)
+                    type = VariableType.Section,
+                    replacesVariableId = parentSectionVariableId,
+                )
+            ),
+            manifestId = newManifestId,
+        )
     val newSubSectionVariableId =
         insertVariableManifestEntry(
             insertSectionVariable(
                 insertVariable(
-                    type = VariableType.Section, replacesVariableId = subSectionVariableId),
-                parentId = newParentSectionVariableId),
-            manifestId = newManifestId)
+                    type = VariableType.Section,
+                    replacesVariableId = subSectionVariableId,
+                ),
+                parentId = newParentSectionVariableId,
+            ),
+            manifestId = newManifestId,
+        )
     insertVariableManifestEntry(
-        insertSectionVariable(parentId = newParentSectionVariableId), manifestId = newManifestId)
+        insertSectionVariable(parentId = newParentSectionVariableId),
+        manifestId = newManifestId,
+    )
 
     val documentId = insertDocument(variableManifestId = oldManifestId)
     val sectionValueId = insertSectionValue(subSectionVariableId, textValue = "some text")
@@ -359,16 +429,24 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             AppendValueOperation(
                 NewSectionValue(
                     BaseVariableValueProperties(
-                        null, inserted.projectId, 0, newSubSectionVariableId, null),
+                        null,
+                        inserted.projectId,
+                        0,
+                        newSubSectionVariableId,
+                        null,
+                    ),
                     SectionValueText("some text"),
-                )),
-            DeleteValueOperation(inserted.projectId, sectionValueId)),
-        calculateOperations(newManifestId, documentId))
+                )
+            ),
+            DeleteValueOperation(inserted.projectId, sectionValueId),
+        ),
+        calculateOperations(newManifestId, documentId),
+    )
   }
 
   private fun calculateOperations(
       manifestId: VariableManifestId,
-      documentId: DocumentId = inserted.documentId
+      documentId: DocumentId = inserted.documentId,
   ) =
       DocumentUpgradeCalculator(
               documentId,
@@ -376,7 +454,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
               documentStore,
               variableManifestsDao,
               variableStore,
-              variableValueStore)
+              variableValueStore,
+          )
           .calculateOperations()
 
   private fun newValueProps(

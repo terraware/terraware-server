@@ -190,7 +190,9 @@ internal class EmailNotificationServiceTest {
       Configuration(Configuration.VERSION_2_3_31).apply {
         // Load the email template files from the templates folder in the build output.
         setClassLoaderForTemplateLoading(
-            EmailNotificationServiceTest::class.java.classLoader, "templates")
+            EmailNotificationServiceTest::class.java.classLoader,
+            "templates",
+        )
       }
 
   private val emailService =
@@ -219,7 +221,8 @@ internal class EmailNotificationServiceTest {
           userStore,
           variableOwnerStore,
           variableStore,
-          webAppUrls)
+          webAppUrls,
+      )
 
   private val organization =
       OrganizationModel(
@@ -227,14 +230,16 @@ internal class EmailNotificationServiceTest {
           "Test Organization",
           createdTime = Instant.EPOCH,
           internalTags = setOf(InternalTagIds.Accelerator),
-          totalUsers = 1)
+          totalUsers = 1,
+      )
   private val nonAcceleratorOrganization =
       OrganizationModel(
           OrganizationId(100),
           "Test Organization",
           createdTime = Instant.EPOCH,
           internalTags = emptySet(),
-          totalUsers = 1)
+          totalUsers = 1,
+      )
   private val facility: FacilityModel =
       FacilityModel(
           connectionState = FacilityConnectionState.Configured,
@@ -248,10 +253,15 @@ internal class EmailNotificationServiceTest {
           lastTimeseriesTime = Instant.EPOCH,
           maxIdleMinutes = 15,
           nextNotificationTime = Instant.EPOCH,
-          type = FacilityType.SeedBank)
+          type = FacilityType.SeedBank,
+      )
   private val devicesRow =
       DevicesRow(
-          id = DeviceId(8), facilityId = facility.id, name = "Test Device", deviceType = "sensor")
+          id = DeviceId(8),
+          facilityId = facility.id,
+          name = "Test Device",
+          deviceType = "sensor",
+      )
   private val automation =
       AutomationModel(
           createdTime = Instant.EPOCH,
@@ -266,7 +276,8 @@ internal class EmailNotificationServiceTest {
           timeseriesName = "Test Timeseries",
           type = AutomationModel.SENSOR_BOUNDS_TYPE,
           upperThreshold = 2.0,
-          verbosity = 0)
+          verbosity = 0,
+      )
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
   private val acceleratorReportId = ReportId(1)
@@ -289,7 +300,8 @@ internal class EmailNotificationServiceTest {
           modifiedTime = Instant.EPOCH,
           name = "My Cohort",
           participantIds = setOf(ParticipantId(1)),
-          phase = CohortPhase.Phase1FeasibilityStudy)
+          phase = CohortPhase.Phase1FeasibilityStudy,
+      )
   private val participant =
       ExistingParticipantModel(
           cohortId = cohort.id,
@@ -320,7 +332,8 @@ internal class EmailNotificationServiceTest {
           observationType = ObservationType.Monitoring,
           plantingSiteId = plantingSite.id,
           startDate = LocalDate.of(2023, 9, 1),
-          state = ObservationState.Upcoming)
+          state = ObservationState.Upcoming,
+      )
 
   private val deliverableCategory = DeliverableCategory.Compliance
   private val deliverable =
@@ -382,7 +395,8 @@ internal class EmailNotificationServiceTest {
               position = 0,
               stableId = StableId("stable"),
           ),
-          renderHeading = false)
+          renderHeading = false,
+      )
 
   private val fundingEntity =
       FundingEntityModel(
@@ -459,7 +473,9 @@ internal class EmailNotificationServiceTest {
     } returns listOf(deliverable)
     every {
       deliverableStore.fetchDeliverableSubmissions(
-          deliverableId = deliverable.deliverableId, projectId = deliverable.projectId)
+          deliverableId = deliverable.deliverableId,
+          projectId = deliverable.projectId,
+      )
     } returns listOf(deliverable)
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { documentStore.fetchOneById(document.id) } returns document
@@ -560,7 +576,9 @@ internal class EmailNotificationServiceTest {
 
     assertBodyContains(devicesRow.name!!, "Device name")
     assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
+        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
+        "Link URL",
+    )
     assertRecipientsEqual(organizationRecipients)
   }
 
@@ -570,7 +588,9 @@ internal class EmailNotificationServiceTest {
 
     assertBodyContains(automation.name, "Automation name")
     assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
+        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
+        "Link URL",
+    )
     assertRecipientsEqual(organizationRecipients)
   }
 
@@ -580,7 +600,9 @@ internal class EmailNotificationServiceTest {
 
     assertBodyContains(devicesRow.name!!, "Device name")
     assertBodyContains(
-        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
+        webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow),
+        "Link URL",
+    )
     assertEquals(organizationRecipients, sentMessages.keys, "Recipients")
     assertRecipientsEqual(organizationRecipients)
   }
@@ -602,7 +624,10 @@ internal class EmailNotificationServiceTest {
 
     assertBodyContains("My Funding Entity", "Funding Entity name", false)
     assertBodyContains(
-        webAppUrls.funderPortalRegistrationUrl(user.email), "Registration URL", false)
+        webAppUrls.funderPortalRegistrationUrl(user.email),
+        "Registration URL",
+        false,
+    )
     assertSubjectContains("You've been invited to the Funder Portal under My Funding Entity")
     assertRecipientsEqual(setOf(user.email))
   }
@@ -614,7 +639,9 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(organization.name, "Organization name")
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(
-        webAppUrls.terrawareRegistrationUrl(organization.id, user.email), "Registration URL")
+        webAppUrls.terrawareRegistrationUrl(organization.id, user.email),
+        "Registration URL",
+    )
     assertSubjectContains("You've")
     assertRecipientsEqual(setOf(user.email))
   }
@@ -644,7 +671,10 @@ internal class EmailNotificationServiceTest {
                 organizationId = organization.id,
                 quarter = 3,
                 status = SeedFundReportStatus.New,
-                year = 2023)))
+                year = 2023,
+            )
+        )
+    )
 
     val englishMessage = sentMessageFor("admin1@x.com")
     val gibberishMessage = sentMessageFor("gibberish@x.com")
@@ -652,7 +682,10 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("2023-Q3", "Year and quarter", message = englishMessage)
     assertBodyContains("Seed Fund Report", "English text", message = englishMessage)
     assertBodyContains(
-        "Seed Fund Report".toGibberish(), "Gibberish text", message = gibberishMessage)
+        "Seed Fund Report".toGibberish(),
+        "Gibberish text",
+        message = gibberishMessage,
+    )
     assertRecipientsEqual(admins.toSet())
   }
 
@@ -667,7 +700,9 @@ internal class EmailNotificationServiceTest {
                 observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 9, 1),
-                state = ObservationState.InProgress))
+                state = ObservationState.InProgress,
+            )
+        )
 
     service.on(event)
 
@@ -692,13 +727,22 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("Observation", message = englishMessage)
     assertBodyContains("September 1, 2023", "Start date", message = englishMessage)
     assertBodyContains(
-        webAppUrls.googlePlay.toString(), "Google Play URL", message = englishMessage)
+        webAppUrls.googlePlay.toString(),
+        "Google Play URL",
+        message = englishMessage,
+    )
 
     assertBodyContains(
-        "Observation".toGibberish(), "Localized text (gibberish)", message = gibberishMessage)
+        "Observation".toGibberish(),
+        "Localized text (gibberish)",
+        message = gibberishMessage,
+    )
     assertBodyContains("2023 Sep 1", "Start date (gibberish)", message = gibberishMessage)
     assertBodyContains(
-        webAppUrls.appStore.toString(), "App Store URL (gibberish)", message = gibberishMessage)
+        webAppUrls.appStore.toString(),
+        "App Store URL (gibberish)",
+        message = gibberishMessage,
+    )
 
     assertRecipientsEqual(recipients)
   }
@@ -731,7 +775,9 @@ internal class EmailNotificationServiceTest {
                 observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 10, 1),
-                state = ObservationState.Upcoming))
+                state = ObservationState.Upcoming,
+            ),
+        )
 
     service.on(event)
 
@@ -765,7 +811,8 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(
         "Schedule an observation".toGibberish(),
         "Localized text (gibberish)",
-        message = gibberishMessage)
+        message = gibberishMessage,
+    )
 
     assertRecipientsEqual(recipients)
   }
@@ -788,7 +835,8 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(
         "Reminder: Schedule an observation".toGibberish(),
         "Localized text (gibberish)",
-        message = gibberishMessage)
+        message = gibberishMessage,
+    )
 
     assertRecipientsEqual(recipients)
   }
@@ -860,7 +908,11 @@ internal class EmailNotificationServiceTest {
 
     val event =
         ObservationPlotReplacedEvent(
-            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
+            ReplacementDuration.LongTerm,
+            "Just because",
+            upcomingObservation,
+            MonitoringPlotId(1),
+        )
 
     service.on(event)
 
@@ -877,7 +929,11 @@ internal class EmailNotificationServiceTest {
   fun `observationMonitoringPlotReplaced without Terraformation contact`() {
     val event =
         ObservationPlotReplacedEvent(
-            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
+            ReplacementDuration.LongTerm,
+            "Just because",
+            upcomingObservation,
+            MonitoringPlotId(1),
+        )
 
     service.on(event)
 
@@ -897,7 +953,11 @@ internal class EmailNotificationServiceTest {
 
     val event =
         ObservationPlotReplacedEvent(
-            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
+            ReplacementDuration.LongTerm,
+            "Just because",
+            upcomingObservation,
+            MonitoringPlotId(1),
+        )
 
     every { parentStore.getOrganizationId(MonitoringPlotId(1)) } returns
         nonAcceleratorOrganization.id
@@ -917,7 +977,8 @@ internal class EmailNotificationServiceTest {
             plantingSite.id,
             PlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3))
+            LocalDate.of(2023, 3, 3),
+        )
 
     service.on(event)
 
@@ -937,7 +998,8 @@ internal class EmailNotificationServiceTest {
             plantingSite.id,
             PlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3))
+            LocalDate.of(2023, 3, 3),
+        )
 
     service.on(event)
 
@@ -956,7 +1018,8 @@ internal class EmailNotificationServiceTest {
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
             LocalDate.of(2023, 1, 2),
-            LocalDate.of(2023, 3, 4))
+            LocalDate.of(2023, 3, 4),
+        )
 
     service.on(event)
 
@@ -979,7 +1042,8 @@ internal class EmailNotificationServiceTest {
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
             LocalDate.of(2023, 1, 2),
-            LocalDate.of(2023, 3, 4))
+            LocalDate.of(2023, 3, 4),
+        )
 
     service.on(event)
 
@@ -1167,7 +1231,10 @@ internal class EmailNotificationServiceTest {
   fun `participantProjectSpeciesAddedToProject without Terraformation contact`() {
     val event =
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
-            DeliverableId(1), project.id, species.id)
+            DeliverableId(1),
+            project.id,
+            species.id,
+        )
 
     service.on(event)
 
@@ -1188,7 +1255,10 @@ internal class EmailNotificationServiceTest {
 
     val event =
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
-            DeliverableId(1), project.id, species.id)
+            DeliverableId(1),
+            project.id,
+            species.id,
+        )
 
     service.on(event)
 
@@ -1206,7 +1276,10 @@ internal class EmailNotificationServiceTest {
   fun `participantProjectSpeciesEditedToProject without Terraformation contact`() {
     val event =
         ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-            DeliverableId(1), project.id, species.id)
+            DeliverableId(1),
+            project.id,
+            species.id,
+        )
 
     service.on(event)
 
@@ -1226,7 +1299,10 @@ internal class EmailNotificationServiceTest {
 
     val event =
         ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-            DeliverableId(1), project.id, species.id)
+            DeliverableId(1),
+            project.id,
+            species.id,
+        )
 
     service.on(event)
 
@@ -1353,7 +1429,8 @@ internal class EmailNotificationServiceTest {
             project.id,
             SubmissionStatus.NotSubmitted,
             SubmissionStatus.NotNeeded,
-            SubmissionId(1))
+            SubmissionId(1),
+        )
 
     service.on(event)
 
@@ -1371,7 +1448,8 @@ internal class EmailNotificationServiceTest {
             project.id,
             SubmissionStatus.InReview,
             SubmissionStatus.NeedsTranslation,
-            SubmissionId(1))
+            SubmissionId(1),
+        )
 
     service.on(event)
 
@@ -1384,7 +1462,11 @@ internal class EmailNotificationServiceTest {
 
     val event =
         CompletedSectionVariableUpdatedEvent(
-            document.id, project.id, VariableId(-1), sectionVariable.id)
+            document.id,
+            project.id,
+            VariableId(-1),
+            sectionVariable.id,
+        )
 
     service.on(event)
 
@@ -1402,7 +1484,11 @@ internal class EmailNotificationServiceTest {
 
     val event =
         CompletedSectionVariableUpdatedEvent(
-            DocumentId(1), project.id, VariableId(2), VariableId(3))
+            DocumentId(1),
+            project.id,
+            VariableId(2),
+            VariableId(3),
+        )
 
     service.on(event)
 
@@ -1429,8 +1515,10 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList()),
-            ReplacementResult(emptySet(), emptySet()))
+                plantingZoneEdits = emptyList(),
+            ),
+            ReplacementResult(emptySet(), emptySet()),
+        )
 
     service.on(event)
 
@@ -1463,8 +1551,10 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList()),
-            ReplacementResult(emptySet(), emptySet()))
+                plantingZoneEdits = emptyList(),
+            ),
+            ReplacementResult(emptySet(), emptySet()),
+        )
 
     service.on(event)
 
@@ -1499,8 +1589,10 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList()),
-            ReplacementResult(emptySet(), emptySet()))
+                plantingZoneEdits = emptyList(),
+            ),
+            ReplacementResult(emptySet(), emptySet()),
+        )
 
     service.on(event)
 
@@ -1573,7 +1665,10 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns emptyList()
 
     emailService.sendOrganizationNotification(
-        organization.id, ObservationNotScheduled(config, "", ""), true)
+        organization.id,
+        ObservationNotScheduled(config, "", ""),
+        true,
+    )
 
     verify(exactly = 1) {
       userStore.fetchByOrganizationId(organization.id, true, rolesWithoutTerraformationContact)
@@ -1586,7 +1681,11 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns emptyList()
 
     emailService.sendOrganizationNotification(
-        organization.id, ObservationNotScheduled(config, "", ""), true, roles)
+        organization.id,
+        ObservationNotScheduled(config, "", ""),
+        true,
+        roles,
+    )
 
     verify(exactly = 1) { userStore.fetchByOrganizationId(organization.id, true, roles) }
   }
@@ -1597,7 +1696,7 @@ internal class EmailNotificationServiceTest {
 
   private fun assertSubjectContains(
       @Suppress("SameParameterValue") text: String,
-      message: MimeMessage = mimeMessageSlot.captured
+      message: MimeMessage = mimeMessageSlot.captured,
   ) {
     assertContains(text, message.subject, "Subject")
   }
@@ -1705,7 +1804,8 @@ internal class EmailNotificationServiceTest {
           (0..<content.count)
               .asSequence()
               .map { index -> content.getBodyPart(index) }
-              .flatMap { textParts(it) })
+              .flatMap { textParts(it) }
+      )
     } else if (part.dataHandler.contentType.startsWith("text/", ignoreCase = true)) {
       yield(part)
     }

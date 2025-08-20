@@ -63,7 +63,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No projects")
+        "No projects",
+    )
 
     val projectId = insertProject()
     insertApplication()
@@ -74,7 +75,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has applications")
+        "Has applications",
+    )
   }
 
   @Test
@@ -82,7 +84,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No modules")
+        "No modules",
+    )
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(cohortId = cohortId)
@@ -97,7 +100,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has modules")
+        "Has modules",
+    )
   }
 
   @Test
@@ -105,7 +109,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No deliverables")
+        "No deliverables",
+    )
 
     val cohortId = insertCohort()
     val participantId = insertParticipant(cohortId = cohortId)
@@ -122,7 +127,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has deliverables")
+        "Has deliverables",
+    )
   }
 
   @Test
@@ -130,7 +136,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No submission")
+        "No submission",
+    )
 
     insertModule(phase = CohortPhase.Application)
     insertDeliverable()
@@ -139,7 +146,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "Only submission for application module")
+        "Only submission for application module",
+    )
 
     insertModule()
     insertDeliverable()
@@ -152,7 +160,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has submissions")
+        "Has submissions",
+    )
   }
 
   @Test
@@ -160,7 +169,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No reports")
+        "No reports",
+    )
 
     val projectId = insertProject()
     insertProjectReportConfig()
@@ -176,7 +186,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has reports")
+        "Has reports",
+    )
   }
 
   @Test
@@ -184,7 +195,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No seed fund reports")
+        "No seed fund reports",
+    )
 
     val projectId = insertProject()
     insertSeedFundReport(projectId = projectId)
@@ -195,7 +207,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "Has seed fund reports")
+        "Has seed fund reports",
+    )
   }
 
   @Test
@@ -203,7 +216,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
-        "No project added")
+        "No project added",
+    )
 
     val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
 
@@ -218,7 +232,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One application project")
+        "One application project",
+    )
 
     val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
     val participantId = insertParticipant(cohortId = cohortId)
@@ -233,7 +248,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One application project and one cohort phase 1 project")
+        "One application project and one cohort phase 1 project",
+    )
 
     val reportProjectId = insertProject(name = "Report project")
     insertProjectReportConfig()
@@ -244,7 +260,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One application project, one cohort phase 1 project, and one report projects")
+        "One application project, one cohort phase 1 project, and one report projects",
+    )
 
     val seedFundProjectId = insertProject()
     insertSeedFundReport(projectId = seedFundProjectId)
@@ -253,6 +270,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One project for every organization feature")
+        "One project for every organization feature",
+    )
   }
 }

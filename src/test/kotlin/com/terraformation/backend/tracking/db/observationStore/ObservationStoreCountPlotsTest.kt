@@ -81,9 +81,11 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
                       totalIncomplete = 1,
                       totalPlots = 1,
                       totalUnclaimed = 1,
-                  )),
+                  )
+          ),
           store.countPlots(plantingSiteId, true),
-          "counting ad-hoc")
+          "counting ad-hoc",
+      )
     }
 
     @Test
@@ -92,7 +94,8 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
 
       assertEquals(
           emptyMap<ObservationId, ObservationPlotCounts>(),
-          store.countPlots(inserted.plantingSiteId))
+          store.countPlots(inserted.plantingSiteId),
+      )
     }
 
     @Test
@@ -221,7 +224,9 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
       insertPlantingSite()
 
       assertEquals(
-          emptyMap<ObservationId, ObservationPlotCounts>(), store.countPlots(organizationId))
+          emptyMap<ObservationId, ObservationPlotCounts>(),
+          store.countPlots(organizationId),
+      )
     }
 
     @Test

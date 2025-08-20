@@ -43,7 +43,8 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionsDao,
             variableTablesDao,
             variableTableColumnsDao,
-            variableTextsDao),
+            variableTextsDao,
+        ),
         VariableValueStore(
             TestClock(),
             dslContext,
@@ -54,8 +55,10 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableSectionValuesDao,
             variableSelectOptionValuesDao,
             variableValuesDao,
-            variableValueTableRowsDao),
-        SystemUser(usersDao))
+            variableValueTableRowsDao,
+        ),
+        SystemUser(usersDao),
+    )
   }
 
   private lateinit var brazilOptionId: VariableSelectOptionId
@@ -91,32 +94,45 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     fun `returns null or empty values if variables not set`() {
       assertEquals(
           ApplicationVariableValues(null, null, null, null, emptyMap(), null, null, null, null),
-          service.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId),
+      )
     }
 
     @Test
     fun `fetches values for all variables`() {
       insertValue(
-          variableId = variableIdsByStableId[StableIds.contactEmail]!!, textValue = "a@b.com")
+          variableId = variableIdsByStableId[StableIds.contactEmail]!!,
+          textValue = "a@b.com",
+      )
       insertValue(
-          variableId = variableIdsByStableId[StableIds.contactName]!!, textValue = "John Smith")
+          variableId = variableIdsByStableId[StableIds.contactName]!!,
+          textValue = "John Smith",
+      )
       insertSelectValue(
           variableId = variableIdsByStableId[StableIds.country]!!,
-          optionIds = setOf(brazilOptionId))
+          optionIds = setOf(brazilOptionId),
+      )
       insertValue(
-          variableId = variableIdsByStableId[StableIds.numSpecies]!!, numberValue = BigDecimal(123))
+          variableId = variableIdsByStableId[StableIds.numSpecies]!!,
+          numberValue = BigDecimal(123),
+      )
       insertValue(
           variableId = variableIdsByStableId[StableIds.totalExpansionPotential]!!,
-          numberValue = BigDecimal(5555))
+          numberValue = BigDecimal(5555),
+      )
       insertValue(
           variableId = variableIdsByStableId[StableIds.website]!!,
-          textValue = "https://example.com/")
+          textValue = "https://example.com/",
+      )
       insertSelectValue(
           variableId = variableIdsByStableId[StableIds.projectType]!!,
-          optionIds = setOf(terrestrialOptionId))
+          optionIds = setOf(terrestrialOptionId),
+      )
       StableIds.landUseHectaresByLandUseModel.forEach { (type, stableId) ->
         insertValue(
-            variableId = variableIdsByStableId[stableId]!!, numberValue = BigDecimal(type.id))
+            variableId = variableIdsByStableId[stableId]!!,
+            numberValue = BigDecimal(type.id),
+        )
       }
 
       assertEquals(
@@ -130,7 +146,8 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = BigDecimal(5555),
               website = "https://example.com/",
           ),
-          service.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId),
+      )
     }
 
     @Test
@@ -165,7 +182,9 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `replaces existing country variable value`() {
       insertSelectValue(
-          variableId = variableIdsByStableId[StableIds.country]!!, optionIds = setOf(chileOptionId))
+          variableId = variableIdsByStableId[StableIds.country]!!,
+          optionIds = setOf(chileOptionId),
+      )
       service.updateCountryVariable(inserted.projectId, "BR")
 
       val lastValueRow =

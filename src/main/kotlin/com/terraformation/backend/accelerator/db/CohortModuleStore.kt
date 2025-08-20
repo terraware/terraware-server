@@ -48,7 +48,8 @@ class CohortModuleStore(
               cohortId != null -> COHORT_MODULES.COHORT_ID.eq(cohortId)
               else -> null
             },
-            moduleId?.let { MODULES.ID.eq(moduleId) })
+            moduleId?.let { MODULES.ID.eq(moduleId) },
+        )
 
     val joinForVisibility = { query: SelectOnConditionStep<Record> ->
       when {
@@ -72,7 +73,7 @@ class CohortModuleStore(
       moduleId: ModuleId,
       title: String,
       startDate: LocalDate,
-      endDate: LocalDate
+      endDate: LocalDate,
   ) {
     requirePermissions { manageModules() }
 
@@ -106,7 +107,7 @@ class CohortModuleStore(
 
   private fun fetch(
       condition: Condition? = null,
-      joinForVisibility: (SelectOnConditionStep<Record>) -> SelectOnConditionStep<Record>
+      joinForVisibility: (SelectOnConditionStep<Record>) -> SelectOnConditionStep<Record>,
   ): List<ModuleModel> {
     val query =
         dslContext
@@ -127,7 +128,8 @@ class CohortModuleStore(
             COHORT_MODULES.COHORT_ID,
             COHORT_MODULES.START_DATE,
             COHORT_MODULES.END_DATE,
-            MODULES.POSITION)
+            MODULES.POSITION,
+        )
         .fetch {
           ModuleModel.of(it)
               .copy(

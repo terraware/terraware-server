@@ -31,7 +31,8 @@ class ProjectScoreModelTest {
       // Average of 7 values of 1.0 (finance counted twice) and 1 value of 2.0
       assertEquals(
           BigDecimal(9.0 / 8.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores))
+          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores),
+      )
     }
 
     @Test
@@ -54,7 +55,8 @@ class ProjectScoreModelTest {
       // (finance counted twice)
       assertEquals(
           BigDecimal(10.0 / 8.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores))
+          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores),
+      )
     }
 
     @Test
@@ -92,7 +94,8 @@ class ProjectScoreModelTest {
       // Average of 1 value of 1.0 and 1 value of 2.5 (average of the two project lead scores)
       assertEquals(
           BigDecimal(3.5 / 2.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores))
+          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores),
+      )
     }
 
     @Test
@@ -106,7 +109,8 @@ class ProjectScoreModelTest {
 
       assertEquals(
           BigDecimal(3.0 / 2.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores))
+          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores),
+      )
     }
 
     @Test
@@ -127,7 +131,9 @@ class ProjectScoreModelTest {
 
     assertNull(ProjectScoreModel.totalScore(CohortPhase.Phase2PlanAndScale, scores), "Phase 2")
     assertNull(
-        ProjectScoreModel.totalScore(CohortPhase.Phase3ImplementAndMonitor, scores), "Phase 3")
+        ProjectScoreModel.totalScore(CohortPhase.Phase3ImplementAndMonitor, scores),
+        "Phase 3",
+    )
   }
 
   private fun newModel(category: ScoreCategory, score: Int?) =

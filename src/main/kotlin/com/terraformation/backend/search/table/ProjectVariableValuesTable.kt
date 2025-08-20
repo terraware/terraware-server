@@ -30,8 +30,11 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
                       .from(VARIABLE_SELECT_OPTION_VALUES)
                       .where(
                           VARIABLE_SELECT_OPTION_VALUES.VARIABLE_VALUE_ID.eq(
-                              PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID))
-                      .and(VARIABLE_SELECT_OPTION_VALUES.OPTION_ID.eq(VARIABLE_SELECT_OPTIONS.ID))),
+                              PROJECT_VARIABLE_VALUES.VARIABLE_VALUE_ID
+                          )
+                      )
+                      .and(VARIABLE_SELECT_OPTION_VALUES.OPTION_ID.eq(VARIABLE_SELECT_OPTIONS.ID))
+              ),
           ),
       )
     }
@@ -60,7 +63,8 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(PROJECTS)
               .where(PROJECT_VARIABLE_VALUES.PROJECT_ID.eq(PROJECTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 
@@ -68,5 +72,6 @@ class ProjectVariableValuesTable(tables: SearchTables) : SearchTable() {
       listOf(
           PROJECT_VARIABLE_VALUES.PROJECT_ID,
           PROJECT_VARIABLE_VALUES.VARIABLE_ID,
-          PROJECT_VARIABLE_VALUES.LIST_POSITION)
+          PROJECT_VARIABLE_VALUES.LIST_POSITION,
+      )
 }

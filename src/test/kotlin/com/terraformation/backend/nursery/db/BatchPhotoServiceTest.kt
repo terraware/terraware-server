@@ -51,7 +51,8 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         mockk(),
         filesDao,
         fileStore,
-        thumbnailStore)
+        thumbnailStore,
+    )
   }
   private val service: BatchPhotoService by lazy {
     BatchPhotoService(batchPhotosDao, clock, dslContext, fileService, ImageUtils(fileStore))
@@ -88,8 +89,11 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   deletedBy = null,
                   deletedTime = null,
-                  fileId = fileId)),
-          batchPhotosDao.findAll().map { it.copy(id = null) })
+                  fileId = fileId,
+              )
+          ),
+          batchPhotosDao.findAll().map { it.copy(id = null) },
+      )
     }
 
     @Test
@@ -192,8 +196,11 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   deletedBy = user.userId,
                   deletedTime = deletedTime,
-                  fileId = null)),
-          batchPhotosDao.findAll().map { it.copy(id = null) })
+                  fileId = null,
+              )
+          ),
+          batchPhotosDao.findAll().map { it.copy(id = null) },
+      )
 
       fileStore.assertFileWasDeleted(storageUrl)
     }
@@ -241,9 +248,12 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 fileId = otherOrgFileId,
-                id = otherBatchPhotoId)),
+                id = otherBatchPhotoId,
+            )
+        ),
         batchPhotosDao.findAll(),
-        "Remaining photos")
+        "Remaining photos",
+    )
 
     assertIsEventListener<OrganizationDeletionStartedEvent>(service)
   }
@@ -267,16 +277,19 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 fileId = otherBatchFileId,
-                id = otherBatchPhotoId)),
+                id = otherBatchPhotoId,
+            )
+        ),
         batchPhotosDao.findAll(),
-        "Remaining photos")
+        "Remaining photos",
+    )
 
     assertIsEventListener<BatchDeletionStartedEvent>(service)
   }
 
   private fun storePhoto(
       batchId: BatchId = this.batchId,
-      content: ByteArray = onePixelPng
+      content: ByteArray = onePixelPng,
   ): FileId {
     return service.storePhoto(batchId, content.inputStream(), metadata)
   }

@@ -76,7 +76,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
 
       assertNull(
-          existing.countryCode, "Initial boundary spans 2 countries so country code should be null")
+          existing.countryCode,
+          "Initial boundary spans 2 countries so country code should be null",
+      )
       assertEquals(existing.allZoneIds(), edited.allZoneIds(), "Planting zone IDs")
       assertEquals(existing.allSubzoneIds(), edited.allSubzoneIds(), "Planting subzone IDs")
     }
@@ -99,14 +101,16 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                       targetPlantingDensity = newTargetPlantingDensity
                       variance = newVariance
                     }
-                  })
+                  },
+          )
 
       assertEquals(newErrorMargin, edited.plantingZones[0].errorMargin, "Error margin")
       assertEquals(newStudentsT, edited.plantingZones[0].studentsT, "Student's t")
       assertEquals(
           newTargetPlantingDensity,
           edited.plantingZones[0].targetPlantingDensity,
-          "Target planting density")
+          "Target planting density",
+      )
       assertEquals(newVariance, edited.plantingZones[0].variance, "Variance")
     }
 
@@ -117,7 +121,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           newSite(width = 750) {
             zone(width = 500)
             zone()
-          })
+          },
+      )
     }
 
     @Test
@@ -128,7 +133,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 zone(width = 500)
                 zone()
               },
-          desired = newSite(width = 500))
+          desired = newSite(width = 500),
+      )
     }
 
     @Test
@@ -141,7 +147,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   subzone()
                 }
               },
-          desired = newSite(width = 500))
+          desired = newSite(width = 500),
+      )
     }
 
     @Test
@@ -149,7 +156,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val (edited, existing) =
           runScenario(
               newSite { exclusion = rectangle(width = 100, height = 500) },
-              newSite { exclusion = rectangle(width = 200, height = 500) })
+              newSite { exclusion = rectangle(width = 200, height = 500) },
+          )
 
       assertEquals(BigDecimal("20.0"), existing.areaHa, "Site area before edit")
       assertEquals(BigDecimal("15.0"), edited.areaHa, "Site area after edit")
@@ -158,11 +166,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           BigDecimal("20.0"),
           existing.plantingZones[0].plantingSubzones[0].areaHa,
-          "Subzone area before edit")
+          "Subzone area before edit",
+      )
       assertEquals(
           BigDecimal("15.0"),
           edited.plantingZones[0].plantingSubzones[0].areaHa,
-          "Subzone area after edit")
+          "Subzone area after edit",
+      )
     }
 
     @Test
@@ -220,7 +230,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val zonesRows = plantingZonesDao.findAll().associateBy { it.name }
       assertEquals(
-          Instant.EPOCH, zonesRows["Z1"]?.boundaryModifiedTime, "Zone with no boundary change")
+          Instant.EPOCH,
+          zonesRows["Z1"]?.boundaryModifiedTime,
+          "Zone with no boundary change",
+      )
       assertEquals(editTime, zonesRows["Z2"]?.boundaryModifiedTime, "Zone with boundary change")
     }
 
@@ -235,14 +248,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           PlantingSiteMapEditedEvent(
               results.edited,
               results.plantingSiteEdit,
-              ReplacementResult(monitoringPlotIds, emptySet())))
+              ReplacementResult(monitoringPlotIds, emptySet()),
+          )
+      )
     }
 
     @Test
     fun `does not publish event if edit was a no-op`() {
       runScenario(
           initial = newSite { zone(numPermanent = 1) { subzone { permanent() } } },
-          desired = newSite { zone(numPermanent = 1) })
+          desired = newSite { zone(numPermanent = 1) },
+      )
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
     }
@@ -273,8 +289,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                                 ),
                             plantingSubzoneEdits = emptyList(),
                             removedRegion = rectangle(0),
-                        )),
-            ))
+                        )
+                    ),
+            )
+        )
       }
     }
 
@@ -300,7 +318,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           runScenario(
               initial = initial,
               desired = expected,
-              expectedPlotCounts = listOf(existingArea to 2, newArea to 2))
+              expectedPlotCounts = listOf(existingArea to 2, newArea to 2),
+          )
 
       assertPermanentPlotRegions(
           edited,
@@ -309,7 +328,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               2 to newArea,
               3 to existingArea,
               4 to newArea,
-          ))
+          ),
+      )
     }
 
     @Test
@@ -388,7 +408,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               27L to null,
           ),
           monitoringPlotsDao.findAll().associate { it.plotNumber to it.permanentIndex },
-          "Permanent indexes for each plot number")
+          "Permanent indexes for each plot number",
+      )
     }
 
     @Test
@@ -436,14 +457,16 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           mapOf("C" to existingZones["A"]!!.id, "D" to existingZones["B"]!!.id),
           edited.plantingZones.associate { it.name to it.id },
-          "Zone IDs")
+          "Zone IDs",
+      )
       assertEquals(
           mapOf(
               "C-Subzone" to existingZones["A"]!!.plantingSubzones.first().id,
               "D-Subzone" to existingZones["B"]!!.plantingSubzones.first().id,
           ),
           edited.plantingZones.flatMap { it.plantingSubzones }.associate { it.fullName to it.id },
-          "Subzone IDs")
+          "Subzone IDs",
+      )
     }
 
     @Test
@@ -467,11 +490,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           mapOf("A" to StableId("B"), "B" to StableId("A")),
           edited.plantingZones.associate { it.name to it.stableId },
-          "Stable IDs for zone names after name swap")
+          "Stable IDs for zone names after name swap",
+      )
       assertEquals(
           existing.plantingZones.associate { it.stableId to it.id },
           edited.plantingZones.associate { it.stableId to it.id },
-          "Planting zone IDs by stable ID after name swap")
+          "Planting zone IDs by stable ID after name swap",
+      )
     }
 
     @Test
@@ -495,11 +520,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           mapOf("S1" to StableId("S2"), "S2" to StableId("S1")),
           edited.plantingZones.single().plantingSubzones.associate { it.name to it.stableId },
-          "Stable IDs for subzone names after name swap")
+          "Stable IDs for subzone names after name swap",
+      )
       assertEquals(
           existing.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
           edited.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
-          "Planting subzone IDs by stable ID after name swap")
+          "Planting subzone IDs by stable ID after name swap",
+      )
     }
 
     @Test
@@ -527,7 +554,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           existingSubzone2.monitoringPlots[0].copy(permanentIndex = 1),
           editedSubzone2.monitoringPlots[0],
-          "Monitoring plot in moved subzone")
+          "Monitoring plot in moved subzone",
+      )
     }
 
     @Test
@@ -551,7 +579,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           existingSubzone.monitoringPlots[0].copy(permanentIndex = 1),
           editedSubzone.monitoringPlots[0],
-          "Monitoring plot in moved subzone")
+          "Monitoring plot in moved subzone",
+      )
     }
 
     private fun createSite(initial: NewPlantingSiteModel): ExistingPlantingSiteModel {
@@ -591,7 +620,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       do {
         val nextPlotNumber =
             identifierGenerator.generateNumericIdentifier(
-                organizationId, NumericIdentifierType.PlotNumber)
+                organizationId,
+                NumericIdentifierType.PlotNumber,
+            )
       } while (nextPlotNumber <= maxPlotNumber)
 
       val existing = store.fetchSiteById(existingWithoutPlots.id, PlantingSiteDepth.Plot)
@@ -634,8 +665,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                         plantingSubzones =
                             zone.plantingSubzones.map { subzone ->
                               subzone.copy(monitoringPlots = emptyList())
-                            })
-                  })
+                            }
+                    )
+                  }
+          )
 
       val expectedWithoutMonitoringPlots = expected.withoutMonitoringPlots()
       val editedWithoutMonitoringPlots = edited.toNew().withoutMonitoringPlots()
@@ -643,7 +676,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         assertEquals(
             expectedWithoutMonitoringPlots,
             editedWithoutMonitoringPlots,
-            "Planting site after edit")
+            "Planting site after edit",
+        )
       }
 
       val editedMonitoringPlots =
@@ -660,7 +694,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         assertEquals(
             expectedPlotCounts,
             actualPlotCounts,
-            "Number of monitoring plots in regions of edited site")
+            "Number of monitoring plots in regions of edited site",
+        )
       }
 
       if (plantingSiteEdit.plantingZoneEdits.isNotEmpty()) {
@@ -703,7 +738,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               plantingSiteId = existing.id,
           ),
           existingSiteHistory,
-          "Existing site history")
+          "Existing site history",
+      )
       assertEquals(
           PlantingSiteHistoriesRow(
               areaHa = edited.areaHa,
@@ -716,7 +752,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               plantingSiteId = existing.id,
           ),
           editedSiteHistory,
-          "Edited site history")
+          "Edited site history",
+      )
 
       val editedZoneHistories =
           plantingZoneHistoriesDao.fetchByPlantingSiteHistoryId(editedSiteHistory.id!!)
@@ -724,7 +761,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           edited.plantingZones.size,
           editedZoneHistories.size,
-          "Number of planting zone histories from edit")
+          "Number of planting zone histories from edit",
+      )
       assertEquals(
           edited.plantingZones
               .map { zone ->
@@ -739,11 +777,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               }
               .toSet(),
           editedZoneHistories.map { it.copy(id = null) }.toSet(),
-          "Planting zone histories from edit")
+          "Planting zone histories from edit",
+      )
 
       val editedSubzoneHistories =
           plantingSubzoneHistoriesDao.fetchByPlantingZoneHistoryId(
-              *editedZoneHistories.map { it.id!! }.toTypedArray())
+              *editedZoneHistories.map { it.id!! }.toTypedArray()
+          )
 
       assertTableEquals(
           edited.plantingZones.flatMap { zone ->
@@ -764,7 +804,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           "Planting subzone histories from edit",
           where =
               PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.PLANTING_SITE_HISTORY_ID.eq(
-                  editedSiteHistory.id))
+                  editedSiteHistory.id
+              ),
+      )
 
       val subzonePlotIds =
           edited.plantingZones
@@ -815,7 +857,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         assertTableEquals(
             expectedPlotHistories,
             "Monitoring plot histories from edit",
-            where = MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(editedSiteHistory.id))
+            where = MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(editedSiteHistory.id),
+        )
       }
     }
   }
@@ -828,7 +871,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
    */
   private fun assertPermanentPlotRegions(
       edited: ExistingPlantingSiteModel,
-      expected: Map<Int, Geometry>
+      expected: Map<Int, Geometry>,
   ) {
     val editedMonitoringPlots =
         edited.plantingZones.flatMap { zone ->
@@ -859,7 +902,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
    */
   private fun assertSubzonePermanentIndexes(
       site: AnyPlantingSiteModel,
-      expected: Map<String, List<Int?>>
+      expected: Map<String, List<Int?>>,
   ) {
     val actual =
         site.plantingZones
@@ -884,7 +927,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
    */
   private fun assertSubzonePlotNumbers(
       site: AnyPlantingSiteModel,
-      expected: Map<String, List<Long>>
+      expected: Map<String, List<Long>>,
   ) {
     val actual =
         site.plantingZones

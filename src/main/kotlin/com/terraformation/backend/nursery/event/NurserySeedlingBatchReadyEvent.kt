@@ -7,5 +7,5 @@ data class NurserySeedlingBatchReadyEvent(
     val batchId: BatchId,
     val batchNumber: String,
     val speciesId: SpeciesId,
-    val nurseryName: String
+    val nurseryName: String,
 )

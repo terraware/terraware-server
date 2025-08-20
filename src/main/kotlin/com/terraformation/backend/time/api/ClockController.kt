@@ -17,7 +17,8 @@ class ClockController(private val clock: Clock) {
       summary = "Get the server's current date and time.",
       description =
           "In test environments, the clock can be advanced artificially, which will cause it to " +
-              "differ from the real-world date and time.")
+              "differ from the real-world date and time.",
+  )
   fun getCurrentTime(request: HttpServletRequest): GetCurrentTimeResponsePayload {
     return GetCurrentTimeResponsePayload(clock.instant())
   }

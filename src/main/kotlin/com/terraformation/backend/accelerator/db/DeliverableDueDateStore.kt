@@ -30,15 +30,18 @@ class DeliverableDueDateStore(
         listOfNotNull(
             cohortId?.let { COHORT_MODULES.COHORT_ID.eq(cohortId) },
             deliverableId?.let { DELIVERABLES.ID.eq(deliverableId) },
-            moduleId?.let { DELIVERABLES.MODULE_ID.eq(moduleId) })
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(moduleId) },
+        )
 
     val projectDueDatesMultiset =
         DSL.multiset(
                 DSL.select(
                         DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID,
-                        DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE)
+                        DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
+                    )
                     .from(DELIVERABLE_PROJECT_DUE_DATES)
-                    .where(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID)))
+                    .where(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+            )
             .convertFrom { result ->
               result.associate { record ->
                 record[DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID]!! to
@@ -53,7 +56,8 @@ class DeliverableDueDateStore(
             COHORT_MODULES.MODULE_ID,
             DELIVERABLES.ID,
             DELIVERABLE_COHORT_DUE_DATES.DUE_DATE,
-            projectDueDatesMultiset)
+            projectDueDatesMultiset,
+        )
         .from(COHORT_MODULES)
         .join(DELIVERABLES)
         .on(DELIVERABLES.MODULE_ID.eq(COHORT_MODULES.MODULE_ID))
@@ -67,7 +71,8 @@ class DeliverableDueDateStore(
               moduleId = record[COHORT_MODULES.MODULE_ID]!!,
               cohortDueDate = record[DELIVERABLE_COHORT_DUE_DATES.DUE_DATE],
               moduleDueDate = record[COHORT_MODULES.END_DATE]!!,
-              projectDueDates = record[projectDueDatesMultiset])
+              projectDueDates = record[projectDueDatesMultiset],
+          )
         }
   }
 

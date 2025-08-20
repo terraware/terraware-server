@@ -58,7 +58,8 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             Messages(),
             organizationsDao,
-            subLocationsDao),
+            subLocationsDao,
+        ),
     )
   }
 
@@ -125,7 +126,8 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             OmniSense("Ambient 1", 21.0 to 25.0, 34.0 to 40.0),
             OmniSense("Dry Cabinet 1", 21.0 to 25.0, 27.0 to 33.0),
             OmniSense("Freezer 3", -25.0 to -15.0),
-            OmniSense("Fridge 2", 0.0 to 10.0))
+            OmniSense("Fridge 2", 0.0 to 10.0),
+        )
   }
 
   @BeforeEach
@@ -151,7 +153,9 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             name = "test",
             deviceType = "random",
             make = "company",
-            model = "product"))
+            model = "product",
+        )
+    )
     assertTableEmpty(AUTOMATIONS)
   }
 
@@ -171,7 +175,9 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
                 name = "PV",
                 deviceType = "unknown",
                 make = "unknown",
-                model = "unknown"))
+                model = "unknown",
+            )
+        )
 
     service.update(bmuRow.copy(id = deviceId))
 
@@ -252,7 +258,10 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
         DeviceUnresponsiveEvent(DeviceId(1), Instant.ofEpochSecond(123), Duration.ofSeconds(30))
 
     service.markUnresponsive(
-        expected.deviceId, expected.lastRespondedTime, expected.expectedInterval)
+        expected.deviceId,
+        expected.lastRespondedTime,
+        expected.expectedInterval,
+    )
 
     eventPublisher.assertEventPublished(expected)
   }
@@ -295,7 +304,9 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             deviceType = "type",
             name = "name",
             make = "make",
-            model = "model"))
+            model = "model",
+        )
+    )
 
     service.createDefaultDevices(desalFacilityId)
 
@@ -338,7 +349,8 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
                 protocol = template.protocol,
                 settings = template.settings,
                 verbosity = template.verbosity,
-            ))
+            )
+        )
 
     val actual = devicesDao.findAll().map { it.copy(id = null) }
     assertEquals(expected, actual)

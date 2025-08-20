@@ -21,19 +21,19 @@ class VariableWorkflowControllerTest : ControllerIntegrationTest() {
 
   private fun path(
       projectId: ProjectId = inserted.projectId,
-      variableId: VariableId = inserted.variableId
+      variableId: VariableId = inserted.variableId,
   ) = "/api/v1/document-producer/projects/$projectId/workflow/$variableId"
 
   @Nested
   inner class UpdateVariableWorkflowDetails {
     val payload =
         """
-          {
-            "feedback": "My feedback",
-            "internalComment": "My comment",
-            "status": "Needs Translation"
-          }
-          """
+        {
+          "feedback": "My feedback",
+          "internalComment": "My comment",
+          "status": "Needs Translation"
+        }
+        """
             .trimIndent()
 
     @Nested
@@ -62,9 +62,11 @@ class VariableWorkflowControllerTest : ControllerIntegrationTest() {
                     projectId = inserted.projectId,
                     variableId = inserted.variableId,
                     variableWorkflowStatusId = VariableWorkflowStatus.NeedsTranslation,
-                )),
+                )
+            ),
             variableWorkflowHistoryDao.findAll().map { it.copy(id = null) },
-            "Should have inserted new history row")
+            "Should have inserted new history row",
+        )
       }
 
       @Test

@@ -35,7 +35,8 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertTestData()
     assertEquals(
         mapOf(org1FacilityId to Role.Contributor, org2FacilityId to Role.Manager),
-        permissionStore.fetchFacilityRoles(org1Contributor2Manager))
+        permissionStore.fetchFacilityRoles(org1Contributor2Manager),
+    )
   }
 
   @Test
@@ -48,7 +49,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchOrganizationRoles only includes organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(organizationId2 to Role.Owner), permissionStore.fetchOrganizationRoles(org2Owner))
+        mapOf(organizationId2 to Role.Owner),
+        permissionStore.fetchOrganizationRoles(org2Owner),
+    )
   }
 
   @Test
@@ -56,7 +59,8 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertTestData()
     assertEquals(
         mapOf(organizationId1 to Role.Contributor, organizationId2 to Role.Manager),
-        permissionStore.fetchOrganizationRoles(org1Contributor2Manager))
+        permissionStore.fetchOrganizationRoles(org1Contributor2Manager),
+    )
   }
 
   @Test
@@ -76,8 +80,10 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
             GlobalRole.AcceleratorAdmin,
             GlobalRole.TFExpert,
             GlobalRole.ReadOnly,
-            GlobalRole.SuperAdmin),
-        permissionStore.fetchGlobalRoles(user.userId))
+            GlobalRole.SuperAdmin,
+        ),
+        permissionStore.fetchGlobalRoles(user.userId),
+    )
   }
 
   @Test

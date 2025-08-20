@@ -63,7 +63,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   content = "New Disclaimer",
                   effectiveOn = Instant.ofEpochSecond(6000),
               ),
-          ))
+          )
+      )
     }
 
     @Test
@@ -136,11 +137,15 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               UserDisclaimersRecord(
                   userId = funderUserId2,
                   disclaimerId = disclaimerId1,
-                  acceptedOn = Instant.ofEpochSecond(3002)),
+                  acceptedOn = Instant.ofEpochSecond(3002),
+              ),
               UserDisclaimersRecord(
                   userId = funderUserId1,
                   disclaimerId = disclaimerId2,
-                  acceptedOn = Instant.ofEpochSecond(6001))))
+                  acceptedOn = Instant.ofEpochSecond(6001),
+              ),
+          )
+      )
     }
 
     @Test
@@ -214,12 +219,14 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       mapOf(
                           funderUserId1 to Instant.ofEpochSecond(9001),
                           funderUserId2 to Instant.ofEpochSecond(9002),
-                      )),
+                      ),
+              ),
               DisclaimerModel(
                   id = disclaimerId3,
                   content = "Disclaimer 3",
                   effectiveOn = Instant.ofEpochSecond(6000),
-                  users = emptyMap()),
+                  users = emptyMap(),
+              ),
               DisclaimerModel(
                   id = disclaimerId2,
                   content = "Disclaimer 2",
@@ -228,7 +235,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       mapOf(
                           funderUserId1 to Instant.ofEpochSecond(3001),
                           funderUserId3 to Instant.ofEpochSecond(3002),
-                      )),
+                      ),
+              ),
           )
 
       assertEquals(expected, store.fetchAllDisclaimers())
@@ -291,9 +299,11 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   mapOf(
                       funderUserId1 to Instant.ofEpochSecond(9001),
                       funderUserId2 to Instant.ofEpochSecond(9002),
-                  )),
+                  ),
+          ),
           store.fetchOneDisclaimer(disclaimerId1),
-          "Disclaimer 1")
+          "Disclaimer 1",
+      )
 
       assertEquals(
           DisclaimerModel(
@@ -304,18 +314,22 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   mapOf(
                       funderUserId1 to Instant.ofEpochSecond(3001),
                       funderUserId3 to Instant.ofEpochSecond(3002),
-                  )),
+                  ),
+          ),
           store.fetchOneDisclaimer(disclaimerId2),
-          "Disclaimer 2")
+          "Disclaimer 2",
+      )
 
       assertEquals(
           DisclaimerModel(
               id = disclaimerId3,
               content = "Disclaimer 3",
               effectiveOn = Instant.ofEpochSecond(6000),
-              users = emptyMap()),
+              users = emptyMap(),
+          ),
           store.fetchOneDisclaimer(disclaimerId3),
-          "Disclaimer 3")
+          "Disclaimer 3",
+      )
     }
 
     @Test
@@ -345,7 +359,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserDisclaimer(
           userId = funderUserId,
           disclaimerId = disclaimerId1,
-          acceptedOn = Instant.ofEpochSecond(3001))
+          acceptedOn = Instant.ofEpochSecond(3001),
+      )
 
       val disclaimerId2 =
           insertDisclaimer(
@@ -365,7 +380,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               effectiveOn = Instant.ofEpochSecond(3000),
           ),
           store.fetchCurrentDisclaimer(),
-          "First disclaimer with accepted date")
+          "First disclaimer with accepted date",
+      )
 
       clock.instant = Instant.ofEpochSecond(6000)
       assertEquals(
@@ -375,7 +391,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               effectiveOn = Instant.ofEpochSecond(6000),
           ),
           store.fetchCurrentDisclaimer(),
-          "Second disclaimer without accepted date")
+          "Second disclaimer without accepted date",
+      )
     }
 
     @Test
@@ -398,7 +415,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserDisclaimer(
           userId = funderUserId,
           disclaimerId = existingDisclaimerId,
-          acceptedOn = Instant.ofEpochSecond(3001))
+          acceptedOn = Instant.ofEpochSecond(3001),
+      )
 
       val disclaimerId =
           insertDisclaimer(
@@ -421,7 +439,9 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   userId = funderUserId,
                   disclaimerId = disclaimerId,
                   acceptedOn = Instant.ofEpochSecond(6001),
-              )))
+              ),
+          )
+      )
     }
 
     @Test
@@ -435,7 +455,8 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserDisclaimer(
           userId = funderUserId,
           disclaimerId = disclaimerId,
-          acceptedOn = Instant.ofEpochSecond(3000))
+          acceptedOn = Instant.ofEpochSecond(3000),
+      )
 
       clock.instant = Instant.ofEpochSecond(6000)
       store.acceptCurrentDisclaimer()
@@ -444,7 +465,9 @@ internal class DisclaimerStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           UserDisclaimersRecord(
               userId = funderUserId,
               disclaimerId = disclaimerId,
-              acceptedOn = Instant.ofEpochSecond(3000)))
+              acceptedOn = Instant.ofEpochSecond(3000),
+          )
+      )
     }
 
     @Test

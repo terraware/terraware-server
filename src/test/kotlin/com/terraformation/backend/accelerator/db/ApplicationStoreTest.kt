@@ -68,7 +68,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val store: ApplicationStore by lazy {
     ApplicationStore(
-        clock, countriesDao, TestSingletons.countryDetector, dslContext, eventPublisher, messages)
+        clock,
+        countriesDao,
+        TestSingletons.countryDetector,
+        dslContext,
+        eventPublisher,
+        messages,
+    )
   }
 
   private val organizationName = UUID.randomUUID().toString()
@@ -111,7 +117,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               internalName = "XXX_$organizationName",
               modifiedBy = user.userId,
               modifiedTime = now,
-              projectId = inserted.projectId))
+              projectId = inserted.projectId,
+          )
+      )
 
       assertTableEquals(
           ApplicationHistoriesRecord(
@@ -119,18 +127,23 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               applicationStatusId = ApplicationStatus.NotSubmitted,
               modifiedBy = user.userId,
               modifiedTime = now,
-          ))
+          )
+      )
 
       assertTableEquals(
           listOf(
               ApplicationModulesRecord(
                   applicationId = model.id,
                   moduleId = prescreenModuleId,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete,
+              ),
               ApplicationModulesRecord(
                   applicationId = model.id,
                   moduleId = applicationModuleId,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)))
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete,
+              ),
+          )
+      )
     }
 
     @Test
@@ -189,7 +202,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
           insertApplication(
-              projectId = org2ProjectId1, countryCode = "US", internalName = "Internal Name 3")
+              projectId = org2ProjectId1,
+              countryCode = "US",
+              internalName = "Internal Name 3",
+          )
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
@@ -199,9 +215,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       @Test
       fun `fetches application data with latest modified time`() {
         insertApplicationHistory(
-            org1Project1ApplicationId, modifiedTime = clock.instant.plusSeconds(600))
+            org1Project1ApplicationId,
+            modifiedTime = clock.instant.plusSeconds(600),
+        )
         insertApplicationHistory(
-            org1Project1ApplicationId, modifiedTime = clock.instant.plusSeconds(120))
+            org1Project1ApplicationId,
+            modifiedTime = clock.instant.plusSeconds(120),
+        )
 
         assertEquals(
             ExistingApplicationModel(
@@ -217,8 +237,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 organizationName = organizationName,
                 projectId = org1ProjectId1,
                 projectName = "Project A",
-                status = ApplicationStatus.ExpertReview),
-            store.fetchOneById(org1Project1ApplicationId))
+                status = ApplicationStatus.ExpertReview,
+            ),
+            store.fetchOneById(org1Project1ApplicationId),
+        )
       }
 
       @Test
@@ -244,26 +266,39 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             org1Project1ApplicationId.value,
             simpleFeature.getAttribute("applicationId"),
-            "applicationId attribute")
+            "applicationId attribute",
+        )
         assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
         assertEquals(
-            "Internal Name 1", simpleFeature.getAttribute("internalName"), "internalName attribute")
+            "Internal Name 1",
+            simpleFeature.getAttribute("internalName"),
+            "internalName attribute",
+        )
         assertEquals(
             organizationId.value,
             simpleFeature.getAttribute("organizationId"),
-            "organizationId attribute")
+            "organizationId attribute",
+        )
         assertEquals(
             organizationName,
             simpleFeature.getAttribute("organizationName"),
-            "organizationName attribute")
+            "organizationName attribute",
+        )
         assertEquals(
-            org1ProjectId1.value, simpleFeature.getAttribute("projectId"), "projectId attribute")
+            org1ProjectId1.value,
+            simpleFeature.getAttribute("projectId"),
+            "projectId attribute",
+        )
         assertEquals(
-            "Project A", simpleFeature.getAttribute("projectName"), "projectName attribute")
+            "Project A",
+            simpleFeature.getAttribute("projectName"),
+            "projectName attribute",
+        )
         assertEquals(
             ApplicationStatus.ExpertReview.jsonValue,
             simpleFeature.getAttribute("status"),
-            "status attribute")
+            "status attribute",
+        )
       }
 
       @Test
@@ -298,8 +333,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.ExpertReview)),
-            store.fetchByProjectId(org1ProjectId1))
+                    status = ApplicationStatus.ExpertReview,
+                )
+            ),
+            store.fetchByProjectId(org1ProjectId1),
+        )
       }
 
       @Test
@@ -313,7 +351,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       fun `returns empty list if project has no application`() {
         val noApplicationProjectId = insertProject()
         assertEquals(
-            emptyList<ExistingApplicationModel>(), store.fetchByProjectId(noApplicationProjectId))
+            emptyList<ExistingApplicationModel>(),
+            store.fetchByProjectId(noApplicationProjectId),
+        )
       }
 
       @Test
@@ -343,7 +383,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.ExpertReview),
+                    status = ApplicationStatus.ExpertReview,
+                ),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
                     createdTime = Instant.EPOCH,
@@ -356,9 +397,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
-                    status = ApplicationStatus.SourcingTeamReview),
+                    status = ApplicationStatus.SourcingTeamReview,
+                ),
             ),
-            store.fetchByOrganizationId(organizationId))
+            store.fetchByOrganizationId(organizationId),
+        )
       }
 
       @Test
@@ -390,7 +433,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.ExpertReview),
+                    status = ApplicationStatus.ExpertReview,
+                ),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
                     createdTime = Instant.EPOCH,
@@ -403,7 +447,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
-                    status = ApplicationStatus.SourcingTeamReview),
+                    status = ApplicationStatus.SourcingTeamReview,
+                ),
                 ExistingApplicationModel(
                     countryCode = "US",
                     createdTime = Instant.EPOCH,
@@ -414,9 +459,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = "Organization 2",
                     projectId = org2ProjectId1,
                     projectName = "Project C",
-                    status = ApplicationStatus.NotSubmitted),
+                    status = ApplicationStatus.NotSubmitted,
+                ),
             ),
-            store.fetchAll())
+            store.fetchAll(),
+        )
       }
 
       @Test
@@ -435,7 +482,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 feedback = "feedback 1",
                 internalComment = "internal comment 1",
                 modifiedTime = Instant.ofEpochSecond(5),
-                status = ApplicationStatus.NotSubmitted)
+                status = ApplicationStatus.NotSubmitted,
+            )
         val laterHistoryId =
             insertApplicationHistory(
                 applicationId = org1Project1ApplicationId,
@@ -443,7 +491,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 feedback = "feedback 2",
                 internalComment = "internal comment 2",
                 modifiedTime = Instant.ofEpochSecond(10),
-                status = ApplicationStatus.PassedPreScreen)
+                status = ApplicationStatus.PassedPreScreen,
+            )
 
         assertEquals(
             listOf(
@@ -467,7 +516,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     modifiedTime = Instant.ofEpochSecond(5),
                 ),
             ),
-            store.fetchHistoryByApplicationId(org1Project1ApplicationId))
+            store.fetchHistoryByApplicationId(org1Project1ApplicationId),
+        )
       }
 
       @Test
@@ -503,15 +553,25 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Application 1",
                 overview = "Application 1 Overview",
                 phase = CohortPhase.Application,
-                position = 1)
+                position = 1,
+            )
         insertModule(name = "Hidden module", phase = CohortPhase.Phase1FeasibilityStudy)
 
         insertApplicationModule(
-            inserted.applicationId, prescreenModule, ApplicationModuleStatus.Complete)
+            inserted.applicationId,
+            prescreenModule,
+            ApplicationModuleStatus.Complete,
+        )
         insertApplicationModule(
-            inserted.applicationId, applicationModule1, ApplicationModuleStatus.Incomplete)
+            inserted.applicationId,
+            applicationModule1,
+            ApplicationModuleStatus.Incomplete,
+        )
         insertApplicationModule(
-            inserted.applicationId, applicationModule2, ApplicationModuleStatus.Incomplete)
+            inserted.applicationId,
+            applicationModule2,
+            ApplicationModuleStatus.Incomplete,
+        )
 
         val expected =
             listOf(
@@ -521,21 +581,24 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     phase = CohortPhase.PreScreen,
                     overview = "Pre-screen Overview",
                     applicationId = inserted.applicationId,
-                    applicationModuleStatus = ApplicationModuleStatus.Complete),
+                    applicationModuleStatus = ApplicationModuleStatus.Complete,
+                ),
                 ApplicationModuleModel(
                     id = applicationModule1,
                     name = "Application 1",
                     phase = CohortPhase.Application,
                     overview = "Application 1 Overview",
                     applicationId = inserted.applicationId,
-                    applicationModuleStatus = ApplicationModuleStatus.Incomplete),
+                    applicationModuleStatus = ApplicationModuleStatus.Incomplete,
+                ),
                 ApplicationModuleModel(
                     id = applicationModule2,
                     name = "Application 2",
                     phase = CohortPhase.Application,
                     overview = "Application 2 Overview",
                     applicationId = inserted.applicationId,
-                    applicationModuleStatus = ApplicationModuleStatus.Incomplete),
+                    applicationModuleStatus = ApplicationModuleStatus.Incomplete,
+                ),
             )
         val actual = store.fetchModulesByApplicationId(inserted.applicationId).toList()
 
@@ -590,14 +653,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertModule(
                 name = "Application",
                 overview = "Application Overview",
-                phase = CohortPhase.Application)
+                phase = CohortPhase.Application,
+            )
 
         // Extra module only for org 2 project 1, not visible to Org 1.
         extraApplicationModuleId =
             insertModule(
                 name = "Extra Application",
                 overview = "Extra Application Overview",
-                phase = CohortPhase.Application)
+                phase = CohortPhase.Application,
+            )
 
         insertApplicationModule(org1Project1ApplicationId, prescreenModuleId)
         insertApplicationModule(org1Project1ApplicationId, applicationModuleId)
@@ -814,134 +879,173 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId1).toSet(),
-            "Fetch application deliverables by projectId for org1 project1")
+            "Fetch application deliverables by projectId for org1 project1",
+        )
 
         assertEquals(
             setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId2).toSet(),
-            "Fetch application deliverables by projectId for org1 project2")
+            "Fetch application deliverables by projectId for org1 project2",
+        )
 
         assertEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
-                org2Project1ExtraApplicationModel),
+                org2Project1ExtraApplicationModel,
+            ),
             store.fetchApplicationDeliverables(projectId = org2ProjectId1).toSet(),
-            "Fetch application deliverables by org2 project1")
+            "Fetch application deliverables by org2 project1",
+        )
 
         assertEquals(
             setOf(org1Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
-                    projectId = org1ProjectId1, deliverableId = prescreenDeliverableId)
+                    projectId = org1ProjectId1,
+                    deliverableId = prescreenDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by projectId and deliverableId for org1 project1")
+            "Fetch application deliverables by projectId and deliverableId for org1 project1",
+        )
 
         assertEquals(
             setOf(org1Project2PrescreenModel),
             store
                 .fetchApplicationDeliverables(
-                    projectId = org1ProjectId2, deliverableId = prescreenDeliverableId)
+                    projectId = org1ProjectId2,
+                    deliverableId = prescreenDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by projectId and deliverableId for org1 project2")
+            "Fetch application deliverables by projectId and deliverableId for org1 project2",
+        )
 
         assertEquals(
             setOf(org2Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
-                    projectId = org2ProjectId1, deliverableId = prescreenDeliverableId)
+                    projectId = org2ProjectId1,
+                    deliverableId = prescreenDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by projectId and deliverableId for org1 project2")
+            "Fetch application deliverables by projectId and deliverableId for org1 project2",
+        )
 
         assertEquals(
             setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project1ApplicationId).toSet(),
-            "Fetch application deliverables by applicationId for org1 project1")
+            "Fetch application deliverables by applicationId for org1 project1",
+        )
 
         assertEquals(
             setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project2ApplicationId).toSet(),
-            "Fetch application deliverables by applicationId for org1 project2")
+            "Fetch application deliverables by applicationId for org1 project2",
+        )
 
         assertEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
-                org2Project1ExtraApplicationModel),
+                org2Project1ExtraApplicationModel,
+            ),
             store.fetchApplicationDeliverables(applicationId = org2Project1ApplicationId).toSet(),
-            "Fetch application deliverables by applicationId for org2 project1")
+            "Fetch application deliverables by applicationId for org2 project1",
+        )
 
         assertEquals(
             setOf(org1Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org1Project1ApplicationId,
-                    deliverableId = applicationDeliverableId)
+                    deliverableId = applicationDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by applicationId and deliverableId for org1 project1")
+            "Fetch application deliverables by applicationId and deliverableId for org1 project1",
+        )
 
         assertEquals(
             setOf(org1Project2ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org1Project2ApplicationId,
-                    deliverableId = applicationDeliverableId)
+                    deliverableId = applicationDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by applicationId and deliverableId for org1 project2")
+            "Fetch application deliverables by applicationId and deliverableId for org1 project2",
+        )
 
         assertEquals(
             setOf(org2Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org2Project1ApplicationId,
-                    deliverableId = applicationDeliverableId)
+                    deliverableId = applicationDeliverableId,
+                )
                 .toSet(),
-            "Fetch application deliverables by applicationId and deliverableId for org1 project2")
+            "Fetch application deliverables by applicationId and deliverableId for org1 project2",
+        )
 
         assertEquals(
             setOf(
                 org1Project1PrescreenModel,
                 org1Project1ApplicationModel,
                 org1Project2PrescreenModel,
-                org1Project2ApplicationModel),
+                org1Project2ApplicationModel,
+            ),
             store.fetchApplicationDeliverables(organizationId = organizationId).toSet(),
-            "Fetch application deliverables by organizationId 1")
+            "Fetch application deliverables by organizationId 1",
+        )
 
         assertEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
-                org2Project1ExtraApplicationModel),
+                org2Project1ExtraApplicationModel,
+            ),
             store.fetchApplicationDeliverables(organizationId = organizationId2).toSet(),
-            "Fetch application deliverables by organizationId 2")
+            "Fetch application deliverables by organizationId 2",
+        )
 
         assertEquals(
             setOf(
-                org1Project1PrescreenModel, org1Project2PrescreenModel, org2Project1PrescreenModel),
+                org1Project1PrescreenModel,
+                org1Project2PrescreenModel,
+                org2Project1PrescreenModel,
+            ),
             store.fetchApplicationDeliverables(deliverableId = prescreenDeliverableId).toSet(),
-            "Fetch application deliverables by pre-screen deliverableId")
+            "Fetch application deliverables by pre-screen deliverableId",
+        )
 
         assertEquals(
             setOf(
                 org1Project1ApplicationModel,
                 org1Project2ApplicationModel,
-                org2Project1ApplicationModel),
+                org2Project1ApplicationModel,
+            ),
             store.fetchApplicationDeliverables(deliverableId = applicationDeliverableId).toSet(),
-            "Fetch application deliverables by application deliverableId")
+            "Fetch application deliverables by application deliverableId",
+        )
 
         assertEquals(
             setOf(
-                org1Project1PrescreenModel, org1Project2PrescreenModel, org2Project1PrescreenModel),
+                org1Project1PrescreenModel,
+                org1Project2PrescreenModel,
+                org2Project1PrescreenModel,
+            ),
             store.fetchApplicationDeliverables(moduleId = prescreenModuleId).toSet(),
-            "Fetch application deliverables by pre-screen moduleId")
+            "Fetch application deliverables by pre-screen moduleId",
+        )
 
         assertEquals(
             setOf(
                 org1Project1ApplicationModel,
                 org1Project2ApplicationModel,
-                org2Project1ApplicationModel),
+                org2Project1ApplicationModel,
+            ),
             store.fetchApplicationDeliverables(moduleId = applicationModuleId).toSet(),
-            "Fetch application deliverables by application moduleId")
+            "Fetch application deliverables by application moduleId",
+        )
 
         assertEquals(
             setOf(
@@ -951,9 +1055,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 org1Project2ApplicationModel,
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
-                org2Project1ExtraApplicationModel),
+                org2Project1ExtraApplicationModel,
+            ),
             store.fetchApplicationDeliverables().toSet(),
-            "Fetch application deliverables by application deliverableId")
+            "Fetch application deliverables by application deliverableId",
+        )
       }
 
       @Test
@@ -996,7 +1102,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(
               createdBy = otherUserId,
               status = ApplicationStatus.PassedPreScreen,
-              internalName = "XXX_internalName")
+              internalName = "XXX_internalName",
+          )
       val initial = applicationsDao.findAll().single()
 
       clock.instant = Instant.ofEpochSecond(30)
@@ -1008,8 +1115,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               initial.copy(
                   applicationStatusId = ApplicationStatus.NotSubmitted,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant)),
-          applicationsDao.findAll())
+                  modifiedTime = clock.instant,
+              )
+          ),
+          applicationsDao.findAll(),
+      )
 
       assertEquals(
           listOf(
@@ -1017,8 +1127,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationId = applicationId,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-                  applicationStatusId = ApplicationStatus.NotSubmitted)),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+                  applicationStatusId = ApplicationStatus.NotSubmitted,
+              )
+          ),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) },
+      )
     }
 
     @Test
@@ -1079,7 +1192,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             internalName = "new name",
             organizationId = OrganizationId(-1),
             projectId = ProjectId(-1),
-            status = ApplicationStatus.SourcingTeamReview)
+            status = ApplicationStatus.SourcingTeamReview,
+        )
       }
 
       assertEquals(
@@ -1090,8 +1204,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   internalComment = "internal comment",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          applicationsDao.findAll())
+              )
+          ),
+          applicationsDao.findAll(),
+      )
 
       assertEquals(
           listOf(
@@ -1101,8 +1217,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
                   applicationStatusId = ApplicationStatus.SourcingTeamReview,
                   internalComment = "internal comment",
-                  feedback = "feedback")),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+                  feedback = "feedback",
+              )
+          ),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) },
+      )
     }
 
     @Test
@@ -1147,8 +1266,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              messages.applicationPreScreenFailureMismatchCountries("United States", "Tanzania")),
-          result.problems)
+              messages.applicationPreScreenFailureMismatchCountries("United States", "Tanzania")
+          ),
+          result.problems,
+      )
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1164,7 +1285,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @MethodSource(
-        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes"
+    )
     @ParameterizedTest
     fun `detects land use hectares below minimum`(
         country: String,
@@ -1186,19 +1308,28 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                       mapOf(LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10)),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(5000)))
+                  totalExpansionPotential = BigDecimal(5000),
+              ),
+          )
 
       assertEquals(
           listOf(
               messages.applicationPreScreenFailureBadSize(
-                  country, minTotalHectares, 100000, minMangroveHectares)),
+                  country,
+                  minTotalHectares,
+                  100000,
+                  minMangroveHectares,
+              )
+          ),
           result.problems,
-          country)
+          country,
+      )
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
     }
 
     @MethodSource(
-        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes"
+    )
     @ParameterizedTest
     fun `passes minimum land use hectares with total hectares`(
         country: String,
@@ -1219,17 +1350,21 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(minTotalHectares - 10),
-                          LandUseModelType.Mangroves to BigDecimal(10)),
+                          LandUseModelType.Mangroves to BigDecimal(10),
+                      ),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(5000)))
+                  totalExpansionPotential = BigDecimal(5000),
+              ),
+          )
 
       assertEquals(emptyList<String>(), result.problems, country)
       assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
     }
 
     @MethodSource(
-        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes"
+    )
     @ParameterizedTest
     fun `passes minimum land use hectares with mangrove hectares`(
         country: String,
@@ -1254,10 +1389,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(10),
-                          LandUseModelType.Mangroves to BigDecimal(minMangroveHectares)),
+                          LandUseModelType.Mangroves to BigDecimal(minMangroveHectares),
+                      ),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(5000)))
+                  totalExpansionPotential = BigDecimal(5000),
+              ),
+          )
 
       assertEquals(emptyList<String>(), result.problems, country)
       assertEquals(ApplicationStatus.PassedPreScreen, result.application.status, country)
@@ -1277,14 +1415,18 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(60000),
                           LandUseModelType.Agroforestry to BigDecimal(60000),
-                          LandUseModelType.Mangroves to BigDecimal(2000)),
+                          LandUseModelType.Mangroves to BigDecimal(2000),
+                      ),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
-                  totalExpansionPotential = BigDecimal(5000)))
+                  totalExpansionPotential = BigDecimal(5000),
+              ),
+          )
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureBadSize("Philippines", 3000, 100000, 1000)),
-          result.problems)
+          result.problems,
+      )
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1296,7 +1438,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result = store.submit(applicationId, validVariables(boundary).copy(countryCode = "CA"))
 
       assertEquals(
-          listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
+          listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")),
+          result.problems,
+      )
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1323,9 +1467,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               messages.applicationPreScreenFailureBadSize("United States", 15000, 100000),
-              messages.applicationPreScreenFailureTooFewSpecies(10)),
+              messages.applicationPreScreenFailureTooFewSpecies(10),
+          ),
           result.problems,
-          "Pre-Screen problems from submitting")
+          "Pre-Screen problems from submitting",
+      )
 
       val feedbackHtml =
           "<ul>\n" +
@@ -1335,7 +1481,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(feedbackHtml, result.application.feedback, "Pre-Screen feedback HTML")
       assertEquals(
-          ApplicationStatus.FailedPreScreen, result.application.status, "Pre-Screen status")
+          ApplicationStatus.FailedPreScreen,
+          result.application.status,
+          "Pre-Screen status",
+      )
     }
 
     @Test
@@ -1358,8 +1507,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant)),
-          applicationsDao.findAll())
+                  modifiedTime = clock.instant,
+              )
+          ),
+          applicationsDao.findAll(),
+      )
     }
 
     @Test
@@ -1382,8 +1534,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               countryCode = "US",
               internalName = "USA_${organizationName}_2",
               modifiedBy = user.userId,
-              modifiedTime = clock.instant),
-          applicationsDao.fetchOneById(applicationId))
+              modifiedTime = clock.instant,
+          ),
+          applicationsDao.fetchOneById(applicationId),
+      )
     }
 
     @Test
@@ -1401,10 +1555,12 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.NativeForest to BigDecimal(15000),
-                      LandUseModelType.Monoculture to BigDecimal.ZERO),
+                      LandUseModelType.Monoculture to BigDecimal.ZERO,
+                  ),
               numSpeciesToBePlanted = 500,
               projectType = PreScreenProjectType.Terrestrial,
-              totalExpansionPotential = BigDecimal(1500))
+              totalExpansionPotential = BigDecimal(1500),
+          )
 
       val validSubmission = mockk<DeliverableSubmissionModel>()
       every { validSubmission.status } returns SubmissionStatus.Completed
@@ -1419,8 +1575,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant)),
-          applicationsDao.findAll())
+                  modifiedTime = clock.instant,
+              )
+          ),
+          applicationsDao.findAll(),
+      )
     }
 
     @Test
@@ -1444,8 +1603,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   countryCode = "US",
                   internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant)),
-          applicationsDao.findAll())
+                  modifiedTime = clock.instant,
+              )
+          ),
+          applicationsDao.findAll(),
+      )
 
       assertEquals(
           listOf(
@@ -1454,19 +1616,26 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = initial.boundary,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-                  applicationStatusId = ApplicationStatus.PassedPreScreen)),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+                  applicationStatusId = ApplicationStatus.PassedPreScreen,
+              )
+          ),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) },
+      )
 
       assertTableEquals(
           listOf(
               ApplicationModulesRecord(
                   applicationId = applicationId,
                   moduleId = moduleId1,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete,
+              ),
               ApplicationModulesRecord(
                   applicationId = applicationId,
                   moduleId = moduleId2,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)))
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete,
+              ),
+          )
+      )
     }
 
     @Test
@@ -1490,8 +1659,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               initial.copy(
                   applicationStatusId = ApplicationStatus.Submitted,
                   modifiedBy = user.userId,
-                  modifiedTime = clock.instant)),
-          applicationsDao.findAll())
+                  modifiedTime = clock.instant,
+              )
+          ),
+          applicationsDao.findAll(),
+      )
 
       assertEquals(
           listOf(
@@ -1500,8 +1672,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = initial.boundary,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-                  applicationStatusId = ApplicationStatus.Submitted)),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+                  applicationStatusId = ApplicationStatus.Submitted,
+              )
+          ),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) },
+      )
 
       eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId))
     }
@@ -1543,13 +1718,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               ApplicationModulesRow(
                   applicationId = applicationId,
                   moduleId = moduleId1,
-                  applicationModuleStatusId = ApplicationModuleStatus.Complete),
+                  applicationModuleStatusId = ApplicationModuleStatus.Complete,
+              ),
               ApplicationModulesRow(
                   applicationId = applicationId,
                   moduleId = moduleId2,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete,
+              ),
           ),
-          applicationModulesDao.findAll().toSet())
+          applicationModulesDao.findAll().toSet(),
+      )
     }
 
     @Test
@@ -1582,7 +1760,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           landUseModelHectares =
               mapOf(
                   LandUseModelType.NativeForest to projectHectares,
-                  LandUseModelType.Monoculture to BigDecimal.ZERO),
+                  LandUseModelType.Monoculture to BigDecimal.ZERO,
+              ),
           numSpeciesToBePlanted = 500,
           projectType = PreScreenProjectType.Terrestrial,
           totalExpansionPotential = BigDecimal(1500),
@@ -1616,7 +1795,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
               projectId = inserted.projectId,
           ),
-          applicationRow.copy(boundary = null))
+          applicationRow.copy(boundary = null),
+      )
 
       assertGeometryEquals(boundary, applicationRow.boundary, "Boundary in applications row")
 
@@ -1628,8 +1808,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   boundary = applicationRow.boundary,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+              )
+          ),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) },
+      )
     }
 
     @Test
@@ -1667,15 +1849,19 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
               projectId = inserted.projectId,
           ),
-          applicationRow)
+          applicationRow,
+      )
 
       eventPublisher.assertEventPublished(
-          ApplicationInternalNameUpdatedEvent(applicationId), "Country and internal name updated")
+          ApplicationInternalNameUpdatedEvent(applicationId),
+          "Country and internal name updated",
+      )
       eventPublisher.clear()
 
       store.updateCountryCode(applicationId, "US")
       eventPublisher.assertEventNotPublished<ApplicationInternalNameUpdatedEvent>(
-          "Country and internal name not updated")
+          "Country and internal name not updated"
+      )
     }
 
     @Test

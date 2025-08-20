@@ -51,7 +51,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
               species =
                   listOf(
                       PlantingSiteReportedPlantTotals.Species(speciesId1, 1, 10),
-                      PlantingSiteReportedPlantTotals.Species(speciesId2, 2, 20)),
+                      PlantingSiteReportedPlantTotals.Species(speciesId2, 2, 20),
+                  ),
               totalPlants = 30,
               totalSpecies = 2,
           )
@@ -116,7 +117,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                       id = speciesId2,
                                       plantsSinceLastObservation = 2,
                                       totalPlants = 20,
-                                  )),
+                                  ),
+                              ),
                           targetPlants = 20,
                           totalPlants = 30,
                           totalSpecies = 2,
@@ -131,7 +133,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                                   id = speciesId1,
                                                   plantsSinceLastObservation = 2,
                                                   totalPlants = 5,
-                                              )),
+                                              )
+                                          ),
                                       totalPlants = 5,
                                       totalSpecies = 1,
                                   ),
@@ -149,10 +152,12 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                                   id = speciesId2,
                                                   plantsSinceLastObservation = 2,
                                                   totalPlants = 20,
-                                              )),
+                                              ),
+                                          ),
                                       totalPlants = 25,
                                       totalSpecies = 2,
-                                  )),
+                                  ),
+                              ),
                       ),
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = plantingZoneId2,
@@ -168,7 +173,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                       id = speciesId3,
                                       plantsSinceLastObservation = 7,
                                       totalPlants = 70,
-                                  )),
+                                  ),
+                              ),
                           targetPlants = 404,
                           totalPlants = 110,
                           totalSpecies = 2,
@@ -192,7 +198,9 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                           ),
                                       totalPlants = 105,
                                       totalSpecies = 2,
-                                  ))),
+                                  )
+                              ),
+                      ),
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = emptyPlantingZoneId,
                           plantsSinceLastObservation = 0,
@@ -204,7 +212,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                       species = emptyList(),
                                       totalSpecies = 0,
                                       totalPlants = 0,
-                                  )),
+                                  )
+                              ),
                           species = emptyList(),
                           targetPlants = 250,
                           totalSpecies = 0,
@@ -241,11 +250,13 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       assertEquals(
           (110.0 / 404.0 * 100.0).roundToInt(),
           actual.plantingZones[1].progressPercent,
-          "Progress% for zone 2 should be rounded up")
+          "Progress% for zone 2 should be rounded up",
+      )
       assertEquals(
           (150.0 / (20.0 + 404.0 + 250.0) * 100.0).roundToInt(),
           actual.progressPercent,
-          "Progress% for site")
+          "Progress% for site",
+      )
     }
 
     @Test
@@ -319,7 +330,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                           id = speciesId2,
                                           plantsSinceLastObservation = 2,
                                           totalPlants = 20,
-                                      )),
+                                      ),
+                                  ),
                               targetPlants = 20,
                               totalPlants = 30,
                               totalSpecies = 2,
@@ -334,7 +346,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                                       id = speciesId1,
                                                       plantsSinceLastObservation = 2,
                                                       totalPlants = 5,
-                                                  )),
+                                                  )
+                                              ),
                                           totalPlants = 5,
                                           totalSpecies = 1,
                                       ),
@@ -352,10 +365,12 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                                       id = speciesId2,
                                                       plantsSinceLastObservation = 2,
                                                       totalPlants = 20,
-                                                  )),
+                                                  ),
+                                              ),
                                           totalPlants = 25,
                                           totalSpecies = 2,
-                                      )),
+                                      ),
+                                  ),
                           ),
                           PlantingSiteReportedPlantTotals.PlantingZone(
                               id = plantingZoneId2,
@@ -371,7 +386,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                           id = speciesId3,
                                           plantsSinceLastObservation = 7,
                                           totalPlants = 70,
-                                      )),
+                                      ),
+                                  ),
                               targetPlants = 404,
                               totalPlants = 110,
                               totalSpecies = 2,
@@ -395,7 +411,9 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                               ),
                                           totalPlants = 105,
                                           totalSpecies = 2,
-                                      ))),
+                                      )
+                                  ),
+                          ),
                           PlantingSiteReportedPlantTotals.PlantingZone(
                               id = emptyPlantingZoneId,
                               plantsSinceLastObservation = 0,
@@ -407,7 +425,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                                           species = emptyList(),
                                           totalSpecies = 0,
                                           totalPlants = 0,
-                                      )),
+                                      )
+                                  ),
                               species = emptyList(),
                               targetPlants = 250,
                               totalSpecies = 0,
@@ -443,7 +462,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
                   species = emptyList(),
                   totalPlants = 0,
                   totalSpecies = 0,
-              ))
+              ),
+          )
 
       val actual = store.countReportedPlantsForOrganization(organizationId)
 
@@ -475,11 +495,13 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       insertPlanting(
           numPlants = -1,
           plantingTypeId = PlantingType.ReassignmentFrom,
-          plantingSubzoneId = plantingSubzoneId12)
+          plantingSubzoneId = plantingSubzoneId12,
+      )
       insertPlanting(
           numPlants = 1,
           plantingTypeId = PlantingType.ReassignmentTo,
-          plantingSubzoneId = plantingSubzoneId11)
+          plantingSubzoneId = plantingSubzoneId11,
+      )
       insertSpecies()
       insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId21)
 
@@ -492,7 +514,8 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
 
       assertEquals(
           mapOf(plantingSubzoneId11 to 1L, plantingSubzoneId21 to 6L),
-          store.countReportedPlantsInSubzones(plantingSiteId))
+          store.countReportedPlantsInSubzones(plantingSiteId),
+      )
     }
   }
 }

@@ -32,7 +32,8 @@ class VariableTest {
       assertThrows<VariableNotListException> {
         testValidate(
             TextVariable(baseVariable(), VariableTextType.SingleLine),
-            NewTextValue(baseValue(listPosition = 1), "Text"))
+            NewTextValue(baseValue(listPosition = 1), "Text"),
+        )
       }
     }
 
@@ -40,7 +41,8 @@ class VariableTest {
     fun `allows nonzero list positions for list variables`() {
       testValidate(
           TextVariable(baseVariable(isList = true), VariableTextType.SingleLine),
-          NewTextValue(baseValue(listPosition = 1), "Text"))
+          NewTextValue(baseValue(listPosition = 1), "Text"),
+      )
     }
 
     @Test
@@ -75,7 +77,8 @@ class VariableTest {
     fun `allows value that meets constraints`() {
       testValidate(
           NumberVariable(baseVariable(), BigDecimal.ONE, BigDecimal.TWO, 2),
-          NewNumberValue(baseValue(), BigDecimal("1.54")))
+          NewNumberValue(baseValue(), BigDecimal("1.54")),
+      )
     }
 
     @Test
@@ -83,7 +86,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             NumberVariable(baseVariable(), BigDecimal.TEN, null, 0),
-            NewNumberValue(baseValue(), BigDecimal.ONE))
+            NewNumberValue(baseValue(), BigDecimal.ONE),
+        )
       }
     }
 
@@ -92,7 +96,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             NumberVariable(baseVariable(), null, BigDecimal.ONE, 0),
-            NewNumberValue(baseValue(), BigDecimal.TWO))
+            NewNumberValue(baseValue(), BigDecimal.TWO),
+        )
       }
     }
 
@@ -101,7 +106,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             NumberVariable(baseVariable(), null, null, 3),
-            NewNumberValue(baseValue(), BigDecimal("1.2345")))
+            NewNumberValue(baseValue(), BigDecimal("1.2345")),
+        )
       }
     }
   }
@@ -118,7 +124,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             EmailVariable(baseVariable()),
-            NewEmailValue(baseValue(), "Real Person <valid@example.com>"))
+            NewEmailValue(baseValue(), "Real Person <valid@example.com>"),
+        )
       }
     }
 
@@ -143,14 +150,16 @@ class VariableTest {
     fun `allows single-line value if variable is single-line`() {
       testValidate(
           TextVariable(baseVariable(), VariableTextType.SingleLine),
-          NewTextValue(baseValue(), "abc"))
+          NewTextValue(baseValue(), "abc"),
+      )
     }
 
     @Test
     fun `allows multi-line value if variable is multi-line`() {
       testValidate(
           TextVariable(baseVariable(), VariableTextType.MultiLine),
-          NewTextValue(baseValue(), "abc\ndef"))
+          NewTextValue(baseValue(), "abc\ndef"),
+      )
     }
 
     @Test
@@ -158,7 +167,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             TextVariable(baseVariable(), VariableTextType.SingleLine),
-            NewTextValue(baseValue(), "abc\ndef"))
+            NewTextValue(baseValue(), "abc\ndef"),
+        )
       }
     }
   }
@@ -174,21 +184,24 @@ class VariableTest {
     fun `allows single selection if variable is single-select`() {
       testValidate(
           SelectVariable(baseVariable(), false, listOf(option1)),
-          NewSelectValue(baseValue(), setOf(optionId1)))
+          NewSelectValue(baseValue(), setOf(optionId1)),
+      )
     }
 
     @Test
     fun `allows multiple selection if variable is multi-select`() {
       testValidate(
           SelectVariable(baseVariable(), true, listOf(option1, option2)),
-          NewSelectValue(baseValue(), setOf(optionId1, optionId2)))
+          NewSelectValue(baseValue(), setOf(optionId1, optionId2)),
+      )
     }
 
     @Test
     fun `allows empty selection`() {
       testValidate(
           SelectVariable(baseVariable(), true, listOf(option1)),
-          NewSelectValue(baseValue(), emptySet()))
+          NewSelectValue(baseValue(), emptySet()),
+      )
     }
 
     @Test
@@ -196,7 +209,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             SelectVariable(baseVariable(), false, listOf(option1, option2)),
-            NewSelectValue(baseValue(), setOf(optionId1, optionId2)))
+            NewSelectValue(baseValue(), setOf(optionId1, optionId2)),
+        )
       }
     }
 
@@ -205,7 +219,8 @@ class VariableTest {
       assertThrows<VariableValueInvalidException> {
         testValidate(
             SelectVariable(baseVariable(), false, listOf(option1)),
-            NewSelectValue(baseValue(), setOf(optionId2)))
+            NewSelectValue(baseValue(), setOf(optionId2)),
+        )
       }
     }
   }
@@ -216,7 +231,8 @@ class VariableTest {
     fun `accepts valid text section value`() {
       testValidate(
           SectionVariable(baseVariable(), true),
-          NewSectionValue(baseValue(), SectionValueText("Text")))
+          NewSectionValue(baseValue(), SectionValueText("Text")),
+      )
     }
 
     @Test
@@ -226,7 +242,12 @@ class VariableTest {
           NewSectionValue(
               baseValue(),
               SectionValueVariable(
-                  VariableId(2), VariableUsageType.Injection, VariableInjectionDisplayStyle.Block)))
+                  VariableId(2),
+                  VariableUsageType.Injection,
+                  VariableInjectionDisplayStyle.Block,
+              ),
+          ),
+      )
     }
 
     @Test
@@ -234,7 +255,10 @@ class VariableTest {
       testValidate(
           SectionVariable(baseVariable(), true),
           NewSectionValue(
-              baseValue(), SectionValueVariable(VariableId(2), VariableUsageType.Reference, null)))
+              baseValue(),
+              SectionValueVariable(VariableId(2), VariableUsageType.Reference, null),
+          ),
+      )
     }
 
     @Test
@@ -247,7 +271,10 @@ class VariableTest {
                 SectionValueVariable(
                     nonexistentVariableId,
                     VariableUsageType.Injection,
-                    VariableInjectionDisplayStyle.Block)))
+                    VariableInjectionDisplayStyle.Block,
+                ),
+            ),
+        )
       }
     }
 
@@ -258,7 +285,9 @@ class VariableTest {
             SectionVariable(baseVariable(), true),
             NewSectionValue(
                 baseValue(),
-                SectionValueVariable(VariableId(2), VariableUsageType.Injection, null)))
+                SectionValueVariable(VariableId(2), VariableUsageType.Injection, null),
+            ),
+        )
       }
     }
   }
@@ -278,7 +307,9 @@ class VariableTest {
                     baseVariable(2),
                     minValue = BigDecimal.ZERO,
                     maxValue = null,
-                    decimalPlaces = 0))
+                    decimalPlaces = 0,
+                ),
+        )
       }
 
       @Test
@@ -289,7 +320,12 @@ class VariableTest {
             oldValue = NewNumberValue(baseValue(), BigDecimal.ONE),
             newVariable =
                 NumberVariable(
-                    baseVariable(), minValue = BigDecimal.TEN, maxValue = null, decimalPlaces = 0))
+                    baseVariable(),
+                    minValue = BigDecimal.TEN,
+                    maxValue = null,
+                    decimalPlaces = 0,
+                ),
+        )
       }
 
       @Test
@@ -298,7 +334,8 @@ class VariableTest {
             expectedValue = BigDecimal("123.45"),
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "123.45"),
-            newVariable = NumberVariable(baseVariable(2), null, null, 2))
+            newVariable = NumberVariable(baseVariable(2), null, null, 2),
+        )
       }
     }
 
@@ -310,7 +347,8 @@ class VariableTest {
             expectedValue = "First line",
             oldVariable = TextVariable(baseVariable(1), VariableTextType.MultiLine),
             oldValue = NewTextValue(baseValue(1), "First line\nSecond line\n"),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
 
       @Test
@@ -325,11 +363,15 @@ class VariableTest {
                         SelectOption(VariableSelectOptionId(10), "Option 1", null, null),
                         SelectOption(VariableSelectOptionId(11), "Option 2", null, null),
                         SelectOption(VariableSelectOptionId(12), "Option 3", null, null),
-                    )),
+                    ),
+                ),
             oldValue =
                 NewSelectValue(
-                    baseValue(1), setOf(VariableSelectOptionId(11), VariableSelectOptionId(12))),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+                    baseValue(1),
+                    setOf(VariableSelectOptionId(11), VariableSelectOptionId(12)),
+                ),
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
 
       @Test
@@ -338,7 +380,8 @@ class VariableTest {
             expectedValue = "2023-01-02",
             oldVariable = DateVariable(baseVariable(1)),
             oldValue = NewDateValue(baseValue(1), LocalDate.of(2023, 1, 2)),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
 
       @Test
@@ -347,7 +390,8 @@ class VariableTest {
             expectedValue = "1.2",
             oldVariable = NumberVariable(baseVariable(1), null, null, 1),
             oldValue = NewNumberValue(baseValue(1), BigDecimal("1.2")),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
 
       @Test
@@ -357,7 +401,8 @@ class VariableTest {
             oldVariable = LinkVariable(baseVariable(1)),
             oldValue =
                 NewLinkValue(baseValue(1), LinkValueDetails(URI("https://google.com/"), "Google")),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
 
       @Test
@@ -367,7 +412,8 @@ class VariableTest {
             oldVariable = LinkVariable(baseVariable(1)),
             oldValue =
                 NewLinkValue(baseValue(1), LinkValueDetails(URI("https://google.com/"), null)),
-            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine))
+            newVariable = TextVariable(baseVariable(2), VariableTextType.SingleLine),
+        )
       }
     }
 
@@ -380,7 +426,8 @@ class VariableTest {
             expectedValue = date,
             oldVariable = DateVariable(baseVariable(1)),
             oldValue = NewDateValue(baseValue(1), date),
-            newVariable = DateVariable(baseVariable(2)))
+            newVariable = DateVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -389,7 +436,8 @@ class VariableTest {
             expectedValue = LocalDate.of(2021, 3, 6),
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "2021-03-06"),
-            newVariable = DateVariable(baseVariable(2)))
+            newVariable = DateVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -398,7 +446,8 @@ class VariableTest {
             expectedValue = null,
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "xyzzy"),
-            newVariable = DateVariable(baseVariable(2)))
+            newVariable = DateVariable(baseVariable(2)),
+        )
       }
     }
 
@@ -412,7 +461,8 @@ class VariableTest {
             expectedValue = emailValue,
             oldVariable = EmailVariable(baseVariable(1)),
             oldValue = NewEmailValue(baseValue(1), emailValue),
-            newVariable = EmailVariable(baseVariable(2)))
+            newVariable = EmailVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -423,7 +473,8 @@ class VariableTest {
             expectedValue = emailValue,
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), emailValue),
-            newVariable = EmailVariable(baseVariable(2)))
+            newVariable = EmailVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -432,7 +483,8 @@ class VariableTest {
             expectedValue = null,
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "xyzzy"),
-            newVariable = EmailVariable(baseVariable(2)))
+            newVariable = EmailVariable(baseVariable(2)),
+        )
       }
     }
 
@@ -445,7 +497,8 @@ class VariableTest {
             expectedValue = details,
             oldVariable = ImageVariable(baseVariable(1)),
             oldValue = NewImageValue(baseValue(1), details),
-            newVariable = ImageVariable(baseVariable(2)))
+            newVariable = ImageVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -454,7 +507,8 @@ class VariableTest {
             expectedValue = null,
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "text"),
-            newVariable = ImageVariable(baseVariable(2)))
+            newVariable = ImageVariable(baseVariable(2)),
+        )
       }
     }
 
@@ -483,8 +537,11 @@ class VariableTest {
                     setOf(
                         VariableSelectOptionId(5),
                         VariableSelectOptionId(6),
-                        VariableSelectOptionId(7))),
-            newVariable = SelectVariable(baseVariable(2), true, newOptions))
+                        VariableSelectOptionId(7),
+                    ),
+                ),
+            newVariable = SelectVariable(baseVariable(2), true, newOptions),
+        )
       }
 
       @Test
@@ -505,7 +562,8 @@ class VariableTest {
             expectedValue = setOf(VariableSelectOptionId(11)),
             oldVariable = SelectVariable(baseVariable(1), true, oldOptions),
             oldValue = NewSelectValue(baseValue(1), setOf(VariableSelectOptionId(6))),
-            newVariable = SelectVariable(baseVariable(2), false, newOptions))
+            newVariable = SelectVariable(baseVariable(2), false, newOptions),
+        )
       }
 
       @Test
@@ -527,8 +585,11 @@ class VariableTest {
             oldVariable = SelectVariable(baseVariable(1), true, oldOptions),
             oldValue =
                 NewSelectValue(
-                    baseValue(1), setOf(VariableSelectOptionId(6), VariableSelectOptionId(7))),
-            newVariable = SelectVariable(baseVariable(2), false, newOptions))
+                    baseValue(1),
+                    setOf(VariableSelectOptionId(6), VariableSelectOptionId(7)),
+                ),
+            newVariable = SelectVariable(baseVariable(2), false, newOptions),
+        )
       }
 
       @Test
@@ -542,7 +603,8 @@ class VariableTest {
             expectedValue = setOf(VariableSelectOptionId(11)),
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "option 2"),
-            newVariable = SelectVariable(baseVariable(2), false, newOptions))
+            newVariable = SelectVariable(baseVariable(2), false, newOptions),
+        )
       }
 
       @Test
@@ -555,7 +617,8 @@ class VariableTest {
             expectedValue = null,
             oldVariable = DateVariable(baseVariable(1)),
             oldValue = NewDateValue(baseValue(1), LocalDate.EPOCH),
-            newVariable = SelectVariable(baseVariable(2), false, newOptions))
+            newVariable = SelectVariable(baseVariable(2), false, newOptions),
+        )
       }
     }
 
@@ -568,7 +631,8 @@ class VariableTest {
             expectedValue = fragment,
             oldVariable = SectionVariable(baseVariable(1), true),
             oldValue = NewSectionValue(baseValue(1), fragment),
-            newVariable = SectionVariable(baseVariable(2), true))
+            newVariable = SectionVariable(baseVariable(2), true),
+        )
       }
 
       @Test
@@ -577,7 +641,8 @@ class VariableTest {
             expectedValue = null,
             oldVariable = TextVariable(baseVariable(1), VariableTextType.MultiLine),
             oldValue = NewTextValue(baseValue(1), "abc\ndef"),
-            newVariable = SectionVariable(baseVariable(2), true))
+            newVariable = SectionVariable(baseVariable(2), true),
+        )
       }
     }
 
@@ -604,7 +669,8 @@ class VariableTest {
             oldVariable = TextVariable(baseVariable(1), VariableTextType.MultiLine),
             oldValue = NewTextValue(baseValue(1), "abc\ndef"),
             newVariable =
-                TableVariable(baseVariable(2), VariableTableStyle.Horizontal, emptyList()))
+                TableVariable(baseVariable(2), VariableTableStyle.Horizontal, emptyList()),
+        )
       }
     }
 
@@ -617,7 +683,8 @@ class VariableTest {
             expectedValue = details,
             oldVariable = LinkVariable(baseVariable(1)),
             oldValue = NewLinkValue(baseValue(1), details),
-            newVariable = LinkVariable(baseVariable(2)))
+            newVariable = LinkVariable(baseVariable(2)),
+        )
       }
 
       @Test
@@ -626,7 +693,8 @@ class VariableTest {
             expectedValue = LinkValueDetails(URI("https://google.com"), null),
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "https://google.com"),
-            newVariable = LinkVariable(baseVariable(2)))
+            newVariable = LinkVariable(baseVariable(2)),
+        )
       }
     }
   }
@@ -658,7 +726,7 @@ class VariableTest {
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
       newVariable: Variable,
-      newRowValueId: VariableValueId? = null
+      newRowValueId: VariableValueId? = null,
   ): NewValue? {
     return newVariable.convertValue(oldVariable, oldValue, newRowValueId, this::mockFetchVariable)
   }
@@ -668,7 +736,7 @@ class VariableTest {
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
       newVariable: Variable,
-      newRowValueId: VariableValueId? = VariableValueId(123)
+      newRowValueId: VariableValueId? = VariableValueId(123),
   ) {
     val converted = tryConvert(oldVariable, oldValue, newVariable, newRowValueId)
 

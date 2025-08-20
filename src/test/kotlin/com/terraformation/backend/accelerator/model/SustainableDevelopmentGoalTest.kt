@@ -22,16 +22,21 @@ class SustainableDevelopmentGoalTest {
     assertEquals(SustainableDevelopmentGoal.NoPoverty, SustainableDevelopmentGoal.forJsonValue("1"))
 
     assertEquals(
-        SustainableDevelopmentGoal.Partnerships, SustainableDevelopmentGoal.forJsonValue("17"))
+        SustainableDevelopmentGoal.Partnerships,
+        SustainableDevelopmentGoal.forJsonValue("17"),
+    )
   }
 
   @Test
   fun `forJsonValue works correctly for names`() {
     assertEquals(
-        SustainableDevelopmentGoal.NoPoverty, SustainableDevelopmentGoal.forJsonValue("NoPoverty"))
+        SustainableDevelopmentGoal.NoPoverty,
+        SustainableDevelopmentGoal.forJsonValue("NoPoverty"),
+    )
     assertEquals(
         SustainableDevelopmentGoal.ResponsibleConsumption,
-        SustainableDevelopmentGoal.forJsonValue("ResponsibleConsumption"))
+        SustainableDevelopmentGoal.forJsonValue("ResponsibleConsumption"),
+    )
   }
 
   @Test

@@ -38,12 +38,14 @@ class InternalTagsController(
   @Operation(
       summary = "List the internal tags assigned to all organizations",
       description =
-          "This includes organizations with no internal tags, whose list of tags will be empty.")
+          "This includes organizations with no internal tags, whose list of tags will be empty.",
+  )
   fun listAllOrganizationInternalTags(): ListAllOrganizationInternalTagsResponsePayload {
     val organizations = internalTagStore.fetchAllOrganizationsWithTagIds()
 
     return ListAllOrganizationInternalTagsResponsePayload(
-        organizations.map { OrganizationInternalTagsPayload(it.key, it.value) })
+        organizations.map { OrganizationInternalTagsPayload(it.key, it.value) }
+    )
   }
 
   @GetMapping("/internalTags/organizations/{organizationId}")
@@ -60,7 +62,7 @@ class InternalTagsController(
   @Operation(summary = "Replace the list of internal tags assigned to an organization")
   fun updateOrganizationInternalTags(
       @PathVariable organizationId: OrganizationId,
-      @RequestBody payload: UpdateOrganizationInternalTagsRequestPayload
+      @RequestBody payload: UpdateOrganizationInternalTagsRequestPayload,
   ): SimpleSuccessResponsePayload {
     internalTagStore.updateOrganizationTags(organizationId, payload.tagIds)
 
@@ -73,7 +75,8 @@ data class InternalTagPayload(
     @Schema(
         description =
             "If true, this internal tag is system-defined and may affect the behavior of the " +
-                "application. If falso, the tag is admin-defined and is only used for reporting.")
+                "application. If falso, the tag is admin-defined and is only used for reporting."
+    )
     val isSystem: Boolean,
     val name: String,
 ) {
@@ -89,7 +92,7 @@ data class OrganizationInternalTagsPayload(
 ) {
   constructor(
       model: OrganizationModel,
-      tagIds: Set<InternalTagId>
+      tagIds: Set<InternalTagId>,
   ) : this(model.id, model.name, tagIds)
 }
 

@@ -105,7 +105,11 @@ class AppNotificationService(
     val facilityUrl = webAppUrls.facilityMonitoring(event.facilityId)
     val renderMessage = { messages.facilityIdle() }
     insertFacilityNotifications(
-        event.facilityId, NotificationType.FacilityIdle, renderMessage, facilityUrl)
+        event.facilityId,
+        NotificationType.FacilityIdle,
+        renderMessage,
+        facilityUrl,
+    )
   }
 
   @EventListener
@@ -126,7 +130,11 @@ class AppNotificationService(
     }
 
     insertFacilityNotifications(
-        facility.id, NotificationType.SensorOutOfBounds, renderMessage, facilityUrl)
+        facility.id,
+        NotificationType.SensorOutOfBounds,
+        renderMessage,
+        facilityUrl,
+    )
   }
 
   @EventListener
@@ -140,7 +148,11 @@ class AppNotificationService(
     }
 
     insertFacilityNotifications(
-        facility.id, NotificationType.UnknownAutomationTriggered, renderMessage, facilityUrl)
+        facility.id,
+        NotificationType.UnknownAutomationTriggered,
+        renderMessage,
+        facilityUrl,
+    )
   }
 
   @EventListener
@@ -155,7 +167,11 @@ class AppNotificationService(
     val renderMessage = { messages.deviceUnresponsive(deviceName) }
 
     insertFacilityNotifications(
-        facilityId, NotificationType.DeviceUnresponsive, renderMessage, facilityUrl)
+        facilityId,
+        NotificationType.DeviceUnresponsive,
+        renderMessage,
+        facilityUrl,
+    )
   }
 
   @EventListener
@@ -177,7 +193,11 @@ class AppNotificationService(
 
     val facilityId = parentStore.getFacilityId(event.accessionId)!!
     insertFacilityNotifications(
-        facilityId, NotificationType.AccessionScheduledToEndDrying, renderMessage, accessionUrl)
+        facilityId,
+        NotificationType.AccessionScheduledToEndDrying,
+        renderMessage,
+        accessionUrl,
+    )
   }
 
   @EventListener
@@ -212,7 +232,8 @@ class AppNotificationService(
         NotificationType.SeedFundReportCreated,
         renderMessage,
         reportUrl,
-        setOf(Role.Owner, Role.Admin))
+        setOf(Role.Owner, Role.Admin),
+    )
   }
 
   @EventListener
@@ -258,14 +279,16 @@ class AppNotificationService(
     val renderMessage = { messages.observationSchedule() }
 
     log.info(
-        "Creating app notifications for scheduling observations in planting site ${plantingSite.name}")
+        "Creating app notifications for scheduling observations in planting site ${plantingSite.name}"
+    )
 
     insertOrganizationNotifications(
         plantingSite.organizationId,
         NotificationType.ScheduleObservation,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin))
+        setOf(Role.Owner, Role.Admin),
+    )
   }
 
   @EventListener
@@ -275,26 +298,30 @@ class AppNotificationService(
     val renderMessage = { messages.observationScheduleReminder() }
 
     log.info(
-        "Creating app notifications reminding to scheduling observations in planting site ${plantingSite.name}")
+        "Creating app notifications reminding to scheduling observations in planting site ${plantingSite.name}"
+    )
 
     insertOrganizationNotifications(
         plantingSite.organizationId,
         NotificationType.ScheduleObservationReminder,
         renderMessage,
         observationsUrl,
-        setOf(Role.Owner, Role.Admin))
+        setOf(Role.Owner, Role.Admin),
+    )
   }
 
   @EventListener
   fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent) {
     log.info(
         "Creating app notifications for an approved participant project species being edited in deliverable ${event.deliverableId} in " +
-            "project ${event.projectId}")
+            "project ${event.projectId}"
+    )
 
     val project = projectStore.fetchOneById(event.projectId)
     if (project.participantId == null) {
       log.error(
-          "Got approved participant project species edited notification for non-participant project ${event.projectId}")
+          "Got approved participant project species edited notification for non-participant project ${event.projectId}"
+      )
       return
     }
 
@@ -306,7 +333,9 @@ class AppNotificationService(
         webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
     val renderMessage = {
       messages.participantProjectSpeciesApprovedSpeciesEdited(
-          participantName = participant.name, speciesName = species.scientificName)
+          participantName = participant.name,
+          speciesName = species.scientificName,
+      )
     }
 
     insertAcceleratorNotification(
@@ -314,18 +343,21 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
         project.organizationId,
         renderMessage,
-        deliverableCategory.internalInterestId)
+        deliverableCategory.internalInterestId,
+    )
   }
 
   @EventListener
   fun on(event: ParticipantProjectSpeciesAddedToProjectNotificationDueEvent) {
     log.info(
-        "Creating app notifications for a participant project species being added to project ${event.projectId} ")
+        "Creating app notifications for a participant project species being added to project ${event.projectId} "
+    )
 
     val project = projectStore.fetchOneById(event.projectId)
     if (project.participantId == null) {
       log.error(
-          "Got participant project species added to project notification for non-participant project ${event.projectId}")
+          "Got participant project species added to project notification for non-participant project ${event.projectId}"
+      )
       return
     }
 
@@ -339,7 +371,8 @@ class AppNotificationService(
       messages.participantProjectSpeciesAddedToProject(
           participantName = participant.name,
           projectName = project.name,
-          speciesName = species.scientificName)
+          speciesName = species.scientificName,
+      )
     }
 
     insertAcceleratorNotification(
@@ -347,7 +380,8 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesAddedToProject,
         project.organizationId,
         renderMessage,
-        deliverableCategory.internalInterestId)
+        deliverableCategory.internalInterestId,
+    )
   }
 
   @EventListener
@@ -358,14 +392,16 @@ class AppNotificationService(
 
     log.info(
         "Creating app notifications for start of planting season ${event.plantingSeasonId} at " +
-            "site ${event.plantingSiteId}")
+            "site ${event.plantingSiteId}"
+    )
 
     insertOrganizationNotifications(
         plantingSite.organizationId,
         NotificationType.PlantingSeasonStarted,
         renderMessage,
         inventoryUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager))
+        setOf(Role.Owner, Role.Admin, Role.Manager),
+    )
   }
 
   @EventListener
@@ -375,14 +411,16 @@ class AppNotificationService(
     val renderMessage = { messages.plantingSeasonNotScheduled(event.notificationNumber) }
 
     log.info(
-        "Creating app notifications for planting season not scheduled at site ${event.plantingSiteId}")
+        "Creating app notifications for planting season not scheduled at site ${event.plantingSiteId}"
+    )
 
     insertOrganizationNotifications(
         plantingSite.organizationId,
         NotificationType.SchedulePlantingSeason,
         renderMessage,
         siteUrl,
-        setOf(Role.Owner, Role.Admin, Role.Manager))
+        setOf(Role.Owner, Role.Admin, Role.Manager),
+    )
   }
 
   @EventListener
@@ -401,7 +439,8 @@ class AppNotificationService(
           NotificationType.ApplicationSubmitted,
           organizationId,
           renderMessage,
-          InternalInterest.Sourcing)
+          InternalInterest.Sourcing,
+      )
     }
   }
 
@@ -425,14 +464,16 @@ class AppNotificationService(
 
       log.info(
           "Creating app notifications for project ${event.projectId} participant " +
-              "${project.participantId} deliverable ${event.deliverableId} ready for review")
+              "${project.participantId} deliverable ${event.deliverableId} ready for review"
+      )
 
       insertAcceleratorNotification(
           deliverableUrl,
           NotificationType.DeliverableReadyForReview,
           project.organizationId,
           renderMessage,
-          deliverableCategory.internalInterestId)
+          deliverableCategory.internalInterestId,
+      )
     }
   }
 
@@ -467,7 +508,8 @@ class AppNotificationService(
             NotificationType.EventReminder,
             renderMessage,
             eventUrl,
-            setOf(Role.Owner, Role.Admin, Role.Manager))
+            setOf(Role.Owner, Role.Admin, Role.Manager),
+        )
       }
     }
   }
@@ -513,7 +555,8 @@ class AppNotificationService(
           NotificationType.AcceleratorReportUpcoming,
           renderMessage,
           webAppUrls.acceleratorReport(event.reportId),
-          setOf(Role.Owner, Role.Admin))
+          setOf(Role.Owner, Role.Admin),
+      )
     }
   }
 
@@ -525,14 +568,17 @@ class AppNotificationService(
 
       val renderMessage = {
         messages.acceleratorReportSubmitted(
-            projectDealName = report.projectDealName ?: project.name, reportPrefix = report.prefix)
+            projectDealName = report.projectDealName ?: project.name,
+            reportPrefix = report.prefix,
+        )
       }
 
       insertAcceleratorNotification(
           webAppUrls.acceleratorConsoleReport(event.reportId, report.projectId),
           NotificationType.AcceleratorReportSubmitted,
           project.organizationId,
-          renderMessage)
+          renderMessage,
+      )
     }
   }
 
@@ -545,7 +591,9 @@ class AppNotificationService(
 
       val renderMessage = {
         messages.acceleratorReportPublished(
-            projectDealName = report.projectDealName ?: project.name, reportPrefix = report.prefix)
+            projectDealName = report.projectDealName ?: project.name,
+            reportPrefix = report.prefix,
+        )
       }
 
       fundingEntityIds.forEach { fundingEntityId ->
@@ -553,7 +601,8 @@ class AppNotificationService(
             webAppUrls.funderReport(event.reportId),
             NotificationType.AcceleratorReportPublished,
             fundingEntityId,
-            renderMessage)
+            renderMessage,
+        )
       }
     }
   }
@@ -570,7 +619,8 @@ class AppNotificationService(
           NotificationType.DeliverableStatusUpdated,
           renderMessage,
           deliverableUrl,
-          setOf(Role.Owner, Role.Admin, Role.Manager))
+          setOf(Role.Owner, Role.Admin, Role.Manager),
+      )
     }
   }
 
@@ -578,7 +628,7 @@ class AppNotificationService(
       facilityId: FacilityId,
       notificationType: NotificationType,
       renderMessage: () -> NotificationMessage,
-      localUrl: URI
+      localUrl: URI,
   ) {
     val organizationId = parentStore.getOrganizationId(facilityId)!!
     insertOrganizationNotifications(organizationId, notificationType, renderMessage, localUrl)
@@ -587,7 +637,7 @@ class AppNotificationService(
   private fun insertUserAddedToOrganizationNotification(
       addedBy: UserId,
       userId: UserId,
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
   ) {
     // Users can be added to organizations by super-admins who don't otherwise have access to the
     // organizations, so this needs to run as the system user to be able to access the organization
@@ -602,7 +652,8 @@ class AppNotificationService(
 
       log.info(
           "Creating app notification for user $userId being added to an organization " +
-              "$organizationId.")
+              "$organizationId."
+      )
 
       insert(
           NotificationType.UserAddedToOrganization,
@@ -690,7 +741,13 @@ class AppNotificationService(
     val message = locale.use { renderMessage() }
     val notification =
         CreateNotificationModel(
-            notificationType, user.userId, organizationId, message.title, message.body, localUrl)
+            notificationType,
+            user.userId,
+            organizationId,
+            message.title,
+            message.body,
+            localUrl,
+        )
     notificationStore.create(notification)
   }
 }

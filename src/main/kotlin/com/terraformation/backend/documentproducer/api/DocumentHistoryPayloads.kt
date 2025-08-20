@@ -16,7 +16,7 @@ import java.time.Instant
 enum class DocumentHistoryPayloadType {
   Created,
   Edited,
-  Saved
+  Saved,
 }
 
 @JsonSubTypes(
@@ -32,7 +32,8 @@ enum class DocumentHistoryPayloadType {
             DiscriminatorMapping(schema = DocumentHistoryEditedPayload::class, value = "Edited"),
             DiscriminatorMapping(schema = DocumentHistorySavedPayload::class, value = "Saved"),
         ],
-    discriminatorProperty = "type")
+    discriminatorProperty = "type",
+)
 sealed interface DocumentHistoryPayload {
   val createdBy: UserId
   val createdTime: Instant
@@ -43,7 +44,8 @@ sealed interface DocumentHistoryPayload {
     description =
         "History entry about the creation of the document. This is always the last element in " +
             "the reverse-chronological list of history events. It has the same information as " +
-            "the createdBy and createdTime fields in DocumentPayload.")
+            "the createdBy and createdTime fields in DocumentPayload."
+)
 data class DocumentHistoryCreatedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
@@ -58,7 +60,8 @@ data class DocumentHistoryCreatedPayload(
     description =
         "History entry about a document being edited. This represents the most recent edit by " +
             "the given user; if the same user edits the document multiple times in a row, only " +
-            "the last edit will be listed in the history.")
+            "the last edit will be listed in the history."
+)
 data class DocumentHistoryEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
@@ -72,7 +75,8 @@ data class DocumentHistoryEditedPayload(
 @Schema(
     description =
         "History entry about a saved version of a document. The maxVariableValueId and " +
-            "variableManifestId may be used to retrieve the contents of the saved version.")
+            "variableManifestId may be used to retrieve the contents of the saved version."
+)
 data class DocumentHistorySavedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,

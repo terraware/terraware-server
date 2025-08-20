@@ -21,7 +21,7 @@ class GlobalRoleInterceptor : HandlerInterceptor {
   override fun preHandle(
       request: HttpServletRequest,
       response: HttpServletResponse,
-      handler: Any
+      handler: Any,
   ): Boolean {
     if (handler is HandlerMethod) {
       val requiredRoles =

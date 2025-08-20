@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(
-    enumAsRef = true, description = "Indicates of success or failure of the requested operation.")
+    enumAsRef = true,
+    description = "Indicates of success or failure of the requested operation.",
+)
 enum class SuccessOrError {
   Ok,
   Error;
@@ -37,8 +39,10 @@ interface ErrorResponsePayload : ResponsePayload {
     discriminatorMapping =
         [
             DiscriminatorMapping("ok", schema = SimpleSuccessResponsePayload::class),
-            DiscriminatorMapping("error", schema = SimpleErrorResponsePayload::class)],
-    discriminatorProperty = "status")
+            DiscriminatorMapping("error", schema = SimpleErrorResponsePayload::class),
+        ],
+    discriminatorProperty = "status",
+)
 interface SimpleResponsePayload : ResponsePayload
 
 class SimpleSuccessResponsePayload : SuccessResponsePayload, SimpleResponsePayload

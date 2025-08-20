@@ -34,7 +34,8 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   protected lateinit var timeZone: ZoneId

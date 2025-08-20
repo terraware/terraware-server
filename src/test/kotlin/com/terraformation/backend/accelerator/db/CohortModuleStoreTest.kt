@@ -131,14 +131,16 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               cohortId = cohortA,
               title = "Earliest Start Date",
               startDate = date1,
-              endDate = date2)
+              endDate = date2,
+          )
 
       val cohortBModule1 =
           cohortAModule1.copy(
               cohortId = cohortB,
               title = "Different cohort module",
               startDate = date1,
-              endDate = date4)
+              endDate = date4,
+          )
 
       val expectedCohortModulesA =
           listOf(
@@ -154,7 +156,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           expectedCohortModulesA,
           store.fetch(participantId = participantA),
-          "Fetch by Participant ID")
+          "Fetch by Participant ID",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(expectedCohortModulesA, store.fetch(projectId = projectA), "Fetch by Project ID")
@@ -163,35 +166,43 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(cohortAModule4),
           store.fetch(projectId = projectA, moduleId = module4),
-          "Fetch by Project ID and Module ID")
+          "Fetch by Project ID and Module ID",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(
-          listOf(cohortBModule1), store.fetch(cohortId = cohortB), "Fetch by a different Cohort ID")
+          listOf(cohortBModule1),
+          store.fetch(cohortId = cohortB),
+          "Fetch by a different Cohort ID",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortBModule1),
           store.fetch(participantId = participantB),
-          "Fetch by a different Cohort ID")
+          "Fetch by a different Cohort ID",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortBModule1),
           store.fetch(projectId = projectB),
-          "Fetch by a different Cohort ID")
+          "Fetch by a different Cohort ID",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortAModule4, cohortAModule2, cohortAModule1, cohortAModule3, cohortBModule1),
           store.fetch(),
-          "Fetch all modules")
+          "Fetch all modules",
+      )
       verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortAModule1, cohortBModule1),
           store.fetch(moduleId = module1),
-          "Fetch one module")
+          "Fetch one module",
+      )
     }
   }
 
@@ -210,7 +221,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             inserted.moduleId,
             "Module title",
             LocalDate.of(2024, 1, 1),
-            LocalDate.of(2024, 1, 3))
+            LocalDate.of(2024, 1, 3),
+        )
       }
     }
 
@@ -226,7 +238,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           inserted.moduleId,
           "Module title",
           LocalDate.of(2024, 1, 1),
-          LocalDate.of(2024, 1, 3))
+          LocalDate.of(2024, 1, 3),
+      )
 
       assertEquals(
           listOf(
@@ -236,8 +249,10 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   title = "Module title",
                   startDate = LocalDate.of(2024, 1, 1),
                   endDate = LocalDate.of(2024, 1, 3),
-              )),
-          cohortModulesDao.findAll())
+              )
+          ),
+          cohortModulesDao.findAll(),
+      )
     }
 
     @Test
@@ -252,14 +267,16 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           moduleId = inserted.moduleId,
           title = "Old module title",
           startDate = LocalDate.of(2024, 1, 1),
-          endDate = LocalDate.of(2024, 1, 3))
+          endDate = LocalDate.of(2024, 1, 3),
+      )
 
       store.assign(
           inserted.cohortId,
           inserted.moduleId,
           "New module title",
           LocalDate.of(2024, 2, 1),
-          LocalDate.of(2024, 2, 3))
+          LocalDate.of(2024, 2, 3),
+      )
 
       assertEquals(
           listOf(
@@ -269,8 +286,10 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   title = "New module title",
                   startDate = LocalDate.of(2024, 2, 1),
                   endDate = LocalDate.of(2024, 2, 3),
-              )),
-          cohortModulesDao.findAll())
+              )
+          ),
+          cohortModulesDao.findAll(),
+      )
     }
   }
 
@@ -303,7 +322,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           moduleId = inserted.moduleId,
           title = "Module Title",
           startDate = LocalDate.of(2024, 1, 1),
-          endDate = LocalDate.of(2024, 1, 3))
+          endDate = LocalDate.of(2024, 1, 3),
+      )
 
       store.remove(inserted.cohortId, inserted.moduleId)
 

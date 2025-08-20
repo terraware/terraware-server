@@ -69,9 +69,9 @@ class VariableWorkflowStore(
           .where(PROJECT_ID.eq(projectId))
           .and(
               VARIABLES.STABLE_ID.eq(
-                  DSL.select(VARIABLES.STABLE_ID)
-                      .from(VARIABLES)
-                      .where(VARIABLES.ID.eq(variableId))))
+                  DSL.select(VARIABLES.STABLE_ID).from(VARIABLES).where(VARIABLES.ID.eq(variableId))
+              )
+          )
           .orderBy(CREATED_TIME.desc(), ID.desc())
           .fetch { ExistingVariableWorkflowHistoryModel.of(it, currentVariableIdField) }
     }
@@ -101,8 +101,10 @@ class VariableWorkflowStore(
                         VARIABLES.STABLE_ID.eq(
                             DSL.select(VARIABLES.STABLE_ID)
                                 .from(VARIABLES)
-                                .where(VARIABLES.ID.eq(variableId))),
-                    ))
+                                .where(VARIABLES.ID.eq(variableId))
+                        ),
+                    )
+                )
                 .firstOrNull()
           }
 
@@ -112,7 +114,8 @@ class VariableWorkflowStore(
                   status = existing?.status ?: VariableWorkflowStatus.NotSubmitted,
                   feedback = existing?.feedback,
                   internalComment = existing?.internalComment,
-              ))
+              )
+          )
 
       val newModel =
           with(VARIABLE_WORKFLOW_HISTORY) {
@@ -124,7 +127,8 @@ class VariableWorkflowStore(
                 .set(INTERNAL_COMMENT, updated.internalComment)
                 .set(
                     MAX_VARIABLE_VALUE_ID,
-                    DSL.field(DSL.select(DSL.max(VARIABLE_VALUES.ID)).from(VARIABLE_VALUES)))
+                    DSL.field(DSL.select(DSL.max(VARIABLE_VALUES.ID)).from(VARIABLE_VALUES)),
+                )
                 .set(PROJECT_ID, projectId)
                 .set(VARIABLE_ID, variableId)
                 .set(VARIABLE_WORKFLOW_STATUS_ID, updated.status)
@@ -132,9 +136,11 @@ class VariableWorkflowStore(
                 .fetchOne { ExistingVariableWorkflowHistoryModel.of(it) }
           }
 
-      if (existing == null ||
-          updated.status != existing.status ||
-          updated.feedback != existing.feedback) {
+      if (
+          existing == null ||
+              updated.status != existing.status ||
+              updated.feedback != existing.feedback
+      ) {
         // Notify a reviewable event, if changed
         val deliverableIds =
             with(DELIVERABLE_VARIABLES) {
@@ -168,7 +174,10 @@ class VariableWorkflowStore(
                 VARIABLES.STABLE_ID.eq(
                     DSL.select(VARIABLES.STABLE_ID)
                         .from(VARIABLES)
-                        .where(VARIABLES.ID.eq(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID)))))
+                        .where(VARIABLES.ID.eq(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID))
+                )
+            )
+    )
   }
 
   private fun fetchCurrentByCondition(

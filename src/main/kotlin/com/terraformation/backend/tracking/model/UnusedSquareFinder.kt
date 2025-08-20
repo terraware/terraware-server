@@ -68,9 +68,14 @@ class UnusedSquareFinder(
 
     return findInRegion(
         Coordinate(
-            zoneEnvelopeMeters.minOf { it.x } - margin, zoneEnvelopeMeters.minOf { it.y } - margin),
+            zoneEnvelopeMeters.minOf { it.x } - margin,
+            zoneEnvelopeMeters.minOf { it.y } - margin,
+        ),
         Coordinate(
-            zoneEnvelopeMeters.maxOf { it.x } + margin, zoneEnvelopeMeters.maxOf { it.y } + margin))
+            zoneEnvelopeMeters.maxOf { it.x } + margin,
+            zoneEnvelopeMeters.maxOf { it.y } + margin,
+        ),
+    )
   }
 
   private fun roundToGrid(value: Double): Double = Math.round(value / gridInterval) * gridInterval
@@ -155,7 +160,8 @@ class UnusedSquareFinder(
       val polygon =
           gridAlignedSquare(
               Random.nextDouble(southwest.x, northeast.x),
-              Random.nextDouble(southwest.y, northeast.y))
+              Random.nextDouble(southwest.y, northeast.y),
+          )
 
       if (coveredByZone(polygon)) {
         return polygon

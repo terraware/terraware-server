@@ -139,15 +139,14 @@ class VariableValueStore(
   fun listValues(
       documentId: DocumentId,
       minValueId: VariableValueId? = null,
-      maxValueId: VariableValueId? = null
+      maxValueId: VariableValueId? = null,
   ): List<ExistingValue> {
     val includeDeletedValues = minValueId != null
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(
-                DSL.select(DOCUMENTS.PROJECT_ID)
-                    .from(DOCUMENTS)
-                    .where(DOCUMENTS.ID.eq(documentId))),
+                DSL.select(DOCUMENTS.PROJECT_ID).from(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId))
+            ),
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
         )
@@ -171,7 +170,8 @@ class VariableValueStore(
           DSL.notExists(
               DSL.selectOne()
                   .from(VARIABLES)
-                  .where(VARIABLES.REPLACES_VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID)))
+                  .where(VARIABLES.REPLACES_VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+          )
         }
 
     val conditions =
@@ -182,7 +182,8 @@ class VariableValueStore(
                   DSL.selectOne()
                       .from(DELIVERABLE_VARIABLES)
                       .where(DELIVERABLE_VARIABLES.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
-                      .and(DELIVERABLE_VARIABLES.DELIVERABLE_ID.eq(deliverableId)))
+                      .and(DELIVERABLE_VARIABLES.DELIVERABLE_ID.eq(deliverableId))
+              )
             },
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
@@ -232,8 +233,10 @@ class VariableValueStore(
                         .from(VARIABLE_VALUES)
                         .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
                         .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
-                        .and(VARIABLE_VALUES.IS_DELETED.isFalse))
-                .else_(0))
+                        .and(VARIABLE_VALUES.IS_DELETED.isFalse),
+                )
+                .else_(0)
+        )
         .from(VARIABLES)
         .where(VARIABLES.ID.eq(variableId))
         .fetchOne()
@@ -253,20 +256,23 @@ class VariableValueStore(
                     .where(variableValues2.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
                     .and(variableValues2.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
                     .and(variableValues2.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
-                    .and(variableValues2.ID.gt(VARIABLE_VALUES.ID))))
+                    .and(variableValues2.ID.gt(VARIABLE_VALUES.ID))
+            ),
+        )
 
     return fetchByConditions(conditions, false).filterIsInstance<ExistingSectionValue>()
   }
 
   private fun fetchByConditions(
       conditions: List<Condition>,
-      includeDeletedValues: Boolean
+      includeDeletedValues: Boolean,
   ): List<ExistingValue> {
     val selectOptionsMultiset =
         DSL.multiset(
                 DSL.select(VARIABLE_SELECT_OPTION_VALUES.OPTION_ID)
                     .from(VARIABLE_SELECT_OPTION_VALUES)
-                    .where(VARIABLE_SELECT_OPTION_VALUES.VARIABLE_VALUE_ID.eq(VARIABLE_VALUES.ID)))
+                    .where(VARIABLE_SELECT_OPTION_VALUES.VARIABLE_VALUE_ID.eq(VARIABLE_VALUES.ID))
+            )
             .convertFrom { result ->
               result.map { record -> record[VARIABLE_SELECT_OPTION_VALUES.OPTION_ID] }.toSet()
             }
@@ -413,7 +419,7 @@ class VariableValueStore(
   fun calculateDefaultValues(
       projectId: ProjectId,
       manifestId: VariableManifestId,
-      variableId: VariableId? = null
+      variableId: VariableId? = null,
   ): List<AppendValueOperation> {
     val hasValues =
         dslContext.fetchExists(
@@ -425,8 +431,11 @@ class VariableValueStore(
                 .where(
                     listOfNotNull(
                         VARIABLE_VALUES.PROJECT_ID.eq(projectId),
-                        variableId?.let { VARIABLE_VALUES.VARIABLE_ID.eq(it) }))
-                .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId)))
+                        variableId?.let { VARIABLE_VALUES.VARIABLE_ID.eq(it) },
+                    )
+                )
+                .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
+        )
     if (hasValues) {
       throw IllegalStateException("Can only populate initial values of variables without values")
     }
@@ -437,20 +446,33 @@ class VariableValueStore(
             .where(
                 listOfNotNull(
                     VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_MANIFEST_ID.eq(manifestId),
-                    variableId?.let { VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID.eq(it) }))
+                    variableId?.let { VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID.eq(it) },
+                )
+            )
             .orderBy(
                 VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID,
-                VARIABLE_SECTION_DEFAULT_VALUES.LIST_POSITION)
+                VARIABLE_SECTION_DEFAULT_VALUES.LIST_POSITION,
+            )
             .map { record ->
               val fragment =
                   record.textValue?.let { SectionValueText(it) }
                       ?: SectionValueVariable(
-                          record.usedVariableId!!, record.usageTypeId!!, record.displayStyleId)
+                          record.usedVariableId!!,
+                          record.usageTypeId!!,
+                          record.displayStyleId,
+                      )
               AppendValueOperation(
                   NewSectionValue(
                       BaseVariableValueProperties(
-                          null, projectId, record.listPosition!!, record.variableId!!, null),
-                      fragment))
+                          null,
+                          projectId,
+                          record.listPosition!!,
+                          record.variableId!!,
+                          null,
+                      ),
+                      fragment,
+                  )
+              )
             }
 
     return operations
@@ -497,11 +519,15 @@ class VariableValueStore(
                           sectionValue.projectId,
                           sectionValue.listPosition,
                           sectionValue.variableId,
-                          sectionValue.citation),
+                          sectionValue.citation,
+                      ),
                       SectionValueVariable(
                           newVariableId,
                           sectionValueVariable.usageType,
-                          sectionValueVariable.displayStyle)))
+                          sectionValueVariable.displayStyle,
+                      ),
+                  )
+              )
             }
           }
         }
@@ -522,7 +548,7 @@ class VariableValueStore(
    */
   fun updateValues(
       operations: List<ValueOperation>,
-      triggerWorkflows: Boolean = true
+      triggerWorkflows: Boolean = true,
   ): List<ExistingValue> {
     val projectId = operations.firstOrNull()?.projectId ?: return emptyList()
 
@@ -584,7 +610,7 @@ class VariableValueStore(
 
   private fun appendValue(
       operation: AppendValueOperation,
-      latestRowIds: MutableMap<VariableId, VariableValueId>
+      latestRowIds: MutableMap<VariableId, VariableValueId>,
   ): VariableValueId {
     val projectId = operation.projectId
     val variableId = operation.value.variableId
@@ -664,7 +690,8 @@ class VariableValueStore(
                   VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(containingRowId)
                 } else {
                   VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.isNull
-                })
+                }
+            )
             .and(VARIABLE_VALUES.ID.gt(valueId))
             .fetch()
             .isNotEmpty
@@ -677,7 +704,8 @@ class VariableValueStore(
     val maxListPosition =
         fetchMaxListPosition(projectId, variableId, containingRowId)
             ?: throw IllegalStateException(
-                "Project $projectId variable $variableId has values but no max list position")
+                "Project $projectId variable $variableId has values but no max list position"
+            )
 
     val deletedValue =
         DeletedValue(
@@ -689,7 +717,8 @@ class VariableValueStore(
                 rowValueId = containingRowId,
                 variableId = variableId,
             ),
-            variablesRow.variableTypeId!!)
+            variablesRow.variableTypeId!!,
+        )
 
     // If there were later values with higher list positions, renumber them to avoid holes in the
     // sequence of list positions.
@@ -701,7 +730,8 @@ class VariableValueStore(
                 containingRowId?.let { VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(it) },
                 VARIABLE_VALUES.LIST_POSITION.gt(listPosition),
             ),
-            false)
+            false,
+        )
 
     valuesToRenumber.forEach { valueToRenumber ->
       val newValueId =
@@ -715,7 +745,8 @@ class VariableValueStore(
                 existingValueTableRow ->
               VariableValueTableRowsRow(
                   tableRowValueId = newValueId,
-                  variableValueId = existingValueTableRow.variableValueId)
+                  variableValueId = existingValueTableRow.variableValueId,
+              )
             }
 
         variableValueTableRowsDao.insert(newValueTableRows)
@@ -748,7 +779,8 @@ class VariableValueStore(
                       .and(deletedRows.TABLE_ROW_VALUE_ID.eq(valueId))
                       .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
                       .and(deletedValues.IS_DELETED.isTrue)
-                      .and(deletedValues.ID.gt(VARIABLE_VALUES.ID)))
+                      .and(deletedValues.ID.gt(VARIABLE_VALUES.ID))
+              )
               .orderBy(VARIABLE_VALUES.LIST_POSITION.desc())
               .fetch(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID.asNonNullable())
 
@@ -763,7 +795,7 @@ class VariableValueStore(
   private fun listValues(
       projectId: ProjectId,
       minValueId: VariableValueId? = null,
-      maxValueId: VariableValueId? = null
+      maxValueId: VariableValueId? = null,
   ): List<ExistingValue> = listValues(projectId, null, minValueId, maxValueId)
 
   private fun replaceValues(operation: ReplaceValuesOperation) {
@@ -793,7 +825,8 @@ class VariableValueStore(
                       rowValueId = operation.rowValueId,
                       variableId = operation.variableId,
                   ),
-                  variablesRow.variableTypeId!!)
+                  variablesRow.variableTypeId!!,
+              )
 
           insertValue(projectId, listPosition, operation.rowValueId, deletedValue)
         }
@@ -831,7 +864,8 @@ class VariableValueStore(
                   rowValueId = operation.value.rowValueId,
                   variableId = operation.value.variableId,
               ),
-              ImageValueDetails(operation.value.value.caption, existingImageValue.fileId!!))
+              ImageValueDetails(operation.value.value.caption, existingImageValue.fileId!!),
+          )
         } else {
           operation.value
         }
@@ -878,7 +912,8 @@ class VariableValueStore(
 
     if (rowValueId != null) {
       variableValueTableRowsDao.insert(
-          VariableValueTableRowsRow(tableRowValueId = rowValueId, variableValueId = valueId))
+          VariableValueTableRowsRow(tableRowValueId = rowValueId, variableValueId = valueId)
+      )
     }
 
     when (value) {
@@ -905,7 +940,8 @@ class VariableValueStore(
             variableId = value.variableId,
             variableTypeId = VariableType.Image,
             variableValueId = valueId,
-        ))
+        )
+    )
   }
 
   private fun insertLinkValue(valueId: VariableValueId, value: LinkValue<*>) {
@@ -916,7 +952,8 @@ class VariableValueStore(
             variableId = value.variableId,
             variableTypeId = VariableType.Link,
             variableValueId = valueId,
-        ))
+        )
+    )
   }
 
   private fun insertSectionValue(valueId: VariableValueId, value: SectionValue<*>) {
@@ -1002,7 +1039,7 @@ class VariableValueStore(
   private fun fetchMaxListPosition(
       projectId: ProjectId,
       variableId: VariableId,
-      rowValueId: VariableValueId?
+      rowValueId: VariableValueId?,
   ): Int? {
     val deletedValues = VARIABLE_VALUES.`as`("deleted_values")
     val deletedRows = VARIABLE_VALUE_TABLE_ROWS.`as`("deleted_rows")
@@ -1021,7 +1058,8 @@ class VariableValueStore(
                   .and(deletedValues.PROJECT_ID.eq(projectId))
                   .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
                   .and(deletedValues.IS_DELETED.isTrue)
-                  .and(deletedValues.ID.gt(VARIABLE_VALUES.ID)))
+                  .and(deletedValues.ID.gt(VARIABLE_VALUES.ID))
+          )
           .fetchOne()
           ?.value1()
     } else {
@@ -1044,7 +1082,8 @@ class VariableValueStore(
                   .and(deletedRows.TABLE_ROW_VALUE_ID.eq(rowValueId))
                   .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
                   .and(deletedValues.IS_DELETED.isTrue)
-                  .and(deletedValues.ID.gt(VARIABLE_VALUES.ID)))
+                  .and(deletedValues.ID.gt(VARIABLE_VALUES.ID))
+          )
           .fetchOne()
           ?.value1()
     }
@@ -1053,7 +1092,7 @@ class VariableValueStore(
   private fun fetchNextListPosition(
       projectId: ProjectId,
       variableId: VariableId,
-      rowValueId: VariableValueId?
+      rowValueId: VariableValueId?,
   ): Int {
     return fetchMaxListPosition(projectId, variableId, rowValueId)?.let { it + 1 } ?: 0
   }
@@ -1090,7 +1129,8 @@ class VariableValueStore(
                     .where(VARIABLE_VALUES.VARIABLE_ID.eq(newerValuesTable.VARIABLE_ID))
                     .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
                     .and(VARIABLE_VALUES.LIST_POSITION.eq(newerValuesTable.LIST_POSITION))
-                    .and(VARIABLE_VALUES.ID.lt(newerValuesTable.ID)))
+                    .and(VARIABLE_VALUES.ID.lt(newerValuesTable.ID))
+            )
             .fetch { record ->
               CompletedSectionVariableUpdatedEvent(
                   documentId = record[DOCUMENTS.ID]!!,
@@ -1129,7 +1169,8 @@ class VariableValueStore(
               .from(VARIABLE_WORKFLOW_HISTORY)
               .where(
                   DSL.row(PROJECT_ID, VARIABLE_ID)
-                      .`in`(allSectionEvents.map { DSL.row(projectId, it.sectionVariableId) }))
+                      .`in`(allSectionEvents.map { DSL.row(projectId, it.sectionVariableId) })
+              )
               .orderBy(PROJECT_ID, VARIABLE_ID, ID.desc())
               .fetch { (projectId, variableId, status) ->
                 (projectId!! to variableId!!) to status!!

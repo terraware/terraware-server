@@ -50,7 +50,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         variableSectionValuesDao,
         variableSelectOptionValuesDao,
         variableValuesDao,
-        variableValueTableRowsDao)
+        variableValueTableRowsDao,
+    )
   }
 
   @BeforeEach
@@ -69,7 +70,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val tableVariableId = insertVariableManifestEntry(insertTableVariable())
       val textVariableId =
           insertVariableManifestEntry(
-              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text)))
+              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text))
+          )
       insertTableColumn(tableVariableId, textVariableId)
 
       val rowValueId = insertValue(variableId = tableVariableId)
@@ -84,7 +86,9 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
               ExistingTableValue(existingValueProps(rowValueId, tableVariableId)),
               ExistingTextValue(
                   existingValueProps(updatedTextValueId, textVariableId, rowValueId = rowValueId),
-                  "New"))
+                  "New",
+              ),
+          )
 
       val actual = store.listValues(inserted.documentId)
 
@@ -95,7 +99,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns deleted value on incremental query`() {
       val variableId =
           insertVariableManifestEntry(
-              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text)))
+              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text))
+          )
 
       insertValue(variableId = variableId, textValue = "Old")
       val deletedValueId = insertValue(variableId = variableId, isDeleted = true)
@@ -103,7 +108,10 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val expected =
           listOf(
               ExistingDeletedValue(
-                  existingValueProps(deletedValueId, variableId), VariableType.Text))
+                  existingValueProps(deletedValueId, variableId),
+                  VariableType.Text,
+              )
+          )
 
       val actual = store.listValues(inserted.documentId, minValueId = deletedValueId)
 
@@ -114,7 +122,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
     fun `omits deleted value on non-incremental query`() {
       val variableId =
           insertVariableManifestEntry(
-              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text)))
+              insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text))
+          )
 
       insertValue(variableId = variableId, textValue = "Old")
       insertValue(variableId = variableId, isDeleted = true)
@@ -147,7 +156,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val expected =
           listOf(
               ExistingTextValue(existingValueProps(valueId1, variableId1), "value1"),
-              ExistingTextValue(existingValueProps(valueId2, variableId2), "value2"))
+              ExistingTextValue(existingValueProps(valueId2, variableId2), "value2"),
+          )
 
       val actual = store.listValues(projectId, deliverableId1)
 
@@ -165,7 +175,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         val actual =
             store.updateValues(
-                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new")))
+            )
 
         val expected =
             listOf(ExistingTextValue(existingValueProps(actual[0].id, variableId), "new"))
@@ -177,21 +188,27 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       fun `adds values to list variable`() {
         val variableId =
             insertVariableManifestEntry(
-                insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text)))
+                insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text))
+            )
 
         val actual =
             store.updateValues(
                 listOf(
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "first")),
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "second")),
-                ))
+                )
+            )
 
         val expected =
             listOf(
                 ExistingTextValue(
-                    existingValueProps(actual[0].id, variableId, position = 0), "first"),
+                    existingValueProps(actual[0].id, variableId, position = 0),
+                    "first",
+                ),
                 ExistingTextValue(
-                    existingValueProps(actual[1].id, variableId, position = 1), "second"),
+                    existingValueProps(actual[1].id, variableId, position = 1),
+                    "second",
+                ),
             )
 
         assertEquals(expected, actual)
@@ -201,7 +218,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       fun `associates values with newly-inserted rows`() {
         val tableVariableId =
             insertVariableManifestEntry(
-                insertTableVariable(insertVariable(isList = true, type = VariableType.Table)))
+                insertTableVariable(insertVariable(isList = true, type = VariableType.Table))
+            )
         val columnVariableId = insertVariableManifestEntry(insertTextVariable())
         insertTableColumn(tableVariableId, columnVariableId)
 
@@ -210,11 +228,14 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     AppendValueOperation(NewTableValue(newValueProps(tableVariableId))),
                     AppendValueOperation(
-                        NewTextValue(newValueProps(columnVariableId), "row 0 column")),
+                        NewTextValue(newValueProps(columnVariableId), "row 0 column")
+                    ),
                     AppendValueOperation(NewTableValue(newValueProps(tableVariableId))),
                     AppendValueOperation(
-                        NewTextValue(newValueProps(columnVariableId), "row 1 column")),
-                ))
+                        NewTextValue(newValueProps(columnVariableId), "row 1 column")
+                    ),
+                )
+            )
 
         val expected =
             listOf(
@@ -223,10 +244,12 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                 ExistingTableValue(existingValueProps(actual[1].id, tableVariableId, position = 1)),
                 ExistingTextValue(
                     existingValueProps(actual[2].id, columnVariableId, rowValueId = actual[0].id),
-                    "row 0 column"),
+                    "row 0 column",
+                ),
                 ExistingTextValue(
                     existingValueProps(actual[3].id, columnVariableId, rowValueId = actual[1].id),
-                    "row 1 column"),
+                    "row 1 column",
+                ),
             )
 
         assertEquals(expected, actual)
@@ -239,7 +262,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       fun `renumbers later table rows`() {
         val tableVariableId =
             insertVariableManifestEntry(
-                insertTableVariable(insertVariable(isList = true, type = VariableType.Table)))
+                insertTableVariable(insertVariable(isList = true, type = VariableType.Table))
+            )
         val columnVariableId = insertVariableManifestEntry(insertTextVariable())
         insertTableColumn(tableVariableId, columnVariableId)
 
@@ -258,7 +282,10 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val updatedDocument = store.listValues(inserted.documentId)
 
         assertEquals(
-            2, updatedDocument.count { it.type == VariableType.Table }, "Number of table rows")
+            2,
+            updatedDocument.count { it.type == VariableType.Table },
+            "Number of table rows",
+        )
 
         val newRow0Id =
             updatedDocument.single { it.type == VariableType.Table && it.listPosition == 0 }.id
@@ -271,18 +298,21 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             row1ColumnValueId,
             updatedDocument.single { it.rowValueId == newRow0Id }.id,
-            "ID of column value in new row 0")
+            "ID of column value in new row 0",
+        )
         assertEquals(
             row2ColumnValueId,
             updatedDocument.single { it.rowValueId == newRow1Id }.id,
-            "ID of column value in new row 1")
+            "ID of column value in new row 1",
+        )
       }
 
       @Test
       fun `can delete multiple table rows`() {
         val tableVariableId =
             insertVariableManifestEntry(
-                insertTableVariable(insertVariable(isList = true, type = VariableType.Table)))
+                insertTableVariable(insertVariable(isList = true, type = VariableType.Table))
+            )
         val columnVariableId = insertVariableManifestEntry(insertTextVariable())
         insertTableColumn(tableVariableId, columnVariableId)
 
@@ -299,54 +329,71 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         store.updateValues(
             listOf(
                 DeleteValueOperation(inserted.projectId, row1Id),
-                DeleteValueOperation(inserted.projectId, row0Id)))
+                DeleteValueOperation(inserted.projectId, row0Id),
+            )
+        )
 
         val updatedDocument = store.listValues(inserted.documentId)
 
         assertEquals(
-            1, updatedDocument.count { it.type == VariableType.Table }, "Number of table rows")
+            1,
+            updatedDocument.count { it.type == VariableType.Table },
+            "Number of table rows",
+        )
 
         val newRow0Id =
             updatedDocument.single { it.type == VariableType.Table && it.listPosition == 0 }.id
         assertEquals(
             row2ColumnValueId,
             updatedDocument.single { it.rowValueId == newRow0Id }.id,
-            "ID of column value in new row 0")
+            "ID of column value in new row 0",
+        )
       }
 
       @Test
       fun `repeatedly adding and deleting values results in correct list positions`() {
         val variableId =
             insertVariableManifestEntry(
-                insertTextVariable(insertVariable(isList = true, type = VariableType.Text)))
+                insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
+            )
 
         val append1Result =
             store.updateValues(
                 listOf(
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "1")),
-                    AppendValueOperation(NewTextValue(newValueProps(variableId), "2"))))
+                    AppendValueOperation(NewTextValue(newValueProps(variableId), "2")),
+                )
+            )
         store.updateValues(
             listOf(
                 DeleteValueOperation(
-                    inserted.projectId, append1Result.first { it.value == "1" }.id),
-                AppendValueOperation(NewTextValue(newValueProps(variableId), "3"))))
+                    inserted.projectId,
+                    append1Result.first { it.value == "1" }.id,
+                ),
+                AppendValueOperation(NewTextValue(newValueProps(variableId), "3")),
+            )
+        )
 
         val round1Values = store.listValues(inserted.documentId)
         assertEquals(
             listOf(0 to "2", 1 to "3"),
             round1Values.map { it.listPosition to it.value },
-            "Values after append, append, delete, append")
+            "Values after append, append, delete, append",
+        )
 
         store.updateValues(
             listOf(
                 DeleteValueOperation(inserted.projectId, round1Values.first { it.value == "2" }.id),
-                AppendValueOperation(NewTextValue(newValueProps(variableId), "4"))))
+                AppendValueOperation(NewTextValue(newValueProps(variableId), "4")),
+            )
+        )
 
         val round2Values = store.listValues(inserted.documentId)
         assertEquals(
             listOf(0 to "3", 1 to "4"),
             round2Values.map { it.listPosition to it.value },
-            "Values after append, append, delete, append, delete, append")
+            "Values after append, append, delete, append, delete, append",
+        )
       }
 
       @Test
@@ -355,18 +402,24 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         val append1Result =
             store.updateValues(
-                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "1"))))
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "1")))
+            )
 
         store.updateValues(
-            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id)))
+            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id))
+        )
         val round1Values = store.listValues(inserted.documentId)
 
         store.updateValues(
-            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id)))
+            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id))
+        )
         val round2Values = store.listValues(inserted.documentId)
 
         assertEquals(
-            round1Values, round2Values, "Should not have made any additional changes to values")
+            round1Values,
+            round2Values,
+            "Should not have made any additional changes to values",
+        )
       }
 
       @Test
@@ -387,7 +440,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
             store.listValues(
                 projectId = inserted.projectId,
                 variableIds = listOf(tableVariableId, columnVariableId),
-                includeDeletedValues = false)
+                includeDeletedValues = false,
+            )
         assertEquals(emptyList<ExistingValue>(), updatedValues)
       }
     }
@@ -407,11 +461,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         val updatedValues =
             store.updateValues(
-                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new")))
+            )
 
         updatedValues.forEach { value ->
           eventPublisher.assertEventPublished(
-              VariableValueUpdatedEvent(inserted.projectId, value.variableId))
+              VariableValueUpdatedEvent(inserted.projectId, value.variableId)
+          )
         }
       }
 
@@ -425,7 +481,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         assertThrows<AccessDeniedException> {
           store.updateValues(
               listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
-              triggerWorkflows = false)
+              triggerWorkflows = false,
+          )
         }
       }
 
@@ -435,7 +492,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val fileId = insertFile()
         store.writeValue(NewImageValue(newValueProps(variableId), ImageValueDetails("", fileId)))
         eventPublisher.assertEventPublished(
-            VariableValueUpdatedEvent(inserted.projectId, variableId))
+            VariableValueUpdatedEvent(inserted.projectId, variableId)
+        )
       }
 
       @Test
@@ -454,23 +512,39 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId1)
         insertSectionValue(childSectionVariableId, listPosition = 1, usedVariableId = variableId2)
         insertVariableWorkflowHistory(
-            variableId = topSectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = topSectionVariableId,
+            status = VariableWorkflowStatus.Complete,
+        )
         insertVariableWorkflowHistory(
-            variableId = middleSectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = middleSectionVariableId,
+            status = VariableWorkflowStatus.Complete,
+        )
 
         store.updateValues(
             listOf(
                 AppendValueOperation(NewTextValue(newValueProps(variableId1), "new 1")),
-                AppendValueOperation(NewTextValue(newValueProps(variableId2), "new 2"))))
+                AppendValueOperation(NewTextValue(newValueProps(variableId2), "new 2")),
+            )
+        )
 
         eventPublisher.assertEventPublished(
             CompletedSectionVariableUpdatedEvent(
-                documentId, inserted.projectId, childSectionVariableId, middleSectionVariableId),
-            "Event for middle section")
+                documentId,
+                inserted.projectId,
+                childSectionVariableId,
+                middleSectionVariableId,
+            ),
+            "Event for middle section",
+        )
         eventPublisher.assertEventPublished(
             CompletedSectionVariableUpdatedEvent(
-                documentId, inserted.projectId, childSectionVariableId, topSectionVariableId),
-            "Event for top section")
+                documentId,
+                inserted.projectId,
+                childSectionVariableId,
+                topSectionVariableId,
+            ),
+            "Event for top section",
+        )
       }
 
       @Test
@@ -487,19 +561,32 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId)
         insertVariableWorkflowHistory(
-            variableId = topSectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = topSectionVariableId,
+            status = VariableWorkflowStatus.Complete,
+        )
 
         store.updateValues(
-            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1"))))
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1")))
+        )
 
         eventPublisher.assertEventNotPublished(
             CompletedSectionVariableUpdatedEvent(
-                documentId, inserted.projectId, childSectionVariableId, middleSectionVariableId),
-            "Event for middle section should not have been published")
+                documentId,
+                inserted.projectId,
+                childSectionVariableId,
+                middleSectionVariableId,
+            ),
+            "Event for middle section should not have been published",
+        )
         eventPublisher.assertEventPublished(
             CompletedSectionVariableUpdatedEvent(
-                documentId, inserted.projectId, childSectionVariableId, topSectionVariableId),
-            "Event for top section")
+                documentId,
+                inserted.projectId,
+                childSectionVariableId,
+                topSectionVariableId,
+            ),
+            "Event for top section",
+        )
       }
 
       @Test
@@ -514,10 +601,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId1)
         insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId2)
         insertVariableWorkflowHistory(
-            variableId = sectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = sectionVariableId,
+            status = VariableWorkflowStatus.Complete,
+        )
 
         store.updateValues(
-            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId1), "new"))))
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId1), "new")))
+        )
 
         eventPublisher.assertEventNotPublished<CompletedSectionVariableUpdatedEvent>()
       }
@@ -534,12 +624,17 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId)
         insertVariableWorkflowHistory(
-            variableId = parentSectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = parentSectionVariableId,
+            status = VariableWorkflowStatus.Complete,
+        )
         insertVariableWorkflowHistory(
-            variableId = parentSectionVariableId, status = VariableWorkflowStatus.InReview)
+            variableId = parentSectionVariableId,
+            status = VariableWorkflowStatus.InReview,
+        )
 
         store.updateValues(
-            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1"))))
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1")))
+        )
 
         eventPublisher.assertEventNotPublished<CompletedSectionVariableUpdatedEvent>()
       }
@@ -562,7 +657,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns 0 if there are no existing values`() {
       val variableId =
           insertVariableManifestEntry(
-              insertTextVariable(insertVariable(type = VariableType.Text, isList = true)))
+              insertTextVariable(insertVariable(type = VariableType.Text, isList = true))
+          )
 
       assertEquals(0, store.fetchNextListPosition(inserted.projectId, variableId))
     }
@@ -581,7 +677,11 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           insertVariableManifestEntry(insertVariable(type = VariableType.Text, isList = true))
       insertValue(variableId = variableId, listPosition = 0, textValue = "not deleted")
       insertValue(
-          variableId = variableId, listPosition = 1, textValue = "deleted", isDeleted = true)
+          variableId = variableId,
+          listPosition = 1,
+          textValue = "deleted",
+          isDeleted = true,
+      )
 
       assertEquals(1, store.fetchNextListPosition(inserted.projectId, variableId))
     }
@@ -607,11 +707,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
               listPosition = 1,
               usageType = VariableUsageType.Injection,
               usedVariableId = oldVariableId,
-              variableId = sectionVariableId)
+              variableId = sectionVariableId,
+          )
 
       val newVariableId =
           insertTextVariable(
-              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text)
+          )
 
       every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
 
@@ -627,16 +729,24 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val newReferringSectionValue = newValues.single { it.listPosition == 1 }
 
       assertEquals(
-          oldTextSectionValue, newTextSectionValue, "Text value should not have been modified")
+          oldTextSectionValue,
+          newTextSectionValue,
+          "Text value should not have been modified",
+      )
       assertNotEquals(
           oldReferringSectionValueId,
           newReferringSectionValue.id,
-          "Value with variable reference should have been replaced")
+          "Value with variable reference should have been replaced",
+      )
       assertEquals(
           SectionValueVariable(
-              newVariableId, VariableUsageType.Injection, VariableInjectionDisplayStyle.Block),
+              newVariableId,
+              VariableUsageType.Injection,
+              VariableInjectionDisplayStyle.Block,
+          ),
           newReferringSectionValue.value,
-          "Section should refer to new variable")
+          "Section should refer to new variable",
+      )
     }
 
     @Test
@@ -657,22 +767,28 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           listPosition = 1,
           usageType = VariableUsageType.Injection,
           usedVariableId = oldVariableId,
-          variableId = sectionVariableId)
+          variableId = sectionVariableId,
+      )
 
       // The variable is upgraded at some point
       val newVariableId =
           insertTextVariable(
-              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text)
+          )
 
       // The section has already been updated to use the new variable ID
       insertSectionValue(
-          listPosition = 0, textValue = "some updated text", variableId = sectionVariableId)
+          listPosition = 0,
+          textValue = "some updated text",
+          variableId = sectionVariableId,
+      )
       insertSectionValue(
           displayStyle = VariableInjectionDisplayStyle.Block,
           listPosition = 1,
           usageType = VariableUsageType.Injection,
           usedVariableId = newVariableId,
-          variableId = sectionVariableId)
+          variableId = sectionVariableId,
+      )
 
       // A project value is added to the new variable
       insertValue(textValue = "referenced text", variableId = newVariableId)
@@ -692,7 +808,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           oldReferringSectionValue.id,
           newReferringSectionValue.id,
-          "Value with variable reference should not have been replaced")
+          "Value with variable reference should not have been replaced",
+      )
     }
 
     @Test
@@ -711,11 +828,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           listPosition = 1,
           usageType = VariableUsageType.Injection,
           usedVariableId = oldVariableId,
-          variableId = sectionVariableId)
+          variableId = sectionVariableId,
+      )
 
       val newVariableId =
           insertTextVariable(
-              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text)
+          )
 
       val otherProjectId = insertProject()
       insertValue(textValue = "other project referenced text", variableId = oldVariableId)
@@ -724,7 +843,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           listPosition = 1,
           usageType = VariableUsageType.Injection,
           usedVariableId = oldVariableId,
-          variableId = sectionVariableId)
+          variableId = sectionVariableId,
+      )
 
       every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
       every { user.canUpdateInternalVariableWorkflowDetails(otherProjectId) } returns true

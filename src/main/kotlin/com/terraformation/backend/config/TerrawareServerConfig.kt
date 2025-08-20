@@ -143,7 +143,8 @@ class TerrawareServerConfig(
       if (enabled) {
         if (account == null || apiHost == null || apiToken == null || serviceDeskKey == null) {
           throw IllegalArgumentException(
-              "Account, API host, API token and Jira Service Desk tag are required if Atlassian is enabled")
+              "Account, API host, API token and Jira Service Desk tag are required if Atlassian is enabled"
+          )
         }
       }
     }
@@ -159,7 +160,7 @@ class TerrawareServerConfig(
        * organization, etc., that entity's time zone is used. Default is 00:01 (1 minute past
        * midnight).
        */
-      @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(0, 1)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(0, 1),
   )
 
   class KeycloakConfig(
@@ -233,7 +234,8 @@ class TerrawareServerConfig(
       if (enabled) {
         if (alwaysSendToOverrideAddress && overrideAddress == null) {
           throw IllegalArgumentException(
-              "overrideEmailAddress is required because alwaysSendToOverrideAddress is true")
+              "overrideEmailAddress is required because alwaysSendToOverrideAddress is true"
+          )
         }
 
         if (senderAddress == null) {
@@ -305,7 +307,8 @@ class TerrawareServerConfig(
       if (enabled) {
         if (appKey == null || appSecret == null || refreshToken == null) {
           throw IllegalArgumentException(
-              "App key, app secret, and refresh token are required if Dropbox is enabled")
+              "App key, app secret, and refresh token are required if Dropbox is enabled"
+          )
         }
       }
     }
@@ -320,7 +323,8 @@ class TerrawareServerConfig(
       if (enabled) {
         if (clientId == null || clientSecret == null) {
           throw IllegalArgumentException(
-              "Client ID and client secret are required if HubSpot is enabled")
+              "Client ID and client secret are required if HubSpot is enabled"
+          )
         }
       }
     }

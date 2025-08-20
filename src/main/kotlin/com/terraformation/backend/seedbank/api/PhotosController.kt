@@ -50,7 +50,8 @@ class PhotosController(private val photoRepository: PhotoRepository) {
   @ApiResponse404("The specified accession does not exist.")
   @Operation(
       summary = "Upload a new photo for an accession.",
-      description = "If there was already a photo with the specified filename, replaces it.")
+      description = "If there was already a photo with the specified filename, replaces it.",
+  )
   @PostMapping("/{photoFilename}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadPhoto(
@@ -62,7 +63,10 @@ class PhotosController(private val photoRepository: PhotoRepository) {
 
     try {
       photoRepository.storePhoto(
-          accessionId, file.inputStream, FileMetadata.of(contentType, photoFilename, file.size))
+          accessionId,
+          file.inputStream,
+          FileMetadata.of(contentType, photoFilename, file.size),
+      )
     } catch (e: AccessionNotFoundException) {
       throw e
     } catch (e: Exception) {
@@ -75,12 +79,16 @@ class PhotosController(private val photoRepository: PhotoRepository) {
 
   @ApiResponse200Photo
   @ApiResponse404(
-      "The accession does not exist, or does not have a photo with the requested filename.")
+      "The accession does not exist, or does not have a photo with the requested filename."
+  )
   @GetMapping(
-      "/{photoFilename}", produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+      "/{photoFilename}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
   @Operation(
       summary = "Retrieve a specific photo from an accession.",
-      description = PHOTO_OPERATION_DESCRIPTION)
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
   @ResponseBody
   fun getPhoto(
       @PathVariable("id") accessionId: AccessionId,
@@ -100,7 +108,9 @@ class PhotosController(private val photoRepository: PhotoRepository) {
   }
 
   @ApiResponse(
-      responseCode = "200", description = "The accession's photos are listed in the response.")
+      responseCode = "200",
+      description = "The accession's photos are listed in the response.",
+  )
   @ApiResponse404("The accession does not exist.")
   @GetMapping
   @Operation(summary = "List all the available photos for an accession.")
@@ -118,7 +128,7 @@ class PhotosController(private val photoRepository: PhotoRepository) {
   @Operation(summary = "Delete one photo for an accession.")
   fun deletePhoto(
       @PathVariable("id") accessionId: AccessionId,
-      @PathVariable photoFilename: String
+      @PathVariable photoFilename: String,
   ): SimpleSuccessResponsePayload {
     try {
       photoRepository.deletePhoto(accessionId, photoFilename)

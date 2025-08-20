@@ -26,7 +26,7 @@ internal class GeometrySerializerTest {
       name: String,
       json: String,
       expectedSrid: Int,
-      expectedWkt: String
+      expectedWkt: String,
   ) {
     val expected = WKTReader().read(expectedWkt)
     expected.srid = expectedSrid
@@ -41,7 +41,7 @@ internal class GeometrySerializerTest {
       name: String,
       expected: String,
       srid: Int,
-      wkt: String
+      wkt: String,
   ) {
     val geometry = WKTReader().read(wkt)
     geometry.srid = srid
@@ -83,7 +83,7 @@ internal class GeometrySerializerTest {
   private fun assertJsonIsEquivalent(
       expectedJson: String,
       actualJson: String,
-      message: String? = null
+      message: String? = null,
   ) {
     val expectedMap = objectMapper.readValue<Map<*, *>>(expectedJson)
     val actualMap = objectMapper.readValue<Map<*, *>>(actualJson)
@@ -100,67 +100,80 @@ internal class GeometrySerializerTest {
               "Point with long/lat SRID",
               """{"type":"Point","coordinates":[1.1,-2.2,3.3]}""",
               SRID.LONG_LAT,
-              "POINT(1.1 -2.2 3.3)"),
+              "POINT(1.1 -2.2 3.3)",
+          ),
           arguments(
               "Point with Mercator SRID",
               """{"type":"Point",$mercatorCrs,"coordinates":[1.1,2.2,3.3]}""",
               SRID.SPHERICAL_MERCATOR,
-              "POINT(1.1 2.2 3.3)"),
+              "POINT(1.1 2.2 3.3)",
+          ),
           arguments(
               "MultiPoint with long/lat SRID",
               """{"type":"MultiPoint","coordinates":[[1,1,1],[2,2,2]]}""",
               SRID.LONG_LAT,
-              "MULTIPOINT(1 1 1,2 2 2)"),
+              "MULTIPOINT(1 1 1,2 2 2)",
+          ),
           arguments(
               "MultiPoint with Mercator SRID",
               """{"type":"MultiPoint",$mercatorCrs,"coordinates":[[1,1,1],[2,2,2]]}""",
               SRID.SPHERICAL_MERCATOR,
-              "MULTIPOINT(1 1 1,2 2 2)"),
+              "MULTIPOINT(1 1 1,2 2 2)",
+          ),
           arguments(
               "Polygon with long/lat SRID",
               """{"type":"Polygon","coordinates":[[[1,2,3],[2.1,1.1,0.1],[5,5,5],[1,2,3]]]}""",
               SRID.LONG_LAT,
-              "POLYGON((1 2 3,2.1 1.1 0.1,5 5 5,1 2 3))"),
+              "POLYGON((1 2 3,2.1 1.1 0.1,5 5 5,1 2 3))",
+          ),
           arguments(
               "MultiPolygon with long/lat SRID",
               """{"type":"MultiPolygon","coordinates":[[[[1,2,3],[1,2.5,3],[0.0,2.5,3],[1,2,3]]],[[[11,2,13],[11,2.5,13],[10,2.5,13],[11,2,13]]]]}""",
               SRID.LONG_LAT,
-              "MULTIPOLYGON(((1 2 3,1 2.5 3,0 2.5 3,1 2 3)),((11 2 13,11 2.5 13,10 2.5 13,11 2 13)))"),
+              "MULTIPOLYGON(((1 2 3,1 2.5 3,0 2.5 3,1 2 3)),((11 2 13,11 2.5 13,10 2.5 13,11 2 13)))",
+          ),
           arguments(
               "MultiPolygon with Mercator SRID",
               """{"type":"MultiPolygon",$mercatorCrs,"coordinates":[[[[1,2,3],[1,2.5,3],[0.0,2.5,3],[1,2,3]]],[[[11,2,13],[11,2.5,13],[10,2.5,13],[11,2,13]]]]}""",
               SRID.SPHERICAL_MERCATOR,
-              "MULTIPOLYGON(((1 2 3,1 2.5 3,0 2.5 3,1 2 3)),((11 2 13,11 2.5 13,10 2.5 13,11 2 13)))"),
+              "MULTIPOLYGON(((1 2 3,1 2.5 3,0 2.5 3,1 2 3)),((11 2 13,11 2.5 13,10 2.5 13,11 2 13)))",
+          ),
           arguments(
               "GeometryCollection with long/lat SRID",
               """{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2,3]},{"type":"Point","coordinates":[4,5,6]}]}""",
               SRID.LONG_LAT,
-              "GEOMETRYCOLLECTION(POINT(1 2 3),POINT(4 5 6))"),
+              "GEOMETRYCOLLECTION(POINT(1 2 3),POINT(4 5 6))",
+          ),
           arguments(
               "GeometryCollection with Mercator SRID",
               """{"type":"GeometryCollection",$mercatorCrs,"geometries":[{"type":"Point","coordinates":[1,2,3]},{"type":"Point","coordinates":[4,5,6]}]}""",
               SRID.SPHERICAL_MERCATOR,
-              "GEOMETRYCOLLECTION(POINT(1 2 3),POINT(4 5 6))"),
+              "GEOMETRYCOLLECTION(POINT(1 2 3),POINT(4 5 6))",
+          ),
           arguments(
               "LineString with long/lat SRID",
               """{"type":"LineString","coordinates":[[1,1,1],[2,2,2],[3,3,3]]}""",
               SRID.LONG_LAT,
-              "LINESTRING(1 1 1,2 2 2,3 3 3)"),
+              "LINESTRING(1 1 1,2 2 2,3 3 3)",
+          ),
           arguments(
               "LineString with Mercator SRID",
               """{"type":"LineString",$mercatorCrs,"coordinates":[[1,1,1],[2,2,2],[3,3,3]]}""",
               SRID.SPHERICAL_MERCATOR,
-              "LINESTRING(1 1 1,2 2 2,3 3 3)"),
+              "LINESTRING(1 1 1,2 2 2,3 3 3)",
+          ),
           arguments(
               "MultiLineString with long/lat SRID",
               """{"type":"MultiLineString","coordinates":[[[1,1,1],[2,2,2]],[[3,3,3],[4,4,4]]]}""",
               SRID.LONG_LAT,
-              "MULTILINESTRING((1 1 1,2 2 2),(3 3 3,4 4 4))"),
+              "MULTILINESTRING((1 1 1,2 2 2),(3 3 3,4 4 4))",
+          ),
           arguments(
               "MultiLineString with Mercator SRID",
               """{"type":"MultiLineString",$mercatorCrs,"coordinates":[[[1,1,1],[2,2,2]],[[3,3,3],[4,4,4]]]}""",
               SRID.SPHERICAL_MERCATOR,
-              "MULTILINESTRING((1 1 1,2 2 2),(3 3 3,4 4 4))"),
+              "MULTILINESTRING((1 1 1,2 2 2),(3 3 3,4 4 4))",
+          ),
       )
     }
 
@@ -173,13 +186,17 @@ internal class GeometrySerializerTest {
           arguments("Point with no coordinates", """{"type":"Point"}"""),
           arguments(
               "Point with string coordinates value",
-              """{"type":"Point","coordinates":"[1,2,3]"}"""),
+              """{"type":"Point","coordinates":"[1,2,3]"}""",
+          ),
           arguments("GeometryCollection with no geometries", """{"type":"GeometryCollection"}"""),
           arguments(
-              "Line with too few points", """{"type":"LineString","coordinates":[[1,2,3]]}"""),
+              "Line with too few points",
+              """{"type":"LineString","coordinates":[[1,2,3]]}""",
+          ),
           arguments(
               "Polygon with too few points",
-              """{"type":"Polygon","coordinates":[[[1,2,3],[4,5,6],[1,2,3]]]}"""),
+              """{"type":"Polygon","coordinates":[[[1,2,3],[4,5,6],[1,2,3]]]}""",
+          ),
       )
     }
   }

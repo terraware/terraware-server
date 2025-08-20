@@ -65,7 +65,8 @@ data class GetReportSettingsResponsePayload(
     @Schema(
         description =
             "If false, settings have not been configured yet and the values in the rest of the " +
-                "payload are the defaults.")
+                "payload are the defaults."
+    )
     val isConfigured: Boolean,
     @Schema(description = "If true, organization-level reports are enabled.")
     val organizationEnabled: Boolean,
@@ -90,7 +91,9 @@ data class UpdateReportSettingsRequestPayload(
             Schema(
                 description =
                     "Per-project report settings. If a project is missing from this list, its " +
-                        "settings will revert to the defaults."))
+                        "settings will revert to the defaults."
+            )
+    )
     val projects: List<ProjectReportSettingsPayload>,
 ) {
   fun toModel() =
@@ -98,5 +101,6 @@ data class UpdateReportSettingsRequestPayload(
           isConfigured = true,
           organizationId = organizationId,
           organizationEnabled = organizationEnabled,
-          projects = projects.map { it.toModel() })
+          projects = projects.map { it.toModel() },
+      )
 }

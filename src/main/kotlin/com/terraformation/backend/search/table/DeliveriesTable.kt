@@ -21,9 +21,13 @@ class DeliveriesTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           plantings.asMultiValueSublist("plantings", DELIVERIES.ID.eq(PLANTINGS.DELIVERY_ID)),
           plantingSites.asSingleValueSublist(
-              "plantingSite", DELIVERIES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              DELIVERIES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
           nurseryWithdrawals.asSingleValueSublist(
-              "withdrawal", DELIVERIES.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID)),
+              "withdrawal",
+              DELIVERIES.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID),
+          ),
       )
     }
   }

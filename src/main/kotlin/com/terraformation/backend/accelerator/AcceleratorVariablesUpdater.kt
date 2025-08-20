@@ -54,7 +54,9 @@ class AcceleratorVariablesUpdater(
       val values = acceleratorProjectVariableValuesService.fetchValues(application.projectId)
 
       acceleratorProjectVariableValuesService.writeValues(
-          application.projectId, values.copy(dealName = application.internalName))
+          application.projectId,
+          values.copy(dealName = application.internalName),
+      )
     }
   }
 }

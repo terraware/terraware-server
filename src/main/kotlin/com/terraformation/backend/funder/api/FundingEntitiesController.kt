@@ -74,7 +74,7 @@ class FundingEntitiesController(
   @PutMapping("/{fundingEntityId}")
   fun updateFundingEntity(
       @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId,
-      @RequestBody @Valid payload: UpdateFundingEntityRequestPayload
+      @RequestBody @Valid payload: UpdateFundingEntityRequestPayload,
   ): SimpleSuccessResponsePayload {
     fundingEntityService.update(payload.toRow(fundingEntityId), payload.projects)
     return SimpleSuccessResponsePayload()
@@ -121,7 +121,7 @@ class FundingEntitiesController(
   @DeleteMapping("/{fundingEntityId}/users")
   fun removeFunder(
       @PathVariable fundingEntityId: FundingEntityId,
-      @RequestBody payload: DeleteFundersRequestPayload
+      @RequestBody payload: DeleteFundersRequestPayload,
   ): SimpleSuccessResponsePayload {
     fundingEntityService.deleteFunders(fundingEntityId, payload.userIds)
     return SimpleSuccessResponsePayload()
@@ -153,7 +153,10 @@ data class FundingEntityPayload(
   constructor(
       model: FundingEntityModel
   ) : this(
-      id = model.id, name = model.name, projects = model.projects.map { FundingProjectPayload(it) })
+      id = model.id,
+      name = model.name,
+      projects = model.projects.map { FundingProjectPayload(it) },
+  )
 }
 
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :

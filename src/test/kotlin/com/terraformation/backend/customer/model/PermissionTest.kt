@@ -241,14 +241,18 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     insertOrganizationInternalTag(
-        getDatabaseId(OrganizationId(4)), InternalTagIds.Accelerator, createdBy = userId)
+        getDatabaseId(OrganizationId(4)),
+        InternalTagIds.Accelerator,
+        createdBy = userId,
+    )
 
     otherUserIds =
         mapOf(
             OrganizationId(1) to sameOrgUserId,
             OrganizationId(2) to insertUser(),
             OrganizationId(3) to insertUser(),
-            OrganizationId(4) to insertUser())
+            OrganizationId(4) to insertUser(),
+        )
 
     otherUserIds.forEach { (organizationId, otherUserId) ->
       insertOrganizationUser(otherUserId, getDatabaseId(organizationId), createdBy = userId)
@@ -260,7 +264,10 @@ internal class PermissionTest : DatabaseTest() {
       putDatabaseId(
           participantId,
           insertParticipant(
-              createdBy = userId, cohortId = getDatabaseId(CohortId(participantId.value))))
+              createdBy = userId,
+              cohortId = getDatabaseId(CohortId(participantId.value)),
+          ),
+      )
     }
 
     projectIds.forEach { projectId ->
@@ -269,7 +276,9 @@ internal class PermissionTest : DatabaseTest() {
           insertProject(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
-              participantId = getDatabaseId(ParticipantId(projectId.value / 1000))))
+              participantId = getDatabaseId(ParticipantId(projectId.value / 1000)),
+          ),
+      )
     }
 
     facilityIds.forEach { facilityId ->
@@ -277,7 +286,9 @@ internal class PermissionTest : DatabaseTest() {
       val speciesIdInDatabase = getDatabaseId(SpeciesId(facilityId.value / 1000))
 
       putDatabaseId(
-          facilityId, insertFacility(organizationId = organizationIdInDatabase, createdBy = userId))
+          facilityId,
+          insertFacility(organizationId = organizationIdInDatabase, createdBy = userId),
+      )
 
       putDatabaseId(DeviceId(facilityId.value), insertDevice(createdBy = userId))
       putDatabaseId(AutomationId(facilityId.value), insertAutomation(createdBy = userId))
@@ -288,10 +299,14 @@ internal class PermissionTest : DatabaseTest() {
               createdBy = userId,
               facilityId = getDatabaseId(facilityId),
               projectId = getDatabaseId(ProjectId(facilityId.value)),
-          ))
+          ),
+      )
       val viabilityTestsRow =
           ViabilityTestsRow(
-              accessionId = inserted.accessionId, seedsSown = 1, testType = ViabilityTestType.Lab)
+              accessionId = inserted.accessionId,
+              seedsSown = 1,
+              testType = ViabilityTestType.Lab,
+          )
       viabilityTestsDao.insert(viabilityTestsRow)
       putDatabaseId(ViabilityTestId(facilityId.value), viabilityTestsRow.id!!)
 
@@ -301,17 +316,23 @@ internal class PermissionTest : DatabaseTest() {
               createdBy = userId,
               organizationId = organizationIdInDatabase,
               speciesId = speciesIdInDatabase,
-              projectId = getDatabaseId(ProjectId(facilityId.value))))
+              projectId = getDatabaseId(ProjectId(facilityId.value)),
+          ),
+      )
       putDatabaseId(
           WithdrawalId(facilityId.value),
-          insertNurseryWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant))
+          insertNurseryWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant),
+      )
     }
 
     subLocationIds.forEach { subLocationId ->
       putDatabaseId(
           subLocationId,
           insertSubLocation(
-              facilityId = getDatabaseId(FacilityId(subLocationId.value)), createdBy = userId))
+              facilityId = getDatabaseId(FacilityId(subLocationId.value)),
+              createdBy = userId,
+          ),
+      )
     }
 
     deviceManagerIds.forEach { deviceManagerId ->
@@ -339,18 +360,24 @@ internal class PermissionTest : DatabaseTest() {
           insertPlantingSite(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(plantingSiteId.value / 1000)),
-              projectId = getDatabaseId(ProjectId(plantingSiteId.value))))
+              projectId = getDatabaseId(ProjectId(plantingSiteId.value)),
+          ),
+      )
       putDatabaseId(
           DeliveryId(plantingSiteId.value),
           insertDelivery(
               createdBy = userId,
               withdrawalId = getDatabaseId(WithdrawalId(plantingSiteId.value)),
-              plantingSiteId = getDatabaseId(plantingSiteId)))
+              plantingSiteId = getDatabaseId(plantingSiteId),
+          ),
+      )
       putDatabaseId(
           PlantingId(plantingSiteId.value),
           insertPlanting(
               createdBy = userId,
-              speciesId = getDatabaseId(SpeciesId(plantingSiteId.value / 1000))))
+              speciesId = getDatabaseId(SpeciesId(plantingSiteId.value / 1000)),
+          ),
+      )
     }
 
     plantingZoneIds.forEach { plantingZoneId ->
@@ -358,7 +385,9 @@ internal class PermissionTest : DatabaseTest() {
           plantingZoneId,
           insertPlantingZone(
               createdBy = userId,
-              plantingSiteId = getDatabaseId(PlantingSiteId(plantingZoneId.value))))
+              plantingSiteId = getDatabaseId(PlantingSiteId(plantingZoneId.value)),
+          ),
+      )
     }
 
     plantingSubzoneIds.forEach { plantingSubzoneId ->
@@ -367,7 +396,9 @@ internal class PermissionTest : DatabaseTest() {
           insertPlantingSubzone(
               createdBy = userId,
               plantingSiteId = getDatabaseId(PlantingSiteId(plantingSubzoneId.value)),
-              plantingZoneId = getDatabaseId(PlantingZoneId(plantingSubzoneId.value))))
+              plantingZoneId = getDatabaseId(PlantingZoneId(plantingSubzoneId.value)),
+          ),
+      )
     }
 
     monitoringPlotIds.forEach { monitoringPlotId ->
@@ -376,7 +407,9 @@ internal class PermissionTest : DatabaseTest() {
           insertMonitoringPlot(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(monitoringPlotId.value / 1000)),
-              plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value))))
+              plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value)),
+          ),
+      )
     }
 
     draftPlantingSiteIds.forEach { draftPlantingSiteId ->
@@ -385,13 +418,16 @@ internal class PermissionTest : DatabaseTest() {
           insertDraftPlantingSite(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(draftPlantingSiteId.value / 1000)),
-              projectId = getDatabaseId(ProjectId(draftPlantingSiteId.value))))
+              projectId = getDatabaseId(ProjectId(draftPlantingSiteId.value)),
+          ),
+      )
     }
 
     seedFundReportIds.forEach { reportId ->
       putDatabaseId(
           reportId,
-          insertSeedFundReport(organizationId = getDatabaseId(OrganizationId(reportId.value))))
+          insertSeedFundReport(organizationId = getDatabaseId(OrganizationId(reportId.value))),
+      )
     }
 
     observationIds.forEach { observationId ->
@@ -399,7 +435,9 @@ internal class PermissionTest : DatabaseTest() {
           observationId,
           insertObservation(
               plantingSiteId = getDatabaseId(PlantingSiteId(observationId.value)),
-              state = ObservationState.Upcoming))
+              state = ObservationState.Upcoming,
+          ),
+      )
     }
 
     moduleIds.forEach { moduleId ->
@@ -412,13 +450,19 @@ internal class PermissionTest : DatabaseTest() {
       putDatabaseId(
           deliverableId,
           insertDeliverable(
-              createdBy = userId, moduleId = getDatabaseId(ModuleId(deliverableId.value))))
+              createdBy = userId,
+              moduleId = getDatabaseId(ModuleId(deliverableId.value)),
+          ),
+      )
 
       submissionIds.forEach { submissionId ->
         putDatabaseId(
             submissionId,
             insertSubmission(
-                createdBy = userId, projectId = getDatabaseId(ProjectId(submissionId.value))))
+                createdBy = userId,
+                projectId = getDatabaseId(ProjectId(submissionId.value)),
+            ),
+        )
       }
     }
 
@@ -431,7 +475,8 @@ internal class PermissionTest : DatabaseTest() {
     moduleEventIds.forEach { eventId ->
       putDatabaseId(
           eventId,
-          insertEvent(createdBy = userId, moduleId = getDatabaseId(ModuleId(eventId.value))))
+          insertEvent(createdBy = userId, moduleId = getDatabaseId(ModuleId(eventId.value))),
+      )
       insertEventProject(projectId = getDatabaseId(ProjectId(eventId.value)))
     }
 
@@ -440,7 +485,9 @@ internal class PermissionTest : DatabaseTest() {
           participantProjectSpeciesId,
           insertParticipantProjectSpecies(
               createdBy = userId,
-              projectId = getDatabaseId(ProjectId(participantProjectSpeciesId.value))))
+              projectId = getDatabaseId(ProjectId(participantProjectSpeciesId.value)),
+          ),
+      )
     }
 
     applicationIds.forEach { applicationId ->
@@ -449,7 +496,9 @@ internal class PermissionTest : DatabaseTest() {
           insertApplication(
               createdBy = userId,
               internalName = "XXX_$applicationId",
-              projectId = getDatabaseId(ProjectId(applicationId.value))))
+              projectId = getDatabaseId(ProjectId(applicationId.value)),
+          ),
+      )
     }
   }
 
@@ -727,7 +776,8 @@ internal class PermissionTest : DatabaseTest() {
           [
               "Admin",
               "TerraformationContact",
-          ])
+          ]
+  )
   fun `admin equivalent role grants all permissions except deleting organization`(
       roleName: String
   ) {
@@ -1289,7 +1339,8 @@ internal class PermissionTest : DatabaseTest() {
     deviceManagersDao.update(
         deviceManagersDao
             .fetchOneById(getDatabaseId(deviceManagerId))!!
-            .copy(facilityId = getDatabaseId(facilityId), userId = userId))
+            .copy(facilityId = getDatabaseId(facilityId), userId = userId)
+    )
 
     givenRole(org1Id, Role.Contributor)
 
@@ -2840,10 +2891,14 @@ internal class PermissionTest : DatabaseTest() {
 
     val otherFunderSameEntity = insertUser(type = UserType.Funder)
     insertFundingEntityUser(
-        fundingEntityId = getDatabaseId(userFundingEntityId), userId = otherFunderSameEntity)
+        fundingEntityId = getDatabaseId(userFundingEntityId),
+        userId = otherFunderSameEntity,
+    )
     val otherFunderDiffEntity = insertUser(type = UserType.Funder)
     insertFundingEntityUser(
-        fundingEntityId = getDatabaseId(otherFundingEntityId), userId = otherFunderDiffEntity)
+        fundingEntityId = getDatabaseId(otherFundingEntityId),
+        userId = otherFunderDiffEntity,
+    )
 
     permissions.expect(otherFunderSameEntity, deleteFunder = true, readUser = true)
     permissions.expect(otherFunderDiffEntity)
@@ -3032,87 +3087,108 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             addOrganizationUser,
             user.canAddOrganizationUser(idInDatabase),
-            "Can add organization $organizationId user")
+            "Can add organization $organizationId user",
+        )
         assertEquals(
             addTerraformationContact,
             user.canAddTerraformationContact(idInDatabase),
-            "Can add TF contact for organization $organizationId")
+            "Can add TF contact for organization $organizationId",
+        )
         assertEquals(
             createDraftPlantingSite,
             user.canCreateDraftPlantingSite(idInDatabase),
-            "Can create draft planting site in organization $organizationId")
+            "Can create draft planting site in organization $organizationId",
+        )
         assertEquals(
             createFacility,
             user.canCreateFacility(idInDatabase),
-            "Can create facility in organization $organizationId")
+            "Can create facility in organization $organizationId",
+        )
         assertEquals(
             createPlantingSite,
             user.canCreatePlantingSite(idInDatabase),
-            "Can create planting site in organization $organizationId")
+            "Can create planting site in organization $organizationId",
+        )
         assertEquals(
             createProject,
             user.canCreateProject(idInDatabase),
-            "Can create project in organization $organizationId")
+            "Can create project in organization $organizationId",
+        )
         assertEquals(
             createReport,
             user.canCreateSeedFundReport(idInDatabase),
-            "Can create report in organization $organizationId")
+            "Can create report in organization $organizationId",
+        )
         assertEquals(
             createSpecies,
             user.canCreateSpecies(idInDatabase),
-            "Can create species in organization $organizationId")
+            "Can create species in organization $organizationId",
+        )
         assertEquals(
             deleteOrganization,
             user.canDeleteOrganization(idInDatabase),
-            "Can delete organization $organizationId")
+            "Can delete organization $organizationId",
+        )
         assertEquals(
             listFacilities,
             user.canListFacilities(idInDatabase),
-            "Can list facilities in organization $organizationId")
+            "Can list facilities in organization $organizationId",
+        )
         assertEquals(
             listOrganizationUsers,
             user.canListOrganizationUsers(idInDatabase),
-            "Can list users in organization $organizationId")
+            "Can list users in organization $organizationId",
+        )
         assertEquals(
             listReports,
             user.canListSeedFundReports(idInDatabase),
-            "Can list reports in organization $organizationId")
+            "Can list reports in organization $organizationId",
+        )
         assertEquals(
             readOrganization,
             user.canReadOrganization(idInDatabase),
-            "Can read organization $organizationId")
+            "Can read organization $organizationId",
+        )
         assertEquals(
             readOrganizationDeliverables,
             user.canReadOrganizationDeliverables(idInDatabase),
-            "Can read deliverables for organization $organizationId")
+            "Can read deliverables for organization $organizationId",
+        )
         assertEquals(
             readOrganizationFeatures,
             user.canReadOrganizationFeatures(idInDatabase),
-            "Can read features for organization $organizationId")
+            "Can read features for organization $organizationId",
+        )
         assertEquals(
             readOrganizationSelf,
             user.canReadOrganizationUser(idInDatabase, userId),
-            "Can read self in organization $organizationId")
+            "Can read self in organization $organizationId",
+        )
         assertEquals(
             readOrganizationUser,
             user.canReadOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
-            "Can read user in organization $organizationId")
+            "Can read user in organization $organizationId",
+        )
         assertEquals(
             removeOrganizationSelf,
             user.canRemoveOrganizationUser(idInDatabase, userId),
-            "Can remove self from organization $organizationId")
+            "Can remove self from organization $organizationId",
+        )
         assertEquals(
             removeOrganizationUser,
             user.canRemoveOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
-            "Can remove user from organization $organizationId")
+            "Can remove user from organization $organizationId",
+        )
         assertEquals(
             removeTerraformationContact,
             user.canRemoveTerraformationContact(idInDatabase),
-            "Can remove TF contact from organization $organizationId")
+            "Can remove TF contact from organization $organizationId",
+        )
         assertEquals(
             updateOrganization,
             user.canUpdateOrganization(idInDatabase),
-            "Can update organization $organizationId")
+            "Can update organization $organizationId",
+        )
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -3136,33 +3212,48 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createAccession,
             user.canCreateAccession(idInDatabase),
-            "Can create accession at facility $facilityId")
+            "Can create accession at facility $facilityId",
+        )
         assertEquals(
             createAutomation,
             user.canCreateAutomation(idInDatabase),
-            "Can create automation at facility $facilityId")
+            "Can create automation at facility $facilityId",
+        )
         assertEquals(
             createBatch,
             user.canCreateBatch(idInDatabase),
-            "Can create seedling batch at facility $facilityId")
+            "Can create seedling batch at facility $facilityId",
+        )
         assertEquals(
             createDevice,
             user.canCreateDevice(idInDatabase),
-            "Can create device at facility $facilityId")
+            "Can create device at facility $facilityId",
+        )
         assertEquals(
             createSubLocation,
             user.canCreateSubLocation(idInDatabase),
-            "Can create sub-location at facility $facilityId")
+            "Can create sub-location at facility $facilityId",
+        )
         assertEquals(
             listAutomations,
             user.canListAutomations(idInDatabase),
-            "Can list automations at facility $facilityId")
+            "Can list automations at facility $facilityId",
+        )
         assertEquals(
-            readFacility, user.canReadFacility(idInDatabase), "Can read facility $facilityId")
+            readFacility,
+            user.canReadFacility(idInDatabase),
+            "Can read facility $facilityId",
+        )
         assertEquals(
-            sendAlert, user.canSendAlert(idInDatabase), "Can send alert for facility $facilityId")
+            sendAlert,
+            user.canSendAlert(idInDatabase),
+            "Can send alert for facility $facilityId",
+        )
         assertEquals(
-            updateFacility, user.canUpdateFacility(idInDatabase), "Can update facility $facilityId")
+            updateFacility,
+            user.canUpdateFacility(idInDatabase),
+            "Can update facility $facilityId",
+        )
 
         uncheckedFacilities.remove(facilityId)
       }
@@ -3183,25 +3274,33 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteAccession,
             user.canDeleteAccession(idInDatabase),
-            "Can delete accession $accessionId")
+            "Can delete accession $accessionId",
+        )
         assertEquals(
-            readAccession, user.canReadAccession(idInDatabase), "Can read accession $accessionId")
+            readAccession,
+            user.canReadAccession(idInDatabase),
+            "Can read accession $accessionId",
+        )
         assertEquals(
             setWithdrawalUser,
             user.canSetWithdrawalUser(idInDatabase),
-            "Can set withdrawal user for accession $accessionId")
+            "Can set withdrawal user for accession $accessionId",
+        )
         assertEquals(
             updateAccession,
             user.canUpdateAccession(idInDatabase),
-            "Can update accession $accessionId")
+            "Can update accession $accessionId",
+        )
         assertEquals(
             updateAccessionProject,
             user.canUpdateAccessionProject(idInDatabase),
-            "Can update project for accession $accessionId")
+            "Can update project for accession $accessionId",
+        )
         assertEquals(
             uploadPhoto,
             user.canUploadPhoto(idInDatabase),
-            "Can upload photo for accession $accessionId")
+            "Can upload photo for accession $accessionId",
+        )
 
         uncheckedAccessions.remove(accessionId)
       }
@@ -3220,19 +3319,23 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteAutomation,
             user.canDeleteAutomation(idInDatabase),
-            "Can delete automation $automationId")
+            "Can delete automation $automationId",
+        )
         assertEquals(
             readAutomation,
             user.canReadAutomation(idInDatabase),
-            "Can read automation $automationId")
+            "Can read automation $automationId",
+        )
         assertEquals(
             triggerAutomation,
             user.canTriggerAutomation(idInDatabase),
-            "Can trigger automation $automationId")
+            "Can trigger automation $automationId",
+        )
         assertEquals(
             updateAutomation,
             user.canUpdateAutomation(idInDatabase),
-            "Can update automation $automationId")
+            "Can update automation $automationId",
+        )
 
         uncheckedAutomations.remove(automationId)
       }
@@ -3249,11 +3352,13 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readDeviceManager,
             user.canReadDeviceManager(idInDatabase),
-            "Can read device manager $deviceManagerId")
+            "Can read device manager $deviceManagerId",
+        )
         assertEquals(
             updateDeviceManager,
             user.canUpdateDeviceManager(idInDatabase),
-            "Can update device manager $deviceManagerId")
+            "Can update device manager $deviceManagerId",
+        )
 
         uncheckedDeviceManagers.remove(deviceManagerId)
       }
@@ -3273,18 +3378,24 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createTimeseries,
             user.canCreateTimeseries(idInDatabase),
-            "Can create timeseries for device $deviceId")
+            "Can create timeseries for device $deviceId",
+        )
         assertEquals(readDevice, user.canReadDevice(idInDatabase), "Can read device $deviceId")
         assertEquals(
             readTimeseries,
             user.canReadTimeseries(idInDatabase),
-            "Can read timeseries for device $deviceId")
+            "Can read timeseries for device $deviceId",
+        )
         assertEquals(
-            updateDevice, user.canUpdateDevice(idInDatabase), "Can update device $deviceId")
+            updateDevice,
+            user.canUpdateDevice(idInDatabase),
+            "Can update device $deviceId",
+        )
         assertEquals(
             updateTimeseries,
             user.canUpdateTimeseries(idInDatabase),
-            "Can update timeseries for device $deviceId")
+            "Can update timeseries for device $deviceId",
+        )
 
         uncheckedDevices.remove(deviceId)
       }
@@ -3300,10 +3411,16 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(speciesId)
 
         assertEquals(
-            deleteSpecies, user.canDeleteSpecies(idInDatabase), "Can delete species $speciesId")
+            deleteSpecies,
+            user.canDeleteSpecies(idInDatabase),
+            "Can delete species $speciesId",
+        )
         assertEquals(readSpecies, user.canReadSpecies(idInDatabase), "Can read species $speciesId")
         assertEquals(
-            updateSpecies, user.canUpdateSpecies(idInDatabase), "Can update species $speciesId")
+            updateSpecies,
+            user.canUpdateSpecies(idInDatabase),
+            "Can update species $speciesId",
+        )
 
         uncheckedSpecies.remove(speciesId)
       }
@@ -3321,15 +3438,18 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteSubLocation,
             user.canDeleteSubLocation(idInDatabase),
-            "Can delete sub-location $subLocationId")
+            "Can delete sub-location $subLocationId",
+        )
         assertEquals(
             readSubLocation,
             user.canReadSubLocation(idInDatabase),
-            "Can read sub-location $subLocationId")
+            "Can read sub-location $subLocationId",
+        )
         assertEquals(
             updateSubLocation,
             user.canUpdateSubLocation(idInDatabase),
-            "Can update sub-location $subLocationId")
+            "Can update sub-location $subLocationId",
+        )
 
         uncheckedSubLocations.remove(subLocationId)
       }
@@ -3396,17 +3516,23 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           acceptCurrentDisclaimer,
           user.canAcceptCurrentDisclaimer(),
-          "Can accept current disclaimer")
+          "Can accept current disclaimer",
+      )
       assertEquals(
-          addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
+          addAnyOrganizationUser,
+          user.canAddAnyOrganizationUser(),
+          "Can add any organization user",
+      )
       assertEquals(
           addCohortParticipant,
           user.canAddCohortParticipant(cohortId, participantId),
-          "Can add cohort participant")
+          "Can add cohort participant",
+      )
       assertEquals(
           addParticipantProject,
           user.canAddParticipantProject(participantId, projectId),
-          "Can add participant project")
+          "Can add participant project",
+      )
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createCohortModule, user.canCreateCohortModule(), "Can create cohort module")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
@@ -3415,24 +3541,31 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           deleteCohortParticipant,
           user.canDeleteCohortParticipant(cohortId, participantId),
-          "Can delete cohort participant")
+          "Can delete cohort participant",
+      )
       assertEquals(
-          deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
+          deleteParticipant,
+          user.canDeleteParticipant(participantId),
+          "Can delete participant",
+      )
       assertEquals(
           deleteParticipantProject,
           user.canDeleteParticipantProject(participantId, projectId),
-          "Can delete participant project")
+          "Can delete participant project",
+      )
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
       assertEquals(deleteUsers, user.canDeleteUsers(), "Can delete users")
       assertEquals(
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
-          "Can import global species data")
+          "Can import global species data",
+      )
       assertEquals(
           manageDefaultProjectLeads,
           user.canManageDefaultProjectLeads(),
-          "Can manage default project leads")
+          "Can manage default project leads",
+      )
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageDisclaimers, user.canManageDisclaimers(), "Can manage disclaimers")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
@@ -3440,71 +3573,97 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           manageModuleEventStatuses,
           user.canManageModuleEventStatuses(),
-          "Can manage module event statuses")
+          "Can manage module event statuses",
+      )
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(
           manageProjectReportConfigs,
           user.canManageProjectReportConfigs(),
-          "Can manage project report configs")
+          "Can manage project report configs",
+      )
       assertEquals(
-          notifyUpcomingReports, user.canNotifyUpcomingReports(), "Can notify upcoming reports")
+          notifyUpcomingReports,
+          user.canNotifyUpcomingReports(),
+          "Can notify upcoming reports",
+      )
       assertEquals(
           proxyGeoServerGetRequests,
           user.canProxyGeoServerGetRequests(),
-          "Can proxy GeoServer GET requests")
+          "Can proxy GeoServer GET requests",
+      )
       assertEquals(
           publishProjectProfileDetails,
           user.canPublishProjectProfileDetails(),
-          "Can publish project profile details")
+          "Can publish project profile details",
+      )
       assertEquals(publishReports, user.canPublishReports(), "Can publish reports")
       assertEquals(
           readAllAcceleratorDetails,
           user.canReadAllAcceleratorDetails(),
-          "Can read all accelerator details")
+          "Can read all accelerator details",
+      )
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(
           readCohortParticipants,
           user.canReadCohortParticipants(cohortId),
-          "Can read cohort participants")
+          "Can read cohort participants",
+      )
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(
-          readCurrentDisclaimer, user.canReadCurrentDisclaimer(), "Can read current disclaimer")
+          readCurrentDisclaimer,
+          user.canReadCurrentDisclaimer(),
+          "Can read current disclaimer",
+      )
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(
           readModuleEventParticipants,
           user.canReadModuleEventParticipants(),
-          "Can read module event participants")
+          "Can read module event participants",
+      )
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
           readProjectReportConfigs,
           user.canReadProjectReportConfigs(),
-          "Can read project report configs")
+          "Can read project report configs",
+      )
       assertEquals(
-          readPublishedProjects, user.canReadPublishedProjects(), "Can read published projects")
+          readPublishedProjects,
+          user.canReadPublishedProjects(),
+          "Can read published projects",
+      )
       assertEquals(
           readReportInternalComments,
           user.canReadReportInternalComments(),
-          "Can read report internal comment")
+          "Can read report internal comment",
+      )
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
-          "Can regenerate all device manager tokens")
+          "Can regenerate all device manager tokens",
+      )
       assertEquals(reviewReports, user.canReviewReports(), "Can review reports")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
       assertEquals(updateCohort, user.canUpdateCohort(cohortId), "Can update cohort")
       assertEquals(
-          updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
+          updateDeviceTemplates,
+          user.canUpdateDeviceTemplates(),
+          "Can update device templates",
+      )
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
       assertEquals(
-          updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
+          updateParticipant,
+          user.canUpdateParticipant(participantId),
+          "Can update participant",
+      )
       assertEquals(
           updateSpecificGlobalRoles,
           user.canUpdateSpecificGlobalRoles(globalRoles),
-          "Can update specific global roles")
+          "Can update specific global roles",
+      )
 
       hasCheckedGlobalPermissions = true
     }
@@ -3519,7 +3678,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readViabilityTest,
             user.canReadViabilityTest(idInDatabase),
-            "Can read viability test $viabilityTestId")
+            "Can read viability test $viabilityTestId",
+        )
 
         uncheckedViabilityTests.remove(viabilityTestId)
       }
@@ -3553,11 +3713,13 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createWithdrawalPhoto,
             user.canCreateWithdrawalPhoto(idInDatabase),
-            "Can create photo for withdrawal $withdrawalId")
+            "Can create photo for withdrawal $withdrawalId",
+        )
         assertEquals(
             readWithdrawal,
             user.canReadWithdrawal(idInDatabase),
-            "Can read withdrawal $withdrawalId")
+            "Can read withdrawal $withdrawalId",
+        )
 
         uncheckedWithdrawals.remove(withdrawalId)
       }
@@ -3581,39 +3743,48 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createDelivery,
             user.canCreateDelivery(idInDatabase),
-            "Can create delivery at planting site $plantingSiteId")
+            "Can create delivery at planting site $plantingSiteId",
+        )
         assertEquals(
             createObservation,
             user.canCreateObservation(idInDatabase),
-            "Can create observation of planting site $plantingSiteId")
+            "Can create observation of planting site $plantingSiteId",
+        )
         assertEquals(
             deletePlantingSite,
             user.canDeletePlantingSite(idInDatabase),
-            "Can delete planting site $plantingSiteId")
+            "Can delete planting site $plantingSiteId",
+        )
         assertEquals(
             movePlantingSiteToAnyOrg,
             user.canMovePlantingSiteToAnyOrg(idInDatabase),
-            "Can move planting site $plantingSiteId")
+            "Can move planting site $plantingSiteId",
+        )
         assertEquals(
             readPlantingSite,
             user.canReadPlantingSite(idInDatabase),
-            "Can read planting site $plantingSiteId")
+            "Can read planting site $plantingSiteId",
+        )
         assertEquals(
             scheduleAdHocObservation,
             user.canScheduleAdHocObservation(idInDatabase),
-            "Can schedule ad-hoc observation $plantingSiteId")
+            "Can schedule ad-hoc observation $plantingSiteId",
+        )
         assertEquals(
             scheduleObservation,
             user.canScheduleObservation(idInDatabase),
-            "Can schedule observation $plantingSiteId")
+            "Can schedule observation $plantingSiteId",
+        )
         assertEquals(
             updatePlantingSite,
             user.canUpdatePlantingSite(idInDatabase),
-            "Can update planting site $plantingSiteId")
+            "Can update planting site $plantingSiteId",
+        )
         assertEquals(
             updatePlantingSiteProject,
             user.canUpdatePlantingSiteProject(idInDatabase),
-            "Can update project for planting site $plantingSiteId")
+            "Can update project for planting site $plantingSiteId",
+        )
 
         uncheckedPlantingSites.remove(plantingSiteId)
       }
@@ -3630,11 +3801,13 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readPlantingSubzone,
             user.canReadPlantingSubzone(idInDatabase),
-            "Can read planting subzone $plantingSubzoneId")
+            "Can read planting subzone $plantingSubzoneId",
+        )
         assertEquals(
             updatePlantingSubzoneCompleted,
             user.canUpdatePlantingSubzoneCompleted(idInDatabase),
-            "Can update planting completed for subzone $plantingSubzoneId")
+            "Can update planting completed for subzone $plantingSubzoneId",
+        )
 
         uncheckedPlantingSubzones.remove(plantingSubzoneId)
       }
@@ -3651,11 +3824,13 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readPlantingZone,
             user.canReadPlantingZone(idInDatabase),
-            "Can read planting zone $plantingZoneId")
+            "Can read planting zone $plantingZoneId",
+        )
         assertEquals(
             updatePlantingZone,
             user.canUpdatePlantingZone(idInDatabase),
-            "Can update planting zone $plantingZoneId")
+            "Can update planting zone $plantingZoneId",
+        )
 
         uncheckedPlantingZones.remove(plantingZoneId)
       }
@@ -3672,11 +3847,13 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readMonitoringPlot,
             user.canReadMonitoringPlot(idInDatabase),
-            "Can read monitoring plot $monitoringPlotId")
+            "Can read monitoring plot $monitoringPlotId",
+        )
         assertEquals(
             updateMonitoringPlot,
             user.canUpdateMonitoringPlot(idInDatabase),
-            "Can update monitoring plot $monitoringPlotId")
+            "Can update monitoring plot $monitoringPlotId",
+        )
 
         uncheckedMonitoringPlots.remove(monitoringPlotId)
       }
@@ -3694,15 +3871,18 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteDraftPlantingSite,
             user.canDeleteDraftPlantingSite(idInDatabase),
-            "Can delete draft planting site $draftPlantingSiteId")
+            "Can delete draft planting site $draftPlantingSiteId",
+        )
         assertEquals(
             readDraftPlantingSite,
             user.canReadDraftPlantingSite(idInDatabase),
-            "Can read draft planting site $draftPlantingSiteId")
+            "Can read draft planting site $draftPlantingSiteId",
+        )
         assertEquals(
             updateDraftPlantingSite,
             user.canUpdateDraftPlantingSite(idInDatabase),
-            "Can update draft planting site $draftPlantingSiteId")
+            "Can update draft planting site $draftPlantingSiteId",
+        )
 
         uncheckedDraftPlantingSites.remove(draftPlantingSiteId)
       }
@@ -3717,9 +3897,15 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(deliveryId)
 
         assertEquals(
-            readDelivery, user.canReadDelivery(idInDatabase), "Can read delivery $deliveryId")
+            readDelivery,
+            user.canReadDelivery(idInDatabase),
+            "Can read delivery $deliveryId",
+        )
         assertEquals(
-            updateDelivery, user.canUpdateDelivery(idInDatabase), "Can update delivery $deliveryId")
+            updateDelivery,
+            user.canUpdateDelivery(idInDatabase),
+            "Can update delivery $deliveryId",
+        )
 
         uncheckedDeliveries.remove(deliveryId)
       }
@@ -3733,7 +3919,10 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(plantingId)
 
         assertEquals(
-            readPlanting, user.canReadPlanting(idInDatabase), "Can read planting $plantingId")
+            readPlanting,
+            user.canReadPlanting(idInDatabase),
+            "Can read planting $plantingId",
+        )
 
         uncheckedPlantings.remove(plantingId)
       }
@@ -3749,11 +3938,20 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(reportId)
 
         assertEquals(
-            deleteReport, user.canDeleteSeedFundReport(idInDatabase), "Can delete report $reportId")
+            deleteReport,
+            user.canDeleteSeedFundReport(idInDatabase),
+            "Can delete report $reportId",
+        )
         assertEquals(
-            readReport, user.canReadSeedFundReport(idInDatabase), "Can read report $reportId")
+            readReport,
+            user.canReadSeedFundReport(idInDatabase),
+            "Can read report $reportId",
+        )
         assertEquals(
-            updateReport, user.canUpdateSeedFundReport(idInDatabase), "Can update report $reportId")
+            updateReport,
+            user.canUpdateSeedFundReport(idInDatabase),
+            "Can update report $reportId",
+        )
 
         uncheckedSeedFundReports.remove(reportId)
       }
@@ -3773,23 +3971,28 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             manageObservation,
             user.canManageObservation(idInDatabase),
-            "Can manage observation $observationId")
+            "Can manage observation $observationId",
+        )
         assertEquals(
             readObservation,
             user.canReadObservation(idInDatabase),
-            "Can read observation $observationId")
+            "Can read observation $observationId",
+        )
         assertEquals(
             replaceObservationPlot,
             user.canReplaceObservationPlot(idInDatabase),
-            "Can replace plot in observation $observationId")
+            "Can replace plot in observation $observationId",
+        )
         assertEquals(
             rescheduleObservation,
             user.canRescheduleObservation(idInDatabase),
-            "Can reschedule observation $observationId")
+            "Can reschedule observation $observationId",
+        )
         assertEquals(
             updateObservation,
             user.canUpdateObservation(idInDatabase),
-            "Can update observation $observationId")
+            "Can update observation $observationId",
+        )
 
         uncheckedObservations.remove(observationId)
       }
@@ -3828,88 +4031,116 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createApplication,
             user.canCreateApplication(idInDatabase),
-            "Can create application in project $projectId")
+            "Can create application in project $projectId",
+        )
         assertEquals(
             createSubmission,
             user.canCreateSubmission(idInDatabase),
-            "Can create submission for project $projectId")
+            "Can create submission for project $projectId",
+        )
         assertEquals(
             createParticipantProjectSpecies,
             user.canCreateParticipantProjectSpecies(idInDatabase),
-            "Can create participant project species for project $projectId")
+            "Can create participant project species for project $projectId",
+        )
         assertEquals(
-            deleteProject, user.canDeleteProject(idInDatabase), "Can delete project $projectId")
+            deleteProject,
+            user.canDeleteProject(idInDatabase),
+            "Can delete project $projectId",
+        )
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
             readInternalVariableWorkflowDetails,
             user.canReadInternalVariableWorkflowDetails(idInDatabase),
-            "Can read variable owners for project $projectId")
+            "Can read variable owners for project $projectId",
+        )
         assertEquals(
             readProjectModules,
             user.canReadProjectModules(idInDatabase),
-            "Can read project modules")
+            "Can read project modules",
+        )
         assertEquals(readProject, user.canReadProject(idInDatabase), "Can read project $projectId")
         assertEquals(
             readProjectAcceleratorDetails,
             user.canReadProjectAcceleratorDetails(idInDatabase),
-            "Can read accelerator details for project $projectId")
+            "Can read accelerator details for project $projectId",
+        )
         assertEquals(
             readProjectDeliverables,
             user.canReadProjectDeliverables(idInDatabase),
-            "Can read deliverables for project $projectId")
+            "Can read deliverables for project $projectId",
+        )
         assertEquals(
             readProjectFunderDetails,
             user.canReadProjectFunderDetails(idInDatabase),
-            "Can read project funder details for project $projectId")
+            "Can read project funder details for project $projectId",
+        )
         assertEquals(
             readProjectScores,
             user.canReadProjectScores(idInDatabase),
-            "Can read scores for project $projectId")
+            "Can read scores for project $projectId",
+        )
         assertEquals(
             readProjectVotes,
             user.canReadProjectVotes(idInDatabase),
-            "Can read votes for project $projectId")
+            "Can read votes for project $projectId",
+        )
         assertEquals(
             readPublishedReports,
             user.canReadPublishedReports(idInDatabase),
-            "Can read published reports for project $projectId")
+            "Can read published reports for project $projectId",
+        )
         assertEquals(
-            updateDefaultVoters, user.canUpdateDefaultVoters(), "Can update default voters")
+            updateDefaultVoters,
+            user.canUpdateDefaultVoters(),
+            "Can update default voters",
+        )
         assertEquals(
             updateInternalVariableWorkflowDetails,
             user.canUpdateInternalVariableWorkflowDetails(idInDatabase),
-            "Can update variable owners for project $projectId")
+            "Can update variable owners for project $projectId",
+        )
         assertEquals(
-            updateProject, user.canUpdateProject(idInDatabase), "Can update project $projectId")
+            updateProject,
+            user.canUpdateProject(idInDatabase),
+            "Can update project $projectId",
+        )
         assertEquals(
             updateProjectAcceleratorDetails,
             user.canUpdateProjectAcceleratorDetails(idInDatabase),
-            "Can update accelerator details for project $projectId")
+            "Can update accelerator details for project $projectId",
+        )
         assertEquals(
             updateProjectDocumentSettings,
             user.canUpdateProjectDocumentSettings(idInDatabase),
-            "Can update project document settings for project $projectId")
+            "Can update project document settings for project $projectId",
+        )
         assertEquals(
             updateProjectInternalUsers,
             user.canUpdateProjectInternalUsers(idInDatabase),
-            "Can update internal project users for project $projectId")
+            "Can update internal project users for project $projectId",
+        )
         assertEquals(
             updateProjectReports,
             user.canUpdateProjectReports(idInDatabase),
-            "Can update reports for project $projectId")
+            "Can update reports for project $projectId",
+        )
         assertEquals(
             updateProjectScores,
             user.canUpdateProjectScores(idInDatabase),
-            "Can update scores for project $projectId")
+            "Can update scores for project $projectId",
+        )
         assertEquals(
             updateProjectVotes,
             user.canUpdateProjectVotes(idInDatabase),
-            "Can update votes for project $projectId")
+            "Can update votes for project $projectId",
+        )
 
         assertEquals(
             updateSubmissionStatus,
             user.canUpdateSubmissionStatus(deliverableIds.first(), projectId),
-            "Can update submission status for project $projectId")
+            "Can update submission status for project $projectId",
+        )
 
         uncheckedProjects.remove(projectId)
       }
@@ -3925,7 +4156,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readModuleEvent,
             user.canReadModuleEvent(idInDatabase),
-            "Can read module event $eventId")
+            "Can read module event $eventId",
+        )
 
         uncheckedModuleEvents.remove(eventId)
       }
@@ -3943,7 +4175,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readModuleDetails,
             user.canReadModuleDetails(idInDatabase),
-            "Can read module details $moduleId")
+            "Can read module details $moduleId",
+        )
 
         uncheckedModules.remove(moduleId)
       }
@@ -3961,17 +4194,20 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteParticipantProjectSpecies,
             user.canDeleteParticipantProjectSpecies(idInDatabase),
-            "Can delete participant project species $participantProjectSpeciesId")
+            "Can delete participant project species $participantProjectSpeciesId",
+        )
 
         assertEquals(
             readParticipantProjectSpecies,
             user.canReadParticipantProjectSpecies(idInDatabase),
-            "Can read participant project species $participantProjectSpeciesId")
+            "Can read participant project species $participantProjectSpeciesId",
+        )
 
         assertEquals(
             updateParticipantProjectSpecies,
             user.canUpdateParticipantProjectSpecies(idInDatabase),
-            "Can update participant project species $participantProjectSpeciesId")
+            "Can update participant project species $participantProjectSpeciesId",
+        )
 
         uncheckedParticipantProjectSpecies.remove(participantProjectSpeciesId)
       }
@@ -3987,7 +4223,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readSubmission,
             user.canReadSubmission(idInDatabase),
-            "Can read submission $submissionId")
+            "Can read submission $submissionId",
+        )
 
         uncheckedSubmissions.remove(submissionId)
       }
@@ -4001,7 +4238,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             readSubmissionDocument,
             user.canReadSubmissionDocument(documentId),
-            "Can read submission document $documentId")
+            "Can read submission document $documentId",
+        )
 
         uncheckedSubmissionDocuments.remove(documentId)
       }
@@ -4017,11 +4255,18 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createSavedVersion,
             user.canCreateSavedVersion(documentId),
-            "Can create saved version of document $documentId")
+            "Can create saved version of document $documentId",
+        )
         assertEquals(
-            readDocument, user.canReadDocument(documentId), "Can read document $documentId")
+            readDocument,
+            user.canReadDocument(documentId),
+            "Can read document $documentId",
+        )
         assertEquals(
-            updateDocument, user.canUpdateDocument(documentId), "Can update document $documentId")
+            updateDocument,
+            user.canUpdateDocument(documentId),
+            "Can update document $documentId",
+        )
 
         uncheckedDocuments.remove(documentId)
       }
@@ -4040,21 +4285,25 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             createEntityWithOwner,
             user.canCreateEntityWithOwner(userId),
-            "Can create entity with owner $userId")
+            "Can create entity with owner $userId",
+        )
         assertEquals(
             createNotifications,
             user.canCreateNotification(userId),
-            "Can create notifications for $userId")
+            "Can create notifications for $userId",
+        )
         assertEquals(deleteFunder, user.canDeleteFunder(userId), "Can delete funder $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
         assertEquals(
             readUserInternalInterests,
             user.canReadUserInternalInterests(userId),
-            "Can read deliverable categories for user $userId")
+            "Can read deliverable categories for user $userId",
+        )
         assertEquals(
             updateUserInternalInterests,
             user.canUpdateUserInternalInterests(userId),
-            "Can update deliverable categories for user $userId")
+            "Can update deliverable categories for user $userId",
+        )
 
         uncheckedUsers.remove(userId)
       }
@@ -4076,23 +4325,28 @@ internal class PermissionTest : DatabaseTest() {
             assertEquals(
                 readApplication,
                 user.canReadApplication(idInDatabase),
-                "Can read application $applicationId")
+                "Can read application $applicationId",
+            )
             assertEquals(
                 reviewApplication,
                 user.canReviewApplication(idInDatabase),
-                "Can review application $applicationId")
+                "Can review application $applicationId",
+            )
             assertEquals(
                 updateApplicationBoundary,
                 user.canUpdateApplicationBoundary(idInDatabase),
-                "Can update boundary for application $applicationId")
+                "Can update boundary for application $applicationId",
+            )
             assertEquals(
                 updateApplicationCountry,
                 user.canUpdateApplicationCountry(idInDatabase),
-                "Can update country for application $applicationId")
+                "Can update country for application $applicationId",
+            )
             assertEquals(
                 updateApplicationSubmissionStatus,
                 user.canUpdateApplicationSubmissionStatus(idInDatabase),
-                "Can update submission status of application $applicationId")
+                "Can update submission status of application $applicationId",
+            )
 
             uncheckedApplications.remove(applicationId)
           }
@@ -4110,7 +4364,10 @@ internal class PermissionTest : DatabaseTest() {
 
             assertEquals(readReport, user.canReadReport(idInDatabase), "Can read report $reportId")
             assertEquals(
-                updateReport, user.canUpdateReport(idInDatabase), "Can update report $reportId")
+                updateReport,
+                user.canUpdateReport(idInDatabase),
+                "Can update report $reportId",
+            )
 
             uncheckedReports.remove(reportId)
           }
@@ -4130,15 +4387,18 @@ internal class PermissionTest : DatabaseTest() {
             assertEquals(
                 readFundingEntity,
                 user.canReadFundingEntity(idInDatabase),
-                "Can read funding entity $entityId")
+                "Can read funding entity $entityId",
+            )
             assertEquals(
                 listFundingEntityUsers,
                 user.canListFundingEntityUsers(idInDatabase),
-                "Can list users for funding entity $entityId")
+                "Can list users for funding entity $entityId",
+            )
             assertEquals(
                 updateFundingEntityUsers,
                 user.canUpdateFundingEntityUsers(idInDatabase),
-                "Can update funding entity users for funding entity $entityId")
+                "Can update funding entity users for funding entity $entityId",
+            )
 
             uncheckedFundingEntities.remove(entityId)
           }

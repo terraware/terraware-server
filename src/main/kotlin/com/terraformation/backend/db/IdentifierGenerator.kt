@@ -108,7 +108,7 @@ class IdentifierGenerator(
 
 enum class IdentifierType(val digit: Char) {
   ACCESSION('1'),
-  BATCH('2')
+  BATCH('2'),
 }
 
 enum class NumericIdentifierType {

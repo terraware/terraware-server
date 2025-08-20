@@ -44,7 +44,8 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
         ZoneId::class.java,
         StringSchema()
             .description("Time zone name in IANA tz database format")
-            .example("America/New_York"))
+            .example("America/New_York"),
+    )
   }
 
   override fun customise(openApi: OpenAPI) {
@@ -60,7 +61,8 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
           type = SecurityScheme.Type.OPENIDCONNECT
           description = "OpenID Connect"
           openIdConnectUrl = keycloakInfo.openIdConnectConfigUrl
-        })
+        },
+    )
   }
 
   /**
@@ -101,9 +103,9 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
           val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
           val propertySchema = classSchema.properties?.get(propertyName)
 
-          if (propertySchema != null &&
-              propertySchema.`$ref` != null &&
-              propertyAnnotation != null) {
+          if (
+              propertySchema != null && propertySchema.`$ref` != null && propertyAnnotation != null
+          ) {
             val composedSchema = ComposedSchema()
 
             if (propertyAnnotation.oneOf.isEmpty()) {
@@ -125,15 +127,19 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
 
           // ArbitraryJsonObject and Map<String, Any?> fields are also missing descriptions, but
           // we can modify their schemas in place.
-          if (propertySchema is ObjectSchema &&
-              propertyAnnotation != null &&
-              propertySchema.description == null) {
+          if (
+              propertySchema is ObjectSchema &&
+                  propertyAnnotation != null &&
+                  propertySchema.description == null
+          ) {
             propertySchema.description = propertyAnnotation.description
           }
 
           // ArbitraryJsonObject should always allow additional properties.
-          if (propertySchema is ObjectSchema &&
-              property.returnType.isSubtypeOf(typeOf<ArbitraryJsonObject?>())) {
+          if (
+              propertySchema is ObjectSchema &&
+                  property.returnType.isSubtypeOf(typeOf<ArbitraryJsonObject?>())
+          ) {
             propertySchema.additionalProperties = true
           }
 
@@ -202,8 +208,10 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
   private fun useRefForGeometry(openApi: OpenAPI) {
     openApi.components?.schemas?.values?.forEach { schema ->
       schema.properties?.values?.forEach { property ->
-        if (property is ComposedSchema &&
-            property.oneOf?.any { it.`$ref` == "#/components/schemas/Polygon" } == true) {
+        if (
+            property is ComposedSchema &&
+                property.oneOf?.any { it.`$ref` == "#/components/schemas/Polygon" } == true
+        ) {
           property.`$ref` = "#/components/schemas/Geometry"
           property.oneOf = null
         }

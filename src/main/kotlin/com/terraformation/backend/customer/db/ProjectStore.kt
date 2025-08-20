@@ -121,7 +121,7 @@ class ProjectStore(
       projectId: ProjectId,
       userId: UserId,
       role: ProjectInternalRole? = null,
-      roleName: String? = null
+      roleName: String? = null,
   ) {
     requirePermissions { updateProjectInternalUsers(projectId) }
 
@@ -143,7 +143,8 @@ class ProjectStore(
             .execute()
 
         eventPublisher.publishEvent(
-            ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName))
+            ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName)
+        )
       }
     }
   }
@@ -164,7 +165,8 @@ class ProjectStore(
 
         if (rowsDeleted > 0) {
           eventPublisher.publishEvent(
-              ProjectInternalUserRemovedEvent(projectId, organizationId, userId))
+              ProjectInternalUserRemovedEvent(projectId, organizationId, userId)
+          )
         }
       }
     }
@@ -211,12 +213,18 @@ class ProjectStore(
           ParticipantProjectRemovedEvent(
               participantId = existingParticipantId,
               projectId = projectId,
-              removedBy = currentUser().userId))
+              removedBy = currentUser().userId,
+          )
+      )
     }
     if (participantId != null) {
       eventPublisher.publishEvent(
           ParticipantProjectAddedEvent(
-              addedBy = currentUser().userId, participantId = participantId, projectId = projectId))
+              addedBy = currentUser().userId,
+              participantId = participantId,
+              projectId = projectId,
+          )
+      )
     }
   }
 }

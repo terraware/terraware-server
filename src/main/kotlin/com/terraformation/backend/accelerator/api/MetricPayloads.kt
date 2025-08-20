@@ -69,7 +69,8 @@ data class ExistingStandardMetricPayload(
       component = model.component,
       type = model.type,
       reference = model.reference,
-      isPublishable = model.isPublishable)
+      isPublishable = model.isPublishable,
+  )
 
   fun toModel(): ExistingStandardMetricModel {
     return ExistingStandardMetricModel(

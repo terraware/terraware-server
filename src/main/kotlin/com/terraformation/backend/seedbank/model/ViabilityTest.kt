@@ -15,7 +15,7 @@ data class ViabilityTestResultModel(
     val id: ViabilityTestResultId? = null,
     val recordingDate: LocalDate,
     val seedsGerminated: Int,
-    val testId: ViabilityTestId? = null
+    val testId: ViabilityTestId? = null,
 )
 
 data class ViabilityTestModel(
@@ -59,7 +59,8 @@ data class ViabilityTestModel(
         }
     if (!substrateValidForTestType) {
       throw IllegalArgumentException(
-          "Substrate ${substrate?.jsonValue} not valid for test type ${testType.jsonValue}")
+          "Substrate ${substrate?.jsonValue} not valid for test type ${testType.jsonValue}"
+      )
     }
 
     assertNotMixingCutAndGerminationResults()
@@ -77,10 +78,12 @@ data class ViabilityTestModel(
   }
 
   private fun assertValidSeedCounts() {
-    if (seedsCompromised?.sign == -1 ||
-        seedsEmpty?.sign == -1 ||
-        seedsFilled?.sign == -1 ||
-        seedsTested?.sign == -1) {
+    if (
+        seedsCompromised?.sign == -1 ||
+            seedsEmpty?.sign == -1 ||
+            seedsFilled?.sign == -1 ||
+            seedsTested?.sign == -1
+    ) {
       throw IllegalArgumentException("Seed counts cannot be negative")
     }
 

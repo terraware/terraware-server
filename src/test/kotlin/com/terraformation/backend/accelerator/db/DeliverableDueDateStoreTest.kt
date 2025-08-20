@@ -50,19 +50,22 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           cohortId = cohortId1,
           moduleId = moduleId1,
           startDate = cohort1Module1EndDate.minusDays(1),
-          endDate = cohort1Module1EndDate)
+          endDate = cohort1Module1EndDate,
+      )
 
       insertCohortModule(
           cohortId = cohortId1,
           moduleId = moduleId2,
           startDate = cohort1Module2EndDate.minusDays(1),
-          endDate = cohort1Module2EndDate)
+          endDate = cohort1Module2EndDate,
+      )
 
       insertCohortModule(
           cohortId = cohortId2,
           moduleId = moduleId2,
           startDate = cohort2Module2EndDate.minusDays(1),
-          endDate = cohort2Module2EndDate)
+          endDate = cohort2Module2EndDate,
+      )
 
       val deliverableId1 = insertDeliverable(moduleId = moduleId1)
       val deliverableId2 =
@@ -83,7 +86,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableId1,
               moduleId = moduleId1,
               moduleDueDate = cohort1Module1EndDate,
-              projectDueDates = emptyMap())
+              projectDueDates = emptyMap(),
+          )
 
       val cohort1Deliverable2 =
           cohort1Deliverable1.copy(
@@ -125,7 +129,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               cohort2Deliverable4,
           ),
           store.fetchDeliverableDueDates().toSet(),
-          "Fetch with no filters")
+          "Fetch with no filters",
+      )
 
       assertEquals(
           setOf(
@@ -135,12 +140,14 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               cohort1Deliverable4,
           ),
           store.fetchDeliverableDueDates(cohortId = cohortId1).toSet(),
-          "Fetch with cohort filter")
+          "Fetch with cohort filter",
+      )
 
       assertEquals(
           setOf(cohort1Deliverable3, cohort1Deliverable4, cohort2Deliverable3, cohort2Deliverable4),
           store.fetchDeliverableDueDates(moduleId = moduleId2).toSet(),
-          "Fetch with module filter")
+          "Fetch with module filter",
+      )
 
       assertEquals(
           setOf(
@@ -148,7 +155,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               cohort1Deliverable4,
           ),
           store.fetchDeliverableDueDates(cohortId = cohortId1, moduleId = moduleId2).toSet(),
-          "Fetch with cohort and module filter")
+          "Fetch with cohort and module filter",
+      )
 
       assertEquals(
           setOf(
@@ -156,7 +164,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               cohort2Deliverable3,
           ),
           store.fetchDeliverableDueDates(deliverableId = deliverableId3).toSet(),
-          "Fetch with deliverable filter")
+          "Fetch with deliverable filter",
+      )
 
       assertEquals(
           setOf(
@@ -165,14 +174,16 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           store
               .fetchDeliverableDueDates(cohortId = cohortId1, deliverableId = deliverableId3)
               .toSet(),
-          "Fetch with cohort and deliverable filter")
+          "Fetch with cohort and deliverable filter",
+      )
 
       assertEquals(
           emptySet<DeliverableDueDateModel>(),
           store
               .fetchDeliverableDueDates(deliverableId = deliverableId1, moduleId = moduleId2)
               .toSet(),
-          "Fetch with conflicting deliverable and module filter")
+          "Fetch with conflicting deliverable and module filter",
+      )
     }
 
     @Test
@@ -200,21 +211,31 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertDeliverable()
 
       insertDeliverableCohortDueDate(
-          inserted.deliverableId, cohortToUpdate, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          cohortToUpdate,
+          LocalDate.of(2024, 5, 1),
+      )
 
       val existingRow = deliverableCohortDueDatesDao.findAll().firstOrNull()
 
       store.upsertDeliverableCohortDueDate(
-          inserted.deliverableId, cohortToUpdate, LocalDate.of(2024, 6, 1))
+          inserted.deliverableId,
+          cohortToUpdate,
+          LocalDate.of(2024, 6, 1),
+      )
       store.upsertDeliverableCohortDueDate(
-          inserted.deliverableId, cohortToInsert, LocalDate.of(2024, 7, 1))
+          inserted.deliverableId,
+          cohortToInsert,
+          LocalDate.of(2024, 7, 1),
+      )
 
       val updatedRow = existingRow?.copy(dueDate = LocalDate.of(2024, 6, 1))
       val insertedRow =
           DeliverableCohortDueDatesRow(
               cohortId = cohortToInsert,
               deliverableId = inserted.deliverableId,
-              dueDate = LocalDate.of(2024, 7, 1))
+              dueDate = LocalDate.of(2024, 7, 1),
+          )
 
       assertEquals(setOf(updatedRow, insertedRow), deliverableCohortDueDatesDao.findAll().toSet())
     }
@@ -230,7 +251,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.upsertDeliverableCohortDueDate(
-            inserted.deliverableId, inserted.cohortId, LocalDate.of(2024, 5, 1))
+            inserted.deliverableId,
+            inserted.cohortId,
+            LocalDate.of(2024, 5, 1),
+        )
       }
     }
   }
@@ -249,21 +273,31 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val projectToInsert = insertProject(participantId = inserted.participantId)
 
       insertDeliverableProjectDueDate(
-          inserted.deliverableId, projectToUpdate, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          projectToUpdate,
+          LocalDate.of(2024, 5, 1),
+      )
 
       val existingRow = deliverableProjectDueDatesDao.findAll().firstOrNull()
 
       store.upsertDeliverableProjectDueDate(
-          inserted.deliverableId, projectToUpdate, LocalDate.of(2024, 6, 1))
+          inserted.deliverableId,
+          projectToUpdate,
+          LocalDate.of(2024, 6, 1),
+      )
       store.upsertDeliverableProjectDueDate(
-          inserted.deliverableId, projectToInsert, LocalDate.of(2024, 7, 1))
+          inserted.deliverableId,
+          projectToInsert,
+          LocalDate.of(2024, 7, 1),
+      )
 
       val updatedRow = existingRow?.copy(dueDate = LocalDate.of(2024, 6, 1))
       val insertedRow =
           DeliverableProjectDueDatesRow(
               projectId = projectToInsert,
               deliverableId = inserted.deliverableId,
-              dueDate = LocalDate.of(2024, 7, 1))
+              dueDate = LocalDate.of(2024, 7, 1),
+          )
 
       assertEquals(setOf(updatedRow, insertedRow), deliverableProjectDueDatesDao.findAll().toSet())
     }
@@ -282,7 +316,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.upsertDeliverableProjectDueDate(
-            inserted.deliverableId, projectId, LocalDate.of(2024, 5, 1))
+            inserted.deliverableId,
+            projectId,
+            LocalDate.of(2024, 5, 1),
+        )
       }
     }
   }
@@ -297,14 +334,22 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertDeliverable()
 
       insertDeliverableCohortDueDate(
-          inserted.deliverableId, inserted.cohortId, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          inserted.cohortId,
+          LocalDate.of(2024, 5, 1),
+      )
 
       assertEquals(
           listOf(
               DeliverableCohortDueDatesRow(
-                  inserted.deliverableId, inserted.cohortId, LocalDate.of(2024, 5, 1))),
+                  inserted.deliverableId,
+                  inserted.cohortId,
+                  LocalDate.of(2024, 5, 1),
+              )
+          ),
           deliverableCohortDueDatesDao.findAll(),
-          "Row exists before deletion")
+          "Row exists before deletion",
+      )
 
       store.deleteDeliverableCohortDueDate(inserted.deliverableId, inserted.cohortId)
 
@@ -321,7 +366,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertDeliverable()
 
       insertDeliverableCohortDueDate(
-          inserted.deliverableId, inserted.cohortId, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          inserted.cohortId,
+          LocalDate.of(2024, 5, 1),
+      )
       assertThrows<AccessDeniedException> {
         store.deleteDeliverableCohortDueDate(inserted.deliverableId, inserted.cohortId)
       }
@@ -341,14 +389,22 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = inserted.participantId)
 
       insertDeliverableProjectDueDate(
-          inserted.deliverableId, inserted.projectId, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          inserted.projectId,
+          LocalDate.of(2024, 5, 1),
+      )
 
       assertEquals(
           listOf(
               DeliverableProjectDueDatesRow(
-                  inserted.deliverableId, inserted.projectId, LocalDate.of(2024, 5, 1))),
+                  inserted.deliverableId,
+                  inserted.projectId,
+                  LocalDate.of(2024, 5, 1),
+              )
+          ),
           deliverableProjectDueDatesDao.findAll(),
-          "Row exists before deletion")
+          "Row exists before deletion",
+      )
 
       store.deleteDeliverableProjectDueDate(inserted.deliverableId, projectId)
 
@@ -368,7 +424,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = inserted.participantId)
 
       insertDeliverableProjectDueDate(
-          inserted.deliverableId, inserted.projectId, LocalDate.of(2024, 5, 1))
+          inserted.deliverableId,
+          inserted.projectId,
+          LocalDate.of(2024, 5, 1),
+      )
       assertThrows<AccessDeniedException> {
         store.deleteDeliverableProjectDueDate(inserted.deliverableId, projectId)
       }

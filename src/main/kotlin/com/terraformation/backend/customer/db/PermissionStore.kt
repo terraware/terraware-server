@@ -70,7 +70,8 @@ class PermissionStore(private val dslContext: DSLContext) {
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
         .fetchMap(
             ORGANIZATION_USERS.ORGANIZATION_ID.asNonNullable(),
-            ORGANIZATION_USERS.ROLE_ID.asNonNullable())
+            ORGANIZATION_USERS.ROLE_ID.asNonNullable(),
+        )
   }
 
   /**

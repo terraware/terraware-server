@@ -26,13 +26,21 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
           batches.asMultiValueSublist("batches", FACILITIES.ID.eq(BATCHES.FACILITY_ID)),
           facilityInventoryTotals.asMultiValueSublist(
-              "facilityInventoryTotals", FACILITIES.ID.eq(FACILITY_INVENTORY_TOTALS.FACILITY_ID)),
+              "facilityInventoryTotals",
+              FACILITIES.ID.eq(FACILITY_INVENTORY_TOTALS.FACILITY_ID),
+          ),
           nurseryWithdrawals.asMultiValueSublist(
-              "nurseryWithdrawals", FACILITIES.ID.eq(WITHDRAWAL_SUMMARIES.FACILITY_ID)),
+              "nurseryWithdrawals",
+              FACILITIES.ID.eq(WITHDRAWAL_SUMMARIES.FACILITY_ID),
+          ),
           organizations.asSingleValueSublist(
-              "organization", FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           subLocations.asMultiValueSublist(
-              "subLocations", FACILITIES.ID.eq(SUB_LOCATIONS.FACILITY_ID)),
+              "subLocations",
+              FACILITIES.ID.eq(SUB_LOCATIONS.FACILITY_ID),
+          ),
       )
     }
   }

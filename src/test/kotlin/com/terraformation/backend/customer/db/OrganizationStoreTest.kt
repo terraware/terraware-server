@@ -119,12 +119,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(organizationModel),
         store.fetchAll(OrganizationStore.FetchDepth.Facility),
-        "Fetch depth = Facility")
+        "Fetch depth = Facility",
+    )
 
     assertEquals(
         listOf(organizationModel.copy(facilities = null)),
         store.fetchAll(OrganizationStore.FetchDepth.Organization),
-        "Fetch depth = Organization")
+        "Fetch depth = Organization",
+    )
   }
 
   @Test
@@ -132,12 +134,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         organizationModel,
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility),
-        "Fetch depth = Facility")
+        "Fetch depth = Facility",
+    )
 
     assertEquals(
         organizationModel.copy(facilities = null),
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization),
-        "Fetch depth = Organization")
+        "Fetch depth = Organization",
+    )
   }
 
   @Test
@@ -166,7 +170,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         organizationModel.copy(facilities = emptyList()),
-        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility))
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility),
+    )
   }
 
   @Test
@@ -232,7 +237,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 countryCode = "us",
                 countrySubdivisionCode = "us-hi",
                 name = "Test Org",
-            ))
+            )
+        )
     val row = organizationsDao.fetchOneById(createdModel.id)!!
 
     assertEquals("US", row.countryCode, "Country code")
@@ -250,7 +256,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `createWithAdmin rejects invalid country subdivision codes`() {
     assertThrows<IllegalArgumentException> {
       store.createWithAdmin(
-          OrganizationsRow(countryCode = "US", countrySubdivisionCode = "US-XX", name = "Test Org"))
+          OrganizationsRow(countryCode = "US", countrySubdivisionCode = "US-XX", name = "Test Org")
+      )
     }
   }
 
@@ -258,7 +265,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `createWithAdmin rejects mismatched country and subdivision codes`() {
     assertThrows<IllegalArgumentException> {
       store.createWithAdmin(
-          OrganizationsRow(countryCode = "GB", countrySubdivisionCode = "US-HI", name = "Test Org"))
+          OrganizationsRow(countryCode = "GB", countrySubdivisionCode = "US-HI", name = "Test Org")
+      )
     }
   }
 
@@ -287,10 +295,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         listOf(
             OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.Nursery),
+                managedLocationTypeId = ManagedLocationType.Nursery,
+            ),
             OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.SeedBank)))
+                managedLocationTypeId = ManagedLocationType.SeedBank,
+            ),
+        )
+    )
   }
 
   @Test
@@ -405,7 +417,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     store.update(existing.copy(timeZone = newTimeZone))
     publisher.assertEventPublished(
-        OrganizationTimeZoneChangedEvent(organizationId, null, newTimeZone))
+        OrganizationTimeZoneChangedEvent(organizationId, null, newTimeZone)
+    )
   }
 
   @Test
@@ -436,7 +449,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                     UserType.Individual,
                     clock.instant().plus(1, ChronoUnit.DAYS),
                     organizationId,
-                    Role.Admin),
+                    Role.Admin,
+                ),
                 OrganizationUserModel(
                     UserId(0),
                     "${UUID.randomUUID()}@x.com",
@@ -445,7 +459,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                     UserType.Individual,
                     clock.instant().plus(2, ChronoUnit.MINUTES),
                     organizationId,
-                    Role.Contributor),
+                    Role.Contributor,
+                ),
             )
             .map { configureUser(it) }
 
@@ -458,7 +473,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.DeviceManager,
             clock.instant(),
             organizationId,
-            Role.Contributor))
+            Role.Contributor,
+        )
+    )
 
     val actual = store.fetchUsers(organizationId)
 
@@ -494,7 +511,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.Individual,
                 clock.instant(),
                 organizationId,
-                Role.Contributor))
+                Role.Contributor,
+            )
+        )
 
     val expected = listOf(model)
     val actual = store.fetchUsers(organizationId)
@@ -596,14 +615,16 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         emptyList<UserId>(),
         store.fetchTerraformationContacts(organizationId),
-        "Should not find a Terraformation Contact")
+        "Should not find a Terraformation Contact",
+    )
 
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     assertEquals(
         listOf(tfContact.userId),
         store.fetchTerraformationContacts(organizationId),
-        "Should find the Terraformation Contact")
+        "Should find the Terraformation Contact",
+    )
   }
 
   @Test
@@ -632,7 +653,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
     assertNotNull(
         store.fetchUser(organizationId, tfContact.userId),
-        "Should find a Terraformation Contact user")
+        "Should find a Terraformation Contact user",
+    )
 
     every { user.canRemoveTerraformationContact(organizationId) } returns true
 
@@ -657,7 +679,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             USER_PREFERENCES,
             USER_PREFERENCES.USER_ID,
             USER_PREFERENCES.ORGANIZATION_ID,
-            USER_PREFERENCES.PREFERENCES)
+            USER_PREFERENCES.PREFERENCES,
+        )
         .values(model.userId, null, JSONB.valueOf("{\"org\":\"null\"}"))
         .values(model.userId, organizationId, JSONB.valueOf("{\"org\":\"1\"}"))
         .execute()
@@ -666,11 +689,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<UserNotFoundException> { store.fetchUser(organizationId, model.userId) }
     assertNotNull(
-        store.fetchUser(otherOrgId, model.userId), "User should still belong to other org")
+        store.fetchUser(otherOrgId, model.userId),
+        "User should still belong to other org",
+    )
     assertEquals(
         listOf(UserPreferencesRow(model.userId, null, JSONB.valueOf("{\"org\":\"null\"}"))),
         dslContext.selectFrom(USER_PREFERENCES).fetchInto(UserPreferencesRow::class.java),
-        "User preferences for organization should be removed")
+        "User preferences for organization should be removed",
+    )
   }
 
   @Test
@@ -708,7 +734,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     store.setUserRole(organizationId, owner1.userId, Role.Admin)
 
     assertEquals(
-        Role.Admin, store.fetchUser(organizationId, owner1.userId).role, "Should find Admin role")
+        Role.Admin,
+        store.fetchUser(organizationId, owner1.userId).role,
+        "Should find Admin role",
+    )
   }
 
   @Test
@@ -734,7 +763,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `setUserRole throws exception when setting new role as Terraformation Contact for non-terraformation email`() {
     val owner =
         configureUser(
-            organizationUserModel(email = "user@nonterraformation.com", role = Role.Owner))
+            organizationUserModel(email = "user@nonterraformation.com", role = Role.Owner)
+        )
 
     every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
@@ -767,7 +797,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         Role.Admin,
         store.fetchUser(organizationId = organizationId, userId = tfContact.userId).role,
-        "Should find updated Admin role")
+        "Should find updated Admin role",
+    )
   }
 
   @Test
@@ -783,7 +814,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         Role.TerraformationContact,
         store.fetchUser(organizationId = organizationId, userId = admin.userId).role,
-        "Should find updated Terraformation Contact role")
+        "Should find updated Terraformation Contact role",
+    )
   }
 
   @Test
@@ -830,10 +862,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         listOf(
             OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.Nursery),
+                managedLocationTypeId = ManagedLocationType.Nursery,
+            ),
             OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.SeedBank)))
+                managedLocationTypeId = ManagedLocationType.SeedBank,
+            ),
+        )
+    )
 
     store.delete(createdModel.id)
 
@@ -852,13 +888,25 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       role: Role = Role.Contributor,
   ): OrganizationUserModel {
     return OrganizationUserModel(
-        UserId(0), email, firstName, lastName, userType, createdTime, organizationId, role)
+        UserId(0),
+        email,
+        firstName,
+        lastName,
+        userType,
+        createdTime,
+        organizationId,
+        role,
+    )
   }
 
   private fun configureUser(model: OrganizationUserModel): OrganizationUserModel {
     val userId = insertUser(null, model.email, model.firstName, model.lastName, model.userType)
     insertOrganizationUser(
-        userId, model.organizationId, model.role, createdTime = model.createdTime)
+        userId,
+        model.organizationId,
+        model.role,
+        createdTime = model.createdTime,
+    )
     return model.copy(userId = userId)
   }
 }

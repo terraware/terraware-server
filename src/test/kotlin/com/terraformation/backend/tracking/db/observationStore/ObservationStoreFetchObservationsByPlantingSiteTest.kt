@@ -27,18 +27,23 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
             endDate = endDate3,
             isAdHoc = true,
             startDate = startDate3,
-            state = ObservationState.Upcoming)
+            state = ObservationState.Upcoming,
+        )
 
     // Insert in reverse time order
     val observationId1 =
         insertObservation(
-            endDate = endDate2, startDate = startDate2, state = ObservationState.Upcoming)
+            endDate = endDate2,
+            startDate = startDate2,
+            state = ObservationState.Upcoming,
+        )
 
     val observationId2 =
         insertObservation(
             endDate = endDate1,
             plantingSiteHistoryId = plantingSiteHistoryId,
-            startDate = startDate1)
+            startDate = startDate1,
+        )
 
     insertPlantingZone()
     val subzoneId = insertPlantingSubzone()
@@ -88,9 +93,11 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
                 plantingSiteId = plantingSiteId,
                 startDate = startDate3,
                 state = ObservationState.Upcoming,
-            )),
+            )
+        ),
         store.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc = true),
-        "Ad-hoc observations")
+        "Ad-hoc observations",
+    )
   }
 
   @Test

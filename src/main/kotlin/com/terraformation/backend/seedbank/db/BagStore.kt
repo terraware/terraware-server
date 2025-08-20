@@ -15,14 +15,15 @@ class BagStore(private val dslContext: DSLContext) {
             DSL.select(BAGS.BAG_NUMBER)
                 .from(BAGS)
                 .where(BAGS.ACCESSION_ID.eq(idField))
-                .orderBy(BAGS.BAG_NUMBER))
+                .orderBy(BAGS.BAG_NUMBER)
+        )
         .convertFrom { result -> result.map { it.get(BAGS.BAG_NUMBER) }.toSet() }
   }
 
   fun updateBags(
       accessionId: AccessionId,
       existingBagNumbers: Set<String>?,
-      desiredBagNumbers: Set<String>?
+      desiredBagNumbers: Set<String>?,
   ) {
     if (existingBagNumbers != desiredBagNumbers) {
       val existing = existingBagNumbers ?: emptySet()

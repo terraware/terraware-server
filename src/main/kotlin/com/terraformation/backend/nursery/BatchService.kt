@@ -65,7 +65,11 @@ class BatchService(
 
       val deliveryId =
           deliveryStore.createDelivery(
-              withdrawal.id, plantingSiteId, plantingSubzoneId, quantitiesBySpecies)
+              withdrawal.id,
+              plantingSiteId,
+              plantingSubzoneId,
+              quantitiesBySpecies,
+          )
 
       withdrawal.copy(deliveryId = deliveryId)
     }

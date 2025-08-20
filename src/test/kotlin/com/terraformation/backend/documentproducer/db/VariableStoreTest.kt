@@ -39,7 +39,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
 
   @BeforeEach
@@ -60,21 +61,26 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
 
       val variableId1 =
           insertNumberVariable(
-              insertVariable(name = variableName, stableId = stableId, type = VariableType.Number))
+              insertVariable(name = variableName, stableId = stableId, type = VariableType.Number)
+          )
       val variableId2 =
           insertNumberVariable(
               insertVariable(
                   name = variableName,
                   stableId = stableId,
                   type = VariableType.Number,
-                  replacesVariableId = variableId1))
+                  replacesVariableId = variableId1,
+              )
+          )
       val variableId3 =
           insertNumberVariable(
               insertVariable(
                   name = variableName,
                   stableId = stableId,
                   type = VariableType.Number,
-                  replacesVariableId = variableId2))
+                  replacesVariableId = variableId2,
+              )
+          )
 
       val expected =
           NumberVariable(
@@ -90,7 +96,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               decimalPlaces = null,
               minValue = null,
-              maxValue = null)
+              maxValue = null,
+          )
 
       val actual = store.fetchByStableId(StableId(stableId))
 
@@ -111,39 +118,45 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
 
       val variableId1 =
           insertNumberVariable(
-              insertVariable(
-                  name = variableName1, stableId = stableId1, type = VariableType.Number))
+              insertVariable(name = variableName1, stableId = stableId1, type = VariableType.Number)
+          )
       val variableId2 =
           insertNumberVariable(
               insertVariable(
                   name = variableName1,
                   stableId = stableId1,
                   type = VariableType.Number,
-                  replacesVariableId = variableId1))
+                  replacesVariableId = variableId1,
+              )
+          )
       val variableId3 =
           insertNumberVariable(
               insertVariable(
                   name = variableName1,
                   stableId = stableId1,
                   type = VariableType.Number,
-                  replacesVariableId = variableId2))
+                  replacesVariableId = variableId2,
+              )
+          )
 
       val variableId4 =
           insertNumberVariable(
-              insertVariable(
-                  name = variableName2, stableId = stableId2, type = VariableType.Number))
+              insertVariable(name = variableName2, stableId = stableId2, type = VariableType.Number)
+          )
       val variableId5 =
           insertNumberVariable(
               insertVariable(
                   name = variableName2,
                   stableId = stableId2,
                   type = VariableType.Number,
-                  replacesVariableId = variableId4))
+                  replacesVariableId = variableId4,
+              )
+          )
 
       val variableId6 =
           insertNumberVariable(
-              insertVariable(
-                  name = variableName3, stableId = stableId3, type = VariableType.Number))
+              insertVariable(name = variableName3, stableId = stableId3, type = VariableType.Number)
+          )
 
       val expected =
           listOf(
@@ -160,7 +173,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = null),
+                  maxValue = null,
+              ),
               NumberVariable(
                   base =
                       BaseVariableProperties(
@@ -174,7 +188,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = null),
+                  maxValue = null,
+              ),
               NumberVariable(
                   base =
                       BaseVariableProperties(
@@ -188,12 +203,14 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = null),
+                  maxValue = null,
+              ),
           )
 
       val actual =
           store.fetchListByStableIds(
-              listOf(StableId(stableId1), StableId(stableId2), StableId(stableId3)))
+              listOf(StableId(stableId1), StableId(stableId2), StableId(stableId3))
+          )
 
       assertEquals(expected, actual)
     }
@@ -205,21 +222,25 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
     fun `fetches nested sections`() {
       val sectionId1 =
           insertSectionVariable(
-              id = insertVariable(name = "1", stableId = "A", type = VariableType.Section))
+              id = insertVariable(name = "1", stableId = "A", type = VariableType.Section)
+          )
       val sectionId2 =
           insertSectionVariable(
               id = insertVariable(name = "1.1", stableId = "B", type = VariableType.Section),
-              parentId = sectionId1)
+              parentId = sectionId1,
+          )
       val sectionId3a =
           insertSectionVariable(
               id = insertVariable(name = "1.1.1", stableId = "C", type = VariableType.Section),
               parentId = sectionId2,
-              renderHeading = false)
+              renderHeading = false,
+          )
       val sectionId3b =
           insertSectionVariable(
               id = insertVariable(name = "1.1.2", stableId = "D", type = VariableType.Section),
               parentId = sectionId2,
-              renderHeading = false)
+              renderHeading = false,
+          )
 
       insertVariableManifestEntry(sectionId1)
       insertVariableManifestEntry(sectionId2)
@@ -272,7 +293,12 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                           position = 3,
                                           stableId = StableId("D"),
                                       ),
-                                      renderHeading = false)))))
+                                      renderHeading = false,
+                                  ),
+                              ),
+                      )
+                  ),
+          )
 
       val actual = store.fetchOneVariable(sectionId1, inserted.variableManifestId)
 
@@ -315,7 +341,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   deliverablePosition = 1,
                   deliverableQuestion = "Question 1",
                   name = "Variable 1",
-                  stableId = "1"))
+                  stableId = "1",
+              )
+          )
 
       // This variable had a new version created
       val variableId2 =
@@ -328,7 +356,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   deliverableQuestion = "Question 2",
                   isRequired = false,
                   name = "Variable 2",
-                  stableId = "2"))
+                  stableId = "2",
+              )
+          )
       val variableId3 =
           insertNumberVariable(
               insertVariable(
@@ -339,7 +369,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   isRequired = true,
                   name = "Variable 2",
                   replacesVariableId = variableId2,
-                  stableId = "2"))
+                  stableId = "2",
+              )
+          )
 
       // Another variable unrelated to the requested deliverable
       insertNumberVariable(
@@ -347,7 +379,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               type = VariableType.Number,
               deliverableId = deliverableId2,
               deliverablePosition = 0,
-              stableId = "3"))
+              stableId = "3",
+          )
+      )
 
       val expected =
           listOf(
@@ -362,10 +396,12 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           name = "Variable 2",
                           position = 0,
                           stableId = StableId("2"),
-                          replacesVariableId = variableId2),
+                          replacesVariableId = variableId2,
+                      ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = null),
+                  maxValue = null,
+              ),
               NumberVariable(
                   base =
                       BaseVariableProperties(
@@ -380,7 +416,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = null))
+                  maxValue = null,
+              ),
+          )
 
       val actual = store.fetchDeliverableVariables(deliverableId1)
 
@@ -398,11 +436,17 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   deliverablePosition = 1,
                   isList = true,
                   name = "Table",
-                  type = VariableType.Table))
+                  type = VariableType.Table,
+              )
+          )
       val columnId =
           insertTextVariable(
               insertVariable(
-                  deliverableId = deliverableId, deliverablePosition = 2, type = VariableType.Text))
+                  deliverableId = deliverableId,
+                  deliverablePosition = 2,
+                  type = VariableType.Text,
+              )
+          )
       insertTableColumn(tableId, columnId)
 
       val expected =
@@ -435,7 +479,12 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                               position = 0,
                                               stableId = StableId("2"),
                                           ),
-                                      textType = VariableTextType.SingleLine)))))
+                                      textType = VariableTextType.SingleLine,
+                                  ),
+                          )
+                      ),
+              )
+          )
 
       val actual = store.fetchDeliverableVariables(deliverableId)
 
@@ -456,7 +505,9 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               type = VariableType.Number,
               deliverableId = newDeliverableId,
               stableId = stableId,
-              replacesVariableId = oldVariableId))
+              replacesVariableId = oldVariableId,
+          )
+      )
 
       assertEquals(emptyList<Variable>(), store.fetchDeliverableVariables(oldDeliverableId))
     }
@@ -472,14 +523,18 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               insertVariable(
                   type = VariableType.Number,
                   deliverableId = deliverableId,
-                  stableId = "$stableId-1"))
+                  stableId = "$stableId-1",
+              )
+          )
       val internalOnlyVariableId =
           insertNumberVariable(
               insertVariable(
                   type = VariableType.Number,
                   deliverableId = deliverableId,
                   stableId = "$stableId-2",
-                  internalOnly = true))
+                  internalOnly = true,
+              )
+          )
 
       val expectedPublicVariable =
           NumberVariable(
@@ -495,7 +550,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               decimalPlaces = null,
               minValue = null,
-              maxValue = null)
+              maxValue = null,
+          )
       val expectedInternalOnlyVariable =
           NumberVariable(
               base =
@@ -511,28 +567,32 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               decimalPlaces = null,
               minValue = null,
-              maxValue = null)
+              maxValue = null,
+          )
 
       every { user.canReadInternalOnlyVariables() } returns true
 
       assertEquals(
           listOf(expectedPublicVariable, expectedInternalOnlyVariable),
           store.fetchDeliverableVariables(deliverableId),
-          "Result with permission to read internal-only variables")
+          "Result with permission to read internal-only variables",
+      )
 
       every { user.canReadInternalOnlyVariables() } returns false
 
       assertEquals(
           listOf(expectedPublicVariable),
           store.fetchDeliverableVariables(deliverableId),
-          "Result without permission to read internal-only variables")
+          "Result without permission to read internal-only variables",
+      )
 
       every { user.canReadInternalOnlyVariables() } returns true
 
       assertEquals(
           listOf(expectedPublicVariable, expectedInternalOnlyVariable),
           store.fetchDeliverableVariables(deliverableId),
-          "Result with permission to read internal-only variables after unprivileged read")
+          "Result with permission to read internal-only variables after unprivileged read",
+      )
     }
   }
 
@@ -555,8 +615,12 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
           insertNumberVariable(
               id =
                   insertVariable(
-                      name = "Number Variable", stableId = "1", type = VariableType.Number),
-              maxValue = BigDecimal(10))
+                      name = "Number Variable",
+                      stableId = "1",
+                      type = VariableType.Number,
+                  ),
+              maxValue = BigDecimal(10),
+          )
 
       val parentSectionVariableId =
           insertVariableManifestEntry(
@@ -567,8 +631,11 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           insertVariable(
                               name = "Parent section",
                               stableId = "100",
-                              type = VariableType.Section)),
-              position = 1)
+                              type = VariableType.Section,
+                          )
+                  ),
+              position = 1,
+          )
       val childSectionVariableId =
           insertVariableManifestEntry(
               manifestId = manifestId,
@@ -578,10 +645,13 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           insertVariable(
                               name = "Child section",
                               stableId = "101",
-                              type = VariableType.Section),
+                              type = VariableType.Section,
+                          ),
                       parentId = parentSectionVariableId,
-                      renderHeading = true),
-              position = 2)
+                      renderHeading = true,
+                  ),
+              position = 2,
+          )
       val grandchildSectionVariableId =
           insertVariableManifestEntry(
               manifestId = manifestId,
@@ -591,10 +661,13 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           insertVariable(
                               name = "Grandchild section",
                               stableId = "1001",
-                              type = VariableType.Section),
+                              type = VariableType.Section,
+                          ),
                       parentId = childSectionVariableId,
-                      renderHeading = false),
-              position = 3)
+                      renderHeading = false,
+                  ),
+              position = 3,
+          )
 
       val otherSectionVariableId =
           insertVariableManifestEntry(
@@ -605,20 +678,25 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           insertVariable(
                               name = "Parent section - other manifest",
                               stableId = "200",
-                              type = VariableType.Section)),
-              position = 1)
+                              type = VariableType.Section,
+                          )
+                  ),
+              position = 1,
+          )
 
       // The variable is injected into the section along with some text
       insertSectionValue(
           listPosition = 0,
           projectId = projectId,
           variableId = grandchildSectionVariableId,
-          textValue = "Section text")
+          textValue = "Section text",
+      )
       insertSectionValue(
           listPosition = 1,
           projectId = projectId,
           variableId = grandchildSectionVariableId,
-          usedVariableId = variableIdOutdated)
+          usedVariableId = variableIdOutdated,
+      )
 
       // Variable is updated at some point
       val variableIdCurrent =
@@ -628,30 +706,36 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       name = "Number Variable",
                       replacesVariableId = variableIdOutdated,
                       stableId = "1",
-                      type = VariableType.Number),
-              maxValue = BigDecimal(5))
+                      type = VariableType.Number,
+                  ),
+              maxValue = BigDecimal(5),
+          )
 
       // Other injections for other projects and/or documents
       insertSectionValue(
           listPosition = 0,
           projectId = projectIdOther,
           variableId = grandchildSectionVariableId,
-          textValue = "Section text")
+          textValue = "Section text",
+      )
       insertSectionValue(
           listPosition = 1,
           projectId = projectIdOther,
           variableId = grandchildSectionVariableId,
-          usedVariableId = variableIdCurrent)
+          usedVariableId = variableIdCurrent,
+      )
       insertSectionValue(
           listPosition = 1,
           projectId = projectId,
           variableId = otherSectionVariableId,
-          usedVariableId = variableIdCurrent)
+          usedVariableId = variableIdCurrent,
+      )
       insertSectionValue(
           listPosition = 1,
           projectId = projectIdOther,
           variableId = otherSectionVariableId,
-          usedVariableId = variableIdOutdated)
+          usedVariableId = variableIdOutdated,
+      )
 
       val actual = store.fetchUsedVariables(documentId)
       val expected =
@@ -664,10 +748,13 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           manifestId = null,
                           name = "Number Variable",
                           position = 0,
-                          stableId = StableId("1")),
+                          stableId = StableId("1"),
+                      ),
                   decimalPlaces = null,
                   minValue = null,
-                  maxValue = BigDecimal(10)))
+                  maxValue = BigDecimal(10),
+              )
+          )
 
       assertEquals(expected, actual, "Fetch used variables for document")
     }
@@ -687,7 +774,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           beforeVariable.deliverablePositions[deliverableId],
           0,
-          "Position after insertion should be correct")
+          "Position after insertion should be correct",
+      )
 
       with(DELIVERABLE_VARIABLES) {
         dslContext
@@ -702,7 +790,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           nonUpdatedVariable.deliverablePositions[deliverableId],
           0,
-          "Position after update should be from cache, not db")
+          "Position after update should be from cache, not db",
+      )
 
       store.clearCache()
 
@@ -710,7 +799,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           updatedVariable.deliverablePositions[deliverableId],
           1,
-          "Position after cache clear should be updated from db")
+          "Position after cache clear should be updated from db",
+      )
     }
   }
 }

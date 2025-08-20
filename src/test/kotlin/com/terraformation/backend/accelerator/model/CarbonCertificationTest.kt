@@ -8,7 +8,9 @@ class CarbonCertificationTest {
   @Test
   fun `forDisplayName works correctly`() {
     assertEquals(
-        CarbonCertification.CcbVerraStandard, CarbonCertification.forDisplayName("CCB Standard"))
+        CarbonCertification.CcbVerraStandard,
+        CarbonCertification.forDisplayName("CCB Standard"),
+    )
   }
 
   @Test

@@ -269,7 +269,7 @@ class GoogleDriveWriter(
       parentFolderId: String,
       name: String,
       fileId: FileId? = null,
-      mimeType: String? = null
+      mimeType: String? = null,
   ): String? {
     val escapedName = name.replace("\\", "\\\\").replace("'", "\\'")
 

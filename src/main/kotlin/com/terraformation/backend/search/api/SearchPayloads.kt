@@ -64,7 +64,7 @@ data class SearchSortOrderElement(
     @Schema(
         defaultValue = "Ascending",
     )
-    val direction: SearchDirection?
+    val direction: SearchDirection?,
 ) {
   fun toSearchSortField(prefix: SearchFieldPrefix) =
       SearchSortField(prefix.resolve(field), direction ?: SearchDirection.Ascending)
@@ -77,7 +77,10 @@ data class SearchSortOrderElement(
     JsonSubTypes.Type(name = "or", value = OrNodePayload::class),
 )
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "operation")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "operation",
+)
 @Schema(
     description =
         "A search criterion. The search will return results that match this criterion. The " +
@@ -88,14 +91,16 @@ data class SearchSortOrderElement(
             AndNodePayload::class,
             FieldNodePayload::class,
             NotNodePayload::class,
-            OrNodePayload::class],
+            OrNodePayload::class,
+        ],
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
             DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
             DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
             DiscriminatorMapping(value = "or", schema = OrNodePayload::class),
-        ])
+        ],
+)
 interface SearchNodePayload {
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
 }
@@ -104,12 +109,14 @@ interface SearchNodePayload {
 @Schema(
     description =
         "Search criterion that matches results that meet any of a set of other search criteria. " +
-            "That is, if the list of children is x, y, and z, this will require x OR y OR z.")
+            "That is, if the list of children is x, y, and z, this will require x OR y OR z."
+)
 data class OrNodePayload(
     @ArraySchema(
         minItems = 1,
         arraySchema =
-            Schema(description = "List of criteria at least one of which must be satisfied"))
+            Schema(description = "List of criteria at least one of which must be satisfied"),
+    )
     @NotEmpty
     val children: List<SearchNodePayload>
 ) : SearchNodePayload {
@@ -122,11 +129,13 @@ data class OrNodePayload(
 @Schema(
     description =
         "Search criterion that matches results that meet all of a set of other search criteria. " +
-            "That is, if the list of children is x, y, and z, this will require x AND y AND z.")
+            "That is, if the list of children is x, y, and z, this will require x AND y AND z."
+)
 data class AndNodePayload(
     @ArraySchema(
         minItems = 1,
-        arraySchema = Schema(description = "List of criteria all of which must be satisfied"))
+        arraySchema = Schema(description = "List of criteria all of which must be satisfied"),
+    )
     @NotEmpty
     val children: List<SearchNodePayload>
 ) : SearchNodePayload {
@@ -138,7 +147,8 @@ data class AndNodePayload(
 @JsonTypeName("not")
 @Schema(
     description =
-        "Search criterion that matches results that do not match a set of search criteria.")
+        "Search criterion that matches results that do not match a set of search criteria."
+)
 data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
   override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     return NotNode(child.toSearchNode(prefix))
@@ -159,10 +169,12 @@ data class FieldNodePayload(
                         "accessions where the field does not have a value. For range searches, " +
                         "the list must contain exactly two values, the minimum and maximum; one " +
                         "of the values may be null to search for all values above a minimum or " +
-                        "below a maximum."))
+                        "below a maximum."
+            ),
+    )
     @NotEmpty
     val values: List<String?>,
-    val type: SearchFilterType = SearchFilterType.Exact
+    val type: SearchFilterType = SearchFilterType.Exact,
 ) : SearchNodePayload {
   override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     return FieldNode(prefix.resolve(field), values, type)
@@ -182,13 +194,16 @@ data class FieldValuesPayload(
                     "All the values this field could possibly have, whether or not any " +
                         "accessions have them. For fields that allow the user to enter arbitrary " +
                         "values, this is equivalent to querying the list of values without any " +
-                        "filter criteria, that is, it's a list of all the user-entered values."))
+                        "filter criteria, that is, it's a list of all the user-entered values."
+            )
+    )
     val values: List<String?>,
     @Schema(
         description =
             "If true, the list of values is too long to return in its entirety and \"values\" is " +
-                "a partial list.")
-    val partial: Boolean
+                "a partial list."
+    )
+    val partial: Boolean,
 )
 
 data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>)

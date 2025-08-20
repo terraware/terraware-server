@@ -39,8 +39,11 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                 createdTime = Instant.EPOCH,
                 historyTypeId = AccessionQuantityHistoryType.Observed,
                 remainingQuantity = BigDecimal.TEN,
-                remainingUnitsId = SeedQuantityUnits.Seeds)),
-        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) })
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+            )
+        ),
+        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) },
+    )
   }
 
   @Test
@@ -58,7 +61,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
   fun `uses facility time zone to calculate dates`() {
     val earlierZoneThanUtc = ZoneId.of("America/New_York")
     facilitiesDao.update(
-        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = earlierZoneThanUtc))
+        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = earlierZoneThanUtc)
+    )
 
     // Creation happens at Instant.EPOCH, which is 1969-12-31 in New York
     val initial = store.create(accessionModel())
@@ -140,7 +144,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val withSeedQuantity =
         store.updateAndFetch(
             initial.copy(remaining = seeds(100), state = AccessionState.Processing),
-            AccessionUpdateContext(remainingQuantityNotes = "got more seeds"))
+            AccessionUpdateContext(remainingQuantityNotes = "got more seeds"),
+        )
 
     clock.instant = firstWithdrawalTime
 
@@ -154,7 +159,11 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                             notes = "Some withdrawal notes",
                             purpose = WithdrawalPurpose.Nursery,
                             withdrawn = seeds(1),
-                            withdrawnByUserId = firstWithdrawerUserId))))
+                            withdrawnByUserId = firstWithdrawerUserId,
+                        )
+                    )
+            )
+        )
 
     clock.instant = secondWithdrawalTime
 
@@ -167,7 +176,11 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                             seedsTested = 29,
                             startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
                             testType = ViabilityTestType.Lab,
-                            withdrawnByUserId = viabilityTesterUserId))))
+                            withdrawnByUserId = viabilityTesterUserId,
+                        )
+                    )
+            )
+        )
 
     clock.instant = backdatedWithdrawalTime
 
@@ -181,7 +194,10 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                         // in the reverse-time-ordered history.
                         date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
                         staffResponsible = "Backdated Withdrawer",
-                        withdrawn = seeds(70))))
+                        withdrawn = seeds(70),
+                    )
+        )
+    )
 
     // V1 COMPATIBILITY: Test the fallback to the staffResponsible field for withdrawals without
     // user IDs.
@@ -189,7 +205,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
         withdrawalsDao
             .fetchByStaffResponsible("Backdated Withdrawer")
             .first()
-            .copy(withdrawnBy = null))
+            .copy(withdrawnBy = null)
+    )
 
     val expected =
         listOf(
@@ -282,7 +299,10 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                 newStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession created",
                 updatedBy = user.userId,
-                updatedTime = clock.instant())),
-        historyRecords)
+                updatedTime = clock.instant(),
+            )
+        ),
+        historyRecords,
+    )
   }
 }

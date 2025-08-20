@@ -51,8 +51,11 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
                 oldStateId = AccessionState.Drying,
                 reason = "Accession has been edited",
                 updatedBy = user.userId,
-                updatedTime = clock.instant())),
-        historyRecords)
+                updatedTime = clock.instant(),
+            )
+        ),
+        historyRecords,
+    )
   }
 
   @Test

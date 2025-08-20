@@ -45,7 +45,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                 plantingSubzoneHistoryId = plantingSubzoneHistoryId,
                 plantingSubzoneId = plantingSubzoneId,
             )
-          })
+          }
+      )
     }
 
     @Test
@@ -78,13 +79,19 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
 
       val plantingSiteId =
           insertPlantingSite(
-              boundary = siteBoundary, gridOrigin = gridOrigin, insertHistory = false)
+              boundary = siteBoundary,
+              gridOrigin = gridOrigin,
+              insertHistory = false,
+          )
       val plantingSiteHistoryId = insertPlantingSiteHistory()
       insertPlantingZone(boundary = siteBoundary, numPermanentPlots = 3)
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
       insertMonitoringPlot(
-          boundary = existingPlotBoundary, permanentIndex = 2, insertHistory = false)
+          boundary = existingPlotBoundary,
+          permanentIndex = 2,
+          insertHistory = false,
+      )
 
       store.ensurePermanentPlotsExist(plantingSiteId)
 
@@ -106,7 +113,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                     plantingSubzoneHistoryId = plantingSubzoneHistoryId,
                     plantingSubzoneId = plantingSubzoneId,
                 )
-              })
+              }
+      )
     }
 
     @Test
@@ -167,7 +175,9 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
 
       repeat(5) {
         identifierGenerator.generateNumericIdentifier(
-            organizationId, NumericIdentifierType.PlotNumber)
+            organizationId,
+            NumericIdentifierType.PlotNumber,
+        )
       }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
@@ -181,7 +191,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       assertEquals(
           setOf(1L, 6L),
           plots.map { it.plotNumber }.toSet(),
-          "Plot numbers including existing plot")
+          "Plot numbers including existing plot",
+      )
     }
   }
 }

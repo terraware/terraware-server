@@ -66,7 +66,12 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service: SeedFundReportFileService by lazy {
     SeedFundReportFileService(
-        filesDao, fileService, seedFundReportStore, seedFundReportFilesDao, seedFundReportPhotosDao)
+        filesDao,
+        fileService,
+        seedFundReportStore,
+        seedFundReportFilesDao,
+        seedFundReportPhotosDao,
+    )
   }
 
   private val excelContentType = "application/vnd.ms-excel"
@@ -125,10 +130,12 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file1.xls", fileId1, 0, URI("1")),
-                  seedFundReportId),
+                  seedFundReportId,
+              ),
               SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file2.xls", fileId2, 3, URI("2")),
-                  seedFundReportId),
+                  seedFundReportId,
+              ),
           )
 
       val actual = service.listFiles(seedFundReportId)
@@ -154,20 +161,33 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       storePhoto(insertSeedFundReport(year = 1990))
 
       seedFundReportPhotosDao.update(
-          seedFundReportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption"))
+          seedFundReportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption")
+      )
 
       val expected =
           listOf(
               SeedFundReportPhotoModel(
                   null,
                   ExistingFileMetadata(
-                      MediaType.IMAGE_JPEG_VALUE, "photo1.jpg", fileId1, 0, URI("1")),
-                  seedFundReportId),
+                      MediaType.IMAGE_JPEG_VALUE,
+                      "photo1.jpg",
+                      fileId1,
+                      0,
+                      URI("1"),
+                  ),
+                  seedFundReportId,
+              ),
               SeedFundReportPhotoModel(
                   "caption",
                   ExistingFileMetadata(
-                      MediaType.IMAGE_PNG_VALUE, "photo2.png", fileId2, 0, URI("2")),
-                  seedFundReportId),
+                      MediaType.IMAGE_PNG_VALUE,
+                      "photo2.png",
+                      fileId2,
+                      0,
+                      URI("2"),
+                  ),
+                  seedFundReportId,
+              ),
           )
 
       val actual = service.listPhotos(seedFundReportId)
@@ -267,7 +287,8 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(SeedFundReportFilesRow(fileId, seedFundReportId)),
-          seedFundReportFilesDao.findAll())
+          seedFundReportFilesDao.findAll(),
+      )
     }
 
     @Test
@@ -286,7 +307,8 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(SeedFundReportPhotosRow(seedFundReportId, fileId)),
-          seedFundReportPhotosDao.findAll())
+          seedFundReportPhotosDao.findAll(),
+      )
     }
 
     @Test
@@ -308,7 +330,9 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
           SeedFundReportPhotoModel(
               newCaption,
               ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-              seedFundReportId))
+              seedFundReportId,
+          )
+      )
 
       val row = seedFundReportPhotosDao.fetchOneByFileId(fileId)
 
@@ -326,7 +350,9 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
             SeedFundReportPhotoModel(
                 "caption",
                 ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-                seedFundReportId))
+                seedFundReportId,
+            )
+        )
       }
     }
   }
@@ -340,7 +366,8 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     return service.storeFile(
         SeedFundReportId,
         content.inputStream(),
-        FileMetadata.of(contentType, filename, content.size.toLong()))
+        FileMetadata.of(contentType, filename, content.size.toLong()),
+    )
   }
 
   private fun storePhoto(
@@ -352,6 +379,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     return service.storePhoto(
         SeedFundReportId,
         content.inputStream(),
-        FileMetadata.of(contentType, filename, content.size.toLong()))
+        FileMetadata.of(contentType, filename, content.size.toLong()),
+    )
   }
 }

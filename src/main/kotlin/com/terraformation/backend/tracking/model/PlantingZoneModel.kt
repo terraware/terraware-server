@@ -23,7 +23,10 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 data class PlantingZoneModel<
-    PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?, TIMESTAMP : Instant?>(
+    PZID : PlantingZoneId?,
+    PSZID : PlantingSubzoneId?,
+    TIMESTAMP : Instant?,
+>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
@@ -128,7 +131,8 @@ data class PlantingZoneModel<
                   }
                 }
                 .thenBy { if (it.id != null && it.id in requestedSubzoneIds) 0 else 1 }
-                .thenBy { it.id?.value ?: 0L })
+                .thenBy { it.id?.value ?: 0L }
+        )
         .flatMapIndexed { index, subzone ->
           if (subzone.id != null && subzone.id in requestedSubzoneIds) {
             val numPlots =
@@ -262,7 +266,9 @@ data class PlantingZoneModel<
             middle.coordinate,
             Coordinate(middle.x + width, middle.y),
             Coordinate(middle.x, middle.y + height),
-            middle.coordinate))
+            middle.coordinate,
+        )
+    )
   }
 
   /**
@@ -330,7 +336,11 @@ data class PlantingZoneModel<
         if (overlapPercent > PlantingSiteModel.REGION_OVERLAP_MAX_PERCENT) {
           problems.add(
               PlantingSiteValidationFailure.subzoneBoundaryOverlaps(
-                  setOf(otherSubzone.name), subzone.name, name))
+                  setOf(otherSubzone.name),
+                  subzone.name,
+                  name,
+              )
+          )
         }
       }
     }

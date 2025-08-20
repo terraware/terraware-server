@@ -141,7 +141,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
         readCohort(cohortId)
         readParticipant(participantId)
         throw AccessDeniedException(
-            "No permission to add participant $participantId to cohort $cohortId")
+            "No permission to add participant $participantId to cohort $cohortId"
+        )
       }
     }
   }
@@ -170,7 +171,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canAddTerraformationContact(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to add terraformation contact to organization $organizationId")
+            "No permission to add terraformation contact to organization $organizationId"
+        )
       }
     }
   }
@@ -197,7 +199,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateApiKey(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create API keys in organization $organizationId")
+            "No permission to create API keys in organization $organizationId"
+        )
       }
     }
   }
@@ -250,7 +253,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateDelivery(plantingSiteId)) {
         readPlantingSite(plantingSiteId)
         throw AccessDeniedException(
-            "No permission to create delivery at planting site $plantingSiteId")
+            "No permission to create delivery at planting site $plantingSiteId"
+        )
       }
     }
   }
@@ -285,7 +289,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateDraftPlantingSite(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create draft planting site in organization $organizationId")
+            "No permission to create draft planting site in organization $organizationId"
+        )
       }
     }
   }
@@ -304,7 +309,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateFacility(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create facilities in organization $organizationId")
+            "No permission to create facilities in organization $organizationId"
+        )
       }
     }
   }
@@ -353,7 +359,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreatePlantingSite(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create planting sites in organization $organizationId")
+            "No permission to create planting sites in organization $organizationId"
+        )
       }
     }
   }
@@ -363,7 +370,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateProject(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create projects in organization $organizationId")
+            "No permission to create projects in organization $organizationId"
+        )
       }
     }
   }
@@ -381,7 +389,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateSeedFundReport(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to create seed fund reports in organization $organizationId")
+            "No permission to create seed fund reports in organization $organizationId"
+        )
       }
     }
   }
@@ -490,7 +499,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canDeleteDraftPlantingSite(draftPlantingSiteId)) {
         readDraftPlantingSite(draftPlantingSiteId)
         throw AccessDeniedException(
-            "No permission to delete draft planting site $draftPlantingSiteId")
+            "No permission to delete draft planting site $draftPlantingSiteId"
+        )
       }
     }
   }
@@ -535,7 +545,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
         readParticipant(participantId)
         readProject(projectId)
         throw AccessDeniedException(
-            "No permission to delete project from participant $participantId")
+            "No permission to delete project from participant $participantId"
+        )
       }
     }
   }
@@ -545,7 +556,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId)) {
         readParticipantProjectSpecies(participantProjectSpeciesId)
         throw AccessDeniedException(
-            "No permission to delete participant project species $participantProjectSpeciesId")
+            "No permission to delete participant project species $participantProjectSpeciesId"
+        )
       }
     }
   }
@@ -679,7 +691,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canListSeedFundReports(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to list seed fund reports in organization $organizationId")
+            "No permission to list seed fund reports in organization $organizationId"
+        )
       }
     }
   }
@@ -1053,7 +1066,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadOrganizationDeliverables(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to read deliverables for organization $organizationId")
+            "No permission to read deliverables for organization $organizationId"
+        )
       }
     }
   }
@@ -1063,7 +1077,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadOrganizationFeatures(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to read features for organization $organizationId")
+            "No permission to read features for organization $organizationId"
+        )
       }
     }
   }
@@ -1138,7 +1153,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadProjectAcceleratorDetails(projectId)) {
         readProject(projectId)
         throw AccessDeniedException(
-            "No permission to read accelerator details for project $projectId")
+            "No permission to read accelerator details for project $projectId"
+        )
       }
     }
   }
@@ -1192,7 +1208,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadInternalVariableWorkflowDetails(projectId)) {
         readProject(projectId)
         throw AccessDeniedException(
-            "No permission to read variable workflow details for project $projectId")
+            "No permission to read variable workflow details for project $projectId"
+        )
       }
     }
   }
@@ -1332,7 +1349,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canRemoveOrganizationUser(organizationId, userId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to remove user $userId from organization $organizationId")
+            "No permission to remove user $userId from organization $organizationId"
+        )
       }
     }
   }
@@ -1342,7 +1360,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canRemoveTerraformationContact(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to remove Terraformation Contact from organization $organizationId")
+            "No permission to remove Terraformation Contact from organization $organizationId"
+        )
       }
     }
   }
@@ -1387,7 +1406,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canScheduleAdHocObservation(plantingSiteId)) {
         readPlantingSite(plantingSiteId)
         throw AccessDeniedException(
-            "No permission to schedule ad-hoc observation for planting site $plantingSiteId")
+            "No permission to schedule ad-hoc observation for planting site $plantingSiteId"
+        )
       }
     }
   }
@@ -1397,7 +1417,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canScheduleObservation(plantingSiteId)) {
         readPlantingSite(plantingSiteId)
         throw AccessDeniedException(
-            "No permission to schedule observation for planting site $plantingSiteId")
+            "No permission to schedule observation for planting site $plantingSiteId"
+        )
       }
     }
   }
@@ -1416,7 +1437,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canSetOrganizationUserRole(organizationId, role)) {
         readOrganization(organizationId)
         throw AccessDeniedException(
-            "No permission to grant role to users in organization $organizationId")
+            "No permission to grant role to users in organization $organizationId"
+        )
       }
     }
   }
@@ -1434,7 +1456,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canSetWithdrawalUser(accessionId)) {
         readAccession(accessionId)
         throw AccessDeniedException(
-            "No permission to set withdrawal user for accession $accessionId")
+            "No permission to set withdrawal user for accession $accessionId"
+        )
       }
     }
   }
@@ -1471,7 +1494,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateApplicationBoundary(applicationId)) {
         readApplication(applicationId)
         throw AccessDeniedException(
-            "No permission to update boundary for application $applicationId")
+            "No permission to update boundary for application $applicationId"
+        )
       }
     }
   }
@@ -1481,7 +1505,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateApplicationCountry(applicationId)) {
         readApplication(applicationId)
         throw AccessDeniedException(
-            "No permission to update country for application $applicationId")
+            "No permission to update country for application $applicationId"
+        )
       }
     }
   }
@@ -1491,7 +1516,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateApplicationSubmissionStatus(applicationId)) {
         readApplication(applicationId)
         throw AccessDeniedException(
-            "No permission to update submission status for application $applicationId")
+            "No permission to update submission status for application $applicationId"
+        )
       }
     }
   }
@@ -1587,7 +1613,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateDraftPlantingSite(draftPlantingSiteId)) {
         readDraftPlantingSite(draftPlantingSiteId)
         throw AccessDeniedException(
-            "No permission to update draft planting site $draftPlantingSiteId")
+            "No permission to update draft planting site $draftPlantingSiteId"
+        )
       }
     }
   }
@@ -1694,7 +1721,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId)) {
         readParticipantProjectSpecies(participantProjectSpeciesId)
         throw AccessDeniedException(
-            "No permission to update participant project species $participantProjectSpeciesId")
+            "No permission to update participant project species $participantProjectSpeciesId"
+        )
       }
     }
   }
@@ -1713,7 +1741,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdatePlantingSiteProject(plantingSiteId)) {
         readPlantingSite(plantingSiteId)
         throw AccessDeniedException(
-            "No permission to assign project to planting site $plantingSiteId")
+            "No permission to assign project to planting site $plantingSiteId"
+        )
       }
     }
   }
@@ -1750,7 +1779,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateProjectAcceleratorDetails(projectId)) {
         readProject(projectId)
         throw AccessDeniedException(
-            "No permission to update accelerator details for project $projectId")
+            "No permission to update accelerator details for project $projectId"
+        )
       }
     }
   }
@@ -1804,7 +1834,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateInternalVariableWorkflowDetails(projectId)) {
         readProject(projectId)
         throw AccessDeniedException(
-            "No permission to update variable workflow details for project $projectId")
+            "No permission to update variable workflow details for project $projectId"
+        )
       }
     }
   }

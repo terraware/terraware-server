@@ -40,7 +40,8 @@ class UserInternalInterestsStore(
           DSL.selectOne()
               .from(this)
               .where(INTERNAL_INTEREST_ID.eq(internalInterest))
-              .and(USER_ID.eq(USERS.ID)))
+              .and(USER_ID.eq(USERS.ID))
+      )
     }
   }
 

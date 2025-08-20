@@ -54,7 +54,8 @@ class VariableFileService(
           if (isAppend) {
             base.copy(
                 listPosition =
-                    variableValueStore.fetchNextListPosition(base.projectId, base.variableId))
+                    variableValueStore.fetchNextListPosition(base.projectId, base.variableId)
+            )
           } else {
             base
           }

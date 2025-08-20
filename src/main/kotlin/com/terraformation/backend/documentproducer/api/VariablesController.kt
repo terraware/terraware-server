@@ -46,7 +46,8 @@ class VariablesController(
       summary = "List the available variables, optionally filtered by a document or deliverable.",
       description =
           "Variables returned for a document include all section hierarchies and variables " +
-              "injected into section text.")
+              "injected into section text.",
+  )
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
@@ -55,14 +56,16 @@ class VariablesController(
           description =
               "If specified, return the definition of a specific variable given its stable ID. " +
                   "May be specified more than once to return multiple variables. deliverableId " +
-                  "and documentId are ignored if this is specified.")
+                  "and documentId are ignored if this is specified."
+      )
       @RequestParam
       stableId: List<StableId>?,
       @Parameter(
           description =
               "If specified, return the definition of a specific variable. May be specified more " +
                   "than once to return multiple variables. deliverableId, documentId, and " +
-                  "stableId are ignored if this is specified.")
+                  "stableId are ignored if this is specified."
+      )
       @RequestParam
       variableId: List<VariableId>?,
   ): ListVariablesResponsePayload {
@@ -112,7 +115,8 @@ class VariablesController(
             DiscriminatorMapping(schema = SelectVariablePayload::class, value = "Select"),
             DiscriminatorMapping(schema = TableVariablePayload::class, value = "Table"),
             DiscriminatorMapping(schema = TextVariablePayload::class, value = "Text"),
-        ])
+        ]
+)
 interface VariablePayload {
   @get:JsonIgnore val model: Variable
 
@@ -155,7 +159,8 @@ interface VariablePayload {
   val recommendedBy: Set<VariableId>?
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @ArraySchema(
-        arraySchema = Schema(description = "IDs of sections that recommend this variable."))
+        arraySchema = Schema(description = "IDs of sections that recommend this variable.")
+    )
     get() = model.recommendedBy.toSet()
 
   val stableId: StableId
@@ -204,7 +209,8 @@ data class SectionVariablePayload(override val model: SectionVariable) : Variabl
   val children = model.children.map { SectionVariablePayload(it) }
   val recommends
     @ArraySchema(
-        arraySchema = Schema(description = "IDs of variables that this section recommends."))
+        arraySchema = Schema(description = "IDs of variables that this section recommends.")
+    )
     get() = model.recommends
 
   val renderHeading

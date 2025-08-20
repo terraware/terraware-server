@@ -18,7 +18,9 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           organizations.asSingleValueSublist(
-              "organization", ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           users.asSingleValueSublist("user", ORGANIZATION_USERS.USER_ID.eq(USERS.ID)),
       )
     }
@@ -27,7 +29,8 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", ORGANIZATION_USERS.CREATED_TIME),
-          enumField("roleName", ORGANIZATION_USERS.ROLE_ID))
+          enumField("roleName", ORGANIZATION_USERS.ROLE_ID),
+      )
 
   override val primaryKey: TableField<out Record, out Any?>
     get() = ORGANIZATION_USERS.ORGANIZATION_USER_ID
@@ -39,6 +42,8 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
                 DSL.selectOne()
                     .from(USERS)
                     .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
-                    .and(USERS.USER_TYPE_ID.eq(UserType.Individual))))
+                    .and(USERS.USER_TYPE_ID.eq(UserType.Individual))
+            )
+        )
   }
 }

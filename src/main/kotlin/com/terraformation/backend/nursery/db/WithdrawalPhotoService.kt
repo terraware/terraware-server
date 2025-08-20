@@ -35,7 +35,8 @@ class WithdrawalPhotoService(
     val fileId =
         fileService.storeFile("withdrawal", data, metadata, imageUtils::read) { fileId ->
           withdrawalPhotosDao.insert(
-              WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId))
+              WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId)
+          )
         }
 
     log.info("Stored photo $fileId for withdrawal $withdrawalId")
@@ -47,7 +48,7 @@ class WithdrawalPhotoService(
       withdrawalId: WithdrawalId,
       fileId: FileId,
       maxWidth: Int? = null,
-      maxHeight: Int? = null
+      maxHeight: Int? = null,
   ): SizedInputStream {
     val storedWithdrawalId =
         dslContext
@@ -79,7 +80,9 @@ class WithdrawalPhotoService(
   fun on(event: OrganizationDeletionStartedEvent) {
     deleteWhere(
         WITHDRAWAL_PHOTOS.withdrawals.withdrawalsFacilityIdFkey.ORGANIZATION_ID.eq(
-            event.organizationId))
+            event.organizationId
+        )
+    )
   }
 
   private fun deleteWhere(condition: Condition) {

@@ -71,7 +71,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         parentStore,
         projectsDao,
         subLocationsDao,
-        nurseryWithdrawalsDao)
+        nurseryWithdrawalsDao,
+    )
   }
   private val messages = Messages()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
@@ -82,7 +83,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,
-        speciesProblemsDao)
+        speciesProblemsDao,
+    )
   }
   private val uploadStore: UploadStore by lazy {
     UploadStore(dslContext, uploadProblemsDao, uploadsDao)
@@ -102,7 +104,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         uploadsDao,
         uploadService,
         uploadStore,
-        userStore)
+        userStore,
+    )
   }
 
   private lateinit var facilityId: FacilityId
@@ -290,14 +293,17 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 facilityId = facilityId,
                 subLocationId = subLocationId,
             ),
-        ))
+        ),
+    )
   }
 
   @Test
   fun `rejects files with validation errors`() {
     val uploadId =
         insertBatchUpload(
-            headerAnd("ShortName,,1,1,2022-01-01,\n"), UploadStatus.AwaitingValidation)
+            headerAnd("ShortName,,1,1,2022-01-01,\n"),
+            UploadStatus.AwaitingValidation,
+        )
 
     importer.validateCsv(uploadId)
 
@@ -309,7 +315,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             position = 2,
             typeId = UploadProblemType.MalformedValue,
             uploadId = uploadId,
-            value = "ShortName"))
+            value = "ShortName",
+        )
+    )
 
     assertStatus(UploadStatus.Invalid)
   }
@@ -357,7 +365,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         UploadStatus.AwaitingProcessing,
         uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
-        "Status after validation")
+        "Status after validation",
+    )
 
     // Import
     slot.captured.accept(importer)
@@ -365,7 +374,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         UploadStatus.Completed,
         uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
-        "Status after import")
+        "Status after import",
+    )
 
     val actualSpecies = speciesDao.findAll().sortedBy { it.id }
     val actualBatches = batchesDao.findAll().sortedBy { it.id }
@@ -375,12 +385,14 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         expectedSpecies.map { it.copy(id = null) },
         actualSpecies.map { it.copy(id = null) },
-        "Imported species")
+        "Imported species",
+    )
 
     assertJsonEquals(
         expectedBatches.map { it.copy(id = null, speciesId = mappedSpeciesIds[it.speciesId]) },
         actualBatches.map { it.copy(id = null) },
-        "Imported batches")
+        "Imported batches",
+    )
 
     assertJsonEquals(
         expectedSubLocations.map { it.copy(batchId = mappedBatchIds[it.batchId]) },
@@ -388,8 +400,10 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             .findAll()
             .sortedWith(
                 compareBy<BatchSubLocationsRow> { it.batchId!!.value }
-                    .thenBy { it.subLocationId!!.value }),
-        "Imported batch sub-locations")
+                    .thenBy { it.subLocationId!!.value }
+            ),
+        "Imported batch sub-locations",
+    )
 
     assertStatus(UploadStatus.Completed)
   }

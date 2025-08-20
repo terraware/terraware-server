@@ -51,7 +51,8 @@ class ParticipantProjectSpeciesController(
   @PostMapping("/projects/species/assign")
   @Operation(
       summary =
-          "Creates a new participant project species entry for every project ID and species ID pairing.")
+          "Creates a new participant project species entry for every project ID and species ID pairing."
+  )
   fun assignParticipantProjectSpecies(
       @RequestBody payload: AssignParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
@@ -73,7 +74,8 @@ class ParticipantProjectSpeciesController(
                 rationale = payload.rationale,
                 speciesId = payload.speciesId,
                 speciesNativeCategory = payload.speciesNativeCategory,
-            ))
+            )
+        )
 
     return GetParticipantProjectSpeciesResponsePayload(ParticipantProjectSpeciesPayload(model))
   }
@@ -109,13 +111,16 @@ class ParticipantProjectSpeciesController(
           [
               Content(
                   schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.ALL_VALUE)])
+                  mediaType = MediaType.ALL_VALUE,
+              )
+          ],
+  )
   @GetMapping("/projects/{projectId}/species/snapshots/{deliverableId}")
   @Operation(summary = "Creates a new participant project species entry.")
   @Produces
   fun getParticipantProjectSpeciesSnapshot(
       @PathVariable projectId: ProjectId,
-      @PathVariable deliverableId: DeliverableId
+      @PathVariable deliverableId: DeliverableId,
   ): ResponseEntity<InputStreamResource> {
     return try {
       participantProjectSpeciesService
@@ -131,14 +136,16 @@ class ParticipantProjectSpeciesController(
   @GetMapping("/species/{speciesId}/projects")
   @Operation(
       summary =
-          "Gets all participant projects associated to a species with active deliverable information if applicable.")
+          "Gets all participant projects associated to a species with active deliverable information if applicable."
+  )
   fun getProjectsForSpecies(
       @PathVariable speciesId: SpeciesId
   ): GetParticipantProjectsForSpeciesResponsePayload {
     val results = participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(speciesId)
 
     return GetParticipantProjectsForSpeciesResponsePayload(
-        results.map { ParticipantProjectForSpeciesPayload(it) })
+        results.map { ParticipantProjectForSpeciesPayload(it) }
+    )
   }
 
   @ApiResponse200
@@ -151,7 +158,8 @@ class ParticipantProjectSpeciesController(
     val results = participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
 
     return GetSpeciesForParticipantProjectsResponsePayload(
-        results.map { SpeciesForParticipantProjectPayload(it) })
+        results.map { SpeciesForParticipantProjectPayload(it) }
+    )
   }
 
   @ApiResponse200
@@ -160,7 +168,7 @@ class ParticipantProjectSpeciesController(
   @Operation(summary = "Updates a participant project species entry.")
   fun updateParticipantProjectSpecies(
       @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId,
-      @RequestBody payload: UpdateParticipantProjectSpeciesPayload
+      @RequestBody payload: UpdateParticipantProjectSpeciesPayload,
   ): SimpleSuccessResponsePayload {
     participantProjectSpeciesStore.update(participantProjectSpeciesId, payload::applyTo)
 
@@ -170,7 +178,7 @@ class ParticipantProjectSpeciesController(
 
 data class AssignParticipantProjectSpeciesPayload(
     val projectIds: Set<ProjectId>,
-    val speciesIds: Set<SpeciesId>
+    val speciesIds: Set<SpeciesId>,
 )
 
 data class CreateParticipantProjectSpeciesPayload(
@@ -204,7 +212,8 @@ data class ParticipantProjectSpeciesPayload(
       rationale = model.rationale,
       speciesId = model.speciesId,
       speciesNativeCategory = model.speciesNativeCategory,
-      submissionStatus = model.submissionStatus)
+      submissionStatus = model.submissionStatus,
+  )
 }
 
 data class GetParticipantProjectSpeciesResponsePayload(
@@ -214,7 +223,8 @@ data class GetParticipantProjectSpeciesResponsePayload(
 data class ParticipantProjectForSpeciesPayload(
     @Schema(
         description =
-            "This deliverable ID is associated to the active or most recent cohort module, if available.")
+            "This deliverable ID is associated to the active or most recent cohort module, if available."
+    )
     val deliverableId: DeliverableId?,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
@@ -232,7 +242,8 @@ data class ParticipantProjectForSpeciesPayload(
       participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,
       projectId = model.projectId,
       projectName = model.projectName,
-      speciesId = model.speciesId)
+      speciesId = model.speciesId,
+  )
 }
 
 data class GetParticipantProjectsForSpeciesResponsePayload(
@@ -270,5 +281,6 @@ data class UpdateParticipantProjectSpeciesPayload(
           internalComment = internalComment,
           rationale = rationale,
           speciesNativeCategory = speciesNativeCategory,
-          submissionStatus = submissionStatus)
+          submissionStatus = submissionStatus,
+      )
 }

@@ -80,17 +80,20 @@ class PublishedReportsStore(
               DSL.select(PUBLISHED_REPORT_ACHIEVEMENTS.ACHIEVEMENT)
                   .from(PUBLISHED_REPORT_ACHIEVEMENTS)
                   .where(PUBLISHED_REPORT_ACHIEVEMENTS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
-                  .orderBy(PUBLISHED_REPORT_ACHIEVEMENTS.POSITION))
+                  .orderBy(PUBLISHED_REPORT_ACHIEVEMENTS.POSITION)
+          )
           .convertFrom { result -> result.map { it[PUBLISHED_REPORT_ACHIEVEMENTS.ACHIEVEMENT]!! } }
 
   private val challengesMultiset: Field<List<ReportChallengeModel>> =
       DSL.multiset(
               DSL.select(
                       PUBLISHED_REPORT_CHALLENGES.CHALLENGE,
-                      PUBLISHED_REPORT_CHALLENGES.MITIGATION_PLAN)
+                      PUBLISHED_REPORT_CHALLENGES.MITIGATION_PLAN,
+                  )
                   .from(PUBLISHED_REPORT_CHALLENGES)
                   .where(PUBLISHED_REPORT_CHALLENGES.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
-                  .orderBy(PUBLISHED_REPORT_CHALLENGES.POSITION))
+                  .orderBy(PUBLISHED_REPORT_CHALLENGES.POSITION)
+          )
           .convertFrom { result ->
             result.map {
               ReportChallengeModel(
@@ -107,11 +110,15 @@ class PublishedReportsStore(
     val publishedMetricTable = publishedMetricIdField.table!!
     val reportIdField =
         publishedMetricTable.field(
-            "report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+            "report_id",
+            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
+        )!!
     val progressNotesField = publishedMetricTable.field("progress_notes", String::class.java)
     val statusField =
         publishedMetricTable.field(
-            "status_id", SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()))!!
+            "status_id",
+            SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
+        )!!
     val targetField = publishedMetricTable.field("target", Int::class.java)!!
     val underperformanceJustificationField =
         publishedMetricTable.field("underperformance_justification", String::class.java)!!
@@ -120,13 +127,17 @@ class PublishedReportsStore(
     val metricTable = metricTableIdField.table!!
     val metricComponentField =
         metricTable.field(
-            "component_id", SQLDataType.INTEGER.asConvertedDataType(MetricComponentConverter()))!!
+            "component_id",
+            SQLDataType.INTEGER.asConvertedDataType(MetricComponentConverter()),
+        )!!
     val metricDescriptionField = metricTable.field("description", String::class.java)!!
     val metricNameField = metricTable.field("name", String::class.java)!!
     val metricReferenceField = metricTable.field("reference", String::class.java)!!
     val metricTypeField =
         metricTable.field(
-            "type_id", SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()))!!
+            "type_id",
+            SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()),
+        )!!
     val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
     return DSL.multiset(
@@ -148,7 +159,8 @@ class PublishedReportsStore(
                 .join(metricTable)
                 .on(metricTableIdField.eq(publishedMetricIdField))
                 .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
-                .orderBy(metricReferenceField))
+                .orderBy(metricReferenceField)
+        )
         .convertFrom { result ->
           result.map {
             PublishedReportMetricModel(

@@ -57,12 +57,15 @@ import java.time.LocalDate
             DiscriminatorMapping(schema = NewNumberValuePayload::class, value = "Number"),
             DiscriminatorMapping(schema = NewSectionTextValuePayload::class, value = "SectionText"),
             DiscriminatorMapping(
-                schema = NewSectionVariableValuePayload::class, value = "SectionVariable"),
+                schema = NewSectionVariableValuePayload::class,
+                value = "SectionVariable",
+            ),
             DiscriminatorMapping(schema = NewSelectValuePayload::class, value = "Select"),
             DiscriminatorMapping(schema = NewTableValuePayload::class, value = "Table"),
             DiscriminatorMapping(schema = NewTextValuePayload::class, value = "Text"),
         ],
-    discriminatorProperty = "type")
+    discriminatorProperty = "type",
+)
 sealed interface NewValuePayload {
   @get:JsonIgnore val citation: String?
 
@@ -99,7 +102,8 @@ data class NewEmailValuePayload(
 @Schema(
     description =
         "Updated metadata about an image value. May only be used in Update operations, and " +
-            "cannot be used to replace the actual image data.")
+            "cannot be used to replace the actual image data."
+)
 data class NewImageValuePayload(
     @get:JsonIgnore(false) override val citation: String?,
     val caption: String?,
@@ -151,7 +155,8 @@ data class NewSectionTextValuePayload(
         description =
             "Citation for this chunk of text. If you want text with multiple citations at " +
                 "different positions, you can split it into multiple text values and put a " +
-                "citation on each of them.")
+                "citation on each of them."
+    )
     override val citation: String?,
     @AllowBlankString val textValue: String,
 ) : NewValuePayload {
@@ -184,7 +189,8 @@ data class NewTableValuePayload(
             "Citations on table values can be used if you want a citation that is associated " +
                 "with the table as a whole rather than with individual cells, or if you want a " +
                 "citation on an empty table: append a row with no column values but with a " +
-                "citation.")
+                "citation."
+    )
     override val citation: String?
 ) : NewValuePayload {
   override val type: VariableValuePayloadType

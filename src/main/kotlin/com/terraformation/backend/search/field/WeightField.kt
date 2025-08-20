@@ -71,7 +71,8 @@ class WeightField(
                         gramsCondition,
                         unitsField
                             .eq(quantityModel.units)
-                            .and(quantityField.eq(quantityModel.quantity)))
+                            .and(quantityField.eq(quantityModel.quantity)),
+                    )
                   } else {
                     gramsCondition
                   }
@@ -80,10 +81,12 @@ class WeightField(
             DSL.or(exactMatchConditions + listOfNotNull(nullCondition))
           }
           SearchFilterType.Range -> {
-            if (quantityModels.size != 2 ||
-                quantityModels[0] == null && quantityModels[1] == null) {
+            if (
+                quantityModels.size != 2 || quantityModels[0] == null && quantityModels[1] == null
+            ) {
               throw IllegalArgumentException(
-                  "Range search must have two values, one or both of which must be non-null")
+                  "Range search must have two values, one or both of which must be non-null"
+              )
             }
 
             val gramsQuantities =
@@ -145,7 +148,8 @@ class WeightField(
     val matches =
         formatRegex.matchEntire(value)
             ?: throw IllegalStateException(
-                "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value")
+                "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value"
+            )
 
     val number =
         if (localize) {
@@ -183,7 +187,15 @@ class WeightField(
   override fun raw(): SearchField? {
     return if (localize) {
       WeightField(
-          rawFieldName(), quantityField, unitsField, gramsField, desiredUnits, table, false, false)
+          rawFieldName(),
+          quantityField,
+          unitsField,
+          gramsField,
+          desiredUnits,
+          table,
+          false,
+          false,
+      )
     } else {
       null
     }

@@ -23,7 +23,9 @@ class ProjectDeliverablesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           deliverables.asSingleValueSublist(
-              "deliverable", DELIVERABLES.ID.eq(PROJECT_DELIVERABLES.DELIVERABLE_ID)),
+              "deliverable",
+              DELIVERABLES.ID.eq(PROJECT_DELIVERABLES.DELIVERABLE_ID),
+          ),
           modules.asSingleValueSublist("module", MODULES.ID.eq(PROJECT_DELIVERABLES.MODULE_ID)),
           projects.asSingleValueSublist("project", PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID)),
       )
@@ -57,7 +59,8 @@ class ProjectDeliverablesTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(PROJECTS)
               .where(PROJECT_DELIVERABLES.PROJECT_ID.eq(PROJECTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 }

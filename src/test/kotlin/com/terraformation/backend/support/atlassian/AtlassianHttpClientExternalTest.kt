@@ -46,7 +46,9 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
                     apiHost = apiHostname,
                     apiToken = apiToken,
                     enabled = true,
-                    serviceDeskKey = serviceDeskKey))
+                    serviceDeskKey = serviceDeskKey,
+                )
+        )
 
     client = AtlassianHttpClient(config)
     assertTrue(client.requestTypeIds.isNotEmpty())

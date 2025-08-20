@@ -95,7 +95,10 @@ typealias ExistingRecordedTreeModel = RecordedTreeModel<RecordedTreeId>
 typealias NewRecordedTreeModel = RecordedTreeModel<Nothing?>
 
 data class BiomassDetailsModel<
-    ID : ObservationId?, PlotId : MonitoringPlotId?, TreeId : RecordedTreeId?>(
+    ID : ObservationId?,
+    PlotId : MonitoringPlotId?,
+    TreeId : RecordedTreeId?,
+>(
     val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,
@@ -151,12 +154,15 @@ data class BiomassDetailsModel<
 
         if (trees[0].treeGrowthForm != TreeGrowthForm.Trunk) {
           throw IllegalStateException(
-              "Tree $treeNumber consists of multiple trunks, but does not have growth form Trunk")
+              "Tree $treeNumber consists of multiple trunks, but does not have growth form Trunk"
+          )
         }
 
-        if (!trees.all {
-          it.speciesName == trees[0].speciesName && it.speciesId == trees[0].speciesId
-        }) {
+        if (
+            !trees.all {
+              it.speciesName == trees[0].speciesName && it.speciesId == trees[0].speciesId
+            }
+        ) {
           throw IllegalStateException("Tree $treeNumber consists of multiple species")
         }
       }

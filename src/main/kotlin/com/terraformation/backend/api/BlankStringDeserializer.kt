@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.deser.std.StringDeserializer
 class BlankStringDeserializer : JsonDeserializer<String?>(), ContextualDeserializer {
   override fun createContextual(
       ctxt: DeserializationContext,
-      property: BeanProperty?
+      property: BeanProperty?,
   ): JsonDeserializer<*> {
     return if (property?.getAnnotation(AllowBlankString::class.java) != null) {
       StringDeserializer.instance

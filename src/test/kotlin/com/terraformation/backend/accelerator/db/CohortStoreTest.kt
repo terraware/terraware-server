@@ -56,8 +56,10 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          cohortsDao.findAll())
+              )
+          ),
+          cohortsDao.findAll(),
+      )
     }
 
     @Test
@@ -80,7 +82,10 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       store.delete(cohortIdToDelete)
 
       assertEquals(
-          listOf(cohortIdToKeep), cohortsDao.findAll().map { it.id }, "Cohort IDs after delete")
+          listOf(cohortIdToKeep),
+          cohortsDao.findAll().map { it.id },
+          "Cohort IDs after delete",
+      )
     }
 
     @Test
@@ -120,7 +125,8 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
               modifiedBy = modifiedBy,
-              modifiedTime = modifiedTime)
+              modifiedTime = modifiedTime,
+          )
 
       insertOrganization()
       val participantId1 = insertParticipant(cohortId = cohortId)
@@ -145,7 +151,8 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           noDepthModel.copy(participantIds = setOf(participantId1, participantId2)),
           store.fetchOneById(cohortId, CohortDepth.Participant),
-          "Participant depth")
+          "Participant depth",
+      )
     }
 
     @Test
@@ -199,7 +206,8 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(cohortId1, cohortId2),
           store.findAll(cohortDepth = CohortDepth.Participant).map { it.id },
-          "Cohort IDs")
+          "Cohort IDs",
+      )
     }
   }
 
@@ -210,7 +218,10 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
       val cohortId =
           insertCohort(
-              name = "Old Name", createdBy = otherUserId, phase = CohortPhase.Phase0DueDiligence)
+              name = "Old Name",
+              createdBy = otherUserId,
+              phase = CohortPhase.Phase0DueDiligence,
+          )
 
       every { user.canUpdateCohort(cohortId) } returns true
 
@@ -228,11 +239,14 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "New Name",
-              phaseId = CohortPhase.Phase1FeasibilityStudy),
-          cohortsDao.fetchOneById(cohortId))
+              phaseId = CohortPhase.Phase1FeasibilityStudy,
+          ),
+          cohortsDao.fetchOneById(cohortId),
+      )
 
       eventPublisher.assertEventPublished(
-          CohortPhaseUpdatedEvent(cohortId, CohortPhase.Phase1FeasibilityStudy))
+          CohortPhaseUpdatedEvent(cohortId, CohortPhase.Phase1FeasibilityStudy)
+      )
     }
 
     @Test

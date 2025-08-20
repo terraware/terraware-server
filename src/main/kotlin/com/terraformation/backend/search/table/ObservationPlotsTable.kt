@@ -25,23 +25,34 @@ class ObservationPlotsTable(private val tables: SearchTables) : SearchTable() {
           observationBiomassDetails.asSingleValueSublist(
               "biomassDetails",
               OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID),
-              isRequired = false),
+                  OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
+              ),
+              isRequired = false,
+          ),
           observationPlotConditions.asMultiValueSublist(
               "conditions",
               OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_PLOT_CONDITIONS.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_PLOT_CONDITIONS.OBSERVATION_PLOT_ID
+              ),
+          ),
           monitoringPlots.asSingleValueSublist(
-              "monitoringPlot", OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)),
+              "monitoringPlot",
+              OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+          ),
           observations.asSingleValueSublist(
-              "observation", OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID)),
+              "observation",
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+          ),
           observationBiomassQuadratSpecies.asMultiValueSublist(
               "quadratSpecies",
               OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.OBSERVATION_PLOT_ID
+              ),
+          ),
           recordedTrees.asMultiValueSublist(
               "recordedTrees",
-              OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(RECORDED_TREES.OBSERVATION_PLOT_ID)),
+              OBSERVATION_PLOTS.OBSERVATION_PLOT_ID.eq(RECORDED_TREES.OBSERVATION_PLOT_ID),
+          ),
       )
     }
   }

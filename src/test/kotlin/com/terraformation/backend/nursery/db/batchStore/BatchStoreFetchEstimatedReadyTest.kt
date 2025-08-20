@@ -17,7 +17,11 @@ internal class BatchStoreFetchEstimatedReadyTest : BatchStoreTest() {
     val expected =
         batchesDao.fetchById(batchId1, batchId2).map {
           NurserySeedlingBatchReadyEvent(
-              it.id!!, it.batchNumber!!, it.speciesId!!, "baby plant nursery")
+              it.id!!,
+              it.batchNumber!!,
+              it.speciesId!!,
+              "baby plant nursery",
+          )
         }
     val actual =
         store.fetchEstimatedReady(facilityId, LocalDate.of(2022, 11, 1), LocalDate.of(2022, 11, 6))
@@ -34,7 +38,10 @@ internal class BatchStoreFetchEstimatedReadyTest : BatchStoreTest() {
     val expected = emptyList<NurserySeedlingBatchReadyEvent>()
     val actual =
         store.fetchEstimatedReady(
-            otherFacilityId, LocalDate.of(2022, 11, 1), LocalDate.of(2022, 11, 6))
+            otherFacilityId,
+            LocalDate.of(2022, 11, 1),
+            LocalDate.of(2022, 11, 6),
+        )
 
     assertEquals(expected, actual)
   }

@@ -61,7 +61,8 @@ class FacilityServiceTest {
     service.on(OrganizationTimeZoneChangedEvent(organizationId, null, ZoneOffset.UTC))
 
     publisher.assertExactEventsPublished(
-        listOf(FacilityTimeZoneChangedEvent(facilityWithoutTimeZone)))
+        listOf(FacilityTimeZoneChangedEvent(facilityWithoutTimeZone))
+    )
     assertIsEventListener<OrganizationTimeZoneChangedEvent>(service)
   }
 
@@ -159,7 +160,9 @@ class FacilityServiceTest {
                             name = "name",
                             operationStartedDate = LocalDate.of(2023, 6, 3),
                         ),
-                    )))
+                    ),
+            ),
+        )
 
     val newlyPopulatedNurseryModel =
         unpopulatedNurseryModel.copy(

@@ -94,7 +94,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               overview = "<h> Overview </h>",
               preparationMaterials = "<i> Preps </i>",
           ),
-          store.fetchOneById(moduleId))
+          store.fetchOneById(moduleId),
+      )
     }
 
     @Test
@@ -162,8 +163,10 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   overview = "<h> Overview </h>",
                   preparationMaterials = "<i> Preps </i>",
-              )),
-          store.fetchAllModules())
+              )
+          ),
+          store.fetchAllModules(),
+      )
     }
 
     @Test

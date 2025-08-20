@@ -170,7 +170,9 @@ class UserStore(
                 keycloakAdminClient.searchByEmail(lowerCaseEmail, true)
               } catch (e: Exception) {
                 throw KeycloakRequestFailedException(
-                    "Failed to search for user data in Keycloak", e)
+                    "Failed to search for user data in Keycloak",
+                    e,
+                )
               }
           if (keycloakUsers.isNotEmpty()) {
             insertKeycloakUser(keycloakUsers.first())
@@ -222,7 +224,7 @@ class UserStore(
   fun fetchByOrganizationId(
       organizationId: OrganizationId,
       requireOptIn: Boolean = true,
-      roles: Set<Role>? = null
+      roles: Set<Role>? = null,
   ): List<IndividualUser> {
     if (roles?.isEmpty() == true) {
       return emptyList()
@@ -275,7 +277,7 @@ class UserStore(
    */
   fun fetchWithGlobalRoles(
       roles: Collection<GlobalRole>? = null,
-      additionalCondition: Condition? = null
+      additionalCondition: Condition? = null,
   ): List<IndividualUser> {
     requirePermissions { readGlobalRoles() }
 
@@ -288,7 +290,8 @@ class UserStore(
     val conditions =
         listOfNotNull(
             DSL.exists(DSL.selectOne().from(USER_GLOBAL_ROLES).where(globalRoleConditions)),
-            additionalCondition)
+            additionalCondition,
+        )
 
     return dslContext
         .select(USERS.asterisk())
@@ -340,7 +343,8 @@ class UserStore(
             email = email.lowercase(),
             emailNotificationsEnabled = false,
             modifiedTime = clock.instant(),
-            userTypeId = UserType.Individual)
+            userTypeId = UserType.Individual,
+        )
 
     usersDao.insert(row)
 
@@ -379,7 +383,9 @@ class UserStore(
               firstName = model.firstName,
               lastName = model.lastName,
               locale = newLocale,
-              timeZone = model.timeZone))
+              timeZone = model.timeZone,
+          )
+      )
 
       try {
         val representation =
@@ -450,8 +456,9 @@ class UserStore(
 
     userIds.forEach {
       val user = fetchOneById(it)
-      if (user !is IndividualUser ||
-          !user.email.endsWith("@terraformation.com", ignoreCase = true)) {
+      if (
+          user !is IndividualUser || !user.email.endsWith("@terraformation.com", ignoreCase = true)
+      ) {
         throw AccessDeniedException("Only Terraformation users may have global roles")
       }
     }
@@ -484,7 +491,7 @@ class UserStore(
    */
   fun createDeviceManagerUser(
       organizationId: OrganizationId,
-      description: String?
+      description: String?,
   ): DeviceManagerUser {
     requirePermissions { createApiKey(organizationId) }
 
@@ -556,7 +563,8 @@ class UserStore(
     } else if (response.statusInfo.family != Response.Status.Family.SUCCESSFUL) {
       val responseBody = response.readEntity(String::class.java)
       log.error(
-          "Failed to create user $username in Keycloak: HTTP ${response.status} $responseBody")
+          "Failed to create user $username in Keycloak: HTTP ${response.status} $responseBody"
+      )
       throw KeycloakRequestFailedException("User creation failed")
     }
 
@@ -644,7 +652,8 @@ class UserStore(
               log.error(
                   "Failed to remove temporary password from device manager user $userId " +
                       "($authId) after generating token",
-                  e)
+                  e,
+              )
 
               // But return the token anyway; it should be usable and a long random password
               // sticking around afterwards should be harmless.
@@ -696,7 +705,8 @@ class UserStore(
               email = "deleted:${user.userId}",
               emailNotificationsEnabled = false,
               firstName = "Deleted",
-              lastName = "User")
+              lastName = "User",
+          )
       usersDao.update(anonymizedRow)
 
       dslContext
@@ -767,7 +777,8 @@ class UserStore(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
         parentStore,
-        permissionStore)
+        permissionStore,
+    )
   }
 
   private fun rowToModel(user: UsersRow): TerrawareUser {
@@ -778,7 +789,8 @@ class UserStore(
       UserType.System -> SystemUser(usersDao)
       else ->
           throw AccessDeniedException(
-              "User type ${user.userTypeId} is not allowed to be converted to a model")
+              "User type ${user.userTypeId} is not allowed to be converted to a model"
+          )
     }
   }
 
@@ -796,12 +808,13 @@ class UserStore(
         usersRow.cookiesConsentedTime,
         usersRow.locale,
         usersRow.timeZone,
-        permissionStore)
+        permissionStore,
+    )
   }
 
   private fun insertKeycloakUser(
       keycloakUser: UserRepresentation,
-      type: UserType = UserType.Individual
+      type: UserType = UserType.Individual,
   ): UsersRow {
     val existingUser = usersDao.fetchByEmail(keycloakUser.email).firstOrNull()
 
@@ -813,7 +826,8 @@ class UserStore(
               authId = keycloakUser.id,
               firstName = keycloakUser.firstName,
               lastName = keycloakUser.lastName,
-              modifiedTime = clock.instant())
+              modifiedTime = clock.instant(),
+          )
 
       usersDao.update(updatedRow)
       updatedRow

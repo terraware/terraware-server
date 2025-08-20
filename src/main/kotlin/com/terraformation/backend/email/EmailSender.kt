@@ -78,7 +78,8 @@ class EmailSender(
                   .build(),
           )
           builder.content(
-              EmailContent.builder().raw(RawMessage.builder().data(sdkBytes).build()).build())
+              EmailContent.builder().raw(RawMessage.builder().data(sdkBytes).build()).build()
+          )
         }
 
     return response.messageId()

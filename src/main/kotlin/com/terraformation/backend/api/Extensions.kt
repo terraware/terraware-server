@@ -76,5 +76,8 @@ fun SimpleFeature.toInputStream(): SizedInputStream {
   val byteArray = byteArrayOutputStream.toByteArray()
   val inputStream = byteArray.inputStream()
   return SizedInputStream(
-      inputStream, byteArray.size.toLong(), MediaType.parseMediaType("application/geo+json"))
+      inputStream,
+      byteArray.size.toLong(),
+      MediaType.parseMediaType("application/geo+json"),
+  )
 }

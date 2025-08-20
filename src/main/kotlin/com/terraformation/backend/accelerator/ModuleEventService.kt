@@ -53,7 +53,8 @@ class ModuleEventService(
       } else {
         log.warn(
             "Module event ${event.eventId} is starting before notification lead time. " +
-                "No notifications sent to users.")
+                "No notifications sent to users."
+        )
       }
 
       if (now.isBefore(startTime)) {

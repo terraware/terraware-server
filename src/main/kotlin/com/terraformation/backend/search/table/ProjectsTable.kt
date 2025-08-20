@@ -41,26 +41,45 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           countries.asSingleValueSublist("country", PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           documents.asMultiValueSublist("documents", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
           draftPlantingSites.asMultiValueSublist(
-              "draftPlantingSites", PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID)),
+              "draftPlantingSites",
+              PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID),
+          ),
           events.asMultiValueSublist("events", eventsCondition),
           organizations.asSingleValueSublist(
-              "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           participants.asSingleValueSublist(
-              "participant", PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID), isRequired = false),
+              "participant",
+              PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID),
+              isRequired = false,
+          ),
           participantProjectSpecies.asMultiValueSublist(
-              "participantProjectSpecies", PROJECTS.ID.eq(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID)),
+              "participantProjectSpecies",
+              PROJECTS.ID.eq(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID),
+          ),
           plantingSites.asMultiValueSublist(
-              "plantingSites", PROJECTS.ID.eq(PLANTING_SITE_SUMMARIES.PROJECT_ID)),
+              "plantingSites",
+              PROJECTS.ID.eq(PLANTING_SITE_SUMMARIES.PROJECT_ID),
+          ),
           projectAcceleratorDetails.asSingleValueSublist(
               "acceleratorDetails",
               PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID),
-              isRequired = false),
+              isRequired = false,
+          ),
           projectDeliverables.asMultiValueSublist(
-              "projectDeliverables", PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID)),
+              "projectDeliverables",
+              PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID),
+          ),
           projectLandUseModelTypes.asMultiValueSublist(
-              "landUseModelTypes", PROJECTS.ID.eq(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID)),
+              "landUseModelTypes",
+              PROJECTS.ID.eq(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID),
+          ),
           projectVariables.asMultiValueSublist(
-              "variables", PROJECTS.ID.eq(PROJECT_VARIABLES.PROJECT_ID)))
+              "variables",
+              PROJECTS.ID.eq(PROJECT_VARIABLES.PROJECT_ID),
+          ),
+      )
     }
   }
 
@@ -80,7 +99,8 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
               DSL.selectOne()
                   .from(ORGANIZATION_INTERNAL_TAGS)
                   .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+          )
         } else {
           null
         }
@@ -88,7 +108,9 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
     return DSL.or(
         listOfNotNull(
             PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys),
-            acceleratorCondition))
+            acceleratorCondition,
+        )
+    )
   }
 
   override val defaultOrderFields: List<OrderField<*>>
@@ -99,5 +121,6 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(EVENT_PROJECTS)
               .where(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
-              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
+              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
+      )
 }

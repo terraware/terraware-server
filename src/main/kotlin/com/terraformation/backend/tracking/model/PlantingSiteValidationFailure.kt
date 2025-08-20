@@ -9,7 +9,10 @@ data class PlantingSiteValidationFailure(
   companion object {
     fun duplicateSubzoneName(subzoneName: String, zoneName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.DuplicateSubzoneName, zoneName, subzoneName)
+            PlantingSiteValidationFailureType.DuplicateSubzoneName,
+            zoneName,
+            subzoneName,
+        )
 
     fun duplicateZoneName(zoneName: String) =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.DuplicateZoneName, zoneName)
@@ -25,21 +28,29 @@ data class PlantingSiteValidationFailure(
             PlantingSiteValidationFailureType.SubzoneBoundaryOverlaps,
             zoneName,
             subzoneName,
-            conflictsWith)
+            conflictsWith,
+        )
 
     fun subzoneInExclusionArea(subzoneName: String, zoneName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.SubzoneInExclusionArea, zoneName, subzoneName)
+            PlantingSiteValidationFailureType.SubzoneInExclusionArea,
+            zoneName,
+            subzoneName,
+        )
 
     fun subzoneNotInZone(subzoneName: String, zoneName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.SubzoneNotInZone, zoneName, subzoneName)
+            PlantingSiteValidationFailureType.SubzoneNotInZone,
+            zoneName,
+            subzoneName,
+        )
 
     fun zoneBoundaryOverlaps(conflictsWith: Set<String>, zoneName: String) =
         PlantingSiteValidationFailure(
             PlantingSiteValidationFailureType.ZoneBoundaryOverlaps,
             zoneName,
-            conflictsWith = conflictsWith)
+            conflictsWith = conflictsWith,
+        )
 
     fun zoneHasNoSubzones(zoneName: String) =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneHasNoSubzones, zoneName)

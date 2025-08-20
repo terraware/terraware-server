@@ -28,9 +28,11 @@ class MonitoringPlotElevationScheduler(
   fun schedule(scheduler: JobScheduler) {
     if (config.dailyTasks.enabled) {
       scheduler.scheduleRecurrently<MonitoringPlotElevationScheduler>(
-          javaClass.simpleName, Cron.every15minutes()) {
-            updatePlotElevation(MONITORING_PLOT_BATCH_SIZE)
-          }
+          javaClass.simpleName,
+          Cron.every15minutes(),
+      ) {
+        updatePlotElevation(MONITORING_PLOT_BATCH_SIZE)
+      }
     }
   }
 
@@ -53,7 +55,8 @@ class MonitoringPlotElevationScheduler(
                       mapboxService.getElevation(plot.boundary.centroid).toBigDecimal()
                     } catch (e: Exception) {
                       log.warn(
-                          "Failed to fetch elevation for monitoring plot ${plot.id}: ${e.message}")
+                          "Failed to fetch elevation for monitoring plot ${plot.id}: ${e.message}"
+                      )
                       return@mapNotNull null
                     }
 

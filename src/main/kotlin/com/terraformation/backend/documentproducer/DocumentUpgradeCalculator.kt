@@ -67,7 +67,8 @@ class DocumentUpgradeCalculator(
     oldManifestId = documentsRow.variableManifestId!!
     if (newManifestId.value < oldManifestId.value) {
       throw IllegalArgumentException(
-          "Cannot downgrade from manifest $oldManifestId to older manifest $newManifestId")
+          "Cannot downgrade from manifest $oldManifestId to older manifest $newManifestId"
+      )
     }
 
     val oldManifest = variableManifestsDao.fetchOneById(oldManifestId)!!
@@ -80,7 +81,8 @@ class DocumentUpgradeCalculator(
           oldManifest.documentTemplateId!!,
           oldManifestId,
           newManifest.documentTemplateId!!,
-          newManifestId)
+          newManifestId,
+      )
     }
 
     newManifestVariables =
@@ -171,11 +173,15 @@ class DocumentUpgradeCalculator(
                         projectId,
                         sectionValue.listPosition,
                         variable.id,
-                        sectionValue.citation),
+                        sectionValue.citation,
+                    ),
                     SectionValueVariable(
                         replacementVariableIds[usedVariableId]!!,
                         sectionValueVariable.usageType,
-                        sectionValueVariable.displayStyle)))
+                        sectionValueVariable.displayStyle,
+                    ),
+                )
+            )
           } else {
             null
           }
@@ -211,7 +217,10 @@ class DocumentUpgradeCalculator(
 
                 newUsedVariableId?.let {
                   SectionValueVariable(
-                      it, sectionValue.value.usageType, sectionValue.value.displayStyle)
+                      it,
+                      sectionValue.value.usageType,
+                      sectionValue.value.displayStyle,
+                  )
                 }
               }
             }
@@ -221,9 +230,17 @@ class DocumentUpgradeCalculator(
               AppendValueOperation(
                   NewSectionValue(
                       BaseVariableValueProperties(
-                          null, projectId, 0, variable.id, sectionValue.citation),
-                      validFragment)),
-              DeleteValueOperation(projectId, sectionValue.id))
+                          null,
+                          projectId,
+                          0,
+                          variable.id,
+                          sectionValue.citation,
+                      ),
+                      validFragment,
+                  )
+              ),
+              DeleteValueOperation(projectId, sectionValue.id),
+          )
         } ?: emptyList()
       }
     }
@@ -232,7 +249,7 @@ class DocumentUpgradeCalculator(
   private fun tableOperations(
       oldTable: TableVariable,
       oldRows: List<ExistingValue>,
-      newTable: TableVariable
+      newTable: TableVariable,
   ): List<ValueOperation> {
     val oldColumns = oldTable.columns.map { it.variable }.associateBy { it.id }
     val deleteOldTableOperations =
@@ -243,8 +260,9 @@ class DocumentUpgradeCalculator(
           val rowOperation =
               AppendValueOperation(
                   NewTableValue(
-                      BaseVariableValueProperties(
-                          null, projectId, 0, newTable.id, oldRow.citation)))
+                      BaseVariableValueProperties(null, projectId, 0, newTable.id, oldRow.citation)
+                  )
+              )
 
           val deleteRowOperation = oldRow.rowValueId?.let { DeleteValueOperation(projectId, it) }
 
@@ -252,8 +270,10 @@ class DocumentUpgradeCalculator(
               newTable.columns
                   .map { it.variable }
                   .flatMap { newColumn ->
-                    if (newColumn.replacesVariableId != null &&
-                        newColumn.replacesVariableId in oldColumns) {
+                    if (
+                        newColumn.replacesVariableId != null &&
+                            newColumn.replacesVariableId in oldColumns
+                    ) {
                       val oldColumn = oldColumns[newColumn.replacesVariableId]!!
 
                       val appendOps =
@@ -262,7 +282,11 @@ class DocumentUpgradeCalculator(
                               ?.sortedBy { it.listPosition }
                               ?.mapNotNull { oldValue ->
                                 newColumn.convertValue(
-                                    oldColumn, oldValue, null, variableStore::fetchOneVariable)
+                                    oldColumn,
+                                    oldValue,
+                                    null,
+                                    variableStore::fetchOneVariable,
+                                )
                               }
                               ?.map { AppendValueOperation(it) } ?: emptyList()
                       val deleteOps =

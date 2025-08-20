@@ -87,7 +87,8 @@ class AccessionCsvValidator(
               messages.accessionCsvColumnName(0),
               existingNumber,
               messages.accessionCsvNumberExists(),
-              existingRowNum)
+              existingRowNum,
+          )
         }
       }
     }
@@ -110,7 +111,8 @@ class AccessionCsvValidator(
             UploadProblemType.DuplicateValue,
             field,
             value,
-            messages.accessionCsvNumberDuplicate(existingRow))
+            messages.accessionCsvNumberDuplicate(existingRow),
+        )
       } else {
         accessionNumberToRow[value] = rowNum
       }
@@ -127,7 +129,11 @@ class AccessionCsvValidator(
           }
       if (floatValue == null || floatValue < 0) {
         addError(
-            UploadProblemType.MalformedValue, field, value, messages.accessionCsvQuantityInvalid())
+            UploadProblemType.MalformedValue,
+            field,
+            value,
+            messages.accessionCsvQuantityInvalid(),
+        )
       }
     }
   }
@@ -138,21 +144,30 @@ class AccessionCsvValidator(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.accessionCsvQuantityUnitsInvalid())
+          messages.accessionCsvQuantityUnitsInvalid(),
+      )
     }
   }
 
   private fun validateCountryCode(value: String?, field: String) {
     if (value != null && getCountryCode(value) == null) {
       addError(
-          UploadProblemType.UnrecognizedValue, field, value, messages.accessionCsvCountryInvalid())
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.accessionCsvCountryInvalid(),
+      )
     }
   }
 
   private fun validateStatus(value: String?, field: String) {
     if (value != null && !isValidState(value)) {
       addError(
-          UploadProblemType.UnrecognizedValue, field, value, messages.accessionCsvStatusInvalid())
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.accessionCsvStatusInvalid(),
+      )
     }
   }
 
@@ -164,7 +179,8 @@ class AccessionCsvValidator(
             UploadProblemType.MalformedValue,
             field,
             value,
-            messages.accessionCsvNumberOfPlantsInvalid())
+            messages.accessionCsvNumberOfPlantsInvalid(),
+        )
       }
     }
   }
@@ -175,7 +191,8 @@ class AccessionCsvValidator(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.accessionCsvCollectionSourceInvalid())
+          messages.accessionCsvCollectionSourceInvalid(),
+      )
     }
   }
 
@@ -191,7 +208,11 @@ class AccessionCsvValidator(
           }
       if (floatValue == null || floatValue < -90.0 || floatValue > 90.0) {
         addError(
-            UploadProblemType.MalformedValue, field, value, messages.accessionCsvLatitudeInvalid())
+            UploadProblemType.MalformedValue,
+            field,
+            value,
+            messages.accessionCsvLatitudeInvalid(),
+        )
       }
     }
   }
@@ -208,7 +229,11 @@ class AccessionCsvValidator(
           }
       if (floatValue == null || floatValue < -180.0 || floatValue > 180.0) {
         addError(
-            UploadProblemType.MalformedValue, field, value, messages.accessionCsvLongitudeInvalid())
+            UploadProblemType.MalformedValue,
+            field,
+            value,
+            messages.accessionCsvLongitudeInvalid(),
+        )
       }
     }
   }
@@ -219,13 +244,15 @@ class AccessionCsvValidator(
           UploadProblemType.MissingRequiredValue,
           getColumnName(17),
           null,
-          messages.accessionCsvLatitudeLongitude())
+          messages.accessionCsvLatitudeLongitude(),
+      )
     } else if (values[17] != null && values[18] == null) {
       addError(
           UploadProblemType.MissingRequiredValue,
           getColumnName(18),
           null,
-          messages.accessionCsvLatitudeLongitude())
+          messages.accessionCsvLatitudeLongitude(),
+      )
     }
   }
 
@@ -237,7 +264,8 @@ class AccessionCsvValidator(
           UploadProblemType.MalformedValue,
           getColumnName(3),
           values[3],
-          messages.accessionCsvNonZeroUsedUpQuantity())
+          messages.accessionCsvNonZeroUsedUpQuantity(),
+      )
     }
   }
 }

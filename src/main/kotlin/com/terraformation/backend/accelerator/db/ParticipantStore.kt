@@ -93,7 +93,7 @@ class ParticipantStore(
    */
   fun update(
       participantId: ParticipantId,
-      updateFunc: (ExistingParticipantModel) -> ExistingParticipantModel
+      updateFunc: (ExistingParticipantModel) -> ExistingParticipantModel,
   ) {
     requirePermissions { updateParticipant(participantId) }
 
@@ -131,7 +131,8 @@ class ParticipantStore(
                 DSL.select(PROJECTS.ID)
                     .from(PROJECTS)
                     .where(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-                    .orderBy(PROJECTS.ID))
+                    .orderBy(PROJECTS.ID)
+            )
             .convertFrom { result ->
               result
                   .map { it[PROJECTS.ID.asNonNullable()] }

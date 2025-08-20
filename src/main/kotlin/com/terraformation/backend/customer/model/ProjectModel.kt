@@ -33,7 +33,8 @@ data class ProjectModel<ID : ProjectId?>(
           row.modifiedTime,
           row.name!!,
           row.organizationId!!,
-          row.participantId)
+          row.participantId,
+      )
     }
 
     fun of(record: Record): ExistingProjectModel {

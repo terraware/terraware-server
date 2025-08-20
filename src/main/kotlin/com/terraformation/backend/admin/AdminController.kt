@@ -44,7 +44,8 @@ class AdminController(
     model.addAttribute(
         "canCleanupApplicationDrive",
         config.accelerator.applicationGoogleFolderId != null &&
-            GlobalRole.SuperAdmin in currentUser().globalRoles)
+            GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canDeleteUsers", currentUser().canDeleteUsers())
@@ -54,31 +55,43 @@ class AdminController(
     model.addAttribute("canManageDocumentProducer", currentUser().canManageDocumentProducer())
     model.addAttribute(
         "canManageHubSpot",
-        config.hubSpot.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
+        config.hubSpot.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute(
         "canManageModules",
-        currentUser().canManageModules() || currentUser().canManageDeliverables())
+        currentUser().canManageModules() || currentUser().canManageDeliverables(),
+    )
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute(
-        "canMigrateSimplePlantingSites", GlobalRole.SuperAdmin in currentUser().globalRoles)
+        "canMigrateSimplePlantingSites",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute(
         "canQueryGeoServer",
         config.geoServer.wfsUrl != null &&
             currentUser()
                 .globalRoles
                 .intersect(setOf(GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin))
-                .isNotEmpty())
+                .isNotEmpty(),
+    )
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute(
-        "canRecalculateMortalityRates", GlobalRole.SuperAdmin in currentUser().globalRoles)
+        "canRecalculateMortalityRates",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute(
-        "canRecalculatePopulations", GlobalRole.SuperAdmin in currentUser().globalRoles)
+        "canRecalculatePopulations",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute(
-        "canRemoveOrganizationUser", GlobalRole.SuperAdmin in currentUser().globalRoles)
+        "canRemoveOrganizationUser",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute(
         "canSendTestEmail",
-        config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
+        config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())

@@ -30,7 +30,7 @@ class ParticipantService(
   /** Updates a participant's information, including which projects are assigned to it. */
   fun update(
       participantId: ParticipantId,
-      updateFunc: (ExistingParticipantModel) -> ExistingParticipantModel
+      updateFunc: (ExistingParticipantModel) -> ExistingParticipantModel,
   ) {
     dslContext.transaction { _ ->
       val existing = participantStore.fetchOneById(participantId)

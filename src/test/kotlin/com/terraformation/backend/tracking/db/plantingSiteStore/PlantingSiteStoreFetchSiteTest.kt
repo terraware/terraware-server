@@ -43,7 +43,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertPlantingZone(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
-              targetPlantingDensity = BigDecimal.ONE)
+              targetPlantingDensity = BigDecimal.ONE,
+          )
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId =
           insertMonitoringPlot(boundary = polygon(0.1), elevationMeters = BigDecimal.TEN)
@@ -53,19 +54,26 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val season1EndDate = LocalDate.of(2023, 7, 31)
       val plantingSeasonId1 =
           insertPlantingSeason(
-              startDate = season1StartDate, endDate = season1EndDate, timeZone = timeZone)
+              startDate = season1StartDate,
+              endDate = season1EndDate,
+              timeZone = timeZone,
+          )
       val season2StartDate = LocalDate.of(2023, 1, 1)
       val season2EndDate = LocalDate.of(2023, 1, 31)
       val plantingSeasonId2 =
           insertPlantingSeason(
-              startDate = season2StartDate, endDate = season2EndDate, timeZone = timeZone)
+              startDate = season2StartDate,
+              endDate = season2EndDate,
+              timeZone = timeZone,
+          )
 
       val adHocPlotId =
           insertMonitoringPlot(
               boundary = polygon(0.4),
               plantingSubzoneId = null,
               isAdHoc = true,
-              isAvailable = false)
+              isAvailable = false,
+          )
       val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), plantingSubzoneId = null)
 
       val expectedWithSite =
@@ -115,7 +123,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           stableId = StableId("Z1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
-                  ))
+                  )
+          )
 
       val expectedWithSubzone =
           expectedWithZone.copy(
@@ -133,7 +142,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       plantingCompletedTime = null,
                                       stableId = StableId("Z1-1"),
                                       monitoringPlots = emptyList(),
-                                  )))),
+                                  )
+                              )
+                      )
+                  ),
           )
 
       val expectedWithPlot =
@@ -147,7 +159,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           isAdHoc = true,
                           isAvailable = false,
                           plotNumber = 3,
-                          sizeMeters = 30)),
+                          sizeMeters = 30,
+                      )
+                  ),
               exteriorPlots =
                   listOf(
                       MonitoringPlotModel(
@@ -157,7 +171,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           isAdHoc = false,
                           isAvailable = true,
                           plotNumber = 4,
-                          sizeMeters = 30)),
+                          sizeMeters = 30,
+                      )
+                  ),
               plantingZones =
                   listOf(
                       expectedWithSubzone.plantingZones[0].copy(
@@ -175,8 +191,14 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                       isAdHoc = false,
                                                       isAvailable = true,
                                                       plotNumber = 1,
-                                                      sizeMeters = 30)),
-                                      )))))
+                                                      sizeMeters = 30,
+                                                  )
+                                              ),
+                                      )
+                              )
+                      )
+                  ),
+          )
 
       val allExpected =
           mapOf(
@@ -207,7 +229,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertPlantingZone(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
-              targetPlantingDensity = BigDecimal.ONE)
+              targetPlantingDensity = BigDecimal.ONE,
+          )
       val plantingSubzoneId11 = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId112 = insertMonitoringPlot(boundary = polygon(0.1))
@@ -220,7 +243,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertPlantingZone(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
-              targetPlantingDensity = BigDecimal.ONE)
+              targetPlantingDensity = BigDecimal.ONE,
+          )
       val plantingSubzoneId2 =
           insertPlantingSubzone(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
       val monitoringPlotId2 = insertMonitoringPlot(boundary = polygon(0.1))
@@ -344,7 +368,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 1,
-                                                  sizeMeters = 30),
+                                                  sizeMeters = 30,
+                                              ),
                                               MonitoringPlotModel(
                                                   boundary = polygon(0.1),
                                                   elevationMeters = null,
@@ -352,7 +377,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 2,
-                                                  sizeMeters = 30),
+                                                  sizeMeters = 30,
+                                              ),
                                           ),
                                   ),
                                   PlantingSubzoneModel(
@@ -374,7 +400,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 3,
-                                                  sizeMeters = 30),
+                                                  sizeMeters = 30,
+                                              ),
                                               MonitoringPlotModel(
                                                   boundary = polygon(0.1),
                                                   elevationMeters = null,
@@ -382,7 +409,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 4,
-                                                  sizeMeters = 30),
+                                                  sizeMeters = 30,
+                                              ),
                                           ),
                                   ),
                               ),
@@ -418,7 +446,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 5,
-                                                  sizeMeters = 30),
+                                                  sizeMeters = 30,
+                                              ),
                                           ),
                                   ),
                               ),
@@ -498,8 +527,14 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAdHoc = false,
                                                   isAvailable = true,
                                                   plotNumber = 1,
-                                                  sizeMeters = 30)),
-                                  )))))
+                                                  sizeMeters = 30,
+                                              )
+                                          ),
+                                  )
+                              ),
+                      )
+                  ),
+          )
 
       val actual = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 

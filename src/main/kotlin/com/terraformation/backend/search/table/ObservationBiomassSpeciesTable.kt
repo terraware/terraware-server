@@ -24,19 +24,30 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)),
+              OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+          ),
           observationPlots.asSingleValueSublist(
               "observationPlot",
               OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID
+              ),
+          ),
           observations.asSingleValueSublist(
-              "observation", OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(OBSERVATIONS.ID)),
+              "observation",
+              OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+          ),
           observationBiomassQuadratSpecies.asMultiValueSublist(
               "quadratSpecies",
               OBSERVATION_BIOMASS_SPECIES.ID.eq(
-                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID)),
+                  OBSERVATION_BIOMASS_QUADRAT_SPECIES.BIOMASS_SPECIES_ID
+              ),
+          ),
           species.asSingleValueSublist(
-              "species", OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID), isRequired = false))
+              "species",
+              OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID),
+              isRequired = false,
+          ),
+      )
     }
   }
 
@@ -52,8 +63,10 @@ class ObservationBiomassSpeciesTable(private val tables: SearchTables) : SearchT
                       OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
                       DSL.select(SPECIES.SCIENTIFIC_NAME)
                           .from(SPECIES)
-                          .where(SPECIES.ID.eq(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID)))
-                  .cast(SQLDataType.VARCHAR)),
+                          .where(SPECIES.ID.eq(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID)),
+                  )
+                  .cast(SQLDataType.VARCHAR),
+          ),
           textField("scientificName", OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME),
       )
 

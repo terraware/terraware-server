@@ -40,7 +40,8 @@ enum class ValueOperationType {
             DiscriminatorMapping(schema = ReplaceValuesOperationPayload::class, value = "Replace"),
             DiscriminatorMapping(schema = UpdateValueOperationPayload::class, value = "Update"),
         ],
-    discriminatorProperty = "operation")
+    discriminatorProperty = "operation",
+)
 sealed interface ValueOperationPayload {
   // Dummy property so the OpenAPI schema will include the enum values
   @get:JsonIgnore val operation: ValueOperationType
@@ -49,7 +50,7 @@ sealed interface ValueOperationPayload {
 
   fun <ID : VariableValueId?> toOperationModel(
       projectId: ProjectId,
-      base: BaseVariableValueProperties<ID>? = null
+      base: BaseVariableValueProperties<ID>? = null,
   ): ValueOperation
 }
 
@@ -67,12 +68,14 @@ sealed interface ValueOperationPayload {
             "\n" +
             "If the variable is a table column and no rowValueId is specified, associates the " +
             "new value with the most recently appended row. You MUST append a row value before " +
-            "appending the values of the columns.")
+            "appending the values of the columns."
+)
 data class AppendValueOperationPayload(
     @Schema(
         description =
             "If the variable is a table column and the new value should be appended to an " +
-                "existing row, the existing row's value ID.")
+                "existing row, the existing row's value ID."
+    )
     val rowValueId: VariableValueId? = null,
     val variableId: VariableId,
     val value: NewValuePayload,
@@ -82,12 +85,13 @@ data class AppendValueOperationPayload(
 
   override fun <ID : VariableValueId?> toOperationModel(
       projectId: ProjectId,
-      base: BaseVariableValueProperties<ID>?
+      base: BaseVariableValueProperties<ID>?,
   ): ValueOperation {
     return AppendValueOperation(
         value.toValueModel(
-            BaseVariableValueProperties(
-                null, projectId, 0, variableId, value.citation, rowValueId)))
+            BaseVariableValueProperties(null, projectId, 0, variableId, value.citation, rowValueId)
+        )
+    )
   }
 }
 
@@ -105,14 +109,15 @@ data class AppendValueOperationPayload(
             "If the variable is a table, or in other words if the value is a table row, any " +
             "values associated with the row are also deleted. The row itself gets a new value " +
             "that is marked as deleted, and the new values that are created to delete the row's " +
-            "contents are associated with this newly-created deleted row value.")
+            "contents are associated with this newly-created deleted row value."
+)
 data class DeleteValueOperationPayload(val valueId: VariableValueId) : ValueOperationPayload {
   override val operation: ValueOperationType
     get() = ValueOperationType.Delete
 
   override fun <ID : VariableValueId?> toOperationModel(
       projectId: ProjectId,
-      base: BaseVariableValueProperties<ID>?
+      base: BaseVariableValueProperties<ID>?,
   ): ValueOperation {
     return DeleteValueOperation(projectId, valueId)
   }
@@ -132,12 +137,14 @@ data class DeleteValueOperationPayload(val valueId: VariableValueId) : ValueOper
             "payload, the existing values with higher-numbered list positions are deleted.\n" +
             "\n" +
             "If the variable is not a list, it is invalid for this payload to include more than " +
-            "one value.")
+            "one value."
+)
 data class ReplaceValuesOperationPayload(
     @Schema(
         description =
             "If the variable is a table column, the value ID of the row whose values should be " +
-                "replaced.")
+                "replaced."
+    )
     val rowValueId: VariableValueId? = null,
     val variableId: VariableId,
     val values: List<NewValuePayload>,
@@ -147,7 +154,7 @@ data class ReplaceValuesOperationPayload(
 
   override fun <ID : VariableValueId?> toOperationModel(
       projectId: ProjectId,
-      base: BaseVariableValueProperties<ID>?
+      base: BaseVariableValueProperties<ID>?,
   ): ValueOperation {
     return ReplaceValuesOperation(
         projectId,
@@ -155,9 +162,10 @@ data class ReplaceValuesOperationPayload(
         rowValueId,
         values.mapIndexed { index, valuePayload ->
           valuePayload.toValueModel(
-              BaseVariableValueProperties(
-                  null, projectId, index, variableId, valuePayload.citation))
-        })
+              BaseVariableValueProperties(null, projectId, index, variableId, valuePayload.citation)
+          )
+        },
+    )
   }
 }
 
@@ -169,7 +177,8 @@ data class ReplaceValuesOperationPayload(
             "This operation may not be used with table variables.\n" +
             "\n" +
             "If the variable is a table column, the new value will be contained in the same row " +
-            "as the existing one.")
+            "as the existing one."
+)
 data class UpdateValueOperationPayload(
     val valueId: VariableValueId,
     val value: NewValuePayload,
@@ -179,7 +188,7 @@ data class UpdateValueOperationPayload(
 
   override fun <ID : VariableValueId?> toOperationModel(
       projectId: ProjectId,
-      base: BaseVariableValueProperties<ID>?
+      base: BaseVariableValueProperties<ID>?,
   ): ValueOperation {
     if (base == null) {
       throw IllegalArgumentException("No existing value with $valueId found")
@@ -187,7 +196,14 @@ data class UpdateValueOperationPayload(
     return UpdateValueOperation(
         value.toValueModel(
             BaseVariableValueProperties(
-                valueId, projectId, base.listPosition, base.variableId, value.citation)))
+                valueId,
+                projectId,
+                base.listPosition,
+                base.variableId,
+                value.citation,
+            )
+        )
+    )
   }
 
   override fun getExistingValueId() = valueId

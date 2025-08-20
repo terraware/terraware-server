@@ -41,7 +41,7 @@ class AdminAppVersionsController(
       @RequestParam platform: String,
       @RequestParam minimumVersion: String,
       @RequestParam recommendedVersion: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       appVersionStore.create(AppVersionsRow(appName, platform, minimumVersion, recommendedVersion))
@@ -64,12 +64,13 @@ class AdminAppVersionsController(
       @RequestParam platform: String,
       @RequestParam minimumVersion: String,
       @RequestParam recommendedVersion: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       appVersionStore.update(
           AppVersionsRow(originalAppName, originalPlatform),
-          AppVersionsRow(appName, platform, minimumVersion, recommendedVersion))
+          AppVersionsRow(appName, platform, minimumVersion, recommendedVersion),
+      )
       redirectAttributes.successMessage = "App version updated."
     } catch (e: DuplicateKeyException) {
       // User edited the appName/platform to collide with an existing one.
@@ -86,7 +87,7 @@ class AdminAppVersionsController(
   fun deleteAppVersion(
       @RequestParam appName: String,
       @RequestParam platform: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     appVersionStore.delete(appName, platform)
     redirectAttributes.successMessage = "App version deleted."

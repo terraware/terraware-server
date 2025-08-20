@@ -60,7 +60,9 @@ class TimeseriesPruner(
                                   .where(TIMESERIES_ID.eq(timeseriesId))
                                   .and(CREATED_TIME.lessThan(minimumCreatedTime))
                                   .orderBy(CREATED_TIME)
-                                  .limit(maxRowsToDelete)))
+                                  .limit(maxRowsToDelete)
+                          )
+                      )
                       .execute()
                 }
 

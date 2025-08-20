@@ -61,7 +61,7 @@ class SecurityConfig(
   @Bean
   fun securityFilter(
       http: HttpSecurity,
-      clientRegistrationRepository: ClientRegistrationRepository
+      clientRegistrationRepository: ClientRegistrationRepository,
   ): SecurityFilterChain {
     // https://github.com/spring-projects/spring-security/issues/16162
     val fullyAuthenticated =
@@ -124,7 +124,9 @@ class SecurityConfig(
           baseUri = "/api/oauth2/authorization"
           authorizationRequestResolver =
               CustomOAuth2AuthorizationRequestResolver(
-                  clientRegistrationRepository, "/api/oauth2/authorization")
+                  clientRegistrationRepository,
+                  "/api/oauth2/authorization",
+              )
         }
         redirectionEndpoint { baseUri = "/api/oauth2/code/*" }
       }

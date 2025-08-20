@@ -17,20 +17,23 @@ class SubmissionNotifier(
   @EventListener
   fun on(event: DeliverableDocumentUploadedEvent) {
     rateLimitedEventPublisher.publishEvent(
-        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId)
+    )
   }
 
   /** Schedules a "ready for review" notification when a question is answered. */
   @EventListener
   fun on(event: QuestionsDeliverableSubmittedEvent) {
     rateLimitedEventPublisher.publishEvent(
-        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId)
+    )
   }
 
   /** Schedules a "ready for review" notification when a question is answered. */
   @EventListener
   fun on(event: QuestionsDeliverableReviewedEvent) {
     rateLimitedEventPublisher.publishEvent(
-        QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId))
+        QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId)
+    )
   }
 }

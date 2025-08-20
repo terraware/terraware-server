@@ -47,9 +47,11 @@ class VariableWorkflowController(
               variableValueStore.listValues(
                   projectId = projectId,
                   maxValueId = it.maxVariableValueId,
-                  variableIds = setOf(variableId))
+                  variableIds = setOf(variableId),
+              )
           VariableWorkflowHistoryElement(it, values)
-        })
+        },
+    )
   }
 
   @Operation(summary = "Update the workflow details for a variable in a project.")
@@ -57,7 +59,7 @@ class VariableWorkflowController(
   fun updateVariableWorkflowDetails(
       @PathVariable projectId: ProjectId,
       @PathVariable variableId: VariableId,
-      @RequestBody payload: UpdateVariableWorkflowDetailsRequestPayload
+      @RequestBody payload: UpdateVariableWorkflowDetailsRequestPayload,
   ): SimpleSuccessResponsePayload {
     variableWorkflowStore.update(projectId, variableId) {
       it.copy(
@@ -94,7 +96,8 @@ data class VariableWorkflowHistoryElement(
       model.maxVariableValueId,
       model.projectId,
       model.status,
-      values.map { ExistingValuePayload.of(it) })
+      values.map { ExistingValuePayload.of(it) },
+  )
 }
 
 data class GetVariableWorkflowHistoryResponsePayload(

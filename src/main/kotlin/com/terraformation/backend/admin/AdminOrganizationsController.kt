@@ -52,7 +52,9 @@ class AdminOrganizationsController(
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute(
-        "canCreatePlantingSite", currentUser().canCreatePlantingSite(organization.id))
+        "canCreatePlantingSite",
+        currentUser().canCreatePlantingSite(organization.id),
+    )
     model.addAttribute("canCreateReport", isSuperAdmin)
     model.addAttribute("canDeleteReport", isSuperAdmin)
     model.addAttribute("canExportReport", isSuperAdmin && config.report.exportEnabled)

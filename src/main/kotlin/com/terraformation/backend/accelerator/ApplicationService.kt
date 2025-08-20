@@ -61,10 +61,12 @@ class ApplicationService(
       val result = applicationStore.submit(applicationId)
       val details = systemUser.run { projectAcceleratorDetailsService.fetchOneById(projectId) }
 
-      if (config.hubSpot.enabled &&
-          result.isSuccessful &&
-          result.application.status == ApplicationStatus.Submitted &&
-          details.hubSpotUrl == null) {
+      if (
+          config.hubSpot.enabled &&
+              result.isSuccessful &&
+              result.application.status == ApplicationStatus.Submitted &&
+              details.hubSpotUrl == null
+      ) {
         try {
           val application = result.application
 
@@ -106,7 +108,8 @@ class ApplicationService(
     } else {
       log.debug(
           "Not setting internal name for application $applicationId because boundary is not " +
-              "all in one country: $countries")
+              "all in one country: $countries"
+      )
     }
   }
 
@@ -119,7 +122,7 @@ class ApplicationService(
   /** Populates the project accelerator details when an application passes pre-screening. */
   private fun createProjectAcceleratorDetails(
       application: ExistingApplicationModel,
-      variableValues: ApplicationVariableValues
+      variableValues: ApplicationVariableValues,
   ) {
     val landUseModelTypes =
         variableValues.landUseModelHectares.filterValues { it.signum() > 0 }.keys

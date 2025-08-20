@@ -211,7 +211,7 @@ data class GetReportPayloadV1(
       override val totalPlantingSiteArea: Int?,
       override val totalPlantsPlanted: Int?,
       override val totalTreesPlanted: Int?,
-      override val workers: WorkersPayloadV1
+      override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.PlantingSite {
     constructor(
         model: SeedFundReportBodyModelV1.PlantingSite
@@ -401,7 +401,8 @@ data class WorkersPayloadV1(
   ) : this(
       femalePaidWorkers = model.femalePaidWorkers,
       paidWorkers = model.paidWorkers,
-      volunteers = model.volunteers)
+      volunteers = model.volunteers,
+  )
 
   fun toModel() =
       SeedFundReportBodyModelV1.Workers(

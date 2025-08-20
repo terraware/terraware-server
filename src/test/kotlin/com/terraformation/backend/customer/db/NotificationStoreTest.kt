@@ -39,7 +39,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   private fun notificationModel(
       globalNotification: Boolean = false,
-      userId: UserId = user.userId
+      userId: UserId = user.userId,
   ): CreateNotificationModel {
     val orgId: OrganizationId? = if (globalNotification) null else organizationId
     return CreateNotificationModel(
@@ -48,12 +48,13 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
         orgId,
         "the quick brown fox",
         "jumped over the silly lazy goat",
-        URI.create("/"))
+        URI.create("/"),
+    )
   }
 
   private fun toModel(
       created: CreateNotificationModel,
-      notificationId: NotificationId
+      notificationId: NotificationId,
   ): NotificationModel =
       NotificationModel(
           notificationId,
@@ -63,7 +64,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
           created.body,
           created.localUrl,
           Instant.EPOCH,
-          false)
+          false,
+      )
 
   @BeforeEach
   fun setUp() {
@@ -88,12 +90,14 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         0,
         dslContext.fetchCount(NOTIFICATIONS),
-        "Expected count of 0 notifications when none were created")
+        "Expected count of 0 notifications when none were created",
+    )
     store.create(notificationModel())
     assertEquals(
         1,
         dslContext.fetchCount(NOTIFICATIONS),
-        "Expected count of 1 notification after one was created ")
+        "Expected count of 1 notification after one was created ",
+    )
   }
 
   @Test
@@ -102,7 +106,10 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     val id = store.create(toCreate)
     val expected = toModel(toCreate, id)
     assertEquals(
-        expected, store.fetchById(id), "Notification fetched by id does not match what was created")
+        expected,
+        store.fetchById(id),
+        "Notification fetched by id does not match what was created",
+    )
   }
 
   @ParameterizedTest
@@ -118,7 +125,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         expected,
         store.fetchByOrganization(orgId).sortedBy { it.id },
-        "Listed organizations do not match what was created")
+        "Listed organizations do not match what was created",
+    )
   }
 
   @ParameterizedTest
@@ -147,9 +155,13 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     store.markAllRead(false, orgId)
 
     assertFalse(
-        store.fetchById(id1).isRead, "Notification id-1 is still read after marking as unread")
+        store.fetchById(id1).isRead,
+        "Notification id-1 is still read after marking as unread",
+    )
     assertFalse(
-        store.fetchById(id2).isRead, "Notification id-2 is still read after marking as unread")
+        store.fetchById(id2).isRead,
+        "Notification id-2 is still read after marking as unread",
+    )
   }
 
   @Test
@@ -168,7 +180,9 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     store.markRead(false, id)
 
     assertFalse(
-        store.fetchById(id).isRead, "Expected notification to be unread after marking as unread")
+        store.fetchById(id).isRead,
+        "Expected notification to be unread after marking as unread",
+    )
   }
 
   @Test
@@ -197,19 +211,24 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     forOrg = result.firstOrNull { r -> r.organizationId == organizationId }
     assertNotNull(
         forOrg,
-        "Did not find unread count for organization notifications after marking some as read")
+        "Did not find unread count for organization notifications after marking some as read",
+    )
     assertEquals(
         1,
         forOrg!!.unread,
-        "Unread count mismatch for organization notifications after marking some as read")
+        "Unread count mismatch for organization notifications after marking some as read",
+    )
 
     forGlobal = result.firstOrNull { r -> r.organizationId == null }
     assertNotNull(
-        forGlobal, "Did not find unread count for global notifications after marking some as read")
+        forGlobal,
+        "Did not find unread count for global notifications after marking some as read",
+    )
     assertEquals(
         2,
         forGlobal!!.unread,
-        "Unread count mismatch for global notifications after marking some as read")
+        "Unread count mismatch for global notifications after marking some as read",
+    )
   }
 
   @Test

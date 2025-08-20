@@ -29,30 +29,48 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           countries.asSingleValueSublist(
-              "country", PLANTING_SITE_SUMMARIES.COUNTRY_CODE.eq(COUNTRIES.CODE)),
+              "country",
+              PLANTING_SITE_SUMMARIES.COUNTRY_CODE.eq(COUNTRIES.CODE),
+          ),
           deliveries.asMultiValueSublist(
-              "deliveries", PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID)),
+              "deliveries",
+              PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID),
+          ),
           monitoringPlots.asMultiValueSublist(
               "exteriorPlots",
               PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull)),
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull),
+          ),
           monitoringPlots.asMultiValueSublist(
               "monitoringPlots",
               PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNotNull)),
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNotNull),
+          ),
           observations.asMultiValueSublist(
-              "observations", PLANTING_SITE_SUMMARIES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID)),
+              "observations",
+              PLANTING_SITE_SUMMARIES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID),
+          ),
           organizations.asSingleValueSublist(
-              "organization", PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              PLANTING_SITE_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           plantingSeasons.asMultiValueSublist(
-              "plantingSeasons", PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID)),
+              "plantingSeasons",
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID),
+          ),
           plantingZones.asMultiValueSublist(
-              "plantingZones", PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID)),
+              "plantingZones",
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID),
+          ),
           plantingSitePopulations.asMultiValueSublist(
               "populations",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)),
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID),
+          ),
           projects.asSingleValueSublist(
-              "project", PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
+              "project",
+              PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID),
+              isRequired = false,
+          ),
       )
     }
   }
@@ -75,8 +93,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
                   DSL.select(DSL.sum(PLANTING_SITE_POPULATIONS.TOTAL_PLANTS))
                       .from(PLANTING_SITE_POPULATIONS)
                       .where(
-                          PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
-                              PLANTING_SITE_SUMMARIES.ID)))),
+                          PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)
+                      )
+              ),
+          ),
       )
 
   override fun conditionForVisibility(): Condition {

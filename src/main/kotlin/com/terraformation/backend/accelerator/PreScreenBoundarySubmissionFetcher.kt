@@ -25,12 +25,15 @@ class PreScreenBoundarySubmissionFetcher(
     val submission =
         applicationStore
             .fetchApplicationDeliverables(
-                projectId = projectId, deliverableId = boundaryDeliverableId)
+                projectId = projectId,
+                deliverableId = boundaryDeliverableId,
+            )
             .firstOrNull()
 
     if (submission == null) {
       log.error(
-          "Submission not found for deliverable $boundaryDeliverableId and project $projectId")
+          "Submission not found for deliverable $boundaryDeliverableId and project $projectId"
+      )
     }
 
     return submission

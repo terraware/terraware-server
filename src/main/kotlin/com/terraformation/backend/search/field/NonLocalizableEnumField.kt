@@ -46,7 +46,9 @@ class NonLocalizableEnumField<E : Enum<E>, T : EnumFromReferenceTable<*, E>>(
     return DSL.or(
         listOfNotNull(
             if (enumInstances.isNotEmpty()) databaseField.`in`(enumInstances) else null,
-            if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+            if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+        )
+    )
   }
 
   /**

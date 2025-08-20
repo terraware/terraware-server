@@ -64,8 +64,10 @@ class LiveBalenaClient(
                 listOf(
                     filterTerm("device/belongs_to__application", fleetIds),
                     filterTerm("device/id", balenaId),
-                    filterTerm("tag_key", SENSOR_KIT_ID_TAG_KEY)),
-            select = listOf("value"))
+                    filterTerm("tag_key", SENSOR_KIT_ID_TAG_KEY),
+                ),
+            select = listOf("value"),
+        )
 
     return response.d.firstOrNull()?.value
   }
@@ -84,7 +86,8 @@ class LiveBalenaClient(
         sendRequest<ListDevicesResponse>(
             DEVICE_PATH,
             filter = listOf(combinedFilter, filterTerm("belongs_to__application", fleetIds)),
-            select = BalenaDevice.selectFields)
+            select = BalenaDevice.selectFields,
+        )
 
     return response.d
   }
@@ -104,7 +107,9 @@ class LiveBalenaClient(
 
     try {
       sendRequest<Unit>(
-          DEVICE_ENV_VAR_PATH, body = CreateDeviceEnvVarRequest(balenaId, name, value))
+          DEVICE_ENV_VAR_PATH,
+          body = CreateDeviceEnvVarRequest(balenaId, name, value),
+      )
 
       log.info("Created environment variable $name on Balena device $balenaId")
     } catch (e: BalenaRequestFailedException) {
@@ -124,7 +129,8 @@ class LiveBalenaClient(
     val response =
         sendRequest<GetDeviceEnvironmentVarValueResponse>(
             DEVICE_ENV_VAR_PATH,
-            filter = listOf(filterTerm("device", deviceId), filterTerm("name", name)))
+            filter = listOf(filterTerm("device", deviceId), filterTerm("name", name)),
+        )
 
     return response.d.getOrNull(0)?.value
   }
@@ -138,7 +144,8 @@ class LiveBalenaClient(
         sendRequest<GetDeviceEnvironmentVarIdResponse>(
             DEVICE_ENV_VAR_PATH,
             filter = listOf(filterTerm("device", deviceId), filterTerm("name", name)),
-            select = listOf("id"))
+            select = listOf("id"),
+        )
 
     return response.d.getOrNull(0)?.id
   }
@@ -152,7 +159,8 @@ class LiveBalenaClient(
     sendRequest<Unit>(
         "$DEVICE_ENV_VAR_PATH($varId)",
         method = HttpMethod.Patch,
-        body = UpdateDeviceEnvVarRequest(value))
+        body = UpdateDeviceEnvVarRequest(value),
+    )
 
     log.info("Updated environment variable $name on Balena device $deviceId")
   }
@@ -195,13 +203,14 @@ class LiveBalenaClient(
   private fun queryString(
       filter: List<String>? = null,
       expand: List<String>? = null,
-      select: List<String>? = null
+      select: List<String>? = null,
   ): String {
     val elements =
         listOfNotNull(
             filter?.joinToString("+and+", prefix = "\$filter="),
             expand?.joinToString(",", prefix = "\$expand="),
-            select?.joinToString(",", prefix = "\$select="))
+            select?.joinToString(",", prefix = "\$select="),
+        )
 
     return if (elements.isNotEmpty()) elements.joinToString("&", prefix = "?") else ""
   }
@@ -251,7 +260,7 @@ class LiveBalenaClient(
   data class CreateDeviceEnvVarRequest(
       val device: BalenaDeviceId,
       val name: String,
-      val value: String
+      val value: String,
   )
 
   data class UpdateDeviceEnvVarRequest(val value: String)

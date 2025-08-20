@@ -80,7 +80,8 @@ class AccessionNotFoundException(val accessionId: AccessionId) :
 
 class AccessionSpeciesHasDeliveriesException(val accessionId: AccessionId) :
     MismatchedStateException(
-        "Accession $accessionId has deliveries so its species cannot be changed")
+        "Accession $accessionId has deliveries so its species cannot be changed"
+    )
 
 class AutomationNotFoundException(val automationId: AutomationId) :
     EntityNotFoundException("Automation $automationId not found")
@@ -126,7 +127,7 @@ class InvalidTerraformationContactEmail(val email: String) :
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : IOException(message, cause)
 
 /** Keycloak couldn't find a user that we expected to be able to find. */
@@ -174,7 +175,8 @@ class ScientificNameExistsException(val name: String?) :
 
 class SeedFundReportAlreadySubmittedException(val reportId: SeedFundReportId) :
     MismatchedStateException(
-        "Seed Fund Report $reportId has already been submitted and cannot be modified")
+        "Seed Fund Report $reportId has already been submitted and cannot be modified"
+    )
 
 class SeedFundReportLockedException(val reportId: SeedFundReportId) :
     MismatchedStateException("Seed Fund Report $reportId is locked by another user")
@@ -218,7 +220,7 @@ class SubLocationNotFoundException(val subLocationId: SubLocationId) :
 class TimeseriesNotFoundException(
     val deviceId: DeviceId,
     val timeseriesName: String?,
-    message: String = "Timeseries $timeseriesName not found on device $deviceId"
+    message: String = "Timeseries $timeseriesName not found on device $deviceId",
 ) : EntityNotFoundException(message) {
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }

@@ -27,7 +27,12 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
 
     val firstPage =
         searchAccessions(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder, limit = 1)
+            facilityId,
+            fields,
+            criteria = NoConditionNode(),
+            sortOrder = sortOrder,
+            limit = 1,
+        )
     assertEquals(expectedFirstPageResults, firstPage.results)
     // We just care that we get a cursor, not what it is specifically
     assertNotNull(firstPage.cursor)
@@ -41,7 +46,9 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "2",
                     "active" to "Active",
-                )))
+                )
+            )
+        )
 
     val secondPage =
         searchAccessions(
@@ -50,7 +57,8 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
             criteria = NoConditionNode(),
             sortOrder = sortOrder,
             cursor = firstPage.cursor,
-            limit = 1)
+            limit = 1,
+        )
     assertEquals(expectedSecondPage, secondPage)
   }
 }

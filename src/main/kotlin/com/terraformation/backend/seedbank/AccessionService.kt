@@ -65,7 +65,7 @@ class AccessionService(
   fun updateWithdrawal(
       accessionId: AccessionId,
       withdrawalId: WithdrawalId,
-      modify: (WithdrawalModel) -> WithdrawalModel
+      modify: (WithdrawalModel) -> WithdrawalModel,
   ): AccessionModel {
     return updateAccession(accessionId) { it.updateWithdrawal(withdrawalId, modify) }
   }
@@ -98,10 +98,14 @@ class AccessionService(
       throw IllegalArgumentException("Cannot transfer from accession that has no species")
     }
 
-    if (parentStore.getOrganizationId(accession.facilityId!!) !=
-        parentStore.getOrganizationId(batch.facilityId)) {
+    if (
+        parentStore.getOrganizationId(accession.facilityId!!) !=
+            parentStore.getOrganizationId(batch.facilityId)
+    ) {
       throw CrossOrganizationNurseryTransferNotAllowedException(
-          accession.facilityId, batch.facilityId)
+          accession.facilityId,
+          batch.facilityId,
+      )
     }
 
     val totalSeeds =
@@ -118,7 +122,8 @@ class AccessionService(
         batch.copy(
             accessionId = accessionId,
             projectId = accession.projectId,
-            speciesId = accession.speciesId)
+            speciesId = accession.speciesId,
+        )
 
     return dslContext.transactionResult { _ ->
       val updatedBatch = batchStore.create(batchWithAccessionData)
@@ -149,14 +154,14 @@ class AccessionService(
   fun updateViabilityTest(
       accessionId: AccessionId,
       viabilityTestId: ViabilityTestId,
-      modify: (ViabilityTestModel) -> ViabilityTestModel
+      modify: (ViabilityTestModel) -> ViabilityTestModel,
   ): AccessionModel {
     return updateAccession(accessionId) { it.updateViabilityTest(viabilityTestId, modify) }
   }
 
   fun deleteViabilityTest(
       accessionId: AccessionId,
-      viabilityTestId: ViabilityTestId
+      viabilityTestId: ViabilityTestId,
   ): AccessionModel {
     return updateAccession(accessionId) { it.deleteViabilityTest(viabilityTestId) }
   }
@@ -185,7 +190,10 @@ class AccessionService(
     val query =
         searchService
             .buildQuery(
-                accessionsPrefix, listOf(accessionIdField), mapOf(accessionsPrefix to criteria))
+                accessionsPrefix,
+                listOf(accessionIdField),
+                mapOf(accessionsPrefix to criteria),
+            )
             .toSelectQuery() as Select<Record1<AccessionId?>>
 
     return accessionStore.getSummaryStatistics(query)
@@ -193,7 +201,7 @@ class AccessionService(
 
   private fun updateAccession(
       accessionId: AccessionId,
-      modify: (AccessionModel) -> AccessionModel
+      modify: (AccessionModel) -> AccessionModel,
   ): AccessionModel {
     requirePermissions { updateAccession(accessionId) }
 

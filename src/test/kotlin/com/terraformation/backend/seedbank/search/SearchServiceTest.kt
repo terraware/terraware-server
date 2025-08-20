@@ -106,7 +106,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = createdTime,
             modifiedTime = modifiedTime,
-            organizationId = organizationId)
+            organizationId = organizationId,
+        )
     speciesId2 =
         insertSpecies(
             scientificName = "Other Dogwood",
@@ -118,7 +119,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = createdTime,
             modifiedTime = modifiedTime,
-            organizationId = organizationId)
+            organizationId = organizationId,
+        )
     insertSpecies(
         scientificName = "Deleted species",
         initialScientificName = "Deleted species",
@@ -126,7 +128,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
         createdTime = now,
         modifiedTime = now,
         deletedTime = now,
-        organizationId = organizationId)
+        organizationId = organizationId,
+    )
 
     accessionId1 =
         insertAccession(
@@ -149,14 +152,17 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 totalWithdrawnWeightQuantity = BigDecimal(5),
                 totalWithdrawnWeightUnitsId = SeedQuantityUnits.Kilograms,
                 treesCollectedFrom = 1,
-            ))
+            )
+        )
     accessionId2 =
         insertAccession(
             AccessionsRow(
                 number = "ABCDEFG",
                 stateId = AccessionState.Processing,
                 speciesId = speciesId2,
-                treesCollectedFrom = 2))
+                treesCollectedFrom = 2,
+            )
+        )
 
     accessionCollectorsDao.insert(
         AccessionCollectorsRow(accessionId1, 0, "collector 1"),
@@ -188,6 +194,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
         mapOf(rootPrefix to fullCriteria) + sublistCriteria,
         sortOrder,
         cursor,
-        limit)
+        limit,
+    )
   }
 }

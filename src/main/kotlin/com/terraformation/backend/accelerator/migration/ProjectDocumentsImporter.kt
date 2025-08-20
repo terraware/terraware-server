@@ -50,7 +50,8 @@ class ProjectDocumentsImporter(
             val application =
                 applicationStore.fetchOneByInternalName(dealName)
                     ?: throw ImportError(
-                        "Deal $dealName has not been imported yet; import the project setup sheet first.")
+                        "Deal $dealName has not been imported yet; import the project setup sheet first."
+                    )
 
             if (!deliverableStore.deliverableIdExists(deliverableId)) {
               throw ImportError("Deliverable $deliverableId does not exist")

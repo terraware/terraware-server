@@ -67,7 +67,7 @@ class AdminReportsController(
   fun deleteReport(
       @RequestParam organizationId: OrganizationId,
       @RequestParam reportId: SeedFundReportId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { deleteSeedFundReport(reportId) }
 
@@ -86,7 +86,7 @@ class AdminReportsController(
   fun exportReport(
       @RequestParam organizationId: OrganizationId,
       @RequestParam reportId: SeedFundReportId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { createSeedFundReport(organizationId) }
 

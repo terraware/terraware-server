@@ -191,7 +191,9 @@ internal class AccessionModelValidationRulesTest : AccessionModelTest() {
           viabilityTest(
               seedsTested = 1,
               substrate = ViabilityTestSubstrate.Paper,
-              testType = ViabilityTestType.Nursery))
+              testType = ViabilityTestType.Nursery,
+          )
+      )
     }
   }
 }

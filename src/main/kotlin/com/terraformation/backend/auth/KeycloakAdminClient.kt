@@ -23,7 +23,7 @@ interface KeycloakAdminClient {
       clientId: String,
       redirectUri: String,
       lifespan: Int,
-      actions: List<String>
+      actions: List<String>,
   )
 
   fun removeCredential(keycloakId: String, credentialId: String)

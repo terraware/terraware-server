@@ -66,7 +66,8 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     CohortPhase.Phase1FeasibilityStudy to VoteOption.No,
                 ),
         ),
-        service.fetchOneById(inserted.projectId))
+        service.fetchOneById(inserted.projectId),
+    )
 
     val otherProjectId = insertProject()
     assertThrows<AcceleratorProjectNotFoundException> { service.fetchOneById(otherProjectId) }
@@ -90,8 +91,10 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                         CohortPhase.Phase0DueDiligence to VoteOption.Yes,
                         CohortPhase.Phase1FeasibilityStudy to VoteOption.No,
                     ),
-            )),
-        service.listAcceleratorProjects())
+            )
+        ),
+        service.listAcceleratorProjects(),
+    )
   }
 
   @Test

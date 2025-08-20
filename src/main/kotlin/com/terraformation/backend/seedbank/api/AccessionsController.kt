@@ -70,13 +70,15 @@ class AccessionsController(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
     description =
-        "Represents a quantity of seeds, measured either in individual seeds or by weight.")
+        "Represents a quantity of seeds, measured either in individual seeds or by weight."
+)
 data class SeedQuantityPayload(
     @Schema(
         description =
             "Number of units of seeds. If \"units\" is \"Seeds\", this is the number of seeds " +
                 "and must be an integer. Otherwise it is a measurement in the weight units " +
-                "specified in the \"units\" field, and may have a fractional part.")
+                "specified in the \"units\" field, and may have a fractional part."
+    )
     @PositiveOrZero
     val quantity: BigDecimal,
     val units: SeedQuantityUnits,
@@ -85,8 +87,9 @@ data class SeedQuantityPayload(
             "If this quantity is a weight measurement, the weight in grams. This is not set if " +
                 "the \"units\" field is \"Seeds\". This is always calculated on the server side " +
                 "and is ignored on input.",
-        readOnly = true)
-    val grams: BigDecimal? = null
+        readOnly = true,
+    )
+    val grams: BigDecimal? = null,
 ) {
   constructor(model: SeedQuantityModel) : this(model.quantity, model.units, model.grams)
 
@@ -100,7 +103,7 @@ data class ViabilityTestResultPayload(
     @JsonProperty(
         required = true,
     )
-    val seedsGerminated: Int
+    val seedsGerminated: Int,
 ) {
   constructor(model: ViabilityTestResultModel) : this(model.recordingDate, model.seedsGerminated)
 
@@ -112,7 +115,8 @@ data class AccessionHistoryEntryPayload(
     val date: LocalDate,
     @Schema(
         description = "Human-readable description of the event. Does not include date or userName.",
-        example = "updated the status to Drying")
+        example = "updated the status to Drying",
+    )
     val description: String,
     @Schema(description = "Full name of the person responsible for the event, if known.")
     val fullName: String?,
@@ -128,6 +132,7 @@ data class AccessionHistoryEntryPayload(
 data class GetAccessionHistoryResponsePayload(
     @ArraySchema(
         arraySchema =
-            Schema(description = "History of changes in descending time order (newest first.)"))
+            Schema(description = "History of changes in descending time order (newest first.)")
+    )
     val history: List<AccessionHistoryEntryPayload>
 ) : SuccessResponsePayload

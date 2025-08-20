@@ -41,12 +41,12 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     fun `fails when document template does not exist`() {
       val payload =
           """
-            {
-              "documentTemplateId": 12345,
-              "name": "Test",
-              "ownedBy": ${inserted.userId},
-              "projectId": ${inserted.projectId}
-            }"""
+          {
+            "documentTemplateId": 12345,
+            "name": "Test",
+            "ownedBy": ${inserted.userId},
+            "projectId": ${inserted.projectId}
+          }"""
               .trimIndent()
 
       mockMvc.post(path) { content = payload }.andExpect { status { isBadRequest() } }
@@ -56,12 +56,12 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     fun `creates new document`() {
       val payload =
           """
-            {
-              "documentTemplateId": ${inserted.documentTemplateId},
-              "name": "Test document",
-              "ownedBy": ${inserted.userId},
-              "projectId": ${inserted.projectId}
-            }"""
+          {
+            "documentTemplateId": ${inserted.documentTemplateId},
+            "name": "Test document",
+            "ownedBy": ${inserted.userId},
+            "projectId": ${inserted.projectId}
+          }"""
               .trimIndent()
 
       mockMvc
@@ -103,12 +103,12 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       val payload =
           """
-            {
-              "documentTemplateId": ${inserted.documentTemplateId},
-              "name": "Test document",
-              "ownedBy": ${inserted.userId},
-              "projectId": ${inserted.projectId}
-            }"""
+          {
+            "documentTemplateId": ${inserted.documentTemplateId},
+            "name": "Test document",
+            "ownedBy": ${inserted.userId},
+            "projectId": ${inserted.projectId}
+          }"""
               .trimIndent()
 
       mockMvc.post(path) { content = payload }.andExpect { status { isOk() } }
@@ -118,7 +118,10 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       assertEquals(2, values.size, "Should have copied both default value entries")
       assertEquals("Some text", values[0].textValue, "Should have copied text value")
       assertEquals(
-          textVariableId, values[1].usedVariableId, "Should have copied variable reference")
+          textVariableId,
+          values[1].usedVariableId,
+          "Should have copied variable reference",
+      )
     }
   }
 
@@ -180,7 +183,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     }
                   ]
                 }"""
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
 
     @Test
@@ -210,7 +214,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     }
                   ]
                 }"""
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
   }
 
@@ -242,7 +247,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     "variableManifestId": ${inserted.variableManifestId}
                   }
                 }"""
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
   }
 
@@ -252,11 +258,11 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     fun `returns not found error for nonexistent document`() {
       val payload =
           """
-            {
-              "name": "Test Test document",
-              "ownedBy": ${inserted.userId},
-              "status": "Draft"
-            }"""
+          {
+            "name": "Test Test document",
+            "ownedBy": ${inserted.userId},
+            "status": "Draft"
+          }"""
               .trimIndent()
 
       mockMvc.put("$path/1") { content = payload }.andExpect { status { isNotFound() } }
@@ -284,11 +290,11 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       val payload =
           """
-            {
-              "name": "Test Test document",
-              "ownedBy": ${inserted.userId},
-              "status": "Submitted"
-            }"""
+          {
+            "name": "Test Test document",
+            "ownedBy": ${inserted.userId},
+            "status": "Submitted"
+          }"""
               .trimIndent()
 
       mockMvc.put("$path/$documentId") { content = payload }.andExpect { status { isOk() } }
@@ -333,7 +339,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   },
                   "status": "ok"
                 }"""
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
 
     @Test
@@ -385,7 +392,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -480,7 +488,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                 projectId = inserted.projectId,
                 variableId = variableId,
                 createdBy = userId,
-                createdTime = instant)
+                createdTime = instant,
+            )
         return instant
       }
 
@@ -501,7 +510,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
               day1MaxValueId,
               name = "Saved 1",
               createdBy = userId1,
-              createdTime = day1SavedVersionTimestamp)
+              createdTime = day1SavedVersionTimestamp,
+          )
       val day1User2Timestamp2 = insertNextValue(Duration.ofMinutes(1), userId2)
 
       // 2023-01-02: two edits by user 2. Should collapse to one history entry.
@@ -517,7 +527,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
               day3MaxValueId,
               name = "Saved 2",
               createdBy = userId1,
-              createdTime = day3SavedVersionTimestamp1)
+              createdTime = day3SavedVersionTimestamp1,
+          )
 
       val variableManifestId2 = insertVariableManifest()
 
@@ -530,7 +541,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
               createdBy = userId1,
               createdTime = day3SavedVersionTimestamp2,
               isSubmitted = true,
-              variableManifestId = variableManifestId2)
+              variableManifestId = variableManifestId2,
+          )
 
       // 2023-01-04: two edits by user 1, two edits by user 2, two edits by user 1. Should collapse
       // to two history entries, one for each user.
@@ -615,7 +627,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   ],
                   "status": "ok"
                 }"""
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
 
     @Test
@@ -643,7 +656,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       assertEquals(
           newManifestId,
           documentsDao.fetchOneById(inserted.documentId)?.variableManifestId,
-          "Manifest ID")
+          "Manifest ID",
+      )
     }
 
     // This just tests that the controller calls the code that inserts the needed values; the
@@ -656,8 +670,10 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val newVariableId =
           insertVariableManifestEntry(
               insertTextVariable(
-                  insertVariable(type = VariableType.Text, replacesVariableId = oldVariableId)),
-              manifestId = newManifestId)
+                  insertVariable(type = VariableType.Text, replacesVariableId = oldVariableId)
+              ),
+              manifestId = newManifestId,
+          )
       insertValue(variableId = oldVariableId, numberValue = BigDecimal.ONE, citation = "citation")
 
       mockMvc.post(path()) { content = payload(newManifestId) }.andExpect { status { isOk() } }
@@ -665,7 +681,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       assertEquals(
           newManifestId,
           documentsDao.fetchOneById(inserted.documentId)?.variableManifestId,
-          "Manifest ID")
+          "Manifest ID",
+      )
 
       assertEquals(
           listOf(
@@ -679,9 +696,11 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   textValue = "1",
                   variableId = newVariableId,
                   variableTypeId = VariableType.Text,
-              )),
+              )
+          ),
           variableValuesDao.fetchByVariableId(newVariableId).map { it.copy(id = null) },
-          "Should have inserted new value")
+          "Should have inserted new value",
+      )
     }
 
     @Test
@@ -708,7 +727,9 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val otherDocumentTemplateManifestId =
           insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
       insertVariableManifestEntry(
-          insertTextVariable(), manifestId = otherDocumentTemplateManifestId)
+          insertTextVariable(),
+          manifestId = otherDocumentTemplateManifestId,
+      )
 
       mockMvc
           .post(path()) { content = payload(otherDocumentTemplateManifestId) }

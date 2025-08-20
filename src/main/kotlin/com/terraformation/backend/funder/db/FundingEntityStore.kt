@@ -76,7 +76,8 @@ class FundingEntityStore(
                             projectId = record[FUNDING_ENTITY_PROJECTS.PROJECT_ID]!!,
                             dealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME].orEmpty(),
                         )
-                      })
+                      },
+          )
         }
   }
 }

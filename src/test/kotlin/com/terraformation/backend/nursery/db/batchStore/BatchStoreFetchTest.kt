@@ -48,13 +48,15 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 1,
         activeGrowthQuantityWithdrawn = 2,
         readyQuantityWithdrawn = 4,
-        hardeningOffQuantityWithdrawn = 8)
+        hardeningOffQuantityWithdrawn = 8,
+    )
     insertNurseryWithdrawal()
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 8,
         activeGrowthQuantityWithdrawn = 16,
         readyQuantityWithdrawn = 32,
-        hardeningOffQuantityWithdrawn = 64)
+        hardeningOffQuantityWithdrawn = 64,
+    )
 
     val expected =
         ExistingBatchModel(

@@ -18,7 +18,8 @@ fun Project.computeGitVersion(baseVersion: String?): String {
       listOfNotNull(
           baseVersion,
           repo.newObjectReader().abbreviate(head.objectId).name(),
-          if (clean) null else "SNAPSHOT")
+          if (clean) null else "SNAPSHOT",
+      )
 
   return versionParts.joinToString("-")
 }

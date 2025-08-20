@@ -38,7 +38,10 @@ class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
       expected.forEach { insertUserInternalInterest(it) }
 
       assertEquals(
-          expected, store.fetchForUser(targetUserId), "Should be accessible via fetch method")
+          expected,
+          store.fetchForUser(targetUserId),
+          "Should be accessible via fetch method",
+      )
     }
 
     @Test
@@ -65,16 +68,19 @@ class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
 
       store.updateForUser(
           targetUserId,
-          setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles))
+          setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles),
+      )
 
       assertEquals(
           setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles),
           store.fetchForUser(targetUserId),
-          "Should have updated categories of target user")
+          "Should have updated categories of target user",
+      )
       assertEquals(
           setOf(InternalInterest.CarbonEligibility),
           store.fetchForUser(otherUserId),
-          "Should not have updated categories of other user")
+          "Should not have updated categories of other user",
+      )
     }
 
     @Test

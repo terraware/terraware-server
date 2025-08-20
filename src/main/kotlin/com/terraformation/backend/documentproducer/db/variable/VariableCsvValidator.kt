@@ -80,7 +80,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
       listOf(
           this::validateRow,
           this::validateDependencyConfiguration,
-          this::validateDependencyVariableStableId)
+          this::validateDependencyVariableStableId,
+      )
 
   override fun getColumnName(position: Int): String {
     return messages.variablesCsvColumnName(position)
@@ -97,7 +98,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
       addError(
           messages.variablesCsvColumnName(columnIndex),
           value,
-          messages.variablesCsvDependencyVariableStableIdDoesNotExist())
+          messages.variablesCsvDependencyVariableStableIdDoesNotExist(),
+      )
     }
 
     // A variable can not depend on itself
@@ -106,7 +108,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
       addError(
           messages.variablesCsvColumnName(columnIndex),
           value,
-          messages.variablesCsvDependsOnItself())
+          messages.variablesCsvDependsOnItself(),
+      )
     }
   }
 
@@ -119,7 +122,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
         listOf(
             VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID,
             VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION,
-            VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE)
+            VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE,
+        )
     val missingColumns = columns.filter { values[it] == null }
 
     if (missingColumns.isNotEmpty() && missingColumns.size != columns.size) {
@@ -190,7 +194,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
       addError(
           messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
           name,
-          messages.variablesCsvVariableParentDoesNotExist())
+          messages.variablesCsvVariableParentDoesNotExist(),
+      )
       return
     }
 
@@ -253,7 +258,8 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
         addError(
             messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
             parent,
-            messages.variablesCsvWrongDataTypeForChild())
+            messages.variablesCsvWrongDataTypeForChild(),
+        )
       }
     }
   }

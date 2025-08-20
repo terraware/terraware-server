@@ -48,5 +48,6 @@ data class NotificationModel(
               ?: throw IllegalArgumentException("Created time is required"),
       isRead =
           record[NOTIFICATIONS.IS_READ]
-              ?: throw IllegalArgumentException("Notification read is required"))
+              ?: throw IllegalArgumentException("Notification read is required"),
+  )
 }

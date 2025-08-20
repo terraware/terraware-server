@@ -53,8 +53,10 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          participantsDao.findAll())
+              )
+          ),
+          participantsDao.findAll(),
+      )
     }
 
     @Test
@@ -77,8 +79,10 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
                   name = "test",
-              )),
-          participantsDao.findAll())
+              )
+          ),
+          participantsDao.findAll(),
+      )
 
       eventPublisher.assertEventPublished(CohortParticipantAddedEvent(cohortId, model.id))
     }
@@ -103,7 +107,8 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(participantIdToKeep),
           participantsDao.findAll().map { it.id },
-          "Participant IDs after delete")
+          "Participant IDs after delete",
+      )
     }
 
     @Test
@@ -154,7 +159,8 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
               name = "Test Name",
               projectIds = setOf(projectId1, projectId2),
           ),
-          store.fetchOneById(participantId))
+          store.fetchOneById(participantId),
+      )
     }
 
     @Test
@@ -178,7 +184,10 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadParticipant(invisibleParticipantId) } returns false
 
       assertEquals(
-          listOf(participantId1, participantId2), store.findAll().map { it.id }, "Participant IDs")
+          listOf(participantId1, participantId2),
+          store.findAll().map { it.id },
+          "Participant IDs",
+      )
     }
   }
 
@@ -206,7 +215,8 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
               name = "New Name",
           ),
-          participantsDao.fetchOneById(participantId))
+          participantsDao.fetchOneById(participantId),
+      )
 
       eventPublisher.assertEventPublished(CohortParticipantAddedEvent(cohortId, participantId))
     }

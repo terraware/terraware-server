@@ -46,7 +46,8 @@ class SupportService(
             messages.supportRequestTypeName(requestType),
             response.issueKey,
             summary,
-            description),
+            description,
+        ),
         false,
     )
 
@@ -65,7 +66,8 @@ class SupportService(
     sizedInputStream.contentType?.let {
       if (!isContentTypeSupported(it)) {
         throw NotSupportedException(
-            "$it is not a supported content type. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+            "$it is not a supported content type. Must be one of $SUPPORTED_CONTENT_TYPES_STRING"
+        )
       }
     }
 
@@ -75,7 +77,8 @@ class SupportService(
       val tikaContentType = MediaType.parseMediaType(Tika().detect(sizedInputStream))
       if (!isContentTypeSupported(tikaContentType)) {
         throw NotSupportedException(
-            "File detected to be $tikaContentType, which is not supported. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+            "File detected to be $tikaContentType, which is not supported. Must be one of $SUPPORTED_CONTENT_TYPES_STRING"
+        )
       }
       sizedInputStream.reset()
     }

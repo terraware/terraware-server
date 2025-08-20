@@ -25,11 +25,15 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     assertNotEquals(
         accessionInMainFacility.accessionNumber,
         accessionInOtherFacility.accessionNumber,
-        "Accession number")
+        "Accession number",
+    )
 
     assertEquals(accessionInMainFacility.facilityId, facilityId, "Accession in main facility")
     assertEquals(
-        accessionInOtherFacility.facilityId, otherFacilityId, "Accession in other facility")
+        accessionInOtherFacility.facilityId,
+        otherFacilityId,
+        "Accession in other facility",
+    )
   }
 
   @Test
@@ -43,7 +47,10 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
     val afterUpdate = store.fetchOneById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
     assertEquals(
-        afterUpdate.facilityId, anotherFacilityId, "Update should have updated facility id")
+        afterUpdate.facilityId,
+        anotherFacilityId,
+        "Update should have updated facility id",
+    )
   }
 
   @Test

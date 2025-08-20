@@ -46,7 +46,8 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   @BeforeEach
@@ -74,14 +75,18 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
             boundary = siteBoundary1,
             createdTime = Instant.ofEpochSecond(1000),
             gridOrigin = gridOrigin,
-            name = "Site 1")
+            name = "Site 1",
+        )
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
     val plantingZoneId1 =
         insertPlantingZone(areaHa = BigDecimal(100), boundary = zoneBoundary1, name = "Zone 1")
     val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
     val plantingSubzoneId1 =
         insertPlantingSubzone(
-            areaHa = BigDecimal(70), boundary = subzoneBoundary1, name = "Subzone 1")
+            areaHa = BigDecimal(70),
+            boundary = subzoneBoundary1,
+            name = "Subzone 1",
+        )
     val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
@@ -89,23 +94,32 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
     // A second set of history records for the same site.
     val plantingSiteHistoryId2 =
         insertPlantingSiteHistory(
-            areaHa = null, boundary = siteBoundary2, createdTime = Instant.ofEpochSecond(2000))
+            areaHa = null,
+            boundary = siteBoundary2,
+            createdTime = Instant.ofEpochSecond(2000),
+        )
     val plantingZoneHistoryId2 =
         insertPlantingZoneHistory(areaHa = BigDecimal(150), boundary = zoneBoundary2)
     val subzoneHistoryId2 =
         insertPlantingSubzoneHistory(
             areaHa = BigDecimal(120),
             boundary = subzoneBoundary2,
-            plantingSubzoneId = plantingSubzoneId1)
+            plantingSubzoneId = plantingSubzoneId1,
+        )
     val monitoringPlotHistoryId2 =
         insertMonitoringPlotHistory(
-            plantingSubzoneId = plantingSubzoneId1, monitoringPlotId = monitoringPlotId1)
+            plantingSubzoneId = plantingSubzoneId1,
+            monitoringPlotId = monitoringPlotId1,
+        )
 
     // A subzone that was deleted after a monitoring plot was added to it, in the second set of
     // history records
     val deletedSubzoneId =
         insertPlantingSubzone(
-            areaHa = BigDecimal(180), boundary = deletedSubzoneBoundary, name = "Subzone 2")
+            areaHa = BigDecimal(180),
+            boundary = deletedSubzoneBoundary,
+            name = "Subzone 2",
+        )
     val deletedSubzoneHistoryId = inserted.plantingSubzoneHistoryId
     val deletedMonitoringPlotId = insertMonitoringPlot(boundary = deletedMonitoringPlotBoundary)
     val deletedMonitoringPlotHistoryId = inserted.monitoringPlotHistoryId
@@ -175,7 +189,8 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                                                     monitoringPlotId = deletedMonitoringPlotId,
                                                     sizeMeters = MONITORING_PLOT_SIZE_INT,
                                                 ),
-                                            )),
+                                            ),
+                                    ),
                                 ),
                         ),
                     ),
@@ -217,7 +232,8 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
                                                     sizeMeters = MONITORING_PLOT_SIZE_INT,
                                                 ),
                                             ),
-                                    )),
+                                    )
+                                ),
                         ),
                     ),
             ),

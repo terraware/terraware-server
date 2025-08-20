@@ -63,7 +63,7 @@ class OrganizationStore(
 
   fun fetchOneById(
       organizationId: OrganizationId,
-      depth: FetchDepth = FetchDepth.Organization
+      depth: FetchDepth = FetchDepth.Organization,
   ): OrganizationModel {
     requirePermissions { readOrganization(organizationId) }
 
@@ -78,7 +78,8 @@ class OrganizationStore(
         DSL.multiset(
                 DSL.select(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID)
                     .from(ORGANIZATION_INTERNAL_TAGS)
-                    .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+                    .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+            )
             .convertFrom { result ->
               result.map { it[ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.asNonNullable()] }
             }
@@ -99,7 +100,8 @@ class OrganizationStore(
                   DSL.selectFrom(FACILITIES)
                       .where(FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                       .and(facilitiesCondition)
-                      .orderBy(FACILITIES.ID))
+                      .orderBy(FACILITIES.ID)
+              )
               .convertFrom { result -> result.map { FacilityModel(it) } }
         } else {
           DSL.value(null as List<FacilityModel>?)
@@ -109,11 +111,16 @@ class OrganizationStore(
         DSL.field(
             DSL.selectCount()
                 .from(ORGANIZATION_USERS)
-                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+        )
 
     return dslContext
         .select(
-            ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
+            ORGANIZATIONS.asterisk(),
+            facilitiesMultiset,
+            internalTagsMultiset,
+            totalUsersSubquery,
+        )
         .from(ORGANIZATIONS)
         .where(listOfNotNull(condition))
         .orderBy(ORGANIZATIONS.ID)
@@ -208,7 +215,8 @@ class OrganizationStore(
 
     if (existingRow?.timeZone != row.timeZone) {
       publisher.publishEvent(
-          OrganizationTimeZoneChangedEvent(organizationId, existingRow?.timeZone, row.timeZone))
+          OrganizationTimeZoneChangedEvent(organizationId, existingRow?.timeZone, row.timeZone)
+      )
     }
   }
 
@@ -250,7 +258,8 @@ class OrganizationStore(
 
     return queryOrganizationUsers(
         ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
-            .and(USERS.USER_TYPE_ID.eq(UserType.Individual)))
+            .and(USERS.USER_TYPE_ID.eq(UserType.Individual))
+    )
   }
 
   fun fetchUser(organizationId: OrganizationId, userId: UserId): OrganizationUserModel {
@@ -258,7 +267,8 @@ class OrganizationStore(
 
     return queryOrganizationUsers(
             ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
-                .and(ORGANIZATION_USERS.USER_ID.eq(userId)))
+                .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+        )
         .firstOrNull() ?: throw UserNotFoundException(userId)
   }
 
@@ -302,12 +312,14 @@ class OrganizationStore(
           val lastName = record[USERS.LAST_NAME]
           val role = record[ORGANIZATION_USERS.ROLE_ID]
 
-          if (userId != null &&
-              organizationId != null &&
-              userType != null &&
-              createdTime != null &&
-              email != null &&
-              role != null) {
+          if (
+              userId != null &&
+                  organizationId != null &&
+                  userType != null &&
+                  createdTime != null &&
+                  email != null &&
+                  role != null
+          ) {
             OrganizationUserModel(
                 userId,
                 email,
@@ -354,7 +366,9 @@ class OrganizationStore(
                 ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId),
                 USERS.USER_TYPE_ID.eq(UserType.Individual),
                 optInCondition,
-                roleCondition))
+                roleCondition,
+            )
+        )
         .fetch(USERS.EMAIL.asNonNullable())
   }
 
@@ -473,8 +487,10 @@ class OrganizationStore(
     val isTerraformationContact = role == Role.TerraformationContact
 
     requirePermissions {
-      if (getUserRole(organizationId, userId) == Role.TerraformationContact &&
-          !isTerraformationContact) {
+      if (
+          getUserRole(organizationId, userId) == Role.TerraformationContact &&
+              !isTerraformationContact
+      ) {
         removeTerraformationContact(organizationId)
       } else if (isTerraformationContact) {
         addTerraformationContact(organizationId)
@@ -583,12 +599,14 @@ class OrganizationStore(
         throw IllegalArgumentException("Country code must be 2 characters long")
       }
 
-      if (dslContext
-          .selectOne()
-          .from(COUNTRIES)
-          .where(COUNTRIES.CODE.eq(countryCode.uppercase()))
-          .fetch()
-          .isEmpty()) {
+      if (
+          dslContext
+              .selectOne()
+              .from(COUNTRIES)
+              .where(COUNTRIES.CODE.eq(countryCode.uppercase()))
+              .fetch()
+              .isEmpty()
+      ) {
         throw IllegalArgumentException("Country code not recognized")
       }
     }
@@ -603,15 +621,18 @@ class OrganizationStore(
 
       if (countrySubdivisionCode.length < 4 || countrySubdivisionCode.length > 6) {
         throw IllegalArgumentException(
-            "Country subdivision code must be between 4 and 6 characters")
+            "Country subdivision code must be between 4 and 6 characters"
+        )
       }
 
-      if (dslContext
-          .selectOne()
-          .from(COUNTRY_SUBDIVISIONS)
-          .where(COUNTRY_SUBDIVISIONS.CODE.eq(countrySubdivisionCode.uppercase()))
-          .fetch()
-          .isEmpty()) {
+      if (
+          dslContext
+              .selectOne()
+              .from(COUNTRY_SUBDIVISIONS)
+              .where(COUNTRY_SUBDIVISIONS.CODE.eq(countrySubdivisionCode.uppercase()))
+              .fetch()
+              .isEmpty()
+      ) {
         throw IllegalArgumentException("Country subdivision code not recognized")
       }
     }
@@ -623,15 +644,17 @@ class OrganizationStore(
    */
   private fun validateOrganizationType(
       organizationType: OrganizationType?,
-      organizationTypeDetails: String?
+      organizationTypeDetails: String?,
   ) {
     if (organizationTypeDetails.isNullOrBlank() && OrganizationType.Other == organizationType) {
       throw IllegalArgumentException(
-          "Organization details not provided for organization type 'Other'")
+          "Organization details not provided for organization type 'Other'"
+      )
     }
     if (!organizationTypeDetails.isNullOrBlank() && OrganizationType.Other != organizationType) {
       throw IllegalArgumentException(
-          "Organization details provided for organization type that is not 'Other'")
+          "Organization details provided for organization type that is not 'Other'"
+      )
     }
   }
 
@@ -656,6 +679,6 @@ class OrganizationStore(
 
   enum class FetchDepth(val level: Int) {
     Organization(1),
-    Facility(2)
+    Facility(2),
   }
 }

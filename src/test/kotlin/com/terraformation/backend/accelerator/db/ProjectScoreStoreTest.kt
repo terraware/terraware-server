@@ -52,11 +52,13 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           category = ScoreCategory.Legal,
           qualitative = "q1",
           score = 1,
-          createdTime = time1)
+          createdTime = time1,
+      )
       insertProjectScore(
           phase = CohortPhase.Phase1FeasibilityStudy,
           category = ScoreCategory.Carbon,
-          createdTime = time2)
+          createdTime = time2,
+      )
 
       insertProject()
 
@@ -64,14 +66,16 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           phase = CohortPhase.Phase0DueDiligence,
           category = ScoreCategory.SocialImpact,
           score = -1,
-          createdTime = time3)
+          createdTime = time3,
+      )
 
       val expected =
           mapOf(
               CohortPhase.Phase0DueDiligence to
                   listOf(ExistingProjectScoreModel(ScoreCategory.Legal, time1, "q1", 1)),
               CohortPhase.Phase1FeasibilityStudy to
-                  listOf(ExistingProjectScoreModel(ScoreCategory.Carbon, time2, null, null)))
+                  listOf(ExistingProjectScoreModel(ScoreCategory.Carbon, time2, null, null)),
+          )
 
       val actual = store.fetchScores(projectId)
 
@@ -92,21 +96,25 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           category = ScoreCategory.Legal,
           qualitative = "q1",
           score = 1,
-          createdTime = time1)
+          createdTime = time1,
+      )
       insertProjectScore(
           phase = CohortPhase.Phase0DueDiligence,
           category = ScoreCategory.Carbon,
           score = 2,
-          createdTime = time2)
+          createdTime = time2,
+      )
       insertProjectScore(
           phase = CohortPhase.Phase1FeasibilityStudy,
           category = ScoreCategory.Carbon,
-          createdTime = time3)
+          createdTime = time3,
+      )
       insertProjectScore(
           phase = CohortPhase.Phase2PlanAndScale,
           category = ScoreCategory.Carbon,
           score = -1,
-          createdTime = time4)
+          createdTime = time4,
+      )
 
       val expected =
           mapOf(
@@ -118,7 +126,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
               CohortPhase.Phase1FeasibilityStudy to
                   listOf(
                       ExistingProjectScoreModel(ScoreCategory.Carbon, time3, null, null),
-                  ))
+                  ),
+          )
 
       val actual =
           store.fetchScores(
@@ -126,7 +135,9 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
               setOf(
                   CohortPhase.Phase0DueDiligence,
                   CohortPhase.Phase1FeasibilityStudy,
-                  CohortPhase.Phase3ImplementAndMonitor))
+                  CohortPhase.Phase3ImplementAndMonitor,
+              ),
+          )
 
       assertEquals(expected, actual)
     }
@@ -155,7 +166,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               NewProjectScoreModel(ScoreCategory.Carbon, null, "q1", 1),
               NewProjectScoreModel(ScoreCategory.Legal, null, null, null),
-          ))
+          ),
+      )
 
       val commonRow =
           ProjectScoresRow(
@@ -193,7 +205,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           phase = CohortPhase.Phase0DueDiligence,
           category = ScoreCategory.Forestry,
           qualitative = "q",
-          score = 1)
+          score = 1,
+      )
 
       clock.instant = Instant.ofEpochSecond(123)
 
@@ -203,7 +216,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               NewProjectScoreModel(ScoreCategory.Legal, null, "q1", 1),
               NewProjectScoreModel(ScoreCategory.Forestry, null, null, null),
-          ))
+          ),
+      )
 
       val commonRow =
           ProjectScoresRow(
@@ -242,7 +256,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
         store.updateScores(
             projectId,
             CohortPhase.Phase0DueDiligence,
-            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)))
+            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
+        )
       }
     }
 
@@ -254,7 +269,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
         store.updateScores(
             projectId,
             CohortPhase.Phase0DueDiligence,
-            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)))
+            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
+        )
       }
     }
 
@@ -266,7 +282,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
         store.updateScores(
             projectId,
             CohortPhase.Phase1FeasibilityStudy,
-            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)))
+            listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
+        )
       }
     }
   }

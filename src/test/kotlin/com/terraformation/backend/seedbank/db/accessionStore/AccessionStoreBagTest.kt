@@ -24,7 +24,10 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
     val initialBags = bagsDao.fetchByAccessionId(accessionId)
 
     assertEquals(
-        setOf("bag 1", "bag 2"), initialBags.map { it.bagNumber }.toSet(), "Initial bag numbers")
+        setOf("bag 1", "bag 2"),
+        initialBags.map { it.bagNumber }.toSet(),
+        "Initial bag numbers",
+    )
 
     val bag1Id = initialBags.first { it.bagNumber == "bag 1" }.id!!
     val bag2Id = initialBags.first { it.bagNumber == "bag 2" }.id!!
@@ -39,10 +42,14 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
     assertNotEquals(bag1Id, bag3Id, "Should not have reused bag 1 ID")
     assertNotEquals(bag2Id, bag3Id, "Should not have reused bag 2 ID")
     assertEquals(
-        emptyList<Any>(), updatedBags.filter { it.bagNumber == "bag 1" }, "Missing bag not deleted")
+        emptyList<Any>(),
+        updatedBags.filter { it.bagNumber == "bag 1" },
+        "Missing bag not deleted",
+    )
     assertEquals(
         initialBags.filter { it.bagNumber == "bag 2" },
         updatedBags.filter { it.bagNumber == "bag 2" },
-        "Existing bag is not replaced")
+        "Existing bag is not replaced",
+    )
   }
 }

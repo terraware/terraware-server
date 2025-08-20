@@ -42,9 +42,10 @@ abstract class SingleColumnSearchField<T : Any> : SearchField {
                 databaseField.likeIgnoreCase(it), // Exact match with phrase
                 databaseField.likeIgnoreCase("% $it %"), // phrase in the middle
                 databaseField.likeIgnoreCase("$it %"), // phrase as a prefix
-                databaseField.likeIgnoreCase("% $it") // phrase as a suffix
-                )
-          })
+                databaseField.likeIgnoreCase("% $it"), // phrase as a suffix
+            )
+          }
+      )
 
   /**
    * Returns a Condition for a range query on a field with a data type that is compatible with the

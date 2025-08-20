@@ -29,7 +29,9 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val fetcher: PreScreenBoundarySubmissionFetcher by lazy {
     PreScreenBoundarySubmissionFetcher(
-        ApplicationStore(clock, countriesDao, mockk(), dslContext, mockk(), mockk()), deliverableId)
+        ApplicationStore(clock, countriesDao, mockk(), dslContext, mockk(), mockk()),
+        deliverableId,
+    )
   }
 
   private lateinit var deliverableId: DeliverableId
@@ -97,7 +99,8 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
             deliverableId = deliverableId,
             modifiedTime = clock.instant,
             projectId = inserted.projectId,
-            submissionStatus = SubmissionStatus.Completed)
+            submissionStatus = SubmissionStatus.Completed,
+        )
     val documentId1 = insertSubmissionDocument()
     val documentId2 = insertSubmissionDocument()
 

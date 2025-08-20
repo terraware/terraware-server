@@ -44,7 +44,9 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             plantingSeasonsDao,
             plantingSitesDao,
             plantingSubzonesDao,
-            plantingZonesDao))
+            plantingZonesDao,
+        )
+    )
   }
 
   private val resourcesDir = "src/test/resources/tracking"
@@ -70,7 +72,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           "name",
           "description",
           organizationId,
-          Shapefile.fromZipFile(Path("$resourcesDir/TwoShapefiles.zip")))
+          Shapefile.fromZipFile(Path("$resourcesDir/TwoShapefiles.zip")),
+      )
     }
   }
 
@@ -96,7 +99,11 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val siteBoundary = gen.multiRectangle(0 to 0, 1000 to 1000)
       val subzoneFeature =
           gen.subzoneFeature(
-              siteBoundary, errorMargin = errorMargin, studentsT = studentsT, variance = variance)
+              siteBoundary,
+              errorMargin = errorMargin,
+              studentsT = studentsT,
+              variance = variance,
+          )
 
       importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
 
@@ -114,17 +121,20 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
                   gen.multiRectangle(0 to 0, 100 to 100),
                   errorMargin = BigDecimal(70),
                   studentsT = null,
-                  variance = null),
+                  variance = null,
+              ),
               gen.subzoneFeature(
                   gen.multiRectangle(100 to 0, 200 to 100),
                   errorMargin = null,
                   studentsT = BigDecimal(1.7),
-                  variance = null),
+                  variance = null,
+              ),
               gen.subzoneFeature(
                   gen.multiRectangle(200 to 0, 300 to 100),
                   errorMargin = null,
                   studentsT = null,
-                  variance = BigDecimal(70000)),
+                  variance = BigDecimal(70000),
+              ),
           )
 
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
@@ -145,7 +155,9 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
                   studentsT = BigDecimal(1.7),
                   variance = BigDecimal(70000),
                   permanentPlots = 15,
-                  temporaryPlots = 4))
+                  temporaryPlots = 4,
+              )
+          )
 
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
@@ -164,7 +176,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             "name",
             "description",
             organizationId,
-            Shapefile.fromZipFile(Path("$resourcesDir/NoShapefiles.zip")))
+            Shapefile.fromZipFile(Path("$resourcesDir/NoShapefiles.zip")),
+        )
       }
     }
 
@@ -183,7 +196,11 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       assertHasProblem("Zone Z1 has no subzone with positive value for properties: $property") {
         importer.import(
-            "name", "description", organizationId, listOf(Shapefile(listOf(subzoneFeature))))
+            "name",
+            "description",
+            organizationId,
+            listOf(Shapefile(listOf(subzoneFeature))),
+        )
       }
     }
 
@@ -199,7 +216,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             "test",
             "description",
             organizationId,
-            requireStableIds = true)
+            requireStableIds = true,
+        )
       }
     }
 
@@ -210,14 +228,16 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 500), zoneStableId = "x")
 
       assertHasProblem(
-          "Subzone S1 is missing subzone stable ID properties: stable_sz, stable_sub") {
-            importer.shapefilesToModel(
-                listOf(Shapefile(listOf(subzoneFeature))),
-                "test",
-                "description",
-                organizationId,
-                requireStableIds = true)
-          }
+          "Subzone S1 is missing subzone stable ID properties: stable_sz, stable_sub"
+      ) {
+        importer.shapefilesToModel(
+            listOf(Shapefile(listOf(subzoneFeature))),
+            "test",
+            "description",
+            organizationId,
+            requireStableIds = true,
+        )
+      }
     }
 
     @Test
@@ -227,11 +247,18 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           listOf(
               gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 250), subzoneStableId = "Z1-S1"),
               gen.subzoneFeature(
-                  gen.multiRectangle(0 to 250, 500 to 500), subzoneStableId = "Z1-S1"))
+                  gen.multiRectangle(0 to 250, 500 to 500),
+                  subzoneStableId = "Z1-S1",
+              ),
+          )
 
       assertHasProblem("Duplicate stable ID Z1-S1 on subzones: S1, S2") {
         importer.import(
-            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+            "Test Site",
+            "description",
+            organizationId,
+            listOf(Shapefile(subzoneFeatures)),
+        )
       }
     }
 
@@ -241,13 +268,24 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val subzoneFeatures =
           listOf(
               gen.subzoneFeature(
-                  gen.multiRectangle(0 to 0, 500 to 250), zone = "A", zoneStableId = "A"),
+                  gen.multiRectangle(0 to 0, 500 to 250),
+                  zone = "A",
+                  zoneStableId = "A",
+              ),
               gen.subzoneFeature(
-                  gen.multiRectangle(0 to 250, 500 to 500), zone = "A", zoneStableId = "B"))
+                  gen.multiRectangle(0 to 250, 500 to 500),
+                  zone = "A",
+                  zoneStableId = "B",
+              ),
+          )
 
       assertHasProblem("Inconsistent stable IDs for zone A: A, B") {
         importer.import(
-            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+            "Test Site",
+            "description",
+            organizationId,
+            listOf(Shapefile(subzoneFeatures)),
+        )
       }
     }
 
@@ -257,13 +295,24 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val subzoneFeatures =
           listOf(
               gen.subzoneFeature(
-                  gen.multiRectangle(0 to 0, 500 to 250), zone = "A", zoneStableId = "A"),
+                  gen.multiRectangle(0 to 0, 500 to 250),
+                  zone = "A",
+                  zoneStableId = "A",
+              ),
               gen.subzoneFeature(
-                  gen.multiRectangle(0 to 250, 500 to 500), zone = "B", zoneStableId = "A"))
+                  gen.multiRectangle(0 to 250, 500 to 500),
+                  zone = "B",
+                  zoneStableId = "A",
+              ),
+          )
 
       assertHasProblem("Inconsistent zone names for stable ID A: A, B") {
         importer.import(
-            "Test Site", "description", organizationId, listOf(Shapefile(subzoneFeatures)))
+            "Test Site",
+            "description",
+            organizationId,
+            listOf(Shapefile(subzoneFeatures)),
+        )
       }
     }
 
@@ -282,13 +331,17 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
+            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+        )
         fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
           assertEquals(
-              listOf(expected), e.problems, "Did not find expected problem in problems list")
+              listOf(expected),
+              e.problems,
+              "Did not find expected problem in problems list",
+          )
         }
       }
     }
@@ -319,13 +372,17 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
+            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+        )
         fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
           assertEquals(
-              listOf(expected), e.problems, "Did not find expected problem in problems list")
+              listOf(expected),
+              e.problems,
+              "Did not find expected problem in problems list",
+          )
         }
       }
 
@@ -335,13 +392,15 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             name = "Test Site",
             organizationId = organizationId,
             shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
-            gridOrigin = gen.point(2 to 0))
+            gridOrigin = gen.point(2 to 0),
+        )
       } catch (e: PlantingSiteMapInvalidException) {
         // Display meaningful assertion message for a test failure
         assertEquals(
             emptyList<PlantingSiteValidationFailure>(),
             e.problems,
-            "Import should not have any problems")
+            "Import should not have any problems",
+        )
       }
     }
 
@@ -353,7 +412,10 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
           assertEquals(
-              listOf(expected), e.problems, "Did not find expected problem in problems list")
+              listOf(expected),
+              e.problems,
+              "Did not find expected problem in problems list",
+          )
         }
       }
     }

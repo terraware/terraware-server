@@ -28,7 +28,8 @@ class UriField(
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { databaseField.contains(URI(it)) }))
+                  .plus(nonNullValues.map { databaseField.contains(URI(it)) })
+          )
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search is not supported for URI fields")

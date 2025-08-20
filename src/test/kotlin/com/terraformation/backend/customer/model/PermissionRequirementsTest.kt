@@ -204,7 +204,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
    */
   private inline fun <reified T> readableId(
       exceptionClass: KClass<out Exception>,
-      crossinline grantBlock: TerrawareUser.(T) -> Boolean
+      crossinline grantBlock: TerrawareUser.(T) -> Boolean,
   ): Lazy<T> = lazy {
     val id =
         T::class

@@ -14,7 +14,10 @@ fun dummyTerrawareServerConfig(
     geoServer: GeoServerConfig = GeoServerConfig(),
     keycloak: KeycloakConfig =
         KeycloakConfig(
-            apiClientId = "dummy", apiClientGroupName = "dummy", apiClientUsernamePrefix = "dummy"),
+            apiClientId = "dummy",
+            apiClientGroupName = "dummy",
+            apiClientUsernamePrefix = "dummy",
+        ),
     mapbox: MapboxConfig = MapboxConfig(),
     webAppUrl: URI = URI.create("https://terraware.io"),
 ): TerrawareServerConfig {

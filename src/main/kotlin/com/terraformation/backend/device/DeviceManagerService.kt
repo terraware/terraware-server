@@ -47,7 +47,8 @@ class DeviceManagerService(
           .forEach { (userId, balenaId, facilityId) ->
             if (userId != null && balenaId != null && facilityId != null) {
               log.debug(
-                  "Generating new token for device manager at facility $facilityId (user $userId)")
+                  "Generating new token for device manager at facility $facilityId (user $userId)"
+              )
               generateOfflineToken(userId, balenaId, facilityId, overwrite = true)
             }
           }

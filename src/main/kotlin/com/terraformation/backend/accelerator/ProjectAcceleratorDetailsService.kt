@@ -60,6 +60,8 @@ class ProjectAcceleratorDetailsService(
     projectAcceleratorDetailsStore.update(projectId, variableValues, applyFunc)
 
     acceleratorProjectVariableValuesService.writeValues(
-        projectId, applyFunc(variableValues.toProjectAcceleratorDetails()).toVariableValuesModel())
+        projectId,
+        applyFunc(variableValues.toProjectAcceleratorDetails()).toVariableValuesModel(),
+    )
   }
 }

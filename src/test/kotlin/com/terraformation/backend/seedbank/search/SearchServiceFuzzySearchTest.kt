@@ -10,9 +10,11 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some Mátching Notes"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some Mátching Notes")
+    )
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Not It"))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Not It")
+    )
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(processingNotesField, listOf("mãtç"), SearchFilterType.Fuzzy)
@@ -28,9 +30,11 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
   @Test
   fun `fuzzy search on text fields handles single-character search values`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some Matching Notes"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Some Matching Notes")
+    )
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Not It"))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Not It")
+    )
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(processingNotesField, listOf("G"), SearchFilterType.Fuzzy)
@@ -55,7 +59,8 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
     assertEquals(
         SearchResults(listOf(mapOf("id" to "$accessionId1", "accessionNumber" to "22-1-100"))),
         searchAccessions(facilityId, fields, searchNode),
-        "Search for value with an exact match")
+        "Search for value with an exact match",
+    )
 
     accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(number = "22-1-102"))
 
@@ -64,9 +69,11 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "$accessionId2", "accessionNumber" to "22-1-101"),
                 mapOf("id" to "$accessionId1", "accessionNumber" to "22-1-102"),
-            )),
+            )
+        ),
         searchAccessions(facilityId, fields, searchNode),
-        "Search for value without an exact match")
+        "Search for value without an exact match",
+    )
   }
 
   @Test
@@ -82,8 +89,10 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "$accessionId1", "accessionNumber" to "22-1-10"),
                 mapOf("id" to "$accessionId2", "accessionNumber" to "22-1-100"),
-            )),
-        searchAccessions(facilityId, fields, searchNode))
+            )
+        ),
+        searchAccessions(facilityId, fields, searchNode),
+    )
   }
 
   @Test
@@ -100,7 +109,11 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
-                    "processingNotes" to "Notes"))),
-        searchAccessions(facilityId, fields, searchNode))
+                    "processingNotes" to "Notes",
+                )
+            )
+        ),
+        searchAccessions(facilityId, fields, searchNode),
+    )
   }
 }

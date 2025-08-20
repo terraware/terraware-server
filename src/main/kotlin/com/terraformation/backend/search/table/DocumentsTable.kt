@@ -26,7 +26,10 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
       listOf(
           projects.asSingleValueSublist("project", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
           documentTemplates.asSingleValueSublist(
-              "documentTemplate", DOCUMENT_TEMPLATES.ID.eq(DOCUMENTS.DOCUMENT_TEMPLATE_ID)))
+              "documentTemplate",
+              DOCUMENT_TEMPLATES.ID.eq(DOCUMENTS.DOCUMENT_TEMPLATE_ID),
+          ),
+      )
     }
   }
 
@@ -42,14 +45,17 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
                         .from(DOCUMENT_SAVED_VERSIONS)
                         .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
                         .orderBy(ID.desc())
-                        .limit(1))
-              }) {
-                DocumentSavedVersionId(it)
+                        .limit(1)
+                )
               },
+          ) {
+            DocumentSavedVersionId(it)
+          },
           timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME),
           textField("name", DOCUMENTS.NAME),
           idWrapperField("projectId", DOCUMENTS.PROJECT_ID) { ProjectId(it) },
-          enumField("status", DOCUMENTS.STATUS_ID))
+          enumField("status", DOCUMENTS.STATUS_ID),
+      )
 
   override fun conditionForVisibility(): Condition =
       if (currentUser().canManageDocumentProducer()) {

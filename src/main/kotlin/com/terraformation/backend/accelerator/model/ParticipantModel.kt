@@ -27,7 +27,7 @@ data class ParticipantModel<ID : ParticipantId?>(
     fun create(
         name: String,
         cohortId: CohortId? = null,
-        projectIds: Set<ProjectId> = emptySet()
+        projectIds: Set<ProjectId> = emptySet(),
     ): NewParticipantModel {
       return NewParticipantModel(
           cohortId = cohortId,

@@ -38,8 +38,10 @@ class AttachTemporaryFilesHttpRequest(
                   Headers.build {
                     contentType?.let { append(HttpHeaders.ContentType, it) }
                     append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
-                  })
-            })
+                  },
+              )
+            }
+        )
 
     with(requestBuilder) {
       method = httpMethod

@@ -95,7 +95,9 @@ internal class TimeZonesTest {
   @Test
   fun `omits city name if zone name is unique without it`() {
     assertEquals(
-        "Pitcairn Time", timeZones.getTimeZoneNames(Locale.ENGLISH)[ZoneId.of("Pacific/Pitcairn")])
+        "Pitcairn Time",
+        timeZones.getTimeZoneNames(Locale.ENGLISH)[ZoneId.of("Pacific/Pitcairn")],
+    )
   }
 
   @Test
@@ -103,7 +105,9 @@ internal class TimeZonesTest {
     // This is an alias for Europe/London
     val jerseyTime = ZoneId.of("Europe/Jersey")
     assertFalse(
-        jerseyTime in timeZones.getTimeZoneNames(Locale.ENGLISH), "Should have removed $jerseyTime")
+        jerseyTime in timeZones.getTimeZoneNames(Locale.ENGLISH),
+        "Should have removed $jerseyTime",
+    )
   }
 
   @Test

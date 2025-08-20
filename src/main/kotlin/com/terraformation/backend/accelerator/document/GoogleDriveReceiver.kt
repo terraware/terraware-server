@@ -7,7 +7,7 @@ import java.net.URI
 
 class GoogleDriveReceiver(
     private val googleDriveWriter: GoogleDriveWriter,
-    private val googleFolderUrl: URI
+    private val googleFolderUrl: URI,
 ) : SubmissionDocumentReceiver {
   override val documentStore: DocumentStore
     get() = DocumentStore.Google

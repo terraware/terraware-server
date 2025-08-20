@@ -85,7 +85,13 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     service =
         OrganizationService(
-            dslContext, organizationStore, publisher, scheduler, SystemUser(usersDao), userStore)
+            dslContext,
+            organizationStore,
+            publisher,
+            scheduler,
+            SystemUser(usersDao),
+            userStore,
+        )
 
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateSubLocation(any()) } returns true
@@ -178,7 +184,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                 Instant.EPOCH,
                 Instant.EPOCH,
                 user.userId,
-                user.userId),
+                user.userId,
+            ),
             OrganizationUsersRow(
                 otherUserId,
                 unrelatedOrganizationId,
@@ -186,18 +193,22 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                 Instant.EPOCH,
                 Instant.EPOCH,
                 user.userId,
-                user.userId),
+                user.userId,
+            ),
         )
 
     assertEquals(
         expectedOrganizationUsers,
         organizationUsersDao.findAll().toSet(),
-        "User should be removed from organizations, but other user should remain")
+        "User should be removed from organizations, but other user should remain",
+    )
 
     publisher.assertExactEventsPublished(
         setOf(
             OrganizationAbandonedEvent(soloOrganizationId1),
-            OrganizationAbandonedEvent(soloOrganizationId2)))
+            OrganizationAbandonedEvent(soloOrganizationId2),
+        )
+    )
   }
 
   @Test
@@ -223,7 +234,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertNotEquals(
         emptyList<OrganizationsRow>(),
         organizationsDao.findAll(),
-        "Should not have deleted organization synchronously")
+        "Should not have deleted organization synchronously",
+    )
 
     verify { scheduler.enqueue<OrganizationService>(any()) }
 
@@ -243,12 +255,18 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject()
     val event =
         ProjectInternalUserAddedEvent(
-            projectId, organizationId, userId, role = ProjectInternalRole.RestorationLead)
+            projectId,
+            organizationId,
+            userId,
+            role = ProjectInternalRole.RestorationLead,
+        )
     service.on(event)
 
     val user =
         organizationStore.fetchUser(
-            organizationId, userId) // would fail if user wasn't also added to org
+            organizationId,
+            userId,
+        ) // would fail if user wasn't also added to org
     assertEquals(Role.TerraformationContact, user.role, "Should have Terraformation Contact role")
   }
 
@@ -261,12 +279,19 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject()
     val event =
         ProjectInternalUserAddedEvent(
-            projectId, organizationId, userId, role = ProjectInternalRole.ClimateImpactLead)
+            projectId,
+            organizationId,
+            userId,
+            role = ProjectInternalRole.ClimateImpactLead,
+        )
     service.on(event)
 
     val user = organizationStore.fetchUser(organizationId, userId)
     assertNotEquals(
-        Role.TerraformationContact, user.role, "Should not have Terraformation Contact role")
+        Role.TerraformationContact,
+        user.role,
+        "Should not have Terraformation Contact role",
+    )
   }
 
   @Test
@@ -278,12 +303,20 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
     service.addUser(
-        email = "existingUser@email.com", organizationId = organizationId, role = Role.Contributor)
+        email = "existingUser@email.com",
+        organizationId = organizationId,
+        role = Role.Contributor,
+    )
 
     publisher.assertExactEventsPublished(
         setOf(
             UserAddedToOrganizationEvent(
-                userId = otherUserId, organizationId = organizationId, addedBy = user.userId)))
+                userId = otherUserId,
+                organizationId = organizationId,
+                addedBy = user.userId,
+            )
+        )
+    )
   }
 
   @Test
@@ -302,7 +335,12 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     publisher.assertExactEventsPublished(
         setOf(
             UserAddedToTerrawareEvent(
-                userId = newUser!!.userId, organizationId = organizationId, addedBy = user.userId)))
+                userId = newUser!!.userId,
+                organizationId = organizationId,
+                addedBy = user.userId,
+            )
+        )
+    )
   }
 
   @Test
@@ -343,7 +381,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         emptyList<UserId>(),
         organizationStore.fetchTerraformationContacts(organizationId),
-        "Should not find Terraformation Contacts")
+        "Should not find Terraformation Contacts",
+    )
 
     every { user.canAddTerraformationContact(organizationId) } returns true
 
@@ -352,7 +391,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         organizationStore.fetchTerraformationContacts(organizationId),
         listOf(result),
-        "Should find a matching Terraformation Contact")
+        "Should find a matching Terraformation Contact",
+    )
   }
 
   @Test
@@ -372,14 +412,21 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         organizationStore.fetchTerraformationContacts(organizationId),
         listOf(initialContactId, newContactId),
-        "Should find all matching Terraformation Contacts")
+        "Should find all matching Terraformation Contacts",
+    )
 
     val contact = organizationStore.fetchUser(organizationId, newContactId)
     assertEquals(
-        Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
+        Role.TerraformationContact,
+        contact.role,
+        "Should have Terraformation Contact role",
+    )
     val newContact = organizationStore.fetchUser(organizationId, newContactId)
     assertEquals(
-        Role.TerraformationContact, newContact.role, "Should have Terraformation Contact role")
+        Role.TerraformationContact,
+        newContact.role,
+        "Should have Terraformation Contact role",
+    )
   }
 
   @Test
@@ -402,13 +449,20 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         organizationStore.fetchTerraformationContacts(organizationId),
         listOf(initialContactId, reassignedUserId),
-        "Should find all matching Terraformation Contacts")
+        "Should find all matching Terraformation Contacts",
+    )
 
     val contact = organizationStore.fetchUser(organizationId, initialContactId)
     assertEquals(
-        Role.TerraformationContact, contact.role, "Should have Terraformation Contact role")
+        Role.TerraformationContact,
+        contact.role,
+        "Should have Terraformation Contact role",
+    )
     val reassigned = organizationStore.fetchUser(organizationId, reassignedUserId)
     assertEquals(
-        Role.TerraformationContact, reassigned.role, "Should have Terraformation Contact role")
+        Role.TerraformationContact,
+        reassigned.role,
+        "Should have Terraformation Contact role",
+    )
   }
 }

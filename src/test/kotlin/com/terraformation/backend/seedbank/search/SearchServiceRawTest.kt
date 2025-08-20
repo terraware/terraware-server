@@ -54,7 +54,8 @@ internal class SearchServiceRawTest : SearchServiceTest() {
                 FieldNode(rawRareField, listOf("false")),
                 FieldNode(rawStateField, listOf(AccessionState.InStorage.jsonValue)),
                 FieldNode(rawTotalWeightField, listOf("5000")),
-            ))
+            )
+        )
 
     val result =
         Locales.GIBBERISH.use {
@@ -71,7 +72,9 @@ internal class SearchServiceRawTest : SearchServiceTest() {
                     "species_rare(raw)" to "false",
                     "state(raw)" to "In Storage",
                     "totalWithdrawnWeightGrams(raw)" to "5000",
-                )))
+                )
+            )
+        )
 
     assertEquals(expected, result)
   }

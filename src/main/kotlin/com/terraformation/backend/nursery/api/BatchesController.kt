@@ -80,7 +80,8 @@ class BatchesController(
       responseCode = "200",
       description =
           "The batch was created successfully. Response includes fields populated by the " +
-              "server, including the batch ID.")
+              "server, including the batch ID.",
+  )
   @Operation(summary = "Creates a new seedling batch at a nursery.")
   @PostMapping
   fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
@@ -100,14 +101,15 @@ class BatchesController(
       responseCode = "200",
       description =
           "The batch was updated successfully. Response includes fields populated or " +
-              "modified by the server as a result of the update.")
+              "modified by the server as a result of the update.",
+  )
   @ApiResponse404
   @ApiResponse412
   @Operation(summary = "Updates non-quantity-related details about a batch.")
   @PutMapping("/{id}")
   fun updateBatch(
       @PathVariable("id") id: BatchId,
-      @RequestBody payload: UpdateBatchRequestPayload
+      @RequestBody payload: UpdateBatchRequestPayload,
   ): BatchResponsePayload {
     batchStore.updateDetails(id, payload.version, payload::applyChanges)
 
@@ -120,11 +122,12 @@ class BatchesController(
   @Operation(
       summary = "Updates the remaining quantities in a seedling batch.",
       description =
-          "This should not be used to record withdrawals; use the withdrawal API for that.")
+          "This should not be used to record withdrawals; use the withdrawal API for that.",
+  )
   @PutMapping("/{id}/quantities")
   fun updateBatchQuantities(
       @PathVariable("id") id: BatchId,
-      @RequestBody payload: UpdateBatchQuantitiesRequestPayload
+      @RequestBody payload: UpdateBatchQuantitiesRequestPayload,
   ): BatchResponsePayload {
     batchStore.updateQuantities(
         batchId = id,
@@ -133,7 +136,8 @@ class BatchesController(
         activeGrowth = payload.activeGrowthQuantity,
         hardeningOff = payload.hardeningOffQuantity ?: 0,
         ready = payload.readyQuantity,
-        historyType = BatchQuantityHistoryType.Observed)
+        historyType = BatchQuantityHistoryType.Observed,
+    )
 
     return getBatch(id)
   }
@@ -143,11 +147,12 @@ class BatchesController(
   @ApiResponse412
   @Operation(
       summary = "Changes the statuses of seedlings in a batch.",
-      description = "There must be enough seedlings available to move to the next status.")
+      description = "There must be enough seedlings available to move to the next status.",
+  )
   @PostMapping("/{id}/changeStatuses")
   fun changeBatchStatuses(
       @PathVariable("id") id: BatchId,
-      @RequestBody payload: ChangeBatchStatusRequestPayload
+      @RequestBody payload: ChangeBatchStatusRequestPayload,
   ): BatchResponsePayload {
     batchStore.changeStatuses(id, payload.initialPhase, payload.finalPhase, payload.quantity)
 
@@ -166,7 +171,10 @@ class BatchesController(
 
     val fileId =
         batchPhotoService.storePhoto(
-            batchId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
+            batchId,
+            file.inputStream,
+            FileMetadata.of(contentType, filename, file.size),
+        )
 
     return CreateBatchPhotoResponsePayload(fileId)
   }
@@ -175,10 +183,12 @@ class BatchesController(
   @ApiResponse404("The batch does not exist, or does not have a photo with the requested ID.")
   @GetMapping(
       "/{batchId}/photos/{photoId}",
-      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
   @Operation(
       summary = "Retrieves a specific photo from a seedling batch.",
-      description = PHOTO_OPERATION_DESCRIPTION)
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
   @ResponseBody
   fun getBatchPhoto(
       @PathVariable batchId: BatchId,
@@ -211,7 +221,7 @@ class BatchesController(
   @Operation(summary = "Deletes a photo from a seedling batch.")
   fun deleteBatchPhoto(
       @PathVariable batchId: BatchId,
-      @PathVariable photoId: FileId
+      @PathVariable photoId: FileId,
   ): SimpleSuccessResponsePayload {
     batchPhotoService.deletePhoto(batchId, photoId)
 
@@ -224,12 +234,14 @@ data class BatchPayload(
     @Schema(
         description =
             "If this batch was created via a seed withdrawal, the ID of the seed accession it " +
-                "came from.")
+                "came from."
+    )
     val accessionId: AccessionId?,
     @Schema(
         description =
             "If this batch was created via a seed withdrawal, the accession number associated to " +
-                "the seed accession it came from.")
+                "the seed accession it came from."
+    )
     val accessionNumber: String?,
     val activeGrowthQuantity: Int,
     val addedDate: LocalDate,
@@ -243,7 +255,8 @@ data class BatchPayload(
     @Schema(
         description =
             "If this batch was created via a nursery transfer from another batch, the ID of the " +
-                "batch it came from.")
+                "batch it came from."
+    )
     val initialBatchId: BatchId?,
     val latestObservedTime: Instant,
     val lossRate: Int?,
@@ -263,7 +276,8 @@ data class BatchPayload(
         description =
             "Increases every time a batch is updated. Must be passed as a parameter for certain " +
                 "kinds of write operations to detect when a batch has changed since the client " +
-                "last retrieved it.")
+                "last retrieved it."
+    )
     val version: Int,
 ) {
   constructor(
@@ -388,10 +402,10 @@ data class UpdateBatchQuantitiesRequestPayload(
 
 enum class ChangeBatchStatusOperation(
     val fromPhase: NurseryBatchPhase,
-    val toPhase: NurseryBatchPhase
+    val toPhase: NurseryBatchPhase,
 ) {
   GerminatingToNotReady(NurseryBatchPhase.Germinating, NurseryBatchPhase.ActiveGrowth),
-  NotReadyToReady(NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.Ready)
+  NotReadyToReady(NurseryBatchPhase.ActiveGrowth, NurseryBatchPhase.Ready),
 }
 
 data class ChangeBatchStatusRequestPayload(
@@ -410,7 +424,8 @@ data class ChangeBatchStatusRequestPayload(
         previousPhase
             ?: operation?.fromPhase
             ?: throw IllegalStateException(
-                "Either operation or previousPhase and newPhase must be specified.")
+                "Either operation or previousPhase and newPhase must be specified."
+            )
 
   val finalPhase: NurseryBatchPhase
     @JsonIgnore
@@ -418,7 +433,8 @@ data class ChangeBatchStatusRequestPayload(
         newPhase
             ?: operation?.toPhase
             ?: throw IllegalStateException(
-                "Either operation or previousPhase and newPhase must be specified.")
+                "Either operation or previousPhase and newPhase must be specified."
+            )
 }
 
 data class BatchPhotoPayload(val id: FileId)

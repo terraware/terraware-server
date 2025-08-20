@@ -77,14 +77,19 @@ enum class ExistingValuePayloadType {
             DiscriminatorMapping(schema = ExistingLinkValuePayload::class, value = "Link"),
             DiscriminatorMapping(schema = ExistingNumberValuePayload::class, value = "Number"),
             DiscriminatorMapping(
-                schema = ExistingSectionTextValuePayload::class, value = "SectionText"),
+                schema = ExistingSectionTextValuePayload::class,
+                value = "SectionText",
+            ),
             DiscriminatorMapping(
-                schema = ExistingSectionVariableValuePayload::class, value = "SectionVariable"),
+                schema = ExistingSectionVariableValuePayload::class,
+                value = "SectionVariable",
+            ),
             DiscriminatorMapping(schema = ExistingSelectValuePayload::class, value = "Select"),
             DiscriminatorMapping(schema = ExistingTableValuePayload::class, value = "Table"),
             DiscriminatorMapping(schema = ExistingTextValuePayload::class, value = "Text"),
         ],
-    discriminatorProperty = "type")
+    discriminatorProperty = "type",
+)
 sealed interface ExistingValuePayload {
   val id: VariableValueId
   val listPosition: Int
@@ -130,7 +135,8 @@ data class ExistingDateValuePayload(
 @Schema(
     description =
         "Represents the deletion of an earlier value at the same location. This is only included " +
-            "when you are querying for incremental changes to a document's values.")
+            "when you are querying for incremental changes to a document's values."
+)
 data class ExistingDeletedValuePayload(
     override val id: VariableValueId,
     override val listPosition: Int,
@@ -161,7 +167,8 @@ data class ExistingEmailValuePayload(
 @Schema(
     description =
         "Metadata about an image. The actual image data (e.g., the JPEG or PNG file) must be " +
-            "retrieved in a separate request using the value ID in this payload.")
+            "retrieved in a separate request using the value ID in this payload."
+)
 data class ExistingImageValuePayload(
     override val id: VariableValueId,
     override val listPosition: Int,
@@ -214,7 +221,11 @@ data class ExistingSectionTextValuePayload(
   constructor(
       model: ExistingSectionValue
   ) : this(
-      model.id, model.listPosition, model.citation, (model.value as SectionValueText).textValue)
+      model.id,
+      model.listPosition,
+      model.citation,
+      (model.value as SectionValueText).textValue,
+  )
 
   override val type: ExistingValuePayloadType
     get() = ExistingValuePayloadType.SectionText
@@ -234,7 +245,8 @@ data class ExistingSectionVariableValuePayload(
       model.listPosition,
       (model.value as SectionValueVariable).usedVariableId,
       model.value.usageType,
-      model.value.displayStyle)
+      model.value.displayStyle,
+  )
 
   override val type: ExistingValuePayloadType
     get() = ExistingValuePayloadType.SectionVariable
@@ -244,7 +256,8 @@ data class ExistingSectionVariableValuePayload(
     @Schema(
         description =
             "Ignored for section variable values because the referenced variable can already " +
-                "have a citation.")
+                "have a citation."
+    )
     get() = null
 }
 
@@ -265,7 +278,8 @@ data class ExistingSelectValuePayload(
 @Schema(
     description =
         "A row in a table. Each row has its own value ID. ExistingVariableValuesPayload includes " +
-            "this ID for values of variables that are defined as columns of a table.")
+            "this ID for values of variables that are defined as columns of a table."
+)
 data class ExistingTableValuePayload(
     override val id: VariableValueId,
     override val listPosition: Int,
@@ -297,12 +311,14 @@ data class ExistingVariableValuesPayload(
     @Schema(description = "If this is the value of a table cell, the ID of the row it's part of.")
     val rowValueId: VariableValueId? = null,
     @Schema(
-        description = "User-visible feedback from reviewer. Not populated for table cell values.")
+        description = "User-visible feedback from reviewer. Not populated for table cell values."
+    )
     val feedback: String?,
     @Schema(
         description =
             "Internal comment from reviewer. Only populated if the current user has permission " +
-                "to read internal comments. Not populated for table cell values.")
+                "to read internal comments. Not populated for table cell values."
+    )
     val internalComment: String?,
     @Schema(description = "Current status of this variable. Not populated for table cell values.")
     val status: VariableWorkflowStatus?,
@@ -314,6 +330,7 @@ data class ExistingVariableValuesPayload(
                 "the items that have changed, and existing items won't be present. For example, " +
                 "if a variable is a list and has 3 values, and a fourth value is added, the " +
                 "incremental list of values in this payload will have one item and its list " +
-                "position will be 3 (since lists are 0-indexed).")
+                "position will be 3 (since lists are 0-indexed)."
+    )
     val values: List<ExistingValuePayload>,
 )

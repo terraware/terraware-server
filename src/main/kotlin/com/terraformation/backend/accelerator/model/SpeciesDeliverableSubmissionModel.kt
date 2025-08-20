@@ -8,7 +8,7 @@ import org.jooq.Record
 
 data class ExistingSpeciesDeliverableSubmissionModel(
     val deliverableId: DeliverableId,
-    val submissionId: SubmissionId? = null
+    val submissionId: SubmissionId? = null,
 ) {
   companion object {
     fun of(record: Record): ExistingSpeciesDeliverableSubmissionModel {

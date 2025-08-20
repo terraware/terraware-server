@@ -49,7 +49,8 @@ class OpenApiAnnotationTest {
 
     assertTrue(
         responseCodes.isEmpty() || responseCodes.any { it in 200..399 },
-        "No response declared for HTTP 2xx response code on $name")
+        "No response declared for HTTP 2xx response code on $name",
+    )
   }
 
   @MethodSource("findAllEndpointMethods")

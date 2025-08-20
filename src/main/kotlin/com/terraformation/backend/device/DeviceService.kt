@@ -44,10 +44,12 @@ class DeviceService(
     dslContext.transaction { _ ->
       deviceStore.update(row)
 
-      if (row.name != existingRow.name ||
-          row.deviceType != existingRow.deviceType ||
-          row.make != existingRow.make ||
-          row.model != existingRow.model) {
+      if (
+          row.name != existingRow.name ||
+              row.deviceType != existingRow.deviceType ||
+              row.make != existingRow.make ||
+              row.model != existingRow.model
+      ) {
         updateAutomations(deviceId, row.copy(facilityId = existingRow.facilityId))
       }
     }
@@ -61,7 +63,8 @@ class DeviceService(
     requirePermissions { updateDevice(deviceId) }
 
     eventPublisher.publishEvent(
-        DeviceUnresponsiveEvent(deviceId, lastRespondedTime, expectedInterval))
+        DeviceUnresponsiveEvent(deviceId, lastRespondedTime, expectedInterval)
+    )
   }
 
   /**
@@ -110,7 +113,8 @@ class DeviceService(
       } else {
         log.debug(
             "Keeping automation ${existingAutomation.name} for device $deviceId because it " +
-                "is of type ${existingAutomation.type}")
+                "is of type ${existingAutomation.type}"
+        )
       }
     }
 
@@ -129,17 +133,35 @@ class DeviceService(
 
   private fun createBmuAutomations(facilityId: FacilityId, deviceId: DeviceId, name: String) {
     createBoundsAutomation(
-        "$name 25% charge", facilityId, deviceId, "relative_state_of_charge", 25.1, null)
+        "$name 25% charge",
+        facilityId,
+        deviceId,
+        "relative_state_of_charge",
+        25.1,
+        null,
+    )
     createBoundsAutomation(
-        "$name 10% charge", facilityId, deviceId, "relative_state_of_charge", 10.1, null)
+        "$name 10% charge",
+        facilityId,
+        deviceId,
+        "relative_state_of_charge",
+        10.1,
+        null,
+    )
     createBoundsAutomation(
-        "$name 0% charge", facilityId, deviceId, "relative_state_of_charge", 0.1, null)
+        "$name 0% charge",
+        facilityId,
+        deviceId,
+        "relative_state_of_charge",
+        0.1,
+        null,
+    )
   }
 
   private fun createTemperatureHumiditySensorAutomations(
       facilityId: FacilityId,
       deviceId: DeviceId,
-      name: String
+      name: String,
   ) {
     when {
       name.startsWith("Ambient ") -> {
@@ -152,7 +174,13 @@ class DeviceService(
       }
       name.startsWith("Freezer ") -> {
         createBoundsAutomation(
-            "$name temperature", facilityId, deviceId, "temperature", -25.0, -15.0)
+            "$name temperature",
+            facilityId,
+            deviceId,
+            "temperature",
+            -25.0,
+            -15.0,
+        )
       }
       name.startsWith("Fridge ") -> {
         createBoundsAutomation("$name temperature", facilityId, deviceId, "temperature", 0.0, 10.0)

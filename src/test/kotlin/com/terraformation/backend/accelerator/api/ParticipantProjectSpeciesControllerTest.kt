@@ -29,7 +29,8 @@ class ParticipantProjectSpeciesControllerTest : ControllerIntegrationTest() {
       insertCohortModule()
       insertDeliverable(
           deliverableTypeId = DeliverableType.Species,
-          deliverableCategoryId = DeliverableCategory.CarbonEligibility)
+          deliverableCategoryId = DeliverableCategory.CarbonEligibility,
+      )
       insertSubmission(submissionStatus = SubmissionStatus.Approved)
 
       val payload =

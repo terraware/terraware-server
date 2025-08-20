@@ -109,13 +109,15 @@ class ObservationsController(
       @Schema(
           description =
               "Limit results to observations of planting sites in a specific organization. " +
-                  "Ignored if plantingSiteId is specified.")
+                  "Ignored if plantingSiteId is specified."
+      )
       organizationId: OrganizationId? = null,
       @RequestParam
       @Schema(
           description =
               "Limit results to observations of a specific planting site. Required if " +
-                  "organizationId is not specified.")
+                  "organizationId is not specified."
+      )
       plantingSiteId: PlantingSiteId? = null,
   ): ListObservationsResponsePayload {
     val observations: Collection<ExistingObservationModel>
@@ -127,7 +129,8 @@ class ObservationsController(
       plantingSites =
           mapOf(
               plantingSiteId to
-                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
+                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+          )
       plotCounts = observationStore.countPlots(plantingSiteId)
     } else if (organizationId != null) {
       observations = observationStore.fetchObservationsByOrganization(organizationId)
@@ -143,7 +146,8 @@ class ObservationsController(
           ObservationPayload(
               observation,
               plotCounts[observation.id],
-              plantingSites[observation.plantingSiteId]!!.name)
+              plantingSites[observation.plantingSiteId]!!.name,
+          )
         }
 
     return ListObservationsResponsePayload(
@@ -162,7 +166,8 @@ class ObservationsController(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
                   "completion time, newest first, so setting this to 1 will return the results " +
-                  "of the most recently completed observation.")
+                  "of the most recently completed observation."
+      )
       limit: Int? = null,
   ): ListObservationResultsResponsePayload {
     val results =
@@ -185,12 +190,14 @@ class ObservationsController(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
                   "observations completion time, newest first, so setting this to 1 will return the " +
-                  "summaries including the most recently completed observation.")
+                  "summaries including the most recently completed observation."
+      )
       limit: Int? = null,
   ): ListObservationSummariesResponsePayload {
     val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit)
     return ListObservationSummariesResponsePayload(
-        results.map { PlantingSiteObservationSummaryPayload(it) })
+        results.map { PlantingSiteObservationSummaryPayload(it) }
+    )
   }
 
   @GetMapping("/{observationId}")
@@ -202,7 +209,8 @@ class ObservationsController(
     val plotCounts = observationStore.countPlots(observationId)
 
     return GetObservationResponsePayload(
-        ObservationPayload(observation, plotCounts, platingSite.name))
+        ObservationPayload(observation, plotCounts, platingSite.name)
+    )
   }
 
   @ApiResponse409("Observation is already completed or abandoned.")
@@ -234,7 +242,10 @@ class ObservationsController(
           [
               Content(
                   mediaType = "application/gpx+xml",
-                  schema = Schema(type = "string", format = "binary"))])
+                  schema = Schema(type = "string", format = "binary"),
+              )
+          ],
+  )
   @GetMapping("/{observationId}/plots", produces = ["application/gpx+xml"])
   @Operation(summary = "Exports monitoring plots assigned to an observation as a GPX file.")
   fun exportAssignedPlots(@PathVariable observationId: ObservationId): ResponseEntity<ByteArray> {
@@ -255,7 +266,8 @@ class ObservationsController(
   @GetMapping("/{observationId}/results")
   @Operation(
       summary = "Gets the results of an observation of a planting site.",
-      description = "Some information is only available once all plots have been completed.")
+      description = "Some information is only available once all plots have been completed.",
+  )
   fun getObservationResults(
       @PathVariable observationId: ObservationId
   ): GetObservationResultsResponsePayload {
@@ -279,7 +291,8 @@ class ObservationsController(
         payload.conditions,
         payload.notes,
         payload.observedTime,
-        payload.plants.map { it.toRow() })
+        payload.plants.map { it.toRow() },
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -313,34 +326,43 @@ class ObservationsController(
   @ApiResponse404("The observation does not exist or does not have the requested monitoring plot.")
   @ApiResponse409(
       "The observation of the monitoring plot has already been completed and the plot cannot be " +
-          "replaced.")
+          "replaced."
+  )
   @Operation(
       summary = "Requests that a monitoring plot be replaced with a new one.",
       description =
           "In some cases, the requested plot will be removed from the observation but not " +
-              "replaced with a different one.")
+              "replaced with a different one.",
+  )
   @PostMapping("/{observationId}/plots/{plotId}/replace")
   fun replaceObservationPlot(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
-      @RequestBody payload: ReplaceObservationPlotRequestPayload
+      @RequestBody payload: ReplaceObservationPlotRequestPayload,
   ): ReplaceObservationPlotResponsePayload {
     val result =
         observationService.replaceMonitoringPlot(
-            observationId, plotId, payload.justification, payload.duration)
+            observationId,
+            plotId,
+            payload.justification,
+            payload.duration,
+        )
 
     return ReplaceObservationPlotResponsePayload(result)
   }
 
   @ApiResponse200Photo
   @ApiResponse404(
-      "The plot observation does not exist, or does not have a photo with the requested ID.")
+      "The plot observation does not exist, or does not have a photo with the requested ID."
+  )
   @GetMapping(
       "/{observationId}/plots/{plotId}/photos/{fileId}",
-      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
   @Operation(
       summary = "Retrieves a specific photo from an observation of a monitoring plot.",
-      description = PHOTO_OPERATION_DESCRIPTION)
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
   @ResponseBody
   fun getPlotPhoto(
       @PathVariable observationId: ObservationId,
@@ -356,7 +378,9 @@ class ObservationsController(
 
   @Operation(summary = "Uploads a photo of a monitoring plot.")
   @PostMapping(
-      "/{observationId}/plots/{plotId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+      "/{observationId}/plots/{plotId}/photos",
+      consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+  )
   @RequestBodyPhotoFile
   fun uploadPlotPhoto(
       @PathVariable observationId: ObservationId,
@@ -385,7 +409,8 @@ class ObservationsController(
   @ApiResponseSimpleSuccess
   @Operation(
       summary = "Claims a monitoring plot.",
-      description = "A plot may only be claimed by one user at a time.")
+      description = "A plot may only be claimed by one user at a time.",
+  )
   @PostMapping("/{observationId}/plots/{plotId}/claim")
   fun claimMonitoringPlot(
       @PathVariable observationId: ObservationId,
@@ -416,13 +441,15 @@ class ObservationsController(
       @Schema(
           description =
               "Limit results to observations of planting sites in a specific organization. " +
-                  "Ignored if plantingSiteId is specified.")
+                  "Ignored if plantingSiteId is specified."
+      )
       organizationId: OrganizationId? = null,
       @RequestParam
       @Schema(
           description =
               "Limit results to observations of a specific planting site. Required if " +
-                  "organizationId is not specified.")
+                  "organizationId is not specified."
+      )
       plantingSiteId: PlantingSiteId? = null,
   ): ListAdHocObservationsResponsePayload {
     val observations: Collection<ExistingObservationModel>
@@ -435,7 +462,8 @@ class ObservationsController(
       plantingSites =
           mapOf(
               plantingSiteId to
-                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
+                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+          )
       plotCounts = observationStore.countPlots(plantingSiteId, true)
     } else if (organizationId != null) {
       observations =
@@ -452,7 +480,8 @@ class ObservationsController(
           ObservationPayload(
               observation,
               plotCounts[observation.id],
-              plantingSites[observation.plantingSiteId]!!.name)
+              plantingSites[observation.plantingSiteId]!!.name,
+          )
         }
 
     return ListAdHocObservationsResponsePayload(
@@ -489,7 +518,8 @@ class ObservationsController(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
                   "completion time, newest first, so setting this to 1 will return the results " +
-                  "of the most recently completed observation.")
+                  "of the most recently completed observation."
+      )
       limit: Int? = null,
   ): ListAdHocObservationResultsResponsePayload {
     val results =
@@ -518,7 +548,7 @@ class ObservationsController(
   @PutMapping("/{observationId}")
   fun rescheduleObservation(
       @PathVariable observationId: ObservationId,
-      @RequestBody payload: RescheduleObservationRequestPayload
+      @RequestBody payload: RescheduleObservationRequestPayload,
   ): SimpleSuccessResponsePayload {
     observationService.rescheduleObservation(observationId, payload.startDate, payload.endDate)
 
@@ -528,11 +558,12 @@ class ObservationsController(
   @Operation(
       summary =
           "Replaces a user-entered 'Other' species with one of the organization's species in " +
-              "an observation.")
+              "an observation."
+  )
   @PostMapping("/{observationId}/mergeOtherSpecies")
   fun mergeOtherSpecies(
       @PathVariable observationId: ObservationId,
-      @RequestBody payload: MergeOtherSpeciesRequestPayload
+      @RequestBody payload: MergeOtherSpeciesRequestPayload,
   ): SimpleSuccessResponsePayload {
     observationStore.mergeOtherSpecies(observationId, payload.otherSpeciesName, payload.speciesId)
 
@@ -548,7 +579,8 @@ data class ObservationPayload(
     @Schema(
         description =
             "Total number of monitoring plots that haven't been completed yet. Includes both " +
-                "claimed and unclaimed plots.")
+                "claimed and unclaimed plots."
+    )
     val numIncompletePlots: Int,
     @Schema(description = "Total number of monitoring plots in observation, regardless of status.")
     val numPlots: Int,
@@ -557,15 +589,17 @@ data class ObservationPayload(
     @Schema(
         description =
             "If this observation has already started, the version of the planting site that was " +
-                "used to place its monitoring plots.")
+                "used to place its monitoring plots."
+    )
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,
     @ArraySchema(
         arraySchema =
             Schema(
-                description =
-                    "If specific subzones were requested for this observation, their IDs."))
+                description = "If specific subzones were requested for this observation, their IDs."
+            )
+    )
     val requestedSubzoneIds: Set<PlantingSubzoneId>?,
     @Schema(description = "Date this observation started.") //
     val startDate: LocalDate,
@@ -601,12 +635,14 @@ data class ListObservationsResponsePayload(
     @Schema(
         description =
             "Total number of monitoring plots that haven't been completed yet across all current " +
-                "observations.")
+                "observations."
+    )
     val totalIncompletePlots: Int,
     @Schema(
         description =
             "Total number of monitoring plots that haven't been claimed yet across all current " +
-                "observations.")
+                "observations."
+    )
     val totalUnclaimedPlots: Int,
 ) : SuccessResponsePayload
 
@@ -658,12 +694,14 @@ data class RecordedPlantPayload(
     @Schema(description = "GPS coordinates where plant was observed.") //
     val gpsCoordinates: Point,
     @Schema(
-        description = "Required if certainty is Known. Ignored if certainty is Other or Unknown.")
+        description = "Required if certainty is Known. Ignored if certainty is Other or Unknown."
+    )
     val speciesId: SpeciesId?,
     @Schema(
         description =
             "If certainty is Other, the optional user-supplied name of the species. Ignored if " +
-                "certainty is Known or Unknown.")
+                "certainty is Known or Unknown."
+    )
     val speciesName: String?,
     val status: RecordedPlantStatus,
 ) {
@@ -705,28 +743,33 @@ data class ObservationSpeciesResultsPayload(
         description =
             "Number of dead plants observed in permanent monitoring plots in all observations " +
                 "including this one. 0 if this is a plot-level result for a temporary monitoring " +
-                "plot.")
+                "plot."
+    )
     val cumulativeDead: Int,
     @Schema(
         description =
             "Percentage of plants in permanent monitoring plots that are dead. If there are no " +
                 "permanent monitoring plots (or if this is a plot-level result for a temporary " +
-                "monitoring plot) this will be null.")
+                "monitoring plot) this will be null."
+    )
     val mortalityRate: Int?,
     @Schema(
         description =
             "Number of live plants observed in permanent plots in this observation, not " +
                 "including existing plants. 0 if ths is a plot-level result for a temporary " +
-                "monitoring plot.")
+                "monitoring plot."
+    )
     val permanentLive: Int,
     @Schema(
         description =
-            "If certainty is Known, the ID of the species. Null if certainty is Other or Unknown.")
+            "If certainty is Known, the ID of the species. Null if certainty is Other or Unknown."
+    )
     val speciesId: SpeciesId?,
     @Schema(
         description =
             "If certainty is Other, the user-supplied name of the species. Null if certainty is " +
-                "Known or Unknown.")
+                "Known or Unknown."
+    )
     val speciesName: String?,
     @Schema(description = "Number of dead plants observed in this observation.") //
     val totalDead: Int,
@@ -734,7 +777,8 @@ data class ObservationSpeciesResultsPayload(
     val totalExisting: Int,
     @Schema(
         description =
-            "Number of live plants observed in this observation, not including existing plants.")
+            "Number of live plants observed in this observation, not including existing plants."
+    )
     val totalLive: Int,
     @Schema(description = "Total number of live and existing plants of this species.")
     val totalPlants: Int,
@@ -762,7 +806,8 @@ data class ObservationMonitoringPlotResultsPayload(
     val completedTime: Instant?,
     val conditions: Set<ObservableCondition>,
     @ArraySchema(
-        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
+        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position.")
+    )
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
     val elevationMeters: BigDecimal?,
     val isAdHoc: Boolean,
@@ -771,7 +816,8 @@ data class ObservationMonitoringPlotResultsPayload(
             "True if this was a permanent monitoring plot in this observation. Clients should " +
                 "not assume that the set of permanent monitoring plots is the same in all " +
                 "observations; the number of permanent monitoring plots can be adjusted over " +
-                "time based on observation results.")
+                "time based on observation results."
+    )
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     @Schema(description = "Full name of this monitoring plot, including zone and subzone prefixes.")
@@ -781,7 +827,8 @@ data class ObservationMonitoringPlotResultsPayload(
     @Schema(
         description =
             "If this is a permanent monitoring plot in this observation, percentage of plants of " +
-                "all species that were dead.")
+                "all species that were dead."
+    )
     val mortalityRate: Int?,
     val notes: String?,
     @Schema(description = "IDs of any newer monitoring plots that overlap with this one.")
@@ -798,13 +845,15 @@ data class ObservationMonitoringPlotResultsPayload(
     @Schema(
         description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
-                "status or species.")
+                "status or species."
+    )
     val totalPlants: Int,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total.")
+                "species name is counted as a separate species for purposes of this total."
+    )
     val totalSpecies: Int,
     @Schema(description = "Information about plants of unknown species, if any were observed.")
     val unknownSpecies: ObservationSpeciesResultsPayload?,
@@ -852,12 +901,14 @@ data class ObservationPlantingSubzoneResultsPayload(
     @Schema(
         description =
             "Estimated number of plants in planting subzone based on estimated planting density " +
-                "and subzone area. Only present if the subzone has completed planting.")
+                "and subzone area. Only present if the subzone has completed planting."
+    )
     val estimatedPlants: Int?,
     @Schema(
         description =
             "Percentage of plants of all species that were dead in this subzone's permanent " +
-                "monitoring plots.")
+                "monitoring plots."
+    )
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
@@ -865,23 +916,27 @@ data class ObservationPlantingSubzoneResultsPayload(
     @Schema(
         description =
             "Estimated planting density for the subzone based on the observed planting densities " +
-                "of monitoring plots.")
+                "of monitoring plots."
+    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     @Schema(
-        description = "ID of the subzone. Absent if the subzone was deleted after the observation.")
+        description = "ID of the subzone. Absent if the subzone was deleted after the observation."
+    )
     val plantingSubzoneId: PlantingSubzoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
-                "status or species.")
+                "status or species."
+    )
     val totalPlants: Int,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total.")
+                "species name is counted as a separate species for purposes of this total."
+    )
     val totalSpecies: Int,
 ) {
   constructor(
@@ -914,19 +969,22 @@ data class ObservationPlantingZoneResultsPayload(
         description =
             "Estimated number of plants in planting zone based on estimated planting density and " +
                 "planting zone area. Only present if all the subzones in the zone have been " +
-                "marked as having completed planting.")
+                "marked as having completed planting."
+    )
     val estimatedPlants: Int?,
     @Schema(
         description =
             "Percentage of plants of all species that were dead in this zone's permanent " +
-                "monitoring plots.")
+                "monitoring plots."
+    )
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     val name: String,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
-                "of monitoring plots.")
+                "of monitoring plots."
+    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
@@ -936,13 +994,15 @@ data class ObservationPlantingZoneResultsPayload(
     @Schema(
         description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
-                "status or species.")
+                "status or species."
+    )
     val totalPlants: Int,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total.")
+                "species name is counted as a separate species for purposes of this total."
+    )
     val totalSpecies: Int,
 ) {
   constructor(
@@ -977,12 +1037,14 @@ data class ObservationResultsPayload(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
                 "density and site size. Only present if all the subzones in the site have been " +
-                "marked as having completed planting.")
+                "marked as having completed planting."
+    )
     val estimatedPlants: Int?,
     @Schema(
         description =
             "Percentage of plants of all species that were dead in this site's permanent " +
-                "monitoring plots.")
+                "monitoring plots."
+    )
     val isAdHoc: Boolean,
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
@@ -990,7 +1052,8 @@ data class ObservationResultsPayload(
     @Schema(
         description =
             "Estimated planting density for the site, based on the observed planting densities " +
-                "of monitoring plots.")
+                "of monitoring plots."
+    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
@@ -1041,20 +1104,23 @@ data class PlantingZoneObservationSummaryPayload(
         description =
             "Estimated number of plants in planting zone based on estimated planting density and " +
                 "planting zone area. Only present if all the subzones in the zone have been " +
-                "marked as having completed planting.")
+                "marked as having completed planting."
+    )
     val estimatedPlants: Int?,
     @Schema(description = "The latest time of the observations used in this summary.")
     val latestObservationTime: Instant,
     @Schema(
         description =
             "Percentage of plants of all species that were dead in this zone's permanent " +
-                "monitoring plots.")
+                "monitoring plots."
+    )
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
-                "of monitoring plots.")
+                "of monitoring plots."
+    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     @Schema(description = "List of subzone observations used in this summary.")
@@ -1062,17 +1128,20 @@ data class PlantingZoneObservationSummaryPayload(
     val plantingZoneId: PlantingZoneId,
     @Schema(
         description =
-            "Combined list of observed species and their statuses from the latest observation of each subzone.")
+            "Combined list of observed species and their statuses from the latest observation of each subzone."
+    )
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
-            "Total number of plants recorded from the latest observations of each subzone. Includes all plants, regardless of live/dead status or species.")
+            "Total number of plants recorded from the latest observations of each subzone. Includes all plants, regardless of live/dead status or species."
+    )
     val totalPlants: Int,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total.")
+                "species name is counted as a separate species for purposes of this total."
+    )
     val totalSpecies: Int,
 ) {
   constructor(
@@ -1105,36 +1174,42 @@ data class PlantingSiteObservationSummaryPayload(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
                 "density and site size. Only present if all the subzones in the site have been " +
-                "marked as having completed planting.")
+                "marked as having completed planting."
+    )
     val estimatedPlants: Int?,
     @Schema(description = "The latest time of the observations used in this summary.")
     val latestObservationTime: Instant,
     @Schema(
         description =
             "Percentage of plants of all species that were dead in this site's permanent " +
-                "monitoring plots.")
+                "monitoring plots."
+    )
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the site, based on the observed planting densities " +
-                "of monitoring plots.")
+                "of monitoring plots."
+    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingZones: List<PlantingZoneObservationSummaryPayload>,
     @Schema(
         description =
-            "Combined list of observed species and their statuses from the latest observation of each subzone within each zone.")
+            "Combined list of observed species and their statuses from the latest observation of each subzone within each zone."
+    )
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
-            "Total number of plants recorded from the latest observations of each subzone within each zone. Includes all plants, regardless of live/dead status or species.")
+            "Total number of plants recorded from the latest observations of each subzone within each zone. Includes all plants, regardless of live/dead status or species."
+    )
     val totalPlants: Int,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total.")
+                "species name is counted as a separate species for purposes of this total."
+    )
     val totalSpecies: Int,
 ) {
   constructor(
@@ -1176,7 +1251,7 @@ data class CompleteAdHocObservationRequestPayload(
 
 data class CompleteAdHocObservationResponsePayload(
     val observationId: ObservationId,
-    val plotId: MonitoringPlotId
+    val plotId: MonitoringPlotId,
 ) : SuccessResponsePayload
 
 data class CompletePlotObservationRequestPayload(
@@ -1214,7 +1289,8 @@ data class ListObservationSummariesResponsePayload(
     @Schema(
         description =
             "History of rollup summaries of planting site observations in order of observation " +
-                "time, latest first. ")
+                "time, latest first. "
+    )
     val summaries: List<PlantingSiteObservationSummaryPayload>,
 ) : SuccessResponsePayload
 
@@ -1222,12 +1298,14 @@ data class MergeOtherSpeciesRequestPayload(
     @Schema(
         description =
             "Name of the species of certainty Other whose recorded plants should be updated to " +
-                "refer to the known species.")
+                "refer to the known species."
+    )
     val otherSpeciesName: String,
     @Schema(
         description =
             "ID of the existing species that the Other species' recorded plants should be merged " +
-                "into.")
+                "into."
+    )
     val speciesId: SpeciesId,
 )
 
@@ -1240,13 +1318,15 @@ data class ReplaceObservationPlotResponsePayload(
     @Schema(
         description =
             "IDs of monitoring plots that were added to the observation. Empty if no plots were " +
-                "added.")
+                "added."
+    )
     val addedMonitoringPlotIds: Set<MonitoringPlotId>,
     @Schema(
         description =
             "IDs of monitoring plots that were removed from the observation. Will usually " +
                 "include the requested plot ID, but may be empty if the replacement request " +
-                "couldn't be satisfied.")
+                "couldn't be satisfied."
+    )
     val removedMonitoringPlotIds: Set<MonitoringPlotId>,
 ) : SuccessResponsePayload {
   constructor(
@@ -1260,18 +1340,21 @@ data class ReplaceObservationPlotResponsePayload(
 data class RescheduleObservationRequestPayload(
     @Schema(
         description =
-            "The end date for this observation, should be limited to 2 months from the start date .")
+            "The end date for this observation, should be limited to 2 months from the start date ."
+    )
     val endDate: LocalDate,
     @Schema(
         description =
-            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
+            "The start date for this observation, can be up to a year from the date this schedule request occurs on."
+    )
     val startDate: LocalDate,
 )
 
 data class ScheduleObservationRequestPayload(
     @Schema(
         description =
-            "The end date for this observation, should be limited to 2 months from the start date.")
+            "The end date for this observation, should be limited to 2 months from the start date."
+    )
     val endDate: LocalDate,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
@@ -1279,12 +1362,14 @@ data class ScheduleObservationRequestPayload(
     @ArraySchema(
         arraySchema =
             Schema(description = "The IDs of the subzones this observation should cover."),
-        minItems = 1)
+        minItems = 1,
+    )
     val requestedSubzoneIds: Set<PlantingSubzoneId>,
     @Schema(
         description =
             "The start date for this observation, can be up to a year from the date this " +
-                "schedule request occurs on.")
+                "schedule request occurs on."
+    )
     val startDate: LocalDate,
 ) {
   fun toModel() =
@@ -1296,14 +1381,16 @@ data class ScheduleObservationRequestPayload(
           plantingSiteId = plantingSiteId,
           requestedSubzoneIds = requestedSubzoneIds,
           startDate = startDate,
-          state = ObservationState.Upcoming)
+          state = ObservationState.Upcoming,
+      )
 }
 
 data class ScheduleObservationResponsePayload(val id: ObservationId) : SuccessResponsePayload
 
 data class UpdatePlotObservationRequestPayload(
     @ArraySchema(
-        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
+        arraySchema = Schema(description = "Observed coordinates, if any, up to one per position.")
+    )
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
 )
 

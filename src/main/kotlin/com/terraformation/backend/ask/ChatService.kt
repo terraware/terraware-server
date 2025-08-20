@@ -78,7 +78,10 @@ class ChatService(
    */
   private val loggerAdvisor =
       SimpleLoggerAdvisor(
-          { request -> request.prompt.contents }, { response -> response.result.output.text }, 100)
+          { request -> request.prompt.contents },
+          { response -> response.result.output.text },
+          100,
+      )
 
   private val chatClient: ChatClient = chatClientBuilder.build()
   private val chatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build()
@@ -99,7 +102,7 @@ class ChatService(
       projectId: ProjectId?,
       question: String,
       conversationId: String? = null,
-      showVariables: Boolean = false
+      showVariables: Boolean = false,
   ): String? {
     return try {
       val template =
@@ -109,7 +112,8 @@ class ChatService(
                           basePromptTemplate,
                           if (showVariables) includeVariablesAndDocumentsPrompt else null,
                       )
-                      .joinToString("\n"))
+                      .joinToString("\n")
+              )
               .variables(mapOf("project_context" to renderProjectContext(projectId)))
               .build()
 
@@ -120,17 +124,20 @@ class ChatService(
                       .apply {
                         if (projectId != null) {
                           filterExpression(
-                              FilterExpressionBuilder().eq("projectId", projectId).build())
+                              FilterExpressionBuilder().eq("projectId", projectId).build()
+                          )
                         }
                       }
                       .topK(contextItemsToInclude)
                       .vectorStore(vectorStore)
-                      .build())
+                      .build()
+              )
               .queryAugmenter(
                   ContextualQueryAugmenter.builder()
                       .documentFormatter(this::formatDocuments)
                       .promptTemplate(template)
-                      .build())
+                      .build()
+              )
               .build()
 
       chatClient
@@ -183,8 +190,10 @@ class ChatService(
     val countryCode = project.countryCode ?: organization.countryCode
     val countryName = countryCode?.let { countriesDao.fetchOneByCode(it)?.name }
     val projectName =
-        if (projectAcceleratorDetails.dealName != null &&
-            projectAcceleratorDetails.dealName.length > 3) {
+        if (
+            projectAcceleratorDetails.dealName != null &&
+                projectAcceleratorDetails.dealName.length > 3
+        ) {
           projectAcceleratorDetails.dealName.substring(3)
         } else {
           project.name

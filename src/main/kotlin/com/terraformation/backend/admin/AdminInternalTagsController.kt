@@ -97,7 +97,7 @@ class AdminInternalTagsController(
   @PostMapping("/deleteInternalTag/{id}")
   fun deleteInternalTag(
       @PathVariable("id") id: InternalTagId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       internalTagStore.deleteTag(id)

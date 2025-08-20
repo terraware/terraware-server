@@ -40,7 +40,8 @@ class TerrawareErrorController(
     val attrs =
         errorAttributes.getErrorAttributes(
             ServletWebRequest(request),
-            ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE))
+            ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE),
+        )
 
     val redirectUri =
         if (status == HttpStatus.BAD_REQUEST && attrs["path"] == "/sso/login") {

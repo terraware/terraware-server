@@ -52,7 +52,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   organizationId = organizationId,
                   projectId = projectId,
                   timeZone = timeZone,
-              ))
+              )
+          )
 
       assertEquals(
           listOf(
@@ -67,9 +68,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   timeZone = timeZone,
-              )),
+              )
+          ),
           plantingSitesDao.findAll(),
-          "Planting sites")
+          "Planting sites",
+      )
 
       assertTableEmpty(PLANTING_SITE_HISTORIES)
       assertTableEmpty(PLANTING_ZONES)
@@ -86,7 +89,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   boundary = boundary,
                   name = "name",
                   organizationId = organizationId,
-              ))
+              )
+          )
 
       assertEquals(
           listOf(
@@ -101,9 +105,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   modifiedTime = Instant.EPOCH,
                   name = "name",
                   organizationId = organizationId,
-              )),
+              )
+          ),
           plantingSitesDao.findAll(),
-          "Planting sites")
+          "Planting sites",
+      )
 
       assertTableEmpty(PLANTING_ZONES)
     }
@@ -115,7 +121,11 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       val model =
           store.createPlantingSite(
               PlantingSiteModel.create(
-                  boundary = boundary, name = "name", organizationId = organizationId))
+                  boundary = boundary,
+                  name = "name",
+                  organizationId = organizationId,
+              )
+          )
 
       assertNull(plantingSitesDao.fetchOneById(model.id)!!.areaHa, "Planting site area")
     }
@@ -171,7 +181,9 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                                   PlantingSubzoneModel.create(
                                       boundary = subzone12Boundary,
                                       fullName = "Zone 1-Subzone 2",
-                                      name = "Subzone 2")),
+                                      name = "Subzone 2",
+                                  ),
+                              ),
                           studentsT = BigDecimal(5),
                           targetPlantingDensity = BigDecimal(6),
                           variance = BigDecimal(7),
@@ -189,7 +201,12 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                                   PlantingSubzoneModel.create(
                                       boundary = subzone22Boundary,
                                       fullName = "Zone 2-Subzone 2",
-                                      name = "Subzone 2")))))
+                                      name = "Subzone 2",
+                                  ),
+                              ),
+                      ),
+                  ),
+          )
 
       val model = store.createPlantingSite(newModel)
 
@@ -210,7 +227,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               organizationId = organizationId,
           ),
           plantingSitesRow.copy(boundary = null, gridOrigin = null),
-          "Planting site")
+          "Planting site",
+      )
 
       val commonZonesRow =
           PlantingZonesRow(
@@ -254,7 +272,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           actualZones.values.map { it.copy(boundary = null) }.toSet(),
-          "Planting zones")
+          "Planting zones",
+      )
 
       val commonSubzonesRow =
           PlantingSubzonesRow(
@@ -271,19 +290,23 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertGeometryEquals(
           subzone11Boundary,
           actualSubzones.single { it.fullName == "Zone 1-Subzone 1" }.boundary,
-          "Z1S1 boundary")
+          "Z1S1 boundary",
+      )
       assertGeometryEquals(
           subzone12Boundary,
           actualSubzones.single { it.fullName == "Zone 1-Subzone 2" }.boundary,
-          "Z1S2 boundary")
+          "Z1S2 boundary",
+      )
       assertGeometryEquals(
           subzone21Boundary,
           actualSubzones.single { it.fullName == "Zone 2-Subzone 1" }.boundary,
-          "Z2S1 boundary")
+          "Z2S1 boundary",
+      )
       assertGeometryEquals(
           subzone22Boundary,
           actualSubzones.single { it.fullName == "Zone 2-Subzone 2" }.boundary,
-          "Z2S2 boundary")
+          "Z2S2 boundary",
+      )
       assertEquals(
           setOf(
               commonSubzonesRow.copy(
@@ -312,7 +335,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           actualSubzones.map { it.copy(boundary = null) }.toSet(),
-          "Planting subzones")
+          "Planting subzones",
+      )
     }
 
     @Test
@@ -328,7 +352,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   exclusion = exclusion,
                   name = "name",
                   organizationId = organizationId,
-              ))
+              )
+          )
 
       assertNotNull(model.historyId, "History ID")
 
@@ -345,7 +370,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   plantingSiteId = model.id,
               ),
           ),
-          plantingSiteHistoriesDao.findAll())
+          plantingSiteHistoriesDao.findAll(),
+      )
     }
 
     @Test
@@ -375,7 +401,13 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                                           boundary = subzoneBoundary,
                                           exclusion = exclusion,
                                           fullName = "zone-subzone",
-                                          name = "subzone"))))))
+                                          name = "subzone",
+                                      )
+                                  ),
+                          )
+                      ),
+              )
+          )
 
       assertNotNull(model.historyId, "History ID")
       assertEquals(
@@ -392,7 +424,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           plantingSiteHistoriesDao.findAll(),
-          "Planting site histories")
+          "Planting site histories",
+      )
 
       val zoneHistories = plantingZoneHistoriesDao.findAll()
       assertEquals(
@@ -407,7 +440,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           zoneHistories.map { it.copy(id = null) },
-          "Planting zone histories")
+          "Planting zone histories",
+      )
 
       assertEquals(
           listOf(
@@ -422,7 +456,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           plantingSubzoneHistoriesDao.findAll().map { it.copy(id = null) },
-          "Planting subzone histories")
+          "Planting subzone histories",
+      )
 
       assertTableEmpty(MONITORING_PLOT_HISTORIES)
     }
@@ -446,10 +481,15 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               plantingSeasons =
                   listOf(
                       UpdatedPlantingSeasonModel(
-                          startDate = season1StartDate, endDate = season1EndDate),
+                          startDate = season1StartDate,
+                          endDate = season1EndDate,
+                      ),
                       UpdatedPlantingSeasonModel(
-                          startDate = season2StartDate, endDate = season2EndDate),
-                  ))
+                          startDate = season2StartDate,
+                          endDate = season2EndDate,
+                      ),
+                  ),
+          )
 
       val expected =
           listOf(
@@ -485,7 +525,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
             PlantingSiteModel.create(
                 name = "name",
                 organizationId = organizationId,
-            ))
+            )
+        )
       }
     }
 
@@ -500,7 +541,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                 name = "name",
                 organizationId = organizationId,
                 projectId = projectId,
-            ))
+            )
+        )
       }
     }
 
@@ -519,7 +561,10 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                           boundary = boundary,
                           name = "name",
                           // Empty subzone list is invalid.
-                          plantingSubzones = emptyList())))
+                          plantingSubzones = emptyList(),
+                      )
+                  ),
+          )
 
       assertThrows<PlantingSiteMapInvalidException> { store.createPlantingSite(newModel) }
     }
@@ -538,9 +583,15 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
             plantingSeasons =
                 listOf(
                     UpdatedPlantingSeasonModel(
-                        startDate = LocalDate.of(2023, 1, 1), endDate = LocalDate.of(2023, 2, 15)),
+                        startDate = LocalDate.of(2023, 1, 1),
+                        endDate = LocalDate.of(2023, 2, 15),
+                    ),
                     UpdatedPlantingSeasonModel(
-                        startDate = LocalDate.of(2023, 2, 10), endDate = LocalDate.of(2023, 5, 1))))
+                        startDate = LocalDate.of(2023, 2, 10),
+                        endDate = LocalDate.of(2023, 5, 1),
+                    ),
+                ),
+        )
       }
     }
 
@@ -549,18 +600,26 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
 
       assertPlantingSeasonCreateThrows<CannotCreatePastPlantingSeasonException>(
-          LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 1))
+          LocalDate.of(2022, 1, 1),
+          LocalDate.of(2022, 6, 1),
+      )
       assertPlantingSeasonCreateThrows<PlantingSeasonTooFarInFutureException>(
-          LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 1))
+          LocalDate.of(2025, 1, 1),
+          LocalDate.of(2025, 3, 1),
+      )
       assertPlantingSeasonCreateThrows<PlantingSeasonTooLongException>(
-          LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 2))
+          LocalDate.of(2023, 1, 1),
+          LocalDate.of(2024, 1, 2),
+      )
       assertPlantingSeasonCreateThrows<PlantingSeasonTooShortException>(
-          LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 15))
+          LocalDate.of(2023, 1, 1),
+          LocalDate.of(2023, 1, 15),
+      )
     }
 
     private inline fun <reified T : Exception> assertPlantingSeasonCreateThrows(
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ) {
       assertThrows<T> {
         store.createPlantingSite(
@@ -570,7 +629,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                 timeZone = timeZone,
             ),
             plantingSeasons =
-                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
+                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
+        )
       }
     }
   }

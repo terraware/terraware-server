@@ -69,7 +69,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               withdrawalId,
               plantingSiteId,
               plantingSubzoneId,
-              mapOf(speciesId1 to 15, speciesId2 to 20))
+              mapOf(speciesId1 to 15, speciesId2 to 20),
+          )
 
       assertEquals(
           listOf(
@@ -84,7 +85,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           deliveriesDao.findAll(),
-          "Deliveries")
+          "Deliveries",
+      )
 
       assertEquals(
           setOf(
@@ -110,7 +112,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           plantingsDao.findAll().map { it.copy(id = null) }.toSet(),
-          "Plantings")
+          "Plantings",
+      )
 
       assertEquals(
           setOf(
@@ -118,7 +121,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 20, 20),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations")
+          "Planting site populations",
+      )
 
       assertEquals(
           setOf(
@@ -126,7 +130,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 20, 20),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
-          "Planting zone populations")
+          "Planting zone populations",
+      )
 
       assertEquals(
           setOf(
@@ -134,7 +139,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
-          "Planting subzone populations")
+          "Planting subzone populations",
+      )
     }
 
     @Test
@@ -160,7 +166,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     fun `requires that planting site be owned by same organization as withdrawal`() {
       val otherOrgId = insertOrganization()
       plantingSitesDao.update(
-          plantingSitesDao.fetchOneById(plantingSiteId)!!.copy(organizationId = otherOrgId))
+          plantingSitesDao.fetchOneById(plantingSiteId)!!.copy(organizationId = otherOrgId)
+      )
 
       assertThrows<CrossOrganizationDeliveryNotAllowedException> {
         store.createDelivery(withdrawalId, plantingSiteId, null, emptyMap())
@@ -175,7 +182,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           withdrawalId,
           plantingSiteId,
           plantingSubzoneId,
-          mapOf(speciesId1 to 100, speciesId2 to 100))
+          mapOf(speciesId1 to 100, speciesId2 to 100),
+      )
     }
     private val species1PlantingId: PlantingId by lazy {
       plantingsDao.fetchByDeliveryId(deliveryId).first { it.speciesId == speciesId1 }.id!!
@@ -208,7 +216,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   notes = "notes 2",
                   toPlantingSubzoneId = otherPlantingSubzoneId,
               ),
-          ))
+          ),
+      )
 
       val commonValues =
           PlantingsRow(
@@ -267,7 +276,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 100, 100),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations")
+          "Planting site populations",
+      )
 
       assertEquals(
           setOf(
@@ -275,7 +285,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 100, 100),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
-          "Planting zone populations")
+          "Planting zone populations",
+      )
 
       assertEquals(
           setOf(
@@ -285,7 +296,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSubzonePopulationsRow(otherPlantingSubzoneId, speciesId2, 2, 2),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
-          "Planting subzone populations")
+          "Planting subzone populations",
+      )
     }
 
     @Test
@@ -293,7 +305,11 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       val otherWithdrawalId = insertNurseryWithdrawal()
       val otherDeliveryId =
           store.createDelivery(
-              otherWithdrawalId, plantingSiteId, plantingSubzoneId, mapOf(speciesId1 to 10))
+              otherWithdrawalId,
+              plantingSiteId,
+              plantingSubzoneId,
+              mapOf(speciesId1 to 10),
+          )
       val otherDeliveryPlantingId = plantingsDao.fetchByDeliveryId(otherDeliveryId).first().id!!
 
       assertThrows<CrossDeliveryReassignmentNotAllowedException> {
@@ -303,7 +319,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                )
+            ),
+        )
       }
 
       every { user.canReadPlanting(otherDeliveryPlantingId) } returns false
@@ -315,7 +334,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                )
+            ),
+        )
       }
     }
 
@@ -328,7 +350,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = plantingSubzoneId)))
+                    toPlantingSubzoneId = plantingSubzoneId,
+                )
+            ),
+        )
       }
     }
 
@@ -341,7 +366,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 10000,
-                    toPlantingSubzoneId = otherPlantingSubzoneId)))
+                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                )
+            ),
+        )
       }
     }
 
@@ -351,7 +379,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId)
+              toPlantingSubzoneId = otherPlantingSubzoneId,
+          )
       store.reassignDelivery(deliveryId, listOf(reassignment))
 
       assertThrows<ReassignmentExistsException> {
@@ -370,13 +399,15 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           speciesId = speciesId1,
           numPlants = -1,
           plantingSiteId = plantingSiteId,
-          plantingTypeId = PlantingType.Undo)
+          plantingTypeId = PlantingType.Undo,
+      )
 
       val reassignment =
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId)
+              toPlantingSubzoneId = otherPlantingSubzoneId,
+          )
 
       assertThrows<ReassignmentOfUndoneWithdrawalNotAllowedException> {
         store.reassignDelivery(deliveryId, listOf(reassignment))
@@ -394,13 +425,15 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           speciesId = speciesId1,
           numPlants = -1,
           plantingSiteId = plantingSiteId,
-          plantingTypeId = PlantingType.Undo)
+          plantingTypeId = PlantingType.Undo,
+      )
 
       val reassignment =
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId)
+              toPlantingSubzoneId = otherPlantingSubzoneId,
+          )
 
       assertThrows<ReassignmentOfUndoNotAllowedException> {
         store.reassignDelivery(inserted.deliveryId, listOf(reassignment))
@@ -421,7 +454,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                     notes = "notes 1",
                     toPlantingSubzoneId = otherPlantingSubzoneId,
                 ),
-            ))
+            ),
+        )
       }
     }
   }
@@ -435,7 +469,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           insertPlanting(plantingSubzoneId = plantingSubzoneId, speciesId = speciesId1)
       val plantingId2 =
           insertPlanting(
-              numPlants = 2, plantingSubzoneId = plantingSubzoneId, speciesId = speciesId2)
+              numPlants = 2,
+              plantingSubzoneId = plantingSubzoneId,
+              speciesId = speciesId2,
+          )
 
       val expected =
           DeliveryModel(
@@ -448,13 +485,15 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                           numPlants = 1,
                           speciesId = speciesId1,
                           plantingSubzoneId = plantingSubzoneId,
-                          type = PlantingType.Delivery),
+                          type = PlantingType.Delivery,
+                      ),
                       PlantingModel(
                           id = plantingId2,
                           numPlants = 2,
                           speciesId = speciesId2,
                           plantingSubzoneId = plantingSubzoneId,
-                          type = PlantingType.Delivery),
+                          type = PlantingType.Delivery,
+                      ),
                   ),
               plantingSiteId = plantingSiteId,
               withdrawalId = withdrawalId,
@@ -496,12 +535,14 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           numPlants = -1,
           plantingSubzoneId = plantingSubzoneId,
           speciesId = speciesId1,
-          plantingTypeId = PlantingType.ReassignmentFrom)
+          plantingTypeId = PlantingType.ReassignmentFrom,
+      )
       insertPlanting(
           numPlants = 1,
           plantingSubzoneId = otherSubzoneId,
           speciesId = speciesId1,
-          plantingTypeId = PlantingType.ReassignmentTo)
+          plantingTypeId = PlantingType.ReassignmentTo,
+      )
 
       insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
       insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
@@ -513,7 +554,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       val undoWithdrawalId =
           insertNurseryWithdrawal(
-              purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = withdrawalId,
+          )
       val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
 
       val dummyPlantingId = PlantingId(1)
@@ -556,7 +599,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           expectedPlantings,
           undoDelivery.plantings.map { it.copy(id = dummyPlantingId) }.toSet(),
-          "Plantings")
+          "Plantings",
+      )
 
       assertEquals(
           setOf(
@@ -564,7 +608,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations")
+          "Planting site populations",
+      )
 
       assertEquals(
           setOf(
@@ -572,7 +617,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 4, 3),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
-          "Planting zone populations")
+          "Planting zone populations",
+      )
 
       assertEquals(
           setOf(
@@ -581,7 +627,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSubzonePopulationsRow(otherSubzoneId, speciesId1, 2, 1),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
-          "Planting subzone populations")
+          "Planting subzone populations",
+      )
     }
 
     @Test
@@ -595,7 +642,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       val undoWithdrawalId =
           insertNurseryWithdrawal(
-              purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = withdrawalId,
+          )
       val undoDeliveryId = store.undoDelivery(deliveryId, undoWithdrawalId)
 
       val dummyPlantingId = PlantingId(1)
@@ -622,7 +671,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           expectedPlantings,
           undoDelivery.plantings.map { it.copy(id = dummyPlantingId) }.toSet(),
-          "Plantings")
+          "Plantings",
+      )
 
       assertEquals(
           setOf(
@@ -630,7 +680,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations")
+          "Planting site populations",
+      )
     }
 
     @Test
@@ -650,7 +701,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           insertNurseryWithdrawal(
               createdTime = clock.instant,
               purpose = WithdrawalPurpose.Undo,
-              undoesWithdrawalId = withdrawalId)
+              undoesWithdrawalId = withdrawalId,
+          )
 
       store.undoDelivery(deliveryId, undoWithdrawalId)
 
@@ -660,7 +712,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 88, 9),
           ),
           plantingSitePopulationsDao.findAll().toSet(),
-          "Planting site populations")
+          "Planting site populations",
+      )
     }
 
     @Test
@@ -671,7 +724,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           speciesId = speciesId1,
           numPlants = -1,
           plantingSiteId = plantingSiteId,
-          plantingTypeId = PlantingType.Undo)
+          plantingTypeId = PlantingType.Undo,
+      )
 
       assertThrows<UndoOfUndoNotAllowedException> {
         store.undoDelivery(inserted.deliveryId, inserted.withdrawalId)

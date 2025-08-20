@@ -45,7 +45,8 @@ class PathGenerator(private val random: Random = Random.Default) {
         monthFormatter.format(timestamp),
         dayFormatter.format(timestamp),
         category,
-        "$baseName$extension")
+        "$baseName$extension",
+    )
   }
 
   /**

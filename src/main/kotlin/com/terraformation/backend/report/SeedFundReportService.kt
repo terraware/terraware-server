@@ -77,7 +77,8 @@ class SeedFundReportService(
               populateBody(
                   report.metadata.organizationId,
                   report.metadata.projectId,
-                  report.body.toLatestVersion()),
+                  report.body.toLatestVersion(),
+              ),
       )
     }
   }
@@ -89,7 +90,10 @@ class SeedFundReportService(
    */
   fun create(organizationId: OrganizationId, projectId: ProjectId? = null): SeedFundReportMetadata {
     return seedFundReportStore.create(
-        organizationId, projectId, populateBody(organizationId, projectId))
+        organizationId,
+        projectId,
+        populateBody(organizationId, projectId),
+    )
   }
 
   /**
@@ -99,7 +103,7 @@ class SeedFundReportService(
    */
   fun update(
       reportId: SeedFundReportId,
-      modify: (LatestSeedFundReportBodyModel) -> LatestSeedFundReportBodyModel
+      modify: (LatestSeedFundReportBodyModel) -> LatestSeedFundReportBodyModel,
   ) {
     val modifiedBody = modify(fetchOneById(reportId).body.toLatestVersion())
 
@@ -177,7 +181,9 @@ class SeedFundReportService(
                 config.report.googleFolderId ?: driveId,
                 listOf(
                     "${organization.name} (${organization.id})",
-                    "${report.metadata.year}-Q${report.metadata.quarter}"))
+                    "${report.metadata.year}-Q${report.metadata.quarter}",
+                ),
+            )
         val baseFilename =
             "${organization.name} ${report.metadata.year}-Q${report.metadata.quarter}"
 
@@ -189,7 +195,8 @@ class SeedFundReportService(
             // Auto-convert HTML to Google Docs.
             inputStream = html.byteInputStream(),
             driveId = driveId,
-            inputStreamContentType = MediaType.TEXT_HTML_VALUE)
+            inputStreamContentType = MediaType.TEXT_HTML_VALUE,
+        )
 
         val csv = seedFundReportRenderer.renderReportCsv(report)
         googleDriveWriter.uploadFile(
@@ -197,7 +204,8 @@ class SeedFundReportService(
             filename = "$baseFilename.csv",
             contentType = "text/csv",
             inputStream = csv.byteInputStream(),
-            driveId = driveId)
+            driveId = driveId,
+        )
 
         seedFundReportStore.fetchFilesByReportId(reportId).forEach { model ->
           googleDriveWriter.copyFile(driveId, folderId, model.metadata)
@@ -214,7 +222,7 @@ class SeedFundReportService(
   private fun populateBody(
       organizationId: OrganizationId,
       projectId: ProjectId? = null,
-      body: LatestSeedFundReportBodyModel? = null
+      body: LatestSeedFundReportBodyModel? = null,
   ): LatestSeedFundReportBodyModel {
     val organization = organizationStore.fetchOneById(organizationId)
     val isAnnual = body?.isAnnual ?: (seedFundReportStore.getLastQuarter().quarter == 4)

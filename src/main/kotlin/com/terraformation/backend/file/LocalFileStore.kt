@@ -34,7 +34,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 @Priority(20) // If both S3 and filesystem storage are configured, prefer S3.
 class LocalFileStore(
     private val config: TerrawareServerConfig,
-    private val pathGenerator: PathGenerator
+    private val pathGenerator: PathGenerator,
 ) : FileStore {
   override fun delete(url: URI) {
     getFullPath(url).deleteExisting()

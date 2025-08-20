@@ -30,7 +30,9 @@ fun processCsvFile(
   if (skipHeaderRow) {
     if (csvReader.readNext() == null) {
       throw CsvImportFailedException(
-          listOf(CsvImportError(0, "No data found in file")), exceptionMessage)
+          listOf(CsvImportError(0, "No data found in file")),
+          exceptionMessage,
+      )
     }
 
     rowNumber++

@@ -28,7 +28,7 @@ private constructor(
 ) : SearchField by original {
   constructor(
       fieldName: String,
-      targetPath: SearchFieldPath
+      targetPath: SearchFieldPath,
   ) : this(fieldName, targetPath, targetPath.searchField)
 
   init {

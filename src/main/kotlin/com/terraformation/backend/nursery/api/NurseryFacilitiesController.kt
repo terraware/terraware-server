@@ -49,7 +49,8 @@ data class NurserySummaryPayload(
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
-        maximum = "100")
+        maximum = "100",
+    )
     val lossRate: Int?,
     val readyQuantity: Long,
     @ArraySchema(arraySchema = Schema(description = "Species currently present in the nursery."))

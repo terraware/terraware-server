@@ -36,7 +36,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   private val variableManifestStore: VariableManifestStore by lazy {
     VariableManifestStore(
-        clock, documentTemplatesDao, dslContext, variableManifestsDao, variableManifestEntriesDao)
+        clock,
+        documentTemplatesDao,
+        dslContext,
+        variableManifestsDao,
+        variableManifestEntriesDao,
+    )
   }
 
   private val variableStore: VariableStore by lazy {
@@ -51,7 +56,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
 
   private val importer: ManifestImporter by lazy {
@@ -86,8 +92,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: ID must be unique across the entire manifest, Field: ID, Value: Duplicate ID, Position: 3"),
-          importResult.errors)
+              "Message: ID must be unique across the entire manifest, Field: ID, Value: Duplicate ID, Position: 3"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -104,9 +112,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Top Level Variable Name must be unique, Field: Name, Value: Project Details, Position: 3"),
+              "Message: Top Level Variable Name must be unique, Field: Name, Value: Project Details, Position: 3"
+          ),
           importResult.errors,
-          "Non-Unique Input Names")
+          "Non-Unique Input Names",
+      )
     }
 
     @Test
@@ -137,12 +147,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                 parentVariableName =
                     variableSectionsRow.parentVariableId?.let {
                       variablesDao.fetchById(it).single().name
-                    })
+                    },
+            )
           }
 
       fun getSectionVariableByNameAndParent(
           name: String,
-          parent: String? = null
+          parent: String? = null,
       ): VariableSectionsRow? =
           flatVariables
               .find { it.variableName == name && it.parentVariableName == parent }
@@ -159,7 +170,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               variableTypeId = VariableType.Section,
               parentVariableId = actualLevel1SectionVariable!!.variableId,
               parentVariableTypeId = VariableType.Section,
-              renderHeading = true)
+              renderHeading = true,
+          )
 
       val actualLevel3SectionVariable =
           getSectionVariableByNameAndParent("Project Details", "Summary Description of the Project")
@@ -168,7 +180,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               variableTypeId = VariableType.Section,
               parentVariableId = actualLevel2SectionVariable!!.variableId,
               parentVariableTypeId = VariableType.Section,
-              renderHeading = true)
+              renderHeading = true,
+          )
 
       // This is a non-numbered section, there should be no header rendering
       val actualLevel4SectionVariable =
@@ -178,7 +191,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               variableTypeId = VariableType.Section,
               parentVariableId = actualLevel3SectionVariable!!.variableId,
               parentVariableTypeId = VariableType.Section,
-              renderHeading = false)
+              renderHeading = false,
+          )
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
 
@@ -187,33 +201,42 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           expectedLevel1SectionVariable,
           actualLevel1SectionVariable.copy(variableId = null),
-          "level 1 section variable")
+          "level 1 section variable",
+      )
       assertEquals(
           expectedLevel2SectionVariable,
           actualLevel2SectionVariable.copy(variableId = null),
-          "level 2 section variable")
+          "level 2 section variable",
+      )
       assertEquals(
           expectedLevel3SectionVariable,
           actualLevel3SectionVariable.copy(variableId = null),
-          "level 3 section variable")
+          "level 3 section variable",
+      )
       assertEquals(
           expectedLevel4SectionVariable,
           actualLevel4SectionVariable?.copy(variableId = null),
-          "level 4 section variable")
+          "level 4 section variable",
+      )
     }
 
     @Test
     fun `imports section default values with multiple variables`() {
       insertTextVariable(
-          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text)
+      )
       insertTextVariable(
-          insertVariable(name = "Text Variable B", stableId = "1002", type = VariableType.Text))
+          insertVariable(name = "Text Variable B", stableId = "1002", type = VariableType.Text)
+      )
       insertTextVariable(
-          insertVariable(name = "Text Variable C", stableId = "1003", type = VariableType.Text))
+          insertVariable(name = "Text Variable C", stableId = "1003", type = VariableType.Text)
+      )
       insertTextVariable(
-          insertVariable(name = "Text Variable D", stableId = "1004", type = VariableType.Text))
+          insertVariable(name = "Text Variable D", stableId = "1004", type = VariableType.Text)
+      )
       insertTextVariable(
-          insertVariable(name = "Text Variable E", stableId = "1005", type = VariableType.Text))
+          insertVariable(name = "Text Variable E", stableId = "1005", type = VariableType.Text)
+      )
 
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
@@ -337,7 +360,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `imports section default values with variables at the beginning`() {
       insertTextVariable(
-          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text)
+      )
 
       val documentTemplateId = inserted.documentTemplateId
       val testCsv = "$header\nSection,1,,,,Yes,{{Text Variable A - 1001}} at the start."
@@ -381,7 +405,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `imports section default values with variables at the end`() {
       insertTextVariable(
-          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text)
+      )
 
       val documentTemplateId = inserted.documentTemplateId
       val testCsv = "$header\nSection,1,,,,Yes,At the end is {{Text Variable A - 1001}}"
@@ -432,9 +457,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               "Variable in default section text does not exist - position: 2, referenced " +
-                  "variable stable ID: 1001"),
+                  "variable stable ID: 1001"
+          ),
           importResult.errors,
-          "Import errors")
+          "Import errors",
+      )
       assertTableEmpty(VARIABLE_MANIFEST_ENTRIES, "Should not have imported bad manifest")
     }
 
@@ -452,9 +479,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: No two children of the same parent can have the same name, Field: Name, Value: Introduction, Position: 5"),
+              "Message: No two children of the same parent can have the same name, Field: Name, Value: Introduction, Position: 5"
+          ),
           importResult.errors,
-          "Import section variables - validate sibling names")
+          "Import section variables - validate sibling names",
+      )
     }
 
     @Test
@@ -470,9 +499,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Parent for variable does not exist, Field: Parent, Value: Introduction, Position: 4"),
+              "Message: Parent for variable does not exist, Field: Parent, Value: Introduction, Position: 4"
+          ),
           importResult.errors,
-          "parent does not exist")
+          "parent does not exist",
+      )
     }
 
     @Test
@@ -488,9 +519,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               "Message: Parent for variable does not exist, Field: Parent, Value: Project Details, Position: 2",
-              "Message: Parent for variable does not exist, Field: Parent, Value: Summary Description of the Project, Position: 3"),
+              "Message: Parent for variable does not exist, Field: Parent, Value: Summary Description of the Project, Position: 3",
+          ),
           importResult.errors,
-          "parents do not exist")
+          "parents do not exist",
+      )
     }
 
     @Test
@@ -501,8 +534,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: The same variable is recommended more than once, Field: Recommended Variables, Value: Duplicate, Position: 2"),
-          importResult.errors)
+              "Message: The same variable is recommended more than once, Field: Recommended Variables, Value: Duplicate, Position: 2"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -513,8 +548,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Recommended variable does not exist - position: 2, recommended: Bogus Recommended"),
-          importResult.errors)
+              "Recommended variable does not exist - position: 2, recommended: Bogus Recommended"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -525,8 +562,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Name may not contain line breaks, Field: Name, Value: Section\nName, Position: 2"),
-          importResult.errors)
+              "Message: Name may not contain line breaks, Field: Name, Value: Section\nName, Position: 2"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -537,7 +576,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
-          importResult.errors)
+          importResult.errors,
+      )
     }
 
     @Test
@@ -575,7 +615,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           variableSectionsDao.fetchByVariableId(updatedTop.id!!, updatedBottom.id!!).toSet(),
-          "Updated sections")
+          "Updated sections",
+      )
     }
 
     @Test
@@ -624,7 +665,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           variableSectionsDao
               .fetchByVariableId(updatedTop1.id!!, updatedTop2.id!!, updatedBottom.id!!)
               .toSet(),
-          "Updated sections")
+          "Updated sections",
+      )
     }
 
     @Test
@@ -675,7 +717,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           variableSectionsDao
               .fetchByVariableId(updatedTop.id!!, updatedMiddle.id!!, updatedBottom.id!!)
               .toSet(),
-          "Updated sections")
+          "Updated sections",
+      )
     }
 
     @Test
@@ -726,7 +769,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           variableSectionsDao
               .fetchByVariableId(updatedTop.id!!, updatedMiddle.id!!, updatedBottom.id!!)
               .toSet(),
-          "Updated sections")
+          "Updated sections",
+      )
     }
 
     @Test
@@ -772,7 +816,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                   variableManifestId = updatedManifestId,
                   variableTypeId = VariableType.Section,
               ),
-          ))
+          )
+      )
     }
 
     private fun sizedInputStream(content: ByteArray) =

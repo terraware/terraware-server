@@ -123,7 +123,10 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                         createdTime = Instant.ofEpochSecond(1),
                         date = LocalDate.EPOCH,
                         id = withdrawalId,
-                        withdrawn = seeds(5))))
+                        withdrawn = seeds(5),
+                    )
+                ),
+        )
 
     private val updateSlot: CapturingSlot<AccessionModel> = slot()
 
@@ -144,7 +147,10 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     fun `createWithdrawal adds new withdrawal to accession`() {
       val withdrawal =
           WithdrawalModel(
-              accessionId = accessionId, date = LocalDate.EPOCH.plusDays(1), withdrawn = seeds(3))
+              accessionId = accessionId,
+              date = LocalDate.EPOCH.plusDays(1),
+              withdrawn = seeds(3),
+          )
       val updatedAccession = service.createWithdrawal(withdrawal)
 
       assertEquals(seeds(7), updatedAccession.remaining, "Seeds remaining")
@@ -157,7 +163,10 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     fun `createWithdrawal throws exception with correct error message if quantity too big`() {
       val withdrawal =
           WithdrawalModel(
-              accessionId = accessionId, date = LocalDate.EPOCH.plusDays(1), withdrawn = seeds(50))
+              accessionId = accessionId,
+              date = LocalDate.EPOCH.plusDays(1),
+              withdrawn = seeds(50),
+          )
       val exceptionThrown =
           try {
             service.createWithdrawal(withdrawal)
@@ -168,7 +177,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
 
       assertNotNull(exceptionThrown, "Expected exception to be thrown")
       assertEquals(
-          "Withdrawal quantity can't be more than remaining quantity", exceptionThrown?.message)
+          "Withdrawal quantity can't be more than remaining quantity",
+          exceptionThrown?.message,
+      )
     }
 
     @Test
@@ -235,7 +246,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
             latestObservedQuantity = seeds(10),
             latestObservedTime = Instant.EPOCH,
             remaining = seeds(10),
-            speciesId = SpeciesId(1))
+            speciesId = SpeciesId(1),
+        )
 
     private val accessionSlot: CapturingSlot<AccessionModel> = slot()
     private val batchSlot: CapturingSlot<NewBatchModel> = slot()
@@ -294,7 +306,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   activeGrowthQuantity = 2,
                   readyQuantity = 3,
                   hardeningOffQuantity = 4,
-                  speciesId = null))
+                  speciesId = null,
+              ),
+          )
 
       assertEquals(seeds(0), updatedAccession.remaining, "Seeds remaining")
       assertEquals(1, updatedAccession.withdrawals.size, "Number of withdrawals")
@@ -317,7 +331,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
               activeGrowthQuantity = 2,
               readyQuantity = 3,
               hardeningOffQuantity = 4,
-              speciesId = null)
+              speciesId = null,
+          )
 
       val (accession, batch) = service.createNurseryTransfer(accessionId, newBatch)
 
@@ -330,7 +345,8 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
           newBatch.copy(
               accessionId = accessionId,
               projectId = accession.projectId,
-              speciesId = accession.speciesId)
+              speciesId = accession.speciesId,
+          )
 
       verify { batchStore.create(newBatchWithAccessionData) }
     }
@@ -358,7 +374,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                   activeGrowthQuantity = 2,
                   readyQuantity = 3,
                   hardeningOffQuantity = 4,
-                  speciesId = null))
+                  speciesId = null,
+              ),
+          )
 
       assertEquals(grams(initialGrams - gramsPerSeed * (1 + 2 + 3 + 4)), accession.remaining)
     }
@@ -377,7 +395,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
-                speciesId = null))
+                speciesId = null,
+            ),
+        )
       }
     }
 
@@ -395,7 +415,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
-                speciesId = null))
+                speciesId = null,
+            ),
+        )
       }
     }
 
@@ -411,7 +433,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 activeGrowthQuantity = 2000,
                 readyQuantity = 3000,
                 hardeningOffQuantity = 4000,
-                speciesId = null))
+                speciesId = null,
+            ),
+        )
       }
     }
 
@@ -430,7 +454,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
-                speciesId = null))
+                speciesId = null,
+            ),
+        )
       }
     }
 
@@ -448,7 +474,9 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
                 activeGrowthQuantity = 0,
                 readyQuantity = 0,
                 hardeningOffQuantity = 0,
-                speciesId = null))
+                speciesId = null,
+            ),
+        )
       }
     }
   }

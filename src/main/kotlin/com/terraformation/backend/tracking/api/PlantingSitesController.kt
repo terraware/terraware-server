@@ -73,15 +73,17 @@ class PlantingSitesController(
   @Operation(
       summary = "Gets a list of an organization's planting sites.",
       description =
-          "The list can optionally contain information about planting zones and subzones.")
+          "The list can optionally contain information about planting zones and subzones.",
+  )
   fun listPlantingSites(
       @RequestParam //
       organizationId: OrganizationId,
       @RequestParam
       @Schema(
           description = "If true, include planting zones and subzones for each site.",
-          defaultValue = "false")
-      full: Boolean?
+          defaultValue = "false",
+      )
+      full: Boolean?,
   ): ListPlantingSitesResponsePayload {
     val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
     val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
@@ -92,7 +94,8 @@ class PlantingSitesController(
   @GetMapping("/{id}")
   @Operation(
       summary = "Gets information about a specific planting site.",
-      description = "Includes information about the site's planting zones and subzones.")
+      description = "Includes information about the site's planting zones and subzones.",
+  )
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
   ): GetPlantingSiteResponsePayload {
@@ -123,7 +126,8 @@ class PlantingSitesController(
   @Operation(
       summary =
           "Lists the total number of plants planted at a planting site and in each planting zone.",
-      description = "The totals are based on nursery withdrawals.")
+      description = "The totals are based on nursery withdrawals.",
+  )
   fun listPlantingSiteReportedPlants(
       @RequestParam //
       organizationId: OrganizationId,
@@ -131,14 +135,16 @@ class PlantingSitesController(
     val totals = plantingSiteStore.countReportedPlantsForOrganization(organizationId)
 
     return ListPlantingSiteReportedPlantsResponsePayload(
-        totals.map { PlantingSiteReportedPlantsPayload(it) })
+        totals.map { PlantingSiteReportedPlantsPayload(it) }
+    )
   }
 
   @GetMapping("/{id}/reportedPlants")
   @Operation(
       summary =
           "Gets the total number of plants planted at a planting site and in each planting zone.",
-      description = "The totals are based on nursery withdrawals.")
+      description = "The totals are based on nursery withdrawals.",
+  )
   fun getPlantingSiteReportedPlants(
       @PathVariable id: PlantingSiteId,
   ): GetPlantingSiteReportedPlantsResponsePayload {
@@ -172,14 +178,16 @@ class PlantingSitesController(
     val problemPayloads = problems?.map { PlantingSiteValidationProblemPayload(it) } ?: emptyList()
 
     return ValidatePlantingSiteResponsePayload(
-        isValid = problemPayloads.isEmpty(), problems = problemPayloads)
+        isValid = problemPayloads.isEmpty(),
+        problems = problemPayloads,
+    )
   }
 
   @Operation(summary = "Updates information about an existing planting site.")
   @PutMapping("/{id}")
   fun updatePlantingSite(
       @PathVariable("id") id: PlantingSiteId,
-      @RequestBody payload: UpdatePlantingSiteRequestPayload
+      @RequestBody payload: UpdatePlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
     val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
 
@@ -190,10 +198,12 @@ class PlantingSitesController(
 
   @ApiResponse200
   @ApiResponse409(
-      description = "The planting site is in use, e.g., there are plantings allocated to the site.")
+      description = "The planting site is in use, e.g., there are plantings allocated to the site."
+  )
   @Operation(
       summary = "Deletes a planting site.",
-      description = "Planting site should not have any plantings.")
+      description = "Planting site should not have any plantings.",
+  )
   @DeleteMapping("/{id}")
   fun deletePlantingSite(@PathVariable("id") id: PlantingSiteId): SimpleSuccessResponsePayload {
     plantingSiteService.deletePlantingSite(id)
@@ -208,7 +218,7 @@ data class MonitoringPlotPayload(
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
     val plotNumber: Long,
-    val sizeMeters: Int
+    val sizeMeters: Int,
 ) {
   constructor(
       model: MonitoringPlotModel
@@ -227,7 +237,7 @@ data class MonitoringPlotHistoryPayload(
     val boundary: Polygon,
     val id: MonitoringPlotHistoryId,
     val monitoringPlotId: MonitoringPlotId,
-    val sizeMeters: Int
+    val sizeMeters: Int,
 ) {
   constructor(
       model: MonitoringPlotHistoryModel
@@ -250,8 +260,8 @@ data class PlantingSubzonePayload(
     val monitoringPlots: List<MonitoringPlotPayload>,
     val name: String,
     @Schema(
-        description =
-            "When any monitoring plot in the planting subzone was most recently observed.")
+        description = "When any monitoring plot in the planting subzone was most recently observed."
+    )
     val observedTime: Instant?,
     val plantingCompleted: Boolean,
     @Schema(description = "When planting of the planting subzone was marked as completed.")
@@ -281,7 +291,8 @@ data class PlantingZonePayload(
     @Schema(
         description =
             "When the boundary of this planting zone was last modified. Modifications of other " +
-                "attributes of the planting zone do not cause this timestamp to change.")
+                "attributes of the planting zone do not cause this timestamp to change."
+    )
     val boundaryModifiedTime: Instant,
     val id: PlantingZoneId,
     val latestObservationCompletedTime: Instant?,
@@ -328,7 +339,8 @@ data class PlantingSitePayload(
     val adHocPlots: List<MonitoringPlotPayload>,
     @Schema(
         description =
-            "Area of planting site in hectares. Only present if the site has planting zones.")
+            "Area of planting site in hectares. Only present if the site has planting zones."
+    )
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon?,
     val countryCode: String?,
@@ -518,7 +530,8 @@ data class UpdatedPlantingSeasonPayload(
     @Schema(
         description =
             "If present, the start and end dates of an existing planting season will be updated. " +
-                "Otherwise a new planting season will be created.")
+                "Otherwise a new planting season will be created."
+    )
     val id: PlantingSeasonId? = null,
     val startDate: LocalDate,
 ) {
@@ -532,7 +545,8 @@ data class NewPlantingSubzonePayload(
         description =
             "Name of this planting subzone. Two subzones in the same planting zone may not have " +
                 "the same name, but using the same subzone name in different planting zones is " +
-                "valid.")
+                "valid."
+    )
     val name: String,
 ) {
   fun validate() {
@@ -557,7 +571,8 @@ data class NewPlantingZonePayload(
     @Schema(
         description =
             "Name of this planting zone. Two zones in the same planting site may not have the " +
-                "same name.")
+                "same name."
+    )
     val name: String,
     val plantingSubzones: List<NewPlantingSubzonePayload>?,
     val targetPlantingDensity: BigDecimal?,
@@ -589,7 +604,9 @@ data class PlantingSiteValidationProblemPayload(
             Schema(
                 description =
                     "If the problem is a conflict between two planting zones or two subzones, " +
-                        "the list of the conflicting zone or subzone names."))
+                        "the list of the conflicting zone or subzone names."
+            )
+    )
     val conflictsWith: Set<String>?,
     @Schema(description = "If the problem relates to a particular planting zone, its name.")
     val plantingZone: String?,
@@ -597,7 +614,8 @@ data class PlantingSiteValidationProblemPayload(
         description =
             "If the problem relates to a particular subzone, its name. If this is present, " +
                 "plantingZone will also be present and will be the name of the zone that " +
-                "contains this subzone.")
+                "contains this subzone."
+    )
     val plantingSubzone: String?,
     val problemType: PlantingSiteValidationFailureType,
 ) {
@@ -618,7 +636,8 @@ data class CreatePlantingSiteRequestPayload(
     @Schema(
         description =
             "List of planting zones to create. If present and not empty, \"boundary\" must also " +
-                "be specified.")
+                "be specified."
+    )
     val plantingZones: List<NewPlantingZonePayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
@@ -699,6 +718,8 @@ data class ValidatePlantingSiteResponsePayload(
         arraySchema =
             Schema(
                 description =
-                    "List of validation problems found, if any. Empty if the request is valid."))
-    val problems: List<PlantingSiteValidationProblemPayload>
+                    "List of validation problems found, if any. Empty if the request is valid."
+            )
+    )
+    val problems: List<PlantingSiteValidationProblemPayload>,
 ) : SuccessResponsePayload

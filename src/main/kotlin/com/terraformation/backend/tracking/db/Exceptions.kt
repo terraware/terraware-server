@@ -25,19 +25,22 @@ class CrossDeliveryReassignmentNotAllowedException(
 ) :
     MismatchedStateException(
         "Planting $plantingId is in delivery $plantingDeliveryId; cannot reassign to " +
-            "delivery $destinationDeliveryId")
+            "delivery $destinationDeliveryId"
+    )
 
 class CrossOrganizationDeliveryNotAllowedException(
     val facilityId: FacilityId,
-    val plantingSiteId: PlantingSiteId
+    val plantingSiteId: PlantingSiteId,
 ) :
     MismatchedStateException(
         "Cannot transfer from nursery $facilityId to planting site $plantingSiteId because they " +
-            "are in different organizations")
+            "are in different organizations"
+    )
 
 class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException(
-        "Deliveries to planting site $plantingSiteId must include subzone IDs")
+        "Deliveries to planting site $plantingSiteId must include subzone IDs"
+    )
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
@@ -47,11 +50,13 @@ class DraftPlantingSiteNotFoundException(val draftSiteId: DraftPlantingSiteId) :
 
 class InvalidObservationStartDateException(val startDate: LocalDate) :
     IllegalArgumentException(
-        "Observation start date $startDate should be within a year from today")
+        "Observation start date $startDate should be within a year from today"
+    )
 
 class InvalidObservationEndDateException(val startDate: LocalDate, val endDate: LocalDate) :
     IllegalArgumentException(
-        "Observation end date $endDate should be after and within two months of the start date $startDate")
+        "Observation end date $endDate should be after and within two months of the start date $startDate"
+    )
 
 class ObservationAlreadyEndedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId has already ended")
@@ -67,7 +72,7 @@ class ObservationNotFoundException(val observationId: ObservationId) :
 
 class ObservationPlotNotFoundException(
     val observationId: ObservationId,
-    val plotId: MonitoringPlotId
+    val plotId: MonitoringPlotId,
 ) : EntityNotFoundException("Observation $observationId plot $plotId not found")
 
 class PlantingNotFoundException(val plantingId: PlantingId) :
@@ -102,44 +107,52 @@ class PlotAlreadyCompletedException(val monitoringPlotId: MonitoringPlotId) :
 
 class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException(
-        "Monitoring plot $monitoringPlotId is not claimed by the current user")
+        "Monitoring plot $monitoringPlotId is not claimed by the current user"
+    )
 
 class PlotNotFoundException(val monitoringPlotId: MonitoringPlotId) :
     EntityNotFoundException("Monitoring plot $monitoringPlotId not found")
 
 class PlotNotInObservationException(
     val observationId: ObservationId,
-    val monitoringPlotId: MonitoringPlotId
+    val monitoringPlotId: MonitoringPlotId,
 ) :
     EntityNotFoundException(
-        "Monitoring plot $monitoringPlotId is not assigned to observation $observationId")
+        "Monitoring plot $monitoringPlotId is not assigned to observation $observationId"
+    )
 
 class PlotSizeNotReplaceableException(
     val observationId: ObservationId,
-    val monitoringPlotId: MonitoringPlotId
+    val monitoringPlotId: MonitoringPlotId,
 ) :
     MismatchedStateException(
-        "Monitoring plot $monitoringPlotId has old size; can't replace it in observation $observationId")
+        "Monitoring plot $monitoringPlotId has old size; can't replace it in observation $observationId"
+    )
 
 class ReassignmentExistsException(val plantingId: PlantingId) :
     MismatchedStateException(
-        "Cannot reassign from planting $plantingId because it already has a reassignment")
+        "Cannot reassign from planting $plantingId because it already has a reassignment"
+    )
 
 class ReassignmentOfReassignmentNotAllowedException(val plantingId: PlantingId) :
     MismatchedStateException(
-        "Cannot reassign from planting $plantingId because it is a reassignment")
+        "Cannot reassign from planting $plantingId because it is a reassignment"
+    )
 
 class ReassignmentOfUndoneWithdrawalNotAllowedException(val deliveryId: DeliveryId) :
     MismatchedStateException(
-        "Cannot reassign delivery $deliveryId because its withdrawal has been undone")
+        "Cannot reassign delivery $deliveryId because its withdrawal has been undone"
+    )
 
 class ReassignmentOfUndoNotAllowedException(val deliveryId: DeliveryId) :
     MismatchedStateException(
-        "Cannot reassign delivery $deliveryId because it is an undo of another delivery")
+        "Cannot reassign delivery $deliveryId because it is an undo of another delivery"
+    )
 
 class ReassignmentTooLargeException(val plantingId: PlantingId) :
     MismatchedStateException(
-        "Cannot reassign more plants from planting $plantingId than were originally delivered")
+        "Cannot reassign more plants from planting $plantingId than were originally delivered"
+    )
 
 class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
     IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")
@@ -149,7 +162,8 @@ class ObservationRescheduleStateException(val observationId: ObservationId) :
 
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
-        "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones")
+        "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones"
+    )
 
 class ShapefilesInvalidException(val problems: List<String>) :
     RuntimeException("Found problems in planting site map data") {

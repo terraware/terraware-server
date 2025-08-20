@@ -16,7 +16,10 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
                 geolocations =
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
-                        Geolocation(BigDecimal(3), BigDecimal(4)))))
+                        Geolocation(BigDecimal(3), BigDecimal(4)),
+                    )
+            )
+        )
     val initialGeos = geolocationsDao.fetchByAccessionId(initial.id!!)
 
     assertEquals(100.0, initialGeos.firstNotNullOf { it.gpsAccuracy }, 0.1, "Accuracy is recorded")
@@ -26,7 +29,9 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
             geolocations =
                 setOf(
                     Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
-                    Geolocation(BigDecimal(5), BigDecimal(6))))
+                    Geolocation(BigDecimal(5), BigDecimal(6)),
+                )
+        )
 
     store.update(desired)
 
@@ -34,12 +39,14 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     assertTrue(
         updatedGeos.any { it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
-        "New geo inserted")
+        "New geo inserted",
+    )
     assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
     assertEquals(
         initialGeos.filter { it.latitude == BigDecimal(1) },
         updatedGeos.filter { it.latitude == BigDecimal(1) },
-        "Existing geo retained")
+        "Existing geo retained",
+    )
   }
 
   @Test
@@ -53,7 +60,8 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
     assertEquals(
         locationId,
         accessionsDao.fetchOneById(initial.id!!)?.subLocationId,
-        "Existing sub-location ID was used")
+        "Existing sub-location ID was used",
+    )
 
     val updated = store.fetchOneById(initial.id!!)
     assertEquals(locationName, updated.subLocation, "Location name")

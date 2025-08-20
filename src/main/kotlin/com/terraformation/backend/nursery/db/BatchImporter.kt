@@ -57,7 +57,8 @@ class BatchImporter(
         uploadsDao,
         uploadService,
         uploadStore,
-        userStore) {
+        userStore,
+    ) {
   override val templatePath: String
     get() = "/csv/batches-template.csv"
 
@@ -70,7 +71,12 @@ class BatchImporter(
 
     val organizationId = parentStore.getOrganizationId(facilityId)
     return doReceiveCsv(
-        inputStream, fileName, UploadType.SeedlingBatchCSV, organizationId, facilityId)
+        inputStream,
+        fileName,
+        UploadType.SeedlingBatchCSV,
+        organizationId,
+        facilityId,
+    )
   }
 
   override fun getValidator(uploadsRow: UploadsRow): CsvValidator {
@@ -83,7 +89,7 @@ class BatchImporter(
   override fun doImportCsv(
       uploadsRow: UploadsRow,
       csvReader: CSVReader,
-      overwriteExisting: Boolean
+      overwriteExisting: Boolean,
   ) {
     val organizationId = uploadsRow.organizationId!!
     val facilityId = uploadsRow.facilityId!!
@@ -125,8 +131,10 @@ class BatchImporter(
             NewSpeciesModel(
                 commonName = commonName,
                 organizationId = organizationId,
-                scientificName = scientificName),
-            overwriteExisting = false)
+                scientificName = scientificName,
+            ),
+            overwriteExisting = false,
+        )
 
     batchStore.create(
         NewBatchModel(
@@ -138,7 +146,8 @@ class BatchImporter(
             readyQuantity = 0,
             speciesId = speciesId,
             subLocationIds = subLocationNames.mapNotNull { subLocationIds[it] }.toSet(),
-        ))
+        )
+    )
   }
 
   override fun enqueueValidateCsv(uploadId: UploadId): JobId =

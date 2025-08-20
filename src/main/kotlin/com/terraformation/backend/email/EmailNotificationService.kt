@@ -165,7 +165,8 @@ class EmailNotificationService(
 
     emailService.sendFacilityNotification(
         event.facilityId,
-        FacilityAlertRequested(config, event.body, facility, requestedByUser, event.subject))
+        FacilityAlertRequested(config, event.body, facility, requestedByUser, event.subject),
+    )
   }
 
   @EventListener
@@ -175,10 +176,14 @@ class EmailNotificationService(
     val facilityMonitoringUrl =
         webAppUrls
             .fullFacilityMonitoring(
-                parentStore.getOrganizationId(event.facilityId)!!, event.facilityId)
+                parentStore.getOrganizationId(event.facilityId)!!,
+                event.facilityId,
+            )
             .toString()
     emailService.sendFacilityNotification(
-        facility.id, FacilityIdle(config, facility, facilityMonitoringUrl))
+        facility.id,
+        FacilityIdle(config, facility, facilityMonitoringUrl),
+    )
   }
 
   @EventListener
@@ -197,7 +202,8 @@ class EmailNotificationService(
 
     emailService.sendFacilityNotification(
         facility.id,
-        SensorBoundsAlert(config, automation, device, facility, event.value, facilityMonitoringUrl))
+        SensorBoundsAlert(config, automation, device, facility, event.value, facilityMonitoringUrl),
+    )
   }
 
   @EventListener
@@ -214,7 +220,13 @@ class EmailNotificationService(
     emailService.sendFacilityNotification(
         facility.id,
         UnknownAutomationTriggered(
-            config, automation, facility, event.message, facilityMonitoringUrl))
+            config,
+            automation,
+            facility,
+            event.message,
+            facilityMonitoringUrl,
+        ),
+    )
   }
 
   @EventListener
@@ -230,7 +242,9 @@ class EmailNotificationService(
         webAppUrls.fullFacilityMonitoring(organizationId, facilityId, device).toString()
 
     emailService.sendFacilityNotification(
-        facilityId, DeviceUnresponsive(config, device, facility, facilityMonitoringUrl))
+        facilityId,
+        DeviceUnresponsive(config, device, facility, facilityMonitoringUrl),
+    )
   }
 
   @EventListener
@@ -248,7 +262,8 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         UserAddedToOrganization(config, admin, organization, organizationHomeUrl, user),
-        requireOptIn = false)
+        requireOptIn = false,
+    )
   }
 
   @EventListener
@@ -267,7 +282,8 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         UserAddedToTerraware(config, admin, organization, terrawareRegistrationUrl),
-        requireOptIn = false)
+        requireOptIn = false,
+    )
   }
 
   @EventListener
@@ -283,7 +299,9 @@ class EmailNotificationService(
           .add(
               EmailRequest(
                   user,
-                  AccessionDryingEnd(config, event.accessionNumber, facilityName, accessionUrl)))
+                  AccessionDryingEnd(config, event.accessionNumber, facilityName, accessionUrl),
+              )
+          )
     }
   }
 
@@ -300,8 +318,9 @@ class EmailNotificationService(
           .add(
               EmailRequest(
                   user,
-                  NurserySeedlingBatchReady(
-                      config, event.batchNumber, batchUrl, event.nurseryName)))
+                  NurserySeedlingBatchReady(config, event.batchNumber, batchUrl, event.nurseryName),
+              )
+          )
     }
   }
 
@@ -313,7 +332,8 @@ class EmailNotificationService(
     emailService.sendOrganizationNotification(
         event.metadata.organizationId,
         SeedFundReportCreated(config, event.metadata.year, event.metadata.quarter, reportUrl),
-        roles = setOf(Role.Owner, Role.Admin))
+        roles = setOf(Role.Owner, Role.Admin),
+    )
   }
 
   @EventListener
@@ -324,7 +344,9 @@ class EmailNotificationService(
         webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString()
 
     emailService.sendOrganizationNotification(
-        plantingSite.organizationId, ObservationStarted(config, observationsUrl))
+        plantingSite.organizationId,
+        ObservationStarted(config, observationsUrl),
+    )
   }
 
   @EventListener
@@ -342,7 +364,9 @@ class EmailNotificationService(
             event.observation.startDate,
             observationsUrl,
             webAppUrls.appStore.toString(),
-            webAppUrls.googlePlay.toString()))
+            webAppUrls.googlePlay.toString(),
+        ),
+    )
   }
 
   @EventListener
@@ -362,7 +386,8 @@ class EmailNotificationService(
             event.observation.endDate,
         ),
         false,
-        setOf(Role.TerraformationContact))
+        setOf(Role.TerraformationContact),
+    )
   }
 
   @EventListener
@@ -387,7 +412,8 @@ class EmailNotificationService(
             event.rescheduledObservation.endDate,
         ),
         false,
-        setOf(Role.TerraformationContact))
+        setOf(Role.TerraformationContact),
+    )
   }
 
   @EventListener
@@ -406,7 +432,8 @@ class EmailNotificationService(
             plantingSite.name,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
-        roles = setOf(Role.Admin, Role.Owner))
+        roles = setOf(Role.Admin, Role.Owner),
+    )
   }
 
   @EventListener
@@ -425,7 +452,8 @@ class EmailNotificationService(
             plantingSite.name,
             webAppUrls.fullObservations(plantingSite.organizationId, plantingSite.id).toString(),
         ),
-        roles = setOf(Role.Admin, Role.Owner))
+        roles = setOf(Role.Admin, Role.Owner),
+    )
   }
 
   @EventListener
@@ -433,7 +461,9 @@ class EmailNotificationService(
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
-            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+            plantingSite.organizationId,
+            OrganizationStore.FetchDepth.Organization,
+        )
     val model = ObservationNotScheduled(config, organization.name, plantingSite.name)
 
     sendToOrganizationContact(organization, model)
@@ -446,7 +476,8 @@ class EmailNotificationService(
     emailService.sendOrganizationNotification(
         plantingSite.organizationId,
         ObservationNotStarted(config, plantingSite.name, webAppUrls.fullContactUs().toString()),
-        roles = setOf(Role.Admin, Role.Owner))
+        roles = setOf(Role.Admin, Role.Owner),
+    )
   }
 
   @EventListener
@@ -455,10 +486,17 @@ class EmailNotificationService(
         plantingSiteStore.fetchSiteById(event.observation.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
-            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+            plantingSite.organizationId,
+            OrganizationStore.FetchDepth.Organization,
+        )
     val model =
         ObservationPlotReplaced(
-            config, organization.name, plantingSite.name, event.justification, event.duration)
+            config,
+            organization.name,
+            plantingSite.name,
+            event.justification,
+            event.duration,
+        )
 
     sendToOrganizationContact(organization, model)
   }
@@ -468,7 +506,9 @@ class EmailNotificationService(
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
-            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+            plantingSite.organizationId,
+            OrganizationStore.FetchDepth.Organization,
+        )
     val model =
         PlantingSeasonRescheduled(
             config,
@@ -477,7 +517,8 @@ class EmailNotificationService(
             event.oldStartDate,
             event.oldEndDate,
             event.newStartDate,
-            event.newEndDate)
+            event.newEndDate,
+        )
 
     sendToOrganizationContact(organization, model, fallBackToSupport = false)
   }
@@ -487,10 +528,17 @@ class EmailNotificationService(
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
-            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+            plantingSite.organizationId,
+            OrganizationStore.FetchDepth.Organization,
+        )
     val model =
         PlantingSeasonScheduled(
-            config, organization.name, plantingSite.name, event.startDate, event.endDate)
+            config,
+            organization.name,
+            plantingSite.name,
+            event.startDate,
+            event.endDate,
+        )
 
     sendToOrganizationContact(organization, model, fallBackToSupport = false)
   }
@@ -502,10 +550,14 @@ class EmailNotificationService(
         PlantingSeasonStarted(
             config,
             plantingSite.name,
-            webAppUrls.fullNurseryInventory(plantingSite.organizationId).toString())
+            webAppUrls.fullNurseryInventory(plantingSite.organizationId).toString(),
+        )
 
     emailService.sendOrganizationNotification(
-        plantingSite.organizationId, model, roles = setOf(Role.Owner, Role.Admin, Role.Manager))
+        plantingSite.organizationId,
+        model,
+        roles = setOf(Role.Owner, Role.Admin, Role.Manager),
+    )
   }
 
   @EventListener
@@ -516,10 +568,14 @@ class EmailNotificationService(
             config,
             plantingSite.name,
             webAppUrls.fullPlantingSite(plantingSite.organizationId, plantingSite.id).toString(),
-            event.notificationNumber)
+            event.notificationNumber,
+        )
 
     emailService.sendOrganizationNotification(
-        plantingSite.organizationId, model, roles = setOf(Role.Owner, Role.Admin, Role.Manager))
+        plantingSite.organizationId,
+        model,
+        roles = setOf(Role.Owner, Role.Admin, Role.Manager),
+    )
   }
 
   @EventListener
@@ -527,7 +583,9 @@ class EmailNotificationService(
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     val organization =
         organizationStore.fetchOneById(
-            plantingSite.organizationId, OrganizationStore.FetchDepth.Organization)
+            plantingSite.organizationId,
+            OrganizationStore.FetchDepth.Organization,
+        )
     val model = PlantingSeasonNotScheduledSupport(config, organization.name, plantingSite.name)
 
     sendToOrganizationContact(organization, model)
@@ -547,7 +605,8 @@ class EmailNotificationService(
             admin.fullName ?: admin.email,
             organization.name,
             participant.name,
-            project.name)
+            project.name,
+        )
 
     sendToOrganizationContact(organization, model)
   }
@@ -566,7 +625,8 @@ class EmailNotificationService(
             admin.fullName ?: admin.email,
             organization.name,
             participant.name,
-            project.name)
+            project.name,
+        )
 
     sendToOrganizationContact(organization, model)
   }
@@ -587,8 +647,10 @@ class EmailNotificationService(
                 .toString(),
             participant.name,
             project.name,
-            species.scientificName),
-        deliverableCategory.internalInterestId)
+            species.scientificName,
+        ),
+        deliverableCategory.internalInterestId,
+    )
   }
 
   @EventListener
@@ -606,8 +668,10 @@ class EmailNotificationService(
                 .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
                 .toString(),
             participant.name,
-            species.scientificName),
-        deliverableCategory.internalInterestId)
+            species.scientificName,
+        ),
+        deliverableCategory.internalInterestId,
+    )
   }
 
   @EventListener
@@ -627,7 +691,8 @@ class EmailNotificationService(
             organization.name,
             date,
         ),
-        InternalInterest.Sourcing)
+        InternalInterest.Sourcing,
+    )
   }
 
   @EventListener
@@ -642,12 +707,15 @@ class EmailNotificationService(
       val deliverableSubmission =
           deliverableStore
               .fetchDeliverableSubmissions(
-                  deliverableId = event.deliverableId, projectId = event.projectId)
+                  deliverableId = event.deliverableId,
+                  projectId = event.projectId,
+              )
               .firstOrNull()
       if (deliverableSubmission == null) {
         log.error(
             "Got deliverable ready notification for deliverable ${event.deliverableId} in " +
-                "project ${event.projectId} but it has no submission")
+                "project ${event.projectId} but it has no submission"
+        )
         return@run
       }
 
@@ -662,8 +730,10 @@ class EmailNotificationService(
                   .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
                   .toString(),
               deliverableSubmission,
-              participant.name),
-          deliverableCategory.internalInterestId)
+              participant.name,
+          ),
+          deliverableCategory.internalInterestId,
+      )
     }
   }
 
@@ -677,8 +747,10 @@ class EmailNotificationService(
               config,
               webAppUrls
                   .fullDeliverable(event.deliverableId, organizationId, event.projectId)
-                  .toString()),
-          roles = setOf(Role.Admin, Role.Manager, Role.Owner))
+                  .toString(),
+          ),
+          roles = setOf(Role.Admin, Role.Manager, Role.Owner),
+      )
     }
   }
 
@@ -697,7 +769,8 @@ class EmailNotificationService(
             areaHaDifference = event.plantingSiteEdit.areaHaDifference.abs().toPlainString(),
             organizationName = organization.name,
             plantingSiteName = event.plantingSiteEdit.existingModel.name,
-        ))
+        ),
+    )
   }
 
   @EventListener
@@ -727,7 +800,8 @@ class EmailNotificationService(
                 projectName = project.name,
                 sectionName = sectionVariable.name,
             ),
-            false)
+            false,
+        )
       }
     }
   }
@@ -742,8 +816,10 @@ class EmailNotificationService(
         FunderAddedToFundingEntity(
             config = config,
             fundingEntityName = fundingEntity.name,
-            funderPortalRegistrationUrl = funderPortalRegistrationUrl),
-        listOf(event.email))
+            funderPortalRegistrationUrl = funderPortalRegistrationUrl,
+        ),
+        listOf(event.email),
+    )
   }
 
   @EventListener
@@ -758,7 +834,8 @@ class EmailNotificationService(
               config,
               report.projectDealName ?: project.name,
               report.prefix,
-              webAppUrls.fullAcceleratorConsoleReport(event.reportId, report.projectId).toString()),
+              webAppUrls.fullAcceleratorConsoleReport(event.reportId, report.projectId).toString(),
+          ),
       )
     }
   }
@@ -774,8 +851,10 @@ class EmailNotificationService(
           AcceleratorReportUpcoming(
               config,
               report.prefix,
-              webAppUrls.fullAcceleratorReport(event.reportId, project.organizationId).toString()),
-          roles = setOf(Role.Owner, Role.Admin))
+              webAppUrls.fullAcceleratorReport(event.reportId, project.organizationId).toString(),
+          ),
+          roles = setOf(Role.Owner, Role.Admin),
+      )
     }
   }
 
@@ -793,7 +872,8 @@ class EmailNotificationService(
                 config,
                 report.projectDealName ?: project.name,
                 report.prefix,
-                webAppUrls.fullFunderReport(event.reportId).toString()),
+                webAppUrls.fullFunderReport(event.reportId).toString(),
+            ),
         )
       }
     }
@@ -835,7 +915,9 @@ class EmailNotificationService(
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     return userStore.fetchByOrganizationId(
-        organizationId, roles = EmailService.defaultOrgRolesForNotification)
+        organizationId,
+        roles = EmailService.defaultOrgRolesForNotification,
+    )
   }
 
   /**
@@ -854,7 +936,8 @@ class EmailNotificationService(
     } else if (fallBackToSupport && InternalTagIds.Accelerator in organization.internalTags) {
       emailService.sendSupportNotification(model)
       emailService.sendSupportNotification(
-          MissingContact(config, organization.id, organization.name))
+          MissingContact(config, organization.id, organization.name)
+      )
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
     }

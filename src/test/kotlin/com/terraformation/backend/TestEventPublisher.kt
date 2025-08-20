@@ -62,7 +62,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
    */
   fun assertExactEventsPublished(
       events: List<Any>,
-      message: String = "Expected events not published"
+      message: String = "Expected events not published",
   ) {
     assertEquals(events, publishedEvents, message)
   }
@@ -70,7 +70,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
   /** Asserts that a set of events, and only that set of events, were published in any order. */
   fun assertExactEventsPublished(
       events: Set<Any>,
-      message: String = "Expected events not published"
+      message: String = "Expected events not published",
   ) {
     assertEquals(events, publishedEvents.toSet(), message)
   }
@@ -86,7 +86,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
   /** Asserts that an event matching a predicate was published. */
   fun assertEventPublished(
       message: String = "Expected event not published",
-      predicate: (Any) -> Boolean
+      predicate: (Any) -> Boolean,
   ) {
     if (!publishedEvents.any(predicate)) {
       // Fail with an assertion that shows which events were actually published.
@@ -105,7 +105,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
   /** Asserts that no event of a particular type has been published. */
   fun assertEventNotPublished(
       clazz: Class<*>,
-      message: String = "Expected no events of type ${clazz.name}"
+      message: String = "Expected no events of type ${clazz.name}",
   ) {
     assertEquals(emptyList<Any>(), publishedEvents.filter { clazz.isInstance(it) }, message)
   }

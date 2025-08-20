@@ -22,7 +22,9 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           cohortModules.asMultiValueSublist(
-              "cohortModules", COHORTS.ID.eq(COHORT_MODULES.COHORT_ID)),
+              "cohortModules",
+              COHORTS.ID.eq(COHORT_MODULES.COHORT_ID),
+          ),
           participants.asMultiValueSublist("participants", COHORTS.ID.eq(PARTICIPANTS.COHORT_ID)),
       )
     }
@@ -35,9 +37,9 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
           integerField(
               "numParticipants",
               DSL.field(
-                  DSL.selectCount()
-                      .from(PARTICIPANTS)
-                      .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID)))),
+                  DSL.selectCount().from(PARTICIPANTS).where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+              ),
+          ),
           enumField("phase", COHORTS.PHASE_ID),
       )
 
@@ -51,7 +53,8 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
               .join(PROJECTS)
               .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
               .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 }

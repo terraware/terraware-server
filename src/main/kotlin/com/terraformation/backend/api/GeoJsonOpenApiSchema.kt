@@ -23,7 +23,7 @@ abstract class GeoJsonOpenApiSchema {
     MultiPoint,
     MultiLineString,
     MultiPolygon,
-    GeometryCollection
+    GeometryCollection,
   }
 
   @Schema(
@@ -32,7 +32,9 @@ abstract class GeoJsonOpenApiSchema {
       discriminatorMapping =
           [
               DiscriminatorMapping(
-                  value = "GeometryCollection", schema = GeometryCollection::class),
+                  value = "GeometryCollection",
+                  schema = GeometryCollection::class,
+              ),
               DiscriminatorMapping(value = "LineString", schema = LineString::class),
               DiscriminatorMapping(value = "MultiLineString", schema = MultiLineString::class),
               DiscriminatorMapping(value = "MultiPoint", schema = MultiPoint::class),
@@ -50,7 +52,8 @@ abstract class GeoJsonOpenApiSchema {
               Point::class,
               Polygon::class,
           ],
-      type = "object")
+      type = "object",
+  )
   internal interface Geometry {
     val type: GeoJsonGeometryType
     val crs: CRS?
@@ -63,7 +66,9 @@ abstract class GeoJsonOpenApiSchema {
       allOf = [Geometry::class],
       externalDocs =
           ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2"))
+              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2"
+          ),
+  )
   internal abstract class Point(
       val coordinates: Position,
   ) : Geometry {
@@ -81,7 +86,9 @@ abstract class GeoJsonOpenApiSchema {
               description =
                   "A single position consisting of X and Y values in the coordinate system " +
                       "specified by the crs field.",
-              example = "[120,-9.53]"))
+              example = "[120,-9.53]",
+          ),
+  )
   @JsonIgnoreProperties("empty")
   internal interface Position : List<Double>
 
@@ -94,7 +101,10 @@ abstract class GeoJsonOpenApiSchema {
                       "equivalent, and they MUST contain identical values.",
               externalDocs =
                   ExternalDocumentation(
-                      url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6")))
+                      url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6"
+                  ),
+          ),
+  )
   @JsonIgnoreProperties("empty")
   internal interface LinearRing : List<Position>
 
@@ -104,8 +114,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4")
+  )
   internal abstract class LineString(val coordinates: LineStringPositions) : Geometry {
     @get:Schema(allowableValues = ["LineString"], type = "string")
     override val type: GeoJsonGeometryType
@@ -114,8 +124,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6")
+  )
   internal abstract class Polygon(val coordinates: List<LinearRing>) : Geometry {
     @get:Schema(allowableValues = ["Polygon"], type = "string")
     override val type: GeoJsonGeometryType
@@ -124,8 +134,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3")
+  )
   internal abstract class MultiPoint(val coordinates: List<Position>) : Geometry {
     @get:Schema(allowableValues = ["MultiPoint"], type = "string")
     override val type: GeoJsonGeometryType
@@ -134,8 +144,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5")
+  )
   internal abstract class MultiLineString(val coordinates: List<LineStringPositions>) : Geometry {
     @get:Schema(allowableValues = ["MultiLineString"], type = "string")
     override val type: GeoJsonGeometryType
@@ -144,8 +154,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7")
+  )
   internal abstract class MultiPolygon(val coordinates: List<List<LinearRing>>) : Geometry {
     @get:Schema(allowableValues = ["MultiPolygon"], type = "string")
     override val type: GeoJsonGeometryType
@@ -154,8 +164,8 @@ abstract class GeoJsonOpenApiSchema {
 
   @Schema(
       externalDocs =
-          ExternalDocumentation(
-              url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8"))
+          ExternalDocumentation(url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8")
+  )
   internal abstract class GeometryCollection(val geometries: List<Geometry>) : Geometry {
     @get:Schema(allowableValues = ["GeometryCollection"], type = "string")
     override val type: GeoJsonGeometryType
@@ -167,13 +177,14 @@ abstract class GeoJsonOpenApiSchema {
           "Coordinate reference system used for X and Y coordinates in this geometry. By " +
               "default, coordinates are in WGS 84, with longitude and latitude in degrees. " +
               "In that case, this element is not present. Otherwise, it specifies which " +
-              "coordinate system to use.")
+              "coordinate system to use."
+  )
   internal abstract class CRS(
       @Schema(
           allowableValues = ["name"],
       )
       val type: String,
-      val properties: CRSProperties
+      val properties: CRSProperties,
   )
 
   internal abstract class CRSProperties(
@@ -186,7 +197,9 @@ abstract class GeoJsonOpenApiSchema {
           example = "EPSG:4326",
           externalDocs =
               ExternalDocumentation(
-                  url = "https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset"))
+                  url = "https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset"
+              ),
+      )
       val name: String
   )
 
@@ -194,15 +207,25 @@ abstract class GeoJsonOpenApiSchema {
     fun configureJtsSchemas(config: SpringDocUtils) {
       config.replaceWithClass(org.locationtech.jts.geom.Geometry::class.java, Geometry::class.java)
       config.replaceWithClass(
-          org.locationtech.jts.geom.GeometryCollection::class.java, GeometryCollection::class.java)
+          org.locationtech.jts.geom.GeometryCollection::class.java,
+          GeometryCollection::class.java,
+      )
       config.replaceWithClass(
-          org.locationtech.jts.geom.LineString::class.java, LineString::class.java)
+          org.locationtech.jts.geom.LineString::class.java,
+          LineString::class.java,
+      )
       config.replaceWithClass(
-          org.locationtech.jts.geom.MultiLineString::class.java, MultiLineString::class.java)
+          org.locationtech.jts.geom.MultiLineString::class.java,
+          MultiLineString::class.java,
+      )
       config.replaceWithClass(
-          org.locationtech.jts.geom.MultiPoint::class.java, MultiPoint::class.java)
+          org.locationtech.jts.geom.MultiPoint::class.java,
+          MultiPoint::class.java,
+      )
       config.replaceWithClass(
-          org.locationtech.jts.geom.MultiPolygon::class.java, MultiPolygon::class.java)
+          org.locationtech.jts.geom.MultiPolygon::class.java,
+          MultiPolygon::class.java,
+      )
       config.replaceWithClass(org.locationtech.jts.geom.Point::class.java, Point::class.java)
       config.replaceWithClass(org.locationtech.jts.geom.Polygon::class.java, Polygon::class.java)
     }

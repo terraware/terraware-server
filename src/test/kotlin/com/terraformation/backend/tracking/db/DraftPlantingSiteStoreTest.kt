@@ -98,7 +98,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               numPlantingSubzones = 2,
               numPlantingZones = 1,
               projectId = inserted.projectId,
-              timeZone = timeZone)
+              timeZone = timeZone,
+          )
 
       assertEquals(expected, actual.copy())
     }
@@ -136,7 +137,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           setOf(otherDraftId1, otherDraftId2),
           draftPlantingSitesDao.findAll().map { it.id }.toSet(),
-          "Remaining IDs after deletion")
+          "Remaining IDs after deletion",
+      )
     }
 
     @Test

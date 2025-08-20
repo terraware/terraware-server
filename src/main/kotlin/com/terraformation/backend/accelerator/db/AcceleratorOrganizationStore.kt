@@ -28,12 +28,15 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
             DSL.selectOne()
                 .from(PROJECTS)
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                .and(PROJECTS.PARTICIPANT_ID.isNull))
+                .and(PROJECTS.PARTICIPANT_ID.isNull)
+        )
 
     val isUnassigned = PROJECTS.PARTICIPANT_ID.isNull
 
     return fetchWithProjects(
-        listOf(hasAcceleratorTagCondition, hasParticipantProject), listOf(isUnassigned))
+        listOf(hasAcceleratorTagCondition, hasParticipantProject),
+        listOf(isUnassigned),
+    )
   }
 
   /**
@@ -62,7 +65,7 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
 
   private fun fetchWithProjects(
       orgConditions: List<Condition>,
-      projectConditions: List<Condition> = emptyList()
+      projectConditions: List<Condition> = emptyList(),
   ): Map<OrganizationModel, List<ExistingProjectModel>> {
     if (orgConditions.isEmpty()) {
       return emptyMap()
@@ -72,7 +75,8 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
         DSL.multiset(
                 DSL.selectFrom(PROJECTS)
                     .where(projectConditions + PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                    .orderBy(PROJECTS.NAME))
+                    .orderBy(PROJECTS.NAME)
+            )
             .convertFrom { result -> result.map { ProjectModel.of(it) } }
 
     return dslContext
@@ -89,7 +93,8 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
           DSL.selectOne()
               .from(ORGANIZATION_INTERNAL_TAGS)
               .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-              .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+              .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+      )
 
   private val hasProjectApplicationCondition =
       DSL.exists(
@@ -97,5 +102,6 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
               .from(APPLICATIONS)
               .join(PROJECTS)
               .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-              .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+              .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+      )
 }

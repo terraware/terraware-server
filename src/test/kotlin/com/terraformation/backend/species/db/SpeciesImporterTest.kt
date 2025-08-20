@@ -72,7 +72,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,
-        speciesProblemsDao)
+        speciesProblemsDao,
+    )
   }
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {
@@ -91,7 +92,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         uploadsDao,
         uploadService,
         uploadStore,
-        userStore)
+        userStore,
+    )
   }
 
   private val header = speciesCsvColumnNames.joinToString(",")
@@ -139,7 +141,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
           insertUpload(
               organizationId = organizationId,
               storageUrl = storageUrl,
-              type = UploadType.SpeciesCSV)
+              type = UploadType.SpeciesCSV,
+          )
 
       importer.validateCsv(uploadId)
 
@@ -159,7 +162,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         localesByTemplate.values.filter { it.size > 1 }
 
     assertEquals(
-        emptyList<List<Locale>>(), localesWithSameTemplates, "Locales with same CSV template")
+        emptyList<List<Locale>>(),
+        localesWithSameTemplates,
+        "Locales with same CSV template",
+    )
   }
 
   @Test
@@ -204,7 +210,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     insertSpecies(scientificName = "Existing name")
 
     importer.validateCsv(uploadId)
@@ -219,7 +226,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 position = 2,
                 field = "Scientific Name",
                 message = messages.speciesCsvScientificNameExists(),
-                value = "Existing name")))
+                value = "Existing name",
+            )
+        )
+    )
   }
 
   @Test
@@ -232,7 +242,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     insertSpecies("Corrected name", initialScientificName = "Initial name")
 
     importer.validateCsv(uploadId)
@@ -246,7 +257,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 position = 2,
                 field = "Scientific Name",
                 message = messages.speciesCsvScientificNameExists(),
-                value = "Corrected name (Initial name)")))
+                value = "Corrected name (Initial name)",
+            )
+        )
+    )
   }
 
   @Test
@@ -258,7 +272,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     insertSpecies(scientificName = "Existing name", deletedTime = Instant.EPOCH)
 
     importer.validateCsv(uploadId)
@@ -274,7 +289,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
 
     importer.validateCsv(uploadId)
 
@@ -287,7 +303,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 isError = true,
                 position = 1,
                 field = null,
-                message = messages.csvBadHeader())))
+                message = messages.csvBadHeader(),
+            )
+        )
+    )
   }
 
   @Test
@@ -298,7 +317,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
 
     importer.validateCsv(uploadId)
 
@@ -313,12 +333,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         sizedInputStream(
             "$header\nNew—name a–b," + // note the dash types in the scientific name
                 "Common,Family,NT,false,\"Shrub\nHerb\",Recalcitrant,\"Tundra \r\n Mangroves \r\n\"," +
-                "Native,\"Pioneer\nMature\",Eco role,Local uses,\"Wildling harvest\nOther\",Facts\n")
+                "Native,\"Pioneer\nMature\",Eco role,Local uses,\"Wildling harvest\nOther\",Facts\n"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     val existingSpeciesId = insertSpecies(scientificName = "Existing name")
 
     importer.importCsv(uploadId, true)
@@ -354,29 +376,44 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 otherFacts = "Facts",
                 rare = false,
                 scientificName = "New-name a-b", // dashes replaced by hyphens
-                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant)))
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            ),
+        )
+    )
 
     assertTableEquals(
         setOf(
             SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Tundra),
-            SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Mangroves)))
+            SpeciesEcosystemTypesRecord(newSpeciesId, EcosystemType.Mangroves),
+        )
+    )
 
     assertTableEquals(
         setOf(
             SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Herb),
-            SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Shrub)))
+            SpeciesGrowthFormsRecord(newSpeciesId, GrowthForm.Shrub),
+        )
+    )
 
     assertTableEquals(
         setOf(
             SpeciesSuccessionalGroupsRecord(newSpeciesId, SuccessionalGroup.Pioneer),
-            SpeciesSuccessionalGroupsRecord(newSpeciesId, SuccessionalGroup.Mature)))
+            SpeciesSuccessionalGroupsRecord(newSpeciesId, SuccessionalGroup.Mature),
+        )
+    )
 
     assertTableEquals(
         setOf(
             SpeciesPlantMaterialSourcingMethodsRecord(
-                newSpeciesId, PlantMaterialSourcingMethod.Other),
+                newSpeciesId,
+                PlantMaterialSourcingMethod.Other,
+            ),
             SpeciesPlantMaterialSourcingMethodsRecord(
-                newSpeciesId, PlantMaterialSourcingMethod.WildlingHarvest)))
+                newSpeciesId,
+                PlantMaterialSourcingMethod.WildlingHarvest,
+            ),
+        )
+    )
 
     assertStatus(UploadStatus.Completed)
   }
@@ -387,7 +424,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
 
     assertThrows<IllegalStateException> { importer.importCsv(uploadId, true) }
   }
@@ -399,25 +437,29 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             "$header\n" +
                 "Existing name,Common,Family,en,false,Shrub,Recalcitrant,Tundra,,,,,,\n" +
                 "Initial name,New common,NewFamily,lc,true,Shrub,Recalcitrant,,Native," +
-                "Mature,Eco,Local,Other,Facts")
+                "Mature,Eco,Local,Other,Facts"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     val speciesId1 =
         insertSpecies(
             scientificName = "Existing name",
             ecosystemTypes = setOf(EcosystemType.Mangroves),
             growthForms = setOf(GrowthForm.Shrub),
             plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
-            successionalGroups = setOf(SuccessionalGroup.Pioneer))
+            successionalGroups = setOf(SuccessionalGroup.Pioneer),
+        )
     val speciesId2 =
         insertSpecies(
             scientificName = "New name",
             ecosystemTypes = setOf(EcosystemType.Mangroves),
             growthForms = setOf(GrowthForm.Shrub),
-            initialScientificName = "Initial name")
+            initialScientificName = "Initial name",
+        )
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -458,17 +500,23 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 otherFacts = "Facts",
                 rare = true,
                 scientificName = "New name",
-                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant)))
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            ),
+        )
+    )
 
     assertTableEquals(SpeciesEcosystemTypesRecord(speciesId1, EcosystemType.Tundra))
 
     assertTableEquals(
         setOf(
             SpeciesGrowthFormsRecord(speciesId1, GrowthForm.Shrub),
-            SpeciesGrowthFormsRecord(speciesId2, GrowthForm.Shrub)))
+            SpeciesGrowthFormsRecord(speciesId2, GrowthForm.Shrub),
+        )
+    )
 
     assertTableEquals(
-        SpeciesPlantMaterialSourcingMethodsRecord(speciesId2, PlantMaterialSourcingMethod.Other))
+        SpeciesPlantMaterialSourcingMethodsRecord(speciesId2, PlantMaterialSourcingMethod.Other)
+    )
 
     assertTableEquals(SpeciesSuccessionalGroupsRecord(speciesId2, SuccessionalGroup.Mature))
 
@@ -479,17 +527,21 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,,,,,,,")
+            "$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,,,,,,,"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     val speciesId1 =
         insertSpecies(scientificName = "Duplicate name", initialScientificName = "Initial name")
     val speciesId2 =
         insertSpecies(
-            scientificName = "Nonduplicate name", initialScientificName = "Duplicate name")
+            scientificName = "Nonduplicate name",
+            initialScientificName = "Duplicate name",
+        )
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -521,7 +573,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = Instant.EPOCH,
                 organizationId = organizationId,
-                scientificName = "Nonduplicate name")))
+                scientificName = "Nonduplicate name",
+            ),
+        )
+    )
     assertStatus(UploadStatus.Completed)
   }
 
@@ -531,16 +586,19 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         sizedInputStream(
             "$header\n" +
                 "Existing name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra,,,,,,\n" +
-                "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,,,,,,,")
+                "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,,,,,,,"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     insertSpecies(
         scientificName = "Existing name",
         growthForms = setOf(GrowthForm.Shrub),
-        ecosystemTypes = setOf(EcosystemType.Mangroves))
+        ecosystemTypes = setOf(EcosystemType.Mangroves),
+    )
     insertSpecies(scientificName = "New name", initialScientificName = "Initial name")
 
     clock.instant = Instant.EPOCH + Duration.ofDays(1)
@@ -562,17 +620,20 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra,,,,,,\n")
+            "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra,,,,,,\n"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     val speciesId1 =
         insertSpecies(
             scientificName = "Existing name",
             deletedTime = Instant.EPOCH,
-            ecosystemTypes = setOf(EcosystemType.Mangroves))
+            ecosystemTypes = setOf(EcosystemType.Mangroves),
+        )
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -593,7 +654,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             rare = false,
             scientificName = "Existing name",
-            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant))
+            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+        )
+    )
 
     assertTableEquals(SpeciesEcosystemTypesRecord(speciesId1, EcosystemType.Tundra))
 
@@ -606,16 +669,19 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv does not apply renames from deleted species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
-            "$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,,,,,,,")
+            "$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,,,,,,,"
+        )
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     insertSpecies(
         scientificName = "Renamed name",
         deletedTime = Instant.EPOCH,
-        initialScientificName = "Initial name")
+        initialScientificName = "Initial name",
+    )
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -646,7 +712,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 rare = true,
                 scientificName = "Initial name",
-                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant)))
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            ),
+        )
+    )
 
     assertStatus(UploadStatus.Completed)
   }
@@ -666,7 +735,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             uploadsDao,
             uploadService,
             uploadStore,
-            userStore)
+            userStore,
+        )
     every { failingSpeciesStore.importSpecies(any(), any()) } throws RuntimeException("Failed!")
     every { fileStore.read(storageUrl) } returns
         sizedInputStream("$header\nNew name,Common,Family,CR,false,Shrub,Recalcitrant,Tundra")
@@ -675,7 +745,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
 
     failingImporter.importCsv(uploadId, true)
 
@@ -695,13 +766,15 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         sizedInputStream(
             "$header\n" +
                 "New name,,,EW,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant," +
-                "$gibberishMangroves,,$gibberishEarlySecondary,,,$gibberishSeedlingPurchase,\n")
+                "$gibberishMangroves,,$gibberishEarlySecondary,,,$gibberishSeedlingPurchase,\n"
+        )
     val uploadId =
         insertUpload(
             locale = Locales.GIBBERISH,
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
 
     importer.importCsv(uploadId, true)
 
@@ -719,14 +792,21 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             rare = true,
             scientificName = "New name",
-            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant))
+            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+        )
+    )
     assertTableEquals(
         SpeciesSuccessionalGroupsRecord(
-            speciesId = speciesId, successionalGroupId = SuccessionalGroup.EarlySecondary))
+            speciesId = speciesId,
+            successionalGroupId = SuccessionalGroup.EarlySecondary,
+        )
+    )
     assertTableEquals(
         SpeciesPlantMaterialSourcingMethodsRecord(
             plantMaterialSourcingMethodId = PlantMaterialSourcingMethod.SeedlingPurchase,
-            speciesId = speciesId))
+            speciesId = speciesId,
+        )
+    )
   }
 
   private fun assertProblems(expected: List<UploadProblemsRow>) {

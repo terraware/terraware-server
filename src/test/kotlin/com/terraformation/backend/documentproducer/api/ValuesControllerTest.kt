@@ -59,13 +59,21 @@ class ValuesControllerTest : ControllerIntegrationTest() {
           insertLinkValue(variableId = linkVariableId, url = "https://dummy", title = "Link title")
       val sectionTextValueId =
           insertSectionValue(
-              variableId = sectionVariableId, listPosition = 0, textValue = "Section text")
+              variableId = sectionVariableId,
+              listPosition = 0,
+              textValue = "Section text",
+          )
       val sectionVariableValueId =
           insertSectionValue(
-              variableId = sectionVariableId, listPosition = 1, usedVariableId = dateVariableId)
+              variableId = sectionVariableId,
+              listPosition = 1,
+              usedVariableId = dateVariableId,
+          )
       val selectValueId =
           insertSelectValue(
-              variableId = selectVariableId, optionIds = setOf(selectOptionId1, selectOptionId2))
+              variableId = selectVariableId,
+              optionIds = setOf(selectOptionId1, selectOptionId2),
+          )
       val tableValueId = insertValue(citation = "Table citation", variableId = tableVariableId)
 
       mockMvc
@@ -200,7 +208,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -283,7 +292,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -318,14 +328,16 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
     fun `returns internal variable values if user has permission to read it`() {
       val variableId =
           insertTextVariable(
-              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text)
+          )
       val valueId = insertValue(variableId = variableId, textValue = "Value")
 
       mockMvc
@@ -352,7 +364,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
       insertOrganizationUser(user.userId, createdBy = user.userId)
@@ -368,7 +381,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -379,7 +393,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       insertVariableWorkflowHistory(
           feedback = "Looks good",
           internalComment = "Actually, it's just okay",
-          status = VariableWorkflowStatus.Approved)
+          status = VariableWorkflowStatus.Approved,
+      )
 
       mockMvc
           .get(path())
@@ -407,7 +422,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -419,7 +435,9 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       // We'll query the values from a project that doesn't have the dummy value.
       insertProject()
       insertVariableWorkflowHistory(
-          feedback = "You need to fill this out", status = VariableWorkflowStatus.Rejected)
+          feedback = "You need to fill this out",
+          status = VariableWorkflowStatus.Rejected,
+      )
 
       mockMvc
           .get(path())
@@ -439,7 +457,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -450,7 +469,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       insertVariableWorkflowHistory(
           feedback = "Looks good",
           internalComment = "Actually, it's just okay",
-          status = VariableWorkflowStatus.Approved)
+          status = VariableWorkflowStatus.Approved,
+      )
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
       insertOrganizationUser()
@@ -480,7 +500,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -547,7 +568,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -620,7 +642,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
   }
 
@@ -662,7 +685,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       assertEquals(
           newValueId,
           valueTableRow.variableValueId,
-          "New value should have been associated with row")
+          "New value should have been associated with row",
+      )
     }
 
     @Test
@@ -671,19 +695,19 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       val payload =
           """
-          {
-            "operations": [
-              {
-                "operation": "Append",
-                "variableId": $variableId,
-                "value": {
-                  "type": "Number",
-                  "numberValue": 15
+            {
+              "operations": [
+                {
+                  "operation": "Append",
+                  "variableId": $variableId,
+                  "value": {
+                    "type": "Number",
+                    "numberValue": 15
+                  }
                 }
-              }
-            ]
-          }
-        """
+              ]
+            }
+          """
               .trimIndent()
 
       mockMvc.post(path()) { content = payload }.andExpect { status { isBadRequest() } }
@@ -848,7 +872,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
               ),
           ),
           imageValuesRows,
-          "Caption should have been added to new value")
+          "Caption should have been added to new value",
+      )
 
       val valuesRow = variableValuesDao.fetchOneById(newValueId)!!
 
@@ -859,7 +884,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     fun `returns not found error if user has no permission to read internal only variable`() {
       val variableId =
           insertTextVariable(
-              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text)
+          )
       insertValue(variableId = variableId, textValue = "Value")
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
@@ -889,7 +915,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     fun `returns unauthorized error if user has no permission to update internal only variable`() {
       val variableId =
           insertTextVariable(
-              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text)
+          )
       insertValue(variableId = variableId, textValue = "Value")
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
@@ -1071,14 +1098,16 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
     fun `Returns not found error if user has no permission to read internal only variable`() {
       val variableId =
           insertTextVariable(
-              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text)
+          )
       val valueId = insertValue(variableId = variableId, textValue = "Value")
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
@@ -1104,7 +1133,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     fun `Returns unauthorized error if user has no permission to update internal only variable`() {
       val variableId =
           insertTextVariable(
-              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text)
+          )
       val valueId = insertValue(variableId = variableId, textValue = "Value")
 
       dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()

@@ -31,11 +31,14 @@ class TransfersController(
   @PostMapping("/nursery")
   fun createNurseryTransferWithdrawal(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @RequestBody payload: CreateNurseryTransferRequestPayload
+      @RequestBody payload: CreateNurseryTransferRequestPayload,
   ): CreateNurseryTransferResponsePayload {
     val (accession, batch) =
         accessionService.createNurseryTransfer(
-            accessionId, payload.toNewBatchModel(), payload.withdrawnByUserId)
+            accessionId,
+            payload.toNewBatchModel(),
+            payload.withdrawnByUserId,
+        )
     return CreateNurseryTransferResponsePayload(AccessionPayloadV2(accession), BatchPayload(batch))
   }
 }
@@ -61,7 +64,8 @@ data class CreateNurseryTransferRequestPayload(
         description =
             "ID of the user who withdrew the seeds. Default is the current user's ID. If " +
                 "non-null, the current user must have permission to read the referenced user's " +
-                "membership details in the organization.")
+                "membership details in the organization."
+    )
     val withdrawnByUserId: UserId? = null,
 ) {
   fun toNewBatchModel() =

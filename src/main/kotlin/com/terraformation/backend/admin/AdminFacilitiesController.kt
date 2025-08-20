@@ -53,7 +53,9 @@ class AdminFacilitiesController(
     val recipients =
         userStore
             .fetchByOrganizationId(
-                facility.organizationId, roles = EmailService.defaultOrgRolesForNotification)
+                facility.organizationId,
+                roles = EmailService.defaultOrgRolesForNotification,
+            )
             .map { it.email }
     val subLocations = facilityStore.fetchSubLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
@@ -87,7 +89,8 @@ class AdminFacilitiesController(
     }
 
     facilityStore.create(
-        NewFacilityModel(name = name, organizationId = organizationId, type = type))
+        NewFacilityModel(name = name, organizationId = organizationId, type = type)
+    )
 
     redirectAttributes.successMessage = "Facility created."
 
@@ -102,7 +105,7 @@ class AdminFacilitiesController(
       @RequestParam maxIdleMinutes: Int,
       @RequestParam name: String,
       @RequestParam("type") typeId: Int,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     val type = FacilityType.forId(typeId)
 
@@ -117,7 +120,9 @@ class AdminFacilitiesController(
             name = name,
             description = description?.ifEmpty { null },
             type = type,
-            maxIdleMinutes = maxIdleMinutes))
+            maxIdleMinutes = maxIdleMinutes,
+        )
+    )
 
     if (connectionState != existing.connectionState) {
       facilityStore.updateConnectionState(facilityId, existing.connectionState, connectionState)
@@ -133,10 +138,11 @@ class AdminFacilitiesController(
       @RequestParam facilityId: FacilityId,
       @RequestParam subject: String,
       @RequestParam body: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
-    if (facilityStore.fetchOneById(facilityId).connectionState !=
-        FacilityConnectionState.Configured) {
+    if (
+        facilityStore.fetchOneById(facilityId).connectionState != FacilityConnectionState.Configured
+    ) {
       redirectAttributes.successMessage =
           "Alert received, but facility is not configured so alert would be ignored."
       return redirectToFacility(facilityId)
@@ -144,7 +150,8 @@ class AdminFacilitiesController(
 
     try {
       publisher.publishEvent(
-          FacilityAlertRequestedEvent(facilityId, subject, body, currentUser().userId))
+          FacilityAlertRequestedEvent(facilityId, subject, body, currentUser().userId)
+      )
 
       redirectAttributes.successMessage =
           if (config.email.enabled) {
@@ -164,7 +171,7 @@ class AdminFacilitiesController(
   fun createSubLocation(
       @RequestParam facilityId: FacilityId,
       @RequestParam name: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     facilityStore.createSubLocation(facilityId, name)
 
@@ -178,7 +185,7 @@ class AdminFacilitiesController(
       @RequestParam facilityId: FacilityId,
       @RequestParam subLocationId: SubLocationId,
       @RequestParam name: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     facilityStore.updateSubLocation(subLocationId, name)
 
@@ -191,7 +198,7 @@ class AdminFacilitiesController(
   fun deleteSubLocation(
       @RequestParam facilityId: FacilityId,
       @RequestParam subLocationId: SubLocationId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       facilityStore.deleteSubLocation(subLocationId)

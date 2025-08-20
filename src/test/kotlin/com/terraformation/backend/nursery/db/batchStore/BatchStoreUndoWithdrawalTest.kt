@@ -38,7 +38,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             readyQuantity = 30,
             hardeningOffQuantity = 40,
             totalLost = 0,
-            totalLossCandidates = 20 + 30 + 40)
+            totalLossCandidates = 20 + 30 + 40,
+        )
     batch2Id =
         insertBatch(
             speciesId = speciesId,
@@ -48,7 +49,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             readyQuantity = 60,
             hardeningOffQuantity = 70,
             totalLost = 0,
-            totalLossCandidates = 50 + 60 + 70)
+            totalLossCandidates = 50 + 60 + 70,
+        )
 
     every { user.canReadWithdrawal(any()) } returns true
   }
@@ -69,14 +71,18 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                         germinatingQuantityWithdrawn = 1,
                         hardeningOffQuantityWithdrawn = 4,
                         activeGrowthQuantityWithdrawn = 2,
-                        readyQuantityWithdrawn = 3),
+                        readyQuantityWithdrawn = 3,
+                    ),
                     BatchWithdrawalModel(
                         batchId = batch2Id,
                         destinationBatchId = null,
                         germinatingQuantityWithdrawn = 4,
                         hardeningOffQuantityWithdrawn = 7,
                         activeGrowthQuantityWithdrawn = 5,
-                        readyQuantityWithdrawn = 6)))
+                        readyQuantityWithdrawn = 6,
+                    ),
+                )
+        )
 
     clock.instant = clock.instant.plus(2, ChronoUnit.DAYS)
 
@@ -87,7 +93,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         activeGrowth = 110,
         ready = 120,
         hardeningOff = 130,
-        historyType = BatchQuantityHistoryType.Observed)
+        historyType = BatchQuantityHistoryType.Observed,
+    )
 
     val batch2AfterQuantityEdit = store.fetchOneById(batch2Id)
 
@@ -105,14 +112,16 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                         germinatingQuantityWithdrawn = -1,
                         hardeningOffQuantityWithdrawn = -4,
                         activeGrowthQuantityWithdrawn = -2,
-                        readyQuantityWithdrawn = -3),
+                        readyQuantityWithdrawn = -3,
+                    ),
                     BatchWithdrawalModel(
                         batchId = batch2Id,
                         destinationBatchId = null,
                         germinatingQuantityWithdrawn = -4,
                         hardeningOffQuantityWithdrawn = -7,
                         activeGrowthQuantityWithdrawn = -5,
-                        readyQuantityWithdrawn = -6),
+                        readyQuantityWithdrawn = -6,
+                    ),
                 ),
             facilityId = facilityId,
             id = undoWithdrawal.id,
@@ -120,7 +129,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             withdrawnDate = LocalDate.ofInstant(clock.instant, ZoneOffset.UTC),
             undoesWithdrawalId = withdrawalId,
         ),
-        undoWithdrawal)
+        undoWithdrawal,
+    )
 
     val batch1AfterUndo = store.fetchOneById(batch1Id)
     val batch2AfterUndo = store.fetchOneById(batch2Id)
@@ -128,11 +138,13 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
     assertEquals(
         batch1BeforeWithdrawal.copy(version = 3),
         batch1AfterUndo,
-        "Should have updated batch without recent observed quantities")
+        "Should have updated batch without recent observed quantities",
+    )
     assertEquals(
         batch2AfterQuantityEdit.copy(totalWithdrawn = 0, version = 4),
         batch2AfterUndo,
-        "Should not have updated batch with recent observed quantities")
+        "Should not have updated batch with recent observed quantities",
+    )
 
     val quantityHistories = batchQuantityHistoryDao.findAll().onEach { it.id = null }
 
@@ -149,14 +161,17 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 hardeningOffQuantity = 40,
                 withdrawalId = undoWithdrawal.id,
                 version = 3,
-            )),
+            )
+        ),
         quantityHistories.filter { it.batchId == batch1Id && it.withdrawalId == undoWithdrawal.id },
-        "Should have created quantity history entry for undo on batch whose quantity was updated")
+        "Should have created quantity history entry for undo on batch whose quantity was updated",
+    )
 
     assertEquals(
         emptyList<BatchQuantityHistoryRow>(),
         quantityHistories.filter { it.batchId == batch2Id && it.withdrawalId == undoWithdrawal.id },
-        "Should not have created quantity history entry for undo on batch with more recent observed quantity")
+        "Should not have created quantity history entry for undo on batch with more recent observed quantity",
+    )
   }
 
   @Test
@@ -165,7 +180,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
 
     val withdrawalId =
         makeInitialWithdrawal(
-            destinationFacilityId = otherFacilityId, purpose = WithdrawalPurpose.NurseryTransfer)
+            destinationFacilityId = otherFacilityId,
+            purpose = WithdrawalPurpose.NurseryTransfer,
+        )
 
     assertThrows<UndoOfNurseryTransferNotAllowedException> { store.undoWithdrawal(withdrawalId) }
   }
@@ -203,7 +220,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                   germinatingQuantityWithdrawn = 1,
                   activeGrowthQuantityWithdrawn = 2,
                   readyQuantityWithdrawn = 3,
-                  hardeningOffQuantityWithdrawn = 4)),
+                  hardeningOffQuantityWithdrawn = 4,
+              )
+          ),
       destinationFacilityId: FacilityId? = null,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
       withdrawnDate: LocalDate = LocalDate.EPOCH,
@@ -216,7 +235,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 facilityId = facilityId,
                 id = null,
                 purpose = purpose,
-                withdrawnDate = withdrawnDate))
+                withdrawnDate = withdrawnDate,
+            )
+        )
         .id
   }
 }

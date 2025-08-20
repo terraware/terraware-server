@@ -50,7 +50,7 @@ class ViabilityTestsController(
   @Operation(summary = "Get a single viability test.")
   fun getViabilityTest(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId
+      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
   ): GetViabilityTestResponsePayload {
     val model = viabilityTestStore.fetchOneById(viabilityTestId)
     if (model.accessionId != accessionId) {
@@ -62,11 +62,12 @@ class ViabilityTestsController(
 
   @Operation(
       summary = "Create a new viability test on an existing accession.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   @PostMapping
   fun createViabilityTest(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @RequestBody payload: CreateViabilityTestRequestPayload
+      @RequestBody payload: CreateViabilityTestRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createViabilityTest(payload.toModel(accessionId))
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -75,10 +76,11 @@ class ViabilityTestsController(
   @DeleteMapping("/{viabilityTestId}")
   @Operation(
       summary = "Delete an existing viability test.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   fun deleteViabilityTest(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId
+      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.deleteViabilityTest(accessionId, viabilityTestId)
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -86,12 +88,13 @@ class ViabilityTestsController(
 
   @Operation(
       summary = "Update the details of an existing viability test.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   @PutMapping("/{viabilityTestId}")
   fun updateViabilityTest(
       @PathVariable("accessionId") accessionId: AccessionId,
       @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
-      @RequestBody payload: UpdateViabilityTestRequestPayload
+      @RequestBody payload: UpdateViabilityTestRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession =
         accessionService.updateViabilityTest(accessionId, viabilityTestId, payload::applyToModel)
@@ -120,7 +123,8 @@ data class GetViabilityTestPayload(
         description =
             "Server-calculated viability percent for this test. For lab and nursery tests, this " +
                 "is based on the total seeds germinated across all test results. For cut tests, " +
-                "it is based on the number of seeds filled.")
+                "it is based on the number of seeds filled."
+    )
     val viabilityPercent: Int? = null,
     @Schema(description = "Full name of user who withdrew seeds to perform the test.")
     val withdrawnByName: String? = null,
@@ -169,7 +173,8 @@ data class CreateViabilityTestRequestPayload(
         description =
             "ID of user who withdrew seeds to perform the test. Defaults to the current user. If " +
                 "non-null, the current user must have permission to see the referenced user's " +
-                "membership details in the organization.")
+                "membership details in the organization."
+    )
     val withdrawnByUserId: UserId? = null,
 ) {
   fun toModel(accessionId: AccessionId) =
@@ -208,7 +213,8 @@ data class UpdateViabilityTestRequestPayload(
         description =
             "ID of user who withdrew seeds to perform the test. If non-null, the current user " +
                 "must have permission to see the referenced user's membership details in the " +
-                "organization. If absent or null, the existing value is left unchanged.")
+                "organization. If absent or null, the existing value is left unchanged."
+    )
     val withdrawnByUserId: UserId? = null,
 ) {
   fun applyToModel(model: ViabilityTestModel): ViabilityTestModel =

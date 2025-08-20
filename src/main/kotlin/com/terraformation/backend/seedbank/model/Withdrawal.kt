@@ -46,7 +46,8 @@ data class WithdrawalModel(
       estimatedWeight =
           SeedQuantityModel.of(
               record[WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY],
-              record[WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID]),
+              record[WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID],
+          ),
       id = record[WITHDRAWALS.ID],
       notes = record[WITHDRAWALS.NOTES],
       purpose = record[WITHDRAWALS.PURPOSE_ID],
@@ -54,7 +55,9 @@ data class WithdrawalModel(
       viabilityTestId = record[WITHDRAWALS.VIABILITY_TEST_ID],
       withdrawn =
           SeedQuantityModel.of(
-              record[WITHDRAWALS.WITHDRAWN_QUANTITY], record[WITHDRAWALS.WITHDRAWN_UNITS_ID]),
+              record[WITHDRAWALS.WITHDRAWN_QUANTITY],
+              record[WITHDRAWALS.WITHDRAWN_UNITS_ID],
+          ),
       withdrawnByName = fullName,
       withdrawnByUserId = record[WITHDRAWALS.WITHDRAWN_BY],
   )
@@ -116,7 +119,7 @@ data class WithdrawalModel(
   fun calculateEstimatedWeight(
       subsetWeight: SeedQuantityModel?,
       subsetCount: Int?,
-      units: SeedQuantityUnits?
+      units: SeedQuantityUnits?,
   ): SeedQuantityModel? {
     return when {
       withdrawn == null -> null

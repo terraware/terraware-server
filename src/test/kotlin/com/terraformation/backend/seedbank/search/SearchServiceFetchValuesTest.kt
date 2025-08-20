@@ -15,7 +15,10 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   fun `no criteria for simple column value`() {
     val values =
         searchService.fetchValues(
-            rootPrefix, speciesNameField, mapOf(rootPrefix to NoConditionNode()))
+            rootPrefix,
+            speciesNameField,
+            mapOf(rootPrefix to NoConditionNode()),
+        )
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
@@ -24,7 +27,10 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
     accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(speciesId = null))
     val values =
         searchService.fetchValues(
-            rootPrefix, speciesNameField, mapOf(rootPrefix to NoConditionNode()))
+            rootPrefix,
+            speciesNameField,
+            mapOf(rootPrefix to NoConditionNode()),
+        )
     assertEquals(listOf("Other Dogwood", null), values)
   }
 
@@ -36,7 +42,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             speciesNameField,
             mapOf(
                 rootPrefix to
-                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy)))
+                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy)
+            ),
+        )
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
@@ -48,7 +56,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             speciesNameField,
             mapOf(
                 rootPrefix to
-                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.ExactOrFuzzy)))
+                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.ExactOrFuzzy)
+            ),
+        )
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
@@ -61,30 +71,38 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             number = "ZABCDY",
             stateId = AccessionState.Processing,
             speciesId = speciesId2,
-            treesCollectedFrom = 2))
+            treesCollectedFrom = 2,
+        )
+    )
     val values =
         searchService.fetchValues(
             rootPrefix,
             accessionNumberField,
             mapOf(
                 rootPrefix to
-                    FieldNode(accessionNumberField, listOf("abcd"), SearchFilterType.ExactOrFuzzy)))
+                    FieldNode(accessionNumberField, listOf("abcd"), SearchFilterType.ExactOrFuzzy)
+            ),
+        )
     assertEquals(listOf("ABCD", "ZABCDY"), values)
   }
 
   @Test
   fun `exact-or-fuzzy search of collection site name with value that is an exact substring match`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId1)!!.copy(collectionSiteName = "Location 10"))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(collectionSiteName = "Location 10")
+    )
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId2)!!.copy(collectionSiteName = "Location 11"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(collectionSiteName = "Location 11")
+    )
     insertAccession(
         AccessionsRow(
             number = "IJK",
             stateId = AccessionState.Processing,
             speciesId = speciesId2,
             treesCollectedFrom = 2,
-            collectionSiteName = "Location 2"))
+            collectionSiteName = "Location 2",
+        )
+    )
     val values =
         searchService.fetchValues(
             rootPrefix,
@@ -94,7 +112,10 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
                     FieldNode(
                         collectionSiteNameField,
                         listOf("location 1"),
-                        SearchFilterType.ExactOrFuzzy)))
+                        SearchFilterType.ExactOrFuzzy,
+                    )
+            ),
+        )
     assertEquals(listOf("Location 10", "Location 11"), values)
   }
 
@@ -105,7 +126,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             rootPrefix,
             speciesNameField,
             mapOf(
-                rootPrefix to FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy)))
+                rootPrefix to FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy)
+            ),
+        )
     assertEquals(listOf("Other Dogwood"), values)
   }
 
@@ -116,8 +139,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             rootPrefix,
             speciesNameField,
             mapOf(
-                rootPrefix to
-                    FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+                rootPrefix to FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy)
+            ),
+        )
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
@@ -128,8 +152,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             rootPrefix,
             stateField,
             mapOf(
-                rootPrefix to
-                    FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+                rootPrefix to FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy)
+            ),
+        )
     assertEquals(listOf("In Storage", "Processing"), values)
   }
 
@@ -139,7 +164,8 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
         searchService.fetchValues(
             rootPrefix,
             plantsCollectedFromField,
-            mapOf(rootPrefix to FieldNode(plantsCollectedFromField, listOf("1"))))
+            mapOf(rootPrefix to FieldNode(plantsCollectedFromField, listOf("1"))),
+        )
 
     assertEquals(listOf("1"), values)
   }
@@ -154,12 +180,14 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   @Test
   fun `can filter on computed column value`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp)
+    )
     val values =
         searchService.fetchValues(
             rootPrefix,
             activeField,
-            mapOf(rootPrefix to FieldNode(activeField, listOf("Inactive"))))
+            mapOf(rootPrefix to FieldNode(activeField, listOf("Inactive"))),
+        )
     assertEquals(listOf("Inactive"), values)
   }
 
@@ -173,7 +201,10 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
     val actual =
         searchService.fetchValues(
-            rootPrefix, plantsCollectedFromField, mapOf(rootPrefix to NoConditionNode()))
+            rootPrefix,
+            plantsCollectedFromField,
+            mapOf(rootPrefix to NoConditionNode()),
+        )
 
     assertEquals(expected, actual)
   }
@@ -191,7 +222,10 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
     val actual =
         searchService.fetchValues(
-            rootPrefix, plantsCollectedFromField, mapOf(rootPrefix to NoConditionNode()))
+            rootPrefix,
+            plantsCollectedFromField,
+            mapOf(rootPrefix to NoConditionNode()),
+        )
 
     assertEquals(expected, actual)
   }

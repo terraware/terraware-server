@@ -25,7 +25,8 @@ class SubmissionNotifierTest {
     notifier.on(event)
 
     rateLimitedEventPublisher.assertEventPublished(
-        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId)
+    )
     assertIsEventListener<DeliverableDocumentUploadedEvent>(notifier)
   }
 
@@ -36,7 +37,8 @@ class SubmissionNotifierTest {
     notifier.on(event)
 
     rateLimitedEventPublisher.assertEventPublished(
-        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId)
+    )
     assertIsEventListener<QuestionsDeliverableSubmittedEvent>(notifier)
   }
 
@@ -47,7 +49,8 @@ class SubmissionNotifierTest {
     notifier.on(event)
 
     rateLimitedEventPublisher.assertEventPublished(
-        QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId))
+        QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId)
+    )
     assertIsEventListener<QuestionsDeliverableReviewedEvent>(notifier)
   }
 }

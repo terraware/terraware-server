@@ -71,7 +71,8 @@ class SpeciesStore(
       DSL.multiset(
               DSL.select(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
                   .from(SPECIES_ECOSYSTEM_TYPES)
-                  .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID)))
+                  .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID))
+          )
           .convertFrom { result ->
             result
                 .mapNotNull { record -> record[SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID] }
@@ -82,7 +83,8 @@ class SpeciesStore(
       DSL.multiset(
               DSL.select(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
                   .from(SPECIES_GROWTH_FORMS)
-                  .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(SPECIES.ID)))
+                  .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(SPECIES.ID))
+          )
           .convertFrom { result ->
             result.mapNotNull { record -> record[SPECIES_GROWTH_FORMS.GROWTH_FORM_ID] }.toSet()
           }
@@ -91,7 +93,8 @@ class SpeciesStore(
       DSL.multiset(
               DSL.select(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID)
                   .from(SPECIES_PLANT_MATERIAL_SOURCING_METHODS)
-                  .where(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID)))
+                  .where(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID))
+          )
           .convertFrom { result ->
             result
                 .mapNotNull { record ->
@@ -104,7 +107,8 @@ class SpeciesStore(
       DSL.multiset(
               DSL.select(SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID)
                   .from(SPECIES_SUCCESSIONAL_GROUPS)
-                  .where(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID.eq(SPECIES.ID)))
+                  .where(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID.eq(SPECIES.ID))
+          )
           .convertFrom { result ->
             result
                 .mapNotNull { record -> record[SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID] }
@@ -120,19 +124,20 @@ class SpeciesStore(
   private val usedInObservations: Condition =
       DSL.or(
           DSL.exists(
-              DSL.selectOne()
-                  .from(RECORDED_PLANTS)
-                  .where(RECORDED_PLANTS.SPECIES_ID.eq(SPECIES.ID))),
+              DSL.selectOne().from(RECORDED_PLANTS).where(RECORDED_PLANTS.SPECIES_ID.eq(SPECIES.ID))
+          ),
           DSL.exists(
               DSL.selectOne()
                   .from(OBSERVATION_BIOMASS_SPECIES)
-                  .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID))),
+                  .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID))
+          ),
           // Observed site, zone, subzone, and plot totals have the same species, so checking one
           // of them is sufficient.
           DSL.exists(
               DSL.selectOne()
                   .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                  .where(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.eq(SPECIES.ID))),
+                  .where(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.eq(SPECIES.ID))
+          ),
       )
 
   private val usedInPlantings: Condition =
@@ -147,7 +152,8 @@ class SpeciesStore(
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
-            speciesSuccessionalGroupsMultiset)
+            speciesSuccessionalGroupsMultiset,
+        )
         .from(SPECIES)
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
@@ -157,7 +163,8 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
-              speciesSuccessionalGroupsMultiset)
+              speciesSuccessionalGroupsMultiset,
+          )
         } ?: throw SpeciesNotFoundException(speciesId)
   }
 
@@ -170,13 +177,16 @@ class SpeciesStore(
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
-            speciesSuccessionalGroupsMultiset)
+            speciesSuccessionalGroupsMultiset,
+        )
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
                 DSL.select(PLANTINGS.SPECIES_ID)
                     .from(PLANTINGS)
-                    .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
+                    .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))
+            )
+        )
         .and(SPECIES.DELETED_TIME.isNull)
         .fetch {
           ExistingSpeciesModel.of(
@@ -184,7 +194,8 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
-              speciesSuccessionalGroupsMultiset)
+              speciesSuccessionalGroupsMultiset,
+          )
         }
   }
 
@@ -207,7 +218,8 @@ class SpeciesStore(
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
-            speciesSuccessionalGroupsMultiset)
+            speciesSuccessionalGroupsMultiset,
+        )
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
@@ -222,9 +234,14 @@ class SpeciesStore(
                             .join(PLANTING_SUBZONES)
                             .on(
                                 OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(
-                                    PLANTING_SUBZONES.PLANTING_SITE_ID))
+                                    PLANTING_SUBZONES.PLANTING_SITE_ID
+                                )
+                            )
                             .where(PLANTING_SUBZONES.ID.eq(plantingSubzoneId))
-                            .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNotNull))))
+                            .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNotNull)
+                    )
+            )
+        )
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
         .fetch {
@@ -233,7 +250,8 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
-              speciesSuccessionalGroupsMultiset)
+              speciesSuccessionalGroupsMultiset,
+          )
         }
   }
 
@@ -251,7 +269,7 @@ class SpeciesStore(
 
   fun findAllSpecies(
       organizationId: OrganizationId,
-      inUse: Boolean = false
+      inUse: Boolean = false,
   ): List<ExistingSpeciesModel> {
     requirePermissions { readOrganization(organizationId) }
 
@@ -268,7 +286,8 @@ class SpeciesStore(
             speciesEcosystemTypesMultiset,
             speciesGrowthFormsMultiset,
             speciesPlantMaterialSourcingMethodsMultiset,
-            speciesSuccessionalGroupsMultiset)
+            speciesSuccessionalGroupsMultiset,
+        )
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
@@ -280,7 +299,8 @@ class SpeciesStore(
               speciesEcosystemTypesMultiset,
               speciesGrowthFormsMultiset,
               speciesPlantMaterialSourcingMethodsMultiset,
-              speciesSuccessionalGroupsMultiset)
+              speciesSuccessionalGroupsMultiset,
+          )
         }
   }
 
@@ -431,7 +451,8 @@ class SpeciesStore(
 
       if (model.ecosystemTypes.isNotEmpty()) {
         speciesEcosystemTypesDao.insert(
-            model.ecosystemTypes.map { SpeciesEcosystemTypesRow(speciesId, it) })
+            model.ecosystemTypes.map { SpeciesEcosystemTypesRow(speciesId, it) }
+        )
       }
 
       if (model.growthForms.isNotEmpty()) {
@@ -671,7 +692,8 @@ class SpeciesStore(
       V : EnumFromReferenceTable<*, V>,
       R : TableRecord<R>,
       E : TableField<R, V?>,
-      S : TableField<R, SpeciesId?>> updateSet(
+      S : TableField<R, SpeciesId?>,
+  > updateSet(
       enumIdField: E,
       speciesId: SpeciesId,
       speciesIdField: S,
@@ -721,7 +743,7 @@ class SpeciesStore(
 
   private fun updatePlantMaterialSourcingMethods(
       speciesId: SpeciesId,
-      plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>
+      plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>,
   ) =
       updateSet(
           enumIdField = SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
@@ -732,7 +754,7 @@ class SpeciesStore(
 
   private fun updateSuccessionalGroups(
       speciesId: SpeciesId,
-      successionalGroups: Set<SuccessionalGroup>
+      successionalGroups: Set<SuccessionalGroup>,
   ) =
       updateSet(
           enumIdField = SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID,

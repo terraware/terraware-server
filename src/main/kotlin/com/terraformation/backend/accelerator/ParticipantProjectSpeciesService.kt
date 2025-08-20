@@ -68,7 +68,7 @@ class ParticipantProjectSpeciesService(
    */
   fun create(
       projectIds: Set<ProjectId>,
-      speciesIds: Set<SpeciesId>
+      speciesIds: Set<SpeciesId>,
   ): List<ExistingParticipantProjectSpeciesModel> {
     return dslContext.transactionResult { _ ->
       val existingModels = participantProjectSpeciesStore.create(projectIds, speciesIds)
@@ -186,7 +186,7 @@ class ParticipantProjectSpeciesService(
 
   fun readSubmissionSnapshotFile(
       projectId: ProjectId,
-      deliverableId: DeliverableId
+      deliverableId: DeliverableId,
   ): SizedInputStream {
     val submissionRecord =
         with(SUBMISSIONS) {
@@ -209,7 +209,7 @@ class ParticipantProjectSpeciesService(
   private fun createSubmissionSnapshotFile(
       inputStream: ByteArrayInputStream,
       metadata: NewFileMetadata,
-      submissionId: SubmissionId
+      submissionId: SubmissionId,
   ) =
       fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
         with(SUBMISSION_SNAPSHOTS) {
@@ -261,14 +261,15 @@ class ParticipantProjectSpeciesService(
    */
   private fun publishAddedEvent(
       deliverableId: DeliverableId?,
-      participantProjectSpecies: ExistingParticipantProjectSpeciesModel
+      participantProjectSpecies: ExistingParticipantProjectSpeciesModel,
   ) {
     if (deliverableId != null) {
       eventPublisher.publishEvent(
           ParticipantProjectSpeciesAddedEvent(
               deliverableId = deliverableId,
               participantProjectSpecies = participantProjectSpecies,
-          ))
+          )
+      )
     }
   }
 }

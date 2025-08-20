@@ -172,7 +172,8 @@ internal class GbifStoreTest : DatabaseTest() {
               "Scientific name",
               listOf("Common en" to "en", "Common xx" to "xx", "Common unknown" to null),
               "Family",
-              "endangered")
+              "endangered",
+          )
 
       val expected =
           GbifTaxonModel(
@@ -184,7 +185,8 @@ internal class GbifStoreTest : DatabaseTest() {
                   GbifVernacularNameModel("Common unknown", null),
                   GbifVernacularNameModel("Common xx", "xx"),
               ),
-              "endangered")
+              "endangered",
+          )
 
       val actual = store.fetchOneByScientificName("Scientific name")
       assertEquals(expected, actual)
@@ -196,7 +198,8 @@ internal class GbifStoreTest : DatabaseTest() {
           insertTaxon(
               "Scientific name",
               listOf("Common en" to "en", "Common xx" to "xx", "Common unknown" to null),
-              "Family")
+              "Family",
+          )
 
       val expected =
           GbifTaxonModel(
@@ -207,7 +210,8 @@ internal class GbifStoreTest : DatabaseTest() {
                   GbifVernacularNameModel("Common en", "en"),
                   GbifVernacularNameModel("Common unknown", null),
               ),
-              null)
+              null,
+          )
 
       val actual = store.fetchOneByScientificName("Scientific name", "en")
       assertEquals(expected, actual)
@@ -218,16 +222,19 @@ internal class GbifStoreTest : DatabaseTest() {
       insertTaxon(
           "Scientific name",
           fullScientificName = "Scientific name (1)",
-          taxonomicStatus = "doubtful")
+          taxonomicStatus = "doubtful",
+      )
       val taxonId2 =
           insertTaxon(
               "Scientific name",
               fullScientificName = "Scientific name (2)",
-              taxonomicStatus = "accepted")
+              taxonomicStatus = "accepted",
+          )
       insertTaxon(
           "Scientific name",
           fullScientificName = "Scientific name (3)",
-          taxonomicStatus = "synonym")
+          taxonomicStatus = "synonym",
+      )
 
       val expected = GbifTaxonModel(taxonId2, "Scientific name", "Scientific", emptyList(), null)
 
@@ -254,7 +261,8 @@ internal class GbifStoreTest : DatabaseTest() {
       val expected =
           SpeciesProblemsRow(
               fieldId = SpeciesProblemField.ScientificName,
-              typeId = SpeciesProblemType.NameNotFound)
+              typeId = SpeciesProblemType.NameNotFound,
+          )
 
       val actual = store.checkScientificName("Nowhere close")
       assertEquals(expected, actual)
@@ -269,7 +277,8 @@ internal class GbifStoreTest : DatabaseTest() {
           SpeciesProblemsRow(
               fieldId = SpeciesProblemField.ScientificName,
               typeId = SpeciesProblemType.NameMisspelled,
-              suggestedValue = scientificName)
+              suggestedValue = scientificName,
+          )
 
       val actual = store.checkScientificName("Scietific nam")
       assertEquals(expected, actual)
@@ -286,7 +295,8 @@ internal class GbifStoreTest : DatabaseTest() {
           SpeciesProblemsRow(
               fieldId = SpeciesProblemField.ScientificName,
               typeId = SpeciesProblemType.NameIsSynonym,
-              suggestedValue = newName)
+              suggestedValue = newName,
+          )
 
       val actual = store.checkScientificName(oldName)
       assertEquals(expected, actual)
@@ -297,13 +307,17 @@ internal class GbifStoreTest : DatabaseTest() {
       val newName = "New name"
       val newNameTaxonId = insertTaxon(newName)
       insertTaxon(
-          "Correct synonym", taxonomicStatus = "synonym", acceptedNameUsageId = newNameTaxonId)
+          "Correct synonym",
+          taxonomicStatus = "synonym",
+          acceptedNameUsageId = newNameTaxonId,
+      )
 
       val expected =
           SpeciesProblemsRow(
               fieldId = SpeciesProblemField.ScientificName,
               typeId = SpeciesProblemType.NameIsSynonym,
-              suggestedValue = newName)
+              suggestedValue = newName,
+          )
 
       val actual = store.checkScientificName("Corect synonm")
       assertEquals(expected, actual)
@@ -315,7 +329,8 @@ internal class GbifStoreTest : DatabaseTest() {
       insertTaxon(
           "Scientific name",
           fullScientificName = "Scientific name (author2)",
-          taxonomicStatus = "doubtful")
+          taxonomicStatus = "doubtful",
+      )
 
       assertNull(store.checkScientificName("Scientific name"))
     }
@@ -389,7 +404,7 @@ internal class GbifStoreTest : DatabaseTest() {
       taxonId: GbifTaxonId,
       name: String,
       language: String? = null,
-      isScientific: Boolean = true
+      isScientific: Boolean = true,
   ): GbifNamesRow {
     return GbifNamesRow(
         isScientific = isScientific,

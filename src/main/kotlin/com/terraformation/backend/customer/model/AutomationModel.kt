@@ -26,7 +26,7 @@ data class AutomationModel(
 ) {
   constructor(
       row: AutomationsRow,
-      objectMapper: ObjectMapper
+      objectMapper: ObjectMapper,
   ) : this(
       createdTime = row.createdTime ?: throw IllegalArgumentException("createdTime is required"),
       description = row.description,

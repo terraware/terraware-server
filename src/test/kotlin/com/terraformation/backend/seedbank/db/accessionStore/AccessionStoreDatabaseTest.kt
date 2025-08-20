@@ -56,7 +56,10 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
     assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
     assertEquals(
-        initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
+        initialRow.speciesId,
+        initialAccession.speciesId,
+        "Species ID as returned on insert",
+    )
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
   }
 
@@ -69,7 +72,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     assertEquals(
         listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
         accessionCollectorsDao.findAll(),
-        "Collectors are stored")
+        "Collectors are stored",
+    )
   }
 
   @Test
@@ -88,7 +92,9 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
                     Geolocation(
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
-                        accuracy = BigDecimal(3))),
+                        accuracy = BigDecimal(3),
+                    )
+                ),
             collectionSiteCountryCode = "UG",
             collectionSiteCountrySubdivision = "subdivision",
             collectionSiteLandowner = "landowner",
@@ -153,9 +159,11 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
         listOf(
             AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
             AccessionCollectorsRow(stored.id, 1, "second1"),
-            AccessionCollectorsRow(stored.id, 2, "second2")),
+            AccessionCollectorsRow(stored.id, 2, "second2"),
+        ),
         accessionCollectorsDao.findAll().sortedBy { it.position },
-        "Collectors are stored")
+        "Collectors are stored",
+    )
 
     // Old species ID was null, so this doesn't count as a change.
     publisher.assertEventNotPublished(AccessionSpeciesChangedEvent::class.java)
@@ -170,7 +178,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     store.update(initial.copy(speciesId = speciesId2))
 
     publisher.assertEventPublished(
-        AccessionSpeciesChangedEvent(initial.id!!, speciesId1, speciesId2))
+        AccessionSpeciesChangedEvent(initial.id!!, speciesId1, speciesId2)
+    )
   }
 
   @Test
@@ -219,7 +228,9 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
                     Geolocation(
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
-                        accuracy = BigDecimal(3))),
+                        accuracy = BigDecimal(3),
+                    )
+                ),
             collectors = listOf("collector 1", "collector 2"),
             facilityId = facilityId,
             receivedDate = today,
@@ -231,13 +242,17 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     val viabilityTest =
         CreateViabilityTestRequestPayload(
-            seedsTested = 10, startDate = today, testType = ViabilityTestType.Lab)
+            seedsTested = 10,
+            startDate = today,
+            testType = ViabilityTestType.Lab,
+        )
     val withdrawal =
         CreateWithdrawalRequestPayload(
             date = today,
             purpose = WithdrawalPurpose.Other,
             notes = "notes",
-            withdrawnQuantity = seeds(41))
+            withdrawnQuantity = seeds(41),
+        )
 
     insertSubLocation(name = subLocationName)
 
@@ -302,9 +317,12 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
         store.fetchOneById(
             store
                 .create(accessionModel(facilityId = seedBankFacilityId, speciesId = speciesId))
-                .id!!)
+                .id!!
+        )
     assertFalse(
-        otherAccession.hasDeliveries, "Delivery existence should not affect other accessions")
+        otherAccession.hasDeliveries,
+        "Delivery existence should not affect other accessions",
+    )
   }
 
   @Test

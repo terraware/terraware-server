@@ -36,7 +36,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             facilityId,
             fields,
             criteria = FieldNode(bagNumberField, listOf("A")),
-            sortOrder = sortOrder)
+            sortOrder = sortOrder,
+        )
 
     val expected =
         SearchResults(
@@ -51,7 +52,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "bagNumber" to "B",
                     "accessionNumber" to "XYZ",
                 ),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -84,7 +86,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -115,7 +118,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "plantsCollectedFrom" to "1",
                     "active" to "Active",
                 ),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -135,7 +139,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf("scientificName" to "Å x"),
                 mapOf("scientificName" to "Kousa Dogwood"),
                 mapOf("scientificName" to "Other Dogwood"),
-            ))
+            )
+        )
 
     val swedishExpected =
         SearchResults(
@@ -144,17 +149,26 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf("scientificName" to "Kousa Dogwood"),
                 mapOf("scientificName" to "Other Dogwood"),
                 mapOf("scientificName" to "Å x"),
-            ))
+            )
+        )
 
     val englishResult =
         Locale.ENGLISH.use {
           searchService.search(
-              prefix, listOf(field), mapOf(prefix to NoConditionNode()), listOf(sortOrder))
+              prefix,
+              listOf(field),
+              mapOf(prefix to NoConditionNode()),
+              listOf(sortOrder),
+          )
         }
     val swedishResult =
         Locale.forLanguageTag("se").use {
           searchService.search(
-              prefix, listOf(field), mapOf(prefix to NoConditionNode()), listOf(sortOrder))
+              prefix,
+              listOf(field),
+              mapOf(prefix to NoConditionNode()),
+              listOf(sortOrder),
+          )
         }
 
     assertEquals(englishExpected, englishResult, "English should put Å before K")
@@ -164,7 +178,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `can filter on computed fields whose raw values are being queried`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp)
+    )
 
     val fields = listOf(accessionNumberField, stateField)
     val searchNode = FieldNode(activeField, listOf("Inactive"))
@@ -173,8 +188,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(
-                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ", "state" to "Used Up")))
+            listOf(mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ", "state" to "Used Up"))
+        )
 
     assertEquals(expected, result)
   }
@@ -182,7 +197,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `exact search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Sómé Mätching Nótes"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Sómé Mätching Nótes")
+    )
 
     val fields = listOf(accessionNumberField)
     val searchNode =
@@ -207,7 +223,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
           searchService.search(
               countryPrefix,
               listOf(countryCodeField, countryNameField),
-              mapOf(countryPrefix to searchNode))
+              mapOf(countryPrefix to searchNode),
+          )
         }
 
     val expected = SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)))
@@ -221,7 +238,10 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val result =
         searchService.search(
-            countryPrefix, listOf(countryNameField), mapOf(countryPrefix to searchNode))
+            countryPrefix,
+            listOf(countryNameField),
+            mapOf(countryPrefix to searchNode),
+        )
 
     val expected = SearchResults(listOf(mapOf("name" to "Côte d’Ivoire")))
 
@@ -244,7 +264,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
               countryPrefix,
               listOf(countryNameField),
               mapOf(countryPrefix to searchNode),
-              listOf(sortField))
+              listOf(sortField),
+          )
         }
 
     val expected =
@@ -252,7 +273,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             listOf(
                 mapOf("name" to unitedStates),
                 mapOf("name" to togo),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -265,7 +287,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
         FieldNode(
             speciesCheckedTimeField,
             listOf(checkedTimeString.replace("Z", ".000+00:00")),
-            SearchFilterType.Exact)
+            SearchFilterType.Exact,
+        )
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -275,7 +298,10 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
-                    "species_checkedTime" to checkedTimeString)))
+                    "species_checkedTime" to checkedTimeString,
+                )
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -298,7 +324,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-            ))
+            )
+        )
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)

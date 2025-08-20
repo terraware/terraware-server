@@ -49,8 +49,10 @@ class OrganizationService(
       }
     }
 
-    if (isTerraformationContact &&
-        !email.endsWith(suffix = "@terraformation.com", ignoreCase = true)) {
+    if (
+        isTerraformationContact &&
+            !email.endsWith(suffix = "@terraformation.com", ignoreCase = true)
+    ) {
       throw InvalidTerraformationContactEmail(email)
     }
 
@@ -155,7 +157,10 @@ class OrganizationService(
       }
 
       organizationStore.removeUser(
-          organizationId, currentUser().userId, allowRemovingLastOwner = true)
+          organizationId,
+          currentUser().userId,
+          allowRemovingLastOwner = true,
+      )
     }
   }
 

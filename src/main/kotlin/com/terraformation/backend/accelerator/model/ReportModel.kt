@@ -78,7 +78,8 @@ data class ReportModel(
   fun validateForSubmission() {
     if (!isEditable()) {
       throw IllegalStateException(
-          "Report $id not in a submittable status. Status is ${status.name}")
+          "Report $id not in a submittable status. Status is ${status.name}"
+      )
     }
   }
 

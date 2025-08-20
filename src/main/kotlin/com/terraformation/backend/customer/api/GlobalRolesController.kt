@@ -35,7 +35,8 @@ class GlobalRolesController(
       GlobalRoleUsersListResponsePayload(
           userStore.fetchWithGlobalRoles().map { user ->
             UserWithGlobalRolesPayload(user, userInternalInterestsStore.fetchForUser(user.userId))
-          })
+          }
+      )
 
   @ApiResponse200
   @ApiResponse404
@@ -82,7 +83,8 @@ data class UserWithGlobalRolesPayload(
       email = user.email,
       firstName = user.firstName,
       globalRoles = user.globalRoles,
-      lastName = user.lastName)
+      lastName = user.lastName,
+  )
 }
 
 data class GlobalRoleUsersListResponsePayload(val users: List<UserWithGlobalRolesPayload>) :

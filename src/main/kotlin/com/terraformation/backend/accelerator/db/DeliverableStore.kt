@@ -70,7 +70,8 @@ class DeliverableStore(
     val conditions =
         listOfNotNull(
             deliverableId?.let { DELIVERABLES.ID.eq(it) },
-            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) })
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) },
+        )
 
     return dslContext.selectFrom(DELIVERABLES).where(conditions).fetch {
       ModuleDeliverableModel.of(it)
@@ -103,21 +104,24 @@ class DeliverableStore(
               else -> null
             },
             deliverableId?.let { DELIVERABLES.ID.eq(it) },
-            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) })
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) },
+        )
 
     val documentsMultiset =
         DSL.multiset(
                 DSL.select(SUBMISSION_DOCUMENTS.asterisk())
                     .from(SUBMISSION_DOCUMENTS)
                     .where(SUBMISSION_DOCUMENTS.SUBMISSION_ID.eq(SUBMISSIONS.ID))
-                    .orderBy(SUBMISSION_DOCUMENTS.ID))
+                    .orderBy(SUBMISSION_DOCUMENTS.ID)
+            )
             .convertFrom { result -> result.map { SubmissionDocumentModel.of(it) } }
 
     val dueDateField =
         DSL.coalesce(
             DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
             DELIVERABLE_COHORT_DUE_DATES.DUE_DATE,
-            COHORT_MODULES.END_DATE)
+            COHORT_MODULES.END_DATE,
+        )
 
     val deliverableIdField = DELIVERABLES.ID.`as`("deliverable_id")
     val projectIdField = PROJECTS.ID.`as`("project_id")
@@ -132,7 +136,9 @@ class DeliverableStore(
                   MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)
                 } else {
                   null
-                }))
+                },
+            )
+        )
 
     // All the fields we query, minus the due date since it varies depending on whether or not we're
     // querying participant project submissions.
@@ -266,7 +272,8 @@ class DeliverableStore(
                       .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
                       .and(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
                       .where(conditions)
-                      .and(nonCohortConditions))
+                      .and(nonCohortConditions)
+              )
               .orderBy(deliverableIdField, projectIdField)
         }
 

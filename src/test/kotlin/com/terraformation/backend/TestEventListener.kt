@@ -6,5 +6,6 @@ import org.springframework.context.event.EventListener
 inline fun <reified T> assertIsEventListener(obj: Any, method: String = "on") {
   assertNotNull(
       obj.javaClass.getMethod(method, T::class.java).getAnnotation(EventListener::class.java),
-      "$method(${T::class.simpleName}) missing EventListener annotation")
+      "$method(${T::class.simpleName}) missing EventListener annotation",
+  )
 }

@@ -43,7 +43,10 @@ data class Shapefile(
     /** Reads all the shapefiles in a directory. */
     private fun fromDirectory(directory: Path): List<Shapefile> {
       return Files.find(
-              directory, 1, { path, _ -> path.extension.equals("shp", ignoreCase = true) })
+              directory,
+              1,
+              { path, _ -> path.extension.equals("shp", ignoreCase = true) },
+          )
           .use { path -> path.map { fromFiles(it) }.toList() }
           .toList()
     }
@@ -76,7 +79,7 @@ data class Shapefile(
     fun fromBoundary(
         boundary: MultiPolygon,
         properties: Map<String, String>,
-        crs: CoordinateReferenceSystem = CRS.decode("EPSG:${boundary.srid}", true)
+        crs: CoordinateReferenceSystem = CRS.decode("EPSG:${boundary.srid}", true),
     ): Shapefile {
       return Shapefile(listOf(ShapefileFeature(boundary, properties, crs)))
     }

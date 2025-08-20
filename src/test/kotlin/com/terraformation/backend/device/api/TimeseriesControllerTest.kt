@@ -60,7 +60,9 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
     controller.recordTimeseriesValues(
         RecordTimeseriesValuesRequestPayload(
-            listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
+            listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))
+        )
+    )
 
     verify { facilityStore.updateLastTimeseriesTimes(listOf(deviceId1)) }
   }
@@ -94,7 +96,9 @@ internal class TimeseriesControllerTest : RunsAsUser {
                     TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("v10", "v11", "v12")),
                     TimeseriesValuesPayload(deviceId1, "ts2", valuePayloads("v20", "v21")),
                     TimeseriesValuesPayload(deviceId2, "ts1", valuePayloads("v30", "v31")),
-                )))
+                )
+            )
+        )
 
     val expected =
         ResponseEntity.ok(
@@ -104,19 +108,29 @@ internal class TimeseriesControllerTest : RunsAsUser {
                         deviceId1,
                         "ts1",
                         valuePayloads("v11", "v12"),
-                        "Already have a value with this timestamp"),
+                        "Already have a value with this timestamp",
+                    ),
                     TimeseriesValuesErrorPayload(
                         deviceId1,
                         "ts2",
                         valuePayloads("v20"),
-                        "Unexpected error while saving value"),
+                        "Unexpected error while saving value",
+                    ),
                     TimeseriesValuesErrorPayload(
                         deviceId1,
                         "ts2",
                         valuePayloads("v21"),
-                        "Already have a value with this timestamp"),
+                        "Already have a value with this timestamp",
+                    ),
                     TimeseriesValuesErrorPayload(
-                        deviceId2, "ts1", valuePayloads("v30", "v31"), "Timeseries not found"))))
+                        deviceId2,
+                        "ts1",
+                        valuePayloads("v30", "v31"),
+                        "Timeseries not found",
+                    ),
+                )
+            )
+        )
 
     assertEquals(expected, actual)
   }
@@ -130,7 +144,9 @@ internal class TimeseriesControllerTest : RunsAsUser {
     val response =
         controller.recordTimeseriesValues(
             RecordTimeseriesValuesRequestPayload(
-                listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
+                listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))
+            )
+        )
 
     assertNull(response.body!!.failures, "Failures list")
   }
@@ -143,7 +159,9 @@ internal class TimeseriesControllerTest : RunsAsUser {
     val response =
         controller.recordTimeseriesValues(
             RecordTimeseriesValuesRequestPayload(
-                listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
+                listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))
+            )
+        )
 
     val expected =
         ResponseEntity.accepted()
@@ -158,7 +176,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
       name: String = "ts$id",
       type: TimeseriesType = TimeseriesType.Numeric,
       decimalPlaces: Int? = null,
-      units: String? = null
+      units: String? = null,
   ) = TimeseriesModel(id, deviceId, name, type, decimalPlaces, units)
 
   private fun valuePayload(value: String) =

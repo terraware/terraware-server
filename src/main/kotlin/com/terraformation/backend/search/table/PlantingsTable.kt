@@ -23,9 +23,13 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
           deliveries.asSingleValueSublist("delivery", PLANTINGS.DELIVERY_ID.eq(DELIVERIES.ID)),
           species.asSingleValueSublist("species", PLANTINGS.SPECIES_ID.eq(SPECIES.ID)),
           plantingSites.asSingleValueSublist(
-              "plantingSite", PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
           plantingSubzones.asSingleValueSublist(
-              "plantingSubzone", PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
+              "plantingSubzone",
+              PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+          ),
       )
     }
   }

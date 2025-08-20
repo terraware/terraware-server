@@ -33,7 +33,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
                 requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
                 startDate = LocalDate.of(2020, 1, 1),
                 state = ObservationState.Completed,
-            ))
+            )
+        )
 
     val expected =
         ObservationsRow(
@@ -55,7 +56,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
     assertEquals(
         setOf(subzoneId1, subzoneId2),
         observationRequestedSubzonesDao.findAll().map { it.plantingSubzoneId }.toSet(),
-        "Subzone IDs")
+        "Subzone IDs",
+    )
   }
 
   @Test
@@ -75,7 +77,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               requestedSubzoneIds = setOf(otherSiteSubzoneId),
               startDate = LocalDate.of(2020, 1, 1),
               state = ObservationState.Upcoming,
-          ))
+          )
+      )
     }
   }
 
@@ -93,7 +96,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               plantingSiteId = plantingSiteId,
               startDate = LocalDate.EPOCH,
               state = ObservationState.Upcoming,
-          ))
+          )
+      )
     }
   }
 
@@ -111,7 +115,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               plantingSiteId = plantingSiteId,
               startDate = LocalDate.EPOCH,
               state = ObservationState.Upcoming,
-          ))
+          )
+      )
     }
   }
 
@@ -131,7 +136,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
               startDate = LocalDate.EPOCH,
               state = ObservationState.Upcoming,
-          ))
+          )
+      )
     }
   }
 }

@@ -131,7 +131,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         mockk(),
         filesDao,
         fileStore,
-        thumbnailStore)
+        thumbnailStore,
+    )
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
@@ -142,7 +143,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         parentStore,
-        recordedPlantsDao)
+        recordedPlantsDao,
+    )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -156,7 +158,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   private val service: ObservationService by lazy {
@@ -255,17 +258,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         val plotBoundary = monitoringPlots[observationPlot.monitoringPlotId]!!.boundary!!
         if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
           fail(
-              "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
+              "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary"
+          )
         }
       }
 
       assertEquals(
           ObservationState.InProgress,
           observationsDao.fetchOneById(observationId)!!.stateId,
-          "Observation state")
+          "Observation state",
+      )
 
       eventPublisher.assertExactEventsPublished(
-          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
+          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId)))
+      )
     }
 
     @Test
@@ -334,10 +340,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val maxTestRuns = 100
       var testRuns = 0
 
-      while (testRuns++ < maxTestRuns &&
-          !(got0PermanentPlotsInSubzone1 &&
-              got1PermanentPlotInSubzone1 &&
-              got2PermanentPlotsInSubzone1)) {
+      while (
+          testRuns++ < maxTestRuns &&
+              !(got0PermanentPlotsInSubzone1 &&
+                  got1PermanentPlotInSubzone1 &&
+                  got2PermanentPlotsInSubzone1)
+      ) {
         dslContext.savepoint("start").execute()
 
         service.startObservation(observationId)
@@ -353,11 +361,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           val plotBoundary = plot.boundary!!
 
           assertEquals(
-              subzone1Id, plot.plantingSubzoneId, "Planting subzone ID for plot ${plot.id}")
+              subzone1Id,
+              plot.plantingSubzoneId,
+              "Planting subzone ID for plot ${plot.id}",
+          )
 
           if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
             fail(
-                "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary")
+                "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary"
+            )
           }
         }
 
@@ -372,11 +384,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             4,
             monitoringPlots.count { it.permanentIndex != null },
-            "Total number of permanent plots created")
+            "Total number of permanent plots created",
+        )
         assertEquals(
             2,
             numPermanentPlotsInSubzone1 + numPermanentPlotsInSubzone2,
-            "Number of permanent plots created in zone 1")
+            "Number of permanent plots created in zone 1",
+        )
 
         val expectedTemporaryPlots =
             when (numPermanentPlotsInSubzone1) {
@@ -386,21 +400,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               else ->
                   fail(
                       "Expected 0, 1, or 2 permanent plots in subzone $subzone1Id, but " +
-                          "got $numPermanentPlotsInSubzone1")
+                          "got $numPermanentPlotsInSubzone1"
+                  )
             }
 
         assertEquals(
             expectedTemporaryPlots,
             observationPlots.count { !it.isPermanent!! },
-            "Number of temporary plots in observation")
+            "Number of temporary plots in observation",
+        )
 
         assertEquals(
             ObservationState.InProgress,
             observationsDao.fetchOneById(observationId)!!.stateId,
-            "Observation state")
+            "Observation state",
+        )
 
         eventPublisher.assertExactEventsPublished(
-            setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId))))
+            setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId)))
+        )
 
         when (numPermanentPlotsInSubzone1) {
           0 -> got0PermanentPlotsInSubzone1 = true
@@ -415,7 +433,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertNotEquals(
           maxTestRuns,
           testRuns,
-          "Number of test runs without seeing all possible permanent plot counts")
+          "Number of test runs without seeing all possible permanent plot counts",
+      )
     }
 
     @Test
@@ -449,7 +468,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSpecies()
 
       insertPlantingZone(
-          x = 0, width = 15, height = 2, numPermanentPlots = 8, numTemporaryPlots = 6)
+          x = 0,
+          width = 15,
+          height = 2,
+          numPermanentPlots = 8,
+          numTemporaryPlots = 6,
+      )
       val subzoneIds =
           listOf(PlantingSubzoneId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
@@ -459,7 +483,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           index,
           (x, y) ->
         insertMonitoringPlot(
-            x = x, y = y, plantingSubzoneId = subzoneIds[x / 3 + 1], permanentIndex = index + 1)
+            x = x,
+            y = y,
+            plantingSubzoneId = subzoneIds[x / 3 + 1],
+            permanentIndex = index + 1,
+        )
       }
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
@@ -480,7 +508,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           mapOf(subzoneIds[1] to 2, subzoneIds[2] to 1),
           numTemporaryPlotsBySubzone,
-          "Number of temporary plots by subzone")
+          "Number of temporary plots by subzone",
+      )
 
       val numPermanentPlotsBySubzone =
           observationPlots
@@ -490,7 +519,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           mapOf(subzoneIds[2] to 2),
           numPermanentPlotsBySubzone,
-          "Number of permanent plots by subzone")
+          "Number of permanent plots by subzone",
+      )
     }
 
     @Test
@@ -512,7 +542,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           updatedSiteHistoryId,
           observationsDao.fetchOneById(observationId)?.plantingSiteHistoryId,
-          "Planting site history ID")
+          "Planting site history ID",
+      )
     }
 
     @Test
@@ -602,7 +633,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 point(1),
                 ObservationPlotPosition.NortheastCorner,
                 content.inputStream(),
-                metadata)
+                metadata,
+            )
       }
 
       @Test
@@ -665,7 +697,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 point(1),
                 ObservationPlotPosition.NortheastCorner,
                 byteArrayOf(1).inputStream(),
-                metadata)
+                metadata,
+            )
 
         val fileId2 =
             service.storePhoto(
@@ -675,7 +708,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 null,
                 byteArrayOf(1).inputStream(),
                 metadata,
-                ObservationPhotoType.Soil)
+                ObservationPhotoType.Soil,
+            )
 
         fileStore.assertFileExists(filesDao.fetchOneById(fileId1)!!.storageUrl!!)
         fileStore.assertFileExists(filesDao.fetchOneById(fileId2)!!.storageUrl!!)
@@ -688,10 +722,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     plotId,
                     ObservationPlotPosition.NortheastCorner,
                     point(1),
-                    ObservationPhotoType.Plot),
+                    ObservationPhotoType.Plot,
+                ),
                 ObservationPhotosRecord(
-                    fileId2, observationId, plotId, null, point(1), ObservationPhotoType.Soil),
-            ))
+                    fileId2,
+                    observationId,
+                    plotId,
+                    null,
+                    point(1),
+                    ObservationPhotoType.Soil,
+                ),
+            )
+        )
       }
 
       @Test
@@ -704,7 +746,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               null,
               byteArrayOf(1).inputStream(),
               metadata,
-              ObservationPhotoType.Quadrat)
+              ObservationPhotoType.Quadrat,
+          )
         }
       }
 
@@ -718,7 +761,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ObservationPlotPosition.SoutheastCorner,
               byteArrayOf(1).inputStream(),
               metadata,
-              ObservationPhotoType.Soil)
+              ObservationPhotoType.Soil,
+          )
         }
       }
 
@@ -733,7 +777,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               point(1),
               ObservationPlotPosition.NortheastCorner,
               byteArrayOf(1).inputStream(),
-              metadata)
+              metadata,
+          )
         }
       }
     }
@@ -750,7 +795,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             point(1),
             ObservationPlotPosition.NortheastCorner,
             onePixelPng.inputStream(),
-            metadata)
+            metadata,
+        )
 
         insertPlantingSite()
         insertPlantingZone()
@@ -766,18 +812,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 point(1),
                 ObservationPlotPosition.SouthwestCorner,
                 onePixelPng.inputStream(),
-                metadata)
+                metadata,
+            )
 
         service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
 
         assertEquals(
             listOf(otherSiteFileId),
             filesDao.findAll().map { it.id },
-            "Files table should only have file from other observation")
+            "Files table should only have file from other observation",
+        )
         assertEquals(
             listOf(otherSiteFileId),
             observationPhotosDao.findAll().map { it.fileId },
-            "Observation photos table should only have file from other observation")
+            "Observation photos table should only have file from other observation",
+        )
       }
     }
   }
@@ -812,7 +861,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<InvalidObservationStartDateException> {
         service.scheduleObservation(
             newObservationModel(
-                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+                plantingSiteId = plantingSiteId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
       }
     }
 
@@ -824,7 +877,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<InvalidObservationStartDateException> {
         service.scheduleObservation(
             newObservationModel(
-                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+                plantingSiteId = plantingSiteId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
       }
     }
 
@@ -836,7 +893,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<InvalidObservationEndDateException> {
         service.scheduleObservation(
             newObservationModel(
-                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+                plantingSiteId = plantingSiteId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
       }
     }
 
@@ -848,7 +909,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<InvalidObservationEndDateException> {
         service.scheduleObservation(
             newObservationModel(
-                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+                plantingSiteId = plantingSiteId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
       }
     }
 
@@ -860,7 +925,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<ScheduleObservationWithoutPlantsException> {
         service.scheduleObservation(
             newObservationModel(
-                plantingSiteId = plantingSiteId, startDate = startDate, endDate = endDate))
+                plantingSiteId = plantingSiteId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
       }
     }
 
@@ -876,26 +945,35 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               newObservationModel(
                   plantingSiteId = inserted.plantingSiteId,
                   startDate = startDate,
-                  endDate = endDate))
+                  endDate = endDate,
+              )
+          )
 
       assertNotNull(observationId)
 
       val createdObservation = observationStore.fetchObservationById(observationId)
 
       assertEquals(
-          ObservationState.Upcoming, createdObservation.state, "State should show as Upcoming")
+          ObservationState.Upcoming,
+          createdObservation.state,
+          "State should show as Upcoming",
+      )
       assertEquals(
-          startDate, createdObservation.startDate, "Start date should match schedule input")
+          startDate,
+          createdObservation.startDate,
+          "Start date should match schedule input",
+      )
       assertEquals(endDate, createdObservation.endDate, "End date should match schedule input")
 
       eventPublisher.assertExactEventsPublished(
-          setOf(ObservationScheduledEvent(createdObservation)))
+          setOf(ObservationScheduledEvent(createdObservation))
+      )
     }
 
     private fun newObservationModel(
         plantingSiteId: PlantingSiteId,
         startDate: LocalDate = LocalDate.EPOCH,
-        endDate: LocalDate = LocalDate.EPOCH.plusDays(1)
+        endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
     ): NewObservationModel =
         NewObservationModel(
             plantingSiteId = plantingSiteId,
@@ -1002,7 +1080,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             [
                 "InProgress",
                 "Overdue",
-            ])
+            ]
+    )
     fun `throws exception rescheduling an In-Progress or Overdue observation if there are observed plots`(
         stateName: String
     ) {
@@ -1028,7 +1107,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             [
                 "InProgress",
                 "Overdue",
-            ])
+            ]
+    )
     fun `reschedules an In-Progress or Overdue observation if there are no observed plots`(
         stateName: String
     ) {
@@ -1048,13 +1128,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val updatedObservation = observationStore.fetchObservationById(observationId)
       assertEquals(
-          ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
+          ObservationState.Upcoming,
+          updatedObservation.state,
+          "State should show as Upcoming",
+      )
       assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
       assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
       assertTableEmpty(OBSERVATION_PLOTS, "Observation plots should be removed")
 
       eventPublisher.assertExactEventsPublished(
-          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
+          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation))
+      )
     }
 
     @Test
@@ -1069,12 +1153,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val updatedObservation = observationStore.fetchObservationById(observationId)
       assertEquals(
-          ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
+          ObservationState.Upcoming,
+          updatedObservation.state,
+          "State should show as Upcoming",
+      )
       assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
       assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
 
       eventPublisher.assertExactEventsPublished(
-          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
+          setOf(ObservationRescheduledEvent(originalObservation, updatedObservation))
+      )
     }
   }
 
@@ -1108,7 +1196,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(inserted.plantingSiteId),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1116,7 +1205,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1128,7 +1219,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1139,18 +1231,22 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(2 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       val plantingSiteIdWithPlantings = helper.insertPlantedSite()
 
@@ -1158,8 +1254,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
-              plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+              plantingSiteIdWithPlantings,
+          ),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+      )
     }
   }
 
@@ -1186,7 +1284,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(inserted.plantingSiteId),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1195,7 +1294,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1208,7 +1309,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1220,33 +1322,40 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(
-              plantingCreatedTime = Instant.EPOCH.minus(4 * 7, ChronoUnit.DAYS))
+              plantingCreatedTime = Instant.EPOCH.minus(4 * 7, ChronoUnit.DAYS)
+          )
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
       assertEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
-              plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+              plantingSiteIdWithPlantings,
+          ),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+      )
     }
   }
 
@@ -1265,7 +1374,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(inserted.plantingSiteId),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1273,7 +1383,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       helper.insertPlantedSite()
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1285,7 +1397,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1297,10 +1410,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assertEquals(
-          emptyList<Any>(), service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          emptyList<Any>(),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1312,30 +1428,37 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(8 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(
-              plantingCreatedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS))
+              plantingCreatedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)
+          )
 
       assertEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
-              plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+              plantingSiteIdWithPlantings,
+          ),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+      )
     }
   }
 
@@ -1362,7 +1485,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(inserted.plantingSiteId),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1371,7 +1495,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1384,7 +1510,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservation(state = ObservationState.Upcoming)
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assert(service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).isEmpty())
     }
@@ -1393,14 +1520,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns empty results if notification already sent`() {
       helper.insertPlantedSite()
       insertPlantingSiteNotification(
-          type = NotificationType.ObservationNotScheduledSupport, number = 2)
+          type = NotificationType.ObservationNotScheduledSupport,
+          number = 2,
+      )
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       assertEquals(
-          emptyList<Any>(), service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria))
+          emptyList<Any>(),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria),
+      )
     }
 
     @Test
@@ -1410,33 +1542,40 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       val anotherPlantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
       insertObservation(
           ObservationsRow(completedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)),
-          state = ObservationState.Completed)
+          state = ObservationState.Completed,
+      )
 
       // planting site with a more recent completion
       helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
       insertObservation(
-          ObservationsRow(completedTime = Instant.EPOCH), state = ObservationState.Completed)
+          ObservationsRow(completedTime = Instant.EPOCH),
+          state = ObservationState.Completed,
+      )
 
       val plantingSiteIdWithPlantings =
           helper.insertPlantedSite(
-              plantingCreatedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS))
+              plantingCreatedTime = Instant.EPOCH.minus(16 * 7, ChronoUnit.DAYS)
+          )
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
       assertEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
-              plantingSiteIdWithPlantings),
-          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet())
+              plantingSiteIdWithPlantings,
+          ),
+          service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria).toSet(),
+      )
     }
   }
 
@@ -1459,7 +1598,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationPlot(monitoringPlotId = plotId1)
 
       service.replaceMonitoringPlot(
-          observationId, plotId1, "Meteor strike", ReplacementDuration.LongTerm)
+          observationId,
+          plotId1,
+          "Meteor strike",
+          ReplacementDuration.LongTerm,
+      )
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }
 
@@ -1478,10 +1621,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationPlot()
 
       service.replaceMonitoringPlot(
-          observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
+          observationId,
+          monitoringPlotId,
+          "Mudslide",
+          ReplacementDuration.Temporary,
+      )
 
       assertTrue(
-          monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.isAvailable!!, "Plot is available")
+          monitoringPlotsDao.fetchOneById(monitoringPlotId)!!.isAvailable!!,
+          "Plot is available",
+      )
     }
 
     @Test
@@ -1493,14 +1642,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
+              observationId,
+              monitoringPlotId,
+              "Mudslide",
+              ReplacementDuration.Temporary,
+          )
 
       assertEquals(ReplacementResult(setOf(otherPlotId), setOf(monitoringPlotId)), result)
 
       assertEquals(
           listOf(otherPlotId),
           observationPlotsDao.findAll().map { it.monitoringPlotId },
-          "Observation should only have replacement plot")
+          "Observation should only have replacement plot",
+      )
     }
 
     @Test
@@ -1512,7 +1666,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
+              observationId,
+              monitoringPlotId,
+              "Mudslide",
+              ReplacementDuration.Temporary,
+          )
 
       assertEquals(ReplacementResult(emptySet(), setOf(monitoringPlotId)), result)
 
@@ -1527,7 +1685,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
+              observationId,
+              monitoringPlotId,
+              "Mudslide",
+              ReplacementDuration.Temporary,
+          )
 
       val plots = monitoringPlotsDao.findAll()
 
@@ -1540,7 +1702,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(otherPlotId),
           observationPlotsDao.findAll().map { it.monitoringPlotId },
-          "Observation should only have replacement plot")
+          "Observation should only have replacement plot",
+      )
     }
 
     @Test
@@ -1553,19 +1716,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, plotId1, "why not", ReplacementDuration.Temporary)
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.Temporary,
+          )
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = setOf(plotId2), removedMonitoringPlotIds = setOf(plotId1)),
-          result)
+              addedMonitoringPlotIds = setOf(plotId2),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
 
       assertEquals(
           1,
           monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
-          "Should have moved second permanent plot to first place")
+          "Should have moved second permanent plot to first place",
+      )
       assertNotEquals(
-          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex, "Plot $plotId1 index")
+          1,
+          monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex,
+          "Plot $plotId1 index",
+      )
     }
 
     @Test
@@ -1580,19 +1754,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, plotId1, "why not", ReplacementDuration.Temporary)
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.Temporary,
+          )
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
-          result)
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
 
       assertEquals(
           1,
           monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
-          "Should have moved second permanent plot to first place")
+          "Should have moved second permanent plot to first place",
+      )
       assertNotEquals(
-          1, monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex, "Plot $plotId1 index")
+          1,
+          monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex,
+          "Plot $plotId1 index",
+      )
     }
 
     @Test
@@ -1614,7 +1799,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     private fun testPermanentPlotReplacement(plotId1: MonitoringPlotId) {
       val result =
           service.replaceMonitoringPlot(
-              observationId, plotId1, "why not", ReplacementDuration.LongTerm)
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.LongTerm,
+          )
 
       assertEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
       assertEquals(1, result.addedMonitoringPlotIds.size, "Number of plot IDs added")
@@ -1626,7 +1815,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           1,
           plots.values.count { it.permanentIndex == 1 },
-          "Number of plots with permanent index 1")
+          "Number of plots with permanent index 1",
+      )
 
       assertFalse(plots[plotId1]!!.isAvailable!!, "Replaced plot is available")
 
@@ -1646,21 +1836,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           claimedBy = user.userId,
           claimedTime = Instant.EPOCH,
           completedBy = user.userId,
-          completedTime = Instant.EPOCH)
+          completedTime = Instant.EPOCH,
+      )
 
       val result =
           service.replaceMonitoringPlot(
-              observationId, plotId1, "forest fire", ReplacementDuration.LongTerm)
+              observationId,
+              plotId1,
+              "forest fire",
+              ReplacementDuration.LongTerm,
+          )
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
-          result)
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
 
       assertEquals(
           true,
           monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
-          "Monitoring plot should remain available")
+          "Monitoring plot should remain available",
+      )
     }
 
     @Test
@@ -1668,7 +1867,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       observationsDao.update(
           observationsDao
               .fetchOneById(inserted.observationId)!!
-              .copy(completedTime = Instant.EPOCH, stateId = ObservationState.Completed))
+              .copy(completedTime = Instant.EPOCH, stateId = ObservationState.Completed)
+      )
 
       val newObservationId = insertObservation()
 
@@ -1676,17 +1876,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result =
           service.replaceMonitoringPlot(
-              newObservationId, plotId1, "forest fire", ReplacementDuration.LongTerm)
+              newObservationId,
+              plotId1,
+              "forest fire",
+              ReplacementDuration.LongTerm,
+          )
 
       assertEquals(
           ReplacementResult(
-              addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(plotId1)),
-          result)
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
 
       assertEquals(
           true,
           monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
-          "Monitoring plot should remain available")
+          "Monitoring plot should remain available",
+      )
     }
 
     @Test
@@ -1695,7 +1903,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationPlot()
 
       service.replaceMonitoringPlot(
-          observationId, monitoringPlotId, "justification", ReplacementDuration.Temporary)
+          observationId,
+          monitoringPlotId,
+          "justification",
+          ReplacementDuration.Temporary,
+      )
 
       // Default values from insertObservation()
       val observation =
@@ -1708,14 +1920,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingSiteId = inserted.plantingSiteId,
               requestedSubzoneIds = setOf(inserted.plantingSubzoneId),
               startDate = LocalDate.of(2023, 1, 1),
-              state = ObservationState.InProgress)
+              state = ObservationState.InProgress,
+          )
 
       eventPublisher.assertEventPublished(
           ObservationPlotReplacedEvent(
               duration = ReplacementDuration.Temporary,
               justification = "justification",
               observation = observation,
-              monitoringPlotId = monitoringPlotId))
+              monitoringPlotId = monitoringPlotId,
+          )
+      )
     }
 
     @Test
@@ -1725,11 +1940,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           claimedBy = user.userId,
           claimedTime = Instant.EPOCH,
           completedBy = user.userId,
-          completedTime = Instant.EPOCH)
+          completedTime = Instant.EPOCH,
+      )
 
       assertThrows<PlotAlreadyCompletedException> {
         service.replaceMonitoringPlot(
-            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+            observationId,
+            monitoringPlotId,
+            "justification",
+            ReplacementDuration.LongTerm,
+        )
       }
     }
 
@@ -1739,7 +1959,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<PlotNotInObservationException> {
         service.replaceMonitoringPlot(
-            observationId, otherPlotId, "justification", ReplacementDuration.LongTerm)
+            observationId,
+            otherPlotId,
+            "justification",
+            ReplacementDuration.LongTerm,
+        )
       }
     }
 
@@ -1750,7 +1974,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<PlotSizeNotReplaceableException> {
         service.replaceMonitoringPlot(
-            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+            observationId,
+            monitoringPlotId,
+            "justification",
+            ReplacementDuration.LongTerm,
+        )
       }
     }
 
@@ -1761,7 +1989,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<IllegalStateException> {
         service.replaceMonitoringPlot(
-            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+            observationId,
+            monitoringPlotId,
+            "justification",
+            ReplacementDuration.LongTerm,
+        )
       }
     }
 
@@ -1774,7 +2006,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<AccessDeniedException> {
         service.replaceMonitoringPlot(
-            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+            observationId,
+            monitoringPlotId,
+            "justification",
+            ReplacementDuration.LongTerm,
+        )
       }
     }
   }
@@ -1803,22 +2039,26 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live),
+                  statusId = RecordedPlantStatus.Live,
+              ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live),
+                  statusId = RecordedPlantStatus.Live,
+              ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Dead),
+                  statusId = RecordedPlantStatus.Dead,
+              ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Existing),
+                  statusId = RecordedPlantStatus.Existing,
+              ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
@@ -1869,7 +2109,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = date,
               stateId = ObservationState.Completed,
           ),
-          "Observation table")
+          "Observation table",
+      )
 
       val plotBoundary = Turtle(point(1)).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
@@ -1889,7 +2130,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           ),
           actual?.copy(boundary = null),
-          "Ad-hoc plot row")
+          "Ad-hoc plot row",
+      )
       assertGeometryEquals(plotBoundary, actual?.boundary, "Ad-hoc plot boundary")
 
       val latestPlotHistoryId =
@@ -1916,23 +2158,79 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           observationPlotsDao
               .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
               .single(),
-          "Observation plot row")
+          "Observation plot row",
+      )
 
       val plotSpecies1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, speciesId1, null, Known, 2, 1, 1, null, 0, 0)
+              observationId,
+              plotId,
+              speciesId1,
+              null,
+              Known,
+              2,
+              1,
+              1,
+              null,
+              0,
+              0,
+          )
       val plotSpecies2Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, speciesId2, null, Known, 0, 0, 1, null, 0, 0)
+              observationId,
+              plotId,
+              speciesId2,
+              null,
+              Known,
+              0,
+              0,
+              1,
+              null,
+              0,
+              0,
+          )
       val plotOther1Total =
           ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, null, "Other 1", Other, 0, 0, 1, null, 0, 0)
+              observationId,
+              plotId,
+              null,
+              "Other 1",
+              Other,
+              0,
+              0,
+              1,
+              null,
+              0,
+              0,
+          )
       val plotOther2Total =
           ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, null, "Other 2", Other, 0, 1, 0, null, 0, 0)
+              observationId,
+              plotId,
+              null,
+              "Other 2",
+              Other,
+              0,
+              1,
+              0,
+              null,
+              0,
+              0,
+          )
       val plotUnknownTotal =
           ObservedPlotSpeciesTotalsRow(
-              observationId, plotId, null, null, Unknown, 1, 0, 0, null, 0, 0)
+              observationId,
+              plotId,
+              null,
+              null,
+              Unknown,
+              1,
+              0,
+              0,
+              null,
+              0,
+              0,
+          )
 
       helper.assertTotals(
           setOf(
@@ -1942,7 +2240,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plotOther2Total,
               plotUnknownTotal,
           ),
-          "Totals after observation")
+          "Totals after observation",
+      )
     }
 
     @Test
@@ -1987,7 +2286,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               stateId = ObservationState.Completed,
           ),
           observationsDao.fetchOneById(observationId),
-          "Observation row")
+          "Observation row",
+      )
 
       val plotBoundary = Turtle(point(1)).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
@@ -2007,7 +2307,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           ),
           actual?.copy(boundary = null),
-          "Ad-hoc plot row")
+          "Ad-hoc plot row",
+      )
       assertGeometryEquals(plotBoundary, actual?.boundary, "Ad-hoc plot boundary")
 
       val latestPlotHistoryId =
@@ -2031,7 +2332,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               statusId = ObservationPlotStatus.Completed,
               monitoringPlotHistoryId = latestPlotHistoryId,
           ),
-          "Observation plot record")
+          "Observation plot record",
+      )
 
       // Detailed biomass row and tables are covered by ObservationStoreTest
       assertTableEquals(
@@ -2045,7 +2347,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               smallTreesCountHigh = 0,
               soilAssessment = "Basic soil assessment",
           ),
-          "Biomass details table")
+          "Biomass details table",
+      )
     }
 
     @Test
@@ -2154,17 +2457,29 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val completedObservation = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(
-          monitoringPlotId = plotInEditedZone, isPermanent = true, completedBy = user.userId)
+          monitoringPlotId = plotInEditedZone,
+          isPermanent = true,
+          completedBy = user.userId,
+      )
       insertObservationPlot(
-          monitoringPlotId = plotInNonEditedZone, isPermanent = true, completedBy = user.userId)
+          monitoringPlotId = plotInNonEditedZone,
+          isPermanent = true,
+          completedBy = user.userId,
+      )
       val activeObservationWithCompletedPlotInEditedZone = insertObservation()
       insertObservationPlot(
-          monitoringPlotId = plotInEditedZone, isPermanent = true, completedBy = user.userId)
+          monitoringPlotId = plotInEditedZone,
+          isPermanent = true,
+          completedBy = user.userId,
+      )
       insertObservationPlot(monitoringPlotId = plotInNonEditedZone, isPermanent = true)
       val activeObservationWithCompletedPlotInNonEditedZone = insertObservation()
       insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
       insertObservationPlot(
-          monitoringPlotId = plotInNonEditedZone, isPermanent = true, completedBy = user.userId)
+          monitoringPlotId = plotInNonEditedZone,
+          isPermanent = true,
+          completedBy = user.userId,
+      )
       // Active observation with no completed plots; should be deleted
       insertObservation()
       insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
@@ -2186,8 +2501,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               existingModel = plantingSite.plantingZones[0],
                               monitoringPlotEdits = emptyList(),
                               plantingSubzoneEdits = emptyList(),
-                              removedRegion = rectangle(0)))),
-              ReplacementResult(emptySet(), emptySet()))
+                              removedRegion = rectangle(0),
+                          )
+                      ),
+              ),
+              ReplacementResult(emptySet(), emptySet()),
+          )
 
       service.on(event)
 
@@ -2198,7 +2517,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               activeObservationWithCompletedPlotInNonEditedZone to ObservationState.Abandoned,
           ),
           observationsDao.findAll().associate { it.id!! to it.stateId!! },
-          "Observation states")
+          "Observation states",
+      )
     }
   }
 

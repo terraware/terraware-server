@@ -76,8 +76,9 @@ class DropboxWriter(
         try {
           dbxClient.sharing().createSharedLinkWithSettings(path).url
         } catch (e: CreateSharedLinkWithSettingsErrorException) {
-          if (e.errorValue.tag() ==
-              CreateSharedLinkWithSettingsError.Tag.SHARED_LINK_ALREADY_EXISTS) {
+          if (
+              e.errorValue.tag() == CreateSharedLinkWithSettingsError.Tag.SHARED_LINK_ALREADY_EXISTS
+          ) {
             e.errorValue.sharedLinkAlreadyExistsValue.metadataValue.url
           } else {
             throw e
@@ -98,7 +99,8 @@ class DropboxWriter(
             0,
             config.dropbox.refreshToken,
             config.dropbox.appKey,
-            config.dropbox.appSecret)
+            config.dropbox.appSecret,
+        )
 
     val client = DbxClientV2(dbxConfig, credential)
 

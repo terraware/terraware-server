@@ -34,9 +34,11 @@ class NotificationScanner(
   fun schedule(scheduler: JobScheduler) {
     if (config.dailyTasks.enabled) {
       scheduler.scheduleRecurrently<NotificationScanner>(
-          javaClass.simpleName, Cron.every15minutes()) {
-            sendNotifications()
-          }
+          javaClass.simpleName,
+          Cron.every15minutes(),
+      ) {
+        sendNotifications()
+      }
     }
   }
 

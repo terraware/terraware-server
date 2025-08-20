@@ -66,7 +66,9 @@ class AdminDevicesController(
 
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute(
-        "canRegenerateAllDeviceManagerTokens", currentUser().canRegenerateAllDeviceManagerTokens())
+        "canRegenerateAllDeviceManagerTokens",
+        currentUser().canRegenerateAllDeviceManagerTokens(),
+    )
     model.addAttribute("managers", managers)
 
     return "/admin/listDeviceManagers"
@@ -75,13 +77,15 @@ class AdminDevicesController(
   @GetMapping("/deviceManagers/{deviceManagerId}")
   fun getDeviceManager(
       @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
-      model: Model
+      model: Model,
   ): String {
     val manager = deviceManagerStore.fetchOneById(deviceManagerId)
     val facility = manager.facilityId?.let { facilityStore.fetchOneById(it) }
 
     model.addAttribute(
-        "canUpdateDeviceManager", currentUser().canUpdateDeviceManager(deviceManagerId))
+        "canUpdateDeviceManager",
+        currentUser().canUpdateDeviceManager(deviceManagerId),
+    )
     model.addAttribute("facility", facility)
     model.addAttribute("manager", manager)
 
@@ -166,7 +170,8 @@ class AdminDevicesController(
           facilityStore.updateConnectionState(
               newFacilityId,
               FacilityConnectionState.NotConnected,
-              FacilityConnectionState.Connected)
+              FacilityConnectionState.Connected,
+          )
         }
         originalFacilityId != newFacilityId -> {
           redirectAttributes.failureMessage =

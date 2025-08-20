@@ -62,7 +62,7 @@ import org.springframework.web.multipart.MultipartFile
 class ApplicationsController(
     private val applicationService: ApplicationService,
     private val applicationStore: ApplicationStore,
-    private val geometryFileParser: GeometryFileParser
+    private val geometryFileParser: GeometryFileParser,
 ) {
   @Operation(summary = "Create a new application")
   @PostMapping
@@ -90,7 +90,8 @@ class ApplicationsController(
     val deliverables = applicationStore.fetchApplicationDeliverables(applicationId = applicationId)
 
     return GetApplicationDeliverablesResponsePayload(
-        deliverables.map { ApplicationDeliverablePayload(it) })
+        deliverables.map { ApplicationDeliverablePayload(it) }
+    )
   }
 
   @GetMapping("/{applicationId}/export", produces = ["application/geo+json"])
@@ -130,20 +131,24 @@ class ApplicationsController(
   @Operation(summary = "Get deliverables for an application module")
   fun getApplicationModuleDeliverables(
       @PathVariable applicationId: ApplicationId,
-      @PathVariable moduleId: ModuleId
+      @PathVariable moduleId: ModuleId,
   ): GetApplicationDeliverablesResponsePayload {
     val deliverables =
         applicationStore.fetchApplicationDeliverables(
-            applicationId = applicationId, moduleId = moduleId)
+            applicationId = applicationId,
+            moduleId = moduleId,
+        )
 
     return GetApplicationDeliverablesResponsePayload(
-        deliverables.map { ApplicationDeliverablePayload(it) })
+        deliverables.map { ApplicationDeliverablePayload(it) }
+    )
   }
 
   @GetMapping
   @Operation(
       summary = "List all the applications with optional search criteria",
-      description = "Only applications visible to the current user are returned.")
+      description = "Only applications visible to the current user are returned.",
+  )
   fun listApplications(
       @Parameter(description = "If present, only list applications for this organization.")
       @RequestParam
@@ -152,12 +157,14 @@ class ApplicationsController(
           description =
               "If present, only list applications for this project. A project can only have " +
                   "one application, so this will either return an empty result or a result with " +
-                  "a single element.")
+                  "a single element."
+      )
       @RequestParam
       projectId: ProjectId? = null,
       @Parameter(
           description =
-              "If true, list all applications for all projects. Only allowed for internal users.")
+              "If true, list all applications for all projects. Only allowed for internal users."
+      )
       @RequestParam
       listAll: Boolean? = null,
   ): ListApplicationsResponsePayload {
@@ -168,7 +175,8 @@ class ApplicationsController(
           listAll == true -> applicationStore.fetchAll()
           else ->
               throw BadRequestException(
-                  "One of organizationId, projectId, or listAll must be specified")
+                  "One of organizationId, projectId, or listAll must be specified"
+              )
         }
 
     return ListApplicationsResponsePayload(models.map { ApplicationPayload.of(it) })
@@ -176,7 +184,8 @@ class ApplicationsController(
 
   @Operation(
       summary = "Restart a previously-submitted application",
-      description = "If the application has not been submitted yet, this is a no-op.")
+      description = "If the application has not been submitted yet, this is a no-op.",
+  )
   @PostMapping("/{applicationId}/restart")
   fun restartApplication(@PathVariable applicationId: ApplicationId): SimpleSuccessResponsePayload {
     applicationStore.restart(applicationId)
@@ -186,7 +195,8 @@ class ApplicationsController(
 
   @Operation(
       summary = "Submit an application for review",
-      description = "If the application has already been submitted, this is a no-op.")
+      description = "If the application has already been submitted, this is a no-op.",
+  )
   @PostMapping("/{applicationId}/submit")
   fun submitApplication(
       @PathVariable applicationId: ApplicationId
@@ -199,12 +209,13 @@ class ApplicationsController(
   @InternalEndpoint
   @Operation(
       summary = "Update an application's metadata to reflect a review",
-      description = "This is an internal-user-only operation.")
+      description = "This is an internal-user-only operation.",
+  )
   @PostMapping("/{applicationId}/review")
   @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin, GlobalRole.TFExpert])
   fun reviewApplication(
       @PathVariable applicationId: ApplicationId,
-      @RequestBody payload: ReviewApplicationRequestPayload
+      @RequestBody payload: ReviewApplicationRequestPayload,
   ): SimpleSuccessResponsePayload {
     applicationStore.review(applicationId, payload::applyTo)
 
@@ -215,7 +226,7 @@ class ApplicationsController(
   @PutMapping("/{applicationId}/boundary")
   fun updateApplicationBoundary(
       @PathVariable applicationId: ApplicationId,
-      @RequestBody payload: UpdateApplicationBoundaryRequestPayload
+      @RequestBody payload: UpdateApplicationBoundaryRequestPayload,
   ): SimpleSuccessResponsePayload {
     applicationService.updateBoundary(applicationId, payload.boundary)
 
@@ -226,7 +237,7 @@ class ApplicationsController(
   @PostMapping("/{applicationId}/boundary", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   fun uploadApplicationBoundary(
       @PathVariable applicationId: ApplicationId,
-      @RequestPart file: MultipartFile
+      @RequestPart file: MultipartFile,
   ): SimpleSuccessResponsePayload {
     val geometry =
         try {
@@ -307,7 +318,8 @@ data class ApplicationHistoryPayload(
     val feedback: String?,
     @Schema(
         description =
-            "Internal-only comment, if any. Only set if the current user is an internal user.")
+            "Internal-only comment, if any. Only set if the current user is an internal user."
+    )
     val internalComment: String?,
     val modifiedTime: Instant,
     val status: ApiApplicationStatus,
@@ -318,7 +330,8 @@ data class ApplicationHistoryPayload(
       record.feedback,
       record.internalComment,
       record.modifiedTime!!,
-      ApiApplicationStatus.of(record.applicationStatusId!!))
+      ApiApplicationStatus.of(record.applicationStatusId!!),
+  )
 }
 
 data class ApplicationPayload(
@@ -329,12 +342,14 @@ data class ApplicationPayload(
     val id: ApplicationId,
     @Schema(
         description =
-            "Internal-only comment, if any. Only set if the current user is an internal user.")
+            "Internal-only comment, if any. Only set if the current user is an internal user."
+    )
     val internalComment: String?,
     @Schema(
         description =
             "Internal-only reference name of application. Only set if the current user is an " +
-                "internal user.")
+                "internal user."
+    )
     val internalName: String?,
     val modifiedTime: Instant?,
     val organizationId: OrganizationId,
@@ -455,7 +470,8 @@ data class CreateApplicationResponsePayload(val id: ApplicationId) : SuccessResp
 data class GetApplicationHistoryResponsePayload(
     @ArraySchema(
         arraySchema =
-            Schema(description = "History of metadata changes in reverse chronological order."))
+            Schema(description = "History of metadata changes in reverse chronological order.")
+    )
     val history: List<ApplicationHistoryPayload>,
 ) : SuccessResponsePayload
 
@@ -479,7 +495,9 @@ data class SubmitApplicationResponsePayload(
             Schema(
                 description =
                     "If the application failed any of the pre-screening checks, a list of the " +
-                        "reasons why. Empty if the application passed pre-screening."))
+                        "reasons why. Empty if the application passed pre-screening."
+            )
+    )
     val problems: List<String>,
 ) : SuccessResponsePayload {
   constructor(

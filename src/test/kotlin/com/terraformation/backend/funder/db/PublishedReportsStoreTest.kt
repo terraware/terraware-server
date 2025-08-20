@@ -104,9 +104,15 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportAchievement(achievement = "achievement 2", position = 2)
       insertPublishedReportAchievement(achievement = "achievement 1", position = 1)
       insertPublishedReportChallenge(
-          challenge = "challenge 2", mitigationPlan = "mitigation 2", position = 2)
+          challenge = "challenge 2",
+          mitigationPlan = "mitigation 2",
+          position = 2,
+      )
       insertPublishedReportChallenge(
-          challenge = "challenge 1", mitigationPlan = "mitigation 1", position = 1)
+          challenge = "challenge 1",
+          mitigationPlan = "mitigation 1",
+          position = 1,
+      )
 
       insertPublishedReportStandardMetric(
           reportId = reportId1,
@@ -281,9 +287,12 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               underperformanceJustification = "Some plants had died.",
                               value = 5,
                               unit = null,
-                          )),
-              )),
-          store.fetchPublishedReports(projectId))
+                          )
+                      ),
+              ),
+          ),
+          store.fetchPublishedReports(projectId),
+      )
     }
 
     @Test

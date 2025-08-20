@@ -100,7 +100,8 @@ class ProjectSetUpImporter(
                   } else {
                     organizationStore.createWithAdmin(
                         OrganizationsRow(countryCode = countryCode, name = projectName),
-                        ownerUserId = userId)
+                        ownerUserId = userId,
+                    )
                   }
 
               val projectIdFromCsv = valuesByName["Project ID"]?.let { ProjectId(it) }
@@ -111,7 +112,11 @@ class ProjectSetUpImporter(
                     val projectId =
                         projectStore.create(
                             NewProjectModel(
-                                id = null, name = projectName, organizationId = organization.id))
+                                id = null,
+                                name = projectName,
+                                organizationId = organization.id,
+                            )
+                        )
                     projectStore.fetchOneById(projectId)
                   }
 
@@ -188,7 +193,7 @@ class ProjectSetUpImporter(
   private fun updateProjectAcceleratorDetails(
       valuesByName: Map<String, String>,
       project: ExistingProjectModel,
-      countryCode: String
+      countryCode: String,
   ) {
     val landUseModelTypes =
         valuesByName["Land Use Model Type"]
@@ -228,7 +233,7 @@ class ProjectSetUpImporter(
 
   private fun updateApplicationStatus(
       valuesByName: Map<String, String>,
-      application: ExistingApplicationModel
+      application: ExistingApplicationModel,
   ) {
     val applicationStatus =
         ApplicationStatus.forJsonValue(getMandatory(valuesByName, "Application Status"))
@@ -259,7 +264,9 @@ class ProjectSetUpImporter(
               ID.eq(
                   DSL.select(DSL.min(ID))
                       .from(APPLICATION_HISTORIES)
-                      .where(APPLICATION_ID.eq(application.id))))
+                      .where(APPLICATION_ID.eq(application.id))
+              )
+          )
           .execute()
     }
   }

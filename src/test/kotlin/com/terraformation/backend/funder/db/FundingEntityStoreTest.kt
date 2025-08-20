@@ -77,13 +77,16 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
                 fundingEntityId = fundingEntityId,
                 projectId = projectId2,
             ),
-        ))
+        )
+    )
 
     assertEquals(
         listOf(
             FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1"),
-            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2")),
-        store.fetchOneById(fundingEntityId).projects)
+            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2"),
+        ),
+        store.fetchOneById(fundingEntityId).projects,
+    )
   }
 
   @Test
@@ -116,17 +119,21 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         emptyList<FundingProjectModel>(),
         actualEntities[0].projects,
-        "First entity should have no projects")
+        "First entity should have no projects",
+    )
     assertEquals(
         listOf(FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1")),
         actualEntities[1].projects,
-        "Second entity should have one project")
+        "Second entity should have one project",
+    )
     assertEquals(
         listOf(
             FundingProjectModel(projectId = projectId1, dealName = "${dealNamePrefix}1"),
-            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2")),
+            FundingProjectModel(projectId = projectId2, dealName = "${dealNamePrefix}2"),
+        ),
         actualEntities[2].projects,
-        "Third entity should have both projects")
+        "Third entity should have both projects",
+    )
   }
 
   @Test
@@ -156,7 +163,8 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         emptyList<FundingEntityModel>(),
         store.fetchByProjectId(projectId1),
-        "Project should not be connected to any entities")
+        "Project should not be connected to any entities",
+    )
   }
 
   @Test
@@ -178,15 +186,18 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Funding entity 1",
                 createdTime = Instant.EPOCH,
                 modifiedTime = Instant.EPOCH,
-                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = ""))),
+                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = "")),
+            ),
             FundingEntityModel(
                 id = fundingEntity2,
                 name = "Funding entity 2",
                 createdTime = Instant.EPOCH,
                 modifiedTime = Instant.EPOCH,
-                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = ""))),
+                projects = listOf(FundingProjectModel(projectId = projectId1, dealName = "")),
+            ),
         ),
         store.fetchByProjectId(projectId1),
-        "Project should be connected to both entities")
+        "Project should be connected to both entities",
+    )
   }
 }

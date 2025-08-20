@@ -34,15 +34,16 @@ class BatchCsvValidator(
           } catch (e: Exception) {
             null
           }
-      if (bigDecimalValue == null ||
-          bigDecimalValue.signum() == -1 ||
-          bigDecimalValue.scale() > 0) {
+      if (
+          bigDecimalValue == null || bigDecimalValue.signum() == -1 || bigDecimalValue.scale() > 0
+      ) {
         addError(
             UploadProblemType.MalformedValue,
             field,
             value,
             messages.batchCsvQuantityInvalid(),
-            rowNum)
+            rowNum,
+        )
       }
     }
   }
@@ -54,7 +55,8 @@ class BatchCsvValidator(
           field,
           value,
           messages.csvSubLocationNotFound(),
-          rowNum)
+          rowNum,
+      )
     }
   }
 }

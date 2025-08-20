@@ -17,7 +17,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
   fun `should correctly determine if request is funder login`(
       requestUri: String?,
       referer: String?,
-      expected: Boolean
+      expected: Boolean,
   ) {
     val request = mockk<HttpServletRequest>()
     val resolver = CustomOAuth2AuthorizationRequestResolver(mockk(), "/oauth2/authorization")
@@ -48,7 +48,8 @@ class CustomOAuth2AuthorizationRequestResolverTest {
             Arguments.of("/funder", "https://example.com/login", true),
             Arguments.of("/login", "https://example.com/funder/page", true),
             Arguments.of("/login", "https://example.com/login", false),
-            Arguments.of("/user", "https://example.com/user", false))
+            Arguments.of("/user", "https://example.com/user", false),
+        )
 
     @JvmStatic fun nullRequestCase(): Stream<Arguments> = Stream.of(Arguments.of(false))
   }

@@ -30,7 +30,8 @@ internal class BatchCsvValidatorTest {
   fun `accepts well-formed row`() {
     assertValidationResults(
         header +
-            "\nScientific name,Common name,1,2,2022-01-23,\"Valid Location\n  Valid Location 2 \"")
+            "\nScientific name,Common name,1,2,2022-01-23,\"Valid Location\n  Valid Location 2 \""
+    )
   }
 
   @Test
@@ -46,7 +47,8 @@ internal class BatchCsvValidatorTest {
                     typeId = UploadProblemType.MissingRequiredValue,
                     uploadId = uploadId,
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -62,7 +64,8 @@ internal class BatchCsvValidatorTest {
                     typeId = UploadProblemType.MalformedValue,
                     uploadId = uploadId,
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -78,7 +81,8 @@ internal class BatchCsvValidatorTest {
                     typeId = UploadProblemType.MalformedValue,
                     uploadId = uploadId,
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -104,7 +108,8 @@ internal class BatchCsvValidatorTest {
                     uploadId = uploadId,
                     value = "Jan 18",
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -142,7 +147,8 @@ internal class BatchCsvValidatorTest {
                 uploadId = uploadId,
                 value = "Bad character!",
             ),
-        ))
+        ),
+    )
   }
 
   @Test
@@ -210,7 +216,8 @@ internal class BatchCsvValidatorTest {
                 uploadId = uploadId,
                 value = "1.5",
             ),
-        ))
+        ),
+    )
   }
 
   @Test
@@ -228,7 +235,8 @@ internal class BatchCsvValidatorTest {
                     uploadId = uploadId,
                     value = "Bogus Location",
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -245,7 +253,9 @@ internal class BatchCsvValidatorTest {
                   typeId = UploadProblemType.MalformedValue,
                   uploadId = uploadId,
                   value = "This name is way too long",
-              )))
+              )
+          ),
+      )
     }
   }
 
@@ -259,7 +269,7 @@ internal class BatchCsvValidatorTest {
   private fun assertValidationResults(
       csv: String,
       errors: Set<UploadProblemsRow> = emptySet(),
-      warnings: Set<UploadProblemsRow> = emptySet()
+      warnings: Set<UploadProblemsRow> = emptySet(),
   ) {
     val validator =
         BatchCsvValidator(uploadId, messages, setOf("Valid Location", "Valid Location 2"))

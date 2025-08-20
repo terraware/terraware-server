@@ -30,7 +30,8 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   name = "initial name",
                   organizationId = organizationId,
                   timeZone = timeZone,
-              ))
+              )
+          )
 
       val createdTime = clock.instant()
       val newTimeZone = ZoneId.of("Europe/Paris")
@@ -63,9 +64,11 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   modifiedBy = user.userId,
                   modifiedTime = now,
                   timeZone = newTimeZone,
-              )),
+              )
+          ),
           plantingSitesDao.findAll(),
-          "Planting sites")
+          "Planting sites",
+      )
 
       assertEquals(
           setOf(
@@ -87,7 +90,8 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
               ),
           ),
           plantingSiteHistoriesDao.findAll().map { it.copy(id = null) }.toSet(),
-          "Planting site histories")
+          "Planting site histories",
+      )
     }
 
     @Test
@@ -112,7 +116,10 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
 
       val expectedEvent =
           PlantingSiteTimeZoneChangedEvent(
-              initialModel.copy(timeZone = newTimeZone), timeZone, newTimeZone)
+              initialModel.copy(timeZone = newTimeZone),
+              timeZone,
+              newTimeZone,
+          )
 
       eventPublisher.assertEventPublished(expectedEvent)
     }

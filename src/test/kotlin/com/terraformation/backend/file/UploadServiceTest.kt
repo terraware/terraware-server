@@ -77,7 +77,8 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
                 statusId = UploadStatus.AwaitingValidation,
                 storageUrl = storageUrl,
                 typeId = type,
-            ))
+            )
+        )
 
     Locales.GIBBERISH.use { service.receive(stream, fileName, contentType, type, organizationId) }
 
@@ -201,7 +202,8 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(otherOrgUploadId),
         uploadsDao.findAll().map { it.id },
-        "Should still have upload for other organization")
+        "Should still have upload for other organization",
+    )
 
     verify { fileStore.delete(storageUrl1) }
     verify { fileStore.delete(storageUrl2) }

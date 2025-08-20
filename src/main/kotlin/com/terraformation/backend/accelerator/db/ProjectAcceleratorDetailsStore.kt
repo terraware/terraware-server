@@ -32,7 +32,7 @@ class ProjectAcceleratorDetailsStore(
    */
   fun fetchOneById(
       projectId: ProjectId,
-      variableValuesModel: ProjectAcceleratorVariableValuesModel
+      variableValuesModel: ProjectAcceleratorVariableValuesModel,
   ): ProjectAcceleratorDetailsModel {
     requirePermissions { readProjectAcceleratorDetails(projectId) }
 
@@ -76,7 +76,7 @@ class ProjectAcceleratorDetailsStore(
   fun update(
       projectId: ProjectId,
       variableValues: ProjectAcceleratorVariableValuesModel,
-      applyFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel
+      applyFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel,
   ) {
     requirePermissions { updateProjectAcceleratorDetails(projectId) }
 

@@ -67,7 +67,10 @@ annotation class InternalEndpoint
         [
             Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = Schema(implementation = SimpleErrorResponsePayload::class))])
+                schema = Schema(implementation = SimpleErrorResponsePayload::class),
+            )
+        ]
+)
 annotation class ApiResponseSimpleError(
     @get:AliasFor(annotation = ApiResponse::class, attribute = "responseCode")
     val responseCode: String
@@ -145,7 +148,10 @@ annotation class ApiResponse415(
         [
             Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = Schema(implementation = SimpleSuccessResponsePayload::class))])
+                schema = Schema(implementation = SimpleSuccessResponsePayload::class),
+            )
+        ],
+)
 annotation class ApiResponseSimpleSuccess(
     @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
     val description: String = "The requested operation succeeded."
@@ -169,10 +175,14 @@ annotation class RequireGlobalRole(val roles: Array<GlobalRole>)
         [
             Content(
                 schema = Schema(type = "string", format = "binary"),
-                mediaType = MediaType.IMAGE_JPEG_VALUE),
+                mediaType = MediaType.IMAGE_JPEG_VALUE,
+            ),
             Content(
                 schema = Schema(type = "string", format = "binary"),
-                mediaType = MediaType.IMAGE_PNG_VALUE)])
+                mediaType = MediaType.IMAGE_PNG_VALUE,
+            ),
+        ],
+)
 annotation class ApiResponse200Photo
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -186,7 +196,12 @@ annotation class ApiResponse200Photo
                         Encoding(
                             name = "file",
                             contentType =
-                                "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
+                                "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}",
+                        )
+                    ]
+            )
+        ]
+)
 annotation class RequestBodyPhotoFile
 
 /** Allows payload fields to have blank strings during deserialization */

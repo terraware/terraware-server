@@ -37,18 +37,24 @@ class FundingEntityUserStore(private val dslContext: DSLContext) {
                 DSL.select(
                         FUNDING_ENTITY_PROJECTS.PROJECT_ID,
                         PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
-                        PROJECTS.NAME)
+                        PROJECTS.NAME,
+                    )
                     .from(FUNDING_ENTITY_PROJECTS)
                     .join(PROJECTS)
                     .on(FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
                     .leftJoin(PROJECT_ACCELERATOR_DETAILS)
                     .on(
                         FUNDING_ENTITY_PROJECTS.PROJECT_ID.eq(
-                            PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
+                            PROJECT_ACCELERATOR_DETAILS.PROJECT_ID
+                        )
+                    )
                     .where(
                         FUNDING_ENTITY_PROJECTS.FUNDING_ENTITY_ID.eq(
-                            FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID))
-                    .orderBy(FUNDING_ENTITY_PROJECTS.PROJECT_ID))
+                            FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID
+                        )
+                    )
+                    .orderBy(FUNDING_ENTITY_PROJECTS.PROJECT_ID)
+            )
             .convertFrom { result ->
               result.map { record ->
                 FundingProjectModel(
@@ -79,7 +85,8 @@ class FundingEntityUserStore(private val dslContext: DSLContext) {
               users.FIRST_NAME,
               users.LAST_NAME,
               users.CREATED_TIME,
-              users.AUTH_ID.isNotNull)
+              users.AUTH_ID.isNotNull,
+          )
           .from(this)
           .where(FUNDING_ENTITY_ID.eq(entityId))
           .and(users.DELETED_TIME.isNull)

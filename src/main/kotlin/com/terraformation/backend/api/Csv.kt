@@ -22,7 +22,7 @@ import org.springframework.http.ResponseEntity
 fun csvResponse(
     filename: String?,
     columnNames: List<String>,
-    writeRows: (CSVWriter) -> Unit
+    writeRows: (CSVWriter) -> Unit,
 ): ResponseEntity<ByteArray> {
   val byteArrayOutputStream = ByteArrayOutputStream()
 

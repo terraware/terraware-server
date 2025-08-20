@@ -56,7 +56,8 @@ internal class NotificationsCleanupTaskTest : DatabaseTest() {
     assertEquals(
         setOf(notificationId1, notificationId2),
         beforeCleanup.map { it.id }.toSet(),
-        "Expected notification IDs 1 and 2")
+        "Expected notification IDs 1 and 2",
+    )
 
     notificationsCleanupTask.cleanup(DailyTaskTimeArrivedEvent())
 

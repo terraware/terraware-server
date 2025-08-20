@@ -34,14 +34,18 @@ import org.springframework.scheduling.annotation.EnableScheduling
         [
             SecurityRequirement(name = "cookie"),
             SecurityRequirement(
-                name = "openId", scopes = ["email", "offline_access", "openid", "profile"]),
-        ])
+                name = "openId",
+                scopes = ["email", "offline_access", "openid", "profile"],
+            ),
+        ],
+)
 @SecurityScheme(
     type = SecuritySchemeType.APIKEY,
     name = "cookie",
     paramName = "SESSION",
     `in` = SecuritySchemeIn.COOKIE,
-    description = "Session cookie")
+    description = "Session cookie",
+)
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @EnableScheduling
 @SpringBootApplication(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator::class)
@@ -56,7 +60,8 @@ fun main(args: Array<String>) {
   val expectedProviders = "SPI,CLDR"
   if (System.getProperty("java.locale.providers") != expectedProviders) {
     throw RuntimeException(
-        "Please add -Djava.locale.providers=$expectedProviders to the JVM's command-line arguments.")
+        "Please add -Djava.locale.providers=$expectedProviders to the JVM's command-line arguments."
+    )
   }
 
   SpringApplication.run(Application::class.java, *args)

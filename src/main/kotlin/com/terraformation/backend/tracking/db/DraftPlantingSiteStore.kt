@@ -86,7 +86,7 @@ class DraftPlantingSiteStore(
 
   fun update(
       draftPlantingSiteId: DraftPlantingSiteId,
-      updateFunc: (DraftPlantingSitesRecord) -> Unit
+      updateFunc: (DraftPlantingSitesRecord) -> Unit,
   ) {
     requirePermissions { updateDraftPlantingSite(draftPlantingSiteId) }
 

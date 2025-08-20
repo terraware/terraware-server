@@ -41,7 +41,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertModule()
     insertDeliverable()
     insertVariableManifestEntry(
-        insertTextVariable(deliverableId = inserted.deliverableId, stableId = stableId))
+        insertTextVariable(deliverableId = inserted.deliverableId, stableId = stableId)
+    )
 
     insertValue(variableId = inserted.variableId)
 
@@ -55,13 +56,16 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val originalVariableId1 = inserted.variableId
 
       insertVariableWorkflowHistory(
-          createdTime = Instant.EPOCH, status = VariableWorkflowStatus.NotSubmitted)
+          createdTime = Instant.EPOCH,
+          status = VariableWorkflowStatus.NotSubmitted,
+      )
 
       val currentHistoryId1 =
           insertVariableWorkflowHistory(
               createdTime = Instant.EPOCH.plusSeconds(1),
               feedback = "feedback 1",
-              status = VariableWorkflowStatus.InReview)
+              status = VariableWorkflowStatus.InReview,
+          )
 
       val newVariableId1 =
           insertTextVariable(
@@ -69,7 +73,9 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   deliverableId = inserted.deliverableId,
                   replacesVariableId = originalVariableId1,
                   stableId = stableId,
-                  type = VariableType.Text))
+                  type = VariableType.Text,
+              )
+          )
 
       val stableId2 = "$stableId-2"
       val originalVariableId2 = insertTextVariable(stableId = stableId2)
@@ -78,34 +84,42 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertVariableWorkflowHistory(
               createdTime = Instant.EPOCH,
               feedback = "feedback 2",
-              status = VariableWorkflowStatus.InReview)
+              status = VariableWorkflowStatus.InReview,
+          )
 
       val newVariableId2 =
           insertTextVariable(
               insertVariable(
                   replacesVariableId = originalVariableId2,
                   stableId = stableId2,
-                  type = VariableType.Text))
+                  type = VariableType.Text,
+              )
+          )
 
       val stableId3 = "$stableId-3"
       val originalVariableId3 = insertTextVariable(stableId = stableId3)
 
       insertVariableWorkflowHistory(
-          createdTime = Instant.EPOCH, status = VariableWorkflowStatus.NotSubmitted)
+          createdTime = Instant.EPOCH,
+          status = VariableWorkflowStatus.NotSubmitted,
+      )
 
       val newVariableId3 =
           insertTextVariable(
               insertVariable(
                   replacesVariableId = originalVariableId3,
                   stableId = stableId3,
-                  type = VariableType.Text))
+                  type = VariableType.Text,
+              )
+          )
 
       val currentHistoryId3 =
           insertVariableWorkflowHistory(
               createdTime = Instant.EPOCH.plusSeconds(2),
               feedback = "feedback 3",
               internalComment = "internal 3",
-              status = VariableWorkflowStatus.Approved)
+              status = VariableWorkflowStatus.Approved,
+          )
 
       val expected =
           mapOf(
@@ -163,7 +177,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertVariableWorkflowHistory(
               feedback = "feedback",
               internalComment = "internal comment",
-              status = VariableWorkflowStatus.InReview)
+              status = VariableWorkflowStatus.InReview,
+          )
 
       val expected =
           mapOf(
@@ -179,7 +194,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       projectId = inserted.projectId,
                       status = VariableWorkflowStatus.InReview,
                       variableId = inserted.variableId,
-                  ))
+                  )
+          )
 
       assertEquals(expected, store.fetchCurrentForProject(inserted.projectId))
     }
@@ -218,7 +234,9 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   deliverableId = inserted.deliverableId,
                   replacesVariableId = originalVariableId,
                   stableId = stableId,
-                  type = VariableType.Text))
+                  type = VariableType.Text,
+              )
+          )
 
       val newWorkflowId =
           insertVariableWorkflowHistory(
@@ -267,7 +285,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   variableId = newVariableId,
               ),
           ),
-          store.fetchProjectVariableHistory(inserted.projectId, newVariableId))
+          store.fetchProjectVariableHistory(inserted.projectId, newVariableId),
+      )
     }
 
     @Test
@@ -297,7 +316,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId))
+          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId)
+      )
     }
 
     @Test
@@ -326,7 +346,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId))
+          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId)
+      )
     }
 
     @Test
@@ -357,7 +378,9 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val nonDeliverableVariable =
           insertVariableManifestEntry(
               insertTextVariable(
-                  id = insertVariable(deliverableId = null, type = VariableType.Text)))
+                  id = insertVariable(deliverableId = null, type = VariableType.Text)
+              )
+          )
 
       insertValue(variableId = nonDeliverableVariable)
 

@@ -45,13 +45,15 @@ data class SpeciesSummaryPayload(
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
-        maximum = "100")
+        maximum = "100",
+    )
     val lossRate: Int?,
     val nurseries: List<SpeciesSummaryNurseryPayload>,
     val readyQuantity: Long,
     val speciesId: SpeciesId,
     @Schema(
-        description = "Total number of germinated plants that have been withdrawn due to death.")
+        description = "Total number of germinated plants that have been withdrawn due to death."
+    )
     val totalDead: Long,
     @Schema(description = "Total number of germinated plants currently in inventory.")
     val totalQuantity: Long,

@@ -99,7 +99,9 @@ class OrganizationsController(
   ): GetOrganizationResponsePayload {
     val model =
         organizationStore.createWithAdmin(
-            payload.toRow(), payload.managedLocationTypes ?: emptySet())
+            payload.toRow(),
+            payload.managedLocationTypes ?: emptySet(),
+        )
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.Owner))
   }
 
@@ -107,7 +109,7 @@ class OrganizationsController(
   @PutMapping("/{organizationId}")
   fun updateOrganization(
       @PathVariable("organizationId") organizationId: OrganizationId,
-      @RequestBody @Valid payload: UpdateOrganizationRequestPayload
+      @RequestBody @Valid payload: UpdateOrganizationRequestPayload,
   ): SimpleSuccessResponsePayload {
     organizationStore.update(payload.toRow().copy(id = organizationId))
     return SimpleSuccessResponsePayload()
@@ -118,7 +120,8 @@ class OrganizationsController(
   @Operation(
       summary = "Deletes an existing organization.",
       description =
-          "Organizations can only be deleted if they have no members other than the current user.")
+          "Organizations can only be deleted if they have no members other than the current user.",
+  )
   @DeleteMapping("/{organizationId}")
   fun deleteOrganization(
       @PathVariable("organizationId") organizationId: OrganizationId
@@ -147,7 +150,8 @@ class OrganizationsController(
   ): ListOrganizationRolesResponsePayload {
     val roleCounts = organizationStore.countRoleUsers(organizationId)
     return ListOrganizationRolesResponsePayload(
-        roleCounts.map { (role, count) -> OrganizationRolePayload(role, count) })
+        roleCounts.map { (role, count) -> OrganizationRolePayload(role, count) }
+    )
   }
 
   @GetMapping("/{organizationId}/users")
@@ -163,7 +167,7 @@ class OrganizationsController(
   @Operation(summary = "Adds a user to an organization.")
   fun addOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
-      @RequestBody payload: AddOrganizationUserRequestPayload
+      @RequestBody payload: AddOrganizationUserRequestPayload,
   ): CreateOrganizationUserResponsePayload {
     if (!emailValidator.isValid(payload.email)) {
       throw BadRequestException("Field value has incorrect format: email")
@@ -184,7 +188,8 @@ class OrganizationsController(
           organizationStore.fetchUser(organizationId, userId)
         } catch (e: UserNotFoundException) {
           throw NotFoundException(
-              "User $userId does not exist or is not a member of organization $organizationId")
+              "User $userId does not exist or is not a member of organization $organizationId"
+          )
         }
 
     return GetOrganizationUserResponsePayload(OrganizationUserPayload(model))
@@ -193,11 +198,13 @@ class OrganizationsController(
   @ApiResponseSimpleSuccess
   @ApiResponse404("The user is not a member of the organization.")
   @ApiResponse409(
-      "The user is the organization's only owner and an organization must have at least one owner.")
+      "The user is the organization's only owner and an organization must have at least one owner."
+  )
   @DeleteMapping("/{organizationId}/users/{userId}")
   @Operation(
       summary = "Removes a user from an organization.",
-      description = "Does not remove any data created by the user.")
+      description = "Does not remove any data created by the user.",
+  )
   fun deleteOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
       @PathVariable("userId") userId: UserId,
@@ -215,13 +222,15 @@ class OrganizationsController(
   @ApiResponse404("The user is not a member of the organization.")
   @ApiResponse409(
       "An organization must have at least one owner; cannot change the role of an " +
-          "organization's only owner.")
+          "organization's only owner."
+  )
   @PutMapping("/{organizationId}/users/{userId}")
   @Operation(
       summary = "Updates the user's organization information.",
       description =
           "Only includes organization-level information that can be modified by organization " +
-              "administrators.")
+              "administrators.",
+  )
   fun updateOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
       @PathVariable("userId") userId: UserId,
@@ -232,7 +241,8 @@ class OrganizationsController(
       organizationStore.setUserRole(organizationId, userId, payload.role)
     } catch (e: UserNotFoundException) {
       throw NotFoundException(
-          "User $userId does not exist or is not a member of organization $organizationId")
+          "User $userId does not exist or is not a member of organization $organizationId"
+      )
     } catch (e: CannotRemoveLastOwnerException) {
       throw WebApplicationException(e.message, Response.Status.CONFLICT)
     }
@@ -262,7 +272,8 @@ data class CreateOrganizationRequestPayload(
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode must also be set.",
-        example = "US-HI")
+        example = "US-HI",
+    )
     @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
@@ -276,7 +287,7 @@ data class CreateOrganizationRequestPayload(
     @Schema(
         description = "Website of organization, no restrictions on format.",
     )
-    val website: String?
+    val website: String?,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -301,7 +312,8 @@ data class UpdateOrganizationRequestPayload(
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode must also be set.",
-        example = "US-HI")
+        example = "US-HI",
+    )
     @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
@@ -339,7 +351,8 @@ data class OrganizationPayload(
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode will also be set.",
-        example = "US-HI")
+        example = "US-HI",
+    )
     @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val createdTime: Instant,
@@ -348,7 +361,9 @@ data class OrganizationPayload(
         arraySchema =
             Schema(
                 description =
-                    "This organization's facilities. Only included if depth is \"Facility\"."))
+                    "This organization's facilities. Only included if depth is \"Facility\"."
+            )
+    )
     val facilities: List<FacilityPayload>?,
     val id: OrganizationId,
     val name: String,
@@ -357,12 +372,14 @@ data class OrganizationPayload(
     @Schema(
         description =
             "The current user's role in the organization. Absent if the current user is not a " +
-                "member of the organization but is able to read it thanks to a global role.")
+                "member of the organization but is able to read it thanks to a global role."
+    )
     val role: Role?,
     val tfContactUser: TerraformationContactUserPayload?,
     val timeZone: ZoneId?,
     @Schema(
-        description = "The total number of users in the organization, including the current user.")
+        description = "The total number of users in the organization, including the current user."
+    )
     val totalUsers: Int,
     val website: String?,
 ) {
@@ -416,12 +433,14 @@ data class OrganizationUserPayload(
     @Schema(
         description =
             "The user's first name. Not present if the user has been added to the organization " +
-                "but has not signed up for an account yet.")
+                "but has not signed up for an account yet."
+    )
     val firstName: String?,
     @Schema(
         description =
             "The user's last name. Not present if the user has been added to the organization " +
-                "but has not signed up for an account yet.")
+                "but has not signed up for an account yet."
+    )
     val lastName: String?,
     val role: Role,
 ) {

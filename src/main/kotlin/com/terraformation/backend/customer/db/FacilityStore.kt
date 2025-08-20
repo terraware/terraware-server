@@ -101,21 +101,25 @@ class FacilityStore(
         .from(FACILITIES)
         .where(
             FACILITIES.ORGANIZATION_ID.eq(
-                DSL.select(PROJECTS.ORGANIZATION_ID)
-                    .from(PROJECTS)
-                    .where(PROJECTS.ID.eq(projectId))))
+                DSL.select(PROJECTS.ORGANIZATION_ID).from(PROJECTS).where(PROJECTS.ID.eq(projectId))
+            )
+        )
         .and(
             DSL.or(
                 DSL.exists(
                     DSL.selectOne()
                         .from(BATCHES)
                         .where(BATCHES.FACILITY_ID.eq(FACILITIES.ID))
-                        .and(BATCHES.PROJECT_ID.eq(projectId))),
+                        .and(BATCHES.PROJECT_ID.eq(projectId))
+                ),
                 DSL.exists(
                     DSL.selectOne()
                         .from(ACCESSIONS)
                         .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
-                        .and(ACCESSIONS.PROJECT_ID.eq(projectId)))))
+                        .and(ACCESSIONS.PROJECT_ID.eq(projectId))
+                ),
+            )
+        )
         .fetch { FacilityModel(it) }
   }
 
@@ -323,7 +327,7 @@ class FacilityStore(
   fun updateConnectionState(
       facilityId: FacilityId,
       expectedState: FacilityConnectionState,
-      newState: FacilityConnectionState
+      newState: FacilityConnectionState,
   ) {
     requirePermissions { updateFacility(facilityId) }
 
@@ -351,7 +355,8 @@ class FacilityStore(
           throw FacilityAlreadyConnectedException(facilityId)
         } else {
           log.error(
-              "Facility $facilityId was in connection state $currentState, not $expectedState")
+              "Facility $facilityId was in connection state $currentState, not $expectedState"
+          )
           throw IllegalStateException("Facility was not in expected connection state")
         }
       }
@@ -386,7 +391,9 @@ class FacilityStore(
                   FACILITIES.ID.`in`(
                       DSL.select(DEVICES.FACILITY_ID)
                           .from(DEVICES)
-                          .where(DEVICES.ID.`in`(uniqueDeviceIds))))
+                          .where(DEVICES.ID.`in`(uniqueDeviceIds))
+                  )
+              )
               .execute()
 
       if (rowsUpdated < 1) {
@@ -526,7 +533,7 @@ class FacilityStore(
 
   private fun calculateNextNotificationTime(
       facilityTimeZone: ZoneId?,
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
   ): Instant {
     return calculateNextNotificationTime(fetchEffectiveTimeZone(facilityTimeZone, organizationId))
   }

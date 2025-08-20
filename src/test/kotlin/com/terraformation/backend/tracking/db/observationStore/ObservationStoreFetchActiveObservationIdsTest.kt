@@ -36,15 +36,18 @@ class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest()
     assertEquals(
         listOf(observationId1),
         store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId1)),
-        "Observation with two plots in zone should be listed once")
+        "Observation with two plots in zone should be listed once",
+    )
     assertEquals(
         listOf(observationId1, observationId2),
         store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId2)),
-        "Observations with plots in multiple zones should be returned")
+        "Observations with plots in multiple zones should be returned",
+    )
     assertEquals(
         listOf(observationId1, observationId3),
         store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId1, plantingZoneId3)),
-        "Should match observations in all requested zones")
+        "Should match observations in all requested zones",
+    )
   }
 
   @Test
@@ -68,11 +71,14 @@ class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest()
     // Abandoned observation
     insertObservation(completedTime = Instant.EPOCH, state = ObservationState.Abandoned)
     insertObservationPlot(
-        monitoringPlotId = monitoringPlotId2, statusId = ObservationPlotStatus.NotObserved)
+        monitoringPlotId = monitoringPlotId2,
+        statusId = ObservationPlotStatus.NotObserved,
+    )
 
     assertEquals(
         listOf(observationIdWithActivePlotsInBothZones),
-        store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId2)))
+        store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId2)),
+    )
   }
 
   @Test
@@ -85,7 +91,8 @@ class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest()
 
     assertEquals(
         emptyList<ObservationId>(),
-        store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId)))
+        store.fetchActiveObservationIds(plantingSiteId, listOf(plantingZoneId)),
+    )
   }
 
   @Test

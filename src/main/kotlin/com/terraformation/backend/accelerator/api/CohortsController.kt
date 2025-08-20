@@ -54,7 +54,8 @@ class CohortsController(
       @Parameter(
           description =
               "If specified, retrieve associated entities to the supplied depth. For example, " +
-                  "'participant' depth will return the participants associated to the cohort.")
+                  "'participant' depth will return the participants associated to the cohort."
+      )
       @RequestParam
       cohortDepth: CohortDepth = CohortDepth.Cohort,
   ): CohortResponsePayload {
@@ -69,7 +70,8 @@ class CohortsController(
       @Parameter(
           description =
               "If specified, retrieve associated entities to the supplied depth. For example, " +
-                  "'participant' depth will return the participants associated to the cohort.")
+                  "'participant' depth will return the participants associated to the cohort."
+      )
       @RequestParam
       cohortDepth: CohortDepth = CohortDepth.Cohort,
   ): CohortListResponsePayload {
@@ -100,7 +102,7 @@ class CohortsController(
   @Operation(summary = "Updates the information within a single cohort.")
   fun updateCohort(
       @PathVariable cohortId: CohortId,
-      @RequestBody payload: UpdateCohortRequestPayload
+      @RequestBody payload: UpdateCohortRequestPayload,
   ): CohortResponsePayload {
     cohortStore.update(cohortId, payload::applyChanges)
     return getCohort(cohortId)
@@ -116,7 +118,8 @@ class CohortsController(
     val models = cohortModuleStore.fetch(cohortId = cohortId)
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
     return ListCohortModulesResponsePayload(
-        models.map { model -> CohortModulePayload(model, today) })
+        models.map { model -> CohortModulePayload(model, today) }
+    )
   }
 
   @ApiResponse200
@@ -138,12 +141,13 @@ class CohortsController(
   @ApiResponse404
   @Operation(
       summary = "Updates the information about a module's use by a cohort.",
-      description = "Adds the module to the cohort if it is not already associated.")
+      description = "Adds the module to the cohort if it is not already associated.",
+  )
   @PutMapping("/{cohortId}/modules/{moduleId}")
   fun updateCohortModule(
       @PathVariable cohortId: CohortId,
       @PathVariable moduleId: ModuleId,
-      @RequestBody payload: UpdateCohortModuleRequestPayload
+      @RequestBody payload: UpdateCohortModuleRequestPayload,
   ): SimpleSuccessResponsePayload {
     if (payload.endDate < payload.startDate) {
       throw BadRequestException("Start date must be before end date")
@@ -176,7 +180,7 @@ data class CohortPayload(
     val modifiedTime: Instant,
     val name: String,
     val participantIds: Set<ParticipantId>?,
-    val phase: CohortPhase
+    val phase: CohortPhase,
 ) {
   constructor(
       cohort: ExistingCohortModel,

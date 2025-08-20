@@ -113,7 +113,8 @@ abstract class SearchTable {
       return query
     } else {
       throw IllegalStateException(
-          "BUG! Must override joinForVisibility if visibility is inherited from another table.")
+          "BUG! Must override joinForVisibility if visibility is inherited from another table."
+      )
     }
   }
 
@@ -181,7 +182,8 @@ abstract class SearchTable {
         searchTable = this,
         isMultiValue = true,
         conditionForMultiset = conditionForMultiset,
-        isTraversedForGetAllFields = isTraversedForGetAllFields)
+        isTraversedForGetAllFields = isTraversedForGetAllFields,
+    )
   }
 
   /**
@@ -202,7 +204,8 @@ abstract class SearchTable {
         isMultiValue = false,
         isRequired = isRequired,
         conditionForMultiset = conditionForMultiset,
-        isTraversedForGetAllFields = isTraversedForGetAllFields)
+        isTraversedForGetAllFields = isTraversedForGetAllFields,
+    )
   }
 
   private fun resolveTableOrNull(relativePath: String): SearchTable? {
@@ -239,7 +242,7 @@ abstract class SearchTable {
       fieldName: String,
       databaseField: Field<Geometry?>,
       vertexIndex: Int,
-      axis: CoordinateField.Companion.Axis
+      axis: CoordinateField.Companion.Axis,
   ) = CoordinateField(fieldName, databaseField, vertexIndex, axis, this, true, true)
 
   fun dateField(fieldName: String, databaseField: Field<LocalDate?>) =
@@ -271,7 +274,7 @@ abstract class SearchTable {
   fun localizedTextField(
       fieldName: String,
       databaseField: TableField<*, String?>,
-      resourceBundleName: String
+      resourceBundleName: String,
   ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this)
 
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
@@ -279,7 +282,7 @@ abstract class SearchTable {
 
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> nonLocalizableEnumField(
       fieldName: String,
-      databaseField: TableField<*, T?>
+      databaseField: TableField<*, T?>,
   ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)
 
   fun textField(fieldName: String, databaseField: Field<String?>) =
@@ -319,37 +322,43 @@ abstract class SearchTable {
             unitsField,
             gramsField,
             SeedQuantityUnits.Grams,
-            this),
+            this,
+        ),
         WeightField(
             "${fieldNamePrefix}Kilograms".uncapitalize(),
             quantityField,
             unitsField,
             gramsField,
             SeedQuantityUnits.Kilograms,
-            this),
+            this,
+        ),
         WeightField(
             "${fieldNamePrefix}Milligrams".uncapitalize(),
             quantityField,
             unitsField,
             gramsField,
             SeedQuantityUnits.Milligrams,
-            this),
+            this,
+        ),
         WeightField(
             "${fieldNamePrefix}Ounces".uncapitalize(),
             quantityField,
             unitsField,
             gramsField,
             SeedQuantityUnits.Ounces,
-            this),
+            this,
+        ),
         WeightField(
             "${fieldNamePrefix}Pounds".uncapitalize(),
             quantityField,
             unitsField,
             gramsField,
             SeedQuantityUnits.Pounds,
-            this),
+            this,
+        ),
         bigDecimalField("${fieldNamePrefix}Quantity".uncapitalize(), quantityField),
-        enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField))
+        enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField),
+    )
   }
 
   fun zoneIdField(fieldName: String, databaseField: TableField<*, ZoneId?>) =

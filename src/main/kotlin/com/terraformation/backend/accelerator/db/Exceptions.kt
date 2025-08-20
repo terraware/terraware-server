@@ -52,12 +52,14 @@ class ProjectDeliverableNotFoundException(deliverableId: DeliverableId, projectI
 open class ProjectDocumentStorageFailedException(
     projectId: ProjectId,
     message: String = "Project $projectId document storage failed",
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) : Exception(message, cause)
 
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     ProjectDocumentStorageFailedException(
-        id, "Project $id document upload settings have not been configured")
+        id,
+        "Project $id document upload settings have not been configured",
+    )
 
 class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
     MismatchedStateException("Project $projectId is not associated with module $moduleId")
@@ -74,10 +76,11 @@ class ProjectNotInParticipantException(id: ProjectId) :
 class ProjectVoteNotFoundException(
     projectId: ProjectId,
     phase: CohortPhase? = null,
-    userId: UserId? = null
+    userId: UserId? = null,
 ) :
     EntityNotFoundException(
-        "Vote not found for project $projectId, phase ${phase?.id}, user $userId")
+        "Vote not found for project $projectId, phase ${phase?.id}, user $userId"
+    )
 
 class SpeciesDeliverableNotFoundException(id: ProjectId) :
     EntityNotFoundException("Species Deliverable for project $id not found")
@@ -90,11 +93,13 @@ class SubmissionNotFoundException(id: SubmissionId) :
 
 class SubmissionForProjectDeliverableNotFoundException(
     deliverableId: DeliverableId,
-    projectId: ProjectId
+    projectId: ProjectId,
 ) :
     EntityNotFoundException(
-        "Submission not found for deliverable $deliverableId and project $projectId")
+        "Submission not found for deliverable $deliverableId and project $projectId"
+    )
 
 class SubmissionSnapshotNotFoundException(id: SubmissionId) :
     EntityNotFoundException(
-        "Participant Project Species snapshot data for submission $id not found")
+        "Participant Project Species snapshot data for submission $id not found"
+    )

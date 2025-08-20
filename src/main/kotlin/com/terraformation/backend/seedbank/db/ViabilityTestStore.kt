@@ -31,7 +31,8 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
             USERS.ID,
             USERS.FIRST_NAME,
             USERS.LAST_NAME,
-            viabilityTestResultsMultiset)
+            viabilityTestResultsMultiset,
+        )
         .from(VIABILITY_TESTS)
         .leftJoin(WITHDRAWALS)
         .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
@@ -53,7 +54,8 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
             USERS.ID,
             USERS.FIRST_NAME,
             USERS.LAST_NAME,
-            viabilityTestResultsMultiset)
+            viabilityTestResultsMultiset,
+        )
         .from(VIABILITY_TESTS)
         .leftJoin(WITHDRAWALS)
         .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
@@ -76,14 +78,16 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                       USERS.ID,
                       USERS.FIRST_NAME,
                       USERS.LAST_NAME,
-                      viabilityTestResultsMultiset)
+                      viabilityTestResultsMultiset,
+                  )
                   .from(VIABILITY_TESTS)
                   .leftJoin(WITHDRAWALS)
                   .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
                   .leftJoin(USERS)
                   .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
                   .where(ACCESSION_ID.eq(idField))
-                  .orderBy(ID))
+                  .orderBy(ID)
+          )
           .convertFrom { result ->
             result.map { record -> convertToModel(record, viabilityTestResultsMultiset) }
           }
@@ -92,7 +96,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
   private fun convertToModel(
       record: Record,
-      viabilityTestResultsMultiset: Field<List<ViabilityTestResultModel>>
+      viabilityTestResultsMultiset: Field<List<ViabilityTestResultModel>>,
   ): ViabilityTestModel {
     return with(VIABILITY_TESTS) {
       ViabilityTestModel(
@@ -131,7 +135,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                 .from(VIABILITY_TEST_RESULTS)
                 .where(VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID))
                 .orderBy(
-                    VIABILITY_TEST_RESULTS.RECORDING_DATE.desc(), VIABILITY_TEST_RESULTS.ID.desc()),
+                    VIABILITY_TEST_RESULTS.RECORDING_DATE.desc(),
+                    VIABILITY_TEST_RESULTS.ID.desc(),
+                ),
         )
         .convertFrom { result ->
           result.map { record ->
@@ -147,7 +153,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
   fun insertViabilityTest(
       accessionId: AccessionId,
-      viabilityTest: ViabilityTestModel
+      viabilityTest: ViabilityTestModel,
   ): ViabilityTestModel {
     val calculatedTest: ViabilityTestModel = viabilityTest.withCalculatedValues()
 
@@ -191,7 +197,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
   fun updateViabilityTests(
       accessionId: AccessionId,
       existingTests: List<ViabilityTestModel>?,
-      desiredTests: List<ViabilityTestModel>?
+      desiredTests: List<ViabilityTestModel>?,
   ) {
     val existing = existingTests ?: emptyList()
     val existingById = existing.associateBy { it.id }
@@ -217,7 +223,8 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
             val existingTest =
                 existingById[testId]
                     ?: throw IllegalArgumentException(
-                        "Viability test IDs must refer to existing tests; leave ID off to insert a new test.")
+                        "Viability test IDs must refer to existing tests; leave ID off to insert a new test."
+                    )
             if (!desiredTest.fieldsEqual(existingTest)) {
               with(VIABILITY_TESTS) {
                 dslContext

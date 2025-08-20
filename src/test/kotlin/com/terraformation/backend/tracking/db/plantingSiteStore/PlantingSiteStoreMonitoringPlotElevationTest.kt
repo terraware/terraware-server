@@ -39,7 +39,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   private lateinit var organizationId: OrganizationId
@@ -67,19 +68,22 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(1.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
       val org1Site1PlotId2 =
           insertMonitoringPlot(
               boundary = polygon(1.5),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 2L)
+              plotNumber = 2L,
+          )
       // Not visible because it has elevation
       insertMonitoringPlot(
           boundary = polygon(10.0),
           elevationMeters = BigDecimal.TEN,
           organizationId = organizationId,
-          plotNumber = 3L)
+          plotNumber = 3L,
+      )
 
       insertPlantingSite(boundary = multiPolygon(4.0), organizationId = organizationId)
       val org1Site2PlotId =
@@ -87,7 +91,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(2.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 4L)
+              plotNumber = 4L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(3.0), organizationId = secondOrganizationId)
       val org2PlotId =
@@ -95,7 +100,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(3.0),
               elevationMeters = null,
               organizationId = secondOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(10.0), organizationId = otherOrganizationId)
       insertPlantingSiteHistory()
@@ -104,13 +110,15 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(4.0),
               elevationMeters = null,
               organizationId = otherOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
       // Not visible because it has elevation
       insertMonitoringPlot(
           boundary = polygon(10.0),
           elevationMeters = BigDecimal.TWO,
           organizationId = otherOrganizationId,
-          plotNumber = 2L)
+          plotNumber = 2L,
+      )
 
       val org1Site1PlotModel1 =
           MonitoringPlotModel(
@@ -138,12 +146,14 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
       assertEquals(
           listOf(org2PlotIdModel, org1Site2PlotModel, org1Site1PlotModel2, org1Site1PlotModel1),
           store.fetchMonitoringPlotsWithoutElevation(),
-          "Organization user")
+          "Organization user",
+      )
 
       assertEquals(
           listOf(org2PlotIdModel, org1Site2PlotModel),
           store.fetchMonitoringPlotsWithoutElevation(2),
-          "Organization user with fetch limit")
+          "Organization user with fetch limit",
+      )
 
       val systemUser = SystemUser(usersDao)
       assertEquals(
@@ -152,9 +162,11 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               org2PlotIdModel,
               org1Site2PlotModel,
               org1Site1PlotModel2,
-              org1Site1PlotModel1),
+              org1Site1PlotModel1,
+          ),
           systemUser.run { store.fetchMonitoringPlotsWithoutElevation() },
-          "System user")
+          "System user",
+      )
     }
   }
 
@@ -175,13 +187,15 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(1.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
       val org1Site1PlotId2 =
           insertMonitoringPlot(
               boundary = polygon(1.5),
               elevationMeters = BigDecimal.ZERO,
               organizationId = organizationId,
-              plotNumber = 2L)
+              plotNumber = 2L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(4.0), organizationId = organizationId)
       val org1Site2PlotId =
@@ -189,7 +203,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(2.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 4L)
+              plotNumber = 4L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(3.0), organizationId = secondOrganizationId)
       val org2PlotId =
@@ -197,7 +212,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(3.0),
               elevationMeters = null,
               organizationId = secondOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(10.0), organizationId = otherOrganizationId)
       insertPlantingSiteHistory()
@@ -206,7 +222,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(4.0),
               elevationMeters = null,
               organizationId = otherOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       val existingRows = monitoringPlotsDao.findAll()
 
@@ -218,7 +235,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
                   org1Site2PlotId to BigDecimal.ONE,
                   org2PlotId to BigDecimal.TEN, // User not an admin
                   otherOrgPlotId to BigDecimal.TEN, // User not in organization
-              ))
+              )
+          )
 
       val updatedRecords =
           existingRows.map { row ->
@@ -249,13 +267,15 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(1.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
       val org1Site1PlotId2 =
           insertMonitoringPlot(
               boundary = polygon(1.5),
               elevationMeters = BigDecimal.ZERO,
               organizationId = organizationId,
-              plotNumber = 2L)
+              plotNumber = 2L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(4.0), organizationId = organizationId)
       val org1Site2PlotId =
@@ -263,7 +283,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(2.0),
               elevationMeters = null,
               organizationId = organizationId,
-              plotNumber = 4L)
+              plotNumber = 4L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(3.0), organizationId = secondOrganizationId)
       val org2PlotId =
@@ -271,7 +292,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(3.0),
               elevationMeters = null,
               organizationId = secondOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       insertPlantingSite(boundary = multiPolygon(10.0), organizationId = otherOrganizationId)
       insertPlantingSiteHistory()
@@ -280,7 +302,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(4.0),
               elevationMeters = null,
               organizationId = otherOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       val existingRows = monitoringPlotsDao.findAll()
 
@@ -294,7 +317,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
                     org1Site2PlotId to BigDecimal.ONE,
                     org2PlotId to BigDecimal.TEN,
                     otherOrgPlotId to BigDecimal.TEN,
-                ))
+                )
+            )
           }
 
       val updatedRecords =
@@ -330,12 +354,14 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               boundary = polygon(4.0),
               elevationMeters = null,
               organizationId = otherOrganizationId,
-              plotNumber = 1L)
+              plotNumber = 1L,
+          )
 
       assertEquals(
           0,
           store.updateMonitoringPlotElevation(mapOf(otherOrgPlotId to BigDecimal.ZERO)),
-          "Not visible plot")
+          "Not visible plot",
+      )
     }
   }
 }

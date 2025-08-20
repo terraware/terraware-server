@@ -32,7 +32,8 @@ class CoordinateField(
         coordinateExtractionField(geometryField, vertexIndex, axis),
         table,
         localize,
-        exportable) {
+        exportable,
+    ) {
 
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = emptySet()
@@ -88,7 +89,7 @@ class CoordinateField(
     fun coordinateExtractionField(
         geometryField: Field<Geometry?>,
         vertexIndex: Int,
-        axis: Axis
+        axis: Axis,
     ): Field<BigDecimal?> {
       return DSL.function(
           axis.functionName,
@@ -97,7 +98,9 @@ class CoordinateField(
               "ST_PointN",
               Geometry::class.java,
               DSL.function("ST_ExteriorRing", Geometry::class.java, geometryField),
-              DSL.value(vertexIndex)))
+              DSL.value(vertexIndex),
+          ),
+      )
     }
   }
 }

@@ -300,7 +300,8 @@ class AcceleratorProjectVariableValuesService(
               projectId = projectId,
               variable,
               valuesByStableId[StableIds.carbonCertifications] as? ExistingSelectValue,
-              certificationsSelectValue)
+              certificationsSelectValue,
+          )
           ?.let { operations.add(it) }
     }
 

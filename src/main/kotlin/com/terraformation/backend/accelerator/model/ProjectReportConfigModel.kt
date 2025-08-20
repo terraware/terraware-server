@@ -36,7 +36,8 @@ data class ProjectReportConfigModel<ConfigId : ProjectReportConfigId?>(
               frequency = record[REPORT_FREQUENCY_ID]!!,
               reportingStartDate = record[REPORTING_START_DATE]!!,
               reportingEndDate = record[REPORTING_END_DATE]!!,
-              logframeUrl = record[PROJECT_ACCELERATOR_DETAILS.LOGFRAME_URL])
+              logframeUrl = record[PROJECT_ACCELERATOR_DETAILS.LOGFRAME_URL],
+          )
         }
   }
 }

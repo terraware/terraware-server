@@ -53,11 +53,13 @@ class ModuleEventStore(
                   DSL.selectOne()
                       .from(EVENT_PROJECTS)
                       .where(EVENT_PROJECTS.PROJECT_ID.eq(it))
-                      .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
+                      .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
+              )
             },
             moduleId?.let { EVENTS.MODULE_ID.eq(it) },
             eventId?.let { EVENTS.ID.eq(it) },
-            eventType?.let { EVENTS.EVENT_TYPE_ID.eq(it) })
+            eventType?.let { EVENTS.EVENT_TYPE_ID.eq(it) },
+        )
 
     return fetch(condition)
   }

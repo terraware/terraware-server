@@ -20,7 +20,9 @@ class BatchSubLocationsTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           batches.asSingleValueSublist("batch", BATCH_SUB_LOCATIONS.BATCH_ID.eq(BATCHES.ID)),
           subLocations.asSingleValueSublist(
-              "subLocation", BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID)),
+              "subLocation",
+              BATCH_SUB_LOCATIONS.SUB_LOCATION_ID.eq(SUB_LOCATIONS.ID),
+          ),
       )
     }
   }

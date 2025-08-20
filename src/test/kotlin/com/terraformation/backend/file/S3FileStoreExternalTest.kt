@@ -75,7 +75,8 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
   override fun createFile(url: URI, content: ByteArray) {
     s3Client.putObject(
         PutObjectRequest.builder().bucket(bucketName).key(url.path.substring(1)).build(),
-        RequestBody.fromBytes(content))
+        RequestBody.fromBytes(content),
+    )
   }
 
   override fun fileExists(url: URI): Boolean {
@@ -94,7 +95,8 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
       s3Client
           .getObject(
               GetObjectRequest.builder().bucket(bucketName).key(key).build(),
-              ResponseTransformer.toBytes())
+              ResponseTransformer.toBytes(),
+          )
           .asByteArray()
     } catch (e: NoSuchKeyException) {
       throw NoSuchFileException(key)

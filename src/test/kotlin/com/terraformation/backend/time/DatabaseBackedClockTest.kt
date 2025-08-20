@@ -60,7 +60,10 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `initializes database if no clock data`() {
     assertEquals(
-        0, dslContext.selectFrom(TEST_CLOCK).fetch().size, "Clock table should be empty initially")
+        0,
+        dslContext.selectFrom(TEST_CLOCK).fetch().size,
+        "Clock table should be empty initially",
+    )
 
     clock.initialize(applicationStartedEvent)
     val results = dslContext.selectFrom(TEST_CLOCK).fetch()
@@ -187,14 +190,15 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
       expected: Instant,
       actual: Instant,
       message: String? = null,
-      threshold: Duration = Duration.ofSeconds(10)
+      threshold: Duration = Duration.ofSeconds(10),
   ) {
     if (Duration.between(expected, actual) > threshold) {
       fail<Any> {
         listOfNotNull(
                 message,
                 "Difference between expected $expected and actual $actual is greater than " +
-                    "maximum allowed $threshold")
+                    "maximum allowed $threshold",
+            )
             .joinToString(": ")
       }
     }

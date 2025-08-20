@@ -43,7 +43,8 @@ internal class AutomationServiceTest : RunsAsUser {
     service.trigger(automationId, timeseriesValue, null)
 
     eventPublisher.assertEventPublished(
-        SensorBoundsAlertTriggeredEvent(automationId, timeseriesValue))
+        SensorBoundsAlertTriggeredEvent(automationId, timeseriesValue)
+    )
   }
 
   @Test
@@ -54,7 +55,8 @@ internal class AutomationServiceTest : RunsAsUser {
     service.trigger(automationId, 1.23, "message")
 
     eventPublisher.assertEventPublished(
-        UnknownAutomationTriggeredEvent(automationId, "bogus type", "message"))
+        UnknownAutomationTriggeredEvent(automationId, "bogus type", "message")
+    )
   }
 
   @Test

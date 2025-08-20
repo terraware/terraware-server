@@ -65,7 +65,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             Messages(),
             organizationsDao,
-            subLocationsDao)
+            subLocationsDao,
+        )
 
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
     every { user.canCreateFacility(any()) } returns true
@@ -136,17 +137,20 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val subLocationId = insertSubLocation()
     val accessionId =
         insertAccession(
-            AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
+            AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId)
+        )
 
     store.deleteSubLocation(subLocationId)
 
     assertEquals(
         emptyList<SubLocationsRow>(),
         subLocationsDao.fetchByFacilityId(facilityId),
-        "Should have deleted sub-location")
+        "Should have deleted sub-location",
+    )
     assertNull(
         accessionsDao.fetchOneById(accessionId)!!.subLocationId,
-        "Should have cleared accession sub-location ID")
+        "Should have cleared accession sub-location ID",
+    )
   }
 
   @Test
@@ -230,14 +234,15 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(
-        initial.copy(
-            lastTimeseriesTime = null, idleAfterTime = null, idleSinceTime = Instant.EPOCH))
+        initial.copy(lastTimeseriesTime = null, idleAfterTime = null, idleSinceTime = Instant.EPOCH)
+    )
 
     val expected =
         initial.copy(
             lastTimeseriesTime = clock.instant(),
             idleAfterTime = clock.instant().plus(30, ChronoUnit.MINUTES),
-            idleSinceTime = null)
+            idleSinceTime = null,
+        )
 
     store.updateLastTimeseriesTimes(listOf(deviceId))
 
@@ -252,7 +257,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val facilityIds =
         setOf(
             insertFacility(idleAfterTime = Instant.EPOCH),
-            insertFacility(idleAfterTime = Instant.EPOCH))
+            insertFacility(idleAfterTime = Instant.EPOCH),
+        )
 
     val actual = mutableSetOf<FacilityId>()
 
@@ -267,7 +273,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(
-        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant()))
+        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant())
+    )
 
     store.withIdleFacilities {}
 
@@ -280,7 +287,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(
-        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant()))
+        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant())
+    )
 
     try {
       store.withIdleFacilities { throw Exception("Failing callback function") }
@@ -300,7 +308,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         store.create(
             NewFacilityModel(
-                name = "Test", organizationId = organizationId, type = FacilityType.SeedBank))
+                name = "Test",
+                organizationId = organizationId,
+                type = FacilityType.SeedBank,
+            )
+        )
 
     val expected =
         listOf(
@@ -309,7 +321,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             "Freezer 3",
             "Refrigerator 1",
             "Refrigerator 2",
-            "Refrigerator 3")
+            "Refrigerator 3",
+        )
 
     val actual = store.fetchSubLocations(model.id).map { it.name!! }.sorted()
 
@@ -324,7 +337,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Test",
                 organizationId = organizationId,
                 subLocationNames = setOf("SL1", "SL2"),
-                type = FacilityType.SeedBank))
+                type = FacilityType.SeedBank,
+            )
+        )
     val subLocations = store.fetchSubLocations(model.id)
 
     assertEquals(
@@ -346,7 +361,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 name = "SL2",
             ),
         ),
-        subLocations.map { it.copy(id = null) }.toSet())
+        subLocations.map { it.copy(id = null) }.toSet(),
+    )
   }
 
   @Test
@@ -357,7 +373,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Test",
                 organizationId = organizationId,
                 subLocationNames = emptySet(),
-                type = FacilityType.SeedBank))
+                type = FacilityType.SeedBank,
+            )
+        )
     val subLocations = store.fetchSubLocations(model.id)
 
     assertEquals(emptyList<SubLocationsRow>(), subLocations)
@@ -371,7 +389,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Test",
                 organizationId = organizationId,
                 subLocationNames = emptySet(),
-                type = FacilityType.Desalination))
+                type = FacilityType.Desalination,
+            )
+        )
     val subLocations = store.fetchSubLocations(model.id)
 
     assertEquals(emptyList<SubLocationsRow>(), subLocations)
@@ -392,7 +412,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 subLocationNames = emptySet(),
                 timeZone = timeZone,
-                type = FacilityType.SeedBank))
+                type = FacilityType.SeedBank,
+            )
+        )
 
     val expected =
         FacilitiesRow(
@@ -433,7 +455,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         store.create(
             NewFacilityModel(
-                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
+                name = "Test",
+                organizationId = organizationId,
+                type = FacilityType.Nursery,
+            )
+        )
 
     assertEquals(3, facilitiesDao.fetchOneById(model.id)?.facilityNumber, "Facility number")
   }
@@ -441,17 +467,23 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create uses organization time zone if facility time zone not set`() {
     organizationsDao.update(
-        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = timeZone))
+        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = timeZone)
+    )
 
     val model =
         store.create(
             NewFacilityModel(
-                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
+                name = "Test",
+                organizationId = organizationId,
+                type = FacilityType.Nursery,
+            )
+        )
 
     assertNull(model.timeZone, "Facility time zone should be null")
     assertEquals(
         ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, timeZone).toInstant(),
-        model.nextNotificationTime)
+        model.nextNotificationTime,
+    )
   }
 
   @Test
@@ -459,12 +491,17 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         store.create(
             NewFacilityModel(
-                name = "Test", organizationId = organizationId, type = FacilityType.Nursery))
+                name = "Test",
+                organizationId = organizationId,
+                type = FacilityType.Nursery,
+            )
+        )
 
     assertNull(model.timeZone, "Facility time zone should be null")
     assertEquals(
         ZonedDateTime.of(LocalDate.EPOCH, config.dailyTasks.startTime, ZoneOffset.UTC).toInstant(),
-        model.nextNotificationTime)
+        model.nextNotificationTime,
+    )
   }
 
   @Test
@@ -475,7 +512,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> {
       store.create(
           NewFacilityModel(
-              name = "Test", organizationId = organizationId, type = FacilityType.SeedBank))
+              name = "Test",
+              organizationId = organizationId,
+              type = FacilityType.SeedBank,
+          )
+      )
     }
   }
 
@@ -499,7 +540,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 subLocationNames = emptySet(),
                 timeZone = timeZone,
-                type = FacilityType.Nursery))
+                type = FacilityType.Nursery,
+            )
+        )
 
     clock.instant = Instant.ofEpochSecond(5)
 
@@ -541,7 +584,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             name = modified.name,
             nextNotificationTime =
                 ZonedDateTime.of(
-                        LocalDate.EPOCH.plusDays(1), config.dailyTasks.startTime, otherTimeZone)
+                        LocalDate.EPOCH.plusDays(1),
+                        config.dailyTasks.startTime,
+                        otherTimeZone,
+                    )
                     .toInstant(),
             operationStartedDate = modified.operationStartedDate,
             organizationId = initial.organizationId,
@@ -558,7 +604,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `update uses organization time zone if facility time zone is cleared`() {
     val orgTimeZone = ZoneId.of("Asia/Calcutta")
     organizationsDao.update(
-        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = orgTimeZone))
+        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = orgTimeZone)
+    )
 
     store.update(store.fetchOneById(facilityId).copy(timeZone = null))
 
@@ -591,7 +638,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     clock.instant = now
 
     store.updateConnectionState(
-        facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)
+        facilityId,
+        FacilityConnectionState.NotConnected,
+        FacilityConnectionState.Connected,
+    )
 
     val expected =
         initial.copy(connectionStateId = FacilityConnectionState.Connected, modifiedTime = now)
@@ -606,7 +656,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<AccessDeniedException> {
       store.updateConnectionState(
-          facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)
+          facilityId,
+          FacilityConnectionState.NotConnected,
+          FacilityConnectionState.Connected,
+      )
     }
   }
 
@@ -614,7 +667,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateConnectionState throws exception if facility is not in expected state`() {
     assertThrows<IllegalStateException> {
       store.updateConnectionState(
-          facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
+          facilityId,
+          FacilityConnectionState.Connected,
+          FacilityConnectionState.Configured,
+      )
     }
   }
 
@@ -674,6 +730,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         todayAtFacility.plusDays(1).atTime(0, 1).atZone(timeZone).toInstant(),
         updatedRow.nextNotificationTime,
-        "Next notification time")
+        "Next notification time",
+    )
   }
 }

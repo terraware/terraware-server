@@ -27,7 +27,8 @@ internal class PlantingSiteStoreMoveTest : BasePlantingSiteStoreTest() {
               modifiedTime = newTime,
               organizationId = otherOrganizationId,
           ),
-          plantingSitesDao.fetchOneById(plantingSiteId))
+          plantingSitesDao.fetchOneById(plantingSiteId),
+      )
     }
 
     @Test

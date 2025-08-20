@@ -90,7 +90,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertExactEventsPublished(
           listOf(PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 2)),
-          "Should have sent last notification")
+          "Should have sent last notification",
+      )
 
       clock.instant = clock.instant.plusSeconds(1)
       eventPublisher.clear()
@@ -131,11 +132,17 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
       insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
       assertNoEventsBeforeWeekNumber(
-          6, PlantingSeasonNotScheduledSupportNotificationEvent::class.java)
+          6,
+          PlantingSeasonNotScheduledSupportNotificationEvent::class.java,
+      )
       assertEventsAtWeekNumber(
-          6, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1))
+          6,
+          PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1),
+      )
       assertEventsAtWeekNumber(
-          14, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2))
+          14,
+          PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2),
+      )
       assertNoEventsAtWeekNumber(52)
     }
   }
@@ -157,7 +164,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
       insertPlantingSeason(
           timeZone = timeZone,
           startDate = initialDate.plusMonths(1),
-          endDate = initialDate.plusMonths(3))
+          endDate = initialDate.plusMonths(3),
+      )
 
       assertNoEventsAtWeekNumber(2)
     }
@@ -171,7 +179,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertExactEventsPublished(
           listOf(PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 2)),
-          "Should have sent last notification")
+          "Should have sent last notification",
+      )
 
       clock.instant = clock.instant.plusSeconds(1)
       eventPublisher.clear()
@@ -217,11 +226,17 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
       insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
       assertNoEventsBeforeWeekNumber(
-          8, PlantingSeasonNotScheduledSupportNotificationEvent::class.java)
+          8,
+          PlantingSeasonNotScheduledSupportNotificationEvent::class.java,
+      )
       assertEventsAtWeekNumber(
-          8, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1))
+          8,
+          PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 1),
+      )
       assertEventsAtWeekNumber(
-          16, PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2))
+          16,
+          PlantingSeasonNotScheduledSupportNotificationEvent(plantingSiteId, 2),
+      )
       assertNoEventsAtWeekNumber(52)
     }
   }

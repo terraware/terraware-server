@@ -21,11 +21,19 @@ class ReportsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           organizations.asSingleValueSublist(
-              "organization", SEED_FUND_REPORTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              SEED_FUND_REPORTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           users.asSingleValueSublist(
-              "lockedBy", SEED_FUND_REPORTS.LOCKED_BY.eq(USERS.ID), isRequired = false),
+              "lockedBy",
+              SEED_FUND_REPORTS.LOCKED_BY.eq(USERS.ID),
+              isRequired = false,
+          ),
           users.asSingleValueSublist(
-              "submittedBy", SEED_FUND_REPORTS.SUBMITTED_BY.eq(USERS.ID), isRequired = false),
+              "submittedBy",
+              SEED_FUND_REPORTS.SUBMITTED_BY.eq(USERS.ID),
+              isRequired = false,
+          ),
       )
     }
   }

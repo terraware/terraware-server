@@ -35,7 +35,7 @@ data class TimeseriesModel(
 ) {
   constructor(
       record: Record,
-      latestValue: TimeseriesValueModel?
+      latestValue: TimeseriesValueModel?,
   ) : this(
       record[TIMESERIES.ID] ?: throw IllegalArgumentException("ID must be non-null"),
       record[TIMESERIES.DEVICE_ID] ?: throw IllegalArgumentException("Device ID must be non-null"),

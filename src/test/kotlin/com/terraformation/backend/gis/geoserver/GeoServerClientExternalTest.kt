@@ -23,7 +23,11 @@ class GeoServerClientExternalTest {
         dummyTerrawareServerConfig(
             geoServer =
                 TerrawareServerConfig.GeoServerConfig(
-                    password = password, username = username, wfsUrl = wfsUrl))
+                    password = password,
+                    username = username,
+                    wfsUrl = wfsUrl,
+                )
+        )
 
     client = GeoServerClient(config, jacksonObjectMapper().registerModule(GeometryModule()))
   }

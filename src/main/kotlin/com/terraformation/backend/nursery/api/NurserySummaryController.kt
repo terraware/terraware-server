@@ -21,7 +21,8 @@ class NurserySummaryController(
 ) {
   @GetMapping
   @Operation(
-      summary = "Get a summary of the numbers of plants in all the nurseries in an organization.")
+      summary = "Get a summary of the numbers of plants in all the nurseries in an organization."
+  )
   fun getOrganizationNurserySummary(
       @RequestParam organizationId: OrganizationId
   ): GetOrganizationNurserySummaryResponsePayload {
@@ -39,7 +40,8 @@ data class OrganizationNurserySummaryPayload(
     @Schema(
         description = "Percentage of current and past inventory that was withdrawn due to death.",
         minimum = "0",
-        maximum = "100")
+        maximum = "100",
+    )
     val lossRate: Int?,
     val readyQuantity: Long,
     @Schema(description = "Total number of plants that have been withdrawn due to death.")

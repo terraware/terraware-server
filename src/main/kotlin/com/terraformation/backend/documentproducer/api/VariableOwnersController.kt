@@ -25,12 +25,14 @@ class VariableOwnersController(
   @GetMapping
   @Operation(
       summary = "List the owners of a project's variables.",
-      description = "Only variables that actually have owners are returned.")
+      description = "Only variables that actually have owners are returned.",
+  )
   fun listVariableOwners(@PathVariable projectId: ProjectId): ListVariableOwnersResponsePayload {
     val owners = variableOwnerStore.listOwners(projectId)
 
     return ListVariableOwnersResponsePayload(
-        owners.entries.map { VariableOwnersResponseElement(it.value, it.key) })
+        owners.entries.map { VariableOwnersResponseElement(it.value, it.key) }
+    )
   }
 
   @PutMapping("/{variableId}")
@@ -38,7 +40,7 @@ class VariableOwnersController(
   fun updateVariableOwner(
       @PathVariable projectId: ProjectId,
       @PathVariable variableId: VariableId,
-      @RequestBody payload: UpdateVariableOwnerRequestPayload
+      @RequestBody payload: UpdateVariableOwnerRequestPayload,
   ): SimpleSuccessResponsePayload {
     variableOwnerStore.updateOwner(projectId, variableId, payload.ownedBy)
 
@@ -56,6 +58,7 @@ data class ListVariableOwnersResponsePayload(val variables: List<VariableOwnersR
 
 data class UpdateVariableOwnerRequestPayload(
     @Schema(
-        description = "New owner of the variable, or null if the variable should have no owner.")
+        description = "New owner of the variable, or null if the variable should have no owner."
+    )
     val ownedBy: UserId?
 )

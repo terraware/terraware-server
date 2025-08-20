@@ -64,7 +64,9 @@ class PublishedProjectDetailsStore(
               .from(this)
               .where(PROJECT_ID.eq(projectId))
               .fetchMap(
-                  LAND_USE_MODEL_TYPE_ID.asNonNullable(), LAND_USE_MODEL_HECTARES.asNonNullable())
+                  LAND_USE_MODEL_TYPE_ID.asNonNullable(),
+                  LAND_USE_MODEL_HECTARES.asNonNullable(),
+              )
         }
 
     return with(PUBLISHED_PROJECT_DETAILS) {
@@ -126,7 +128,10 @@ class PublishedProjectDetailsStore(
 
         publishProjectSdgs(project.projectId, project.sdgList)
         publishProjectLandUses(
-            project.projectId, project.landUseModelTypes, project.landUseModelHectares)
+            project.projectId,
+            project.landUseModelTypes,
+            project.landUseModelHectares,
+        )
         publishProjectCarbonCerts(project.projectId, project.carbonCertifications)
       }
 
@@ -151,7 +156,7 @@ class PublishedProjectDetailsStore(
   private fun publishProjectLandUses(
       projectId: ProjectId,
       landUseModelTypes: Set<LandUseModelType>,
-      landUseModelHectares: Map<LandUseModelType, BigDecimal>
+      landUseModelHectares: Map<LandUseModelType, BigDecimal>,
   ) {
     with(PUBLISHED_PROJECT_LAND_USE) {
       dslContext.deleteFrom(this).where(PROJECT_ID.eq(projectId)).execute()
@@ -169,7 +174,7 @@ class PublishedProjectDetailsStore(
 
   private fun publishProjectCarbonCerts(
       projectId: ProjectId,
-      carbonCertifications: Set<CarbonCertification>
+      carbonCertifications: Set<CarbonCertification>,
   ) {
     with(PUBLISHED_PROJECT_CARBON_CERTS) {
       dslContext.deleteFrom(this).where(PROJECT_ID.eq(projectId)).execute()

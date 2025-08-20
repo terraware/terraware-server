@@ -78,7 +78,8 @@ class ImageUtils(private val fileStore: FileStore) {
       val detectedType = fileStore.read(photoUrl).use { stream -> Tika().detect(stream) }
 
       throw UnsupportedMediaTypeException(
-          "Cannot read image. Detected content type is $detectedType")
+          "Cannot read image. Detected content type is $detectedType"
+      )
     }
 
     val orientation = getOrientation(photoUrl)

@@ -33,8 +33,11 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
                 oldStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession has been checked in",
                 updatedBy = user.userId,
-                updatedTime = clock.instant())),
-        historyRecords)
+                updatedTime = clock.instant(),
+            )
+        ),
+        historyRecords,
+    )
   }
 
   @Test

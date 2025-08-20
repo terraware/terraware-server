@@ -254,7 +254,8 @@ class AdminPlantingSitesController(
                                   .flatMap { zone -> zone.plantingSubzones.map { it.id } }
                                   .toSet(),
                               gridOrigin = site.gridOrigin!!,
-                              exclusion = site.exclusion)
+                              exclusion = site.exclusion,
+                          )
                           .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
                     } catch (e: PlantingSubzoneFullException) {
                       emptyList()
@@ -592,7 +593,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
@@ -618,7 +619,7 @@ class AdminPlantingSitesController(
   fun deletePlantingSeason(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam plantingSeasonId: PlantingSeasonId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
@@ -644,7 +645,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSeasonId: PlantingSeasonId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
@@ -724,7 +725,7 @@ class AdminPlantingSitesController(
   fun recalculateMortalityRates(
       @RequestParam observationId: ObservationId,
       @RequestParam plantingSiteId: PlantingSiteId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { manageObservation(observationId) }
 
@@ -744,7 +745,7 @@ class AdminPlantingSitesController(
   @RequireGlobalRole([GlobalRole.SuperAdmin])
   fun recalculatePopulations(
       @RequestParam plantingSiteId: PlantingSiteId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
 
     try {
@@ -789,7 +790,9 @@ class AdminPlantingSitesController(
 
     val affectedObservationIds =
         observationStore.fetchActiveObservationIds(
-            edit.existingModel.id, edit.plantingZoneEdits.mapNotNull { it.existingModel?.id })
+            edit.existingModel.id,
+            edit.plantingZoneEdits.mapNotNull { it.existingModel?.id },
+        )
     val affectedObservationsMessage =
         if (affectedObservationIds.isNotEmpty()) {
           "The following observations will be abandoned because they have incomplete " +
@@ -834,12 +837,13 @@ class AdminPlantingSitesController(
           }
         } else {
           "$prefix Create (stable ID ${desiredModel?.stableId})"
-        }) + monitoringPlotCreations + subzoneEdits
+        }
+    ) + monitoringPlotCreations + subzoneEdits
   }
 
   private fun describeSubzoneEdit(
       zoneEdit: PlantingZoneEdit,
-      subzoneEdit: PlantingSubzoneEdit
+      subzoneEdit: PlantingSubzoneEdit,
   ): List<String> {
     val zoneName = zoneEdit.existingModel?.name ?: zoneEdit.desiredModel!!.name
     val subzoneName = subzoneEdit.existingModel?.name ?: subzoneEdit.desiredModel!!.name
@@ -853,7 +857,9 @@ class AdminPlantingSitesController(
           is PlantingSubzoneEdit.Update -> {
             val overlapPercent =
                 renderOverlapPercent(
-                    subzoneEdit.existingModel.boundary, subzoneEdit.desiredModel.boundary)
+                    subzoneEdit.existingModel.boundary,
+                    subzoneEdit.desiredModel.boundary,
+                )
             val areaDifference = subzoneEdit.areaHaDifference.toPlainString()
             "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
           }

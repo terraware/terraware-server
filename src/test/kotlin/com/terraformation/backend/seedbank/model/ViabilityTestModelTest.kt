@@ -19,9 +19,10 @@ internal class ViabilityTestModelTest {
           ViabilityTestModel(
               testResults =
                   listOf(
-                      ViabilityTestResultModel(
-                          recordingDate = LocalDate.EPOCH, seedsGerminated = 1)),
-              testType = ViabilityTestType.Cut)
+                      ViabilityTestResultModel(recordingDate = LocalDate.EPOCH, seedsGerminated = 1)
+                  ),
+              testType = ViabilityTestType.Cut,
+          )
 
       assertThrows<IllegalArgumentException> { model.validate() }
     }
@@ -36,7 +37,8 @@ internal class ViabilityTestModelTest {
             listOf(
                     ViabilityTestModel(seedsCompromised = 1, testType = testType),
                     ViabilityTestModel(seedsEmpty = 1, testType = testType),
-                    ViabilityTestModel(seedsFilled = 1, testType = testType))
+                    ViabilityTestModel(seedsFilled = 1, testType = testType),
+                )
                 .forEach { model ->
                   assertThrows<IllegalArgumentException>("$model") { model.validate() }
                 }
@@ -47,7 +49,9 @@ internal class ViabilityTestModelTest {
     fun `rejects invalid substrate for lab test`() {
       val model =
           ViabilityTestModel(
-              substrate = ViabilityTestSubstrate.Moss, testType = ViabilityTestType.Lab)
+              substrate = ViabilityTestSubstrate.Moss,
+              testType = ViabilityTestType.Lab,
+          )
 
       assertThrows<IllegalArgumentException> { model.validate() }
     }
@@ -56,7 +60,9 @@ internal class ViabilityTestModelTest {
     fun `rejects invalid substrate for nursery test`() {
       val model =
           ViabilityTestModel(
-              substrate = ViabilityTestSubstrate.Agar, testType = ViabilityTestType.Nursery)
+              substrate = ViabilityTestSubstrate.Agar,
+              testType = ViabilityTestType.Nursery,
+          )
 
       assertThrows<IllegalArgumentException> { model.validate() }
     }
@@ -69,7 +75,8 @@ internal class ViabilityTestModelTest {
               seedsEmpty = 1,
               seedsFilled = 1,
               seedsTested = 2,
-              testType = ViabilityTestType.Cut)
+              testType = ViabilityTestType.Cut,
+          )
 
       assertThrows<IllegalArgumentException> { model.validate() }
     }
@@ -78,11 +85,20 @@ internal class ViabilityTestModelTest {
     fun `rejects negative seed counts`() {
       listOf(
               ViabilityTestModel(
-                  seedsCompromised = -1, seedsTested = 1, testType = ViabilityTestType.Cut),
+                  seedsCompromised = -1,
+                  seedsTested = 1,
+                  testType = ViabilityTestType.Cut,
+              ),
               ViabilityTestModel(
-                  seedsEmpty = -1, seedsTested = 1, testType = ViabilityTestType.Cut),
+                  seedsEmpty = -1,
+                  seedsTested = 1,
+                  testType = ViabilityTestType.Cut,
+              ),
               ViabilityTestModel(
-                  seedsFilled = -1, seedsTested = 1, testType = ViabilityTestType.Cut),
+                  seedsFilled = -1,
+                  seedsTested = 1,
+                  testType = ViabilityTestType.Cut,
+              ),
               ViabilityTestModel(seedsTested = -1, testType = ViabilityTestType.Lab),
           )
           .forEach { model ->
@@ -110,11 +126,16 @@ internal class ViabilityTestModelTest {
               testResults =
                   listOf(
                       ViabilityTestResultModel(
-                          recordingDate = LocalDate.EPOCH, seedsGerminated = 12),
+                          recordingDate = LocalDate.EPOCH,
+                          seedsGerminated = 12,
+                      ),
                       ViabilityTestResultModel(
-                          recordingDate = LocalDate.EPOCH, seedsGerminated = 27),
+                          recordingDate = LocalDate.EPOCH,
+                          seedsGerminated = 27,
+                      ),
                   ),
-              testType = testType)
+              testType = testType,
+          )
 
       assertEquals(39, model.calculateViabilityPercent())
     }
@@ -127,7 +148,8 @@ internal class ViabilityTestModelTest {
               seedsEmpty = 2,
               seedsFilled = 3,
               seedsTested = 6,
-              testType = ViabilityTestType.Cut)
+              testType = ViabilityTestType.Cut,
+          )
 
       assertEquals(50, model.calculateViabilityPercent())
     }

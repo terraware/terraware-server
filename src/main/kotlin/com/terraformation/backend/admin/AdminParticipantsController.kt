@@ -103,7 +103,7 @@ class AdminParticipantsController(
   @PostMapping("/createParticipant")
   fun createParticipant(
       @RequestParam name: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     return try {
       val model = participantStore.create(ParticipantModel.create(name = name))
@@ -120,7 +120,7 @@ class AdminParticipantsController(
   @PostMapping("/deleteParticipant")
   fun deleteParticipant(
       @RequestParam participantId: ParticipantId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       participantStore.delete(participantId)
@@ -141,7 +141,7 @@ class AdminParticipantsController(
       @RequestParam cohortId: String?,
       @RequestParam participantId: ParticipantId,
       @RequestParam name: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     val cohortIdWrapper = cohortId?.ifBlank { null }?.let { CohortId(it) }
 
@@ -163,7 +163,7 @@ class AdminParticipantsController(
       @RequestParam fileNaming: String,
       @RequestParam googleFolderUrl: URI,
       @RequestParam dropboxFolderPath: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       projectStore.updateParticipant(projectId, participantId)
@@ -188,7 +188,7 @@ class AdminParticipantsController(
   fun deleteParticipantProject(
       @RequestParam participantId: ParticipantId,
       @RequestParam projectId: ProjectId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       projectStore.updateParticipant(projectId, null)
@@ -208,7 +208,7 @@ class AdminParticipantsController(
       @RequestParam fileNaming: String,
       @RequestParam googleFolderUrl: URI,
       @RequestParam dropboxFolderPath: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       projectAcceleratorDetailsService.update(projectId) {

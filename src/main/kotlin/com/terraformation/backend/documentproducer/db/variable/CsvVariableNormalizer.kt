@@ -25,7 +25,8 @@ class CsvVariableNormalizer {
       val isList =
           normalizeBoolean(
               values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST],
-              defaultValue = dataType == AllVariableCsvVariableType.Table)
+              defaultValue = dataType == AllVariableCsvVariableType.Table,
+          )
       val name = rawValues[VARIABLE_CSV_COLUMN_INDEX_NAME].trim()
 
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
@@ -81,7 +82,8 @@ class CsvVariableNormalizer {
           isRequired = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_REQUIRED]),
           position = index + 2,
           variablePath = variablePath,
-          parentPath = parentPath)
+          parentPath = parentPath,
+      )
     }
   }
 
@@ -109,13 +111,14 @@ class CsvVariableNormalizer {
 
   private fun mapOptionStringToSelectOptionRow(
       rawOptionName: String,
-      position: Int
+      position: Int,
   ): VariableSelectOptionsRow =
       VariableSelectOptionsRow(
           name = getOptionName(rawOptionName),
           position = position,
           renderedText = getRenderedTextFromSelectOptionString(rawOptionName),
-          variableTypeId = VariableType.Select)
+          variableTypeId = VariableType.Select,
+      )
 
   private fun getVariablePath(name: String, parent: String?): String {
     // If there is no parent, this is top level, the path is equal to the name

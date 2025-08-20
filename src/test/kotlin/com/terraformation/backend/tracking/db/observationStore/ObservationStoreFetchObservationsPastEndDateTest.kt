@@ -33,13 +33,19 @@ class ObservationStoreFetchObservationsPastEndDateTest : BaseObservationStoreTes
     insertPlantingSite()
     val observationId1 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.InProgress,
+        )
 
     // End date ended an hour ago.
     insertPlantingSite(timeZone = zone3)
     val observationId2 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.InProgress,
+        )
 
     // End date isn't over yet in the site's time zone.
     insertPlantingSite(timeZone = zone1)
@@ -51,12 +57,16 @@ class ObservationStoreFetchObservationsPastEndDateTest : BaseObservationStoreTes
         ObservationsRow(completedTime = Instant.EPOCH),
         endDate = endDate,
         startDate = startDate,
-        state = ObservationState.Completed)
+        state = ObservationState.Completed,
+    )
 
     // End date is still in the future.
     insertPlantingSite(timeZone = zone3)
     insertObservation(
-        endDate = endDate.plusDays(1), startDate = startDate, state = ObservationState.InProgress)
+        endDate = endDate.plusDays(1),
+        startDate = startDate,
+        state = ObservationState.InProgress,
+    )
 
     val expected = setOf(observationId1, observationId2)
     val actual = store.fetchObservationsPastEndDate().map { it.id }.toSet()
@@ -77,7 +87,10 @@ class ObservationStoreFetchObservationsPastEndDateTest : BaseObservationStoreTes
     val plantingSiteId = insertPlantingSite(timeZone = timeZone)
     val observationId =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.InProgress,
+        )
 
     insertPlantingSite(timeZone = timeZone)
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.InProgress)

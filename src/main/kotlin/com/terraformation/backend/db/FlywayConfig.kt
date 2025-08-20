@@ -37,8 +37,10 @@ class FlywayConfig {
           flyway.validateWithResult().invalidMigrations.filter {
             it.errorDetails.errorCode == CoreErrorCode.CHECKSUM_MISMATCH
           }
-      if (checksumErrors.isNotEmpty() &&
-          checksumErrors.all { it.version in editedMigrationVersions }) {
+      if (
+          checksumErrors.isNotEmpty() &&
+              checksumErrors.all { it.version in editedMigrationVersions }
+      ) {
         flyway.repair()
       }
 

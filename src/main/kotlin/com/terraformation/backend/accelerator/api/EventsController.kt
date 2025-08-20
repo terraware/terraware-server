@@ -62,7 +62,8 @@ class EventsController(
                 null
               }
           ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name, projects)
-        })
+        }
+    )
   }
 
   @ApiResponse200
@@ -89,7 +90,8 @@ class EventsController(
   @ApiResponse404
   @Operation(
       summary = "Create a new event on a module.",
-      description = "Only accessible by accelerator administrators.")
+      description = "Only accessible by accelerator administrators.",
+  )
   @PostMapping
   @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun createEvent(
@@ -107,7 +109,8 @@ class EventsController(
             payload.endTime ?: payload.startTime,
             payload.meetingUrl,
             payload.recordingUrl,
-            payload.slidesUrl)
+            payload.slidesUrl,
+        )
 
     return CreateModuleEventResponsePayload(event.id)
   }
@@ -116,7 +119,8 @@ class EventsController(
   @ApiResponse404
   @Operation(
       summary = "Update an event on a module.",
-      description = "Only accessible by accelerator administrators.")
+      description = "Only accessible by accelerator administrators.",
+  )
   @PutMapping("/{eventId}")
   @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun updateEvent(
@@ -133,7 +137,8 @@ class EventsController(
   @DeleteMapping("/{eventId}")
   @Operation(
       summary = "Delete an event from a module.",
-      description = "Only accessible by accelerator administrators.")
+      description = "Only accessible by accelerator administrators.",
+  )
   @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun deleteEvent(
       @PathVariable eventId: EventId,
@@ -147,7 +152,8 @@ class EventsController(
   @ApiResponse404
   @Operation(
       summary = "Update the list of projects for a module event.",
-      description = "Only accessible by accelerator administrators.")
+      description = "Only accessible by accelerator administrators.",
+  )
   @PostMapping("/{eventId}/projects")
   @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun updateEventProjects(

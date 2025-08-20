@@ -212,7 +212,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
           )
 
       val standardMetricId1 =
@@ -277,7 +278,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = MetricType.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
-                  entry = ReportMetricEntryModel()),
+                  entry = ReportMetricEntryModel(),
+              ),
               ReportStandardMetricModel(
                   metric =
                       StandardMetricModel(
@@ -297,7 +299,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportStandardMetricModel(
                   metric =
                       StandardMetricModel(
@@ -315,7 +318,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
           )
 
       insertReportSystemMetric(
@@ -360,13 +364,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemTime = Instant.ofEpochSecond(8000),
                           modifiedTime = Instant.ofEpochSecond(500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
                   entry =
@@ -375,7 +381,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 0,
                           modifiedTime = Instant.ofEpochSecond(2500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
                   entry =
@@ -387,19 +394,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.Achieved,
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
           )
 
       val reportModel =
@@ -419,7 +429,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.EPOCH,
               projectMetrics = projectMetrics,
               standardMetrics = standardMetrics,
-              systemMetrics = systemMetrics)
+              systemMetrics = systemMetrics,
+          )
 
       assertEquals(listOf(reportModel), store.fetch(includeMetrics = true))
     }
@@ -432,7 +443,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           frequency = ReportFrequency.Quarterly,
           quarter = ReportQuarter.Q1,
           startDate = LocalDate.of(2025, Month.JANUARY, 1),
-          endDate = LocalDate.of(2025, Month.MARCH, 31))
+          endDate = LocalDate.of(2025, Month.MARCH, 31),
+      )
 
       insertDataForSystemMetrics(
           reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
@@ -446,39 +458,46 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 98,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 60,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 83,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 27,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 1,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 40,
-                      )),
+                      ),
+              ),
           ),
-          store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics)
+          store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics,
+      )
     }
 
     @Test
@@ -500,7 +519,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH)
+              modifiedTime = Instant.EPOCH,
+          )
 
       assertEquals(emptyList<ReportModel>(), store.fetch())
 
@@ -529,7 +549,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH)
+              modifiedTime = Instant.EPOCH,
+          )
 
       assertEquals(emptyList<ReportModel>(), store.fetch())
 
@@ -558,17 +579,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
-              internalComment = "internal comment")
+              internalComment = "internal comment",
+          )
 
       assertEquals(
           listOf(reportModel.copy(internalComment = null)),
           store.fetch(),
-          "Org user cannot see internal comment")
+          "Org user cannot see internal comment",
+      )
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
       assertEquals(
-          listOf(reportModel), store.fetch(), "Read-only Global role can see internal comment")
+          listOf(reportModel),
+          store.fetch(),
+          "Read-only Global role can see internal comment",
+      )
     }
 
     @Test
@@ -578,12 +604,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertReport(
               quarter = ReportQuarter.Q4,
               startDate = LocalDate.of(2030, Month.OCTOBER, 1),
-              endDate = LocalDate.of(2030, Month.DECEMBER, 31))
+              endDate = LocalDate.of(2030, Month.DECEMBER, 31),
+          )
       val reportId2 =
           insertReport(
               quarter = ReportQuarter.Q4,
               startDate = LocalDate.of(2035, Month.OCTOBER, 1),
-              endDate = LocalDate.of(2035, Month.DECEMBER, 31))
+              endDate = LocalDate.of(2035, Month.DECEMBER, 31),
+          )
 
       val otherProjectId = insertProject()
       val otherConfigId = insertProjectReportConfig()
@@ -591,12 +619,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertReport(
               quarter = ReportQuarter.Q4,
               startDate = LocalDate.of(2035, Month.OCTOBER, 1),
-              endDate = LocalDate.of(2035, Month.DECEMBER, 31))
+              endDate = LocalDate.of(2035, Month.DECEMBER, 31),
+          )
       val otherReportId2 =
           insertReport(
               quarter = ReportQuarter.Q4,
               startDate = LocalDate.of(2040, Month.OCTOBER, 1),
-              endDate = LocalDate.of(2040, Month.DECEMBER, 31))
+              endDate = LocalDate.of(2040, Month.DECEMBER, 31),
+          )
 
       val reportModel1 =
           ReportModel(
@@ -642,22 +672,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           setOf(reportModel1, reportModel2, otherReportModel1, otherReportModel2),
           store.fetch().toSet(),
-          "Fetches all")
+          "Fetches all",
+      )
 
       assertEquals(
           setOf(reportModel1, reportModel2),
           store.fetch(projectId = projectId).toSet(),
-          "Fetches by projectId")
+          "Fetches by projectId",
+      )
 
       assertEquals(
           setOf(reportModel2, otherReportModel1),
           store.fetch(year = 2035).toSet(),
-          "Fetches by year")
+          "Fetches by year",
+      )
 
       assertEquals(
           listOf(reportModel2),
           store.fetch(projectId = projectId, year = 2035),
-          "Fetches by projectId and year")
+          "Fetches by projectId and year",
+      )
     }
 
     @Test
@@ -713,7 +747,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           emptyList<ReportModel>(),
           store.fetch(),
-          "User not in organizations cannot see the reports")
+          "User not in organizations cannot see the reports",
+      )
 
       insertOrganizationUser(organizationId = organizationId, role = Role.Contributor)
       assertEquals(emptyList<ReportModel>(), store.fetch(), "Contributor cannot see the reports")
@@ -722,13 +757,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           setOf(reportModel, secondReportModel),
           store.fetch().toSet(),
-          "Manager can see project reports within the organization")
+          "Manager can see project reports within the organization",
+      )
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
       assertEquals(
           setOf(reportModel, secondReportModel, otherReportModel),
           store.fetch().toSet(),
-          "Read-only admin user can see all project reports")
+          "Read-only admin user can see all project reports",
+      )
     }
   }
 
@@ -744,7 +781,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertReport(
               quarter = ReportQuarter.Q4,
               startDate = LocalDate.of(2030, Month.OCTOBER, 1),
-              endDate = LocalDate.of(2030, Month.DECEMBER, 31))
+              endDate = LocalDate.of(2030, Month.DECEMBER, 31),
+          )
 
       assertThrows<ReportNotFoundException>(message = "Not organization member or global user") {
         store.fetchOne(reportId)
@@ -807,7 +845,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
           )
 
       val standardMetricId1 =
@@ -873,7 +912,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = MetricType.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
-                  entry = ReportMetricEntryModel()),
+                  entry = ReportMetricEntryModel(),
+              ),
               ReportStandardMetricModel(
                   metric =
                       StandardMetricModel(
@@ -893,7 +933,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportStandardMetricModel(
                   metric =
                       StandardMetricModel(
@@ -911,7 +952,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
           )
 
       insertReportSystemMetric(
@@ -956,13 +998,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemTime = Instant.ofEpochSecond(8000),
                           modifiedTime = Instant.ofEpochSecond(500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.Seedlings,
                   entry =
@@ -971,7 +1015,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 0,
                           modifiedTime = Instant.ofEpochSecond(2500),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
                   entry =
@@ -983,19 +1028,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportMetricStatus.Achieved,
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
               ReportSystemMetricModel(
                   metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
-                      )),
+                      ),
+              ),
           )
 
       val reportModel =
@@ -1015,10 +1063,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.EPOCH,
               projectMetrics = projectMetrics,
               standardMetrics = standardMetrics,
-              systemMetrics = systemMetrics)
+              systemMetrics = systemMetrics,
+          )
 
       assertEquals(
-          reportModel, store.fetchOne(reportId, includeMetrics = true), "Fetch one with metrics")
+          reportModel,
+          store.fetchOne(reportId, includeMetrics = true),
+          "Fetch one with metrics",
+      )
 
       assertEquals(
           reportModel.copy(
@@ -1027,7 +1079,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               systemMetrics = emptyList(),
           ),
           store.fetchOne(reportId, includeMetrics = false),
-          "Fetch one without metrics")
+          "Fetch one without metrics",
+      )
     }
   }
 
@@ -1445,7 +1498,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               // Standard metric 4 is not inserted since there was no updates
           ),
-          "Reports standard metrics table")
+          "Reports standard metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -1485,7 +1539,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
               ),
           ),
-          "Reports system metrics table")
+          "Reports system metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -1498,8 +1553,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   progressNotes = "Project metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )),
-          "Reports project metrics table")
+              )
+          ),
+          "Reports project metrics table",
+      )
 
       assertTableEquals(
           ReportsRecord(
@@ -1519,7 +1576,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
-          "Reports table")
+          "Reports table",
+      )
     }
   }
 
@@ -1653,8 +1711,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   highlights = "New Highlights",
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
-              )),
-          "Report table")
+              )
+          ),
+          "Report table",
+      )
     }
 
     @Test
@@ -1696,8 +1756,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   highlights = null,
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
-              )),
-          "Report table")
+              )
+          ),
+          "Report table",
+      )
     }
 
     @Test
@@ -1903,7 +1965,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               // Standard metric 4 is not inserted since there was no updates
           ),
-          "Reports standard metrics table")
+          "Reports standard metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -1941,7 +2004,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
               ),
           ),
-          "Reports system metrics table")
+          "Reports system metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -1953,8 +2017,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   underperformanceJustification = "Project metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )),
-          "Reports project metrics table")
+              )
+          ),
+          "Reports project metrics table",
+      )
 
       assertTableEquals(
           ReportsRecord(
@@ -1972,7 +2038,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
-          "Reports table")
+          "Reports table",
+      )
     }
   }
 
@@ -1985,7 +2052,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val metricId = insertProjectMetric()
       assertThrows<AccessDeniedException> {
         store.updateProjectMetricTargets(
-            projectId = projectId, metricId = metricId, targets = emptyMap())
+            projectId = projectId,
+            metricId = metricId,
+            targets = emptyMap(),
+        )
       }
     }
 
@@ -2016,17 +2086,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<IllegalStateException>("Submitted Report") {
         store.updateProjectMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(submittedReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(submittedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Approved Report") {
         store.updateProjectMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(approvedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateProjectMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(notNeededReportId to 0),
+        )
       }
 
       assertDoesNotThrow("Update submitted flag on") {
@@ -2053,12 +2132,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.updateProjectMetricTargets(
             projectId = projectId,
             metricId = metricId,
-            targets = mapOf(reportId to 0, otherReportId to 0))
+            targets = mapOf(reportId to 0, otherReportId to 0),
+        )
       }
 
       assertDoesNotThrow {
         store.updateProjectMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(reportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(reportId to 0),
+        )
       }
     }
 
@@ -2102,7 +2185,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId1 to 101,
                   reportId2 to 201,
                   reportId3 to null,
-              ))
+              ),
+      )
 
       assertTableEquals(
           listOf(
@@ -2137,7 +2221,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.EPOCH,
                   modifiedBy = user.userId,
               ),
-          ))
+          )
+      )
     }
   }
 
@@ -2150,7 +2235,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val metricId = insertStandardMetric()
       assertThrows<AccessDeniedException> {
         store.updateStandardMetricTargets(
-            projectId = projectId, metricId = metricId, targets = emptyMap())
+            projectId = projectId,
+            metricId = metricId,
+            targets = emptyMap(),
+        )
       }
     }
 
@@ -2181,17 +2269,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<IllegalStateException>("Submitted Report") {
         store.updateStandardMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(submittedReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(submittedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Approved Report") {
         store.updateStandardMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(approvedReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(approvedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateStandardMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(notNeededReportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(notNeededReportId to 0),
+        )
       }
 
       assertDoesNotThrow("Update submitted flag on") {
@@ -2219,12 +2316,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.updateStandardMetricTargets(
             projectId = projectId,
             metricId = metricId,
-            targets = mapOf(reportId to 0, otherReportId to 0))
+            targets = mapOf(reportId to 0, otherReportId to 0),
+        )
       }
 
       assertDoesNotThrow {
         store.updateStandardMetricTargets(
-            projectId = projectId, metricId = metricId, targets = mapOf(reportId to 0))
+            projectId = projectId,
+            metricId = metricId,
+            targets = mapOf(reportId to 0),
+        )
       }
     }
 
@@ -2268,7 +2369,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId1 to 101,
                   reportId2 to 201,
                   reportId3 to null,
-              ))
+              ),
+      )
 
       assertTableEquals(
           listOf(
@@ -2303,7 +2405,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.EPOCH,
                   modifiedBy = user.userId,
               ),
-          ))
+          )
+      )
     }
   }
 
@@ -2348,21 +2451,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
-            targets = mapOf(submittedReportId to 0))
+            targets = mapOf(submittedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Approved Report") {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
-            targets = mapOf(approvedReportId to 0))
+            targets = mapOf(approvedReportId to 0),
+        )
       }
 
       assertThrows<IllegalStateException>("Not Needed Report") {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
-            targets = mapOf(notNeededReportId to 0))
+            targets = mapOf(notNeededReportId to 0),
+        )
       }
 
       assertDoesNotThrow("Update submitted flag on") {
@@ -2388,14 +2494,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
-            targets = mapOf(reportId to 0, otherReportId to 0))
+            targets = mapOf(reportId to 0, otherReportId to 0),
+        )
       }
 
       assertDoesNotThrow {
         store.updateSystemMetricTargets(
             projectId = projectId,
             metric = SystemMetric.SeedsCollected,
-            targets = mapOf(reportId to 0))
+            targets = mapOf(reportId to 0),
+        )
       }
     }
 
@@ -2437,7 +2545,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId1 to 101,
                   reportId2 to 201,
                   reportId3 to null,
-              ))
+              ),
+      )
 
       assertTableEquals(
           listOf(
@@ -2472,7 +2581,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.EPOCH,
                   modifiedBy = user.userId,
               ),
-          ))
+          )
+      )
     }
   }
 
@@ -2506,11 +2616,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertReport(
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.of(2025, Month.JANUARY, 1),
-              endDate = LocalDate.of(2025, Month.MARCH, 31))
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+          )
 
       insertDataForSystemMetrics(
           reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
-          reportEndDate = LocalDate.of(2025, Month.MARCH, 31))
+          reportEndDate = LocalDate.of(2025, Month.MARCH, 31),
+      )
 
       insertReportSystemMetric(
           metric = SystemMetric.SeedsCollected,
@@ -2542,7 +2654,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(9000)
       store.refreshSystemMetricValues(
           reportId,
-          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted))
+          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted),
+      )
 
       assertTableEquals(
           listOf(
@@ -2575,7 +2688,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-          ))
+          )
+      )
 
       val updatedReport =
           existingReport.copy(
@@ -2594,11 +2708,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertReport(
               status = ReportStatus.Submitted,
               startDate = LocalDate.of(2025, Month.JANUARY, 1),
-              endDate = LocalDate.of(2025, Month.MARCH, 31))
+              endDate = LocalDate.of(2025, Month.MARCH, 31),
+          )
 
       insertDataForSystemMetrics(
           reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
-          reportEndDate = LocalDate.of(2025, Month.MARCH, 31))
+          reportEndDate = LocalDate.of(2025, Month.MARCH, 31),
+      )
 
       insertReportSystemMetric(
           metric = SystemMetric.SeedsCollected,
@@ -2630,7 +2746,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(9000)
       store.refreshSystemMetricValues(
           reportId,
-          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted))
+          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted),
+      )
 
       assertTableEquals(
           listOf(
@@ -2669,7 +2786,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-          ))
+          )
+      )
 
       val updatedReport =
           existingReport.copy(
@@ -2713,7 +2831,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2025, Month.JANUARY, 1),
               endDate = LocalDate.of(2025, Month.MARCH, 31),
               createdBy = otherUserId,
-              modifiedBy = otherUserId)
+              modifiedBy = otherUserId,
+          )
       insertSystemMetricTargetsForReport(reportId)
       insertDataForSystemMetrics(
           reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
@@ -2740,7 +2859,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedBy = currentUser().userId,
               submittedTime = clock.instant,
           ),
-          "Reports table")
+          "Reports table",
+      )
 
       assertTableEquals(
           listOf(
@@ -2799,7 +2919,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = clock.instant,
               ),
           ),
-          "Report system metrics")
+          "Report system metrics",
+      )
 
       eventPublisher.assertEventPublished(AcceleratorReportSubmittedEvent(reportId))
     }
@@ -2822,7 +2943,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `queries by project, includes logframe URL`() {
       val otherProjectId = insertProject()
       insertProjectAcceleratorDetails(
-          projectId = otherProjectId, logframeUrl = "https://terraware.io/logframe")
+          projectId = otherProjectId,
+          logframeUrl = "https://terraware.io/logframe",
+      )
 
       val projectConfigId1 =
           insertProjectReportConfig(
@@ -2899,16 +3022,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           setOf(projectConfigModel1, projectConfigModel2),
           store.fetchProjectReportConfigs(projectId = projectId).toSet(),
-          "fetches by projectId")
+          "fetches by projectId",
+      )
 
       assertEquals(
           setOf(
               projectConfigModel1,
               projectConfigModel2,
               otherProjectConfigModel1,
-              otherProjectConfigModel2),
+              otherProjectConfigModel2,
+          ),
           store.fetchProjectReportConfigs().toSet(),
-          "fetches all project configs")
+          "fetches all project configs",
+      )
     }
   }
 
@@ -2937,7 +3063,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       deleteProjectAcceleratorDetails(projectId)
       insertProjectAcceleratorDetails(
-          projectId = projectId, logframeUrl = URI("https://example.com/existing-logframe"))
+          projectId = projectId,
+          logframeUrl = URI("https://example.com/existing-logframe"),
+      )
 
       val config =
           NewProjectReportConfigModel(
@@ -2960,7 +3088,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2028, Month.MARCH, 2),
           ),
-          "Project report config tables")
+          "Project report config tables",
+      )
 
       assertTableEquals(
           listOf(
@@ -3011,7 +3140,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = clock.instant,
                   modifiedBy = systemUser.userId,
                   modifiedTime = clock.instant,
-              )),
+              ),
+          ),
           "Reports table",
       )
 
@@ -3020,7 +3150,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               logframeUrl = URI("https://example.com/new-logframe"),
           ),
-          "Project accelerator details table")
+          "Project accelerator details table",
+      )
     }
 
     @Test
@@ -3050,7 +3181,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
           ),
-          "Project report config tables")
+          "Project report config tables",
+      )
 
       assertTableEquals(
           listOf(
@@ -3105,7 +3237,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = clock.instant,
                   modifiedBy = systemUser.userId,
                   modifiedTime = clock.instant,
-              )),
+              ),
+          ),
           "Reports table",
       )
 
@@ -3114,7 +3247,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               logframeUrl = URI("https://example.com"),
           ),
-          "Project accelerator details table")
+          "Project accelerator details table",
+      )
     }
   }
 
@@ -3195,7 +3329,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
               ),
           ),
-          "Project report config tables")
+          "Project report config tables",
+      )
 
       assertTableEquals(
           listOf(
@@ -3250,7 +3385,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = clock.instant,
                   modifiedBy = systemUser.userId,
                   modifiedTime = clock.instant,
-              )),
+              ),
+          ),
           "Reports table",
       )
     }
@@ -3337,7 +3473,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               reportingStartDate = LocalDate.of(2022, Month.FEBRUARY, 14),
               reportingEndDate = LocalDate.of(2025, Month.MARCH, 17),
           ),
-          "Project report config tables")
+          "Project report config tables",
+      )
 
       assertTableEquals(
           listOf(
@@ -3508,12 +3645,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = systemUser.userId,
                   modifiedTime = Instant.ofEpochSecond(900),
               ),
-          ))
+          )
+      )
 
       assertTableEquals(
           ProjectAcceleratorDetailsRecord(
-              projectId = projectId, logframeUrl = URI("https://example.com/new")),
-          "Project accelerator details table")
+              projectId = projectId,
+              logframeUrl = URI("https://example.com/new"),
+          ),
+          "Project accelerator details table",
+      )
     }
 
     @Test
@@ -3522,7 +3663,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectAcceleratorDetails(
           projectId = projectId,
           dealName = "Unchanged deal name",
-          logframeUrl = URI("https://example.com/existing"))
+          logframeUrl = URI("https://example.com/existing"),
+      )
 
       val quarterlyConfigId =
           insertProjectReportConfig(
@@ -3564,14 +3706,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
               ),
           ),
-          "Project report config table")
+          "Project report config table",
+      )
 
       assertTableEquals(
           ProjectAcceleratorDetailsRecord(
               projectId = projectId,
               dealName = "Unchanged deal name",
-              logframeUrl = URI("https://example.com/new")),
-          "Project accelerator details table")
+              logframeUrl = URI("https://example.com/new"),
+          ),
+          "Project accelerator details table",
+      )
     }
   }
 
@@ -3658,7 +3803,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       systemUser.run { store.notifyUpcomingReports() }
 
       eventPublisher.assertExactEventsPublished(
-          setOf(AcceleratorReportUpcomingEvent(upcomingReportId)))
+          setOf(AcceleratorReportUpcomingEvent(upcomingReportId))
+      )
 
       assertTableEquals(
           listOf(
@@ -3717,7 +3863,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = Instant.EPOCH,
                   modifiedBy = currentUser().userId,
                   modifiedTime = Instant.EPOCH,
-                  upcomingNotificationSentTime = Instant.ofEpochSecond(15000)),
+                  upcomingNotificationSentTime = Instant.ofEpochSecond(15000),
+              ),
               ReportsRecord(
                   id = submittedReportId,
                   projectId = projectId,
@@ -3762,7 +3909,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = currentUser().userId,
                   modifiedTime = Instant.EPOCH,
               ),
-          ))
+          )
+      )
     }
   }
 
@@ -3819,7 +3967,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertPublishedReport(user.userId, clock.instant)
 
       eventPublisher.assertEventPublished(
-          AcceleratorReportPublishedEvent(reportId), "Published Event")
+          AcceleratorReportPublishedEvent(reportId),
+          "Published Event",
+      )
     }
 
     @Test
@@ -3919,7 +4069,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.publishReport(reportId)
       assertPublishedReport(user.userId, clock.instant)
       eventPublisher.assertEventPublished(
-          AcceleratorReportPublishedEvent(reportId), "Published Event")
+          AcceleratorReportPublishedEvent(reportId),
+          "Published Event",
+      )
     }
 
     @BeforeEach
@@ -4088,11 +4240,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           listOf(
               PublishedReportAchievementsRecord(
-                  reportId = reportId, position = 0, achievement = "Achievement A"),
+                  reportId = reportId,
+                  position = 0,
+                  achievement = "Achievement A",
+              ),
               PublishedReportAchievementsRecord(
-                  reportId = reportId, position = 1, achievement = "Achievement B"),
+                  reportId = reportId,
+                  position = 1,
+                  achievement = "Achievement B",
+              ),
               PublishedReportAchievementsRecord(
-                  reportId = reportId, position = 2, achievement = "Achievement C"),
+                  reportId = reportId,
+                  position = 2,
+                  achievement = "Achievement C",
+              ),
           ),
           "Published report achievements table",
       )
@@ -4112,7 +4273,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   mitigationPlan = "Plan B",
               ),
           ),
-          "Published report challenges table")
+          "Published report challenges table",
+      )
 
       assertTableEquals(
           listOf(
@@ -4134,7 +4296,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   underperformanceJustification = "Standard Metric 2 Underperformance",
               ),
           ),
-          "Published report standard metrics table")
+          "Published report standard metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -4156,7 +4319,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   underperformanceJustification = "Project Metric 2 Underperformance",
               ),
           ),
-          "Published report project metrics table")
+          "Published report project metrics table",
+      )
 
       assertTableEquals(
           listOf(
@@ -4198,7 +4362,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = 0,
               ),
           ),
-          "Published report system metrics table")
+          "Published report system metrics table",
+      )
     }
   }
 
@@ -4236,7 +4401,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 remainingQuantity = BigDecimal(0),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 stateId = AccessionState.UsedUp,
-                totalWithdrawnCount = 35),
+                totalWithdrawnCount = 35,
+            ),
             // Weight-based accession
             AccessionsRow(
                 facilityId = facilityId2,
@@ -4292,7 +4458,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 3,
                 totalLost = 100,
                 speciesId = speciesId,
-            ))
+            )
+        )
 
     val batchId2 =
         insertBatch(
@@ -4306,7 +4473,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 2,
                 totalLost = 100,
                 speciesId = otherSpeciesId,
-            ))
+            )
+        )
 
     // Other project
     val otherBatchId =
@@ -4321,7 +4489,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
-            ))
+            )
+        )
 
     // Outside of date range
     val outdatedBatchId =
@@ -4336,12 +4505,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
-            ))
+            )
+        )
 
     val outplantWithdrawalId1 =
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant,
-            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = outplantWithdrawalId1,
@@ -4363,7 +4534,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val outplantWithdrawalId2 =
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant,
-            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = outplantWithdrawalId2,
@@ -4374,7 +4546,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // This includes two species, but does not count towards species planted.
     val futureWithdrawalId =
         insertNurseryWithdrawal(
-            purpose = WithdrawalPurpose.OutPlant, withdrawnDate = reportEndDate.plusDays(1))
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = reportEndDate.plusDays(1),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = futureWithdrawalId,
@@ -4389,7 +4563,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val otherWithdrawalId =
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.Other,
-            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = otherWithdrawalId,
@@ -4408,7 +4583,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val deadWithdrawalId =
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.Dead,
-            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = deadWithdrawalId,
@@ -4424,7 +4600,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val nurseryTransferWithdrawalId =
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.NurseryTransfer,
-            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate),
+        )
     insertBatchWithdrawal(
         batchId = batchId1,
         withdrawalId = nurseryTransferWithdrawalId,
@@ -4592,7 +4769,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingSiteId = plantingSiteId1,
             plantingSiteHistoryId = plantingSiteHistoryId1,
             state = ObservationState.Completed,
-            completedTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+            completedTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4623,7 +4801,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingSiteId = plantingSiteId1,
             plantingSiteHistoryId = plantingSiteHistoryId1,
             state = ObservationState.Completed,
-            completedTime = observationDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+            completedTime = observationDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4663,7 +4842,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingSiteId = plantingSiteId2,
             plantingSiteHistoryId = plantingSiteHistoryId2,
             state = ObservationState.Completed,
-            completedTime = reportStartDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+            completedTime = reportStartDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
     insertObservedSiteSpeciesTotals(
         observationId = site2ObservationId,
         plantingSiteId = plantingSiteId2,
@@ -4682,7 +4862,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             completedTime =
                 getRandomDate(reportStartDate, reportEndDate)
                     .atStartOfDay()
-                    .toInstant(ZoneOffset.UTC))
+                    .toInstant(ZoneOffset.UTC),
+        )
     insertObservedSiteSpeciesTotals(
         observationId = otherSiteObservationId,
         plantingSiteId = plantingSiteId1,

@@ -42,7 +42,8 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
   private val variableValueStore: VariableValueStore by lazy {
     VariableValueStore(
@@ -55,7 +56,8 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         variableSectionValuesDao,
         variableSelectOptionValuesDao,
         variableValuesDao,
-        variableValueTableRowsDao)
+        variableValueTableRowsDao,
+    )
   }
 
   private val stableId = "${UUID.randomUUID()}"
@@ -83,11 +85,15 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 replacesVariableId = oldVariableId,
                 deliverableId = deliverableId,
-                stableId = stableId),
-            minValue = BigDecimal.TEN)
+                stableId = stableId,
+            ),
+            minValue = BigDecimal.TEN,
+        )
 
     assertEquals(
-        emptyList<ValueOperation>(), calculateOperations(mapOf(oldVariableId to newVariableId)))
+        emptyList<ValueOperation>(),
+        calculateOperations(mapOf(oldVariableId to newVariableId)),
+    )
   }
 
   // This just tests that values are converted as part of the upgrade calculations; the conversion
@@ -104,11 +110,14 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Text,
                 replacesVariableId = oldVariableId,
                 deliverableId = deliverableId,
-                stableId = stableId))
+                stableId = stableId,
+            )
+        )
 
     assertEquals(
         listOf(AppendValueOperation(NewTextValue(newValueProps(newVariableId), "1.23456"))),
-        calculateOperations(mapOf(oldVariableId to newVariableId)))
+        calculateOperations(mapOf(oldVariableId to newVariableId)),
+    )
   }
 
   @Test
@@ -119,7 +128,9 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 isList = true,
                 deliverableId = deliverableId,
-                stableId = stableId))
+                stableId = stableId,
+            )
+        )
 
     insertValue(variableId = oldVariableId, listPosition = 0, numberValue = BigDecimal(0))
     insertValue(variableId = oldVariableId, listPosition = 1, numberValue = BigDecimal(1))
@@ -133,22 +144,28 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 isList = true,
                 replacesVariableId = oldVariableId,
                 deliverableId = deliverableId,
-                stableId = stableId),
-            maxValue = BigDecimal.TEN)
+                stableId = stableId,
+            ),
+            maxValue = BigDecimal.TEN,
+        )
 
     assertEquals(
         listOf(
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 0), BigDecimal(0))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 0), BigDecimal(0))
+            ),
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 1), BigDecimal(1))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 1), BigDecimal(1))
+            ),
             // List position is preserved across value conversion, so we expect to skip position 2
             // here; it is ignored by append operations so this won't result in a hole in the final
             // result.
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, listPosition = 3), BigDecimal(3))),
+                NewNumberValue(newValueProps(newVariableId, listPosition = 3), BigDecimal(3))
+            ),
         ),
-        calculateOperations(mapOf(oldVariableId to newVariableId)))
+        calculateOperations(mapOf(oldVariableId to newVariableId)),
+    )
   }
 
   @Test
@@ -170,15 +187,19 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Table,
                 replacesVariableId = oldTableVariableId,
                 deliverableId = deliverableId,
-                stableId = "table-$stableId"))
+                stableId = "table-$stableId",
+            )
+        )
     val newTableUpdatedColumnId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 replacesVariableId = oldTableOutdatedColumnId,
                 deliverableId = deliverableId,
-                stableId = "col2-$stableId"),
-            minValue = BigDecimal.TEN)
+                stableId = "col2-$stableId",
+            ),
+            minValue = BigDecimal.TEN,
+        )
     insertTableColumn(newTableVariableId, newTableUpdatedColumnId)
 
     val oldTableRowId1 = insertValue(variableId = oldTableVariableId, listPosition = 0)
@@ -189,7 +210,8 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         insertValue(
             variableId = oldTableOutdatedColumnId,
             numberValue = BigDecimal(50),
-            citation = "citation")
+            citation = "citation",
+        )
     insertValueTableRow(oldRowVal1Col2, oldTableRowId1)
 
     val oldTableRowId2 = insertValue(variableId = oldTableVariableId, listPosition = 1)
@@ -206,7 +228,10 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
             AppendValueOperation(
                 NewNumberValue(
-                    newValueProps(newTableUpdatedColumnId, citation = "citation"), BigDecimal(50))),
+                    newValueProps(newTableUpdatedColumnId, citation = "citation"),
+                    BigDecimal(50),
+                )
+            ),
             // Empty row because the old one didn't have any values to carry forward.
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
         ),
@@ -214,7 +239,9 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             mapOf(
                 oldTableVariableId to newTableVariableId,
                 oldTableOutdatedColumnId to newTableUpdatedColumnId,
-            )))
+            )
+        ),
+    )
   }
 
   @Test
@@ -230,13 +257,18 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 deliverableId = newDeliverableId,
                 replacesVariableId = oldDeliverableVariableId,
-                stableId = stableId))
+                stableId = stableId,
+            )
+        )
 
     assertEquals(
         listOf(
             AppendValueOperation(
-                NewNumberValue(newValueProps(newDeliverableVariableId), BigDecimal(5)))),
-        calculateOperations(mapOf(oldDeliverableVariableId to newDeliverableVariableId)))
+                NewNumberValue(newValueProps(newDeliverableVariableId), BigDecimal(5))
+            )
+        ),
+        calculateOperations(mapOf(oldDeliverableVariableId to newDeliverableVariableId)),
+    )
   }
 
   @Test
@@ -255,16 +287,21 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 replacesVariableId = oldVariableId,
                 deliverableId = deliverableId,
-                stableId = stableId))
+                stableId = stableId,
+            )
+        )
 
     assertEquals(
         listOf(
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, projectId1), BigDecimal(1))),
+                NewNumberValue(newValueProps(newVariableId, projectId1), BigDecimal(1))
+            ),
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, projectId2), BigDecimal(2))),
+                NewNumberValue(newValueProps(newVariableId, projectId2), BigDecimal(2))
+            ),
         ),
-        calculateOperations(mapOf(oldVariableId to newVariableId)))
+        calculateOperations(mapOf(oldVariableId to newVariableId)),
+    )
   }
 
   @Test
@@ -285,17 +322,22 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 replacesVariableId = oldVariableId,
                 deliverableId = deliverableId,
-                stableId = stableId))
+                stableId = stableId,
+            )
+        )
     insertValue(variableId = newVariableId, projectId = projectId2, numberValue = BigDecimal.ZERO)
 
     assertEquals(
         listOf(
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, projectId1), BigDecimal(1))),
+                NewNumberValue(newValueProps(newVariableId, projectId1), BigDecimal(1))
+            ),
             AppendValueOperation(
-                NewNumberValue(newValueProps(newVariableId, projectId3), BigDecimal(3))),
+                NewNumberValue(newValueProps(newVariableId, projectId3), BigDecimal(3))
+            ),
         ),
-        calculateOperations(mapOf(oldVariableId to newVariableId)))
+        calculateOperations(mapOf(oldVariableId to newVariableId)),
+    )
   }
 
   private fun calculateOperations(replacements: Map<VariableId, VariableId>) =

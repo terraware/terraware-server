@@ -49,7 +49,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = clock.instant,
             name = "name",
         ),
-        internalTagsDao.fetchOneById(tagId))
+        internalTagsDao.fetchOneById(tagId),
+    )
   }
 
   @Test
@@ -85,7 +86,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = clock.instant,
             name = "new name",
         ),
-        internalTagsDao.fetchOneById(tagId))
+        internalTagsDao.fetchOneById(tagId),
+    )
   }
 
   @Test
@@ -119,7 +121,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         listOf(organizationId),
-        store.fetchOrganizationsByTagId(InternalTagIds.Reporter).map { it.id })
+        store.fetchOrganizationsByTagId(InternalTagIds.Reporter).map { it.id },
+    )
   }
 
   @Test
@@ -135,7 +138,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
             organizationId to setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
             otherOrganizationId to setOf(InternalTagIds.Testing),
         ),
-        store.fetchAllOrganizationTagIds())
+        store.fetchAllOrganizationTagIds(),
+    )
   }
 
   @Nested
@@ -154,7 +158,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
               id = organizationIdWithNoTags,
               name = "No Tags",
               createdTime = Instant.EPOCH,
-              totalUsers = 0)
+              totalUsers = 0,
+          )
       val oneTagModel = noTagsModel.copy(id = organizationIdWithOneTag, name = "One Tag")
       val twoTagsModel = noTagsModel.copy(id = organizationIdWithTwoTags, name = "Two Tags")
 
@@ -164,7 +169,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
               oneTagModel to setOf(InternalTagIds.Testing),
               twoTagsModel to setOf(InternalTagIds.Accelerator, InternalTagIds.Reporter),
           ),
-          store.fetchAllOrganizationsWithTagIds())
+          store.fetchAllOrganizationsWithTagIds(),
+      )
     }
 
     @Test
@@ -185,7 +191,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
-        store.fetchTagsByOrganization(organizationId))
+        store.fetchTagsByOrganization(organizationId),
+    )
   }
 
   @Test
@@ -207,7 +214,9 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     clock.instant = newTime
 
     store.updateOrganizationTags(
-        organizationId, setOf(InternalTagIds.Reporter, InternalTagIds.Testing))
+        organizationId,
+        setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
+    )
 
     assertEquals(
         setOf(
@@ -230,7 +239,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
             ),
         ),
-        organizationInternalTagsDao.findAll().toSet())
+        organizationInternalTagsDao.findAll().toSet(),
+    )
   }
 
   @Test

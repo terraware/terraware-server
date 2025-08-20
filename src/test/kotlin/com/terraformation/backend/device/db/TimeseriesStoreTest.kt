@@ -74,7 +74,8 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
             name,
             timeseriesRow.typeId!!,
             timeseriesRow.decimalPlaces,
-            timeseriesRow.units)
+            timeseriesRow.units,
+        )
 
     val actual = store.fetchOneByName(deviceId, name)
     assertEquals(expected, actual)
@@ -259,7 +260,8 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
             TIMESERIES_VALUES,
             TIMESERIES_VALUES.TIMESERIES_ID,
             TIMESERIES_VALUES.CREATED_TIME,
-            TIMESERIES_VALUES.VALUE)
+            TIMESERIES_VALUES.VALUE,
+        )
         .values(timeseriesRow.id, time2, "2")
         .values(timeseriesRow.id, time1, "1")
         .execute()

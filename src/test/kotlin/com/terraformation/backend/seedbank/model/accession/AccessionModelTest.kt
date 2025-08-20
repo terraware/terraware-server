@@ -109,13 +109,14 @@ internal abstract class AccessionModelTest {
 
   protected fun viabilityTestResult(
       recordingDate: LocalDate = january(2),
-      seedsGerminated: Int = 1
+      seedsGerminated: Int = 1,
   ): ViabilityTestResultModel {
     return ViabilityTestResultModel(
         id = nextViabilityTestResultId(),
         recordingDate = recordingDate,
         seedsGerminated = seedsGerminated,
-        testId = viabilityTestId)
+        testId = viabilityTestId,
+    )
   }
 
   protected fun nextWithdrawalId(): WithdrawalId {

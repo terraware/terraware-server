@@ -52,7 +52,10 @@ class FailureReportingService(
 
       if (config.atlassian.enabled) {
         supportService.submitServiceRequest(
-            SupportRequestType.BugReport, "Document upload failed", description)
+            SupportRequestType.BugReport,
+            "Document upload failed",
+            description,
+        )
       } else {
         log.info("Atlassian integration disabled; would file support ticket:\n$description")
       }

@@ -107,8 +107,10 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
           mapOf(
               subzoneId1 to "renamed-sub 1",
               subzoneId2 to "renamed-sub 2",
-              subzoneId3 to "initial 2-sub 3"),
-          plantingSubzonesDao.findAll().associate { it.id to it.fullName })
+              subzoneId3 to "initial 2-sub 3",
+          ),
+          plantingSubzonesDao.findAll().associate { it.id to it.fullName },
+      )
     }
 
     @Test

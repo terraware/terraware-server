@@ -31,34 +31,67 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
         insertViabilityTest(accessionId = accessionId1, notes = "this is Viability Test 1")
     val testId2 =
         insertViabilityTest(
-            accessionId = accessionId2, notes = "This is Viability Test 2 extra stuff")
+            accessionId = accessionId2,
+            notes = "This is Viability Test 2 extra stuff",
+        )
     val testId3 =
         insertViabilityTest(
             accessionId = accessionId1,
-            notes = "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS")
+            notes = "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS",
+        )
     val testId4 =
         insertViabilityTest(accessionId = accessionId2, notes = "THIS IS Viability Test 4")
 
     insertViabilityTestResult(
-        viabilityTestId = testId1, seedsGerminated = 0, recordingDate = epochPlusOne)
+        viabilityTestId = testId1,
+        seedsGerminated = 0,
+        recordingDate = epochPlusOne,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId1, seedsGerminated = 5, recordingDate = epochPlusOne)
+        viabilityTestId = testId1,
+        seedsGerminated = 5,
+        recordingDate = epochPlusOne,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId1, seedsGerminated = 10, recordingDate = epochPlusOne)
+        viabilityTestId = testId1,
+        seedsGerminated = 10,
+        recordingDate = epochPlusOne,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId2, seedsGerminated = 5, recordingDate = epochPlusTwo)
+        viabilityTestId = testId2,
+        seedsGerminated = 5,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId2, seedsGerminated = 10, recordingDate = epochPlusTwo)
+        viabilityTestId = testId2,
+        seedsGerminated = 10,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId2, seedsGerminated = 15, recordingDate = epochPlusTwo)
+        viabilityTestId = testId2,
+        seedsGerminated = 15,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId3, seedsGerminated = 10, recordingDate = epochPlusTwo)
+        viabilityTestId = testId3,
+        seedsGerminated = 10,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId3, seedsGerminated = 15, recordingDate = epochPlusTwo)
+        viabilityTestId = testId3,
+        seedsGerminated = 15,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId3, seedsGerminated = 20, recordingDate = epochPlusTwo)
+        viabilityTestId = testId3,
+        seedsGerminated = 20,
+        recordingDate = epochPlusTwo,
+    )
     insertViabilityTestResult(
-        viabilityTestId = testId4, seedsGerminated = 30, recordingDate = epochPlusOne)
+        viabilityTestId = testId4,
+        seedsGerminated = 30,
+        recordingDate = epochPlusOne,
+    )
   }
 
   @Test
@@ -73,7 +106,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
             criteria = NoConditionNode(),
             sortOrder = sortOrder,
             sublistCriteria =
-                mapOf(bagsPrefix to FieldNode(bagNumberSublistField, listOf("101", "201"))))
+                mapOf(bagsPrefix to FieldNode(bagNumberSublistField, listOf("101", "201"))),
+        )
 
     val expected =
         SearchResults(
@@ -81,12 +115,15 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
-                    "bags" to listOf(mapOf("number" to "101"))),
+                    "bags" to listOf(mapOf("number" to "101")),
+                ),
                 mapOf(
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
-                    "bags" to listOf(mapOf("number" to "201"))),
-            ))
+                    "bags" to listOf(mapOf("number" to "201")),
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -105,7 +142,9 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
             sublistCriteria =
                 mapOf(
                     bagsPrefix to
-                        NotNode(child = FieldNode(bagNumberSublistField, listOf("101", "201")))))
+                        NotNode(child = FieldNode(bagNumberSublistField, listOf("101", "201")))
+                ),
+        )
 
     val expected =
         SearchResults(
@@ -113,12 +152,15 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
-                    "bags" to listOf(mapOf("number" to "102"), mapOf("number" to "103"))),
+                    "bags" to listOf(mapOf("number" to "102"), mapOf("number" to "103")),
+                ),
                 mapOf(
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
-                    "bags" to listOf(mapOf("number" to "202"))),
-            ))
+                    "bags" to listOf(mapOf("number" to "202")),
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -140,13 +182,19 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                         listOf(
                             FieldNode(
                                 rootPrefix.resolve(
-                                    "viabilityTests.viabilityTestResults.seedsGerminated"),
-                                listOf("10")),
+                                    "viabilityTests.viabilityTestResults.seedsGerminated"
+                                ),
+                                listOf("10"),
+                            ),
                             FieldNode(
                                 rootPrefix.resolve(
-                                    "viabilityTests.viabilityTestResults.recordingDate"),
-                                listOf(epochPlusTwo.toString())),
-                        )))
+                                    "viabilityTests.viabilityTestResults.recordingDate"
+                                ),
+                                listOf(epochPlusTwo.toString()),
+                            ),
+                        )
+                )
+        )
 
     val result =
         searchService.search(
@@ -173,9 +221,11 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                         mapOf(
                                             "seedsGerminated" to "10",
                                             "recordingDate" to epochPlusTwo.toString(),
-                                        )),
+                                        )
+                                    ),
                             ),
-                        )),
+                        )
+                ),
                 mapOf(
                     "viabilityTests" to
                         listOf(
@@ -186,13 +236,16 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                         mapOf(
                                             "seedsGerminated" to "10",
                                             "recordingDate" to epochPlusTwo.toString(),
-                                        )),
+                                        )
+                                    ),
                             ),
                             mapOf(
                                 "notes" to "THIS IS Viability Test 4",
                             ),
-                        )),
-            ))
+                        )
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -214,13 +267,19 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                         listOf(
                             FieldNode(
                                 rootPrefix.resolve(
-                                    "viabilityTests.viabilityTestResults.seedsGerminated"),
-                                listOf("10")),
+                                    "viabilityTests.viabilityTestResults.seedsGerminated"
+                                ),
+                                listOf("10"),
+                            ),
                             FieldNode(
                                 rootPrefix.resolve(
-                                    "viabilityTests.viabilityTestResults.recordingDate"),
-                                listOf(epochPlusOne.toString())),
-                        )))
+                                    "viabilityTests.viabilityTestResults.recordingDate"
+                                ),
+                                listOf(epochPlusOne.toString()),
+                            ),
+                        )
+                )
+        )
 
     val result =
         searchService.search(
@@ -252,7 +311,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                             "seedsGerminated" to "10",
                                             "recordingDate" to epochPlusOne.toString(),
                                         ),
-                                    )),
+                                    ),
+                            ),
                             mapOf(
                                 "notes" to
                                     "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS",
@@ -261,9 +321,11 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                         mapOf(
                                             "seedsGerminated" to "10",
                                             "recordingDate" to epochPlusTwo.toString(),
-                                        )),
+                                        )
+                                    ),
                             ),
-                        )),
+                        )
+                ),
                 mapOf(
                     "viabilityTests" to
                         listOf(
@@ -274,7 +336,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                         mapOf(
                                             "seedsGerminated" to "10",
                                             "recordingDate" to epochPlusTwo.toString(),
-                                        )),
+                                        )
+                                    ),
                             ),
                             mapOf(
                                 "notes" to "THIS IS Viability Test 4",
@@ -283,10 +346,13 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                         mapOf(
                                             "seedsGerminated" to "30",
                                             "recordingDate" to epochPlusOne.toString(),
-                                        )),
+                                        )
+                                    ),
                             ),
-                        )),
-            ))
+                        )
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -307,14 +373,20 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                         listOf(
                             FieldNode(
                                 rootPrefix.resolve(
-                                    "viabilityTests.viabilityTestResults.seedsGerminated"),
-                                listOf("10")),
+                                    "viabilityTests.viabilityTestResults.seedsGerminated"
+                                ),
+                                listOf("10"),
+                            ),
                             FieldNode(
                                 rootPrefix.resolve(
                                     // recordingDate is not in list of fields
-                                    "viabilityTests.viabilityTestResults.recordingDate"),
-                                listOf(epochPlusTwo.toString())),
-                        )))
+                                    "viabilityTests.viabilityTestResults.recordingDate"
+                                ),
+                                listOf(epochPlusTwo.toString()),
+                            ),
+                        )
+                )
+        )
 
     val result =
         searchService.search(
@@ -338,7 +410,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                     "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS",
                                 "viabilityTestResults" to listOf(mapOf("seedsGerminated" to "10")),
                             ),
-                        )),
+                        )
+                ),
                 mapOf(
                     "viabilityTests" to
                         listOf(
@@ -349,8 +422,10 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                             mapOf(
                                 "notes" to "THIS IS Viability Test 4",
                             ),
-                        )),
-            ))
+                        )
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -368,7 +443,9 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
             rootPrefix.relativeSublistPrefix("viabilityTests.viabilityTestResults")!! to
                 FieldNode(
                     rootPrefix.resolve("viabilityTests.viabilityTestResults.seedsGerminated"),
-                    listOf("10")))
+                    listOf("10"),
+                )
+        )
 
     val result =
         searchService.search(
@@ -393,7 +470,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                     "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS",
                                 "viabilityTestResults" to listOf(mapOf("seedsGerminated" to "10")),
                             ),
-                        )),
+                        )
+                ),
                 mapOf(
                     "viabilityTests" to
                         listOf(
@@ -404,8 +482,10 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                             mapOf(
                                 "notes" to "THIS IS Viability Test 4",
                             ),
-                        )),
-            ))
+                        )
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -423,16 +503,16 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
     val sublistCriteria =
         mapOf(
             prefix.relativeSublistPrefix("viabilityTestResults")!! to
-                FieldNode(prefix.resolve("viabilityTestResults.seedsGerminated"), listOf("10")))
+                FieldNode(prefix.resolve("viabilityTestResults.seedsGerminated"), listOf("10"))
+        )
 
     val result =
         searchService.search(
             prefix,
             fields,
             mapOf(
-                prefix to
-                    FieldNode(prefix.resolve("accession.facility.id"), listOf("$facilityId"))) +
-                sublistCriteria,
+                prefix to FieldNode(prefix.resolve("accession.facility.id"), listOf("$facilityId"))
+            ) + sublistCriteria,
             sortOrder,
         )
 
@@ -473,7 +553,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                 FieldNode(
                     rootPrefix.resolve("viabilityTests.notes"),
                     listOf("extra stuff"),
-                    type = SearchFilterType.PhraseMatch),
+                    type = SearchFilterType.PhraseMatch,
+                ),
         )
 
     val result =
@@ -493,7 +574,8 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                             mapOf(
                                 "notes" to "This is Viability Test 2 extra stuff",
                             ),
-                        )),
+                        )
+                ),
                 mapOf(
                     "viabilityTests" to
                         listOf(
@@ -501,8 +583,10 @@ internal class SearchServiceSublistSearchTest : SearchServiceTest() {
                                 "notes" to
                                     "this IS Viability Test 3 EXTRA STUFF AND THINGS AND WORDS",
                             ),
-                        )),
-            ))
+                        )
+                ),
+            )
+        )
 
     assertEquals(expected, result)
   }

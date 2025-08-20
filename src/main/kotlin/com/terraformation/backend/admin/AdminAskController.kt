@@ -28,7 +28,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Controller
 @RequestMapping("/admin/ask")
 @RequireGlobalRole(
-    [GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly])
+    [GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly]
+)
 @Validated
 class AdminAskController(
     private val chatService: ChatService,
@@ -56,7 +57,7 @@ class AdminAskController(
   fun getProjectChat(
       @PathVariable projectId: ProjectId,
       model: Model,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val project = projectStore.fetchOneById(projectId)
@@ -84,7 +85,7 @@ class AdminAskController(
       query: String,
       conversationId: String,
       showVariables: String?,
-      model: Model
+      model: Model,
   ): String {
     model.addAttribute("conversationId", conversationId)
     model.addAttribute("projectId", projectId)
@@ -112,7 +113,7 @@ class AdminAskController(
   @PostMapping("/prepare")
   fun prepareProject(
       @RequestParam projectId: ProjectId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       systemUser.run { embeddingService.embedProjectData(projectId) }

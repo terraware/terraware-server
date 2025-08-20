@@ -18,7 +18,8 @@ class LoginController {
       responseCode = "302",
       description =
           "Redirects to a login page. After login, the user will be redirected back to the URL " +
-              "specified in the \"redirect\" parameter.")
+              "specified in the \"redirect\" parameter.",
+  )
   @GetMapping("/api/v1/login")
   @Operation(
       summary = "Redirects to a login page.",
@@ -29,13 +30,15 @@ class LoginController {
               "the application. One approach is to use this in error response handlers: if an " +
               "API request returns HTTP 401 Unauthorized, set location.href to this endpoint " +
               "and set \"redirect\" to the URL of the page the user was on so they'll return " +
-              "there after logging in.")
+              "there after logging in.",
+  )
   fun login(
       @QueryParam("redirect")
       @Schema(
           description =
               "URL to redirect to after login. The list of valid redirect URLs is restricted; " +
-                  "this must be the URL of a Terraware web application.")
+                  "this must be the URL of a Terraware web application."
+      )
       redirect: URI,
       request: HttpServletRequest,
       response: HttpServletResponse,

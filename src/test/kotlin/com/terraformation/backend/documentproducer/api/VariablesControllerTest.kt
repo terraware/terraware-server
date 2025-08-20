@@ -49,8 +49,12 @@ class VariablesControllerTest : ControllerIntegrationTest() {
           insertNumberVariable(
               id =
                   insertVariable(
-                      name = "Number Variable", stableId = "1", type = VariableType.Number),
-              maxValue = BigDecimal(10))
+                      name = "Number Variable",
+                      stableId = "1",
+                      type = VariableType.Number,
+                  ),
+              maxValue = BigDecimal(10),
+          )
 
       val parentSectionVariableId =
           insertVariableManifestEntry(
@@ -61,8 +65,11 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           insertVariable(
                               name = "Parent section",
                               stableId = "100",
-                              type = VariableType.Section)),
-              position = 1)
+                              type = VariableType.Section,
+                          )
+                  ),
+              position = 1,
+          )
       val childSectionVariableId =
           insertVariableManifestEntry(
               manifestId = manifestId1,
@@ -72,18 +79,25 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           insertVariable(
                               name = "Child section",
                               stableId = "101",
-                              type = VariableType.Section),
+                              type = VariableType.Section,
+                          ),
                       parentId = parentSectionVariableId,
-                      renderHeading = false),
-              position = 2)
+                      renderHeading = false,
+                  ),
+              position = 2,
+          )
 
       // The variable is injected into the section along with some text
       insertSectionValue(
-          variableId = childSectionVariableId, listPosition = 0, textValue = "Section text")
+          variableId = childSectionVariableId,
+          listPosition = 0,
+          textValue = "Section text",
+      )
       insertSectionValue(
           variableId = childSectionVariableId,
           listPosition = 1,
-          usedVariableId = variableIdOutdated)
+          usedVariableId = variableIdOutdated,
+      )
 
       // Variable is updated at some point
       insertNumberVariable(
@@ -92,8 +106,10 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   name = "Number Variable",
                   replacesVariableId = variableIdOutdated,
                   stableId = "1",
-                  type = VariableType.Number),
-          maxValue = BigDecimal(5))
+                  type = VariableType.Number,
+              ),
+          maxValue = BigDecimal(5),
+      )
 
       mockMvc
           .get(path(documentId))
@@ -143,7 +159,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -157,12 +174,14 @@ class VariablesControllerTest : ControllerIntegrationTest() {
           insertVariable(
               deliverableQuestion = "Date Question",
               name = "Date Variable",
-              type = VariableType.Date)
+              type = VariableType.Date,
+          )
       val variableId2 =
           insertVariable(
               deliverableQuestion = "Link Question",
               name = "Link Variable",
-              type = VariableType.Link)
+              type = VariableType.Link,
+          )
 
       insertVariableManifestEntry(manifestId = manifestId1, variableId = variableId1, position = 0)
       insertVariableManifestEntry(manifestId = manifestId2, variableId = variableId2, position = 0)
@@ -188,7 +207,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -208,12 +228,19 @@ class VariablesControllerTest : ControllerIntegrationTest() {
               deliverableQuestion = "Link Question",
               internalOnly = false,
               name = "Link Variable",
-              type = VariableType.Link)
+              type = VariableType.Link,
+          )
 
       insertVariableManifestEntry(
-          manifestId = manifestId, variableId = internalVariableId, position = 0)
+          manifestId = manifestId,
+          variableId = internalVariableId,
+          position = 0,
+      )
       insertVariableManifestEntry(
-          manifestId = manifestId, variableId = externalVariableId, position = 1)
+          manifestId = manifestId,
+          variableId = externalVariableId,
+          position = 1,
+      )
 
       mockMvc
           .get(path(documentId))
@@ -236,7 +263,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
 
       insertUserGlobalRole(userId = user.userId, role = GlobalRole.ReadOnly)
 
@@ -272,7 +300,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -280,10 +309,13 @@ class VariablesControllerTest : ControllerIntegrationTest() {
       val sectionVariableId =
           insertVariableManifestEntry(
               insertSectionVariable(
-                  id = insertVariable(name = "Section Variable", type = VariableType.Section)))
+                  id = insertVariable(name = "Section Variable", type = VariableType.Section)
+              )
+          )
       val dateVariableId =
           insertVariableManifestEntry(
-              insertVariable(name = "Date Variable", type = VariableType.Date))
+              insertVariable(name = "Date Variable", type = VariableType.Date)
+          )
 
       insertSectionRecommendation(sectionId = sectionVariableId, recommendedId = dateVariableId)
 
@@ -321,7 +353,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -333,7 +366,9 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   isList = true,
                   isRequired = true,
                   name = "A date",
-                  description = "A description"))
+                  description = "A description",
+              )
+          )
       val imageVariableId =
           insertVariableManifestEntry(insertVariable(type = VariableType.Image, name = "An image"))
       val linkVariableId =
@@ -344,47 +379,64 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   id = insertVariable(type = VariableType.Number, name = "A number"),
                   decimalPlaces = 1,
                   minValue = BigDecimal.TWO,
-                  maxValue = BigDecimal.TEN))
+                  maxValue = BigDecimal.TEN,
+              )
+          )
       val parentSectionVariableId =
           insertVariableManifestEntry(
               insertSectionVariable(
-                  id = insertVariable(type = VariableType.Section, name = "Parent section")))
+                  id = insertVariable(type = VariableType.Section, name = "Parent section")
+              )
+          )
       val childSectionVariableId =
           insertVariableManifestEntry(
               insertSectionVariable(
                   id = insertVariable(type = VariableType.Section, name = "Child section"),
                   parentId = parentSectionVariableId,
-                  renderHeading = false))
+                  renderHeading = false,
+              )
+          )
       val selectVariableId =
           insertVariableManifestEntry(
               insertSelectVariable(
                   id = insertVariable(type = VariableType.Select, name = "A select"),
-                  isMultiple = true))
+                  isMultiple = true,
+              )
+          )
       val optionId1 =
           insertSelectOption(
               selectVariableId,
               "Option 1",
               description = "Description 1",
-              renderedText = "Rendered 1")
+              renderedText = "Rendered 1",
+          )
       val optionId2 = insertSelectOption(selectVariableId, "Option 2")
       val tableVariableId =
           insertVariableManifestEntry(
-              insertTableVariable(id = insertVariable(type = VariableType.Table, name = "A table")))
+              insertTableVariable(id = insertVariable(type = VariableType.Table, name = "A table"))
+          )
       val columnId1 =
           insertTableColumn(
               tableVariableId,
               insertVariableManifestEntry(
-                  insertVariable(name = "Column 1", type = VariableType.Date)),
-              isHeader = true)
+                  insertVariable(name = "Column 1", type = VariableType.Date)
+              ),
+              isHeader = true,
+          )
       val columnId2 =
           insertVariableManifestEntry(
               insertTableColumn(
-                  tableVariableId, insertVariable(name = "Column 2", type = VariableType.Link)))
+                  tableVariableId,
+                  insertVariable(name = "Column 2", type = VariableType.Link),
+              )
+          )
       val textVariableId =
           insertVariableManifestEntry(
               insertTextVariable(
                   id = insertVariable(type = VariableType.Text, name = "A paragraph"),
-                  textType = VariableTextType.MultiLine))
+                  textType = VariableTextType.MultiLine,
+              )
+          )
 
       mockMvc
           .get(path())
@@ -540,7 +592,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -557,7 +610,11 @@ class VariablesControllerTest : ControllerIntegrationTest() {
       val internalVariableId =
           insertTextVariable(
               insertVariable(
-                  internalOnly = true, stableId = "$stableIdPrefix-3", type = VariableType.Text))
+                  internalOnly = true,
+                  stableId = "$stableIdPrefix-3",
+                  type = VariableType.Text,
+              )
+          )
 
       // Additional variable in deliverable, but we won't request it.
       insertTextVariable(deliverableId = deliverableId, stableId = "$stableIdPrefix-4")
@@ -572,7 +629,10 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           externalVariableId2,
                           // Specify the same variable twice; should only be returned once.
                           externalVariableId2,
-                          internalVariableId)))
+                          internalVariableId,
+                      ),
+              )
+          )
           .andExpectJson(
               """
                 {
@@ -605,7 +665,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
 
     @Test
@@ -621,7 +682,11 @@ class VariablesControllerTest : ControllerIntegrationTest() {
       // Internal-only variable shouldn't be returned because user doesn't have permission.
       insertTextVariable(
           insertVariable(
-              internalOnly = true, stableId = "$stableIdPrefix-3", type = VariableType.Text))
+              internalOnly = true,
+              stableId = "$stableIdPrefix-3",
+              type = VariableType.Text,
+          )
+      )
 
       // Additional variable in deliverable, but we won't request it.
       insertTextVariable(deliverableId = deliverableId, stableId = "$stableIdPrefix-4")
@@ -637,7 +702,9 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           // Specify the same variable twice; should only be returned once.
                           "$stableIdPrefix-2",
                           "$stableIdPrefix-3",
-                      )))
+                      ),
+              )
+          )
           .andExpectJson(
               """
                 {
@@ -670,7 +737,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                 }
               """
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
   }
 }

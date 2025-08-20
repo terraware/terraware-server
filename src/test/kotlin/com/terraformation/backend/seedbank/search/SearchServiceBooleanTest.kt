@@ -27,7 +27,9 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "$speciesId1", "rare" to "false".toGibberish()),
-                mapOf("id" to "$speciesId2", "rare" to "true".toGibberish())))
+                mapOf("id" to "$speciesId2", "rare" to "true".toGibberish()),
+            )
+        )
 
     assertEquals(expected, result)
   }

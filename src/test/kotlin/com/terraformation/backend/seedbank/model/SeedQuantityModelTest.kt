@@ -35,12 +35,16 @@ internal class SeedQuantityModelTest {
                     SeedQuantityModel(BigDecimal("4535920"), SeedQuantityUnits.Milligrams),
                     SeedQuantityModel(BigDecimal("10"), SeedQuantityUnits.Pounds),
                     SeedQuantityModel(BigDecimal("160"), SeedQuantityUnits.Ounces),
-                ))
+                ),
+        )
 
     cases.forEach { (original, conversions) ->
       conversions.forEach { expected ->
         assertEquals(
-            expected, original.toUnits(expected.units), "${original.units} to ${expected.units}")
+            expected,
+            original.toUnits(expected.units),
+            "${original.units} to ${expected.units}",
+        )
       }
     }
   }
@@ -121,6 +125,7 @@ internal class SeedQuantityModelTest {
     assertEquals(
         SeedQuantityModel(BigDecimal("0.2"), SeedQuantityUnits.Grams),
         multiplied,
-        "Multiplication result")
+        "Multiplication result",
+    )
   }
 }

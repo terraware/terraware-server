@@ -55,7 +55,8 @@ class BiomassPayloadsTest {
                               isDead = false,
                               pointOfMeasurement = BigDecimal(1.3),
                           ),
-                      )),
+                      ),
+              ),
               NewTreeWithTrunksPayload(
                   gpsCoordinates = point(3),
                   speciesId = SpeciesId(5),
@@ -75,7 +76,9 @@ class BiomassPayloadsTest {
                               height = BigDecimal(9),
                               isDead = false,
                               pointOfMeasurement = BigDecimal(1.3),
-                          ))),
+                          ),
+                      ),
+              ),
           )
 
       val actual = treeList.flatMapIndexed { index, tree -> tree.toTreeModels(index + 1) }
@@ -173,7 +176,9 @@ class BiomassPayloadsTest {
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 40,
                                           speciesId = SpeciesId(1),
-                                      ))),
+                                      )
+                                  ),
+                          ),
                       ObservationPlotPosition.NorthwestCorner to
                           BiomassQuadratModel(
                               description = "NW description",
@@ -187,7 +192,8 @@ class BiomassPayloadsTest {
                                           abundancePercent = 5,
                                           speciesName = "Herbaceous species",
                                       ),
-                                  )),
+                                  ),
+                          ),
                       ObservationPlotPosition.SoutheastCorner to
                           BiomassQuadratModel(
                               description = "SE description",
@@ -196,7 +202,9 @@ class BiomassPayloadsTest {
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 90,
                                           speciesId = SpeciesId(1),
-                                      ))),
+                                      )
+                                  ),
+                          ),
                       ObservationPlotPosition.SouthwestCorner to
                           BiomassQuadratModel(
                               description = "SW description",
@@ -299,7 +307,8 @@ class BiomassPayloadsTest {
                           treeGrowthForm = TreeGrowthForm.Trunk,
                           treeNumber = 3,
                           trunkNumber = 2,
-                      )),
+                      ),
+                  ),
           )
 
       val expected =
@@ -330,7 +339,8 @@ class BiomassPayloadsTest {
                       ExistingBiomassQuadratPayload(
                           description = "SW description",
                           position = ObservationPlotPosition.SouthwestCorner,
-                          species = emptyList()),
+                          species = emptyList(),
+                      ),
                       ExistingBiomassQuadratPayload(
                           description = "SE description",
                           position = ObservationPlotPosition.SoutheastCorner,
@@ -343,7 +353,8 @@ class BiomassPayloadsTest {
                                       speciesId = SpeciesId(1),
                                       speciesName = null,
                                   ),
-                              )),
+                              ),
+                      ),
                       ExistingBiomassQuadratPayload(
                           description = "NE description",
                           position = ObservationPlotPosition.NortheastCorner,
@@ -356,7 +367,8 @@ class BiomassPayloadsTest {
                                       speciesId = SpeciesId(1),
                                       speciesName = null,
                                   ),
-                              )),
+                              ),
+                      ),
                       ExistingBiomassQuadratPayload(
                           description = "NW description",
                           position = ObservationPlotPosition.NorthwestCorner,
@@ -376,7 +388,8 @@ class BiomassPayloadsTest {
                                       speciesId = null,
                                       speciesName = "Herbaceous species",
                                   ),
-                              )),
+                              ),
+                      ),
                   ),
               salinity = null,
               smallTreeCountLow = 0,
@@ -450,7 +463,8 @@ class BiomassPayloadsTest {
                           treeGrowthForm = TreeGrowthForm.Trunk,
                           treeNumber = 3,
                           trunkNumber = 2,
-                      )),
+                      ),
+                  ),
               waterDepth = null,
           )
 
@@ -458,7 +472,8 @@ class BiomassPayloadsTest {
       assertEquals(
           expected.copy(quadrats = emptyList()),
           actual.copy(quadrats = emptyList()),
-          "Payload without quadrats")
+          "Payload without quadrats",
+      )
 
       assertEquals(expected.quadrats.toSet(), actual.quadrats.toSet(), "Payload quadrats")
     }

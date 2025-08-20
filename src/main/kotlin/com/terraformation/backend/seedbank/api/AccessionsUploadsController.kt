@@ -41,12 +41,14 @@ class AccessionsUploadsController(
       description =
           "The file has been successfully received. It will be processed asynchronously; use " +
               "the ID returned in the response payload to poll for its status using the " +
-              "`/api/v2/seedbank/accessions/uploads/{uploadId}` GET endpoint.")
+              "`/api/v2/seedbank/accessions/uploads/{uploadId}` GET endpoint.",
+  )
   @Operation(
       summary = "Uploads a list of accessions to add to the facility.",
       description =
           "The uploaded file must be in CSV format. A template with the correct headers may be " +
-              "downloaded from the `/api/v2/seedbank/accessions/uploads/template` endpoint.")
+              "downloaded from the `/api/v2/seedbank/accessions/uploads/template` endpoint.",
+  )
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
@@ -68,7 +70,8 @@ class AccessionsUploadsController(
   @GetMapping("/template")
   @Operation(
       summary =
-          "Gets a template file that contains the required header row for accessions list uploads.")
+          "Gets a template file that contains the required header row for accessions list uploads."
+  )
   @Produces("text/csv")
   fun getAccessionsListUploadTemplate(): ResponseEntity<ByteArray> {
     val body = accessionImporter.getCsvTemplate()
@@ -78,7 +81,8 @@ class AccessionsUploadsController(
   @GetMapping("/{uploadId}")
   @Operation(
       summary = "Gets the status of an accessions list uploaded previously.",
-      description = "Clients may poll this endpoint to monitor the progress of the file.")
+      description = "Clients may poll this endpoint to monitor the progress of the file.",
+  )
   fun getAccessionsListUploadStatus(
       @PathVariable uploadId: UploadId
   ): GetUploadStatusResponsePayload {
@@ -91,11 +95,12 @@ class AccessionsUploadsController(
   @Operation(
       summary = "Resolves the problems with an accessions list that is awaiting user action.",
       description =
-          "This may only be called if the status of the upload is \"Awaiting User Action\".")
+          "This may only be called if the status of the upload is \"Awaiting User Action\".",
+  )
   @PostMapping("/{uploadId}/resolve")
   fun resolveAccessionsListUpload(
       @PathVariable uploadId: UploadId,
-      @RequestBody payload: ResolveUploadRequestPayload
+      @RequestBody payload: ResolveUploadRequestPayload,
   ): SimpleSuccessResponsePayload {
     accessionImporter.resolveWarnings(uploadId, payload.overwriteExisting)
     return SimpleSuccessResponsePayload()
@@ -107,7 +112,8 @@ class AccessionsUploadsController(
   @Operation(
       summary = "Deletes an accessions list upload that is awaiting user action.",
       description =
-          "This may only be called if the status of the upload is \"Awaiting User Action\".")
+          "This may only be called if the status of the upload is \"Awaiting User Action\".",
+  )
   fun deleteAccessionsListUpload(@PathVariable uploadId: UploadId): SimpleSuccessResponsePayload {
     accessionImporter.cancelProcessing(uploadId)
     return SimpleSuccessResponsePayload()

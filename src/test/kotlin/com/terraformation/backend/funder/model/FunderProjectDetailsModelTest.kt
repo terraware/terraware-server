@@ -46,7 +46,8 @@ class FunderProjectDetailsModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Mangroves to BigDecimal(1001),
-                    LandUseModelType.Silvopasture to BigDecimal(2002)),
+                    LandUseModelType.Silvopasture to BigDecimal(2002),
+                ),
             maxCarbonAccumulation = BigDecimal(5),
             methodologyNumber = "methodologyNumber",
             minCarbonAccumulation = BigDecimal(4),
@@ -65,7 +66,8 @@ class FunderProjectDetailsModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.AffordableEnergy,
-                    SustainableDevelopmentGoal.ClimateAction),
+                    SustainableDevelopmentGoal.ClimateAction,
+                ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
             totalCarbon = BigDecimal(9),
@@ -88,7 +90,8 @@ class FunderProjectDetailsModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Mangroves to BigDecimal(1001),
-                    LandUseModelType.Silvopasture to BigDecimal(2002)),
+                    LandUseModelType.Silvopasture to BigDecimal(2002),
+                ),
             methodologyNumber = "methodologyNumber",
             minProjectArea = BigDecimal(22),
             numNativeSpecies = 1,
@@ -100,13 +103,15 @@ class FunderProjectDetailsModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.AffordableEnergy,
-                    SustainableDevelopmentGoal.ClimateAction),
+                    SustainableDevelopmentGoal.ClimateAction,
+                ),
             standard = "standard",
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),
             verraLink = URI("https://verraLink"),
         ),
-        FunderProjectDetailsModel.of(projectAcceleratorDetailsModel))
+        FunderProjectDetailsModel.of(projectAcceleratorDetailsModel),
+    )
   }
 
   @Test
@@ -134,7 +139,8 @@ class FunderProjectDetailsModelTest {
                 verraLink = "https://verraLink",
                 publishedBy = UserId(2),
                 publishedTime = Instant.EPOCH,
-            ))
+            )
+        )
     val sdgList =
         setOf(SustainableDevelopmentGoal.CleanWater, SustainableDevelopmentGoal.ClimateAction)
     val carbonCerts = setOf(CarbonCertification.CcbVerraStandard)
@@ -165,6 +171,7 @@ class FunderProjectDetailsModelTest {
             landUseModelTypes = landUsages.keys,
             landUseModelHectares = landUsages,
         ),
-        FunderProjectDetailsModel.of(record, carbonCerts, sdgList, landUsages))
+        FunderProjectDetailsModel.of(record, carbonCerts, sdgList, landUsages),
+    )
   }
 }

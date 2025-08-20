@@ -17,5 +17,6 @@ class DocumentTemplatesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", DOCUMENT_TEMPLATES.ID) { DocumentTemplateId(it) },
-          textField("name", DOCUMENT_TEMPLATES.NAME))
+          textField("name", DOCUMENT_TEMPLATES.NAME),
+      )
 }

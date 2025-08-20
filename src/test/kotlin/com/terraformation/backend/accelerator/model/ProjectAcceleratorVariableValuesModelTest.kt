@@ -30,7 +30,8 @@ class ProjectAcceleratorVariableValuesModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Monoculture to BigDecimal(101),
-                    LandUseModelType.NativeForest to BigDecimal(102)),
+                    LandUseModelType.NativeForest to BigDecimal(102),
+                ),
             maxCarbonAccumulation = BigDecimal(5),
             methodologyNumber = "methodologyNumber",
             minCarbonAccumulation = BigDecimal(4),
@@ -45,14 +46,16 @@ class ProjectAcceleratorVariableValuesModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.LifeBelowWater,
-                    SustainableDevelopmentGoal.DecentWork),
+                    SustainableDevelopmentGoal.DecentWork,
+                ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
             totalCarbon = BigDecimal(9),
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),
             verraLink = URI("https://verraLink"),
-            whatNeedsToBeTrue = null)
+            whatNeedsToBeTrue = null,
+        )
 
     assertEquals(
         ProjectAcceleratorDetailsModel(
@@ -77,7 +80,8 @@ class ProjectAcceleratorVariableValuesModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.NativeForest to BigDecimal(102),
-                    LandUseModelType.Monoculture to BigDecimal(101)),
+                    LandUseModelType.Monoculture to BigDecimal(101),
+                ),
             maxCarbonAccumulation = BigDecimal(5),
             methodologyNumber = "methodologyNumber",
             minCarbonAccumulation = BigDecimal(4),
@@ -94,7 +98,8 @@ class ProjectAcceleratorVariableValuesModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.DecentWork,
-                    SustainableDevelopmentGoal.LifeBelowWater),
+                    SustainableDevelopmentGoal.LifeBelowWater,
+                ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
             projectLead = null,
@@ -102,7 +107,9 @@ class ProjectAcceleratorVariableValuesModelTest {
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),
             verraLink = URI("https://verraLink"),
-            whatNeedsToBeTrue = null),
-        values.toProjectAcceleratorDetails())
+            whatNeedsToBeTrue = null,
+        ),
+        values.toProjectAcceleratorDetails(),
+    )
   }
 }

@@ -97,7 +97,9 @@ class AccessionStore(
                   .on(BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID))
                   .join(DELIVERIES)
                   .on(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(DELIVERIES.WITHDRAWAL_ID))
-                  .where(BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID))))
+                  .where(BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID))
+          )
+      )
 
   fun fetchOneById(accessionId: AccessionId): AccessionModel {
     requirePermissions { readAccession(accessionId) }
@@ -109,7 +111,8 @@ class AccessionStore(
   fun fetchOneByNumber(facilityId: FacilityId, accessionNumber: String): AccessionModel? {
     val model =
         fetchOneByCondition(
-            ACCESSIONS.FACILITY_ID.eq(facilityId).and(ACCESSIONS.NUMBER.eq(accessionNumber)))
+            ACCESSIONS.FACILITY_ID.eq(facilityId).and(ACCESSIONS.NUMBER.eq(accessionNumber))
+        )
 
     return if (model?.id != null && currentUser().canReadAccession(model.id)) {
       model
@@ -205,7 +208,9 @@ class AccessionStore(
           totalWithdrawnCount = record[TOTAL_WITHDRAWN_COUNT],
           totalWithdrawnWeight =
               SeedQuantityModel.of(
-                  record[TOTAL_WITHDRAWN_WEIGHT_QUANTITY], record[TOTAL_WITHDRAWN_WEIGHT_UNITS_ID]),
+                  record[TOTAL_WITHDRAWN_WEIGHT_QUANTITY],
+                  record[TOTAL_WITHDRAWN_WEIGHT_UNITS_ID],
+              ),
           viabilityTests = record[viabilityTestsField],
           withdrawals = record[withdrawalsField],
           clock = getClock(record[ID]!!),
@@ -237,8 +242,10 @@ class AccessionStore(
       accession.speciesId?.let { readSpecies(it) }
     }
 
-    if (accession.state == AccessionState.UsedUp &&
-        (accession.remaining == null || accession.remaining.quantity.signum() != 0)) {
+    if (
+        accession.state == AccessionState.UsedUp &&
+            (accession.remaining == null || accession.remaining.quantity.signum() != 0)
+    ) {
       throw IllegalArgumentException("Quantity must be zero if state is UsedUp")
     }
 
@@ -246,8 +253,10 @@ class AccessionStore(
       throw FacilityTypeMismatchException(facilityId, FacilityType.SeedBank)
     }
 
-    if (accession.projectId != null &&
-        organizationId != parentStore.getOrganizationId(accession.projectId)) {
+    if (
+        accession.projectId != null &&
+            organizationId != parentStore.getOrganizationId(accession.projectId)
+    ) {
       throw ProjectInDifferentOrganizationException()
     }
 
@@ -257,7 +266,10 @@ class AccessionStore(
       val accessionNumber =
           accession.accessionNumber
               ?: identifierGenerator.generateTextIdentifier(
-                  organizationId, IdentifierType.ACCESSION, facility.facilityNumber!!)
+                  organizationId,
+                  IdentifierType.ACCESSION,
+                  facility.facilityNumber!!,
+              )
 
       try {
         val accessionId =
@@ -271,7 +283,8 @@ class AccessionStore(
                         .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
                         .set(
                             COLLECTION_SITE_COUNTRY_SUBDIVISION,
-                            accession.collectionSiteCountrySubdivision)
+                            accession.collectionSiteCountrySubdivision,
+                        )
                         .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
                         .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
                         .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
@@ -281,7 +294,8 @@ class AccessionStore(
                         .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
                         .set(
                             EST_SEED_COUNT,
-                            accession.calculateEstimatedSeedCount(accession.remaining))
+                            accession.calculateEstimatedSeedCount(accession.remaining),
+                        )
                         .set(EST_WEIGHT_GRAMS, estimatedWeight?.grams)
                         .set(EST_WEIGHT_QUANTITY, estimatedWeight?.quantity)
                         .set(EST_WEIGHT_UNITS_ID, estimatedWeight?.units)
@@ -334,7 +348,10 @@ class AccessionStore(
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
               viabilityTestStore.updateViabilityTests(
-                  accessionId, emptyList(), accession.viabilityTests)
+                  accessionId,
+                  emptyList(),
+                  accession.viabilityTests,
+              )
               withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
 
               accessionId
@@ -369,8 +386,10 @@ class AccessionStore(
       throw IllegalArgumentException("State must be v2-compatible")
     }
 
-    if (facilityId != existingFacilityId &&
-        organizationId != parentStore.getOrganizationId(existingFacilityId)) {
+    if (
+        facilityId != existingFacilityId &&
+            organizationId != parentStore.getOrganizationId(existingFacilityId)
+    ) {
       throw FacilityNotFoundException(facilityId)
     }
 
@@ -384,8 +403,10 @@ class AccessionStore(
       updated.speciesId?.let { readSpecies(it) }
     }
 
-    if (updated.projectId != null &&
-        organizationId != parentStore.getOrganizationId(updated.projectId)) {
+    if (
+        updated.projectId != null &&
+            organizationId != parentStore.getOrganizationId(updated.projectId)
+    ) {
       throw ProjectInDifferentOrganizationException()
     }
 
@@ -419,7 +440,10 @@ class AccessionStore(
 
       bagStore.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
       geolocationStore.updateGeolocations(
-          accessionId, existing.geolocations, accession.geolocations)
+          accessionId,
+          existing.geolocations,
+          accession.geolocations,
+      )
       viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
@@ -434,7 +458,9 @@ class AccessionStore(
                 .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                 .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
                 .set(
-                    COLLECTION_SITE_COUNTRY_SUBDIVISION, accession.collectionSiteCountrySubdivision)
+                    COLLECTION_SITE_COUNTRY_SUBDIVISION,
+                    accession.collectionSiteCountrySubdivision,
+                )
                 .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
                 .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
                 .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
@@ -479,11 +505,14 @@ class AccessionStore(
         throw DataAccessException("Unable to update accession $accessionId")
       }
 
-      if (accession.speciesId != null &&
-          existing.speciesId != null &&
-          accession.speciesId != existing.speciesId) {
+      if (
+          accession.speciesId != null &&
+              existing.speciesId != null &&
+              accession.speciesId != existing.speciesId
+      ) {
         eventPublisher.publishEvent(
-            AccessionSpeciesChangedEvent(accessionId, existing.speciesId, accession.speciesId))
+            AccessionSpeciesChangedEvent(accessionId, existing.speciesId, accession.speciesId)
+        )
       }
     }
   }
@@ -523,7 +552,8 @@ class AccessionStore(
             ACCESSION_STATE_HISTORY.UPDATED_BY,
             ACCESSION_STATE_HISTORY.UPDATED_TIME,
             USERS.FIRST_NAME,
-            USERS.LAST_NAME)
+            USERS.LAST_NAME,
+        )
         .from(ACCESSION_STATE_HISTORY)
         .join(USERS)
         .on(ACCESSION_STATE_HISTORY.UPDATED_BY.eq(USERS.ID))
@@ -570,7 +600,8 @@ class AccessionStore(
             ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY,
             ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID,
             USERS.FIRST_NAME,
-            USERS.LAST_NAME)
+            USERS.LAST_NAME,
+        )
         .from(ACCESSION_QUANTITY_HISTORY)
         .join(USERS)
         .on(ACCESSION_QUANTITY_HISTORY.CREATED_BY.eq(USERS.ID))
@@ -585,7 +616,8 @@ class AccessionStore(
           val remainingQuantity =
               SeedQuantityModel(
                   record[ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY]!!,
-                  record[ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID]!!)
+                  record[ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID]!!,
+              )
           val userId = record[ACCESSION_QUANTITY_HISTORY.CREATED_BY]!!
 
           AccessionHistoryModel(
@@ -633,12 +665,14 @@ class AccessionStore(
   private fun insertQuantityHistory(
       before: AccessionModel,
       after: AccessionModel,
-      notes: String? = null
+      notes: String? = null,
   ) {
     if (after.remaining != null && before.remaining != after.remaining) {
       val historyType =
-          if (before.latestObservedQuantity != after.latestObservedQuantity ||
-              before.latestObservedTime != after.latestObservedTime) {
+          if (
+              before.latestObservedQuantity != after.latestObservedQuantity ||
+                  before.latestObservedTime != after.latestObservedTime
+          ) {
             AccessionQuantityHistoryType.Observed
           } else {
             AccessionQuantityHistoryType.Computed
@@ -665,7 +699,7 @@ class AccessionStore(
    */
   fun updateAndFetch(
       accession: AccessionModel,
-      updateContext: AccessionUpdateContext? = null
+      updateContext: AccessionUpdateContext? = null,
   ): AccessionModel {
     val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
     update(accession, updateContext)
@@ -770,7 +804,8 @@ class AccessionStore(
                 .join(FILES)
                 .on(ACCESSION_PHOTOS.FILE_ID.eq(FILES.ID))
                 .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(ACCESSIONS.ID))
-                .orderBy(FILES.CREATED_TIME))
+                .orderBy(FILES.CREATED_TIME)
+        )
         .convertFrom { result -> result.map { it.value1() } }
   }
 
@@ -779,14 +814,15 @@ class AccessionStore(
             DSL.select(ACCESSION_COLLECTORS.NAME)
                 .from(ACCESSION_COLLECTORS)
                 .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
-                .orderBy(ACCESSION_COLLECTORS.POSITION))
+                .orderBy(ACCESSION_COLLECTORS.POSITION)
+        )
         .convertFrom { result -> result.map { it.value1() } }
   }
 
   private fun updateCollectors(
       accessionId: AccessionId,
       existing: List<String>,
-      desired: List<String>
+      desired: List<String>,
   ) {
     if (existing.size > desired.size) {
       dslContext
@@ -878,7 +914,7 @@ class AccessionStore(
   fun fetchDryingEndDue(
       facilityId: FacilityId,
       after: LocalDate,
-      until: LocalDate
+      until: LocalDate,
   ): Map<String, AccessionId> {
     return with(ACCESSIONS) {
       dslContext
@@ -915,7 +951,8 @@ class AccessionStore(
         DSL.select(ACCESSIONS.ID)
             .from(ACCESSIONS)
             .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+    )
   }
 
   fun getSummaryStatistics(organizationId: OrganizationId): AccessionSummaryStatistics {
@@ -925,12 +962,13 @@ class AccessionStore(
         DSL.select(ACCESSIONS.ID)
             .from(ACCESSIONS)
             .where(ACCESSIONS.facilities.ORGANIZATION_ID.eq(organizationId))
-            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+    )
   }
 
   fun getSummaryStatistics(
       facilityId: FacilityId,
-      projectId: ProjectId
+      projectId: ProjectId,
   ): AccessionSummaryStatistics {
     requirePermissions { readProject(projectId) }
 
@@ -939,7 +977,8 @@ class AccessionStore(
             .from(ACCESSIONS)
             .where(ACCESSIONS.PROJECT_ID.eq(projectId))
             .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+    )
   }
 
   fun getSummaryStatistics(subquery: Select<Record1<AccessionId?>>): AccessionSummaryStatistics {
@@ -948,8 +987,10 @@ class AccessionStore(
             DSL.case_()
                 .`when`(
                     ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds),
-                    ACCESSIONS.REMAINING_QUANTITY)
-                .else_(BigDecimal.ZERO))
+                    ACCESSIONS.REMAINING_QUANTITY,
+                )
+                .else_(BigDecimal.ZERO)
+        )
 
     val estimatedSeedsRemaining =
         DSL.sum(
@@ -960,8 +1001,10 @@ class AccessionStore(
                         .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
                         .and(ACCESSIONS.REMAINING_GRAMS.isNotNull),
                     ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
-                        .mul(ACCESSIONS.SUBSET_COUNT))
-                .else_(BigDecimal.ZERO))
+                        .mul(ACCESSIONS.SUBSET_COUNT),
+                )
+                .else_(BigDecimal.ZERO)
+        )
 
     val unknownQuantity =
         DSL.sum(
@@ -971,9 +1014,12 @@ class AccessionStore(
                         .and(
                             ACCESSIONS.SUBSET_COUNT.isNull
                                 .or(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNull)
-                                .or(ACCESSIONS.REMAINING_GRAMS.isNull)),
-                    1)
-                .else_(0))
+                                .or(ACCESSIONS.REMAINING_GRAMS.isNull)
+                        ),
+                    1,
+                )
+                .else_(0)
+        )
 
     val speciesCount =
         dslContext
@@ -993,7 +1039,8 @@ class AccessionStore(
                 seedsRemaining,
                 estimatedSeedsRemaining,
                 DSL.sum(ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
-                unknownQuantity)
+                unknownQuantity,
+            )
             .from(ACCESSIONS)
             .where(ACCESSIONS.ID.`in`(subquery))
 

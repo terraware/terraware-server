@@ -32,7 +32,8 @@ val ENUM_TABLES =
                                 "internal_interest_id",
                                 "InternalInterest",
                                 true,
-                            )),
+                            )
+                        ),
                 ),
                 EnumTable("deliverable_types"),
                 EnumTable("document_stores", isLocalizable = false),
@@ -52,7 +53,8 @@ val ENUM_TABLES =
                         "funder\\.published_report_project_metrics\\.status_id",
                         "funder\\.published_report_standard_metrics\\.status_id",
                         "funder\\.published_report_system_metrics\\.status_id",
-                    )),
+                    ),
+                ),
                 EnumTable("report_quarters"),
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
@@ -85,7 +87,8 @@ val ENUM_TABLES =
                                 "Boolean",
                             ),
                         ),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("vote_options", isLocalizable = false),
             ),
         "docprod" to
@@ -104,25 +107,30 @@ val ENUM_TABLES =
                 EnumTable(
                     "batch_quantity_history_types",
                     listOf("batch_quantity_history\\.history_type_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("batch_substrates", listOf("nursery\\..*\\.substrate_id")),
                 EnumTable(
                     "withdrawal_purposes",
                     listOf(
                         "nursery\\.withdrawals\\.purpose_id",
-                        "nursery\\.withdrawal_summaries\\.purpose_id")),
+                        "nursery\\.withdrawal_summaries\\.purpose_id",
+                    ),
+                ),
             ),
         "public" to
             listOf(
                 EnumTable(
                     "chat_memory_message_types",
                     listOf("chat_memory_messages\\.message_type_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("conservation_categories", useIdAsJsonValue = true),
                 EnumTable(
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("ecosystem_types"),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
@@ -135,7 +143,8 @@ val ENUM_TABLES =
                     listOf(".*\\.notification_criticality_id"),
                     "NotificationCriticality",
                     generateForcedType = false,
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "notification_types",
                     additionalColumns =
@@ -144,18 +153,23 @@ val ENUM_TABLES =
                                 "notification_criticality_id",
                                 "NotificationCriticality",
                                 true,
-                            )),
-                    isLocalizable = false),
+                            )
+                        ),
+                    isLocalizable = false,
+                ),
                 EnumTable("organization_types", isLocalizable = false),
                 EnumTable("plant_material_sourcing_methods"),
                 EnumTable(
                     "project_internal_roles",
-                    listOf("project_internal_users\\.project_internal_role_id")),
+                    listOf("project_internal_users\\.project_internal_role_id"),
+                ),
                 EnumTable(
                     "regions",
                     listOf(
                         "accelerator\\.default_project_leads\\.region_id",
-                        "countries\\.region_id")),
+                        "countries\\.region_id",
+                    ),
+                ),
                 EnumTable("roles"),
                 EnumTable("seed_fund_report_statuses", listOf("seed_fund_reports\\.status_id")),
                 EnumTable("seed_storage_behaviors"),
@@ -165,21 +179,27 @@ val ENUM_TABLES =
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
                 EnumTable("successional_groups"),
                 EnumTable(
-                    "timeseries_types", listOf("timeseries\\.type_id"), isLocalizable = false),
+                    "timeseries_types",
+                    listOf("timeseries\\.type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "upload_problem_types",
                     listOf("upload_problems\\.type_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "upload_statuses",
                     listOf("uploads\\.status_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("finished", "Boolean", false)),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "upload_types",
                     listOf("uploads\\.type_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean")),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("user_types", isLocalizable = false),
                 EnumTable("wood_density_levels"),
             ),
@@ -188,14 +208,17 @@ val ENUM_TABLES =
                 EnumTable(
                     "accession_quantity_history_types",
                     listOf("accession_quantity_history\\.history_type_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "accession_states",
                     listOf(
                         "accessions\\.state_id",
                         ".*\\.accession_state_id",
-                        "accession_state_history\\.(old|new)_state_id"),
-                    additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
+                        "accession_state_history\\.(old|new)_state_id",
+                    ),
+                    additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean")),
+                ),
                 EnumTable("collection_sources"),
                 EnumTable("data_sources"),
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
@@ -207,32 +230,43 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable(
-                    "biomass_forest_types", listOf("observation_biomass_details\\.forest_type_id")),
+                    "biomass_forest_types",
+                    listOf("observation_biomass_details\\.forest_type_id"),
+                ),
                 EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
                 EnumTable(
-                    "observable_conditions", listOf("observation_plot_conditions\\.condition_id")),
+                    "observable_conditions",
+                    listOf("observation_plot_conditions\\.condition_id"),
+                ),
                 EnumTable(
                     "observation_photo_types",
                     listOf("observation_photos\\.type_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("observation_plot_positions", listOf("tracking\\..*\\.position_id")),
                 EnumTable(
                     "observation_plot_statuses",
                     listOf("observation_plots\\.status_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
-                    "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
+                    "observation_states",
+                    listOf("observations\\.state_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("observation_types", listOf("observations\\.observation_type_id")),
                 EnumTable("planting_types"),
                 EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable(
                     "recorded_species_certainties",
                     listOf("tracking\\..*\\.certainty_id"),
                     "RecordedSpeciesCertainty",
-                    isLocalizable = false),
+                    isLocalizable = false,
+                ),
                 EnumTable("tree_growth_forms", listOf("recorded_trees\\.tree_growth_form_id")),
             ),
     )
@@ -250,20 +284,29 @@ val ID_WRAPPERS =
                 IdWrapper("ModuleId", listOf("modules\\.id", ".*\\.module_id")),
                 IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
                 IdWrapper(
-                    "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
+                    "ParticipantProjectSpeciesId",
+                    listOf("participant_project_species\\.id"),
+                ),
                 IdWrapper(
-                    "ProjectMetricId", listOf("project_metrics\\.id", ".*\\.project_metric_id")),
+                    "ProjectMetricId",
+                    listOf("project_metrics\\.id", ".*\\.project_metric_id"),
+                ),
                 IdWrapper(
                     "ProjectReportConfigId",
-                    listOf("project_report_configs\\.id", ".*\\.config_id")),
+                    listOf("project_report_configs\\.id", ".*\\.config_id"),
+                ),
                 IdWrapper(
                     "ReportId",
                     listOf(
                         "accelerator\\.reports\\.id",
                         "accelerator\\..*\\.report_id",
-                        "funder\\..*\\.report_id")),
+                        "funder\\..*\\.report_id",
+                    ),
+                ),
                 IdWrapper(
-                    "StandardMetricId", listOf("standard_metrics\\.id", ".*\\.standard_metric_id")),
+                    "StandardMetricId",
+                    listOf("standard_metrics\\.id", ".*\\.standard_metric_id"),
+                ),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
                 IdWrapper("SubmissionSnapshotId", listOf("submission_snapshots\\.id")),
@@ -274,44 +317,58 @@ val ID_WRAPPERS =
                 IdWrapper("DocumentSavedVersionId", listOf("document_saved_versions\\.id")),
                 IdWrapper(
                     "DocumentTemplateId",
-                    listOf("document_templates\\.id", ".*\\.document_template_id")),
+                    listOf("document_templates\\.id", ".*\\.document_template_id"),
+                ),
                 IdWrapper("VariableId", listOf("variables\\.id", ".*variable_id")),
                 IdWrapper(
                     "VariableManifestId",
-                    listOf("variable_manifests\\.id", ".*\\.variable_manifest_id")),
+                    listOf("variable_manifests\\.id", ".*\\.variable_manifest_id"),
+                ),
                 IdWrapper(
                     "VariableSectionDefaultValueId",
-                    listOf("variable_section_default_values\\.id")),
+                    listOf("variable_section_default_values\\.id"),
+                ),
                 IdWrapper(
                     "VariableSelectOptionId",
                     listOf(
                         "variable_select_options\\.id",
-                        "variable_select_option_values\\.option_id")),
+                        "variable_select_option_values\\.option_id",
+                    ),
+                ),
                 IdWrapper("VariableValueCitationId", listOf("variable_value_citations\\.id")),
                 IdWrapper(
                     "VariableValueId",
                     listOf(
-                        "variable_values\\.id", ".*variable_value_id", ".*\\.table_row_value_id")),
+                        "variable_values\\.id",
+                        ".*variable_value_id",
+                        ".*\\.table_row_value_id",
+                    ),
+                ),
                 IdWrapper("VariableValueTableRowId", listOf("variable_value_table_rows\\.id")),
                 IdWrapper("VariableWorkflowHistoryId", listOf("variable_workflow_history\\.id")),
             ),
         "funder" to
             listOf(
                 IdWrapper(
-                    "FundingEntityId", listOf("funding_entities\\.id", ".*\\.funding_entity_id")),
+                    "FundingEntityId",
+                    listOf("funding_entities\\.id", ".*\\.funding_entity_id"),
+                ),
             ),
         "nursery" to
             listOf(
                 IdWrapper(
                     "BatchDetailsHistoryId",
-                    listOf("batch_details_history\\.id", ".*\\.batch_details_history_id")),
+                    listOf("batch_details_history\\.id", ".*\\.batch_details_history_id"),
+                ),
                 IdWrapper(
                     "BatchId",
                     listOf(
                         "batches\\.id",
                         "batch_withdrawals\\.destination_batch_id",
                         ".*\\.batch_id",
-                        ".*\\.initial_batch_id")),
+                        ".*\\.initial_batch_id",
+                    ),
+                ),
                 IdWrapper("BatchPhotoId", listOf("batch_photos\\.id")),
                 IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
                 IdWrapper(
@@ -321,7 +378,9 @@ val ID_WRAPPERS =
                         "nursery\\.withdrawal_summaries\\.id",
                         "nursery\\..*\\.withdrawal_id",
                         "nursery\\..*\\..*_withdrawal_id",
-                        "tracking\\..*\\.withdrawal_id")),
+                        "tracking\\..*\\.withdrawal_id",
+                    ),
+                ),
             ),
         "public" to
             listOf(
@@ -329,25 +388,30 @@ val ID_WRAPPERS =
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
                 IdWrapper("ChatMemoryMessageId", listOf("chat_memory_messages\\.id")),
                 IdWrapper(
-                    "DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
+                    "DeviceId",
+                    listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id"),
+                ),
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
                 IdWrapper("DisclaimerId", listOf("disclaimers\\.id", ".*\\.disclaimer_id")),
                 IdWrapper(
                     "FacilityId",
-                    listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id")),
+                    listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id"),
+                ),
                 IdWrapper("FileId", listOf("files\\.id", ".*\\.file_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
                     "GbifTaxonId",
-                    listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id")),
+                    listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id"),
+                ),
                 IdWrapper("InternalTagId", listOf("internal_tags\\.id", ".*\\.internal_tag_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
                 IdWrapper(
                     "SeedFundReportId",
-                    listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id")),
+                    listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id"),
+                ),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
                 IdWrapper("SubLocationId", listOf("sub_locations\\.id", ".*\\.sub_location_id")),
@@ -361,13 +425,15 @@ val ID_WRAPPERS =
                         "users\\.id",
                         ".*\\.user_id",
                         ".*\\.[a-z_]+_by",
-                    )),
+                    ),
+                ),
             ),
         "seedbank" to
             listOf(
                 IdWrapper(
                     "AccessionId",
-                    listOf("accessions\\.id", ".*\\.accession_id", ".*\\.seed_accession_id")),
+                    listOf("accessions\\.id", ".*\\.accession_id", ".*\\.seed_accession_id"),
+                ),
                 IdWrapper("AccessionQuantityHistoryId", listOf("accession_quantity_history\\.id")),
                 IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
                 IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
@@ -376,49 +442,61 @@ val ID_WRAPPERS =
                     listOf(
                         "viability_tests\\.id",
                         ".*\\.viability_test_id",
-                        "viability_test_results\\.test_id")),
+                        "viability_test_results\\.test_id",
+                    ),
+                ),
                 IdWrapper("ViabilityTestResultId", listOf("viability_test_results\\.id")),
                 IdWrapper(
                     "WithdrawalId",
-                    listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id")),
+                    listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id"),
+                ),
             ),
         "tracking" to
             listOf(
                 IdWrapper(
                     "BiomassSpeciesId",
-                    listOf("observation_biomass_species\\.id", ".*\\.biomass_species_id")),
+                    listOf("observation_biomass_species\\.id", ".*\\.biomass_species_id"),
+                ),
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
                 IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
                 IdWrapper(
                     "MonitoringPlotHistoryId",
-                    listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id")),
+                    listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id"),
+                ),
                 IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\..*_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
                 IdWrapper(
                     "ObservationTypeId",
-                    listOf("observation_types\\.id", ".*\\.observation_type_id")),
+                    listOf("observation_types\\.id", ".*\\.observation_type_id"),
+                ),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper("PlantingSeasonId", listOf("planting_seasons\\.id")),
                 IdWrapper(
                     "PlantingSiteHistoryId",
-                    listOf("planting_site_histories\\.id", ".*\\.planting_site_history_id")),
+                    listOf("planting_site_histories\\.id", ".*\\.planting_site_history_id"),
+                ),
                 IdWrapper(
                     "PlantingSiteId",
                     listOf(
                         "planting_sites\\.id",
                         "planting_site_summaries\\.id",
-                        ".*\\.planting_site_id")),
+                        ".*\\.planting_site_id",
+                    ),
+                ),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
                 IdWrapper(
                     "PlantingSubzoneHistoryId",
-                    listOf("planting_subzone_histories\\.id", ".*\\.planting_subzone_history_id")),
+                    listOf("planting_subzone_histories\\.id", ".*\\.planting_subzone_history_id"),
+                ),
                 IdWrapper(
                     "PlantingSubzoneId",
-                    listOf("planting_subzones\\.id", ".*\\.planting_subzone_id")),
+                    listOf("planting_subzones\\.id", ".*\\.planting_subzone_id"),
+                ),
                 IdWrapper(
                     "PlantingZoneHistoryId",
-                    listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id")),
+                    listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id"),
+                ),
                 IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
                 IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
@@ -461,7 +539,11 @@ val EMBEDDABLES =
             .withName("observation_biomass_quadrat_species_id")
             .withTables("tracking.observation_biomass_quadrat_species")
             .withColumns(
-                "observation_id", "monitoring_plot_id", "position_id", "biomass_species_id"),
+                "observation_id",
+                "monitoring_plot_id",
+                "position_id",
+                "biomass_species_id",
+            ),
         EmbeddableDefinitionType()
             .withName("observation_plot_id")
             .withTables(
@@ -474,7 +556,8 @@ val EMBEDDABLES =
                         "observation_plots",
                         "recorded_trees",
                     )
-                    .joinToString("|", prefix = "tracking."))
+                    .joinToString("|", prefix = "tracking.")
+            )
             .withColumns("observation_id", "monitoring_plot_id"),
         EmbeddableDefinitionType()
             .withName("organization_internal_tag_id")

@@ -58,7 +58,8 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
         insertVariable(
             stableId = linkStableId,
             type = VariableType.Link,
-            replacesVariableId = oldLinkVariableId)
+            replacesVariableId = oldLinkVariableId,
+        )
 
     // Add a connection between the project and each variable
     insertValue(variableId = newVariableId, textValue = "NewVarOldVal")
@@ -104,7 +105,8 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                     "variableType" to "Date",
                 ),
             ),
-            cursor = null)
+            cursor = null,
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -138,7 +140,10 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "variableId" to "$variableId2",
                             ),
-                        ))))
+                        ),
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -173,7 +178,11 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "variableId" to "$variableId1",
-                            )))))
+                            )
+                        ),
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -211,7 +220,8 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                 "variables.projectId",
                 "variables.stableId",
                 "variables.variableId",
-                "variables.variableValueId")
+                "variables.variableValueId",
+            )
             .map { prefix.resolve(it) }
 
     val expected =
@@ -240,14 +250,16 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                 ),
             ),
-            cursor = null)
+            cursor = null,
+        )
 
     val search =
         AndNode(
             listOf(
                 FieldNode(prefix.resolve("id"), listOf(projectId1.toString())),
                 FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3)),
-            ))
+            )
+        )
     val actual =
         Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to search)) }
 

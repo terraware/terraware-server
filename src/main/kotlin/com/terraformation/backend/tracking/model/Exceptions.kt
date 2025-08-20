@@ -10,19 +10,21 @@ class CannotCreatePastPlantingSeasonException(val startDate: LocalDate, val endD
 
 class CannotUpdatePastPlantingSeasonException(
     val plantingSeasonId: PlantingSeasonId,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 ) :
     IllegalArgumentException(
-        "Cannot update planting season $plantingSeasonId because it ended on $endDate")
+        "Cannot update planting season $plantingSeasonId because it ended on $endDate"
+    )
 
 class PlantingSeasonsOverlapException(
     val startDate1: LocalDate,
     val endDate1: LocalDate,
     val startDate2: LocalDate,
-    val endDate2: LocalDate
+    val endDate2: LocalDate,
 ) :
     MismatchedStateException(
-        "Planting season $startDate1-$endDate1 overlaps with $startDate2-$endDate2")
+        "Planting season $startDate1-$endDate1 overlaps with $startDate2-$endDate2"
+    )
 
 class PlantingSeasonTooFarInFutureException(val startDate: LocalDate) :
     IllegalArgumentException("Planting season start date $startDate is too far in the future")
@@ -36,8 +38,9 @@ class PlantingSeasonTooShortException(val startDate: LocalDate, val endDate: Loc
 class PlantingSubzoneFullException(
     val plantingSubzoneId: PlantingSubzoneId,
     val plotsNeeded: Int,
-    val plotsRemaining: Int
+    val plotsRemaining: Int,
 ) :
     IllegalStateException(
         "Planting subzone $plantingSubzoneId needs $plotsNeeded temporary plots but only " +
-            "$plotsRemaining available")
+            "$plotsRemaining available"
+    )

@@ -17,7 +17,9 @@ class AccessionCollectorsTable(private val tables: SearchTables) : SearchTable()
     with(tables) {
       listOf(
           accessions.asSingleValueSublist(
-              "accession", ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID)),
+              "accession",
+              ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID),
+          ),
       )
     }
   }

@@ -103,7 +103,8 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           expected,
           store.fetchOneById(projectId),
-          "Fetch should return published project details from db")
+          "Fetch should return published project details from db",
+      )
     }
 
     @Test
@@ -117,7 +118,9 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fileStore.write(uri2, contents.inputStream())
       val highlightValueId =
           insertImageValue(
-              variableIdsByStableId[StableIds.projectHighlightPhoto]!!, highlightFileId)
+              variableIdsByStableId[StableIds.projectHighlightPhoto]!!,
+              highlightFileId,
+          )
       val zoneFigureValueId =
           insertImageValue(variableIdsByStableId[StableIds.projectZoneFigure]!!, zoneFileId)
 
@@ -183,7 +186,8 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           expected,
           store.fetchOneById(projectId),
-          "Fetch should return published project details from db")
+          "Fetch should return published project details from db",
+      )
     }
   }
 
@@ -201,7 +205,8 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           projectModel,
           store.fetchOneById(projectId),
-          "Minimal published project details should be stored in db")
+          "Minimal published project details should be stored in db",
+      )
     }
 
     @Test
@@ -215,7 +220,9 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fileStore.write(uri2, contents.inputStream())
       val highlightValueId =
           insertImageValue(
-              variableIdsByStableId[StableIds.projectHighlightPhoto]!!, highlightFileId)
+              variableIdsByStableId[StableIds.projectHighlightPhoto]!!,
+              highlightFileId,
+          )
       val zoneFigureValueId =
           insertImageValue(variableIdsByStableId[StableIds.projectZoneFigure]!!, zoneFileId)
       val carbonCerts = setOf(CarbonCertification.CcbVerraStandard)
@@ -223,11 +230,13 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(
               SustainableDevelopmentGoal.NoPoverty,
               SustainableDevelopmentGoal.LifeOnLand,
-              SustainableDevelopmentGoal.LifeBelowWater)
+              SustainableDevelopmentGoal.LifeBelowWater,
+          )
       val landUsages =
           mapOf(
               LandUseModelType.Silvopasture to null,
-              LandUseModelType.Agroforestry to BigDecimal(20))
+              LandUseModelType.Agroforestry to BigDecimal(20),
+          )
 
       val projectModel =
           FunderProjectDetailsModel(
@@ -261,7 +270,8 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           projectModel,
           store.fetchOneById(projectId),
-          "Full published project details should be stored in db")
+          "Full published project details should be stored in db",
+      )
     }
 
     @Test
@@ -275,7 +285,9 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fileStore.write(uri2, contents.inputStream())
       val highlightValueId =
           insertImageValue(
-              variableIdsByStableId[StableIds.projectHighlightPhoto]!!, highlightFileId)
+              variableIdsByStableId[StableIds.projectHighlightPhoto]!!,
+              highlightFileId,
+          )
       val zoneFigureValueId =
           insertImageValue(variableIdsByStableId[StableIds.projectZoneFigure]!!, zoneFileId)
 
@@ -315,7 +327,8 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val newLandUsages =
           mapOf(
               LandUseModelType.OtherLandUseModel to BigDecimal(100),
-              LandUseModelType.Monoculture to BigDecimal(200))
+              LandUseModelType.Monoculture to BigDecimal(200),
+          )
       val projectModel =
           FunderProjectDetailsModel(
               projectId = projectId,
@@ -340,14 +353,18 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               sdgList =
                   setOf(
                       SustainableDevelopmentGoal.DecentWork,
-                      SustainableDevelopmentGoal.GenderEquality),
+                      SustainableDevelopmentGoal.GenderEquality,
+                  ),
               landUseModelTypes = newLandUsages.keys,
               landUseModelHectares = newLandUsages,
           )
 
       store.publish(projectModel)
       assertEquals(
-          projectModel, store.fetchOneById(projectId), "Project details should be updated in db")
+          projectModel,
+          store.fetchOneById(projectId),
+          "Project details should be updated in db",
+      )
     }
   }
 }

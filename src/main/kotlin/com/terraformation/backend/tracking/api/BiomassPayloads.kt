@@ -158,13 +158,17 @@ data class ExistingTreePayload(
     JsonSubTypes.Type(name = "tree", value = NewTreeWithTrunksPayload::class),
 )
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "growthForm")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "growthForm",
+)
 @Schema(
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "shrub", schema = NewShrubPayload::class),
             DiscriminatorMapping(value = "tree", schema = NewTreeWithTrunksPayload::class),
-        ])
+        ]
+)
 sealed interface NewTreePayload {
   @get:Schema(description = "GPS coordinates where plant was observed.") //
   val gpsCoordinates: Point?
@@ -199,7 +203,8 @@ data class NewShrubPayload(
             treeGrowthForm = TreeGrowthForm.Shrub,
             treeNumber = treeNumber,
             trunkNumber = 1,
-        ))
+        )
+    )
   }
 }
 
@@ -219,7 +224,7 @@ data class NewTrunkPayload(
       speciesId: SpeciesId?,
       speciesName: String?,
       treeNumber: Int,
-      trunkNumber: Int
+      trunkNumber: Int,
   ): NewRecordedTreeModel {
     return NewRecordedTreeModel(
         id = null,
@@ -353,7 +358,8 @@ data class NewBiomassMeasurementPayload(
         description =
             "List of herbaceous and tree species. Includes all recorded quadrat and additional " +
                 "herbaceous species and recorded tree species. Species not assigned to a quadrat or " +
-                "recorded trees will be saved as an additional herbaceous species.")
+                "recorded trees will be saved as an additional herbaceous species."
+    )
     val species: List<BiomassSpeciesPayload>,
     @Schema(description = "Measured in centimeters. Required for Mangrove forest.")
     val waterDepth: Int?,

@@ -71,10 +71,16 @@ class DeliverableService(
       systemUser.run {
         if (submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
           applicationStore.updateModuleStatus(
-              projectId, deliverableModule.id, ApplicationModuleStatus.Complete)
+              projectId,
+              deliverableModule.id,
+              ApplicationModuleStatus.Complete,
+          )
         } else {
           applicationStore.updateModuleStatus(
-              projectId, deliverableModule.id, ApplicationModuleStatus.Incomplete)
+              projectId,
+              deliverableModule.id,
+              ApplicationModuleStatus.Incomplete,
+          )
         }
       }
     }
