@@ -545,9 +545,9 @@ COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental n
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
-COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
+COMMENT ON TABLE tracking.t0_plot IS 'For a given plot, which observation to use as T0 data, or the estimated density for a specific species.';
 
-COMMENT ON TABLE tracking.t0_plot_species IS 'For a given plot, which observation to use as T0 data, or the estimated density for a given species.';
+COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
