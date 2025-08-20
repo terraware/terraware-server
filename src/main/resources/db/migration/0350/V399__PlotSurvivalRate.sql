@@ -23,6 +23,5 @@ CREATE TABLE tracking.t0_plot
 CREATE UNIQUE INDEX ON tracking.t0_plot (monitoring_plot_id)
 WHERE observation_id IS NOT NULL;
 
-CREATE INDEX ON tracking.t0_plot (monitoring_plot_id);
 CREATE INDEX ON tracking.t0_plot (observation_id);
 CREATE INDEX ON tracking.t0_plot (species_id);
