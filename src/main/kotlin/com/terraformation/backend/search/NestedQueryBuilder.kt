@@ -848,7 +848,7 @@ class NestedQueryBuilder(
       val queryBuilder = NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
       if (criteria != null) {
         queryBuilder.addCondition(
-            filterResults(SearchFieldPrefix(relativeField.searchTable), criteria))
+            filterResults(SearchFieldPrefix(relativeField.searchTable), criteria, true))
       }
       queryBuilder
     }
@@ -1126,10 +1126,16 @@ class NestedQueryBuilder(
     }
   }
 
-  /** Returns a condition that filters search results based on a list of criteria. */
+  /**
+   * Returns a condition that filters search results based on [criteria].
+   *
+   * If this is for a sublist filter, then fewer left joins are needed for the
+   * `joinWithSecondaryTable`. [isSublistFilter] controls this.
+   */
   fun filterResults(
       rootPrefix: SearchFieldPrefix,
       criteria: SearchNode? = null,
+      isSublistFilter: Boolean = false,
   ): Condition {
     // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
     // the visibility check on the root table, but not on parent tables.
@@ -1142,9 +1148,15 @@ class NestedQueryBuilder(
 
     val primaryKey = rootTable.primaryKey
 
+    // the criteria for a sublist filter will already be in conditions instead of the secondary
+    // table joins since the conditions don't need the table joined
+    val secondaryTablesCriteria = if (isSublistFilter) NoConditionNode() else rootCriterion
+
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(rootTable.fromTable), rootPrefix, rootCriterion)
+                DSL.select(primaryKey).from(rootTable.fromTable),
+                rootPrefix,
+                secondaryTablesCriteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
