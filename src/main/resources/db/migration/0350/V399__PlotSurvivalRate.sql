@@ -13,10 +13,9 @@ CALL add_survival_rate_column('observed_site_species_totals');
 DROP PROCEDURE add_survival_rate_column;
 
 CREATE TABLE tracking.t0_plot_species (
-    monitoring_plot_id BIGINT NOT NULL REFERENCES tracking.monitoring_plots ON DELETE CASCADE,
-    species_id BIGINT NOT NULL REFERENCES species,
+    monitoring_plot_id BIGINT PRIMARY KEY REFERENCES tracking.monitoring_plots ON DELETE CASCADE,
     observation_id BIGINT REFERENCES tracking.observations ON DELETE CASCADE,
+    species_id BIGINT REFERENCES species ON DELETE CASCADE,
     estimated_planting_density NUMERIC,
-    PRIMARY KEY (monitoring_plot_id, species_id),
-    CONSTRAINT t0_plot_species_density CHECK ((observation_id IS NULL) != (estimated_planting_density IS NULL))
+    CONSTRAINT t0_plot_species_density CHECK ((observation_id IS NULL) or (estimated_planting_density IS NULL and species_id IS NULL))
 );
