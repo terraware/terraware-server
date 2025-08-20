@@ -95,7 +95,8 @@ class WithdrawalsController(
             payload.toModel(),
             payload.readyByDate,
             payload.plantingSiteId,
-            payload.plantingSubzoneId)
+            payload.plantingSubzoneId,
+        )
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
     val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
 
@@ -114,7 +115,10 @@ class WithdrawalsController(
 
     val fileId =
         withdrawalPhotoService.storePhoto(
-            withdrawalId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
+            withdrawalId,
+            file.inputStream,
+            FileMetadata.of(contentType, filename, file.size),
+        )
 
     return CreateNurseryWithdrawalPhotoResponsePayload(fileId)
   }
@@ -123,10 +127,12 @@ class WithdrawalsController(
   @ApiResponse404("The withdrawal does not exist, or does not have a photo with the requested ID.")
   @GetMapping(
       "/{withdrawalId}/photos/{photoId}",
-      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
   @Operation(
       summary = "Retrieves a specific photo from a withdrawal.",
-      description = PHOTO_OPERATION_DESCRIPTION)
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
   @ResponseBody
   fun getWithdrawalPhoto(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
@@ -159,7 +165,8 @@ class WithdrawalsController(
   @ApiResponse404("The withdrawal does not exist.")
   @ApiResponse409(
       "The withdrawal is not eligible for undo, e.g., because it has already been undone or " +
-          "because it is a nursery transfer.")
+          "because it is a nursery transfer."
+  )
   @PostMapping("/{withdrawalId}/undo")
   @Operation(
       summary = "Undoes a withdrawal.",
@@ -167,7 +174,8 @@ class WithdrawalsController(
           "The withdrawal's plants will be returned to their original batches. Nursery transfers " +
               "may not be undone. If the withdrawal was an outplanting to a planting site, the " +
               "plants will be removed from the planting site's plant totals. This does not " +
-              "delete the original withdrawal.")
+              "delete the original withdrawal.",
+  )
   fun undoBatchWithdrawal(@PathVariable withdrawalId: WithdrawalId): SimpleSuccessResponsePayload {
     batchService.undoWithdrawal(withdrawalId)
 
@@ -216,7 +224,8 @@ data class NurseryWithdrawalPayload(
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to which the seedlings " +
-                "were transferred.")
+                "were transferred."
+    )
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val id: WithdrawalId,
@@ -271,26 +280,30 @@ data class CreateNurseryWithdrawalRequestPayload(
         description =
             "If purpose is \"Nursery Transfer\", the ID of the facility to transfer to. Must be " +
                 "in the same organization as the originating facility. Not allowed for purposes " +
-                "other than \"Nursery Transfer\".")
+                "other than \"Nursery Transfer\"."
+    )
     val destinationFacilityId: FacilityId? = null,
     val facilityId: FacilityId,
     val notes: String? = null,
     @Schema(
         description =
             "If purpose is \"Out Plant\", the ID of the planting site to which the seedlings " +
-                "were delivered.")
+                "were delivered."
+    )
     val plantingSiteId: PlantingSiteId?,
     @Schema(
         description =
             "If purpose is \"Out Plant\", the ID of the planting subzone to which the seedlings " +
                 "were delivered. Must be specified if the planting site has planting subzones, " +
-                "but must be omitted or set to null if the planting site has no planting subzones.")
+                "but must be omitted or set to null if the planting site has no planting subzones."
+    )
     val plantingSubzoneId: PlantingSubzoneId?,
     val purpose: CreateWithdrawalPurpose,
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the estimated ready-by date to use for the " +
-                "batches that are created at the other nursery.")
+                "batches that are created at the other nursery."
+    )
     val readyByDate: LocalDate? = null,
     val withdrawnDate: LocalDate,
 ) {
@@ -312,9 +325,10 @@ data class GetNurseryWithdrawalResponsePayload(
     @Schema(
         description =
             "If the withdrawal was an outplanting to a planting site, the delivery that was " +
-                "created. Not present for other withdrawal purposes.")
+                "created. Not present for other withdrawal purposes."
+    )
     val delivery: DeliveryPayload?,
-    val withdrawal: NurseryWithdrawalPayload
+    val withdrawal: NurseryWithdrawalPayload,
 ) : SuccessResponsePayload {
   constructor(
       batches: List<ExistingBatchModel>,

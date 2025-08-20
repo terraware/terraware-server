@@ -115,8 +115,8 @@ data class PlantingSiteModel<
           val overlapPercent = zone.boundary.coveragePercent(otherZone.boundary)
           if (overlapPercent > REGION_OVERLAP_MAX_PERCENT) {
             problems.add(
-                PlantingSiteValidationFailure.zoneBoundaryOverlaps(
-                    setOf(otherZone.name), zone.name))
+                PlantingSiteValidationFailure.zoneBoundaryOverlaps(setOf(otherZone.name), zone.name)
+            )
           }
         }
 
@@ -265,7 +265,11 @@ data class PlantingSiteModel<
 
 typealias AnyPlantingSiteModel =
     PlantingSiteModel<
-        out PlantingSiteId?, out PlantingZoneId?, out PlantingSubzoneId?, out Instant?>
+        out PlantingSiteId?,
+        out PlantingZoneId?,
+        out PlantingSubzoneId?,
+        out Instant?,
+    >
 
 typealias ExistingPlantingSiteModel =
     PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId, Instant>

@@ -31,7 +31,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Controller
 @RequestMapping("/admin")
 @RequireGlobalRole(
-    [GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly])
+    [GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly]
+)
 @Validated
 class AdminCohortsController(
     private val deliverableDueDateStore: DeliverableDueDateStore,
@@ -57,7 +58,7 @@ class AdminCohortsController(
   fun cohortView(
       model: Model,
       @PathVariable cohortId: CohortId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { readCohort(cohortId) }
     val cohort =
@@ -102,7 +103,7 @@ class AdminCohortsController(
       model: Model,
       @PathVariable cohortId: CohortId,
       @PathVariable deliverableId: DeliverableId,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { readAllDeliverables() }
 
@@ -171,7 +172,7 @@ class AdminCohortsController(
       @RequestParam operation: String,
       @RequestParam projectId: ProjectId?,
       @RequestParam dueDate: LocalDate?,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { manageDeliverables() }
     when (operation) {
@@ -184,7 +185,10 @@ class AdminCohortsController(
         try {
           if (projectId != null) {
             deliverableDueDateStore.upsertDeliverableProjectDueDate(
-                deliverableId, projectId, dueDate)
+                deliverableId,
+                projectId,
+                dueDate,
+            )
           } else {
             deliverableDueDateStore.upsertDeliverableCohortDueDate(deliverableId, cohortId, dueDate)
           }

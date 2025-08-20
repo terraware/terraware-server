@@ -52,7 +52,8 @@ class DeliveryStore(
               DSL.select(PLANTINGS.asterisk())
                   .from(PLANTINGS)
                   .where(PLANTINGS.DELIVERY_ID.eq(DELIVERIES.ID))
-                  .orderBy(PLANTINGS.ID))
+                  .orderBy(PLANTINGS.ID)
+          )
           .convertFrom { result -> result.map { PlantingModel(it) } }
 
   fun fetchOneById(deliveryId: DeliveryId): DeliveryModel {
@@ -138,7 +139,8 @@ class DeliveryStore(
 
       log.info(
           "Created delivery $deliveryId to planting site $plantingSiteId plot $plantingSubzoneId with " +
-              "plantings $plantingIds")
+              "plantings $plantingIds"
+      )
 
       deliveryId
     }
@@ -176,7 +178,10 @@ class DeliveryStore(
 
           if (originalPlanting.deliveryId != deliveryId) {
             throw CrossDeliveryReassignmentNotAllowedException(
-                fromPlantingId, originalPlanting.deliveryId!!, deliveryId)
+                fromPlantingId,
+                originalPlanting.deliveryId!!,
+                deliveryId,
+            )
           }
 
           if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
@@ -236,7 +241,10 @@ class DeliveryStore(
 
       newPlantings.forEach { planting ->
         addToSubzonePopulations(
-            planting.plantingSubzoneId!!, planting.speciesId!!, planting.numPlants!!)
+            planting.plantingSubzoneId!!,
+            planting.speciesId!!,
+            planting.numPlants!!,
+        )
       }
     }
   }
@@ -306,7 +314,8 @@ class DeliveryStore(
             originalPlanting.plantingSubzoneId,
             originalPlanting.speciesId,
             -originalPlanting.numPlants,
-            if (deliveryNewerThanLastObservation) -originalPlanting.numPlants else 0)
+            if (deliveryNewerThanLastObservation) -originalPlanting.numPlants else 0,
+        )
       }
 
       undoDeliveryId
@@ -327,7 +336,9 @@ class DeliveryStore(
                 PLANTING_ZONE_ID.`in`(
                     DSL.select(PLANTING_ZONES.ID)
                         .from(PLANTING_ZONES)
-                        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+                        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                )
+            )
             .execute()
 
         dslContext
@@ -336,7 +347,8 @@ class DeliveryStore(
                 PLANTING_ZONE_ID,
                 SPECIES_ID,
                 TOTAL_PLANTS,
-                PLANTS_SINCE_LAST_OBSERVATION)
+                PLANTS_SINCE_LAST_OBSERVATION,
+            )
             .select(
                 with(PLANTING_SUBZONE_POPULATIONS) {
                   DSL.select(
@@ -350,7 +362,8 @@ class DeliveryStore(
                       .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
                       .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
                       .groupBy(PLANTING_SUBZONES.PLANTING_ZONE_ID, SPECIES_ID)
-                })
+                }
+            )
             .execute()
       }
     }
@@ -375,7 +388,8 @@ class DeliveryStore(
                 PLANTING_SITE_ID,
                 SPECIES_ID,
                 TOTAL_PLANTS,
-                PLANTS_SINCE_LAST_OBSERVATION)
+                PLANTS_SINCE_LAST_OBSERVATION,
+            )
             .select(
                 with(PLANTING_ZONE_POPULATIONS) {
                   DSL.select(
@@ -389,7 +403,8 @@ class DeliveryStore(
                       .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                       .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
                       .groupBy(SPECIES_ID)
-                })
+                }
+            )
             .execute()
       }
     }
@@ -401,8 +416,9 @@ class DeliveryStore(
    * population data, e.g., because batches were deleted.
    */
   fun recalculatePopulationsFromPlantings(plantingSiteId: PlantingSiteId) {
-    if (!dslContext.fetchExists(
-        PLANTING_ZONES, PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))) {
+    if (
+        !dslContext.fetchExists(PLANTING_ZONES, PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+    ) {
       throw IllegalArgumentException("Recalculation not supported for simple planting sites")
     }
 
@@ -418,9 +434,13 @@ class DeliveryStore(
                       .from(PLANTINGS)
                       .where(
                           PLANTINGS.PLANTING_SUBZONE_ID.eq(
-                              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+                              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
+                          )
+                      )
                       .groupBy(PLANTINGS.SPECIES_ID)
-                      .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))))
+                      .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))
+              )
+          )
           .execute()
 
       val sumField = DSL.sum(PLANTINGS.NUM_PLANTS).cast(SQLDataType.INTEGER).`as`("total_plants")
@@ -431,18 +451,25 @@ class DeliveryStore(
               PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
               PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
               PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS,
-              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+          )
           .select(
               DSL.select(
-                      PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID, sumField, DSL.value(0))
+                      PLANTINGS.PLANTING_SUBZONE_ID,
+                      PLANTINGS.SPECIES_ID,
+                      sumField,
+                      DSL.value(0),
+                  )
                   .from(PLANTINGS)
                   .join(PLANTING_SUBZONES)
                   .on(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
                   .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .groupBy(PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID))
+                  .groupBy(PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID)
+          )
           .onConflict(
               PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
-              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
+              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
+          )
           .doUpdate()
           .set(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, DSL.excluded(sumField))
           .execute()
@@ -470,7 +497,8 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
+          )
           .execute()
 
       if (numPlants < 0) {
@@ -513,7 +541,8 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
+          )
           .execute()
 
       if (numPlants < 0) {
@@ -537,7 +566,8 @@ class DeliveryStore(
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
+          )
           .execute()
 
       if (numPlants < 0) {
@@ -565,7 +595,8 @@ class DeliveryStore(
     return dslContext.fetchExists(
         DSL.selectOne()
             .from(PLANTING_SUBZONES)
-            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId)))
+            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+    )
   }
 
   private fun deliveryAlreadyUndone(deliveryId: DeliveryId): Boolean {
@@ -574,7 +605,8 @@ class DeliveryStore(
             .from(WITHDRAWALS)
             .join(DELIVERIES)
             .on(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(DELIVERIES.WITHDRAWAL_ID))
-            .where(DELIVERIES.ID.eq(deliveryId)))
+            .where(DELIVERIES.ID.eq(deliveryId))
+    )
   }
 
   private fun getWithdrawalPurpose(deliveryId: DeliveryId): WithdrawalPurpose? {

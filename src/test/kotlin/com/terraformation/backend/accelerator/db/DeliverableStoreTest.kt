@@ -131,7 +131,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = now,
               internalComment = "comment",
               projectId = projectId1,
-              submissionStatus = SubmissionStatus.InReview)
+              submissionStatus = SubmissionStatus.InReview,
+          )
       val documentId1 = insertSubmissionDocument()
       val documentId2 = insertSubmissionDocument()
 
@@ -272,7 +273,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project2,
           ),
           store.fetchDeliverableSubmissions(organizationId = organizationId1),
-          "All deliverables for organization 1")
+          "All deliverables for organization 1",
+      )
       assertEquals(
           listOf(
               deliverable1Project3,
@@ -281,7 +283,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project4,
           ),
           store.fetchDeliverableSubmissions(organizationId = organizationId2),
-          "All deliverables for organization 2")
+          "All deliverables for organization 2",
+      )
 
       assertEquals(
           listOf(
@@ -293,7 +296,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project3,
           ),
           store.fetchDeliverableSubmissions(participantId = participantId1),
-          "All deliverables for participant 1 (projects 1 and 3)")
+          "All deliverables for participant 1 (projects 1 and 3)",
+      )
       assertEquals(
           listOf(
               deliverable1Project2,
@@ -301,11 +305,13 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project2,
           ),
           store.fetchDeliverableSubmissions(participantId = participantId2),
-          "All deliverables for participant 2 (project 2)")
+          "All deliverables for participant 2 (project 2)",
+      )
       assertEquals(
           listOf(deliverable3Project4),
           store.fetchDeliverableSubmissions(participantId = participantId3),
-          "All deliverables for participant 3 (project 4)")
+          "All deliverables for participant 3 (project 4)",
+      )
 
       assertEquals(
           listOf(
@@ -314,7 +320,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project1,
           ),
           store.fetchDeliverableSubmissions(projectId = projectId1),
-          "All deliverables for project 1")
+          "All deliverables for project 1",
+      )
       assertEquals(
           listOf(
               deliverable1Project2,
@@ -322,7 +329,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project2,
           ),
           store.fetchDeliverableSubmissions(projectId = projectId2),
-          "All deliverables for project 2")
+          "All deliverables for project 2",
+      )
       assertEquals(
           listOf(
               deliverable1Project3,
@@ -330,11 +338,13 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project3,
           ),
           store.fetchDeliverableSubmissions(projectId = projectId3),
-          "All deliverables for project 3")
+          "All deliverables for project 3",
+      )
       assertEquals(
           listOf(deliverable3Project4),
           store.fetchDeliverableSubmissions(projectId = projectId4),
-          "All deliverables for project 4")
+          "All deliverables for project 4",
+      )
 
       assertEquals(
           listOf(
@@ -343,7 +353,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable1Project3,
           ),
           store.fetchDeliverableSubmissions(deliverableId = deliverableId1),
-          "Deliverable 1 for all projects")
+          "Deliverable 1 for all projects",
+      )
 
       assertEquals(
           listOf(
@@ -359,16 +370,19 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable3Project4,
           ),
           store.fetchDeliverableSubmissions(),
-          "All deliverables")
+          "All deliverables",
+      )
 
       assertEquals(
           listOf(deliverable1Project1),
           store.fetchDeliverableSubmissions(projectId = projectId1, deliverableId = deliverableId1),
-          "Single deliverable with submitted documents for project 1")
+          "Single deliverable with submitted documents for project 1",
+      )
       assertEquals(
           listOf(deliverable1Project3),
           store.fetchDeliverableSubmissions(projectId = projectId3, deliverableId = deliverableId1),
-          "Single deliverable with no submissions for project 3")
+          "Single deliverable with no submissions for project 3",
+      )
 
       assertEquals(
           listOf(
@@ -380,35 +394,42 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable2Project3,
           ),
           store.fetchDeliverableSubmissions(moduleId = moduleId1),
-          "All deliverables by module")
+          "All deliverables by module",
+      )
 
       assertEquals(
           listOf(
               deliverable1Project1,
               deliverable1Project2,
               deliverable2Project1,
-              deliverable2Project2),
+              deliverable2Project2,
+          ),
           store.fetchDeliverableSubmissions(organizationId = organizationId1, moduleId = moduleId1),
-          "Deliverables by module for organization 1")
+          "Deliverables by module for organization 1",
+      )
 
       assertEquals(
           listOf(
               deliverable1Project1,
               deliverable1Project3,
               deliverable2Project1,
-              deliverable2Project3),
+              deliverable2Project3,
+          ),
           store.fetchDeliverableSubmissions(participantId = participantId1, moduleId = moduleId1),
-          "Deliverables by module for participant 1")
+          "Deliverables by module for participant 1",
+      )
 
       assertEquals(
           listOf(deliverable1Project1, deliverable2Project1),
           store.fetchDeliverableSubmissions(projectId = projectId1, moduleId = moduleId1),
-          "Deliverables by module for project 1")
+          "Deliverables by module for project 1",
+      )
 
       assertEquals(
           emptyList<DeliverableSubmissionModel>(),
           store.fetchDeliverableSubmissions(moduleId = moduleId1, deliverableId = deliverableId3),
-          "Empty result for single deliverable not in module")
+          "Empty result for single deliverable not in module",
+      )
     }
 
     @Test
@@ -470,8 +491,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   submissionId = submissionId,
                   templateUrl = null,
                   type = DeliverableType.Document,
-              )),
-          store.fetchDeliverableSubmissions())
+              )
+          ),
+          store.fetchDeliverableSubmissions(),
+      )
     }
 
     @Test
@@ -525,8 +548,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   submissionId = submissionId,
                   templateUrl = null,
                   type = DeliverableType.Document,
-              )),
-          store.fetchDeliverableSubmissions(deliverableId = deliverableId))
+              )
+          ),
+          store.fetchDeliverableSubmissions(deliverableId = deliverableId),
+      )
     }
 
     @Test
@@ -573,8 +598,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   submissionId = submissionId,
                   templateUrl = null,
                   type = DeliverableType.Document,
-              )),
-          store.fetchDeliverableSubmissions(deliverableId = deliverableId))
+              )
+          ),
+          store.fetchDeliverableSubmissions(deliverableId = deliverableId),
+      )
     }
 
     @Test
@@ -615,8 +642,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   submissionId = null,
                   templateUrl = null,
                   type = DeliverableType.Document,
-              )),
-          store.fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId))
+              )
+          ),
+          store.fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId),
+      )
     }
 
     @Test
@@ -662,28 +691,37 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           projectDueDate,
           store
               .fetchDeliverableSubmissions(
-                  projectId = projectWithProjectDueDate, deliverableId = deliverableId)
+                  projectId = projectWithProjectDueDate,
+                  deliverableId = deliverableId,
+              )
               .firstOrNull()
               ?.dueDate,
-          "Deliverable for project with project due date")
+          "Deliverable for project with project due date",
+      )
 
       assertEquals(
           cohortDueDate,
           store
               .fetchDeliverableSubmissions(
-                  projectId = projectWithCohortDueDate, deliverableId = deliverableId)
+                  projectId = projectWithCohortDueDate,
+                  deliverableId = deliverableId,
+              )
               .firstOrNull()
               ?.dueDate,
-          "Deliverable for project with cohort due date and no project due date")
+          "Deliverable for project with cohort due date and no project due date",
+      )
 
       assertEquals(
           cohortModuleEndDate,
           store
               .fetchDeliverableSubmissions(
-                  projectId = projectWithDefaultDueDate, deliverableId = deliverableId)
+                  projectId = projectWithDefaultDueDate,
+                  deliverableId = deliverableId,
+              )
               .firstOrNull()
               ?.dueDate,
-          "Deliverable for project with neither project nor cohort due date")
+          "Deliverable for project with neither project nor cohort due date",
+      )
     }
 
     @Test

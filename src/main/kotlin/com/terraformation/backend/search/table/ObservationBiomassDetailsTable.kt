@@ -24,17 +24,24 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)),
+              OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+          ),
           observationPlots.asSingleValueSublist(
               "observationPlot",
               OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID
+              ),
+          ),
           observations.asSingleValueSublist(
-              "observation", OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(OBSERVATIONS.ID)),
+              "observation",
+              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+          ),
           observationBiomassSpecies.asMultiValueSublist(
               "species",
               OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_BIOMASS_SPECIES.OBSERVATION_PLOT_ID
+              ),
+          ),
       )
     }
   }
@@ -44,7 +51,9 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
           textField("description", OBSERVATION_BIOMASS_DETAILS.DESCRIPTION),
           enumField("forestType", OBSERVATION_BIOMASS_DETAILS.FOREST_TYPE_ID),
           integerField(
-              "herbaceousCoverPercent", OBSERVATION_BIOMASS_DETAILS.HERBACEOUS_COVER_PERCENT),
+              "herbaceousCoverPercent",
+              OBSERVATION_BIOMASS_DETAILS.HERBACEOUS_COVER_PERCENT,
+          ),
           integerField(
               "numPlants",
               DSL.field(
@@ -52,7 +61,11 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
                       .from(RECORDED_TREES)
                       .where(
                           RECORDED_TREES.OBSERVATION_PLOT_ID.eq(
-                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID)))),
+                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
+                          )
+                      )
+              ),
+          ),
           integerField(
               "numSpecies",
               DSL.field(
@@ -60,7 +73,11 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
                       .from(RECORDED_TREES)
                       .where(
                           RECORDED_TREES.OBSERVATION_PLOT_ID.eq(
-                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID)))),
+                              OBSERVATION_BIOMASS_DETAILS.OBSERVATION_PLOT_ID
+                          )
+                      )
+              ),
+          ),
           bigDecimalField("ph", OBSERVATION_BIOMASS_DETAILS.PH),
           integerField("smallTreesCountHigh", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_HIGH),
           integerField("smallTreesCountLow", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_LOW),
@@ -75,7 +92,8 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
     get() =
         listOf(
             OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID,
-            OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID)
+            OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID,
+        )
 
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.observations

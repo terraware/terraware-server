@@ -37,7 +37,7 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
 
   fun assertFileNotExists(
       url: URI,
-      message: String = "$url was found in file store but shouldn't have been"
+      message: String = "$url was found in file store but shouldn't have been",
   ) {
     if (url in files) {
       fail(message)
@@ -64,7 +64,10 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
   override fun read(url: URI): SizedInputStream {
     val bytes = getFile(url)
     return SizedInputStream(
-        ByteArrayInputStream(bytes), bytes.size.toLong(), MediaType.APPLICATION_OCTET_STREAM)
+        ByteArrayInputStream(bytes),
+        bytes.size.toLong(),
+        MediaType.APPLICATION_OCTET_STREAM,
+    )
   }
 
   override fun size(url: URI): Long {

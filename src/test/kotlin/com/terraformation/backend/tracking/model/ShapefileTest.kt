@@ -21,7 +21,8 @@ internal class ShapefileTest {
     assertEquals(
         MultiPolygon::class.java,
         plantingSite!!.features[0].rawGeometry.javaClass,
-        "Site feature type")
+        "Site feature type",
+    )
   }
 
   @Test

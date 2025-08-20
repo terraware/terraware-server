@@ -106,13 +106,16 @@ class VariableImporter(
 
           // Import tables first
           importAllVariableCsvVariables(
-              csvVariables = csvVariables, importVariableType = HierarchicalVariableType.Table)
+              csvVariables = csvVariables,
+              importVariableType = HierarchicalVariableType.Table,
+          )
 
           // Import all non tables, non sections
           importAllVariableCsvVariables(
               csvVariables = csvVariables,
               ignoreVariableTypes =
-                  listOf(HierarchicalVariableType.Table, HierarchicalVariableType.Section))
+                  listOf(HierarchicalVariableType.Table, HierarchicalVariableType.Section),
+          )
 
           if (errors.isNotEmpty()) {
             // Roll back the transaction so we don't end up with a partially-imported manifest.
@@ -221,7 +224,7 @@ class VariableImporter(
 
     private fun variableNameOrParentWithinList(
         csvVariable: AllVariableCsvVariable,
-        names: List<String>
+        names: List<String>,
     ) = names.intersect(setOf(csvVariable.name, csvVariable.parent)).isNotEmpty()
 
     // This is where we define the "extra" import instructions for specific variable types
@@ -246,7 +249,8 @@ class VariableImporter(
         // This should be impossible since we are filtering the csv variables before we get here
         // But we should double-check
         throw IllegalStateException(
-            "Attempting to import top level table variable which is not of type 'table'")
+            "Attempting to import top level table variable which is not of type 'table'"
+        )
       }
 
       // Main table variable
@@ -254,7 +258,9 @@ class VariableImporter(
           VariableTablesRow(
               variableId = csvVariable.variableId,
               variableTypeId = VariableType.Table,
-              tableStyleId = csvVariable.tableStyle))
+              tableStyleId = csvVariable.tableStyle,
+          )
+      )
     }
 
     private fun importTableColumnVariable(csvVariable: AllVariableCsvVariable) {
@@ -262,13 +268,15 @@ class VariableImporter(
       val tableVariableId: VariableId =
           csvVariableByPath[csvVariable.parentPath]?.variableId
               ?: throw IllegalStateException(
-                  "Parent variable has not been imported - ${csvVariable.parent}")
+                  "Parent variable has not been imported - ${csvVariable.parent}"
+              )
       val zeroIndexedPosition =
           csvVariablesByParentPath[csvVariable.parentPath]?.indexOfFirst {
             it.variableId == csvVariable.variableId
           }
               ?: throw IllegalStateException(
-                  "Variable ${csvVariable.variableId} not found in parent ${csvVariable.parentPath}")
+                  "Variable ${csvVariable.variableId} not found in parent ${csvVariable.parentPath}"
+              )
 
       variableStore.importTableColumnVariable(
           VariableTableColumnsRow(
@@ -276,7 +284,9 @@ class VariableImporter(
               tableVariableId = tableVariableId,
               tableVariableTypeId = VariableType.Table,
               position = zeroIndexedPosition + 1,
-              isHeader = csvVariable.isHeader))
+              isHeader = csvVariable.isHeader,
+          )
+      )
     }
 
     // Import select variable and select variable option rows
@@ -291,11 +301,15 @@ class VariableImporter(
                     AllVariableCsvVariableType.MultiSelect -> true
                     else ->
                         throw IllegalStateException(
-                            "Attempting to import a Select Variable with non-select type variable data")
-                  })
+                            "Attempting to import a Select Variable with non-select type variable data"
+                        )
+                  },
+          )
       // The options were hydrated before we saved the variable, so we need to add some data
       variableStore.importSelectVariable(
-          selectsRow, csvVariable.options.map { it.copy(variableId = csvVariable.variableId) })
+          selectsRow,
+          csvVariable.options.map { it.copy(variableId = csvVariable.variableId) },
+      )
     }
 
     private fun importNumberVariable(csvVariable: AllVariableCsvVariable) {
@@ -305,7 +319,9 @@ class VariableImporter(
               variableTypeId = VariableType.Number,
               minValue = csvVariable.minValue,
               maxValue = csvVariable.maxValue,
-              decimalPlaces = csvVariable.decimalPlaces))
+              decimalPlaces = csvVariable.decimalPlaces,
+          )
+      )
     }
 
     private fun importTextVariable(csvVariable: AllVariableCsvVariable) {
@@ -319,8 +335,11 @@ class VariableImporter(
                     AllVariableCsvVariableType.MultiLine -> VariableTextType.MultiLine
                     else ->
                         throw IllegalStateException(
-                            "Attempt to import a non Text type CSV variable as a Text Variable")
-                  }))
+                            "Attempt to import a non Text type CSV variable as a Text Variable"
+                        )
+                  },
+          )
+      )
     }
 
     /**
@@ -336,7 +355,8 @@ class VariableImporter(
         // and this seems like a good validation as opposed to going back through
         // another csv type -> variable type `when` statement
         throw IllegalStateException(
-            "Variable Row is missing a type ID - position: ${csvVariable.position}, name: ${csvVariable.name}")
+            "Variable Row is missing a type ID - position: ${csvVariable.position}, name: ${csvVariable.name}"
+        )
       }
 
       val isNewVariable = variablesRow.id == null
@@ -376,7 +396,7 @@ class VariableImporter(
      */
     private fun hasSameOptions(
         csvVariable: AllVariableCsvVariable,
-        variable: SelectVariable
+        variable: SelectVariable,
     ): Boolean {
       val variableOptions =
           variable.options.mapIndexed { index, selectOption ->
@@ -415,7 +435,7 @@ class VariableImporter(
      */
     private fun canReuseExistingVariable(
         csvVariable: AllVariableCsvVariable,
-        variable: Variable
+        variable: Variable,
     ): Boolean {
       return csvVariable.description == variable.description &&
           csvVariable.dependencyCondition == variable.dependencyCondition &&

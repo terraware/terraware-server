@@ -27,15 +27,25 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           accessions.asSingleValueSublist(
-              "accession", BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID), isRequired = false),
+              "accession",
+              BATCHES.ACCESSION_ID.eq(ACCESSIONS.ID),
+              isRequired = false,
+          ),
           facilities.asSingleValueSublist("facility", BATCHES.FACILITY_ID.eq(FACILITIES.ID)),
           projects.asSingleValueSublist(
-              "project", BATCHES.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
+              "project",
+              BATCHES.PROJECT_ID.eq(PROJECTS.ID),
+              isRequired = false,
+          ),
           species.asSingleValueSublist("species", BATCHES.SPECIES_ID.eq(SPECIES.ID)),
           batchSubLocations.asMultiValueSublist(
-              "subLocations", BATCHES.ID.eq(BATCH_SUB_LOCATIONS.BATCH_ID)),
+              "subLocations",
+              BATCHES.ID.eq(BATCH_SUB_LOCATIONS.BATCH_ID),
+          ),
           batchWithdrawals.asMultiValueSublist(
-              "withdrawals", BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID)),
+              "withdrawals",
+              BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID),
+          ),
       )
     }
   }
@@ -46,12 +56,17 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
                   DSL.select(
                           DSL.sum(
                               BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN.plus(
-                                      BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN)
-                                  .plus(BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN)))
+                                      BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN
+                                  )
+                                  .plus(BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN)
+                          )
+                      )
                       .from(BATCH_WITHDRAWALS)
-                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID)))
+                      .where(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))
+              )
               .cast(SQLDataType.BIGINT),
-          DSL.value(0))
+          DSL.value(0),
+      )
 
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
@@ -76,7 +91,8 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
         integerField(
             "totalQuantity",
             BATCHES.READY_QUANTITY.plus(BATCHES.ACTIVE_GROWTH_QUANTITY)
-                .plus(BATCHES.HARDENING_OFF_QUANTITY)),
+                .plus(BATCHES.HARDENING_OFF_QUANTITY),
+        ),
         enumField("treatment", BATCHES.TREATMENT_ID),
         textField("treatmentNotes", BATCHES.TREATMENT_NOTES),
         longField("totalQuantityWithdrawn", totalQuantityWithdrawnField, nullable = false),

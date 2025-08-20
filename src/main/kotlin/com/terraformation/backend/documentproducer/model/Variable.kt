@@ -140,7 +140,8 @@ sealed interface Variable : BaseVariable {
   @Throws(
       VariableNotListException::class,
       VariableTypeMismatchException::class,
-      VariableValueInvalidException::class)
+      VariableValueInvalidException::class,
+  )
   fun validate(
       value: VariableValue<*, *>,
       fetchVariable: (VariableId) -> Variable,
@@ -176,7 +177,7 @@ sealed interface Variable : BaseVariable {
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
       newRowValueId: VariableValueId?,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ): NewValue? {
     return convertValueForType(oldVariable, oldValue, newRowValueId)?.let { convertedValue ->
       try {
@@ -209,7 +210,13 @@ sealed interface Variable : BaseVariable {
  */
 private fun Variable.baseForValue(oldValue: VariableValue<*, *>, newRowValueId: VariableValueId?) =
     BaseVariableValueProperties(
-        null, oldValue.projectId, oldValue.listPosition, id, oldValue.citation, newRowValueId)
+        null,
+        oldValue.projectId,
+        oldValue.listPosition,
+        id,
+        oldValue.citation,
+        newRowValueId,
+    )
 
 data class NumberVariable(
     private val base: BaseVariableProperties,
@@ -222,7 +229,7 @@ data class NumberVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is NumberValue) {
       throw VariableTypeMismatchException(id, VariableType.Number)
@@ -233,11 +240,15 @@ data class NumberVariable(
     }
     if (maxValue != null && value.value > maxValue) {
       throw VariableValueInvalidException(
-          id, "${value.value} is greater than maximum value $maxValue")
+          id,
+          "${value.value} is greater than maximum value $maxValue",
+      )
     }
     if (decimalPlaces != null && value.value.scale() > decimalPlaces) {
       throw VariableValueInvalidException(
-          id, "${value.value} has more decimal places than the maximum $decimalPlaces")
+          id,
+          "${value.value} has more decimal places than the maximum $decimalPlaces",
+      )
     }
   }
 
@@ -268,7 +279,7 @@ data class TextVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is TextValue) {
       throw VariableTypeMismatchException(id, VariableType.Text)
@@ -282,7 +293,7 @@ data class TextVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     val text =
         when (oldValue) {
@@ -324,7 +335,7 @@ data class DateVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is DateValue) {
       throw VariableTypeMismatchException(id, VariableType.Date)
@@ -334,7 +345,7 @@ data class DateVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     val date =
         when (oldValue) {
@@ -361,7 +372,7 @@ data class EmailVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is EmailValue) {
       throw VariableTypeMismatchException(id, VariableType.Email)
@@ -375,7 +386,7 @@ data class EmailVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     val oldText =
         when (oldValue) {
@@ -402,7 +413,7 @@ data class ImageVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is ImageValue) {
       throw VariableTypeMismatchException(id, VariableType.Image)
@@ -412,7 +423,7 @@ data class ImageVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     return if (oldValue is ImageValue) {
       NewImageValue(baseForValue(oldValue, newRowValueId), oldValue.value)
@@ -441,7 +452,7 @@ data class SelectVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is SelectValue) {
       throw VariableTypeMismatchException(id, VariableType.Select)
@@ -449,13 +460,17 @@ data class SelectVariable(
 
     if (!isMultiple && value.value.size > 1) {
       throw VariableValueInvalidException(
-          id, "Cannot select multiple values on single-selection variable")
+          id,
+          "Cannot select multiple values on single-selection variable",
+      )
     }
 
     value.value.forEach { optionId ->
       if (optionId !in validOptionIds) {
         throw VariableValueInvalidException(
-            id, "$optionId is not a valid option ID for this variable")
+            id,
+            "$optionId is not a valid option ID for this variable",
+        )
       }
     }
   }
@@ -463,7 +478,7 @@ data class SelectVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     // Try to match the textual representation(s) of the old option with the names of the options
     // in this variable.
@@ -509,15 +524,16 @@ data class SectionVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is SectionValue) {
       throw VariableTypeMismatchException(id, VariableType.Section)
     }
 
     if (value.value is SectionValueVariable) {
-      if (value.value.usageType == VariableUsageType.Injection &&
-          value.value.displayStyle == null) {
+      if (
+          value.value.usageType == VariableUsageType.Injection && value.value.displayStyle == null
+      ) {
         throw VariableValueInvalidException(id, "Display style is required for variable injections")
       }
 
@@ -527,7 +543,9 @@ data class SectionVariable(
         fetchVariable(usedVariableId)
       } catch (e: VariableNotFoundException) {
         throw VariableValueInvalidException(
-            id, "Variable $usedVariableId is used but does not exist in manifest")
+            id,
+            "Variable $usedVariableId is used but does not exist in manifest",
+        )
       }
     }
   }
@@ -535,7 +553,7 @@ data class SectionVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     return if (oldValue is SectionValue) {
       NewSectionValue(baseForValue(oldValue, newRowValueId), oldValue.value)
@@ -565,7 +583,7 @@ data class TableVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is TableValue) {
       throw VariableTypeMismatchException(id, VariableType.Table)
@@ -575,7 +593,7 @@ data class TableVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     return if (oldValue is TableValue) {
       NewTableValue(baseForValue(oldValue, newRowValueId))
@@ -598,7 +616,7 @@ data class LinkVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (value !is LinkValue) {
       throw VariableTypeMismatchException(id, VariableType.Link)
@@ -608,7 +626,7 @@ data class LinkVariable(
   override fun convertValueForType(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
   ): NewValue? {
     return when (oldValue) {
       is LinkValue -> NewLinkValue(baseForValue(oldValue, newRowValueId), oldValue.value)

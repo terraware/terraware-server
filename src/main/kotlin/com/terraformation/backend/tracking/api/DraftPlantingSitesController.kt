@@ -61,7 +61,7 @@ class DraftPlantingSitesController(
   @PutMapping("/{id}")
   fun updateDraftPlantingSite(
       @PathVariable id: DraftPlantingSiteId,
-      @RequestBody payload: UpdateDraftPlantingSiteRequestPayload
+      @RequestBody payload: UpdateDraftPlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
     draftPlantingSiteStore.update(id, payload::applyTo)
 
@@ -81,13 +81,15 @@ data class DraftPlantingSitePayload(
     @Schema(
         description =
             "ID of the user who created this draft. Only that user is allowed to modify or " +
-                "delete the draft.")
+                "delete the draft."
+    )
     val createdBy: UserId,
     val createdTime: Instant,
     @Schema(
         description =
             "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server.")
+                "by the client. It is treated as opaque data by the server."
+    )
     val data: ArbitraryJsonObject,
     val description: String?,
     val id: DraftPlantingSiteId,
@@ -96,11 +98,13 @@ data class DraftPlantingSitePayload(
     @Schema(
         description =
             "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far.")
+                "so far."
+    )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far.")
+            "If the user has started defining planting zones, the number of zones defined so far."
+    )
     val numPlantingZones: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
@@ -134,18 +138,21 @@ data class CreateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
             "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server.")
+                "by the client. It is treated as opaque data by the server."
+    )
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
     @Schema(
         description =
             "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far.")
+                "so far."
+    )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far.")
+            "If the user has started defining planting zones, the number of zones defined so far."
+    )
     val numPlantingZones: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
@@ -160,18 +167,21 @@ data class UpdateDraftPlantingSiteRequestPayload(
     @Schema(
         description =
             "In-progress state of the draft. This includes map data and other information needed " +
-                "by the client. It is treated as opaque data by the server.")
+                "by the client. It is treated as opaque data by the server."
+    )
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
     @Schema(
         description =
             "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far.")
+                "so far."
+    )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far.")
+            "If the user has started defining planting zones, the number of zones defined so far."
+    )
     val numPlantingZones: Int?,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,

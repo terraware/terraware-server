@@ -33,18 +33,20 @@ class DeliveriesController(
 ) {
   @GetMapping("/{id}")
   @Operation(
-      summary = "Gets information about a specific delivery of seedlings to a planting site.")
+      summary = "Gets information about a specific delivery of seedlings to a planting site."
+  )
   fun getDelivery(@PathVariable("id") deliveryId: DeliveryId): GetDeliveryResponsePayload {
     val model = deliveryStore.fetchOneById(deliveryId)
     return GetDeliveryResponsePayload(DeliveryPayload(model))
   }
 
   @Operation(
-      summary = "Reassigns some of the seedlings from a delivery to a different planting subzone.")
+      summary = "Reassigns some of the seedlings from a delivery to a different planting subzone."
+  )
   @PostMapping("/{id}/reassign")
   fun reassignDelivery(
       @PathVariable("id") deliveryId: DeliveryId,
-      @RequestBody payload: ReassignDeliveryRequestPayload
+      @RequestBody payload: ReassignDeliveryRequestPayload,
   ): SimpleSuccessResponsePayload {
     deliveryStore.reassignDelivery(deliveryId, payload.reassignments.map { it.toModel() })
     return SimpleSuccessResponsePayload()
@@ -58,7 +60,8 @@ data class PlantingPayload(
     @Schema(
         description =
             "Number of plants planted or reassigned. If type is \"Reassignment From\", this " +
-                "will be negative.")
+                "will be negative."
+    )
     val numPlants: Int,
     val plantingSubzoneId: PlantingSubzoneId?,
     val speciesId: SpeciesId,
@@ -99,7 +102,8 @@ data class ReassignmentPayload(
     @Schema(
         description =
             "Number of plants to reassign from the planting's original subzone to the new one. " +
-                "Must be less than or equal to the number of plants in the original planting.")
+                "Must be less than or equal to the number of plants in the original planting."
+    )
     val numPlants: Int,
     val notes: String?,
     val toPlantingSubzoneId: PlantingSubzoneId,

@@ -23,8 +23,9 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
         store.updateAndFetch(
             withQuantity.copy(
                 state = AccessionState.Drying,
-                withdrawals =
-                    listOf(WithdrawalModel(date = LocalDate.EPOCH, withdrawn = seeds(1)))))
+                withdrawals = listOf(WithdrawalModel(date = LocalDate.EPOCH, withdrawn = seeds(1))),
+            )
+        )
 
     assertEquals(AccessionState.UsedUp, updated.state)
   }
@@ -40,11 +41,16 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
                   WithdrawalModel(
                       date = LocalDate.EPOCH,
                       purpose = WithdrawalPurpose.Other,
-                      withdrawn = seeds(10)))
+                      withdrawn = seeds(10),
+                  )
+              )
             }
 
     assertEquals(
-        seeds<SeedQuantityModel>(90), accession.remaining, "Quantity remaining on accession")
+        seeds<SeedQuantityModel>(90),
+        accession.remaining,
+        "Quantity remaining on accession",
+    )
 
     val quantityFromHistory =
         accessionQuantityHistoryDao
@@ -54,7 +60,8 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
     assertEquals(
         BigDecimal(90),
         quantityFromHistory,
-        "Should have inserted quantity history row for new value")
+        "Should have inserted quantity history row for new value",
+    )
   }
 
   @Test
@@ -69,7 +76,9 @@ internal class AccessionStoreWithdrawalTest : AccessionStoreTest() {
                   WithdrawalModel(
                       date = LocalDate.EPOCH,
                       purpose = WithdrawalPurpose.Other,
-                      withdrawn = grams(4)))
+                      withdrawn = grams(4),
+                  )
+              )
             }
 
     assertEquals(2, accession.totalWithdrawnCount, "Total withdrawn count")

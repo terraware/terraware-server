@@ -40,7 +40,9 @@ class DeviceManagerStore(
         DSL.or(
             listOfNotNull(
                 DEVICE_MANAGERS.FACILITY_ID.isNull,
-                facilityIds?.let { DEVICE_MANAGERS.FACILITY_ID.`in`(it) }))
+                facilityIds?.let { DEVICE_MANAGERS.FACILITY_ID.`in`(it) },
+            )
+        )
 
     return dslContext
         .selectFrom(DEVICE_MANAGERS)

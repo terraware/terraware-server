@@ -56,13 +56,15 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
                     "collectedDate" to "2019-01-01",
                 ),
                 mapOf("id" to "${accessionIds[4]}"),
-            ))
+            )
+        )
     val actual =
         searchService.search(
             rootPrefix,
             listOf(idField, ageMonthsField, ageYearsField, collectedDateField),
             mapOf(rootPrefix to searchNode),
-            listOf(sortField))
+            listOf(sortField),
+        )
 
     assertEquals(expected, actual)
   }
@@ -80,14 +82,16 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
                 // Oldest first, meaning ascending date order
                 mapOf("id" to "$accessionId2", "ageMonths" to "0", "collectedDate" to "2020-06-01"),
                 mapOf("id" to "$accessionId1", "ageMonths" to "0", "collectedDate" to "2020-06-02"),
-            ))
+            )
+        )
 
     val actual =
         searchService.search(
             rootPrefix,
             listOf(idField, ageMonthsField, collectedDateField),
             mapOf(rootPrefix to searchNode),
-            listOf(sortField))
+            listOf(sortField),
+        )
 
     assertEquals(expected, actual)
   }
@@ -105,14 +109,16 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
                 // Youngest first, meaning reverse date order
                 mapOf("id" to "$accessionId1", "ageYears" to "0", "collectedDate" to "2020-06-02"),
                 mapOf("id" to "$accessionId2", "ageYears" to "0", "collectedDate" to "2020-06-01"),
-            ))
+            )
+        )
 
     val actual =
         searchService.search(
             rootPrefix,
             listOf(idField, ageYearsField, collectedDateField),
             mapOf(rootPrefix to searchNode),
-            listOf(sortField))
+            listOf(sortField),
+        )
 
     assertEquals(expected, actual)
   }
@@ -148,7 +154,8 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     setCollectedDates(
         accessionId1 to "2018-01-01",
         accessionId2 to "2019-12-31",
-        otherAccessionId to "2020-01-01")
+        otherAccessionId to "2020-01-01",
+    )
 
     val searchNode = FieldNode(ageYearsField, listOf("1", "2"), SearchFilterType.Range)
     val sortField = SearchSortField(ageYearsField)
@@ -157,7 +164,11 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
         SearchResults(listOf(mapOf("id" to "$accessionId2"), mapOf("id" to "$accessionId1")))
     val actual =
         searchService.search(
-            rootPrefix, listOf(idField), mapOf(rootPrefix to searchNode), listOf(sortField))
+            rootPrefix,
+            listOf(idField),
+            mapOf(rootPrefix to searchNode),
+            listOf(sortField),
+        )
 
     assertEquals(expected, actual)
   }

@@ -78,22 +78,26 @@ class DeliverablesController(
               "query string. If no filter parameters are supplied, lists all the deliverables " +
               "in all the participants and projects that are visible to the user. For users with " +
               "accelerator admin privileges, this will be the full list of all deliverables for " +
-              "all accelerator projects.")
+              "all accelerator projects.",
+  )
   fun listDeliverables(
       @Parameter(
-          description = "Filter deliverables by modules. Can be used with other request params.")
+          description = "Filter deliverables by modules. Can be used with other request params."
+      )
       @RequestParam
       moduleId: ModuleId? = null,
       @Parameter(
           description =
               "List deliverables for projects belonging to this organization. Ignored if " +
-                  "participantId or projectId is specified.")
+                  "participantId or projectId is specified."
+      )
       @RequestParam
       organizationId: OrganizationId? = null,
       @Parameter(
           description =
               "List deliverables for all projects in this participant. Ignored if projectId is " +
-                  "specified.")
+                  "specified."
+      )
       @RequestParam
       participantId: ParticipantId? = null,
       @Parameter(description = "List deliverables for this project only.")
@@ -102,7 +106,11 @@ class DeliverablesController(
   ): ListDeliverablesResponsePayload {
     val models =
         deliverableStore.fetchDeliverableSubmissions(
-            organizationId, participantId, projectId, moduleId = moduleId)
+            organizationId,
+            participantId,
+            projectId,
+            moduleId = moduleId,
+        )
 
     return ListDeliverablesResponsePayload(models.map { ListDeliverablesElement(it) })
   }
@@ -111,10 +119,11 @@ class DeliverablesController(
   @ApiResponse404
   @GetMapping("/{deliverableId}/submissions/{projectId}")
   @Operation(
-      summary = "Gets the details of a single deliverable and its submission documents, if any.")
+      summary = "Gets the details of a single deliverable and its submission documents, if any."
+  )
   fun getDeliverable(
       @PathVariable deliverableId: DeliverableId,
-      @PathVariable projectId: ProjectId
+      @PathVariable projectId: ProjectId,
   ): GetDeliverableResponsePayload {
     val model =
         deliverableStore
@@ -129,13 +138,14 @@ class DeliverablesController(
           "If the current user has permission to view the document, redirects to the document " +
               "on the document store. Depending on the document store, the redirect URL may or " +
               "may not be valid for only a limited time.",
-      headers = [Header(name = "Location", description = "URL of document in document store.")])
+      headers = [Header(name = "Location", description = "URL of document in document store.")],
+  )
   @ApiResponse404
   @GetMapping("/{deliverableId}/documents/{documentId}")
   @Operation(summary = "Gets a single submission document from a deliverable.")
   fun getDeliverableDocument(
       @PathVariable deliverableId: DeliverableId,
-      @PathVariable documentId: SubmissionDocumentId
+      @PathVariable documentId: SubmissionDocumentId,
   ): ResponseEntity<String> {
     val url = submissionService.getExternalUrl(deliverableId, documentId)
 
@@ -148,16 +158,18 @@ class DeliverablesController(
       description =
           "The server is unable to store the uploaded file. This response indicates a condition " +
               "that triggers the system to create a customer support ticket; clients can inform " +
-              "users of that fact.")
+              "users of that fact.",
+  )
   @Operation(summary = "Uploads a new document to satisfy a deliverable.")
   @PostMapping("/{deliverableId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])]
+  )
   fun uploadDeliverableDocument(
       @PathVariable deliverableId: DeliverableId,
       @RequestPart(required = true) projectId: String,
       @RequestPart(required = true) description: String,
-      @RequestPart(required = true) file: MultipartFile
+      @RequestPart(required = true) file: MultipartFile,
   ): UploadDeliverableDocumentResponsePayload {
     try {
       val documentId =
@@ -167,12 +179,16 @@ class DeliverablesController(
               ProjectId(projectId),
               deliverableId,
               description,
-              file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
+              file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE,
+          )
 
       return UploadDeliverableDocumentResponsePayload(documentId)
     } catch (e: ProjectDocumentStorageFailedException) {
       throw ServerErrorException(
-          "Unable to store uploaded file", HttpStatus.INSUFFICIENT_STORAGE.value(), e)
+          "Unable to store uploaded file",
+          HttpStatus.INSUFFICIENT_STORAGE.value(),
+          e,
+      )
     }
   }
 
@@ -180,7 +196,8 @@ class DeliverablesController(
   @Operation(summary = "Import a list of deliverables metadata. ")
   @PostMapping("/import", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])]
+  )
   fun importDeliverables(
       @RequestPart(required = true) file: MultipartFile
   ): ImportDeliverableResponsePayload {
@@ -190,7 +207,8 @@ class DeliverablesController(
       return ImportDeliverableResponsePayload(
           SuccessOrError.Error,
           e.errors.map { ImportDeliverableProblemElement(it.rowNumber, it.message) },
-          e.message)
+          e.message,
+      )
     }
     return ImportDeliverableResponsePayload(SuccessOrError.Ok)
   }
@@ -198,16 +216,22 @@ class DeliverablesController(
   @ApiResponseSimpleSuccess
   @Operation(
       summary = "Updates the state of a submission from a project.",
-      description = "Only permitted for users with accelerator admin privileges.")
+      description = "Only permitted for users with accelerator admin privileges.",
+  )
   @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   @PutMapping("/{deliverableId}/submissions/{projectId}")
   fun updateSubmission(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: UpdateSubmissionRequestPayload
+      @RequestBody payload: UpdateSubmissionRequestPayload,
   ): SimpleSuccessResponsePayload {
     submissionStore.updateSubmissionStatus(
-        deliverableId, projectId, payload.status, payload.feedback, payload.internalComment)
+        deliverableId,
+        projectId,
+        payload.status,
+        payload.feedback,
+        payload.internalComment,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -264,7 +288,8 @@ data class ListDeliverablesElement(
     @Schema(
         description =
             "Number of documents submitted for this deliverable. Only valid for deliverables of " +
-                "type Document.")
+                "type Document."
+    )
     val numDocuments: Int?,
     val organizationId: OrganizationId,
     val organizationName: String,
@@ -335,13 +360,15 @@ data class DeliverablePayload(
     val documents: List<SubmissionDocumentPayload>,
     @Schema(
         description =
-            "If the deliverable has been reviewed, the user-visible feedback from the review.")
+            "If the deliverable has been reviewed, the user-visible feedback from the review."
+    )
     val dueDate: LocalDate?,
     val feedback: String?,
     val id: DeliverableId,
     @Schema(
         description =
-            "Internal-only comment on the submission. Only present if the current user has accelerator admin privileges.")
+            "Internal-only comment on the submission. Only present if the current user has accelerator admin privileges."
+    )
     val internalComment: String?,
     val name: String,
     val organizationId: OrganizationId,

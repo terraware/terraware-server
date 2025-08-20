@@ -30,7 +30,8 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
   @GetMapping("/names")
   @Operation(
       description =
-          "Gets a list of known scientific names whose words begin with particular letters.")
+          "Gets a list of known scientific names whose words begin with particular letters."
+  )
   fun listSpeciesNames(
       @RequestParam
       @Schema(
@@ -39,7 +40,8 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
                   "are ignored, and matches are case-insensitive. The order of prefixes is " +
                   "significant; \"ag sc\" will match \"Aglaonema schottianum\" but won't match " +
                   "\"Scabiosa agrestis\".",
-          example = "ag sc")
+          example = "ag sc",
+      )
       @Size(min = 2, max = 100)
       search: String,
       @RequestParam("maxResults", defaultValue = "10")
@@ -76,7 +78,8 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
               "If specified, only return common names in this language or whose language is " +
                   "unknown. Names with unknown languages are always included. This is a " +
                   "two-letter ISO 639-1 language code.",
-          example = "en")
+          example = "en",
+      )
       language: String? = null,
   ): SpeciesLookupDetailsResponsePayload {
     val model =
@@ -91,8 +94,9 @@ data class SpeciesLookupNamesResponsePayload(
     val names: List<String>,
     @Schema(
         description =
-            "True if there were more matching names than could be included in the response.")
-    val partial: Boolean
+            "True if there were more matching names than could be included in the response."
+    )
+    val partial: Boolean,
 ) : SuccessResponsePayload
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -102,7 +106,8 @@ data class SpeciesLookupCommonNamePayload(
         description =
             "ISO 639-1 two-letter language code indicating the name's language. Some common " +
                 "names in the server's taxonomic database are not tagged with languages; this " +
-                "value will not be present for those names.")
+                "value will not be present for those names."
+    )
     val language: String?,
 ) {
   constructor(model: GbifVernacularNameModel) : this(model.name, model.language)
@@ -112,23 +117,27 @@ data class SpeciesLookupCommonNamePayload(
 data class SpeciesLookupDetailsResponsePayload(
     val scientificName: String,
     @ArraySchema(
-        arraySchema = Schema(description = "List of known common names for the species, if any."))
+        arraySchema = Schema(description = "List of known common names for the species, if any.")
+    )
     val commonNames: List<SpeciesLookupCommonNamePayload>?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
-            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"),
+    )
     val conservationCategory: ConservationCategory?,
     val familyName: String,
     @Schema(
         description =
             "If this is not the accepted name for the species, the type of problem the name has. " +
-                "Currently, this will always be \"Name Is Synonym\".")
+                "Currently, this will always be \"Name Is Synonym\"."
+    )
     val problemType: SpeciesProblemType?,
     @Schema(
         description =
             "If this is not the accepted name for the species, the name to suggest as an " +
-                "alternative.")
+                "alternative."
+    )
     val suggestedScientificName: String?,
 ) {
   constructor(
@@ -140,5 +149,6 @@ data class SpeciesLookupDetailsResponsePayload(
       model.conservationCategory,
       model.familyName,
       problem?.typeId,
-      problem?.suggestedValue)
+      problem?.suggestedValue,
+  )
 }

@@ -23,16 +23,25 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           plantings.asMultiValueSublist(
-              "plantings", PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID)),
+              "plantings",
+              PLANTING_SUBZONES.ID.eq(PLANTINGS.PLANTING_SUBZONE_ID),
+          ),
           plantingSites.asSingleValueSublist(
-              "plantingSite", PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
           plantingZones.asSingleValueSublist(
-              "plantingZone", PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)),
+              "plantingZone",
+              PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID),
+          ),
           plantingSubzonePopulations.asMultiValueSublist(
               "populations",
-              PLANTING_SUBZONES.ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)),
+              PLANTING_SUBZONES.ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID),
+          ),
           monitoringPlots.asMultiValueSublist(
-              "monitoringPlots", PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID)),
+              "monitoringPlots",
+              PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID),
+          ),
       )
     }
   }
@@ -53,8 +62,10 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
                   DSL.select(DSL.sum(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS))
                       .from(PLANTING_SUBZONE_POPULATIONS)
                       .where(
-                          PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(
-                              PLANTING_SUBZONES.ID)))),
+                          PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)
+                      )
+              ),
+          ),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.plantingZones

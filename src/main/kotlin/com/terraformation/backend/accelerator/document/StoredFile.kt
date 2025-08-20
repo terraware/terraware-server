@@ -8,5 +8,5 @@ data class StoredFile(
      */
     val storedName: String,
     /** The file's location in the document store. The meaning of this is store-specific. */
-    val location: String
+    val location: String,
 )

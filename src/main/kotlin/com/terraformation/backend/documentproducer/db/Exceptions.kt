@@ -12,14 +12,16 @@ import com.terraformation.backend.db.docprod.VariableValueId
 
 class CannotSaveEmptyDocumentException(val documentId: DocumentId) :
     MismatchedStateException(
-        "Cannot save version of document $documentId before any values are present")
+        "Cannot save version of document $documentId before any values are present"
+    )
 
 class DocumentNotFoundException(documentId: DocumentId) :
     EntityNotFoundException("Document $documentId not found")
 
 class MissingVariableManifestException(val documentTemplateId: DocumentTemplateId) :
     MismatchedStateException(
-        "No variable manifest defined for document template $documentTemplateId")
+        "No variable manifest defined for document template $documentTemplateId"
+    )
 
 class SavedVersionNotFoundException(documentId: DocumentId, versionId: DocumentSavedVersionId) :
     EntityNotFoundException("Document $documentId has no saved version $versionId")
@@ -32,7 +34,8 @@ class UpgradeCannotChangeDocumentTemplateException(
 ) :
     MismatchedStateException(
         "Cannot upgrade from manifest $oldManifestId (document template $oldDocumentTemplateId) to manifest " +
-            "$newManifestId which is for a different document template $newDocumentTemplateId")
+            "$newManifestId which is for a different document template $newDocumentTemplateId"
+    )
 
 class CircularReferenceException(val variableIds: Collection<VariableId>) :
     IllegalStateException("Circular reference detected in variables: $variableIds")
@@ -42,14 +45,16 @@ class NoManifestForDocumentTemplateException(val documentTemplateId: DocumentTem
 
 class RowInWrongTableException(val columnVariableId: VariableId, val rowValueId: VariableValueId) :
     MismatchedStateException(
-        "Row $rowValueId is in a different table than column $columnVariableId")
+        "Row $rowValueId is in a different table than column $columnVariableId"
+    )
 
 class VariableIncompleteException(val variableId: VariableId) :
     IllegalStateException("Variable $variableId missing required configuration data")
 
 class VariableInTableException(val variableId: VariableId) :
     MismatchedStateException(
-        "Variable $variableId is a table column so must be used in a table row")
+        "Variable $variableId is a table column so must be used in a table row"
+    )
 
 class VariableManifestNotFoundException(val manifestId: VariableManifestId) :
     EntityNotFoundException("Variable manifest $manifestId not found")
@@ -59,12 +64,13 @@ class VariableNotFoundException(val variableId: VariableId) :
 
 class VariableNotInManifestException(
     val variableId: VariableId,
-    val manifestId: VariableManifestId
+    val manifestId: VariableManifestId,
 ) : EntityNotFoundException("Variable $variableId is not in manifest $manifestId")
 
 class VariableNotInTableException(val variableId: VariableId) :
     MismatchedStateException(
-        "Variable $variableId is not a table column so cannot be used in a table row")
+        "Variable $variableId is not a table column so cannot be used in a table row"
+    )
 
 class VariableNotListException(val variableId: VariableId) :
     MismatchedStateException("Variable $variableId is not a list")
@@ -77,12 +83,13 @@ class VariableValueIncompleteException(val valueId: VariableValueId) :
 
 class VariableValueInvalidException(val variableId: VariableId, val reason: String? = null) :
     IllegalArgumentException(
-        listOfNotNull("Invalid value for $variableId", reason).joinToString(": "))
+        listOfNotNull("Invalid value for $variableId", reason).joinToString(": ")
+    )
 
 class VariableValueNotFoundException(val valueId: VariableValueId) :
     EntityNotFoundException("Value $valueId not found")
 
 class VariableValueTypeMismatchException(
     val valueId: VariableValueId,
-    val expectedType: VariableType
+    val expectedType: VariableType,
 ) : MismatchedStateException("Value $valueId is not of type $expectedType")

@@ -63,7 +63,8 @@ class Messages {
             country,
             totalMinimum,
             mangroveMinimum,
-            totalMaximum)
+            totalMaximum,
+        )
       }
 
   fun applicationPreScreenBoundaryInNoCountry() =
@@ -74,7 +75,7 @@ class Messages {
 
   fun applicationPreScreenFailureMismatchCountries(
       boundaryCountry: String,
-      projectCountry: String
+      projectCountry: String,
   ) = getMessage("applicationPreScreen.failure.mismatchCountries", boundaryCountry, projectCountry)
 
   fun applicationPreScreenFailureMonocultureTooHigh(maximum: Int) =
@@ -130,33 +131,43 @@ class Messages {
   fun acceleratorReportUpcoming(reportPrefix: String): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.acceleratorReport.upcoming.app.title", reportPrefix),
-        body = getMessage("notification.acceleratorReport.upcoming.app.body", reportPrefix))
+        body = getMessage("notification.acceleratorReport.upcoming.app.body", reportPrefix),
+    )
   }
 
   fun acceleratorReportSubmitted(
       projectDealName: String,
-      reportPrefix: String
+      reportPrefix: String,
   ): NotificationMessage {
     return NotificationMessage(
         title =
             getMessage(
                 "notification.acceleratorReport.submitted.app.title",
                 reportPrefix,
-                projectDealName),
+                projectDealName,
+            ),
         body =
             getMessage(
-                "notification.acceleratorReport.submitted.app.body", projectDealName, reportPrefix))
+                "notification.acceleratorReport.submitted.app.body",
+                projectDealName,
+                reportPrefix,
+            ),
+    )
   }
 
   fun acceleratorReportPublished(
       projectDealName: String,
-      reportPrefix: String
+      reportPrefix: String,
   ): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.acceleratorReport.published.app.title", projectDealName),
         body =
             getMessage(
-                "notification.acceleratorReport.published.app.body", projectDealName, reportPrefix))
+                "notification.acceleratorReport.published.app.body",
+                projectDealName,
+                reportPrefix,
+            ),
+    )
   }
 
   fun accessionCsvColumnName(position: Int) = getMessage("accessionCsvColumnName.$position")
@@ -175,7 +186,8 @@ class Messages {
   fun accessionCsvNonZeroUsedUpQuantity() =
       getMessage(
           "accessionCsvNonZeroUsedUpQuantity",
-          AccessionState.UsedUp.getDisplayName(currentLocale()))
+          AccessionState.UsedUp.getDisplayName(currentLocale()),
+      )
 
   fun accessionCsvNumberDuplicate(lineNumber: Int) =
       getMessage("accessionCsvNumberDuplicate", lineNumber)
@@ -241,12 +253,14 @@ class Messages {
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.user.addedToOrganization.app.title"),
-          body = getMessage("notification.user.addedToOrganization.app.body", orgName))
+          body = getMessage("notification.user.addedToOrganization.app.body", orgName),
+      )
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.accession.dryingEnd.app.title"),
-          body = getMessage("notification.accession.dryingEnd.app.body", accessionNumber))
+          body = getMessage("notification.accession.dryingEnd.app.body", accessionNumber),
+      )
 
   fun moduleEventStartingNotification(
       eventType: EventType,
@@ -257,45 +271,54 @@ class Messages {
               getMessage(
                   "notification.module.eventStarting.title",
                   eventType.getDisplayName(currentLocale()),
-                  MODULE_EVENT_NOTIFICATION_LEAD_TIME.toMinutes().toString()),
+                  MODULE_EVENT_NOTIFICATION_LEAD_TIME.toMinutes().toString(),
+              ),
           body =
               getMessage(
                   "notification.module.eventStarting.body",
                   eventType.getDisplayName(currentLocale()),
-                  moduleName))
+                  moduleName,
+              ),
+      )
 
   fun moduleRecordedSessionNotification(moduleName: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.module.recordedSession.title"),
-          body = getMessage("notification.module.recordedSession.body", moduleName))
+          body = getMessage("notification.module.recordedSession.body", moduleName),
+      )
 
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,
-      facilityName: String
+      facilityName: String,
   ): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.batch.ready.app.title", batchNumber),
-          body = getMessage("notification.batch.ready.app.body", batchNumber, facilityName))
+          body = getMessage("notification.batch.ready.app.body", batchNumber, facilityName),
+      )
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.seedBank.idle.app.title"),
-          body = getMessage("notification.seedBank.idle.app.body"))
+          body = getMessage("notification.seedBank.idle.app.body"),
+      )
 
   fun observationScheduleReminder(): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.observation.scheduleReminder.app.title"),
-          body = getMessage("notification.observation.scheduleReminder.app.body"))
+          body = getMessage("notification.observation.scheduleReminder.app.body"),
+      )
 
   fun observationSchedule(): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.observation.schedule.app.title"),
-          body = getMessage("notification.observation.schedule.app.body"))
+          body = getMessage("notification.observation.schedule.app.body"),
+      )
 
   fun observationStarted(): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.observation.started.app.title"),
-        body = getMessage("notification.observation.started.app.body"))
+        body = getMessage("notification.observation.started.app.body"),
+    )
   }
 
   fun observationUpcoming(plantingSiteName: String, startDate: LocalDate): NotificationMessage {
@@ -307,7 +330,11 @@ class Messages {
         title = getMessage("notification.observation.upcoming.app.title"),
         body =
             getMessage(
-                "notification.observation.upcoming.app.body", plantingSiteName, startDateString))
+                "notification.observation.upcoming.app.body",
+                plantingSiteName,
+                startDateString,
+            ),
+    )
   }
 
   fun plantingSeasonNotScheduled(notificationNumber: Int): NotificationMessage {
@@ -321,49 +348,57 @@ class Messages {
   fun plantingSeasonStarted(plantingSiteName: String): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.plantingSeason.started.app.title"),
-        body = getMessage("notification.plantingSeason.started.app.body", plantingSiteName))
+        body = getMessage("notification.plantingSeason.started.app.body", plantingSiteName),
+    )
   }
 
   fun deliverableReadyForReview(participantName: String): NotificationMessage {
     return NotificationMessage(
         title = "Review a submitted deliverable",
-        body = "A deliverable from $participantName is ready for review for approval.")
+        body = "A deliverable from $participantName is ready for review for approval.",
+    )
   }
 
   fun deliverableStatusUpdated(): NotificationMessage {
     return NotificationMessage(
         title = getMessage("notification.deliverable.statusUpdated.app.title"),
-        body = getMessage("notification.deliverable.statusUpdated.app.body"))
+        body = getMessage("notification.deliverable.statusUpdated.app.body"),
+    )
   }
 
   fun participantProjectSpeciesAddedToProject(
       participantName: String,
       projectName: String,
-      speciesName: String
+      speciesName: String,
   ): NotificationMessage {
     return NotificationMessage(
         title =
             getMessage("notification.participantProjectSpecies.added.app.title", participantName),
         body =
             getMessage(
-                "notification.participantProjectSpecies.added.app.body", speciesName, projectName))
+                "notification.participantProjectSpecies.added.app.body",
+                speciesName,
+                projectName,
+            ),
+    )
   }
 
   fun participantProjectSpeciesApprovedSpeciesEdited(
       participantName: String,
-      speciesName: String
+      speciesName: String,
   ): NotificationMessage {
     return NotificationMessage(
         title =
             getMessage("notification.participantProjectSpecies.edited.app.title", participantName),
-        body = getMessage("notification.participantProjectSpecies.edited.app.body", speciesName))
+        body = getMessage("notification.participantProjectSpecies.edited.app.body", speciesName),
+    )
   }
 
   fun sensorBoundsAlert(
       device: DevicesRow,
       facilityName: String,
       timeseriesName: String,
-      value: Any
+      value: Any,
   ): NotificationMessage =
       NotificationMessage(
           title =
@@ -380,46 +415,54 @@ class Messages {
                     getMessage(
                         "notification.seedBank.sensorBounds.humidity.app.body",
                         device.name!!,
-                        value)
+                        value,
+                    )
                 device.deviceType == "sensor" && timeseriesName == "temperature" ->
                     getMessage(
                         "notification.seedBank.sensorBounds.temperature.app.body",
                         device.name!!,
-                        value)
+                        value,
+                    )
                 else ->
                     getMessage(
                         "notification.seedBank.sensorBounds.generic.app.body",
                         timeseriesName,
                         device.name!!,
-                        value)
-              })
+                        value,
+                    )
+              },
+      )
 
   fun unknownAutomationTriggered(
       automationName: String,
       facilityName: String,
-      message: String?
+      message: String?,
   ): NotificationMessage =
       NotificationMessage(
           title =
               getMessage(
                   "notification.seedBank.unknownAutomationTriggered.app.title",
                   automationName,
-                  facilityName),
-          body = message ?: getMessage("notification.seedBank.unknownAutomationTriggered.app.body"))
+                  facilityName,
+              ),
+          body = message ?: getMessage("notification.seedBank.unknownAutomationTriggered.app.body"),
+      )
 
   fun deviceUnresponsive(deviceName: String): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.seedBank.deviceUnresponsive.app.title", deviceName),
-          body = getMessage("notification.seedBank.deviceUnresponsive.app.body", deviceName))
+          body = getMessage("notification.seedBank.deviceUnresponsive.app.body", deviceName),
+      )
 
   fun seedFundReportCreated(year: Int, quarter: Int): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.seedFundReport.created.app.title", "$year", "$quarter"),
-          body = getMessage("notification.seedFundReport.created.app.body", "$year", "$quarter"))
+          body = getMessage("notification.seedFundReport.created.app.body", "$year", "$quarter"),
+      )
 
   fun completedSectionVariableUpdated(
       documentName: String,
-      sectionName: String
+      sectionName: String,
   ): NotificationMessage =
       NotificationMessage(
           title = getMessage("notification.document.completedSectionVariableUpdated.app.title"),
@@ -427,7 +470,8 @@ class Messages {
               getMessage(
                   "notification.document.completedSectionVariableUpdated.app.body",
                   documentName,
-                  sectionName),
+                  sectionName,
+              ),
       )
 
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
@@ -440,7 +484,7 @@ class Messages {
 
   fun historyAccessionWithdrawal(
       quantity: SeedQuantityModel?,
-      purpose: WithdrawalPurpose?
+      purpose: WithdrawalPurpose?,
   ): String {
     val quantityText = quantity?.let { seedQuantity(it) }
 

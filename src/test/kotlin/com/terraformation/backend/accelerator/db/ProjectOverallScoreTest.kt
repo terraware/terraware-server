@@ -58,7 +58,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overallScore = 1.5,
           summary = "summary 1",
           createdBy = otherUser,
-          createdTime = Instant.ofEpochSecond(300))
+          createdTime = Instant.ofEpochSecond(300),
+      )
 
       insertProjectOverallScore(
           otherProjectId,
@@ -66,7 +67,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overallScore = 2.5,
           summary = "summary 2",
           createdBy = user.userId,
-          createdTime = Instant.ofEpochSecond(600))
+          createdTime = Instant.ofEpochSecond(600),
+      )
 
       assertEquals(
           ProjectOverallScoreModel(
@@ -78,7 +80,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(300),
           ),
           store.fetch(projectId),
-          "fetch by original projectId")
+          "fetch by original projectId",
+      )
 
       assertEquals(
           ProjectOverallScoreModel(
@@ -90,7 +93,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(600),
           ),
           store.fetch(otherProjectId),
-          "fetch by other projectId")
+          "fetch by other projectId",
+      )
     }
 
     @Test
@@ -118,7 +122,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overallScore = 1.5,
           summary = "summary 1",
           createdBy = otherUser,
-          createdTime = Instant.ofEpochSecond(300))
+          createdTime = Instant.ofEpochSecond(300),
+      )
 
       store.update(projectId) {
         it.copy(
@@ -162,7 +167,8 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-          ))
+          )
+      )
     }
 
     @Test

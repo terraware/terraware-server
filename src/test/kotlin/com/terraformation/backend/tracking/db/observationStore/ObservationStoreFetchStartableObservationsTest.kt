@@ -29,7 +29,10 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     helper.insertPlantedSite(timeZone = timeZone)
     val startableObservationId =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Another planting site with no requested subzone.
@@ -66,14 +69,20 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     helper.insertPlantedSite(timeZone = null)
     val observationId1 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Start date is an hour ago.
     helper.insertPlantedSite(timeZone = zone3)
     val observationId2 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Start date hasn't arrived yet in the site's time zone.
@@ -89,7 +98,10 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     // Start date is still in the future.
     helper.insertPlantedSite(timeZone = zone3)
     insertObservation(
-        endDate = endDate, startDate = startDate.plusDays(1), state = ObservationState.Upcoming)
+        endDate = endDate,
+        startDate = startDate.plusDays(1),
+        state = ObservationState.Upcoming,
+    )
     insertObservationRequestedSubzone()
 
     val expected = setOf(observationId1, observationId2)
@@ -111,7 +123,10 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
     val plantingSiteId = helper.insertPlantedSite(timeZone = timeZone)
     val observationId =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     insertPlantingSite(timeZone = timeZone)

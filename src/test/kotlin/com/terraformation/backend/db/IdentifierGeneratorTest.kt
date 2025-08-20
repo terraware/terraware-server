@@ -44,12 +44,15 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
             "Org 1 accession 1" to "22-1-1-001",
             "Org 1 accession 2" to "22-1-1-002",
             "Org 1 batch" to "22-2-1-001",
-            "Org 2 accession" to "22-1-1-001"),
+            "Org 2 accession" to "22-1-1-001",
+        ),
         mapOf(
             "Org 1 accession 1" to org1AccessionIdentifier1,
             "Org 1 accession 2" to org1AccessionIdentifier2,
             "Org 1 batch" to org1BatchIdentifier,
-            "Org 2 accession" to org2AccessionIdentifier))
+            "Org 2 accession" to org2AccessionIdentifier,
+        ),
+    )
   }
 
   @Test
@@ -67,11 +70,14 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
         mapOf(
             "Nursery 1 batch 1" to "22-2-1-001",
             "Nursery 1 batch 2" to "22-2-1-002",
-            "Nursery 2 batch 1" to "22-2-2-003"),
+            "Nursery 2 batch 1" to "22-2-2-003",
+        ),
         mapOf(
             "Nursery 1 batch 1" to nursery1BatchIdentifier1,
             "Nursery 1 batch 2" to nursery1BatchIdentifier2,
-            "Nursery 2 batch 1" to nursery2BatchIdentifier1))
+            "Nursery 2 batch 1" to nursery2BatchIdentifier1,
+        ),
+    )
   }
 
   @Test
@@ -80,10 +86,18 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
     val identifierInUtc =
         generator.generateTextIdentifier(
-            organizationId, IdentifierType.ACCESSION, 2, ZoneOffset.UTC)
+            organizationId,
+            IdentifierType.ACCESSION,
+            2,
+            ZoneOffset.UTC,
+        )
     val identifierInLaterZone =
         generator.generateTextIdentifier(
-            organizationId, IdentifierType.ACCESSION, 3, ZoneOffset.ofHours(1))
+            organizationId,
+            IdentifierType.ACCESSION,
+            3,
+            ZoneOffset.ofHours(1),
+        )
 
     assertEquals("19-1-2-001", identifierInUtc, "Identifier in earlier time zone")
     assertEquals("20-1-3-001", identifierInLaterZone, "Identifier in later time zone")
@@ -121,11 +135,13 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         1L,
         generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
-        "Identifier for first organization")
+        "Identifier for first organization",
+    )
     assertEquals(
         1L,
         generator.generateNumericIdentifier(otherOrganizationId, NumericIdentifierType.PlotNumber),
-        "Identifier for second organization")
+        "Identifier for second organization",
+    )
   }
 
   @Test
@@ -133,15 +149,18 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         1L,
         generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
-        "Initial identifier")
+        "Initial identifier",
+    )
     assertEquals(
         2L,
         generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
-        "Second identifier")
+        "Second identifier",
+    )
     assertEquals(
         3L,
         generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
-        "Third identifier")
+        "Third identifier",
+    )
   }
 
   @Test

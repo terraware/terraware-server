@@ -40,7 +40,11 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
 
   private val acceleratorProjectVariableValuesService by lazy {
     AcceleratorProjectVariableValuesService(
-        countriesDao, variableStore, variableValuesStore, SystemUser(usersDao))
+        countriesDao,
+        variableStore,
+        variableValuesStore,
+        SystemUser(usersDao),
+    )
   }
   private val variableStore by lazy {
     VariableStore(
@@ -54,7 +58,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
   private val variableValuesStore by lazy {
     VariableValueStore(
@@ -67,7 +72,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
         variableSectionValuesDao,
         variableSelectOptionValuesDao,
         variableValuesDao,
-        variableValueTableRowsDao)
+        variableValueTableRowsDao,
+    )
   }
 
   private val updater: AcceleratorVariablesUpdater by lazy {
@@ -116,7 +122,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
             projectName = "Project Name",
             organizationId = organizationId,
             organizationName = "Organization 1",
-            status = ApplicationStatus.NotSubmitted)
+            status = ApplicationStatus.NotSubmitted,
+        )
 
     every { applicationStore.fetchByProjectId(projectId) } returns listOf(applicationModel)
     every { applicationStore.fetchOneById(applicationId) } returns applicationModel
@@ -159,7 +166,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
         updater.on(VariableValueUpdatedEvent(projectId, dealNameVariableId))
 
         assertTableEquals(
-            ProjectAcceleratorDetailsRecord(projectId = projectId, dealName = "New deal name"))
+            ProjectAcceleratorDetailsRecord(projectId = projectId, dealName = "New deal name")
+        )
       }
 
       @Test
@@ -178,7 +186,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
                 projectId = projectId,
                 dealName = "New deal name",
                 projectLead = "Project Lead",
-            ))
+            )
+        )
       }
     }
   }

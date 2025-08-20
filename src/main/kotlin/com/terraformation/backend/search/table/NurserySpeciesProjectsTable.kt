@@ -26,7 +26,9 @@ class NurserySpeciesProjectsTable(private val tables: SearchTables) : SearchTabl
           projects.asSingleValueSublist("project", SPECIES_PROJECTS.PROJECT_ID.eq(PROJECTS.ID)),
           species.asSingleValueSublist("species", SPECIES_PROJECTS.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
-              "organization", SPECIES_PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              SPECIES_PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
       )
     }
   }

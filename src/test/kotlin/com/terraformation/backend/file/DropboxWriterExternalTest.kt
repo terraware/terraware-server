@@ -38,7 +38,9 @@ class DropboxWriterExternalTest {
                     enabled = true,
                     appKey = appKey,
                     appSecret = appSecret,
-                    refreshToken = refreshToken))
+                    refreshToken = refreshToken,
+                )
+        )
 
     writer = DropboxWriter(config)
   }

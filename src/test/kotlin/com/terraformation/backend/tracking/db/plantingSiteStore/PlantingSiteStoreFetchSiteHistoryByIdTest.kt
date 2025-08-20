@@ -47,7 +47,8 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   @BeforeEach
@@ -73,14 +74,18 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
             boundary = siteBoundary1,
             createdTime = Instant.ofEpochSecond(1000),
             gridOrigin = gridOrigin,
-            name = "Site 1")
+            name = "Site 1",
+        )
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
     val plantingZoneId1 =
         insertPlantingZone(areaHa = BigDecimal(75), boundary = zoneBoundary1, name = "Zone 1")
     val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
     val plantingSubzoneId1 =
         insertPlantingSubzone(
-            areaHa = BigDecimal(50), boundary = subzoneBoundary1, name = "Subzone 1")
+            areaHa = BigDecimal(50),
+            boundary = subzoneBoundary1,
+            name = "Subzone 1",
+        )
     val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
@@ -88,7 +93,10 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
     // A subzone that was deleted after a monitoring plot was added to it.
     val subzoneId2 =
         insertPlantingSubzone(
-            areaHa = BigDecimal(25), boundary = subzoneBoundary2, name = "Subzone 2")
+            areaHa = BigDecimal(25),
+            boundary = subzoneBoundary2,
+            name = "Subzone 2",
+        )
     val subzoneHistoryId2 = inserted.plantingSubzoneHistoryId
     val monitoringPlotId2 = insertMonitoringPlot(boundary = monitoringPlotBoundary2)
     val monitoringPlotHistoryId2 = inserted.monitoringPlotHistoryId
@@ -163,7 +171,8 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                                                 monitoringPlotId = monitoringPlotId2,
                                                 sizeMeters = MONITORING_PLOT_SIZE_INT,
                                             ),
-                                        )),
+                                        ),
+                                ),
                             ),
                     ),
                 ),

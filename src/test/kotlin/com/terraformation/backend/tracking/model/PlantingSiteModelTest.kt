@@ -49,7 +49,8 @@ class PlantingSiteModelTest {
       val site = newSite()
       val siteWithoutSubzones =
           site.copy(
-              plantingZones = site.plantingZones.map { it.copy(plantingSubzones = emptyList()) })
+              plantingZones = site.plantingZones.map { it.copy(plantingSubzones = emptyList()) }
+          )
 
       assertHasProblem(siteWithoutSubzones, PlantingSiteValidationFailure.zoneHasNoSubzones("Z1"))
     }
@@ -79,7 +80,9 @@ class PlantingSiteModelTest {
           }
 
       assertHasProblem(
-          site, PlantingSiteValidationFailure.subzoneBoundaryOverlaps(setOf("S2"), "S1", "Z1"))
+          site,
+          PlantingSiteValidationFailure.subzoneBoundaryOverlaps(setOf("S2"), "S1", "Z1"),
+      )
     }
 
     @Test
@@ -100,20 +103,24 @@ class PlantingSiteModelTest {
       assertHasProblem(
           newSite(width = MONITORING_PLOT_SIZE_INT * 2 - 1, height = MONITORING_PLOT_SIZE_INT),
           PlantingSiteValidationFailure.zoneTooSmall("Z1"),
-          "Site is big enough for permanent plot but not also for temporary plot")
+          "Site is big enough for permanent plot but not also for temporary plot",
+      )
     }
 
     @Test
     fun `checks that site has boundary if it has exclusion`() {
       assertHasProblem(
           newSite().copy(boundary = null, exclusion = rectangle(1)),
-          PlantingSiteValidationFailure.exclusionWithoutBoundary())
+          PlantingSiteValidationFailure.exclusionWithoutBoundary(),
+      )
     }
 
     @Test
     fun `checks that site has boundary if it has zones`() {
       assertHasProblem(
-          newSite().copy(boundary = null), PlantingSiteValidationFailure.zonesWithoutSiteBoundary())
+          newSite().copy(boundary = null),
+          PlantingSiteValidationFailure.zonesWithoutSiteBoundary(),
+      )
     }
 
     private fun assertHasProblem(

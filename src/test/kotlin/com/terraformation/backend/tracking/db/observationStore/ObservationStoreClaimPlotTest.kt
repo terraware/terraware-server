@@ -44,7 +44,8 @@ class ObservationStoreClaimPlotTest : BaseObservationStoreTest() {
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Claimed)
+        statusId = ObservationPlotStatus.Claimed,
+    )
 
     clock.instant = Instant.ofEpochSecond(2)
 
@@ -64,7 +65,8 @@ class ObservationStoreClaimPlotTest : BaseObservationStoreTest() {
     insertObservationPlot(
         claimedBy = otherUserId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Claimed)
+        statusId = ObservationPlotStatus.Claimed,
+    )
 
     assertThrows<PlotAlreadyClaimedException> { store.claimPlot(observationId, plotId) }
   }
@@ -74,7 +76,8 @@ class ObservationStoreClaimPlotTest : BaseObservationStoreTest() {
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Completed)
+        statusId = ObservationPlotStatus.Completed,
+    )
 
     assertThrows<PlotAlreadyCompletedException> { store.claimPlot(observationId, plotId) }
   }
@@ -84,7 +87,8 @@ class ObservationStoreClaimPlotTest : BaseObservationStoreTest() {
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.NotObserved)
+        statusId = ObservationPlotStatus.NotObserved,
+    )
 
     assertThrows<PlotAlreadyCompletedException> { store.claimPlot(observationId, plotId) }
   }

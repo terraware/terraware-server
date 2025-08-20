@@ -46,7 +46,10 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
                 certaintyId = RecordedSpeciesCertainty.Other,
                 gpsCoordinates = point(1),
                 speciesName = "Species name",
-                statusId = RecordedPlantStatus.Dead)))
+                statusId = RecordedPlantStatus.Dead,
+            )
+        ),
+    )
 
     val totalsForOtherSite = helper.fetchAllTotals()
 
@@ -69,7 +72,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
             certaintyId = RecordedSpeciesCertainty.Other,
             gpsCoordinates = point(1),
             speciesName = "Species name",
-            statusId = RecordedPlantStatus.Dead)
+            statusId = RecordedPlantStatus.Dead,
+        )
 
     insertPlantingSite(x = 0)
     insertPlantingZone()
@@ -83,16 +87,30 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
         isPermanent = true,
-        monitoringPlotId = plotId1)
+        monitoringPlotId = plotId1,
+    )
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
         isPermanent = true,
-        monitoringPlotId = plotId2)
+        monitoringPlotId = plotId2,
+    )
     store.completePlot(
-        previousObservationId, plotId1, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
+        previousObservationId,
+        plotId1,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(deadPlant),
+    )
     store.completePlot(
-        previousObservationId, plotId2, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
+        previousObservationId,
+        plotId2,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(deadPlant),
+    )
 
     val totalsFromPreviousObservation = helper.fetchAllTotals()
 
@@ -156,7 +174,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
                 permanentLive = 0,
             ),
         ),
-        totalsForThisObservation)
+        totalsForThisObservation,
+    )
   }
 
   @Test
@@ -166,7 +185,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
             certaintyId = RecordedSpeciesCertainty.Other,
             gpsCoordinates = point(1),
             speciesName = "Species name",
-            statusId = RecordedPlantStatus.Live)
+            statusId = RecordedPlantStatus.Live,
+        )
 
     insertPlantingSite(x = 0)
     insertPlantingZone()
@@ -182,7 +202,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
         emptySet(),
         null,
         Instant.EPOCH,
-        listOf(livePlant))
+        listOf(livePlant),
+    )
 
     val totalsFromPreviousObservation = helper.fetchAllTotals()
 

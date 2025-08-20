@@ -40,10 +40,15 @@ class PlantingSiteEditCalculatorTest {
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
-                                    desiredModel =
-                                        desired.plantingZones[1].plantingSubzones[0]))))),
+                                    desiredModel = desired.plantingZones[1].plantingSubzones[0]
+                                )
+                            ),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -111,9 +116,13 @@ class PlantingSiteEditCalculatorTest {
                                     removedRegion = rectangle(0),
                                 ),
                             ),
-                        removedRegion = rectangle(0)))),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -147,9 +156,13 @@ class PlantingSiteEditCalculatorTest {
                         existingModel = existing.plantingZones[0],
                         monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits = emptyList(),
-                        removedRegion = rectangle(0)))),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -172,7 +185,10 @@ class PlantingSiteEditCalculatorTest {
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
-                                    rectangle(x = 100, width = 400, height = 500), 1)),
+                                    rectangle(x = 100, width = 400, height = 500),
+                                    1,
+                                )
+                            ),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
@@ -181,10 +197,15 @@ class PlantingSiteEditCalculatorTest {
                                     desiredModel = desired.plantingZones[0].plantingSubzones[0],
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     removedRegion = rectangle(x = 0, width = 100, height = 500),
-                                )),
-                        removedRegion = rectangle(x = 0, width = 100, height = 500)))),
+                                )
+                            ),
+                        removedRegion = rectangle(x = 0, width = 100, height = 500),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -226,7 +247,8 @@ class PlantingSiteEditCalculatorTest {
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(1), 1),
                                         ),
                                     removedRegion = rectangle(x = 800, width = 200, height = 500),
-                                )),
+                                )
+                            ),
                         removedRegion = rectangle(x = 800, width = 200, height = 500),
                     ),
                     // Zone A moves to east edge of site and shrinks from 800m to 500m wide
@@ -240,7 +262,9 @@ class PlantingSiteEditCalculatorTest {
                                 // The permanent plot should be created in the part of the zone that
                                 // overlaps with its old boundary.
                                 MonitoringPlotEdit.Create(
-                                    rectangle(x = 500, width = 300, height = 500), 1),
+                                    rectangle(x = 500, width = 300, height = 500),
+                                    1,
+                                ),
                             ),
                         plantingSubzoneEdits =
                             listOf(
@@ -258,13 +282,15 @@ class PlantingSiteEditCalculatorTest {
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(2), null),
                                         ),
                                     removedRegion = rectangle(x = 0, width = 500, height = 500),
-                                )),
+                                )
+                            ),
                         removedRegion = rectangle(x = 0, width = 500, height = 500),
                     ),
                 ),
         ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -295,7 +321,10 @@ class PlantingSiteEditCalculatorTest {
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
-                                    rectangle(x = 250, width = 250, height = 500), 2)),
+                                    rectangle(x = 250, width = 250, height = 500),
+                                    2,
+                                )
+                            ),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
@@ -305,7 +334,10 @@ class PlantingSiteEditCalculatorTest {
                                     existingModel = existing.plantingZones[0].plantingSubzones[1],
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(2), 1)),
-                                    removedRegion = rectangle(0)))),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                    ),
                     // Zone A shrinks
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(0),
@@ -314,9 +346,13 @@ class PlantingSiteEditCalculatorTest {
                         existingModel = existing.plantingZones[0],
                         monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits = emptyList(),
-                        removedRegion = rectangle(x = 250, width = 250, height = 500)))),
+                        removedRegion = rectangle(x = 250, width = 250, height = 500),
+                    ),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -381,9 +417,13 @@ class PlantingSiteEditCalculatorTest {
                                     removedRegion = rectangle(0),
                                 ),
                             ),
-                        removedRegion = rectangle(0)))),
+                        removedRegion = rectangle(0),
+                    ),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -422,11 +462,18 @@ class PlantingSiteEditCalculatorTest {
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
                                                 monitoringPlotId = MonitoringPlotId(1),
-                                                permanentIndex = 1),
+                                                permanentIndex = 1,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                monitoringPlotId = MonitoringPlotId(2)),
+                                                monitoringPlotId = MonitoringPlotId(2)
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                monitoringPlotId = MonitoringPlotId(3)))))),
+                                                monitoringPlotId = MonitoringPlotId(3)
+                                            ),
+                                        ),
+                                )
+                            ),
+                    ),
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal(-25),
@@ -435,7 +482,10 @@ class PlantingSiteEditCalculatorTest {
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
-                                    rectangle(x = 0, width = 500, height = 500), 1)),
+                                    rectangle(x = 0, width = 500, height = 500),
+                                    1,
+                                )
+                            ),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
@@ -445,10 +495,15 @@ class PlantingSiteEditCalculatorTest {
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(x = 500, width = 500, height = 500),
-                                )),
-                        removedRegion = rectangle(x = 500, width = 500, height = 500)))),
+                                )
+                            ),
+                        removedRegion = rectangle(x = 500, width = 500, height = 500),
+                    ),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -496,7 +551,8 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 MonitoringPlotEdit.Create(
                                     region = rectangle(x = 280, width = 220, height = 500),
-                                    permanentIndex = 11),
+                                    permanentIndex = 11,
+                                ),
                             ),
                         plantingSubzoneEdits =
                             listOf(
@@ -508,27 +564,49 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(16), permanentIndex = 1),
+                                                MonitoringPlotId(16),
+                                                permanentIndex = 1,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(1), permanentIndex = 2),
+                                                MonitoringPlotId(1),
+                                                permanentIndex = 2,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(18), permanentIndex = 3),
+                                                MonitoringPlotId(18),
+                                                permanentIndex = 3,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(2), permanentIndex = 4),
+                                                MonitoringPlotId(2),
+                                                permanentIndex = 4,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(19), permanentIndex = 5),
+                                                MonitoringPlotId(19),
+                                                permanentIndex = 5,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(4), permanentIndex = 6),
+                                                MonitoringPlotId(4),
+                                                permanentIndex = 6,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(23), permanentIndex = 7),
+                                                MonitoringPlotId(23),
+                                                permanentIndex = 7,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(25), permanentIndex = 8),
+                                                MonitoringPlotId(25),
+                                                permanentIndex = 8,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(7), permanentIndex = 9),
+                                                MonitoringPlotId(7),
+                                                permanentIndex = 9,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(26), permanentIndex = 10),
+                                                MonitoringPlotId(26),
+                                                permanentIndex = 10,
+                                            ),
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(27), permanentIndex = null),
+                                                MonitoringPlotId(27),
+                                                permanentIndex = null,
+                                            ),
                                         ),
                                     removedRegion = rectangle(x = 0, width = 280, height = 500),
                                 ),
@@ -541,9 +619,15 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 PlantingSubzoneEdit.Delete(
                                     existingModel = existing.plantingZones[1].plantingSubzones[0],
-                                    monitoringPlotEdits = emptyList()))))),
+                                    monitoringPlotEdits = emptyList(),
+                                )
+                            ),
+                    ),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -574,11 +658,20 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
-                                                MonitoringPlotId(1), permanentIndex = 1)),
-                                    removedRegion = rectangle(0))),
-                        removedRegion = rectangle(0)))),
+                                                MonitoringPlotId(1),
+                                                permanentIndex = 1,
+                                            )
+                                        ),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -627,9 +720,11 @@ class PlantingSiteEditCalculatorTest {
                             ),
                         removedRegion = rectangle(0),
                     ),
-                )),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -683,10 +778,15 @@ class PlantingSiteEditCalculatorTest {
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
-                                )),
-                        removedRegion = rectangle(0)))),
+                                )
+                            ),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -716,9 +816,13 @@ class PlantingSiteEditCalculatorTest {
                         monitoringPlotEdits =
                             listOf(MonitoringPlotEdit.Create(existing.boundary!!, 3)),
                         plantingSubzoneEdits = emptyList(),
-                        removedRegion = rectangle(0)))),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -757,10 +861,15 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(3), null)),
                                     removedRegion = rectangle(0),
-                                )),
-                        removedRegion = rectangle(0)))),
+                                )
+                            ),
+                        removedRegion = rectangle(0),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -786,9 +895,15 @@ class PlantingSiteEditCalculatorTest {
                                 PlantingSubzoneEdit.Delete(
                                     existingModel = existing.plantingZones[1].plantingSubzones[0],
                                     monitoringPlotEdits =
-                                        listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(2)))))))),
+                                        listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(2))),
+                                )
+                            ),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -820,10 +935,15 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 PlantingSubzoneEdit.Delete(
                                     existingModel = existing.plantingZones[0].plantingSubzones[1],
-                                )),
-                        removedRegion = rectangle(x = 500, width = 500, height = 500)))),
+                                )
+                            ),
+                        removedRegion = rectangle(x = 500, width = 500, height = 500),
+                    )
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -867,7 +987,10 @@ class PlantingSiteEditCalculatorTest {
                                     desiredModel = desired.plantingZones[0].plantingSubzones[0],
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     monitoringPlotEdits = emptyList(),
-                                    removedRegion = rectangle(0)))),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                    ),
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
@@ -883,10 +1006,15 @@ class PlantingSiteEditCalculatorTest {
                                     desiredModel = desired.plantingZones[1].plantingSubzones[0],
                                     existingModel = existing.plantingZones[1].plantingSubzones[0],
                                     monitoringPlotEdits = emptyList(),
-                                    removedRegion = rectangle(0)))),
-                )),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                    ),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -922,11 +1050,16 @@ class PlantingSiteEditCalculatorTest {
                                     desiredModel = desired.plantingZones[0].plantingSubzones[0],
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     monitoringPlotEdits = emptyList(),
-                                    removedRegion = rectangle(0)))),
+                                    removedRegion = rectangle(0),
+                                )
+                            ),
+                    ),
                     PlantingZoneEdit.Delete(existing.plantingZones[0], emptyList()),
-                )),
+                ),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -974,10 +1107,12 @@ class PlantingSiteEditCalculatorTest {
                                 ),
                             ),
                         removedRegion = rectangle(25),
-                    )),
+                    )
+                ),
         ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -1021,10 +1156,12 @@ class PlantingSiteEditCalculatorTest {
                                 ),
                             ),
                         removedRegion = rectangle(width = 10, height = 500),
-                    )),
+                    )
+                ),
         ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Test
@@ -1037,9 +1174,11 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("0.0"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits = emptyList()),
+            plantingZoneEdits = emptyList(),
+        ),
         existing,
-        desired)
+        desired,
+    )
   }
 
   @Nested

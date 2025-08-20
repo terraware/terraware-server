@@ -53,7 +53,9 @@ class ParticipantsController(
             ParticipantModel.create(
                 cohortId = payload.cohortId,
                 name = payload.name,
-                projectIds = payload.projectIds?.toSet() ?: emptySet()))
+                projectIds = payload.projectIds?.toSet() ?: emptySet(),
+            )
+        )
 
     return GetParticipantResponsePayload(makeParticipantPayload(model))
   }
@@ -95,7 +97,7 @@ class ParticipantsController(
   @PutMapping("/{participantId}")
   fun updateParticipant(
       @PathVariable participantId: ParticipantId,
-      @RequestBody payload: UpdateParticipantRequestPayload
+      @RequestBody payload: UpdateParticipantRequestPayload,
   ): SimpleSuccessResponsePayload {
     participantService.update(participantId, payload::applyTo)
 
@@ -163,7 +165,8 @@ data class CreateParticipantRequestPayload(
     @Schema(
         description =
             "Assign the participant to this cohort. If null, the participant will not be " +
-                "assigned to any cohort initially.")
+                "assigned to any cohort initially."
+    )
     val cohortId: CohortId?,
     val name: String,
     @ArraySchema(
@@ -171,7 +174,9 @@ data class CreateParticipantRequestPayload(
             Schema(
                 description =
                     "Assign these projects to the new participant. If projects are already " +
-                        "assigned to other participants, they will be reassigned to the new one."))
+                        "assigned to other participants, they will be reassigned to the new one."
+            )
+    )
     val projectIds: List<ProjectId>?,
 )
 
@@ -187,7 +192,8 @@ data class UpdateParticipantRequestPayload(
     @Schema(
         description =
             "Assign the participant to this cohort. If null, remove the participant from its " +
-                "current cohort, if any.")
+                "current cohort, if any."
+    )
     val cohortId: CohortId?,
     val name: String,
     @ArraySchema(
@@ -196,7 +202,9 @@ data class UpdateParticipantRequestPayload(
                 description =
                     "Set the participant's list of assigned projects to this. If projects are " +
                         "currently assigned to the participant but aren't included in this list, " +
-                        "they will be removed from the participant."))
+                        "they will be removed from the participant."
+            )
+    )
     val projectIds: Set<ProjectId>,
 ) {
   fun applyTo(model: ExistingParticipantModel) =

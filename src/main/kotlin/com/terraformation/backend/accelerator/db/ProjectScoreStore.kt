@@ -26,7 +26,7 @@ class ProjectScoreStore(
    */
   fun fetchScores(
       projectId: ProjectId,
-      phases: Collection<CohortPhase>? = null
+      phases: Collection<CohortPhase>? = null,
   ): Map<CohortPhase, List<ExistingProjectScoreModel>> {
     requirePermissions { readProjectScores(projectId) }
 
@@ -49,7 +49,7 @@ class ProjectScoreStore(
   fun updateScores(
       projectId: ProjectId,
       phase: CohortPhase,
-      scores: Collection<NewProjectScoreModel>
+      scores: Collection<NewProjectScoreModel>,
   ) {
     requirePermissions { updateProjectScores(projectId) }
 

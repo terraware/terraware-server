@@ -77,7 +77,8 @@ class BalenaPoller(
 
                 log.info(
                     "Added device manager ${newRow.id} for Balena device ${device.id} with " +
-                        "sensor kit ID $sensorKitId")
+                        "sensor kit ID $sensorKitId"
+                )
               }
             } else {
               existingRow.apply {
@@ -92,7 +93,8 @@ class BalenaPoller(
 
               log.info(
                   "Updated information for device manager ${existingRow.id} from Balena " +
-                      "device ${device.id}")
+                      "device ${device.id}"
+              )
             }
           }
         }

@@ -84,7 +84,8 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     `class` = "Class",
                     order = "Order",
                     family = "Family",
-                    genus = null),
+                    genus = null,
+                ),
                 GbifTaxaRow(
                     taxonId = GbifTaxonId(11),
                     datasetId = "dataset2",
@@ -103,7 +104,8 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     `class` = "Class",
                     order = "Order",
                     family = "Family",
-                    genus = "Genus"),
+                    genus = "Genus",
+                ),
                 GbifTaxaRow(
                     taxonId = GbifTaxonId(12),
                     datasetId = "dataset3",
@@ -122,7 +124,8 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     `class` = "Class",
                     order = "Order",
                     family = "Family",
-                    genus = "Genus"),
+                    genus = "Genus",
+                ),
             ),
             listOf(
                 GbifDistributionsRow(
@@ -130,20 +133,23 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     countryCode = "CA",
                     establishmentMeans = "native",
                     occurrenceStatus = "present",
-                    threatStatus = null),
+                    threatStatus = null,
+                ),
                 GbifDistributionsRow(
                     taxonId = GbifTaxonId(12),
                     countryCode = null,
                     establishmentMeans = null,
                     occurrenceStatus = null,
-                    threatStatus = "least concern"),
+                    threatStatus = "least concern",
+                ),
             ),
             listOf(
                 GbifVernacularNamesRow(
                     taxonId = GbifTaxonId(12),
                     vernacularName = "My Species",
                     language = "en",
-                    countryCode = "US"),
+                    countryCode = "US",
+                ),
                 GbifVernacularNamesRow(taxonId = GbifTaxonId(12), vernacularName = "My Spécies 2"),
             ),
             listOf(
@@ -151,17 +157,20 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     taxonId = GbifTaxonId(12),
                     name = "Species? SpecificSpecies subsp. InfraSpecies",
                     language = null,
-                    isScientific = true),
+                    isScientific = true,
+                ),
                 GbifNamesRow(
                     taxonId = GbifTaxonId(12),
                     name = "My Species",
                     language = "en",
-                    isScientific = false),
+                    isScientific = false,
+                ),
                 GbifNamesRow(
                     taxonId = GbifTaxonId(12),
                     name = "My Spécies 2",
                     language = null,
-                    isScientific = false),
+                    isScientific = false,
+                ),
             ),
             listOf(
                 // See actualData doc for notes on how name IDs work here.
@@ -372,7 +381,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
       val distributions: List<GbifDistributionsRow>,
       val vernacularNames: List<GbifVernacularNamesRow>,
       val names: List<GbifNamesRow>,
-      val nameWords: List<GbifNameWordsRow>
+      val nameWords: List<GbifNameWordsRow>,
   )
 
   /**
@@ -422,6 +431,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
         distributions,
         vernacularNames,
         names.map { it.copy(id = null) },
-        nameWords.map { it.copy(gbifNameId = nameIdMap[it.gbifNameId]) })
+        nameWords.map { it.copy(gbifNameId = nameIdMap[it.gbifNameId]) },
+    )
   }
 }

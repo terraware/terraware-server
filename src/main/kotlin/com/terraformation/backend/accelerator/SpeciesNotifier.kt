@@ -22,7 +22,9 @@ class SpeciesNotifier(
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
             deliverableId = event.deliverableId,
             projectId = event.participantProjectSpecies.projectId,
-            speciesId = event.participantProjectSpecies.speciesId))
+            speciesId = event.participantProjectSpecies.speciesId,
+        )
+    )
   }
 
   /** Schedules a "species edited" notification when a species associated to a project is edited. */
@@ -40,7 +42,9 @@ class SpeciesNotifier(
             ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
                 deliverableSubmission.deliverableId,
                 event.projectId,
-                event.newParticipantProjectSpecies.speciesId))
+                event.newParticipantProjectSpecies.speciesId,
+            )
+        )
       }
     }
   }

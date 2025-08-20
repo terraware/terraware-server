@@ -58,7 +58,7 @@ class ReportMetricStore(
 
   fun updateStandardMetric(
       metricId: StandardMetricId,
-      updateFunc: (ExistingStandardMetricModel) -> ExistingStandardMetricModel
+      updateFunc: (ExistingStandardMetricModel) -> ExistingStandardMetricModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
 
@@ -121,7 +121,7 @@ class ReportMetricStore(
 
   fun updateProjectMetric(
       metricId: ProjectMetricId,
-      updateFunc: (ExistingProjectMetricModel) -> ExistingProjectMetricModel
+      updateFunc: (ExistingProjectMetricModel) -> ExistingProjectMetricModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
 

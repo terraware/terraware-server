@@ -35,7 +35,8 @@ class DocumentTemplatesControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }"""
                   .trimIndent(),
-              strict = true)
+              strict = true,
+          )
     }
   }
 }

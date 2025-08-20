@@ -26,7 +26,8 @@ class TimeZonesController(private val timeZones: TimeZones) {
               "Language code and optional country code suffix. If not specified, the preferred " +
                   "locale from the Accept-Language header is used if supported; otherwise US " +
                   "English is the default.",
-          example = "zh-CN")
+          example = "zh-CN",
+      )
       localeName: String?
   ): ListTimeZoneNamesResponsePayload {
     val locale = localeName?.let { Locale.forLanguageTag(it) } ?: currentLocale()
@@ -41,8 +42,9 @@ data class TimeZonePayload(
         description =
             "Long name of time zone, possibly including a city name. This name is guaranteed to " +
                 "be unique across all zones.",
-        example = "Central European Time - Berlin")
-    val longName: String
+        example = "Central European Time - Berlin",
+    )
+    val longName: String,
 )
 
 data class ListTimeZoneNamesResponsePayload(

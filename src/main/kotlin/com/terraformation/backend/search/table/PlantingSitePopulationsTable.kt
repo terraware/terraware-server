@@ -19,10 +19,13 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
     with(tables) {
       listOf(
           species.asSingleValueSublist(
-              "species", PLANTING_SITE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID)),
+              "species",
+              PLANTING_SITE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID),
+          ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
-              PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
       )
     }
   }
@@ -31,7 +34,8 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
       listOf(
           integerField(
               "plantsSinceLastObservation",
-              PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION),
+              PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+          ),
           integerField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS),
       )
 

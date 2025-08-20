@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController
 class TimeseriesController(
     private val facilityStore: FacilityStore,
     private val parentStore: ParentStore,
-    private val timeSeriesStore: TimeseriesStore
+    private val timeSeriesStore: TimeseriesStore,
 ) {
   private val log = perClassLogger()
 
@@ -51,7 +51,8 @@ class TimeseriesController(
       summary = "Defines a list of timeseries for one or more devices.",
       description =
           "If there are existing timeseries with the same names, the old definitions will be" +
-              " overwritten.")
+              " overwritten.",
+  )
   @PostMapping("/create")
   fun createMultipleTimeseries(
       @RequestBody payload: CreateTimeseriesRequestPayload
@@ -74,14 +75,17 @@ class TimeseriesController(
   @ApiResponse200(
       "Successfully processed the request. Note that this status will be returned even if the " +
           "server was unable to record some of the values. In that case, the failed values will " +
-          "be returned in the response payload.")
+          "be returned in the response payload."
+  )
   @ApiResponse(
       responseCode = "202",
       description =
           "The request was valid, but the user is still configuring or placing sensors, so the " +
-              "timeseries values have not been recorded.")
+              "timeseries values have not been recorded.",
+  )
   @ApiResponse413(
-      "The request had more than ${RecordTimeseriesValuesRequestPayload.MAX_VALUES} values.")
+      "The request had more than ${RecordTimeseriesValuesRequestPayload.MAX_VALUES} values."
+  )
   @Operation(summary = "Records new values for one or more timeseries.")
   @PostMapping("/values")
   fun recordTimeseriesValues(
@@ -93,7 +97,8 @@ class TimeseriesController(
     if (payload.timeseries.size > maxValues) {
       throw WebApplicationException(
           "Request must contain $maxValues or fewer values",
-          Response.Status.REQUEST_ENTITY_TOO_LARGE)
+          Response.Status.REQUEST_ENTITY_TOO_LARGE,
+      )
     }
 
     val facilityNotConfigured =
@@ -118,7 +123,12 @@ class TimeseriesController(
         log.error("Timeseries $timeseriesName for device $deviceId not found or no permission")
         errors.add(
             TimeseriesValuesErrorPayload(
-                deviceId, timeseriesName, valuesEntry.values, "Timeseries not found"))
+                deviceId,
+                timeseriesName,
+                valuesEntry.values,
+                "Timeseries not found",
+            )
+        )
       } else {
         // Group failures by error message.
         val failures = mutableMapOf<String, MutableList<TimeseriesValuePayload>>()
@@ -127,7 +137,9 @@ class TimeseriesController(
         // them again.
         val existingTimestamps =
             timeSeriesStore.checkExistingValues(
-                timeseriesId, valuesEntry.values.map { it.timestamp })
+                timeseriesId,
+                valuesEntry.values.map { it.timestamp },
+            )
 
         valuesEntry.values.forEach { valueEntry ->
           val timestamp = valueEntry.timestamp
@@ -144,11 +156,14 @@ class TimeseriesController(
             } catch (e: DuplicateKeyException) {
               log.info(
                   "Duplicate value for timeseries $timeseriesId timestamp $timestamp was not " +
-                      "detected by read check")
+                      "detected by read check"
+              )
               addFailureMessage("Already have a value with this timestamp")
             } catch (e: Exception) {
               log.error(
-                  "Failed to insert value ${valueEntry.value} for timeseries $timeseriesId", e)
+                  "Failed to insert value ${valueEntry.value} for timeseries $timeseriesId",
+                  e,
+              )
               addFailureMessage("Unexpected error while saving value")
             }
           }
@@ -178,13 +193,15 @@ data class CreateTimeseriesEntry(
     @Schema(
         description =
             "Name of this timeseries. Duplicate timeseries names for the same device aren't " +
-                "allowed, but different devices can have timeseries with the same name.")
+                "allowed, but different devices can have timeseries with the same name."
+    )
     val timeseriesName: String,
     val type: TimeseriesType,
     @Schema(
         description =
             "Number of significant fractional digits (after the decimal point), if this is a " +
-                "timeseries with non-integer numeric values.")
+                "timeseries with non-integer numeric values."
+    )
     val decimalPlaces: Int?,
     @Schema(description = "Units of measure for values in this timeseries.", example = "volts")
     val units: String?,
@@ -208,7 +225,8 @@ data class TimeseriesValuesErrorPayload(
     val timeseriesName: String,
     @ArraySchema(
         arraySchema =
-            Schema(description = "Values that the server was not able to successfully record."))
+            Schema(description = "Values that the server was not able to successfully record.")
+    )
     val values: List<TimeseriesValuePayload>,
     @Schema(
         description = "Human-readable details about the failure.",
@@ -224,9 +242,10 @@ data class TimeseriesValuesPayload(
     @Schema(
         description =
             "Name of timeseries. This must be the name of a timeseries that has already been " +
-                "created for the device.")
+                "created for the device."
+    )
     val timeseriesName: String,
-    val values: List<TimeseriesValuePayload>
+    val values: List<TimeseriesValuePayload>,
 )
 
 data class TimeseriesValuePayload(
@@ -235,8 +254,9 @@ data class TimeseriesValuePayload(
         description =
             "Value to record. If the timeseries is of type Numeric, this must be a decimal " +
                 "or integer value in string form. If the timeseries is of type Text, this can be " +
-                "an arbitrary string.")
-    val value: String
+                "an arbitrary string."
+    )
+    val value: String,
 )
 
 data class CreateTimeseriesRequestPayload(val timeseries: List<CreateTimeseriesEntry>)
@@ -260,10 +280,12 @@ data class RecordTimeseriesValuesResponsePayload(
             Schema(
                 description =
                     "List of values that the server failed to record. Will not be included if " +
-                        "all the values were recorded successfully."))
+                        "all the values were recorded successfully."
+            )
+    )
     val failures: List<TimeseriesValuesErrorPayload>?,
     override val status: SuccessOrError,
-    val error: ErrorDetails?
+    val error: ErrorDetails?,
 ) : ResponsePayload {
   constructor() : this(null, SuccessOrError.Ok, null)
 
@@ -272,7 +294,8 @@ data class RecordTimeseriesValuesResponsePayload(
   ) : this(
       failures,
       SuccessOrError.Error,
-      ErrorDetails("One or more timeseries values could not be recorded."))
+      ErrorDetails("One or more timeseries values could not be recorded."),
+  )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -286,7 +309,8 @@ data class TimeseriesPayload(
     @Schema(
         description =
             "Number of significant fractional digits (after the decimal point), if this is a " +
-                "timeseries with non-integer numeric values.")
+                "timeseries with non-integer numeric values."
+    )
     val decimalPlaces: Int?,
     @Schema(description = "Units of measure for values in this timeseries.", example = "volts")
     val units: String?,
@@ -301,7 +325,8 @@ data class TimeseriesPayload(
       model.type,
       model.decimalPlaces,
       model.units,
-      model.latestValue?.let { TimeseriesValuePayload(it.createdTime, it.value) })
+      model.latestValue?.let { TimeseriesValuePayload(it.createdTime, it.value) },
+  )
 }
 
 data class ListTimeseriesResponsePayload(val timeseries: List<TimeseriesPayload>) :

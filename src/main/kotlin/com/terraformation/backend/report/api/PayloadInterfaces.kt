@@ -63,7 +63,8 @@ interface ReportMetadataFields {
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "1", schema = GetReportPayloadV1::class),
-        ])
+        ]
+)
 sealed interface GetReportPayload : ReportMetadataFields {
   companion object {
     fun of(model: SeedFundReportModel, getFullName: (UserId) -> String?): GetReportPayload {
@@ -92,7 +93,8 @@ sealed interface GetReportPayload : ReportMetadataFields {
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "1", schema = PutReportPayloadV1::class),
-        ])
+        ]
+)
 sealed interface PutReportPayload : EditableReportFields {
   /**
    * Overwrites the fields in a report body with the values from this payload. Note that

@@ -5,5 +5,5 @@ enum class NurseryBatchPhase {
   ActiveGrowth,
   NotReady,
   HardeningOff,
-  Ready
+  Ready,
 }

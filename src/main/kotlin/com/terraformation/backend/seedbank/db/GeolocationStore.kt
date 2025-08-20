@@ -17,7 +17,8 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
     return DSL.multiset(
             DSL.selectFrom(GEOLOCATIONS)
                 .where(GEOLOCATIONS.ACCESSION_ID.eq(idField))
-                .orderBy(GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE))
+                .orderBy(GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE)
+        )
         .convertFrom { result ->
           result
               .map { record ->
@@ -34,7 +35,7 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
   fun updateGeolocations(
       accessionId: AccessionId,
       existingGeolocations: Set<Geolocation>?,
-      desiredGeolocations: Set<Geolocation>?
+      desiredGeolocations: Set<Geolocation>?,
   ) {
     if (existingGeolocations != desiredGeolocations) {
       val existing = existingGeolocations ?: emptySet()
@@ -49,20 +50,28 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
               .where(ACCESSION_ID.eq(accessionId))
               .and(
                   DSL.row(LATITUDE, LONGITUDE)
-                      .`in`(deleted.map { DSL.row(it.latitude, it.longitude) }))
+                      .`in`(deleted.map { DSL.row(it.latitude, it.longitude) })
+              )
               .execute()
         }
 
         added.forEach { geolocation ->
           dslContext
               .insertInto(
-                  GEOLOCATIONS, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
+                  GEOLOCATIONS,
+                  ACCESSION_ID,
+                  CREATED_TIME,
+                  LATITUDE,
+                  LONGITUDE,
+                  GPS_ACCURACY,
+              )
               .values(
                   accessionId,
                   clock.instant(),
                   geolocation.latitude,
                   geolocation.longitude,
-                  geolocation.accuracy?.toDouble())
+                  geolocation.accuracy?.toDouble(),
+              )
               .execute()
         }
       }

@@ -77,7 +77,8 @@ class SpeciesController(
       @RequestParam
       @Schema(
           description =
-              "Only list species that are currently used in the organization's inventory, accessions or planting sites.")
+              "Only list species that are currently used in the organization's inventory, accessions or planting sites."
+      )
       inUse: Boolean?,
   ): ListSpeciesResponsePayload {
     val problems = speciesStore.findAllProblems(organizationId)
@@ -91,7 +92,10 @@ class SpeciesController(
   @ApiResponses(
       ApiResponse(responseCode = "200", description = "Species created."),
       ApiResponse(
-          responseCode = "409", description = "A species with the requested name already exists."))
+          responseCode = "409",
+          description = "A species with the requested name already exists.",
+      ),
+  )
   @Operation(summary = "Creates a new species.")
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
@@ -121,14 +125,16 @@ class SpeciesController(
   }
 
   @ApiResponse(
-      responseCode = "200", description = "Species updated or merged with an existing species.")
+      responseCode = "200",
+      description = "Species updated or merged with an existing species.",
+  )
   @ApiResponse404
   @ApiResponse409("A species with the requested name already exists.")
   @Operation(summary = "Updates an existing species.")
   @PutMapping("/{speciesId}")
   fun updateSpecies(
       @PathVariable speciesId: SpeciesId,
-      @RequestBody payload: SpeciesRequestPayload
+      @RequestBody payload: SpeciesRequestPayload,
   ): SimpleSuccessResponsePayload {
     try {
       speciesService.updateSpecies(payload.toExisting(speciesId))
@@ -146,7 +152,8 @@ class SpeciesController(
       summary = "Deletes an existing species.",
       description =
           "The species will no longer appear in the organization's list of species, but existing " +
-              "data (plants, seeds, etc.) that refer to the species will still refer to it.")
+              "data (plants, seeds, etc.) that refer to the species will still refer to it.",
+  )
   fun deleteSpecies(
       @PathVariable speciesId: SpeciesId,
   ): SimpleSuccessResponsePayload {
@@ -171,12 +178,14 @@ class SpeciesController(
 
   @ApiResponse(
       responseCode = "200",
-      description = "Suggestion applied. Response contains the updated species information.")
+      description = "Suggestion applied. Response contains the updated species information.",
+  )
   @ApiResponse404
   @ApiResponse409("There is no suggested change for this problem.")
   @Operation(
       summary = "Applies suggested changes to fix a problem with a species.",
-      description = "Only valid for problems that include suggested changes.")
+      description = "Only valid for problems that include suggested changes.",
+  )
   @PostMapping("/problems/{problemId}")
   fun acceptProblemSuggestion(
       @PathVariable("problemId") problemId: SpeciesProblemId
@@ -192,7 +201,8 @@ class SpeciesController(
   @Operation(
       summary =
           "Deletes information about a problem with a species without applying any suggested " +
-              "changes.")
+              "changes."
+  )
   fun deleteProblem(
       @PathVariable("problemId") problemId: SpeciesProblemId
   ): SimpleSuccessResponsePayload {
@@ -209,7 +219,8 @@ data class SpeciesProblemElement(
     @Schema(
         description =
             "Value for the field in question that would correct the problem. Absent if the " +
-                "system is unable to calculate a corrected value.")
+                "system is unable to calculate a corrected value."
+    )
     val suggestedValue: String?,
 ) {
   constructor(
@@ -229,7 +240,8 @@ data class SpeciesResponseElement(
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
-            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"),
+    )
     val conservationCategory: ConservationCategory?,
     val createdTime: Instant,
     val dbhSource: String?,
@@ -290,7 +302,8 @@ data class SpeciesRequestPayload(
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
-            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
+            ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"),
+    )
     val conservationCategory: ConservationCategory?,
     val dbhSource: String?,
     val dbhValue: BigDecimal?,

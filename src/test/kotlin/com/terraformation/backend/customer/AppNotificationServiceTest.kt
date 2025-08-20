@@ -179,7 +179,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     deviceStore = DeviceStore(devicesDao)
     documentStore =
         DocumentStore(
-            clock, documentSavedVersionsDao, documentsDao, dslContext, documentTemplatesDao)
+            clock,
+            documentSavedVersionsDao,
+            documentsDao,
+            dslContext,
+            documentTemplatesDao,
+        )
     facilityStore =
         FacilityStore(
             clock,
@@ -189,7 +194,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             facilitiesDao,
             messages,
             organizationsDao,
-            subLocationsDao)
+            subLocationsDao,
+        )
     moduleEventStore = ModuleEventStore(clock, dslContext, publisher, eventsDao)
     moduleStore = ModuleStore(dslContext)
     notificationStore = NotificationStore(dslContext, clock)
@@ -207,10 +213,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             plantingSeasonsDao,
             plantingSitesDao,
             plantingSubzonesDao,
-            plantingZonesDao)
+            plantingZonesDao,
+        )
     projectStore =
         ProjectStore(
-            clock, dslContext, publisher, parentStore, projectsDao, projectInternalUsersDao)
+            clock,
+            dslContext,
+            publisher,
+            parentStore,
+            projectsDao,
+            projectInternalUsersDao,
+        )
     reportStore = ReportStore(clock, dslContext, publisher, reportsDao, SystemUser(usersDao))
     speciesStore =
         SpeciesStore(
@@ -219,7 +232,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
-            speciesProblemsDao)
+            speciesProblemsDao,
+        )
     userInternalInterestsStore = UserInternalInterestsStore(clock, dslContext)
     userStore =
         UserStore(
@@ -248,7 +262,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionsDao,
             variableTablesDao,
             variableTableColumnsDao,
-            variableTextsDao)
+            variableTextsDao,
+        )
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
     service =
         AppNotificationService(
@@ -274,7 +289,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             variableOwnerStore,
             variableStore,
             messages,
-            webAppUrls)
+            webAppUrls,
+        )
 
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateAutomation(any()) } returns true
@@ -310,7 +326,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         organizationId = null,
         title = "You've been added to a new organization!",
         body = "You are now a member of Organization 1. Welcome!",
-        localUrl = webAppUrls.organizationHome(organizationId))
+        localUrl = webAppUrls.organizationHome(organizationId),
+    )
   }
 
   @Test
@@ -322,7 +339,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         organizationId = null,
         title = "You've been added to a new organization!",
         body = "You are now a member of Organization 1. Welcome!",
-        localUrl = webAppUrls.organizationHome(organizationId))
+        localUrl = webAppUrls.organizationHome(organizationId),
+    )
   }
 
   @Test
@@ -336,7 +354,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.AccessionScheduledToEndDrying,
         title = "An accession has dried",
         body = "${accessionModel.accessionNumber} has finished drying.",
-        localUrl = webAppUrls.accession(accessionModel.id!!))
+        localUrl = webAppUrls.accession(accessionModel.id!!),
+    )
   }
 
   @Test
@@ -348,7 +367,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val speciesId = insertSpecies()
     val batchId =
         insertBatch(
-            BatchesRow(batchNumber = batchNumber, speciesId = speciesId, facilityId = facilityId))
+            BatchesRow(batchNumber = batchNumber, speciesId = speciesId, facilityId = facilityId)
+        )
 
     testEventNotification(
         NurserySeedlingBatchReadyEvent(batchId, batchNumber, speciesId, nurseryName),
@@ -357,7 +377,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "$batchNumber has reached its scheduled ready by date.",
         body =
             "$batchNumber (located in $nurseryName) has reached its scheduled ready by date. Check on your plants and update their status if needed.",
-        localUrl = webAppUrls.batch(batchId, speciesId))
+        localUrl = webAppUrls.batch(batchId, speciesId),
+    )
   }
 
   @Test
@@ -368,7 +389,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         title = "Device manager cannot be detected.",
         body = "Device manager is disconnected. Please check on it.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId))
+        localUrl = webAppUrls.facilityMonitoring(facilityId),
+    )
   }
 
   @Test
@@ -384,7 +406,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.SensorOutOfBounds,
         title = "device 1 is out of range.",
         body = "$timeseriesName on device 1 is $badValue, which is out of threshold.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId))
+        localUrl = webAppUrls.facilityMonitoring(facilityId),
+    )
   }
 
   @Test
@@ -402,7 +425,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.UnknownAutomationTriggered,
         title = "$automationName triggered at $facilityName",
         body = message,
-        localUrl = webAppUrls.facilityMonitoring(facilityId))
+        localUrl = webAppUrls.facilityMonitoring(facilityId),
+    )
   }
 
   @Test
@@ -416,7 +440,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.DeviceUnresponsive,
         title = "$deviceName cannot be detected.",
         body = "$deviceName cannot be detected. Please check on it.",
-        localUrl = webAppUrls.facilityMonitoring(facilityId, device))
+        localUrl = webAppUrls.facilityMonitoring(facilityId, device),
+    )
   }
 
   @Test
@@ -448,8 +473,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 quarter = 3,
                 status = SeedFundReportStatus.New,
-                year = 2023)),
-        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
+                year = 2023,
+            )
+        ),
+        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)),
+    )
   }
 
   @Test
@@ -469,11 +497,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 observationType = ObservationType.Monitoring,
                 plantingSiteId = inserted.plantingSiteId,
                 startDate = startDate,
-                state = ObservationState.InProgress)),
+                state = ObservationState.InProgress,
+            )
+        ),
         type = NotificationType.ObservationStarted,
         title = "It is time to monitor your plantings!",
         body = "Observations of your plantings need to be completed this month.",
-        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+    )
   }
 
   @Test
@@ -494,7 +525,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 observationType = ObservationType.Monitoring,
                 plantingSiteId = inserted.plantingSiteId,
                 startDate = startDate,
-                state = ObservationState.Upcoming)),
+                state = ObservationState.Upcoming,
+            )
+        ),
         type = NotificationType.ObservationUpcoming,
         title = "Upcoming Observation",
         body =
@@ -518,7 +551,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Schedule an observation",
         body = "It's time to schedule an observation for your planting site",
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-        role = Role.Admin)
+        role = Role.Admin,
+    )
   }
 
   @Test
@@ -533,7 +567,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Reminder: Schedule an observation",
         body = "Remember to schedule an observation for your planting site",
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
-        role = Role.Admin)
+        role = Role.Admin,
+    )
   }
 
   @Test
@@ -550,7 +585,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body =
             "Planting season has begun at planting site $plantingSiteName. To begin planting in the field, make sure that your nursery inventory is up-to-date and that you log your nursery withdrawals as you begin planting.",
         localUrl = webAppUrls.nurseryInventory(),
-        role = Role.Manager)
+        role = Role.Manager,
+    )
   }
 
   @Test
@@ -566,7 +602,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Add your next planting season",
         body = "It's time to schedule your next planting season",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
-        role = Role.Manager)
+        role = Role.Manager,
+    )
   }
 
   @Test
@@ -595,11 +632,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             body = "Your 2025 Q1 Report is due.",
             localUrl = webAppUrls.acceleratorReport(reportId),
             organizationId = organizationId,
-            userId = admin)
+            userId = admin,
+        )
 
     testMultipleEventNotifications(
         AcceleratorReportUpcomingEvent(reportId),
-        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
+        listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)),
+    )
   }
 
   @Test
@@ -622,7 +661,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "2025 Q1 Report Submitted for DEAL_name",
         body = "DEAL_name has submitted their 2025 Q1 Report.",
         localUrl = webAppUrls.acceleratorConsoleReport(reportId, projectId),
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -664,14 +704,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             title = "New Report Available for DEAL_name",
             body = "DEAL_name's 2025 Q1 report is now available in Terraware.",
             localUrl = webAppUrls.funderReport(reportId),
-            organizationId = null)
+            organizationId = null,
+        )
 
     testMultipleEventNotifications(
         AcceleratorReportPublishedEvent(reportId),
         listOf(
             commonValues.copy(userId = userIdA1),
             commonValues.copy(userId = userIdA2),
-            commonValues.copy(userId = userIdB1)))
+            commonValues.copy(userId = userIdB1),
+        ),
+    )
   }
 
   @Test
@@ -687,7 +730,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Application Submitted",
         body = "An Application has been submitted for Organization 1",
         localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -708,7 +752,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Review a submitted deliverable",
         body = "A deliverable from participant1 is ready for review for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -725,7 +770,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
     testMultipleEventNotifications(
-        DeliverableReadyForReviewEvent(deliverableId, projectId), emptyList())
+        DeliverableReadyForReviewEvent(deliverableId, projectId),
+        emptyList(),
+    )
   }
 
   @Test
@@ -752,11 +799,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             title = "Review a submitted deliverable",
             body = "A deliverable from participant1 is ready for review for approval.",
             localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-            organizationId = null)
+            organizationId = null,
+        )
 
     testMultipleEventNotifications(
         DeliverableReadyForReviewEvent(deliverableId, projectId),
-        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)))
+        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)),
+    )
   }
 
   @Test
@@ -781,11 +830,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             title = "Review a submitted deliverable",
             body = "A deliverable from participant1 is ready for review for approval.",
             localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-            organizationId = null)
+            organizationId = null,
+        )
 
     testMultipleEventNotifications(
         DeliverableReadyForReviewEvent(deliverableId, projectId),
-        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)))
+        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)),
+    )
   }
 
   @Test
@@ -800,12 +851,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectId,
             SubmissionStatus.NotSubmitted,
             SubmissionStatus.InReview,
-            submissionId),
+            submissionId,
+        ),
         type = NotificationType.DeliverableStatusUpdated,
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
         localUrl = webAppUrls.deliverable(deliverableId, projectId),
-        role = Role.Admin)
+        role = Role.Admin,
+    )
   }
 
   @Test
@@ -821,8 +874,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectId,
             SubmissionStatus.NeedsTranslation,
             SubmissionStatus.InReview,
-            submissionId),
-        emptyList())
+            submissionId,
+        ),
+        emptyList(),
+    )
   }
 
   @Test
@@ -836,7 +891,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
         localUrl = webAppUrls.deliverable(deliverableId, projectId),
-        role = Role.Admin)
+        role = Role.Admin,
+    )
   }
 
   @Test
@@ -854,13 +910,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     testEventNotification(
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
-            deliverableId, projectId, speciesId),
+            deliverableId,
+            projectId,
+            speciesId,
+        ),
         type = NotificationType.ParticipantProjectSpeciesAddedToProject,
         title = "A species has been added to a project for $participantName.",
         body = "Species 1 has been submitted for use for Project 1.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -878,13 +938,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     testEventNotification(
         ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-            deliverableId, projectId, speciesId),
+            deliverableId,
+            projectId,
+            speciesId,
+        ),
         type = NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
         title = "An approved species has been edited for $participantName.",
         body = "Species 1 has been edited and is ready for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -895,18 +959,24 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val documentId = insertDocument(name = "My Document")
     val sectionVariableId =
         insertVariableManifestEntry(
-            insertSectionVariable(insertVariable(type = VariableType.Section, name = "Overview")))
+            insertSectionVariable(insertVariable(type = VariableType.Section, name = "Overview"))
+        )
     insertVariableOwner(ownedBy = user.userId)
 
     testEventNotification(
         CompletedSectionVariableUpdatedEvent(
-            documentId, projectId, sectionVariableId, sectionVariableId),
+            documentId,
+            projectId,
+            sectionVariableId,
+            sectionVariableId,
+        ),
         type = NotificationType.CompletedSectionVariableUpdated,
         title = "Variable edited in a \"Completed\" document section",
         body = "A variable has been edited in the document My Document in section Overview",
         localUrl = webAppUrls.document(documentId, sectionVariableId),
         userId = user.userId,
-        organizationId = null)
+        organizationId = null,
+    )
   }
 
   @Test
@@ -952,8 +1022,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             commonValues.copy(
                 userId = thirdUserId,
                 localUrl = webAppUrls.moduleEvent(moduleId, eventId, otherOrgId, otherProjectId),
-                organizationId = otherOrgId),
-        ))
+                organizationId = otherOrgId,
+            ),
+        ),
+    )
   }
 
   @Test
@@ -969,7 +1041,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Your Recorded Session is ready to view",
         body = "Click the View button to view the recorded session for Module 1",
         localUrl = webAppUrls.moduleEvent(moduleId, eventId, organizationId, projectId),
-        role = Role.Admin)
+        role = Role.Admin,
+    )
   }
 
   @Test
@@ -983,7 +1056,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "Ahora eres un miembro de Organization 1. ¡Bienvenido!",
         webAppUrls.organizationHome(organizationId),
         organizationId = null,
-        userId = gibberishUserId)
+        userId = gibberishUserId,
+    )
   }
 
   /**
@@ -1023,7 +1097,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 localUrl = localUrl,
                 organizationId = organizationId,
                 title = title,
-                userId = userId)))
+                userId = userId,
+            )
+        )
+    )
   }
 
   private inline fun <reified T> testEventNotification(
@@ -1055,7 +1132,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   private inline fun <reified T> testMultipleEventNotifications(
       event: T,
-      expected: Collection<NotificationsRow>
+      expected: Collection<NotificationsRow>,
   ) {
     val method =
         service::class.members.find {

@@ -135,6 +135,6 @@ class SystemUser(
 
   override fun canUpdateSubmissionStatus(
       deliverableId: DeliverableId,
-      projectId: ProjectId
+      projectId: ProjectId,
   ): Boolean = false
 }

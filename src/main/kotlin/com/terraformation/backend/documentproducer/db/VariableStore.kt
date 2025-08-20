@@ -166,7 +166,8 @@ class VariableStore(
           .andNotExists(
               DSL.selectOne()
                   .from(replacementVariables)
-                  .where(replacementVariables.REPLACES_VARIABLE_ID.eq(ID)))
+                  .where(replacementVariables.REPLACES_VARIABLE_ID.eq(ID))
+          )
           .groupBy(STABLE_ID)
           .fetch()
           .mapNotNull { fetchVariableOrNull(it[DSL.max(ID)]!!) }
@@ -185,12 +186,14 @@ class VariableStore(
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
-                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID))
+          )
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_SECTIONS)
                   .where(VARIABLE_ID.eq(VARIABLE_SECTIONS.VARIABLE_ID))
-                  .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
+                  .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull)
+          )
           .orderBy(POSITION)
           .fetch()
           .mapNotNull { fetchVariableOrNull(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
@@ -211,12 +214,14 @@ class VariableStore(
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
-                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID))
+          )
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_SECTIONS)
                   .where(VARIABLE_ID.eq(VARIABLE_SECTIONS.VARIABLE_ID))
-                  .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
+                  .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull)
+          )
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
           .mapNotNull { fetchVariableOrNull(it, manifestId) }
@@ -239,7 +244,8 @@ class VariableStore(
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
-                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID))
+          )
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
           .mapNotNull { fetchVariableOrNull(it, manifestId) }
@@ -260,7 +266,8 @@ class VariableStore(
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
-                  .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+                  .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID))
+          )
           .groupBy(STABLE_ID)
           .fetch(DSL.max(ID))
           .mapNotNull { variableId -> variableId?.let { fetchVariableOrNull(it) } }
@@ -272,7 +279,8 @@ class VariableStore(
         .select(
             VARIABLE_VALUES.VARIABLE_ID,
             VARIABLE_VALUES.LIST_POSITION,
-            VARIABLE_SECTION_VALUES.USED_VARIABLE_ID)
+            VARIABLE_SECTION_VALUES.USED_VARIABLE_ID,
+        )
         .distinctOn(VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION)
         .from(VARIABLE_VALUES)
         .join(VARIABLE_SECTION_VALUES)
@@ -287,7 +295,10 @@ class VariableStore(
         .where(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.isNotNull)
         .and(DOCUMENTS.ID.eq(documentId))
         .orderBy(
-            VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION, VARIABLE_VALUES.ID.desc())
+            VARIABLE_VALUES.VARIABLE_ID,
+            VARIABLE_VALUES.LIST_POSITION,
+            VARIABLE_VALUES.ID.desc(),
+        )
         .fetchSet(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.asNonNullable())
         .mapNotNull { fetchVariableOrNull(it) }
   }
@@ -303,7 +314,8 @@ class VariableStore(
     val tableVariableId =
         dslContext.fetchValue(
             VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID,
-            VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(variableId))
+            VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(variableId),
+        )
     if (tableVariableId != null) {
       // The table might be nested inside another table, so check it for table membership too.
       return fetchTopLevelVariable(tableVariableId)
@@ -311,7 +323,9 @@ class VariableStore(
 
     val parentSectionId =
         dslContext.fetchValue(
-            VARIABLE_SECTIONS.PARENT_VARIABLE_ID, VARIABLE_SECTIONS.VARIABLE_ID.eq(variableId))
+            VARIABLE_SECTIONS.PARENT_VARIABLE_ID,
+            VARIABLE_SECTIONS.VARIABLE_ID.eq(variableId),
+        )
     if (parentSectionId != null) {
       // Walk up the section hierarchy.
       return fetchTopLevelVariable(parentSectionId)
@@ -343,7 +357,7 @@ class VariableStore(
 
   fun importSelectVariable(
       selectRow: VariableSelectsRow,
-      optionsRows: List<VariableSelectOptionsRow>
+      optionsRows: List<VariableSelectOptionsRow>,
   ) {
     variableSelectsDao.insert(selectRow)
     variableSelectOptionsDao.insert(optionsRows)
@@ -394,7 +408,7 @@ class VariableStore(
   /** Returns variable if found. */
   fun fetchVariableOrNull(
       variableId: VariableId,
-      manifestId: VariableManifestId? = null
+      manifestId: VariableManifestId? = null,
   ): Variable? {
     val cache =
         if (currentUser().canReadInternalOnlyVariables()) {
@@ -420,7 +434,7 @@ class VariableStore(
    */
   private inner class FetchContext(
       private val manifestId: VariableManifestId?,
-      private val cache: ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>
+      private val cache: ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>,
   ) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
@@ -566,7 +580,11 @@ class VariableStore(
           }
 
       return SectionVariable(
-          base.copy(manifestId = manifestId), sectionRow.renderHeading!!, children, recommends)
+          base.copy(manifestId = manifestId),
+          sectionRow.renderHeading!!,
+          children,
+          recommends,
+      )
     }
 
     private fun fetchSelect(base: BaseVariableProperties): SelectVariable {

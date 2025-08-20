@@ -11,7 +11,7 @@ fun validateScientificNameSyntax(
     value: String,
     onTooShort: () -> Unit,
     onTooLong: () -> Unit,
-    onInvalidCharacter: (String) -> Unit
+    onInvalidCharacter: (String) -> Unit,
 ) {
   val normalizedValue = normalizeScientificName(value)
   val invalidChar = invalidScientificNameChars.find(normalizedValue)?.value

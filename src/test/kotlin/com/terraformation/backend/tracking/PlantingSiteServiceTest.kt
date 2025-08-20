@@ -55,7 +55,8 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
   private val service by lazy {
     PlantingSiteService(deliveryStore, eventPublisher, plantingSiteStore)
@@ -124,16 +125,25 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
           plantingSiteStore.fetchSiteById(insertPlantingSite(), PlantingSiteDepth.Site)
 
       organizationsDao.update(
-          organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = newTimeZone))
+          organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = newTimeZone)
+      )
 
       service.on(OrganizationTimeZoneChangedEvent(organizationId, oldTimeZone, newTimeZone))
 
       eventPublisher.assertExactEventsPublished(
           setOf(
               PlantingSiteTimeZoneChangedEvent(
-                  plantingSiteWithoutTimeZone1, oldTimeZone, newTimeZone),
+                  plantingSiteWithoutTimeZone1,
+                  oldTimeZone,
+                  newTimeZone,
+              ),
               PlantingSiteTimeZoneChangedEvent(
-                  plantingSiteWithoutTimeZone2, oldTimeZone, newTimeZone)))
+                  plantingSiteWithoutTimeZone2,
+                  oldTimeZone,
+                  newTimeZone,
+              ),
+          )
+      )
 
       assertIsEventListener<OrganizationTimeZoneChangedEvent>(service)
     }
@@ -160,11 +170,13 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           startDate.toInstant(newTimeZone),
           newSiteModel.plantingSeasons.first().startTime,
-          "Start time")
+          "Start time",
+      )
       assertEquals(
           endDate.plusDays(1).toInstant(newTimeZone),
           newSiteModel.plantingSeasons.first().endTime,
-          "End time")
+          "End time",
+      )
 
       assertIsEventListener<PlantingSiteTimeZoneChangedEvent>(service)
     }
@@ -201,7 +213,9 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
           PlantingSiteMapEditedEvent(
               site,
               PlantingSiteEdit(BigDecimal.ZERO, site, site, emptyList()),
-              ReplacementResult(emptySet(), emptySet())))
+              ReplacementResult(emptySet(), emptySet()),
+          )
+      )
 
       assertTableEquals(existingSubzonePopulations, "Subzone populations should not have changed")
 
@@ -225,7 +239,8 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
                   speciesId = speciesId1,
                   totalPlants = 80,
               ),
-          ))
+          )
+      )
 
       assertIsEventListener<PlantingSiteMapEditedEvent>(service)
     }

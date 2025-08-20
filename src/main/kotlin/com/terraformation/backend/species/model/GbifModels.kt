@@ -14,7 +14,8 @@ data class GbifVernacularNameModel(
   ) : this(
       record[GBIF_VERNACULAR_NAMES.VERNACULAR_NAME]
           ?: throw IllegalArgumentException("Name must be non-null"),
-      record[GBIF_VERNACULAR_NAMES.LANGUAGE])
+      record[GBIF_VERNACULAR_NAMES.LANGUAGE],
+  )
 }
 
 data class GbifTaxonModel(

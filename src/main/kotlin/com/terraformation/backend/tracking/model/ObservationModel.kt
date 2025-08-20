@@ -45,7 +45,7 @@ data class ObservationModel<ID : ObservationId?>(
 
     fun of(
         record: Record,
-        requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>>
+        requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>>,
     ): ExistingObservationModel {
       return ObservationModel(
           completedTime = record[OBSERVATIONS.COMPLETED_TIME],

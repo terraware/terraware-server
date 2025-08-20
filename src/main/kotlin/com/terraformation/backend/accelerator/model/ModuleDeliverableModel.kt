@@ -31,7 +31,8 @@ data class ModuleDeliverableModel(
               position = record[POSITION]!!,
               required = record[IS_REQUIRED]!!,
               sensitive = record[IS_SENSITIVE]!!,
-              type = record[DELIVERABLE_TYPE_ID]!!)
+              type = record[DELIVERABLE_TYPE_ID]!!,
+          )
         }
   }
 }

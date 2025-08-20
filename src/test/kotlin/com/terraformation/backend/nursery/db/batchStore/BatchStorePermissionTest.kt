@@ -59,7 +59,8 @@ internal class BatchStorePermissionTest : BatchStoreTest() {
           activeGrowth = 1,
           hardeningOff = 1,
           ready = 1,
-          historyType = BatchQuantityHistoryType.Observed)
+          historyType = BatchQuantityHistoryType.Observed,
+      )
     }
   }
 }

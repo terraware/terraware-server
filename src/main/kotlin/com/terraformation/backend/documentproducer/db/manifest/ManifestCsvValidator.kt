@@ -119,7 +119,8 @@ class ManifestCsvValidator(
       addError(
           messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
           name,
-          messages.manifestCsvVariableParentDoesNotExist())
+          messages.manifestCsvVariableParentDoesNotExist(),
+      )
       return
     }
 

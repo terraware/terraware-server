@@ -47,7 +47,8 @@ class PlantingSiteService(
         .filter { it.timeZone == null }
         .forEach { site ->
           eventPublisher.publishEvent(
-              PlantingSiteTimeZoneChangedEvent(site, event.oldTimeZone, event.newTimeZone))
+              PlantingSiteTimeZoneChangedEvent(site, event.oldTimeZone, event.newTimeZone)
+          )
         }
   }
 
@@ -61,7 +62,8 @@ class PlantingSiteService(
           site.plantingSeasons.map { UpdatedPlantingSeasonModel(it) },
           event.newTimeZone ?: ZoneOffset.UTC,
           site.plantingSeasons,
-          event.oldTimeZone)
+          event.oldTimeZone,
+      )
     }
   }
 

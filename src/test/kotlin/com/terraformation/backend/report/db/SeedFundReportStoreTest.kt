@@ -152,7 +152,10 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual =
           store.create(
-              organizationId, projectId, SeedFundReportBodyModelV1(organizationName = "org"))
+              organizationId,
+              projectId,
+              SeedFundReportBodyModelV1(organizationName = "org"),
+          )
 
       val expected =
           SeedFundReportMetadata(
@@ -190,7 +193,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(reportId2),
           seedFundReportsDao.findAll().map { it.id },
-          "Report IDs after deletion")
+          "Report IDs after deletion",
+      )
     }
 
     @Test
@@ -232,7 +236,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                   quarter = 1,
                   status = SeedFundReportStatus.New,
                   year = 1970,
-              ))
+              ),
+          )
 
       val actual = store.fetchOneById(reportId)
 
@@ -399,7 +404,10 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                           operationStartedDate = null,
                           operationStartedDateEditable = true,
                           totalSeedsStored = 123L,
-                          workers = SeedFundReportBodyModelV1.Workers(1, 2, 3))))
+                          workers = SeedFundReportBodyModelV1.Workers(1, 2, 3),
+                      )
+                  ),
+          )
 
       store.update(reportId, newBody)
 
@@ -416,7 +424,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                   quarter = 1,
                   status = SeedFundReportStatus.Locked,
                   year = 1970,
-              ))
+              ),
+          )
 
       val actual = store.fetchOneById(reportId)
 
@@ -564,7 +573,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
           SeedFundReportBodyModelV1(
               organizationName = "org",
               seedBanks =
-                  listOf(SeedFundReportBodyModelV1.SeedBank(id = facilityId, name = "bank")))
+                  listOf(SeedFundReportBodyModelV1.SeedBank(id = facilityId, name = "bank")),
+          )
       val reportId =
           insertSeedFundReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
 
@@ -622,10 +632,13 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       insertSeedFundReport(
           organizationId = organizationId,
           quarter = twoQuartersAgo.quarter,
-          year = twoQuartersAgo.year)
+          year = twoQuartersAgo.year,
+      )
 
       assertEquals(
-          listOf(organizationId, missingReportOrganizationId), store.findOrganizationsForCreate())
+          listOf(organizationId, missingReportOrganizationId),
+          store.findOrganizationsForCreate(),
+      )
     }
 
     @Test
@@ -633,7 +646,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       insertSeedFundReport(
           organizationId = organizationId,
           quarter = defaultTime.quarter - 1,
-          year = defaultTime.year)
+          year = defaultTime.year,
+      )
 
       assertEquals(listOf(missingReportOrganizationId), store.findOrganizationsForCreate())
     }
@@ -655,9 +669,11 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               isConfigured = false,
               organizationId = organizationId,
               organizationEnabled = true,
-              projects = emptyList()),
+              projects = emptyList(),
+          ),
           store.fetchSettingsByOrganization(organizationId),
-          "Result with no projects")
+          "Result with no projects",
+      )
 
       val projectId = insertProject()
 
@@ -669,9 +685,15 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               projects =
                   listOf(
                       SeedFundReportProjectSettingsModel(
-                          projectId = projectId, isConfigured = false, isEnabled = true))),
+                          projectId = projectId,
+                          isConfigured = false,
+                          isEnabled = true,
+                      )
+                  ),
+          ),
           store.fetchSettingsByOrganization(organizationId),
-          "Result with unconfigured project")
+          "Result with unconfigured project",
+      )
     }
 
     @Test
@@ -686,7 +708,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               projects = emptyList(),
           ),
           store.fetchSettingsByOrganization(organizationId),
-          "Organization reports should be disabled")
+          "Organization reports should be disabled",
+      )
 
       val otherOrganizationId = insertOrganization()
       insertOrganizationReportSettings(isEnabled = true)
@@ -696,9 +719,11 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               isConfigured = true,
               organizationId = otherOrganizationId,
               organizationEnabled = true,
-              projects = emptyList()),
+              projects = emptyList(),
+          ),
           store.fetchSettingsByOrganization(otherOrganizationId),
-          "Organization reports should be enabled")
+          "Organization reports should be enabled",
+      )
     }
 
     @Test
@@ -720,19 +745,29 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                       SeedFundReportProjectSettingsModel(
                           projectId = unconfiguredProjectId,
                           isConfigured = false,
-                          isEnabled = true),
+                          isEnabled = true,
+                      ),
                       SeedFundReportProjectSettingsModel(
-                          projectId = projectId1, isConfigured = true, isEnabled = true),
+                          projectId = projectId1,
+                          isConfigured = true,
+                          isEnabled = true,
+                      ),
                       SeedFundReportProjectSettingsModel(
-                          projectId = projectId2, isConfigured = true, isEnabled = false),
-                  )),
+                          projectId = projectId2,
+                          isConfigured = true,
+                          isEnabled = false,
+                      ),
+                  ),
+          ),
           store.fetchSettingsByOrganization(organizationId),
-          "Should include list of projects with reports enabled")
+          "Should include list of projects with reports enabled",
+      )
 
       organizationReportSettingsDao.update(
           organizationReportSettingsDao
               .fetchOneByOrganizationId(organizationId)!!
-              .copy(isEnabled = true))
+              .copy(isEnabled = true)
+      )
 
       assertEquals(
           SeedFundReportSettingsModel(
@@ -744,14 +779,23 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                       SeedFundReportProjectSettingsModel(
                           projectId = unconfiguredProjectId,
                           isConfigured = false,
-                          isEnabled = true),
+                          isEnabled = true,
+                      ),
                       SeedFundReportProjectSettingsModel(
-                          projectId = projectId1, isConfigured = true, isEnabled = true),
+                          projectId = projectId1,
+                          isConfigured = true,
+                          isEnabled = true,
+                      ),
                       SeedFundReportProjectSettingsModel(
-                          projectId = projectId2, isConfigured = true, isEnabled = false),
-                  )),
+                          projectId = projectId2,
+                          isConfigured = true,
+                          isEnabled = false,
+                      ),
+                  ),
+          ),
           store.fetchSettingsByOrganization(organizationId),
-          "Should include list of projects when organization reporting is enabled")
+          "Should include list of projects when organization reporting is enabled",
+      )
     }
 
     @Test
@@ -773,7 +817,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = true,
-              projects = emptyList())
+              projects = emptyList(),
+          )
 
       store.updateSettings(settings)
 
@@ -789,7 +834,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = false,
-              projects = emptyList())
+              projects = emptyList(),
+          )
 
       store.updateSettings(settings)
 
@@ -810,7 +856,12 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                 projects =
                     listOf(
                         SeedFundReportProjectSettingsModel(
-                            projectId = otherProjectId, isEnabled = true))))
+                            projectId = otherProjectId,
+                            isEnabled = true,
+                        )
+                    ),
+            )
+        )
       }
     }
 
@@ -824,7 +875,9 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                 isConfigured = true,
                 organizationId = organizationId,
                 organizationEnabled = true,
-                projects = emptyList()))
+                projects = emptyList(),
+            )
+        )
       }
     }
   }

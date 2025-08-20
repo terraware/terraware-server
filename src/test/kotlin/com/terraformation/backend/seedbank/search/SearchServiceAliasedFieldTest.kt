@@ -41,7 +41,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -61,7 +62,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "accessionNumber" to "XYZ",
                     "plantsCollectedFromAlias" to "1",
                 ),
-            ))
+            )
+        )
 
     val actual =
         searchAccessions(facilityId, listOf(plantsCollectedFromAlias), criteria = NoConditionNode())
@@ -86,7 +88,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "accessionNumber" to "XYZ",
                     "alias(raw)" to "1",
                 ),
-            ))
+            )
+        )
 
     val actual = searchAccessions(facilityId, listOf(rawAlias), criteria = NoConditionNode())
     assertEquals(expected, actual)
@@ -112,11 +115,16 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
                 mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
-            ))
+            )
+        )
 
     val actual =
         searchAccessions(
-            facilityId, emptyList(), criteria = NoConditionNode(), sortOrder = sortOrder)
+            facilityId,
+            emptyList(),
+            criteria = NoConditionNode(),
+            sortOrder = sortOrder,
+        )
     assertEquals(expected, actual)
   }
 }

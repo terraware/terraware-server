@@ -41,7 +41,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         parentStore,
-        recordedPlantsDao)
+        recordedPlantsDao,
+    )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -55,7 +56,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
   private val plantingSiteImporter: PlantingSiteImporter by lazy {
     PlantingSiteImporter(plantingSiteStore)
@@ -189,7 +191,10 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             shapefiles =
                 listOfNotNull(
-                    Shapefile(subzoneFeatures), exclusionFeature?.let { Shapefile(listOf(it)) }))
+                    Shapefile(subzoneFeatures),
+                    exclusionFeature?.let { Shapefile(listOf(it)) },
+                ),
+        )
 
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 

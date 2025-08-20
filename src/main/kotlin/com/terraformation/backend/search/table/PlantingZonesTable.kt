@@ -20,11 +20,17 @@ class PlantingZonesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           plantingSites.asSingleValueSublist(
-              "plantingSite", PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
           plantingSubzones.asMultiValueSublist(
-              "plantingSubzones", PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID)),
+              "plantingSubzones",
+              PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID),
+          ),
           plantingZonePopulations.asMultiValueSublist(
-              "populations", PLANTING_ZONES.ID.eq(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID)),
+              "populations",
+              PLANTING_ZONES.ID.eq(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID),
+          ),
       )
     }
   }

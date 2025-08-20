@@ -50,9 +50,11 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             projectsDao,
             subLocationsDao,
-            nurseryWithdrawalsDao),
+            nurseryWithdrawalsDao,
+        ),
         DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao),
-        dslContext)
+        dslContext,
+    )
   }
 
   private lateinit var facilityId: FacilityId
@@ -86,11 +88,15 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                           batchId,
                           germinatingQuantityWithdrawn = 0,
                           activeGrowthQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 1)),
+                          readyQuantityWithdrawn = 1,
+                      )
+                  ),
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 
@@ -107,11 +113,15 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                           batchId,
                           germinatingQuantityWithdrawn = 0,
                           activeGrowthQuantityWithdrawn = 0,
-                          readyQuantityWithdrawn = 1)),
+                          readyQuantityWithdrawn = 1,
+                      )
+                  ),
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.Other,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 
@@ -122,19 +132,22 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             speciesId = speciesId1,
             germinatingQuantity = 20,
             activeGrowthQuantity = 20,
-            readyQuantity = 20)
+            readyQuantity = 20,
+        )
     val species1Batch2 =
         insertBatch(
             speciesId = speciesId1,
             germinatingQuantity = 20,
             activeGrowthQuantity = 20,
-            readyQuantity = 20)
+            readyQuantity = 20,
+        )
     val species2Batch1 =
         insertBatch(
             speciesId = speciesId2,
             germinatingQuantity = 20,
             activeGrowthQuantity = 20,
-            readyQuantity = 20)
+            readyQuantity = 20,
+        )
 
     val withdrawal =
         service.withdraw(
@@ -145,24 +158,28 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                             species1Batch1,
                             germinatingQuantityWithdrawn = 1,
                             activeGrowthQuantityWithdrawn = 2,
-                            readyQuantityWithdrawn = 4),
+                            readyQuantityWithdrawn = 4,
+                        ),
                         BatchWithdrawalModel(
                             species1Batch2,
                             germinatingQuantityWithdrawn = 0,
                             activeGrowthQuantityWithdrawn = 0,
-                            readyQuantityWithdrawn = 8),
+                            readyQuantityWithdrawn = 8,
+                        ),
                         BatchWithdrawalModel(
                             species2Batch1,
                             germinatingQuantityWithdrawn = 0,
                             activeGrowthQuantityWithdrawn = 0,
-                            readyQuantityWithdrawn = 16),
+                            readyQuantityWithdrawn = 16,
+                        ),
                     ),
                 facilityId = facilityId,
                 id = null,
                 purpose = WithdrawalPurpose.OutPlant,
                 withdrawnDate = LocalDate.EPOCH,
             ),
-            plantingSiteId = plantingSiteId)
+            plantingSiteId = plantingSiteId,
+        )
 
     assertNotNull(withdrawal.deliveryId, "Should have created delivery")
 
@@ -172,9 +189,15 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
     val plantingsRows = plantingsDao.findAll()
     assertEquals(2, plantingsRows.size, "Should have created a planting for each of 2 species")
     assertEquals(
-        15, plantingsRows.first { it.speciesId == speciesId1 }.numPlants, "Species 1 quantity")
+        15,
+        plantingsRows.first { it.speciesId == speciesId1 }.numPlants,
+        "Species 1 quantity",
+    )
     assertEquals(
-        16, plantingsRows.first { it.speciesId == speciesId2 }.numPlants, "Species 2 quantity")
+        16,
+        plantingsRows.first { it.speciesId == speciesId2 }.numPlants,
+        "Species 2 quantity",
+    )
   }
 
   /**
@@ -203,20 +226,25 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                   purpose = WithdrawalPurpose.OutPlant,
                   withdrawnDate = LocalDate.EPOCH,
               ),
-              plantingSiteId = plantingSiteId)
+              plantingSiteId = plantingSiteId,
+          )
 
       val undoWithdrawal = service.undoWithdrawal(withdrawal.id)
 
       assertEquals(WithdrawalPurpose.Undo, undoWithdrawal.purpose, "Undo withdrawal purpose")
       assertNotNull(undoWithdrawal.deliveryId, "Should have created delivery")
       assertNotEquals(
-          withdrawal.deliveryId, undoWithdrawal.deliveryId, "Should have created new delivery")
+          withdrawal.deliveryId,
+          undoWithdrawal.deliveryId,
+          "Should have created new delivery",
+      )
 
       val plantingsRows = plantingsDao.fetchByDeliveryId(undoWithdrawal.deliveryId!!)
       assertEquals(
           PlantingType.Undo,
           plantingsRows.single().plantingTypeId,
-          "Planting type in undo delivery")
+          "Planting type in undo delivery",
+      )
       assertEquals(-4, plantingsRows.single().numPlants, "Number of plants in undo planting")
     }
 
@@ -228,7 +256,8 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
               germinatingQuantity = 10,
               activeGrowthQuantity = 20,
               hardeningOffQuantity = 30,
-              readyQuantity = 40)
+              readyQuantity = 40,
+          )
       val withdrawal =
           service.withdraw(
               NewWithdrawalModel(
@@ -245,7 +274,9 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
                   facilityId = facilityId,
                   id = null,
                   purpose = WithdrawalPurpose.Other,
-                  withdrawnDate = LocalDate.EPOCH))
+                  withdrawnDate = LocalDate.EPOCH,
+              )
+          )
 
       val undoWithdrawal = service.undoWithdrawal(withdrawal.id)
 
@@ -259,8 +290,10 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
               batchesRow.germinatingQuantity,
               batchesRow.activeGrowthQuantity,
               batchesRow.hardeningOffQuantity,
-              batchesRow.readyQuantity),
-          "Batch quantities after withdrawal")
+              batchesRow.readyQuantity,
+          ),
+          "Batch quantities after withdrawal",
+      )
     }
   }
 }

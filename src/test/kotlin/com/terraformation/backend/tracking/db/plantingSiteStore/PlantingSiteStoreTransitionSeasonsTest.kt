@@ -25,7 +25,8 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
                   timeZone = timeZone,
               ),
               plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
+                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
+          )
 
       assertSeasonActive(false, "Should start as inactive")
 
@@ -40,14 +41,16 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
 
       assertSeasonActive(true, "Should transition to active")
       eventPublisher.assertEventPublished(
-          PlantingSeasonStartedEvent(model.id, model.plantingSeasons.first().id))
+          PlantingSeasonStartedEvent(model.id, model.plantingSeasons.first().id)
+      )
 
       clock.instant = endDate.minusDays(1).toInstant(timeZone)
       eventPublisher.clear()
 
       store.transitionPlantingSeasons()
       eventPublisher.assertNoEventsPublished(
-          "Should not publish any events if planting season already in correct state")
+          "Should not publish any events if planting season already in correct state"
+      )
     }
 
     @Test
@@ -65,7 +68,8 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
                   timeZone = timeZone,
               ),
               plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
+                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
+          )
 
       assertSeasonActive(true, "Should start as active")
 
@@ -80,14 +84,16 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
 
       assertSeasonActive(false, "Should have been marked as inactive")
       eventPublisher.assertEventPublished(
-          PlantingSeasonEndedEvent(model.id, model.plantingSeasons.first().id))
+          PlantingSeasonEndedEvent(model.id, model.plantingSeasons.first().id)
+      )
 
       clock.instant = endDate.plusDays(2).toInstant(timeZone)
       eventPublisher.clear()
 
       store.transitionPlantingSeasons()
       eventPublisher.assertNoEventsPublished(
-          "Should not publish any events if planting season already in correct state")
+          "Should not publish any events if planting season already in correct state"
+      )
     }
 
     private fun assertSeasonActive(isActive: Boolean, message: String) {

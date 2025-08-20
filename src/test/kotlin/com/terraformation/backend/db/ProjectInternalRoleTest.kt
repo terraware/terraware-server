@@ -11,11 +11,16 @@ internal class ProjectInternalRoleTest {
   @Test
   fun `role should be tf contact`() {
     assertTrue(
-        ProjectInternalRole.ProjectLead.shouldBeTfContact(), "Project Lead should be TF Contact")
+        ProjectInternalRole.ProjectLead.shouldBeTfContact(),
+        "Project Lead should be TF Contact",
+    )
     assertTrue(
         ProjectInternalRole.RestorationLead.shouldBeTfContact(),
-        "Restoration Lead should be TF Contact")
+        "Restoration Lead should be TF Contact",
+    )
     assertFalse(
-        ProjectInternalRole.Consultant.shouldBeTfContact(), "Consultant should not be TF Contact")
+        ProjectInternalRole.Consultant.shouldBeTfContact(),
+        "Consultant should not be TF Contact",
+    )
   }
 }

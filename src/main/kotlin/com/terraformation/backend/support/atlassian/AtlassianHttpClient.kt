@@ -70,7 +70,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
     val requestTypeId =
         requestTypeIds[requestType]
             ?: throw IllegalArgumentException(
-                "Request type does not have a configured Jira support request")
+                "Request type does not have a configured Jira support request"
+            )
 
     return makeRequest(
         CreateServiceRequestHttpRequest(
@@ -78,12 +79,13 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
             requestFieldValues = JiraServiceRequestFieldsModel(summary, description),
             requestTypeId = requestTypeId,
             serviceDeskId = serviceDesk.id,
-        ))
+        )
+    )
   }
 
   fun attachTemporaryFile(
       filename: String,
-      sizedInputStream: SizedInputStream
+      sizedInputStream: SizedInputStream,
   ): AttachTemporaryFileResponse {
     // No required permissions
 
@@ -94,7 +96,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
             contentType = sizedInputStream.contentType?.type,
             fileSize = sizedInputStream.size,
             serviceDeskId = serviceDesk.id,
-        ))
+        )
+    )
   }
 
   fun createAttachments(
@@ -110,7 +113,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
               issueId = issueId,
               attachmentIds = attachmentIds,
               comment = comment,
-          ))
+          )
+      )
     } catch (e: ClientRequestException) {
       if (e.response.status == HttpStatusCode.BadRequest) {
         try {
@@ -118,7 +122,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
           if (errorResponse.i18nErrorMessage?.i18nKey == attachmentTimeoutErrorKey) {
             log.error(
                 "Jira attachment temporary ID(s) not found. This may be due to a duplicate API " +
-                    "request from the web app.")
+                    "request from the web app."
+            )
           }
         } catch (e2: NoTransformationFoundException) {
           log.warn("Unable to parse Atlassian API error response", e2)
@@ -171,7 +176,9 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
         basic {
           credentials {
             BasicAuthCredentials(
-                username = config.atlassian.account!!, password = config.atlassian.apiToken!!)
+                username = config.atlassian.account!!,
+                password = config.atlassian.apiToken!!,
+            )
           }
           sendWithoutRequest { true }
         }
@@ -185,6 +192,6 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   @JsonIgnoreProperties(ignoreUnknown = true)
   data class AtlassianErrorResponse(
       val errorMessage: String?,
-      val i18nErrorMessage: AtlassianI18nErrorMessage?
+      val i18nErrorMessage: AtlassianI18nErrorMessage?,
   )
 }

@@ -21,11 +21,17 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           observationBiomassDetails.asMultiValueSublist(
-              "biomassDetails", OBSERVATIONS.ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID)),
+              "biomassDetails",
+              OBSERVATIONS.ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID),
+          ),
           observationPlots.asMultiValueSublist(
-              "observationPlots", OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID)),
+              "observationPlots",
+              OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID),
+          ),
           plantingSites.asSingleValueSublist(
-              "plantingSite", OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
       )
     }
   }

@@ -22,7 +22,8 @@ data class UploadProblemPayload(
     @Schema(
         description =
             "Name of the field with the problem. Absent if the problem isn't specific to a " +
-                "single field.")
+                "single field."
+    )
     val fieldName: String?,
     @Schema(
         description = "Human-readable description of the problem.",
@@ -34,7 +35,8 @@ data class UploadProblemPayload(
     @Schema(
         description =
             "The value that caused the problem. Absent if the problem wasn't caused by a " +
-                "specific field value.")
+                "specific field value."
+    )
     val value: String?,
 ) {
   constructor(
@@ -51,14 +53,18 @@ data class GetUploadStatusDetailsPayload(
             Schema(
                 description =
                     "List of errors in the file. Errors prevent the file from being processed; " +
-                        "the file needs to be modified to resolve them."))
+                        "the file needs to be modified to resolve them."
+            )
+    )
     val errors: List<UploadProblemPayload>?,
     @ArraySchema(
         schema =
             Schema(
                 description =
                     "List of conditions that might cause the user to want to cancel the upload " +
-                        "but that can be automatically resolved if desired."))
+                        "but that can be automatically resolved if desired."
+            )
+    )
     val warnings: List<UploadProblemPayload>?,
 ) {
   constructor(
@@ -67,11 +73,13 @@ data class GetUploadStatusDetailsPayload(
       model.id,
       model.status,
       model.errors.map { UploadProblemPayload(it) }.ifEmpty { null },
-      model.warnings.map { UploadProblemPayload(it) }.ifEmpty { null })
+      model.warnings.map { UploadProblemPayload(it) }.ifEmpty { null },
+  )
 
   @get:Schema(
       description =
-          "True if the server is finished processing the file, either successfully or not.")
+          "True if the server is finished processing the file, either successfully or not."
+  )
   val finished: Boolean
     get() = status.finished
 }
@@ -86,6 +94,7 @@ data class ResolveUploadRequestPayload(
         description =
             "If true, the data for entries that already exist will be overwritten with the " +
                 "values in the uploaded file. If false, only entries that don't already exist " +
-                "will be imported.")
+                "will be imported."
+    )
     val overwriteExisting: Boolean
 )

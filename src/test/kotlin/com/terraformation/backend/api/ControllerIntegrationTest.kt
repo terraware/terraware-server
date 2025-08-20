@@ -39,7 +39,8 @@ abstract class ControllerIntegrationTest :
               MockMvcRequestBuilders.get("")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .apply { with(oidcLogin().idToken { it.subject(currentUser().authId) }) })
+                  .apply { with(oidcLogin().idToken { it.subject(currentUser().authId) }) }
+          )
           .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
           .addFilter<DefaultMockMvcBuilder>(makeSetUserFilter())
           .build()
@@ -67,7 +68,7 @@ abstract class ControllerIntegrationTest :
    */
   protected fun ResultActionsDsl.andExpectJson(
       json: String,
-      strict: Boolean = false
+      strict: Boolean = false,
   ): ResultActionsDsl {
     val compareMode = if (strict) JsonCompareMode.STRICT else JsonCompareMode.LENIENT
 

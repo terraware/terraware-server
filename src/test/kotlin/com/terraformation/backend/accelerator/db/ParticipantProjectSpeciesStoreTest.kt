@@ -39,7 +39,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   private val store: ParticipantProjectSpeciesStore by lazy {
     ParticipantProjectSpeciesStore(
-        clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao)
+        clock,
+        dslContext,
+        eventPublisher,
+        participantProjectSpeciesDao,
+        projectsDao,
+    )
   }
 
   @BeforeEach
@@ -68,17 +73,20 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           createdTime = Instant.EPOCH,
           modifiedTime = Instant.EPOCH.plusSeconds(333),
           projectId = projectId,
-          speciesId = speciesId1)
+          speciesId = speciesId1,
+      )
       insertParticipantProjectSpecies(
           createdTime = Instant.EPOCH.plusSeconds(2),
           modifiedTime = Instant.EPOCH.plusSeconds(331),
           projectId = projectId,
-          speciesId = speciesId2)
+          speciesId = speciesId2,
+      )
       insertParticipantProjectSpecies(
           createdTime = Instant.EPOCH.plusSeconds(1),
           modifiedTime = Instant.EPOCH.plusSeconds(332),
           projectId = projectId,
-          speciesId = speciesId3)
+          speciesId = speciesId3,
+      )
 
       assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastCreatedSpeciesTime(projectId))
     }
@@ -107,17 +115,20 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           createdTime = Instant.EPOCH.plusSeconds(333),
           modifiedTime = Instant.EPOCH,
           projectId = projectId,
-          speciesId = speciesId1)
+          speciesId = speciesId1,
+      )
       insertParticipantProjectSpecies(
           createdTime = Instant.EPOCH.plusSeconds(331),
           modifiedTime = Instant.EPOCH.plusSeconds(2),
           projectId = projectId,
-          speciesId = speciesId2)
+          speciesId = speciesId2,
+      )
       insertParticipantProjectSpecies(
           createdTime = Instant.EPOCH.plusSeconds(332),
           modifiedTime = Instant.EPOCH.plusSeconds(1),
           projectId = projectId,
-          speciesId = speciesId3)
+          speciesId = speciesId3,
+      )
 
       assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastModifiedSpeciesTime(projectId))
     }
@@ -144,7 +155,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "feedback",
               projectId = projectId,
               rationale = "rationale",
-              speciesId = speciesId)
+              speciesId = speciesId,
+          )
 
       val userId = user.userId
       val now = Instant.EPOCH
@@ -162,7 +174,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               speciesId = speciesId,
               submissionStatus = SubmissionStatus.NotSubmitted,
           ),
-          store.fetchOneById(participantProjectSpeciesId))
+          store.fetchOneById(participantProjectSpeciesId),
+      )
     }
 
     @Test
@@ -175,7 +188,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "feedback",
               projectId = projectId,
               rationale = "rationale",
-              speciesId = speciesId)
+              speciesId = speciesId,
+          )
 
       every { user.canReadParticipantProjectSpecies(participantProjectSpeciesId) } returns false
 
@@ -216,7 +230,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId1,
                   projectName = "Project 1",
-                  speciesId = speciesId),
+                  speciesId = speciesId,
+              ),
               ParticipantProjectsForSpecies(
                   deliverableId = deliverableId,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
@@ -224,8 +239,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId2,
                   projectName = "Project 2",
-                  speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(speciesId))
+                  speciesId = speciesId,
+              ),
+          ),
+          store.fetchParticipantProjectsForSpecies(speciesId),
+      )
     }
 
     @Test
@@ -242,7 +260,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdMostRecent =
           insertDeliverable(
-              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+              moduleId = moduleIdMostRecent,
+              deliverableTypeId = DeliverableType.Species,
+          )
 
       // The clock is between these two modules
 
@@ -278,7 +298,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId1,
                   projectName = "Project 1",
-                  speciesId = speciesId),
+                  speciesId = speciesId,
+              ),
               ParticipantProjectsForSpecies(
                   deliverableId = deliverableIdMostRecent,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
@@ -286,8 +307,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId2,
                   projectName = "Project 2",
-                  speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(speciesId))
+                  speciesId = speciesId,
+              ),
+          ),
+          store.fetchParticipantProjectsForSpecies(speciesId),
+      )
     }
 
     @Test
@@ -312,7 +336,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId1,
                   projectName = "Project 1",
-                  speciesId = speciesId),
+                  speciesId = speciesId,
+              ),
               ParticipantProjectsForSpecies(
                   deliverableId = null,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
@@ -320,8 +345,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId2,
                   projectName = "Project 2",
-                  speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(speciesId))
+                  speciesId = speciesId,
+              ),
+          ),
+          store.fetchParticipantProjectsForSpecies(speciesId),
+      )
     }
 
     @Test
@@ -352,7 +380,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId1,
                   projectName = "Project 1",
-                  speciesId = speciesId),
+                  speciesId = speciesId,
+              ),
               ParticipantProjectsForSpecies(
                   deliverableId = null,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
@@ -360,8 +389,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId2,
                   projectName = "Project 2",
-                  speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(speciesId))
+                  speciesId = speciesId,
+              ),
+          ),
+          store.fetchParticipantProjectsForSpecies(speciesId),
+      )
     }
 
     @Test
@@ -381,7 +413,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<ParticipantProjectsForSpecies>(),
-          store.fetchParticipantProjectsForSpecies(speciesId))
+          store.fetchParticipantProjectsForSpecies(speciesId),
+      )
     }
   }
 
@@ -415,7 +448,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           projectId = projectId,
                           speciesId = speciesId1,
-                          submissionStatus = SubmissionStatus.NotSubmitted),
+                          submissionStatus = SubmissionStatus.NotSubmitted,
+                      ),
                   project =
                       ExistingProjectModel(
                           createdBy = userId,
@@ -425,7 +459,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           name = "Project 1",
                           organizationId = inserted.organizationId,
-                          participantId = participantId),
+                          participantId = participantId,
+                      ),
                   species =
                       ExistingSpeciesModel(
                           commonName = null,
@@ -433,7 +468,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           id = speciesId1,
                           modifiedTime = now,
                           organizationId = inserted.organizationId,
-                          scientificName = "Acacia Kochi")),
+                          scientificName = "Acacia Kochi",
+                      ),
+              ),
               SpeciesForParticipantProject(
                   participantProjectSpecies =
                       ExistingParticipantProjectSpeciesModel(
@@ -444,7 +481,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           projectId = projectId,
                           speciesId = speciesId2,
-                          submissionStatus = SubmissionStatus.NotSubmitted),
+                          submissionStatus = SubmissionStatus.NotSubmitted,
+                      ),
                   project =
                       ExistingProjectModel(
                           createdBy = userId,
@@ -454,7 +492,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           name = "Project 1",
                           organizationId = inserted.organizationId,
-                          participantId = participantId),
+                          participantId = participantId,
+                      ),
                   species =
                       ExistingSpeciesModel(
                           commonName = null,
@@ -462,8 +501,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           id = speciesId2,
                           modifiedTime = now,
                           organizationId = inserted.organizationId,
-                          scientificName = "Juniperus scopulorum"))),
-          store.fetchSpeciesForParticipantProject(projectId))
+                          scientificName = "Juniperus scopulorum",
+                      ),
+              ),
+          ),
+          store.fetchSpeciesForParticipantProject(projectId),
+      )
     }
 
     @Test
@@ -479,7 +522,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<SpeciesForParticipantProject>(),
-          store.fetchSpeciesForParticipantProject(projectId))
+          store.fetchSpeciesForParticipantProject(projectId),
+      )
     }
   }
 
@@ -504,11 +548,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(participantProjectSpeciesId1),
           store.findAllForProject(projectId1).map { it.id },
-          "Participant Project Species IDs")
+          "Participant Project Species IDs",
+      )
       assertEquals(
           emptyList<ParticipantProjectSpeciesId>(),
           store.findAllForProject(projectId2).map { it.id },
-          "Participant Project Species IDs")
+          "Participant Project Species IDs",
+      )
     }
   }
 
@@ -527,7 +573,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   id = null,
                   projectId = projectId,
                   rationale = "rationale",
-                  speciesId = speciesId))
+                  speciesId = speciesId,
+              )
+          )
 
       val userId = user.userId
       val now = Instant.EPOCH
@@ -543,8 +591,10 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
+              submissionStatusId = SubmissionStatus.NotSubmitted,
+          ),
+          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id),
+      )
     }
 
     @Test
@@ -559,7 +609,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 id = null,
                 projectId = projectId,
                 rationale = "rationale",
-                speciesId = speciesId))
+                speciesId = speciesId,
+            )
+        )
       }
     }
 
@@ -578,7 +630,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 id = null,
                 projectId = projectId,
                 rationale = "rationale",
-                speciesId = speciesId))
+                speciesId = speciesId,
+            )
+        )
       }
     }
 
@@ -609,7 +663,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -619,7 +674,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -629,7 +685,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -639,7 +696,10 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)))
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
+          )
+      )
     }
   }
 
@@ -658,7 +718,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
             feedback = "Looks good",
             internalComment = "We should approve",
             speciesNativeCategory = SpeciesNativeCategory.Native,
-            submissionStatus = SubmissionStatus.Approved)
+            submissionStatus = SubmissionStatus.Approved,
+        )
       }
 
       val userId = user.userId
@@ -676,8 +737,10 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               speciesId = speciesId,
               speciesNativeCategoryId = SpeciesNativeCategory.Native,
-              submissionStatusId = SubmissionStatus.Approved),
-          participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId))
+              submissionStatusId = SubmissionStatus.Approved,
+          ),
+          participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId),
+      )
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesEditedEvent(
@@ -693,7 +756,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                       projectId = projectId,
                       speciesId = speciesId,
                       speciesNativeCategory = SpeciesNativeCategory.Native,
-                      submissionStatus = SubmissionStatus.Approved),
+                      submissionStatus = SubmissionStatus.Approved,
+                  ),
               oldParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
                       createdBy = userId,
@@ -703,8 +767,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                       modifiedTime = now,
                       projectId = projectId,
                       speciesId = speciesId,
-                      submissionStatus = SubmissionStatus.NotSubmitted),
-              projectId = projectId))
+                      submissionStatus = SubmissionStatus.NotSubmitted,
+                  ),
+              projectId = projectId,
+          )
+      )
     }
 
     @Test
@@ -769,8 +836,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId3,
                   speciesNativeCategoryId = null,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll())
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              )
+          ),
+          participantProjectSpeciesDao.findAll(),
+      )
     }
 
     @Test
@@ -810,7 +880,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId1,
                   speciesNativeCategoryId = null,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -823,7 +894,10 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId2,
                   speciesNativeCategoryId = null,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)))
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
+          )
+      )
     }
   }
 }

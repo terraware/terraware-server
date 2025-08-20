@@ -88,7 +88,8 @@ abstract class CsvValidator(
           UploadProblemType.MalformedValue,
           null,
           null,
-          messages.csvWrongFieldCount(validators.size, rawValues.size))
+          messages.csvWrongFieldCount(validators.size, rawValues.size),
+      )
       return
     }
 
@@ -146,7 +147,11 @@ abstract class CsvValidator(
   protected fun validateDate(value: String?, field: String) {
     if (value == null) {
       addError(
-          UploadProblemType.MissingRequiredValue, field, null, messages.csvRequiredFieldMissing())
+          UploadProblemType.MissingRequiredValue,
+          field,
+          null,
+          messages.csvRequiredFieldMissing(),
+      )
     } else {
       try {
         LocalDate.parse(value)
@@ -159,7 +164,11 @@ abstract class CsvValidator(
   protected fun validateScientificName(value: String?, field: String) {
     if (value == null) {
       addError(
-          UploadProblemType.MissingRequiredValue, field, null, messages.csvScientificNameMissing())
+          UploadProblemType.MissingRequiredValue,
+          field,
+          null,
+          messages.csvScientificNameMissing(),
+      )
     } else {
       validateScientificNameSyntax(
           value,
@@ -168,19 +177,26 @@ abstract class CsvValidator(
                 UploadProblemType.MalformedValue,
                 field,
                 value,
-                messages.csvScientificNameTooShort())
+                messages.csvScientificNameTooShort(),
+            )
           },
           onTooLong = {
             addError(
-                UploadProblemType.MalformedValue, field, value, messages.csvScientificNameTooLong())
+                UploadProblemType.MalformedValue,
+                field,
+                value,
+                messages.csvScientificNameTooLong(),
+            )
           },
           onInvalidCharacter = { invalidChar ->
             addError(
                 UploadProblemType.MalformedValue,
                 field,
                 value,
-                messages.csvScientificNameInvalidChar(invalidChar))
-          })
+                messages.csvScientificNameInvalidChar(invalidChar),
+            )
+          },
+      )
     }
   }
 }

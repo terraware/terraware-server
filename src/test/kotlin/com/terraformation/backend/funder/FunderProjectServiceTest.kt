@@ -105,7 +105,8 @@ class FunderProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           2,
           service.fetchListByProjectIds(setOf(projectId, projectId2)).size,
-          "Expected 2 projects returned")
+          "Expected 2 projects returned",
+      )
     }
   }
 

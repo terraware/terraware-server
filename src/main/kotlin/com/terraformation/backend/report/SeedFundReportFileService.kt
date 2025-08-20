@@ -47,7 +47,7 @@ class SeedFundReportFileService(
       reportId: SeedFundReportId,
       fileId: FileId,
       maxWidth: Int? = null,
-      maxHeight: Int? = null
+      maxHeight: Int? = null,
   ): SizedInputStream {
     requirePermissions { readSeedFundReport(reportId) }
 
@@ -168,7 +168,7 @@ class SeedFundReportFileService(
       reportId: SeedFundReportId,
       data: InputStream,
       metadata: NewFileMetadata,
-      insertChildRow: (FileId) -> Unit
+      insertChildRow: (FileId) -> Unit,
   ): FileId {
     requirePermissions { updateSeedFundReport(reportId) }
 

@@ -133,7 +133,8 @@ class UploadService(
     records.forEach { (uploadId, typeId, storageUrl) ->
       if (uploadId == null || typeId == null || storageUrl == null) {
         throw IllegalStateException(
-            "BUG! Query returned null value ($uploadId $typeId $storageUrl)")
+            "BUG! Query returned null value ($uploadId $typeId $storageUrl)"
+        )
       }
 
       if (typeId.expireFiles) {

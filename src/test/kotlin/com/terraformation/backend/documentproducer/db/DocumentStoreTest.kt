@@ -73,19 +73,22 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               internalComment = "A comment",
               name = "Project $projectId1 Feasibility Study",
               projectId = projectId1,
-              variableManifestId = variableManifestId1)
+              variableManifestId = variableManifestId1,
+          )
       documentId2 =
           insertDocument(
               documentTemplateId = documentTemplateId2,
               name = "Project $projectId1 Project Summary",
               projectId = projectId1,
-              variableManifestId = variableManifestId2)
+              variableManifestId = variableManifestId2,
+          )
       documentId3 =
           insertDocument(
               documentTemplateId = documentTemplateId1,
               name = "Project $projectId2 Feasibility Study",
               projectId = projectId2,
-              variableManifestId = variableManifestId1)
+              variableManifestId = variableManifestId1,
+          )
 
       insertSavedVersion(documentId = documentId2, maxValueId = VariableValueId(1))
       savedVersionId2 =
@@ -111,7 +114,8 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId1,
               projectName = "Project 1",
               status = DocumentStatus.Draft,
-              variableManifestId = variableManifestId1)
+              variableManifestId = variableManifestId1,
+          )
       existingDocument2 =
           ExistingDocumentModel(
               createdBy = userId,
@@ -128,7 +132,8 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId1,
               projectName = "Project 1",
               status = DocumentStatus.Draft,
-              variableManifestId = variableManifestId2)
+              variableManifestId = variableManifestId2,
+          )
       existingDocument3 =
           ExistingDocumentModel(
               createdBy = userId,
@@ -145,13 +150,16 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId2,
               projectName = "Project 2",
               status = DocumentStatus.Draft,
-              variableManifestId = variableManifestId1)
+              variableManifestId = variableManifestId1,
+          )
     }
 
     @Test
     fun `fetches all documents`() {
       assertEquals(
-          listOf(existingDocument1, existingDocument2, existingDocument3), store.fetchAll())
+          listOf(existingDocument1, existingDocument2, existingDocument3),
+          store.fetchAll(),
+      )
     }
 
     @Test

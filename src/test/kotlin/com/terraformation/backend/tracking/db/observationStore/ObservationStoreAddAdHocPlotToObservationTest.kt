@@ -34,7 +34,8 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
         observationPlotsDao
             .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
             .single(),
-        "Observation plot row")
+        "Observation plot row",
+    )
   }
 
   @Test

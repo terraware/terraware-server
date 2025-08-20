@@ -37,14 +37,17 @@ class AcceleratorOrganizationsController(
       summary = "Lists accelerator related organizations and their projects.",
       description =
           "By default, only lists tagged organizations that have projects that have not been " +
-              "assigned to participants yet.")
+              "assigned to participants yet.",
+  )
   fun listAcceleratorOrganizations(
       @Parameter(
-          description = "Whether to also include projects that have been assigned to participants.")
+          description = "Whether to also include projects that have been assigned to participants."
+      )
       @RequestParam
       includeParticipants: Boolean?,
       @Parameter(
-          description = "Whether to load all organizations with a project with an application.")
+          description = "Whether to load all organizations with a project with an application."
+      )
       @RequestParam
       hasProjectApplication: Boolean?,
   ): ListAcceleratorOrganizationsResponsePayload {
@@ -63,16 +66,18 @@ class AcceleratorOrganizationsController(
         organizations.map { (organization, projects) ->
           val contacts = userStore.getTerraformationContactUsers(organization.id)
           AcceleratorOrganizationPayload(organization, projects, contacts)
-        })
+        }
+    )
   }
 
   @Operation(
       summary = "Assign a user as a Terraformation contact for an organization.",
-      description = "The user will be added to the organization if they are not already a member.")
+      description = "The user will be added to the organization if they are not already a member.",
+  )
   @PutMapping("/{organizationId}/tfContact")
   fun assignTerraformationContact(
       @PathVariable organizationId: OrganizationId,
-      @RequestBody payload: AssignTerraformationContactRequestPayload
+      @RequestBody payload: AssignTerraformationContactRequestPayload,
   ): SimpleSuccessResponsePayload {
     organizationService.assignTerraformationContact(payload.userId, organizationId)
 

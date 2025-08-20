@@ -6,5 +6,5 @@ import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
 /** Published when an organization admin submits a report. */
 data class SeedFundReportSubmittedEvent(
     val reportId: SeedFundReportId,
-    val body: LatestSeedFundReportBodyModel
+    val body: LatestSeedFundReportBodyModel,
 )

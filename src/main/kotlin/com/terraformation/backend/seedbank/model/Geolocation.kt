@@ -9,7 +9,7 @@ import java.math.RoundingMode
 class Geolocation(
     val latitude: BigDecimal,
     val longitude: BigDecimal,
-    val accuracy: BigDecimal? = null
+    val accuracy: BigDecimal? = null,
 ) {
   /** Tests property values for numeric equality, disregarding differences in decimal scale. */
   override fun equals(other: Any?): Boolean {

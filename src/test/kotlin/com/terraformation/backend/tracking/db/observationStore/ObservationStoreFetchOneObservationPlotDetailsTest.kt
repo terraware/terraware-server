@@ -38,7 +38,9 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
         ObservationPlotsRow(
             claimedBy = userId1,
             claimedTime = claimedTime12,
-            statusId = ObservationPlotStatus.Claimed))
+            statusId = ObservationPlotStatus.Claimed,
+        )
+    )
 
     val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
@@ -56,7 +58,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             notes = "Some notes",
             observedTime = observedTime21,
             statusId = ObservationPlotStatus.Completed,
-        ))
+        )
+    )
 
     assertEquals(
         AssignedPlotDetails(
@@ -77,7 +80,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             sizeMeters = 30,
         ),
         store.fetchOneObservationPlotDetails(observationId, monitoringPlotId11),
-        "Plot 11")
+        "Plot 11",
+    )
 
     assertEquals(
         AssignedPlotDetails(
@@ -100,7 +104,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             sizeMeters = 30,
         ),
         store.fetchOneObservationPlotDetails(observationId, monitoringPlotId12),
-        "Plot 12")
+        "Plot 12",
+    )
 
     assertEquals(
         AssignedPlotDetails(
@@ -127,7 +132,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             sizeMeters = 30,
         ),
         store.fetchOneObservationPlotDetails(observationId, monitoringPlotId21),
-        "Plot 21")
+        "Plot 21",
+    )
   }
 
   @Test

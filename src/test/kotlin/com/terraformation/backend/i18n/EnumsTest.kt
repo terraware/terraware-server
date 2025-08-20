@@ -37,14 +37,17 @@ class EnumsTest : DatabaseTest() {
   @Test
   fun `all valid country codes have English display names`() {
     assertBundleContains(
-        "i18n.Countries", countriesDao.findAll().associate { it.code!! to it.name })
+        "i18n.Countries",
+        countriesDao.findAll().associate { it.code!! to it.name },
+    )
   }
 
   @Test
   fun `all valid country subdivision codes have English display names`() {
     assertBundleContains(
         "i18n.CountrySubdivisions",
-        countrySubdivisionsDao.findAll().associate { it.code!! to it.name })
+        countrySubdivisionsDao.findAll().associate { it.code!! to it.name },
+    )
   }
 
   private fun assertBundleContains(bundleName: String, enums: Map<String, String?>) {

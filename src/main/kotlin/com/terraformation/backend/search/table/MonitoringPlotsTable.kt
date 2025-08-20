@@ -22,9 +22,13 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           plantingSites.asSingleValueSublist(
-              "plantingSite", MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
           plantingSubzones.asSingleValueSublist(
-              "plantingSubzone", MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
+              "plantingSubzone",
+              MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+          ),
       )
     }
   }

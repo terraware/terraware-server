@@ -119,20 +119,33 @@ class ObservationService(
                 val temporaryPlotIds =
                     plantingZone
                         .chooseTemporaryPlots(
-                            observation.requestedSubzoneIds, gridOrigin, plantingSite.exclusion)
+                            observation.requestedSubzoneIds,
+                            gridOrigin,
+                            plantingSite.exclusion,
+                        )
                         .map { plotBoundary ->
                           plantingSiteStore.createTemporaryPlot(
-                              plantingSite.id, plantingZone.id, plotBoundary)
+                              plantingSite.id,
+                              plantingZone.id,
+                              plotBoundary,
+                          )
                         }
 
                 observationStore.addPlotsToObservation(
-                    observationId, permanentPlotIds, isPermanent = true)
+                    observationId,
+                    permanentPlotIds,
+                    isPermanent = true,
+                )
                 observationStore.addPlotsToObservation(
-                    observationId, temporaryPlotIds, isPermanent = false)
+                    observationId,
+                    temporaryPlotIds,
+                    isPermanent = false,
+                )
 
                 log.info(
                     "Added ${permanentPlotIds.size} permanent and ${temporaryPlotIds.size} " +
-                        "temporary plots")
+                        "temporary plots"
+                )
               } else {
                 log.info("Skipping zone because it has no reported plants")
               }
@@ -147,7 +160,8 @@ class ObservationService(
           log.info("Unable to start observation $observationId", e)
 
           eventPublisher.publishEvent(
-              ObservationNotStartedEvent(observationId, observation.plantingSiteId))
+              ObservationNotStartedEvent(observationId, observation.plantingSiteId)
+          )
 
           observationStore.abandonObservation(observationId)
         }
@@ -166,8 +180,9 @@ class ObservationService(
 
     val photosRow =
         observationPhotosDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
-    if (photosRow.observationId != observationId ||
-        photosRow.monitoringPlotId != monitoringPlotId) {
+    if (
+        photosRow.observationId != observationId || photosRow.monitoringPlotId != monitoringPlotId
+    ) {
       throw FileNotFoundException(fileId)
     }
 
@@ -203,11 +218,13 @@ class ObservationService(
                   observationId = observationId,
                   positionId = position,
                   typeId = type,
-              ))
+              )
+          )
         }
 
     log.info(
-        "Stored photo $fileId of type $type for observation $observationId of plot $monitoringPlotId")
+        "Stored photo $fileId of type $type for observation $observationId of plot $monitoringPlotId"
+    )
 
     return fileId
   }
@@ -223,14 +240,15 @@ class ObservationService(
 
     val observationId = observationStore.createObservation(observation)
     eventPublisher.publishEvent(
-        ObservationScheduledEvent(observationStore.fetchObservationById(observationId)))
+        ObservationScheduledEvent(observationStore.fetchObservationById(observationId))
+    )
     return observationId
   }
 
   fun rescheduleObservation(
       observationId: ObservationId,
       startDate: LocalDate,
-      endDate: LocalDate
+      endDate: LocalDate,
   ) {
     requirePermissions { rescheduleObservation(observationId) }
 
@@ -253,7 +271,10 @@ class ObservationService(
     observationStore.rescheduleObservation(observationId, startDate, endDate)
     eventPublisher.publishEvent(
         ObservationRescheduledEvent(
-            observation, observationStore.fetchObservationById(observation.id)))
+            observation,
+            observationStore.fetchObservationById(observation.id),
+        )
+    )
   }
 
   /** Fetch sites satisfying the input criteria */
@@ -266,13 +287,15 @@ class ObservationService(
         criteria.completedTimeElapsedWeeks,
         criteria.firstPlantingElapsedWeeks,
         plantingSiteStore.fetchSitesWithSubzonePlantings(
-            criteria.notificationNotCompletedCondition(requirePrevious = true)))
+            criteria.notificationNotCompletedCondition(requirePrevious = true)
+        ),
+    )
   }
 
   /** Mark notification to schedule observations as complete */
   fun markSchedulingObservationsNotificationComplete(
       plantingSiteId: PlantingSiteId,
-      criteria: NotificationCriteria.ObservationScheduling
+      criteria: NotificationCriteria.ObservationScheduling,
   ) {
     requirePermissions {
       readPlantingSite(plantingSiteId)
@@ -280,7 +303,10 @@ class ObservationService(
     }
 
     plantingSiteStore.markNotificationComplete(
-        plantingSiteId, criteria.notificationType, criteria.notificationNumber)
+        plantingSiteId,
+        criteria.notificationType,
+        criteria.notificationNumber,
+    )
   }
 
   /** Replaces a monitoring plot in an observation with a different one if possible. */
@@ -359,12 +385,14 @@ class ObservationService(
                 if (subzones.all { it.id in observation.requestedSubzoneIds }) {
                   log.info(
                       "Replacement permanent plot is in a subzone that has completed planting; " +
-                          "including the plot in this observation.")
+                          "including the plot in this observation."
+                  )
                   replacementResult.addedMonitoringPlotIds
                 } else {
                   log.info(
                       "Replacement permanent plot is in a subzone that has not completed " +
-                          "planting; not including it in this observation.")
+                          "planting; not including it in this observation."
+                  )
                   emptySet()
                 }
               } else {
@@ -372,18 +400,24 @@ class ObservationService(
               }
 
           observationStore.removePlotsFromObservation(
-              observationId, replacementResult.removedMonitoringPlotIds)
+              observationId,
+              replacementResult.removedMonitoringPlotIds,
+          )
           removedPlotIds.addAll(replacementResult.removedMonitoringPlotIds)
 
           if (addedPlotsInRequestedSubzones.isNotEmpty()) {
             observationStore.addPlotsToObservation(
-                observationId, addedPlotsInRequestedSubzones, isPermanent = true)
+                observationId,
+                addedPlotsInRequestedSubzones,
+                isPermanent = true,
+            )
             addedPlotIds.addAll(addedPlotsInRequestedSubzones)
           }
         } else {
           log.info(
               "Permanent plot at a site that already has observation data; removing it from this " +
-                  "observation but it may be included in future ones.")
+                  "observation but it may be included in future ones."
+          )
           observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
         }
       } else {
@@ -407,18 +441,25 @@ class ObservationService(
         if (replacementPlotBoundary != null) {
           val replacementPlotId =
               plantingSiteStore.createTemporaryPlot(
-                  plantingSite.id, plantingZone.id, replacementPlotBoundary)
+                  plantingSite.id,
+                  plantingZone.id,
+                  replacementPlotBoundary,
+              )
           log.info("Adding replacement plot $replacementPlotId")
           addedPlotIds.add(replacementPlotId)
           observationStore.addPlotsToObservation(
-              observationId, listOf(replacementPlotId), isPermanent = false)
+              observationId,
+              listOf(replacementPlotId),
+              isPermanent = false,
+          )
         } else {
           log.info("No other temporary plots available in subzone")
         }
       }
 
       eventPublisher.publishEvent(
-          ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId))
+          ObservationPlotReplacedEvent(duration, justification, observation, monitoringPlotId)
+      )
 
       ReplacementResult(addedPlotIds, removedPlotIds)
     }
@@ -478,7 +519,9 @@ class ObservationService(
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = emptySet(),
                   startDate = date,
-                  state = ObservationState.Upcoming))
+                  state = ObservationState.Upcoming,
+              )
+          )
 
       val plotId = plantingSiteStore.createAdHocMonitoringPlot(plantingSiteId, swCorner)
       observationStore.addAdHocPlotToObservation(observationId, plotId)
@@ -506,7 +549,9 @@ class ObservationService(
   fun on(event: PlantingSiteDeletionStartedEvent) {
     deletePhotosWhere(
         OBSERVATION_PHOTOS.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
-            event.plantingSiteId))
+            event.plantingSiteId
+        )
+    )
   }
 
   /** Updates observations, if any, when a site's map is edited. */
@@ -534,7 +579,7 @@ class ObservationService(
   private fun validateSchedule(
       plantingSiteId: PlantingSiteId,
       startDate: LocalDate,
-      endDate: LocalDate
+      endDate: LocalDate,
   ) {
     val today =
         LocalDate.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(plantingSiteId))
@@ -560,7 +605,7 @@ class ObservationService(
   private fun fetchNonNotifiedSitesForThresholds(
       completedTimeElapsedWeeks: Long,
       firstPlantingElapsedWeeks: Long,
-      siteIds: List<PlantingSiteId>
+      siteIds: List<PlantingSiteId>,
   ): Collection<PlantingSiteId> {
     val observationCompletedTimes =
         siteIds.associateWith { observationStore.fetchLastCompletedObservationTime(it) }

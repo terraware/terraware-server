@@ -44,7 +44,7 @@ class DeliverableCompleter(
   private fun completeApplicationDeliverable(
       deliverableId: DeliverableId,
       projectId: ProjectId,
-      predicate: (() -> Boolean)? = null
+      predicate: (() -> Boolean)? = null,
   ) {
     systemUser.run {
       val moduleId = deliverableStore.fetchDeliverableModuleId(deliverableId)
@@ -56,7 +56,10 @@ class DeliverableCompleter(
 
           if (submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
             applicationStore.updateModuleStatus(
-                projectId, moduleId, ApplicationModuleStatus.Complete)
+                projectId,
+                moduleId,
+                ApplicationModuleStatus.Complete,
+            )
           }
         }
       }

@@ -18,7 +18,9 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           organizationUsers.asMultiValueSublist(
-              "organizationMemberships", USERS.ID.eq(ORGANIZATION_USERS.USER_ID)),
+              "organizationMemberships",
+              USERS.ID.eq(ORGANIZATION_USERS.USER_ID),
+          ),
       )
     }
   }
@@ -49,6 +51,10 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                     .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
                     .and(
                         ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
-                            currentUser().organizationRoles.keys))))
+                            currentUser().organizationRoles.keys
+                        )
+                    )
+            )
+        )
   }
 }

@@ -20,7 +20,8 @@ abstract class PostgresDockerConfigTask : DefaultTask() {
   @get:OutputFile
   val outputFile =
       project.layout.buildDirectory.file(
-          "generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
+          "generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt"
+      )
 
   @TaskAction
   fun generate() {
@@ -32,6 +33,7 @@ abstract class PostgresDockerConfigTask : DefaultTask() {
           |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
           |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
         """
-            .trimMargin())
+            .trimMargin(),
+    )
   }
 }

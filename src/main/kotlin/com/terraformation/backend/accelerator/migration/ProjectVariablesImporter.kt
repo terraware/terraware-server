@@ -52,7 +52,8 @@ class ProjectVariablesImporter(
                   values.drop(2).map { name ->
                     if (name == null) {
                       throw ImportError(
-                          "All header columns except the first two must have variable names")
+                          "All header columns except the first two must have variable names"
+                      )
                     }
 
                     if (!ignoreUnknownVariables && name !in variablesByName) {
@@ -72,12 +73,14 @@ class ProjectVariablesImporter(
             val application =
                 applicationStore.fetchOneByInternalName(dealName)
                     ?: throw ImportError(
-                        "Deal $dealName has not been imported yet; import the project setup sheet first.")
+                        "Deal $dealName has not been imported yet; import the project setup sheet first."
+                    )
             val currentValues =
                 variableValueStore
                     .listValues(
                         projectId = application.projectId,
-                        variableIds = variables.mapNotNull { it?.id })
+                        variableIds = variables.mapNotNull { it?.id },
+                    )
                     .associateBy { it.variableId }
 
             val operations =
@@ -85,7 +88,12 @@ class ProjectVariablesImporter(
                   if (value != null && variable != null) {
                     val baseProperties =
                         BaseVariableValueProperties(
-                            null, application.projectId, 0, variable.id, null)
+                            null,
+                            application.projectId,
+                            0,
+                            variable.id,
+                            null,
+                        )
 
                     val typedValue =
                         when (variable.type) {
@@ -93,17 +101,21 @@ class ProjectVariablesImporter(
                             val bigDecimalValue =
                                 value.toBigDecimalOrNull()
                                     ?: throw ImportError(
-                                        "${variable.name} value $value is not a number")
-                            if ((currentValues[variable.id]?.value as? NumberValue<*>)?.value !=
-                                bigDecimalValue) {
+                                        "${variable.name} value $value is not a number"
+                                    )
+                            if (
+                                (currentValues[variable.id]?.value as? NumberValue<*>)?.value !=
+                                    bigDecimalValue
+                            ) {
                               NumberValue(baseProperties, bigDecimalValue)
                             } else {
                               null
                             }
                           }
                           VariableType.Text -> {
-                            if ((currentValues[variable.id]?.value as? TextValue<*>)?.value !=
-                                value) {
+                            if (
+                                (currentValues[variable.id]?.value as? TextValue<*>)?.value != value
+                            ) {
                               TextValue(baseProperties, value)
                             } else {
                               null
@@ -117,18 +129,23 @@ class ProjectVariablesImporter(
                                   LocalDate.parse(datePart)
                                 } catch (_: Exception) {
                                   throw ImportError(
-                                      "${variable.name} value $value is not a date in YYYY-MM-DD format")
+                                      "${variable.name} value $value is not a date in YYYY-MM-DD format"
+                                  )
                                 }
-                            if ((currentValues[variable.id]?.value as? DateValue<*>)?.value !=
-                                localDate) {
+                            if (
+                                (currentValues[variable.id]?.value as? DateValue<*>)?.value !=
+                                    localDate
+                            ) {
                               DateValue(baseProperties, localDate)
                             } else {
                               null
                             }
                           }
                           VariableType.Email -> {
-                            if ((currentValues[variable.id]?.value as? EmailValue<*>)?.value !=
-                                value) {
+                            if (
+                                (currentValues[variable.id]?.value as? EmailValue<*>)?.value !=
+                                    value
+                            ) {
                               EmailValue(baseProperties, value)
                             } else {
                               null
@@ -136,8 +153,10 @@ class ProjectVariablesImporter(
                           }
                           VariableType.Select -> {
                             val optionIds = parseOptions(value, variable as SelectVariable)
-                            if ((currentValues[variable.id]?.value as? SelectValue<*>)?.value !=
-                                optionIds) {
+                            if (
+                                (currentValues[variable.id]?.value as? SelectValue<*>)?.value !=
+                                    optionIds
+                            ) {
                               SelectValue(baseProperties, optionIds)
                             } else {
                               null
@@ -149,10 +168,13 @@ class ProjectVariablesImporter(
                                   URI.create(value)
                                 } catch (e: Exception) {
                                   throw ImportError(
-                                      "${variable.name} value $value is not a valid URL")
+                                      "${variable.name} value $value is not a valid URL"
+                                  )
                                 }
-                            if ((currentValues[variable.id]?.value as? LinkValue<*>)?.value?.url !=
-                                url) {
+                            if (
+                                (currentValues[variable.id]?.value as? LinkValue<*>)?.value?.url !=
+                                    url
+                            ) {
                               LinkValue(baseProperties, LinkValueDetails(url, null))
                             } else {
                               null
@@ -162,7 +184,8 @@ class ProjectVariablesImporter(
                           VariableType.Table,
                           VariableType.Section ->
                               throw ImportError(
-                                  "Import of ${variable.type} variables is not supported")
+                                  "Import of ${variable.type} variables is not supported"
+                              )
                         }
 
                     typedValue?.let {
@@ -212,7 +235,8 @@ class ProjectVariablesImporter(
 
           if (matchingOption != null) {
             throw ImportError(
-                "Ambiguous value: could be either \"${matchingOption.name}\" or \"${option.name}\"")
+                "Ambiguous value: could be either \"${matchingOption.name}\" or \"${option.name}\""
+            )
           } else {
             matchingOption = option
           }

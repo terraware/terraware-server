@@ -755,7 +755,8 @@ data class IndividualUser(
             GlobalRole.ReadOnly,
             GlobalRole.TFExpert,
             GlobalRole.AcceleratorAdmin,
-            GlobalRole.SuperAdmin)
+            GlobalRole.SuperAdmin,
+        )
         .any { it in globalRoles }
   }
 
@@ -868,7 +869,8 @@ data class IndividualUser(
                       "\nPrevious:" +
                       "\n${previousCheck.prettyPrintStack()}" +
                       "\nCurrent:" +
-                      "\n${check.prettyPrintStack()}")
+                      "\n${check.prettyPrintStack()}"
+              )
             } else if (check.isImpliedBy(previousCheck)) {
               checkIsAlreadyImplied = true
             }

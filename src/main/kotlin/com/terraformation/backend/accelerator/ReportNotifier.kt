@@ -14,6 +14,7 @@ class ReportNotifier(
   @EventListener
   fun on(event: AcceleratorReportSubmittedEvent) {
     rateLimitedEventPublisher.publishEvent(
-        RateLimitedAcceleratorReportSubmittedEvent(event.reportId))
+        RateLimitedAcceleratorReportSubmittedEvent(event.reportId)
+    )
   }
 }

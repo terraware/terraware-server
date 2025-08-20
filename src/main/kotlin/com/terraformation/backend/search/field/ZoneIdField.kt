@@ -37,7 +37,9 @@ class ZoneIdField(
     return DSL.or(
         listOfNotNull(
             if (zoneIds.isNotEmpty()) databaseField.`in`(zoneIds) else null,
-            if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+            if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+        )
+    )
   }
 
   override fun computeValue(record: Record) = record[databaseField]?.id

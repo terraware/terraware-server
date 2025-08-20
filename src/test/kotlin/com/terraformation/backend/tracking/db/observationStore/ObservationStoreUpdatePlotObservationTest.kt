@@ -15,23 +15,32 @@ class ObservationStoreUpdatePlotObservationTest : BaseObservationStoreTest() {
     insertObservation()
     insertObservationPlot(completedBy = user.userId)
     insertObservedCoordinates(
-        gpsCoordinates = point(1), position = ObservationPlotPosition.NorthwestCorner)
+        gpsCoordinates = point(1),
+        position = ObservationPlotPosition.NorthwestCorner,
+    )
 
     store.updatePlotObservation(
         inserted.observationId,
         inserted.monitoringPlotId,
         listOf(
             NewObservedPlotCoordinatesModel(
-                gpsCoordinates = point(2), position = ObservationPlotPosition.SoutheastCorner),
+                gpsCoordinates = point(2),
+                position = ObservationPlotPosition.SoutheastCorner,
+            ),
             NewObservedPlotCoordinatesModel(
-                gpsCoordinates = point(1, 2), position = ObservationPlotPosition.SouthwestCorner),
-        ))
+                gpsCoordinates = point(1, 2),
+                position = ObservationPlotPosition.SouthwestCorner,
+            ),
+        ),
+    )
 
     assertEquals(
         mapOf(
             ObservationPlotPosition.SouthwestCorner to point(1, 2),
-            ObservationPlotPosition.SoutheastCorner to point(2, 2)),
+            ObservationPlotPosition.SoutheastCorner to point(2, 2),
+        ),
         observedPlotCoordinatesDao.findAll().associate { it.positionId!! to it.gpsCoordinates!! },
-        "Coordinates after update")
+        "Coordinates after update",
+    )
   }
 }

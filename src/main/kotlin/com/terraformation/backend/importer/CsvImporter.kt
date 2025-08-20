@@ -77,7 +77,8 @@ abstract class CsvImporter(
             "_$locale.csv",
             "_${locale.language}_${locale.country}.csv",
             "_${locale.language}.csv",
-            ".csv")
+            ".csv",
+        )
 
     return suffixes.firstNotNullOfOrNull { suffix ->
       val basePath = templatePath.substringBeforeLast(".csv")
@@ -149,7 +150,8 @@ abstract class CsvImporter(
       log.info(
           "Importing ${uploadsRow.typeId} $uploadId for organization " +
               "${uploadsRow.organizationId} facility ${uploadsRow.facilityId} " +
-              "overwrite $overwriteExisting")
+              "overwrite $overwriteExisting"
+      )
 
       uploadStore.updateStatus(uploadId, UploadStatus.Processing)
 
@@ -178,7 +180,7 @@ abstract class CsvImporter(
       fileName: String,
       type: UploadType,
       organizationId: OrganizationId?,
-      facilityId: FacilityId? = null
+      facilityId: FacilityId? = null,
   ): UploadId {
     val uploadId =
         uploadService.receive(inputStream, fileName, "text/csv", type, organizationId, facilityId)

@@ -103,7 +103,8 @@ class AutomationStore(
 
     if (row.facilityId != model.facilityId) {
       log.warn(
-          "Rejecting update of automation ${model.id} with incorrect facility ${model.facilityId}")
+          "Rejecting update of automation ${model.id} with incorrect facility ${model.facilityId}"
+      )
       throw AutomationNotFoundException(model.id)
     }
 

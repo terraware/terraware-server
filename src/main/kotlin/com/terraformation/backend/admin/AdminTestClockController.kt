@@ -42,7 +42,7 @@ class AdminTestClockController(
   fun advanceTestClock(
       @RequestParam quantity: Long,
       @RequestParam units: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     val duration =
         when (units) {

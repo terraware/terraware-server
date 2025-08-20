@@ -38,7 +38,8 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
         systemUser,
-        VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext)))
+        VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext)),
+    )
   }
 
   private lateinit var voter1: UserId
@@ -86,8 +87,11 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = Instant.EPOCH,
                   voteOption = VoteOption.No,
                   conditionalInfo = "cond",
-                  createdBySystemUser = false),
-              votesRecord(voter2)))
+                  createdBySystemUser = false,
+              ),
+              votesRecord(voter2),
+          )
+      )
     }
 
     @Test
@@ -119,7 +123,9 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               votesRecord(userId = voter1, projectId = projectId1),
               votesRecord(userId = voter2, projectId = projectId1),
               votesRecord(userId = voter1, projectId = projectId2),
-              votesRecord(userId = voter2, projectId = projectId2)))
+              votesRecord(userId = voter2, projectId = projectId2),
+          )
+      )
     }
 
     @Test
@@ -154,11 +160,14 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   userId = voter1,
                   projectId = projectId1,
                   phase = CohortPhase.Phase0DueDiligence,
-                  createdBySystemUser = false),
+                  createdBySystemUser = false,
+              ),
               votesRecord(userId = voter1, projectId = projectId1, phase = phase),
               votesRecord(userId = voter2, projectId = projectId1, phase = phase),
               votesRecord(userId = voter1, projectId = projectId2, phase = phase),
-              votesRecord(userId = voter2, projectId = projectId2, phase = phase)))
+              votesRecord(userId = voter2, projectId = projectId2, phase = phase),
+          )
+      )
     }
 
     @Test

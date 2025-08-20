@@ -23,7 +23,8 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
         listOf(
             FACILITY_INVENTORIES.ORGANIZATION_ID,
             FACILITY_INVENTORIES.SPECIES_ID,
-            FACILITY_INVENTORIES.FACILITY_ID)
+            FACILITY_INVENTORIES.FACILITY_ID,
+        )
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
@@ -31,12 +32,17 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
           batches.asMultiValueSublist(
               "batches",
               FACILITY_INVENTORIES.FACILITY_ID.eq(BATCHES.FACILITY_ID)
-                  .and(FACILITY_INVENTORIES.SPECIES_ID.eq(BATCHES.SPECIES_ID))),
+                  .and(FACILITY_INVENTORIES.SPECIES_ID.eq(BATCHES.SPECIES_ID)),
+          ),
           facilities.asSingleValueSublist(
-              "facility", FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID)),
+              "facility",
+              FACILITY_INVENTORIES.FACILITY_ID.eq(FACILITIES.ID),
+          ),
           species.asSingleValueSublist("species", FACILITY_INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
-              "organization", FACILITY_INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              FACILITY_INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
       )
     }
   }
@@ -46,15 +52,23 @@ class FacilityInventoriesTable(private val tables: SearchTables) : SearchTable()
           longField(
               "activeGrowthQuantity",
               FACILITY_INVENTORIES.ACTIVE_GROWTH_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField(
-              "germinatingQuantity", FACILITY_INVENTORIES.GERMINATING_QUANTITY, nullable = false),
+              "germinatingQuantity",
+              FACILITY_INVENTORIES.GERMINATING_QUANTITY,
+              nullable = false,
+          ),
           longField(
               "hardeningOffQuantity",
               FACILITY_INVENTORIES.HARDENING_OFF_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField(
-              "notReadyQuantity", FACILITY_INVENTORIES.ACTIVE_GROWTH_QUANTITY, nullable = false),
+              "notReadyQuantity",
+              FACILITY_INVENTORIES.ACTIVE_GROWTH_QUANTITY,
+              nullable = false,
+          ),
           longField("readyQuantity", FACILITY_INVENTORIES.READY_QUANTITY, nullable = false),
           longField("totalQuantity", FACILITY_INVENTORIES.TOTAL_QUANTITY, nullable = false),
       )

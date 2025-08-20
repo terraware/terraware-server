@@ -17,7 +17,9 @@ class ProjectLandUseModelTypesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           projects.asSingleValueSublist(
-              "project", PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID)),
+              "project",
+              PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID),
+          ),
       )
     }
   }

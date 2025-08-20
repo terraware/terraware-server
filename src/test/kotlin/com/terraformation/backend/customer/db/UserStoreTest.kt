@@ -159,7 +159,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
         cookiesConsentedTime = Instant.ofEpochSecond(15),
         firstName = "f",
         lastName = "l",
-        timeZone = timeZone)
+        timeZone = timeZone,
+    )
 
     val actual = userStore.fetchByAuthId(authId) as IndividualUser
 
@@ -242,8 +243,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
                 locale = Locales.GIBBERISH,
                 modifiedTime = Instant.EPOCH,
                 userTypeId = UserType.Individual,
-            )),
-        where = USERS.USER_TYPE_ID.ne(UserType.System))
+            )
+        ),
+        where = USERS.USER_TYPE_ID.ne(UserType.System),
+    )
   }
 
   @Test
@@ -330,7 +333,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(userIdWithOneRole, userIdWithTwoRoles),
         userStore.fetchWithGlobalRoles().map { it.userId }.sorted(),
-        "IDs of users with global roles")
+        "IDs of users with global roles",
+    )
   }
 
   @Test
@@ -349,7 +353,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             .fetchWithGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.ReadOnly))
             .map { it.userId }
             .toSet(),
-        "Users with specific global roles")
+        "Users with specific global roles",
+    )
   }
 
   @Nested
@@ -378,24 +383,31 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       val keycloakUser = keycloakAdminClient.get(newUser.authId)!!
       assertEquals(
-          description, keycloakUser.firstName, "Should use description as first name in Keycloak")
+          description,
+          keycloakUser.firstName,
+          "Should use description as first name in Keycloak",
+      )
       assertEquals(
           "Organization $organizationId",
           keycloakUser.lastName,
-          "Should use organization ID as last name in Keycloak")
+          "Should use organization ID as last name in Keycloak",
+      )
       assertEquals(
           config.keycloak.apiClientUsernamePrefix,
           keycloakUser.username.substring(0, config.keycloak.apiClientUsernamePrefix.length),
-          "Should include username prefix in Keycloak")
+          "Should include username prefix in Keycloak",
+      )
       assertEquals(
           listOf("/api-clients"),
           keycloakUser.groups,
-          "Should add user to API clients group in Keycloak")
+          "Should add user to API clients group in Keycloak",
+      )
 
       assertEquals(
           mapOf(organizationId to Role.Contributor),
           permissionStore.fetchOrganizationRoles(newUser.userId),
-          "Should grant contributor role to device manager user")
+          "Should grant contributor role to device manager user",
+      )
     }
   }
 
@@ -424,7 +436,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           expectedToken,
           userStore.generateOfflineToken(user.userId),
-          "Should return refresh token from Keycloak")
+          "Should return refresh token from Keycloak",
+      )
     }
 
     @Test
@@ -458,7 +471,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           emptyList<CredentialRepresentation>(),
           keycloakAdminClient.credentials[user.authId],
-          "Credentials should have been added then removed")
+          "Credentials should have been added then removed",
+      )
     }
   }
 
@@ -498,7 +512,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(newCookiesConsented, updatedModel.cookiesConsented, "Cookies consented")
     assertEquals(
-        newCookiesConsentedTime, updatedModel.cookiesConsentedTime, "Cookies consented time")
+        newCookiesConsentedTime,
+        updatedModel.cookiesConsentedTime,
+        "Cookies consented time",
+    )
     assertEquals(newCountryCode, updatedModel.countryCode, "Country code (DB)")
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
@@ -519,7 +536,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
         authId = userRepresentation.id,
         cookiesConsented = true,
         cookiesConsentedTime = Instant.ofEpochSecond(20),
-        email = userRepresentation.email)
+        email = userRepresentation.email,
+    )
 
     val model = userStore.fetchByEmail(userRepresentation.email)!!
 
@@ -532,7 +550,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(true, updatedModel.cookiesConsented, "Cookies consented")
     assertEquals(
-        Instant.ofEpochSecond(20), updatedModel.cookiesConsentedTime, "Cookies consented time")
+        Instant.ofEpochSecond(20),
+        updatedModel.cookiesConsentedTime,
+        "Cookies consented time",
+    )
   }
 
   @Test
@@ -572,7 +593,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           JSONB.valueOf("""{"org":"$organizationId"}"""),
-          userStore.fetchPreferences(organizationId))
+          userStore.fetchPreferences(organizationId),
+      )
     }
 
     @Test
@@ -653,16 +675,20 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     private fun insertPreferences(
         userId: UserId = user.userId,
         organizationId: OrganizationId? = null,
-        preferences: Map<String, Any> = mapOf("org" to "$organizationId")
+        preferences: Map<String, Any> = mapOf("org" to "$organizationId"),
     ) {
       dslContext
           .insertInto(
               USER_PREFERENCES,
               USER_PREFERENCES.USER_ID,
               USER_PREFERENCES.ORGANIZATION_ID,
-              USER_PREFERENCES.PREFERENCES)
+              USER_PREFERENCES.PREFERENCES,
+          )
           .values(
-              userId, organizationId, JSONB.valueOf(objectMapper.writeValueAsString(preferences)))
+              userId,
+              organizationId,
+              JSONB.valueOf(objectMapper.writeValueAsString(preferences)),
+          )
           .execute()
     }
   }
@@ -694,7 +720,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               authId = authId,
               email = userRepresentation.email,
               firstName = userRepresentation.firstName,
-              lastName = userRepresentation.lastName)
+              lastName = userRepresentation.lastName,
+          )
       every { user.userId } returns userId
 
       userStore.deleteSelf()
@@ -753,7 +780,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               authId = authId,
               email = userRepresentation.email,
               firstName = userRepresentation.firstName,
-              lastName = userRepresentation.lastName)
+              lastName = userRepresentation.lastName,
+          )
       every { user.userId } returns userId
 
       val usersRowBefore = usersDao.fetchOneById(user.userId)!!
@@ -776,10 +804,12 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertNull(
           userStore.fetchByEmail(userRepresentation.email),
-          "Original email address should not be searchable")
+          "Original email address should not be searchable",
+      )
       assertNull(
           userStore.fetchByEmail(updatedUser.email!!),
-          "Dummy post-deletion email address should not be searchable")
+          "Dummy post-deletion email address should not be searchable",
+      )
     }
   }
 
@@ -920,7 +950,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           userStore.getTerraformationContactUsers(organizationId).map { it.email },
-          listOf("tfcontact1@terraformation.com", "tfcontact2@terraformation.com"))
+          listOf("tfcontact1@terraformation.com", "tfcontact2@terraformation.com"),
+      )
     }
 
     @Test
@@ -929,7 +960,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           userStore.getTerraformationContactUsers(organizationId).size,
           0,
-          "Should be no Terraformation Contact users")
+          "Should be no Terraformation Contact users",
+      )
     }
   }
 
@@ -949,7 +981,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(UserGlobalRolesRow(userId = userId, globalRoleId = GlobalRole.SuperAdmin)),
-          userGlobalRolesDao.findAll())
+          userGlobalRolesDao.findAll(),
+      )
     }
 
     @Test
@@ -964,7 +997,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertTableEquals(
           listOf(
               UserGlobalRolesRecord(userId = userId1, globalRoleId = GlobalRole.SuperAdmin),
-              UserGlobalRolesRecord(userId = userId2, globalRoleId = GlobalRole.SuperAdmin)))
+              UserGlobalRolesRecord(userId = userId2, globalRoleId = GlobalRole.SuperAdmin),
+          )
+      )
     }
 
     @Test
@@ -1001,7 +1036,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(UserGlobalRolesRow(userId = userId2, globalRoleId = GlobalRole.AcceleratorAdmin)),
-          userGlobalRolesDao.findAll())
+          userGlobalRolesDao.findAll(),
+      )
     }
 
     @Test
@@ -1028,8 +1064,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               funderUser.userId,
               null,
               email.lowercase(),
-              permissionStore = permissionStore),
-          funderUser)
+              permissionStore = permissionStore,
+          ),
+          funderUser,
+      )
 
       assertEquals(UserType.Funder, funderUser.userType)
     }

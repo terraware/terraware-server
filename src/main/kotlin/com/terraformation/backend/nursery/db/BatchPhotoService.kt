@@ -44,7 +44,9 @@ class BatchPhotoService(
                   batchId = batchId,
                   createdBy = currentUser().userId,
                   createdTime = clock.instant(),
-                  fileId = fileId))
+                  fileId = fileId,
+              )
+          )
         }
 
     log.info("Stored photo $fileId for batch $batchId")
@@ -56,7 +58,7 @@ class BatchPhotoService(
       batchId: BatchId,
       fileId: FileId,
       maxWidth: Int? = null,
-      maxHeight: Int? = null
+      maxHeight: Int? = null,
   ): SizedInputStream {
     checkFileExists(batchId, fileId)
 
@@ -111,7 +113,8 @@ class BatchPhotoService(
             DSL.selectOne()
                 .from(BATCH_PHOTOS)
                 .where(BATCH_PHOTOS.BATCH_ID.eq(batchId))
-                .and(BATCH_PHOTOS.FILE_ID.eq(fileId)))
+                .and(BATCH_PHOTOS.FILE_ID.eq(fileId))
+        )
     if (!fileExists) {
       throw FileNotFoundException(fileId)
     }

@@ -83,7 +83,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           mapOf(
               facilityId to Role.Manager,
               facilityId2 to Role.Manager,
-              org2FacilityId to Role.Contributor)
+              org2FacilityId to Role.Contributor,
+          )
       every { user.organizationRoles } returns
           mapOf(organizationId to Role.Manager, organizationId2 to Role.Contributor)
 
@@ -173,12 +174,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("facilityInventories.totalQuantity"),
               ),
               mapOf(
-                  prefix to
-                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
+                  prefix to FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))
+              ),
               listOf(
                   SearchSortField(prefix.resolve("species_id")),
                   SearchSortField(prefix.resolve("facilityInventories.facility_id")),
-              ))
+              ),
+          )
 
       assertEquals(
           SearchResults(
@@ -210,7 +212,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "readyQuantity" to number(256),
                                   "totalQuantity" to number(128 + 256 + 512),
                               ),
-                          )),
+                          ),
+                  ),
                   mapOf(
                       "species_id" to "$speciesId2",
                       "germinatingQuantity" to number(512),
@@ -229,9 +232,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "readyQuantity" to number(2048),
                                   "totalQuantity" to number(1024 + 2048 + 4096),
                               ),
-                          )),
-              )),
-          results)
+                          ),
+                  ),
+              )
+          ),
+          results,
+      )
     }
 
     @Test
@@ -256,9 +262,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("totalSpecies"),
               ),
               mapOf(
-                  prefix to
-                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
-              listOf(SearchSortField(prefix.resolve("facility_id"))))
+                  prefix to FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))
+              ),
+              listOf(SearchSortField(prefix.resolve("facility_id"))),
+          )
 
       assertEquals(
           SearchResults(
@@ -301,8 +308,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantity" to number(128 + 256 + 512),
                       "totalSpecies" to number(1),
                   ),
-              )),
-          results)
+              )
+          ),
+          results,
+      )
     }
 
     @Test
@@ -321,7 +330,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("readyQuantity"),
                   prefix.resolve("totalQuantity"),
               ),
-              mapOf(prefix to FieldNode(prefix.resolve("facility_id"), listOf("$facilityId2"))))
+              mapOf(prefix to FieldNode(prefix.resolve("facility_id"), listOf("$facilityId2"))),
+          )
 
       assertEquals(
           SearchResults(
@@ -334,8 +344,12 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "hardeningOffQuantity" to number(512),
                       "activeGrowthQuantity" to number(128),
                       "readyQuantity" to number(256),
-                      "totalQuantity" to number(128 + 256 + 512)))),
-          results)
+                      "totalQuantity" to number(128 + 256 + 512),
+                  )
+              )
+          ),
+          results,
+      )
     }
 
     @Test
@@ -394,7 +408,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   prefix.resolve("subLocations.subLocation_id"),
                   prefix.resolve("version"),
               ),
-              mapOf(prefix to FieldNode(prefix.resolve("species_id"), listOf("$speciesId1"))))
+              mapOf(prefix to FieldNode(prefix.resolve("species_id"), listOf("$speciesId1"))),
+          )
 
       assertEquals(
           SearchResults(
@@ -448,8 +463,10 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "seedsSownDate" to "2022-09-10",
                       "version" to number(1),
                   ),
-              )),
-          results)
+              )
+          ),
+          results,
+      )
     }
 
     @Test
@@ -472,16 +489,24 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                           listOf(
                               FieldNode(
                                   prefix.resolve("facility_organization_id"),
-                                  listOf("$organizationId")),
-                              FieldNode(prefix.resolve("project_id"), listOf(null))))))
+                                  listOf("$organizationId"),
+                              ),
+                              FieldNode(prefix.resolve("project_id"), listOf(null)),
+                          )
+                      )
+              ),
+          )
 
       assertEquals(
           SearchResults(
               listOf(
                   mapOf(
                       "id" to "$nonProjectBatchId",
-                  ))),
-          results)
+                  )
+              )
+          ),
+          results,
+      )
     }
 
     @Test
@@ -532,7 +557,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.of(2023, 3, 3))
+              withdrawnDate = LocalDate.of(2023, 3, 3),
+          )
 
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
@@ -548,17 +574,29 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertPlanting(numPlants = 8, speciesId = speciesId1)
       insertPlanting(numPlants = 16, speciesId = speciesId2)
       insertPlanting(
-          numPlants = -1, plantingTypeId = PlantingType.ReassignmentFrom, speciesId = speciesId1)
+          numPlants = -1,
+          plantingTypeId = PlantingType.ReassignmentFrom,
+          speciesId = speciesId1,
+      )
       insertPlanting(
-          numPlants = -3, plantingTypeId = PlantingType.ReassignmentFrom, speciesId = speciesId2)
+          numPlants = -3,
+          plantingTypeId = PlantingType.ReassignmentFrom,
+          speciesId = speciesId2,
+      )
 
       insertPlantingSubzone()
       insertPlanting(
-          numPlants = 1, plantingTypeId = PlantingType.ReassignmentTo, speciesId = speciesId1)
+          numPlants = 1,
+          plantingTypeId = PlantingType.ReassignmentTo,
+          speciesId = speciesId1,
+      )
 
       insertPlantingSubzone()
       insertPlanting(
-          numPlants = 3, plantingTypeId = PlantingType.ReassignmentTo, speciesId = speciesId2)
+          numPlants = 3,
+          plantingTypeId = PlantingType.ReassignmentTo,
+          speciesId = speciesId2,
+      )
 
       // Withdrawal for another organization shouldn't be visible.
       insertOrganization()
@@ -643,7 +681,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",
                   ),
-              ))
+              )
+          )
 
       val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
 
@@ -655,14 +694,17 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertBatch()
       val withdrawalId =
           insertNurseryWithdrawal(
-              facilityId = facilityId, withdrawnDate = LocalDate.of(2024, 1, 15))
+              facilityId = facilityId,
+              withdrawnDate = LocalDate.of(2024, 1, 15),
+          )
       insertBatchWithdrawal(germinatingQuantityWithdrawn = 1)
       val undoWithdrawalId =
           insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.Undo,
               undoesWithdrawalId = withdrawalId,
-              withdrawnDate = LocalDate.of(2024, 2, 5))
+              withdrawnDate = LocalDate.of(2024, 2, 5),
+          )
       insertBatchWithdrawal(germinatingQuantityWithdrawn = -1)
 
       val prefix = SearchFieldPrefix(searchTables.nurseryWithdrawals)
@@ -693,7 +735,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalWithdrawn" to "-1",
                       "undoesWithdrawalDate" to "2024-01-15",
                       "undoesWithdrawalId" to "$withdrawalId",
-                  )))
+                  ),
+              )
+          )
 
       val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
 
@@ -727,14 +771,16 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf("project_name" to "Project 1"),
                   mapOf("project_name" to "Project 2"),
                   mapOf("project_name" to "Project 3"),
-              ))
+              )
+          )
 
       val actual =
           searchService.search(
               prefix,
               fields,
               mapOf(prefix to FieldNode(prefix.resolve("species_id"), listOf("$speciesId1"))),
-              orderBy)
+              orderBy,
+          )
 
       assertJsonEquals(expected, actual)
     }
@@ -755,16 +801,18 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf("id" to "$speciesId1"),
                   mapOf("id" to "$speciesId2"),
-              ))
+              )
+          )
 
       val actual =
           searchService.search(
               prefix,
               fields,
               mapOf(
-                  prefix to
-                      FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))),
-              orderBy)
+                  prefix to FieldNode(prefix.resolve("organization_id"), listOf("$organizationId"))
+              ),
+              orderBy,
+          )
 
       assertJsonEquals(expected, actual)
     }

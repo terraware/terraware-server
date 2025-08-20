@@ -55,7 +55,8 @@ class SpeciesImporter(
         uploadsDao,
         uploadService,
         uploadStore,
-        userStore) {
+        userStore,
+    ) {
   override val templatePath: String
     get() = "/csv/species-template.csv"
 
@@ -102,7 +103,7 @@ class SpeciesImporter(
   override fun doImportCsv(
       uploadsRow: UploadsRow,
       csvReader: CSVReader,
-      overwriteExisting: Boolean
+      overwriteExisting: Boolean,
   ) {
     val organizationId =
         uploadsRow.organizationId ?: throw IllegalStateException("Organization ID must be non-null")

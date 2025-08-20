@@ -46,7 +46,8 @@ class DocumentStore(
 
     if (!documentTemplatesDao.existsById(newDocumentModel.documentTemplateId)) {
       throw IllegalArgumentException(
-          "Document Template ${newDocumentModel.documentTemplateId} does not exist")
+          "Document Template ${newDocumentModel.documentTemplateId} does not exist"
+      )
     }
 
     val currentUserId = currentUser().userId
@@ -120,7 +121,7 @@ class DocumentStore(
 
   fun fetchSavedVersion(
       documentId: DocumentId,
-      versionId: DocumentSavedVersionId
+      versionId: DocumentSavedVersionId,
   ): ExistingSavedVersionModel {
     requirePermissions { readDocument(documentId) }
 
@@ -164,30 +165,37 @@ class DocumentStore(
             DSL.select(DSL.min(DOCUMENT_SAVED_VERSIONS.ID))
                 .from(DOCUMENT_SAVED_VERSIONS)
                 .where(DOCUMENT_SAVED_VERSIONS.DOCUMENT_ID.eq(documentId))
-                .and(DOCUMENT_SAVED_VERSIONS.MAX_VARIABLE_VALUE_ID.ge(VARIABLE_VALUES.ID)))
+                .and(DOCUMENT_SAVED_VERSIONS.MAX_VARIABLE_VALUE_ID.ge(VARIABLE_VALUES.ID))
+        )
     val nextSavedVersionIdField = subquery.field(DSL.min(DOCUMENT_SAVED_VERSIONS.ID))
 
     // jOOQ doesn't have built-in support for PostgreSQL's AT TIME ZONE, so use a SQL template.
     val createdDateField =
         DSL.field(
-            "({0} AT TIME ZONE 'UTC')::DATE", SQLDataType.LOCALDATE, VARIABLE_VALUES.CREATED_TIME)
+            "({0} AT TIME ZONE 'UTC')::DATE",
+            SQLDataType.LOCALDATE,
+            VARIABLE_VALUES.CREATED_TIME,
+        )
 
     return dslContext
         .select(
             VARIABLE_VALUES.CREATED_BY.asNonNullable(),
-            DSL.max(VARIABLE_VALUES.CREATED_TIME).asNonNullable())
+            DSL.max(VARIABLE_VALUES.CREATED_TIME).asNonNullable(),
+        )
         .from(VARIABLE_VALUES, DOCUMENTS, subquery)
         .where(DOCUMENTS.ID.eq(documentId))
         .and(DOCUMENTS.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
         .groupBy(nextSavedVersionIdField, createdDateField, VARIABLE_VALUES.CREATED_BY)
         .orderBy(
-            DSL.max(VARIABLE_VALUES.CREATED_TIME).desc().nullsFirst(), VARIABLE_VALUES.CREATED_BY)
+            DSL.max(VARIABLE_VALUES.CREATED_TIME).desc().nullsFirst(),
+            VARIABLE_VALUES.CREATED_BY,
+        )
         .fetch { record -> EditHistoryModel(record.value1(), record.value2()) }
   }
 
   fun updateDocument(
       documentId: DocumentId,
-      applyChanges: (DocumentsRow) -> DocumentsRow
+      applyChanges: (DocumentsRow) -> DocumentsRow,
   ): DocumentsRow {
     requirePermissions { updateDocument(documentId) }
 
@@ -196,7 +204,10 @@ class DocumentStore(
     val updatedRow =
         applyChanges(documentsRow)
             .copy(
-                id = documentId, modifiedBy = currentUser().userId, modifiedTime = clock.instant())
+                id = documentId,
+                modifiedBy = currentUser().userId,
+                modifiedTime = clock.instant(),
+            )
 
     documentsDao.update(updatedRow)
 
@@ -206,7 +217,7 @@ class DocumentStore(
   fun updateSavedVersion(
       documentId: DocumentId,
       versionId: DocumentSavedVersionId,
-      applyChanges: (DocumentSavedVersionsRow) -> DocumentSavedVersionsRow
+      applyChanges: (DocumentSavedVersionsRow) -> DocumentSavedVersionsRow,
   ): DocumentSavedVersionsRow {
     requirePermissions { updateDocument(documentId) }
 
@@ -241,7 +252,8 @@ class DocumentStore(
           DSL.field(
               DSL.select(DSL.max(ID))
                   .from(DOCUMENT_SAVED_VERSIONS)
-                  .where(DOCUMENT_ID.eq(DOCUMENTS.ID)))
+                  .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
+          )
         }
 
     return dslContext
@@ -250,7 +262,8 @@ class DocumentStore(
             DOCUMENT_TEMPLATES.NAME,
             PROJECTS.NAME,
             PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
-            lastSavedVersionIdField)
+            lastSavedVersionIdField,
+        )
         .from(DOCUMENTS)
         .join(DOCUMENT_TEMPLATES)
         .on(DOCUMENTS.DOCUMENT_TEMPLATE_ID.eq(DOCUMENT_TEMPLATES.ID))

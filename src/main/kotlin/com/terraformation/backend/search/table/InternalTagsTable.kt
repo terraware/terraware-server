@@ -21,7 +21,8 @@ class InternalTagsTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asMultiValueSublist(
               "organizationInternalTags",
-              INTERNAL_TAGS.ID.eq(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID)),
+              INTERNAL_TAGS.ID.eq(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID),
+          ),
       )
     }
   }

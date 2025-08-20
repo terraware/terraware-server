@@ -25,7 +25,9 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           cohortModules.asMultiValueSublist(
-              "cohortModules", MODULES.ID.eq(COHORT_MODULES.MODULE_ID)),
+              "cohortModules",
+              MODULES.ID.eq(COHORT_MODULES.MODULE_ID),
+          ),
           deliverables.asMultiValueSublist("deliverables", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
           events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
       )
@@ -57,7 +59,8 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
                 .join(PROJECTS)
                 .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
                 .where(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
-                .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+                .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+        )
       }
 
   override val defaultOrderFields: List<OrderField<*>>

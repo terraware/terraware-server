@@ -48,7 +48,8 @@ class ModulesController(
         modules.map { module ->
           val deliverables = deliverableStore.fetchDeliverables(moduleId = module.id)
           ModulePayload(module, deliverables.map { ModuleDeliverablePayload(it) })
-        })
+        }
+    )
   }
 
   @ApiResponse200
@@ -61,14 +62,16 @@ class ModulesController(
     val model = moduleStore.fetchOneById(moduleId)
     val deliverables = deliverableStore.fetchDeliverables(moduleId = moduleId)
     return GetModuleResponsePayload(
-        ModulePayload(model, deliverables.map { ModuleDeliverablePayload(it) }))
+        ModulePayload(model, deliverables.map { ModuleDeliverablePayload(it) })
+    )
   }
 
   @ApiResponse200
   @Operation(summary = "Import a list of modules. ")
   @PostMapping("/import", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])]
+  )
   fun importModules(
       @RequestPart(required = true) file: MultipartFile
   ): ImportModuleResponsePayload {
@@ -78,7 +81,8 @@ class ModulesController(
       return ImportModuleResponsePayload(
           SuccessOrError.Error,
           e.errors.map { ImportModuleProblemElement(it.rowNumber, it.message) },
-          e.message)
+          e.message,
+      )
     }
     return ImportModuleResponsePayload(SuccessOrError.Ok)
   }
@@ -128,7 +132,8 @@ data class ModuleDeliverablePayload(
       model.required,
       model.position,
       model.type,
-      model.sensitive)
+      model.sensitive,
+  )
 }
 
 data class ImportModuleProblemElement(

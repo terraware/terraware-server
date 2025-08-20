@@ -35,14 +35,15 @@ class SummaryController(
   @Operation(
       summary =
           "Get summary statistics about a specific seed bank or all seed banks within an " +
-              "organization.")
+              "organization."
+  )
   fun getSeedBankSummary(
       @RequestParam
       @Schema(description = "If set, return summary on all seedbanks for that organization.")
       organizationId: OrganizationId?,
       @RequestParam
       @Schema(description = "If set, return summary on that specific seedbank.")
-      facilityId: FacilityId?
+      facilityId: FacilityId?,
   ): SummaryResponsePayload {
     return when {
       facilityId != null && organizationId == null -> getSummary(facilityId)
@@ -54,7 +55,8 @@ class SummaryController(
 
   @Operation(
       summary =
-          "Get summary statistics about accessions that match a specified set of search criteria.")
+          "Get summary statistics about accessions that match a specified set of search criteria."
+  )
   @PostMapping
   fun summarizeAccessionSearch(
       @RequestBody payload: SummarizeAccessionSearchRequestPayload
@@ -66,13 +68,16 @@ class SummaryController(
 
   private fun getSummary(facilityId: FacilityId): SummaryResponsePayload {
     return SummaryResponsePayload(
-        accessionStore.getSummaryStatistics(facilityId), accessionStore.countByState(facilityId))
+        accessionStore.getSummaryStatistics(facilityId),
+        accessionStore.countByState(facilityId),
+    )
   }
 
   private fun getSummary(organizationId: OrganizationId): SummaryResponsePayload {
     return SummaryResponsePayload(
         accessionStore.getSummaryStatistics(organizationId),
-        accessionStore.countByState(organizationId))
+        accessionStore.countByState(organizationId),
+    )
   }
 }
 
@@ -87,7 +92,7 @@ data class SummaryResponsePayload(
 ) : SuccessResponsePayload {
   constructor(
       stats: AccessionSummaryStatistics,
-      counts: Map<AccessionState, Int>
+      counts: Map<AccessionState, Int>,
   ) : this(
       activeAccessions = stats.accessions,
       species = stats.species,
@@ -96,30 +101,35 @@ data class SummaryResponsePayload(
               .filterKeys { AccessionStateV2.isValid(it) }
               .mapKeys { AccessionStateV2.of(it.key) }
               .toMap(),
-      seedsRemaining = SeedCountSummaryPayload(stats))
+      seedsRemaining = SeedCountSummaryPayload(stats),
+  )
 }
 
 data class SeedCountSummaryPayload(
     @Schema(
         description =
             "Total number of seeds remaining. The sum of subtotalBySeedCount and " +
-                "subtotalByWeightEstimate.")
+                "subtotalByWeightEstimate."
+    )
     val total: Long,
     @Schema(
         description =
-            "Total number of seeds remaining in accessions whose quantities are measured in seeds.")
+            "Total number of seeds remaining in accessions whose quantities are measured in seeds."
+    )
     val subtotalBySeedCount: Long,
     @Schema(
         description =
             "Estimated total number of seeds remaining in accessions whose quantities are " +
                 "measured by weight. This estimate is based on the subset weight and count. " +
                 "Accessions measured by weight that don't have subset weights and counts are not " +
-                "included in this estimate.")
+                "included in this estimate."
+    )
     val subtotalByWeightEstimate: Long,
     @Schema(
         description =
             "Number of accessions that are measured by weight and don't have subset weight and " +
-                "count data. The system cannot estimate how many seeds they have.")
+                "count data. The system cannot estimate how many seeds they have."
+    )
     val unknownQuantityAccessions: Int,
 ) {
   constructor(
@@ -128,7 +138,8 @@ data class SeedCountSummaryPayload(
       summary.totalSeedsRemaining,
       summary.subtotalBySeedCount,
       summary.subtotalByWeightEstimate,
-      summary.unknownQuantityAccessions)
+      summary.unknownQuantityAccessions,
+  )
 }
 
 data class SummarizeAccessionSearchRequestPayload(

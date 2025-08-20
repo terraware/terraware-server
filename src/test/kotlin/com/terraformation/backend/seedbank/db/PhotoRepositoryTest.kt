@@ -234,7 +234,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(AccessionPhotosRow(accessionId, sixPixelFileId)),
         accessionPhotosDao.findAll(),
-        "Accession photos after deletion")
+        "Accession photos after deletion",
+    )
   }
 
   @Test
@@ -295,11 +296,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
               createdBy = user.userId,
               createdTime = uploadedTime,
               modifiedBy = user.userId,
-              modifiedTime = uploadedTime)
+              modifiedTime = uploadedTime,
+          )
 
       filesDao.insert(filesRow)
       accessionPhotosDao.insert(
-          AccessionPhotosRow(accessionId = photoAccessionId, fileId = filesRow.id))
+          AccessionPhotosRow(accessionId = photoAccessionId, fileId = filesRow.id)
+      )
     }
 
     // deleteAllPhotos is tested separately; we just care that it's called for each accession.

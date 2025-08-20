@@ -67,7 +67,7 @@ class WebAppUrls(
   fun fullAccessionViabilityTest(
       accessionId: AccessionId,
       testType: ViabilityTestType,
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
   ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path(accessionViabilityTestPath(accessionId, testType))
@@ -82,7 +82,7 @@ class WebAppUrls(
   fun fullAccessions(
       organizationId: OrganizationId,
       facilityId: FacilityId,
-      state: AccessionState
+      state: AccessionState,
   ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/accessions")
@@ -154,7 +154,7 @@ class WebAppUrls(
       moduleId: ModuleId,
       eventId: EventId,
       organizationId: OrganizationId,
-      projectId: ProjectId
+      projectId: ProjectId,
   ): URI {
     return UriBuilder.fromPath("/projects/$projectId/modules/$moduleId/sessions/$eventId")
         .queryParam("organizationId", organizationId)
@@ -209,7 +209,8 @@ class WebAppUrls(
 
   fun deliverable(deliverableId: DeliverableId, projectId: ProjectId): URI {
     return UriBuilder.fromPath(
-            "/deliverables/${deliverableId.value}/submissions/${projectId.value}")
+            "/deliverables/${deliverableId.value}/submissions/${projectId.value}"
+        )
         .build()
   }
 
@@ -224,7 +225,8 @@ class WebAppUrls(
 
   fun acceleratorConsoleDeliverable(deliverableId: DeliverableId, projectId: ProjectId): URI {
     return UriBuilder.fromPath(
-            "/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}")
+            "/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}"
+        )
         .build()
   }
 
@@ -306,7 +308,7 @@ class WebAppUrls(
 
   private fun accessionViabilityTestPath(
       accessionId: AccessionId,
-      testType: ViabilityTestType
+      testType: ViabilityTestType,
   ): String {
     return "/accessions/${accessionId.value}/" +
         when (testType) {
@@ -319,7 +321,7 @@ class WebAppUrls(
   private fun buildRegistrationUrl(
       redirectUri: URI,
       email: String,
-      additionalParams: Map<String, String> = emptyMap()
+      additionalParams: Map<String, String> = emptyMap(),
   ): URI {
     val builder =
         UriBuilder.fromUri(keycloakInfo.issuerUri)

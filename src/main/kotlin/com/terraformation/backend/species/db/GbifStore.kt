@@ -32,7 +32,7 @@ class GbifStore(private val dslContext: DSLContext) {
   fun findNamesByWordPrefixes(
       prefixes: List<String>,
       scientific: Boolean = true,
-      maxResults: Int = 10
+      maxResults: Int = 10,
   ): List<GbifNamesRow> {
     // Strip non-alphabetic characters and diacritics, and fold to lower case.
     val normalizedPrefixes =
@@ -112,12 +112,13 @@ class GbifStore(private val dslContext: DSLContext) {
    */
   fun fetchOneByScientificName(
       scientificName: String,
-      vernacularNameLanguage: String? = null
+      vernacularNameLanguage: String? = null,
   ): GbifTaxonModel? {
     val languageCondition =
         if (vernacularNameLanguage != null) {
           GBIF_VERNACULAR_NAMES.LANGUAGE.isNull.or(
-              GBIF_VERNACULAR_NAMES.LANGUAGE.eq(vernacularNameLanguage))
+              GBIF_VERNACULAR_NAMES.LANGUAGE.eq(vernacularNameLanguage)
+          )
         } else {
           null
         }
@@ -125,13 +126,18 @@ class GbifStore(private val dslContext: DSLContext) {
     val vernacularNamesMultiset =
         DSL.multiset(
                 DSL.selectDistinct(
-                        GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, GBIF_VERNACULAR_NAMES.LANGUAGE)
+                        GBIF_VERNACULAR_NAMES.VERNACULAR_NAME,
+                        GBIF_VERNACULAR_NAMES.LANGUAGE,
+                    )
                     .from(GBIF_VERNACULAR_NAMES)
                     .where(
                         listOfNotNull(
                             GBIF_VERNACULAR_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID),
-                            languageCondition))
-                    .orderBy(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME))
+                            languageCondition,
+                        )
+                    )
+                    .orderBy(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME)
+            )
             .convertFrom { result -> result.map { record -> GbifVernacularNameModel(record) } }
 
     return dslContext
@@ -140,7 +146,8 @@ class GbifStore(private val dslContext: DSLContext) {
             GBIF_NAMES.NAME,
             GBIF_TAXA.FAMILY,
             GBIF_DISTRIBUTIONS.THREAT_STATUS,
-            vernacularNamesMultiset)
+            vernacularNamesMultiset,
+        )
         .from(GBIF_NAMES)
         .join(GBIF_TAXA)
         .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
@@ -152,7 +159,8 @@ class GbifStore(private val dslContext: DSLContext) {
             DSL.case_()
                 .`when`(GBIF_TAXA.TAXONOMIC_STATUS.eq(TAXONOMIC_STATUS_ACCEPTED), 1)
                 .else_(2),
-            GBIF_NAMES.TAXON_ID)
+            GBIF_NAMES.TAXON_ID,
+        )
         .limit(1)
         .fetchOne { record ->
           GbifTaxonModel(
@@ -208,7 +216,8 @@ class GbifStore(private val dslContext: DSLContext) {
                 DSL.case_()
                     .`when`(GBIF_TAXA.TAXONOMIC_STATUS.eq(TAXONOMIC_STATUS_ACCEPTED), 1)
                     .else_(2),
-                GBIF_NAMES.TAXON_ID)
+                GBIF_NAMES.TAXON_ID,
+            )
             .limit(1)
             .fetchOne()
 
@@ -218,7 +227,8 @@ class GbifStore(private val dslContext: DSLContext) {
         SpeciesProblemsRow(
             fieldId = SpeciesProblemField.ScientificName,
             typeId = SpeciesProblemType.NameIsSynonym,
-            suggestedValue = acceptedName)
+            suggestedValue = acceptedName,
+        )
       }
     }
 
@@ -243,16 +253,20 @@ class GbifStore(private val dslContext: DSLContext) {
         SpeciesProblemsRow(
             fieldId = SpeciesProblemField.ScientificName,
             typeId = SpeciesProblemType.NameIsSynonym,
-            suggestedValue = acceptedName)
+            suggestedValue = acceptedName,
+        )
       } else {
         SpeciesProblemsRow(
             fieldId = SpeciesProblemField.ScientificName,
             typeId = SpeciesProblemType.NameMisspelled,
-            suggestedValue = correctedName)
+            suggestedValue = correctedName,
+        )
       }
     } else {
       SpeciesProblemsRow(
-          fieldId = SpeciesProblemField.ScientificName, typeId = SpeciesProblemType.NameNotFound)
+          fieldId = SpeciesProblemField.ScientificName,
+          typeId = SpeciesProblemType.NameNotFound,
+      )
     }
   }
 

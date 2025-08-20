@@ -32,7 +32,7 @@ class SearchController(
     private val clock: Clock,
     private val messages: Messages,
     private val searchService: SearchService,
-    private val searchTables: SearchTables
+    private val searchTables: SearchTables,
 ) {
   private val organizationsTable = searchTables.organizations
 
@@ -65,7 +65,12 @@ class SearchController(
                                                    { "operation": "field", "field": "remainingGrams", "type": "Range", "values": ["100 Milligrams", "200 Milligrams"] },
                                                    { "operation": "and", "children": [
                                                        { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
-                                                       { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] } }""")])])
+                                                       { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] } }""",
+                              )
+                          ]
+                  )
+              ]
+      )
       payload: SearchRequestPayload
   ): SearchResponsePayload {
     val rootPrefix = resolvePrefix(payload.prefix)
@@ -78,18 +83,22 @@ class SearchController(
             payload.toSearchCriteria(rootPrefix),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
-            count))
+            count,
+        )
+    )
   }
 
   @ApiResponse(
       responseCode = "200",
       content =
-          [Content(mediaType = "text/csv", schema = Schema(type = "string", format = "binary"))])
+          [Content(mediaType = "text/csv", schema = Schema(type = "string", format = "binary"))],
+  )
   @Operation(
       summary = "Exports selected fields from data matching a set of search criteria.",
       description =
           "If a sublist field has multiple values, they are separated with line breaks in the " +
-              "exported file.")
+              "exported file.",
+  )
   @PostMapping(produces = ["text/csv"])
   fun export(@RequestBody payload: SearchRequestPayload): ResponseEntity<ByteArray> {
     val rootPrefix = resolvePrefix(payload.prefix)
@@ -103,7 +112,8 @@ class SearchController(
             mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
-            count)
+            count,
+        )
 
     val dateAndTime =
         DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now(clock))
@@ -145,9 +155,12 @@ class SearchController(
                       searchField,
                       mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
                       payload.cursor,
-                      count)
+                      count,
+                  )
               FieldValuesPayload(fetchResult, fetchResult.size > count)
-            }))
+            },
+        )
+    )
   }
 
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
@@ -171,7 +184,8 @@ data class SearchRequestPayload(
                 "be a dotted sublist name starting from the \"organizations\" level, or the name " +
                 "of a search table. If not present, the search will return a list of " +
                 "organizations.",
-        example = "facilities.accessions")
+        example = "facilities.accessions",
+    )
     val prefix: String? = null,
     @NotEmpty
     @ArraySchema(
@@ -181,14 +195,18 @@ data class SearchRequestPayload(
                     "List of fields to return. Field names should be relative to the prefix. " +
                         "They may navigate the data hierarchy using '.' or '_' as delimiters.",
                 example =
-                    """["processingStartDate","viabilityTests.seedsTested","facility_name"]"""))
+                    """["processingStartDate","viabilityTests.seedsTested","facility_name"]""",
+            )
+    )
     override val fields: List<String>,
     @ArraySchema(
         arraySchema =
             Schema(
                 description =
                     "How to sort the search results. This controls both the order of the " +
-                        "top-level results and the order of any lists of child objects."))
+                        "top-level results and the order of any lists of child objects."
+            )
+    )
     override val sortOrder: List<SearchSortOrderElement>? = null,
     @Schema(
         description =
@@ -206,7 +224,8 @@ data class SearchRequestPayload(
                        { "operation": "field", "field": "remainingGrams", "type": "Range", "values": ["100 Milligrams", "200 Milligrams"] },
                        { "operation": "and", "children": [
                            { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
-                           { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""")
+                           { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] }""",
+    )
     override val search: SearchNodePayload? = null,
     @Schema(
         description =
@@ -219,7 +238,8 @@ data class SearchRequestPayload(
             // formatting is irrelevant.
             """[
                   { "prefix": "species", "search": { "operation": "field", "field": "name", "values": ["Species Name"] } },
-                  { "prefix": "viabilityTests.viabilityTestResults", "search": { "operation": "field", "field": "seedsGerminated", "type": "Range", "values": ["30", "40"] } } ]""")
+                  { "prefix": "viabilityTests.viabilityTestResults", "search": { "operation": "field", "field": "seedsGerminated", "type": "Range", "values": ["30", "40"] } } ]""",
+    )
     override val filters: List<PrefixedSearch>? = null,
     @Schema(
         description =
@@ -234,6 +254,7 @@ data class SearchRequestPayload(
         description =
             "Starting point for search results. If present, a previous search will be continued " +
                 "from where it left off. This should be the value of the cursor that was " +
-                "returned in the response to a previous search.")
+                "returned in the response to a previous search."
+    )
     val cursor: String? = null,
 ) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchCriteria

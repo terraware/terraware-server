@@ -46,17 +46,26 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           insertPlantingSeason(startDate = season1Start, endDate = season1End, timeZone = timeZone)
       val season2Id =
           insertPlantingSeason(
-              startDate = oldSeason2Start, endDate = oldSeason2End, timeZone = timeZone)
+              startDate = oldSeason2Start,
+              endDate = oldSeason2End,
+              timeZone = timeZone,
+          )
       insertPlantingSeason(startDate = season3Start, endDate = season3End, timeZone = timeZone)
 
       val desiredSeasons =
           listOf(
               // Unchanged
               UpdatedPlantingSeasonModel(
-                  startDate = season1Start, endDate = season1End, id = season1Id),
+                  startDate = season1Start,
+                  endDate = season1End,
+                  id = season1Id,
+              ),
               // Rescheduled (same ID, different dates)
               UpdatedPlantingSeasonModel(
-                  startDate = newSeason2Start, endDate = newSeason2End, id = season2Id),
+                  startDate = newSeason2Start,
+                  endDate = newSeason2End,
+                  id = season2Id,
+              ),
               // New
               UpdatedPlantingSeasonModel(startDate = season4Start, endDate = season4End),
           )
@@ -106,14 +115,19 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           insertPlantingSeason(
               startDate = LocalDate.of(2022, 12, 1),
               endDate = LocalDate.of(2023, 2, 1),
-              isActive = true)
+              isActive = true,
+          )
 
       val newStartDate = LocalDate.of(2023, 2, 1)
       val newEndDate = LocalDate.of(2023, 4, 1)
       val desiredSeasons =
           listOf(
               UpdatedPlantingSeasonModel(
-                  startDate = newStartDate, endDate = newEndDate, id = seasonId))
+                  startDate = newStartDate,
+                  endDate = newEndDate,
+                  id = seasonId,
+              )
+          )
 
       store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
 
@@ -138,14 +152,20 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val plantingSiteId = insertPlantingSite()
       val seasonId =
           insertPlantingSeason(
-              startDate = LocalDate.of(2023, 2, 1), endDate = LocalDate.of(2023, 4, 1))
+              startDate = LocalDate.of(2023, 2, 1),
+              endDate = LocalDate.of(2023, 4, 1),
+          )
 
       val newStartDate = LocalDate.of(2022, 12, 1)
       val newEndDate = LocalDate.of(2023, 2, 1)
       val desiredSeasons =
           listOf(
               UpdatedPlantingSeasonModel(
-                  startDate = newStartDate, endDate = newEndDate, id = seasonId))
+                  startDate = newStartDate,
+                  endDate = newEndDate,
+                  id = seasonId,
+              )
+          )
 
       store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
 
@@ -172,14 +192,22 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       // Planting site time zone is Honolulu which is GMT-10, meaning it is 2022-12-31 there;
       // 2024-01-01 is thus more than a year in the future.
       assertPlantingSeasonUpdateThrows<PlantingSeasonTooFarInFutureException>(
-          LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 1))
+          LocalDate.of(2024, 1, 1),
+          LocalDate.of(2024, 2, 1),
+      )
 
       assertPlantingSeasonUpdateThrows<CannotCreatePastPlantingSeasonException>(
-          LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 1))
+          LocalDate.of(2022, 1, 1),
+          LocalDate.of(2022, 6, 1),
+      )
       assertPlantingSeasonUpdateThrows<PlantingSeasonTooShortException>(
-          LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 27))
+          LocalDate.of(2023, 1, 1),
+          LocalDate.of(2023, 1, 27),
+      )
       assertPlantingSeasonUpdateThrows<PlantingSeasonTooLongException>(
-          LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 2))
+          LocalDate.of(2023, 1, 1),
+          LocalDate.of(2024, 1, 2),
+      )
     }
 
     @Test
@@ -191,12 +219,17 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
             plantingSiteId,
             listOf(
                 UpdatedPlantingSeasonModel(
-                    startDate = LocalDate.of(2023, 1, 1), endDate = LocalDate.of(2023, 2, 1)),
+                    startDate = LocalDate.of(2023, 1, 1),
+                    endDate = LocalDate.of(2023, 2, 1),
+                ),
                 UpdatedPlantingSeasonModel(
-                    startDate = LocalDate.of(2023, 2, 1), endDate = LocalDate.of(2023, 4, 1)),
-            )) {
-              it
-            }
+                    startDate = LocalDate.of(2023, 2, 1),
+                    endDate = LocalDate.of(2023, 4, 1),
+                ),
+            ),
+        ) {
+          it
+        }
       }
     }
 
@@ -215,9 +248,12 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
                 UpdatedPlantingSeasonModel(
                     startDate = startDate,
                     endDate = LocalDate.of(2023, 1, 15),
-                    id = plantingSeasonId))) {
-              it
-            }
+                    id = plantingSeasonId,
+                )
+            ),
+        ) {
+          it
+        }
       }
     }
 
@@ -235,9 +271,14 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           plantingSiteId,
           listOf(
               UpdatedPlantingSeasonModel(
-                  startDate = startDate, endDate = endDate, id = plantingSeasonId))) {
-            it
-          }
+                  startDate = startDate,
+                  endDate = endDate,
+                  id = plantingSeasonId,
+              )
+          ),
+      ) {
+        it
+      }
 
       val actual = plantingSeasonsDao.findAll()
 
@@ -280,18 +321,24 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           plantingSiteId,
           listOf(
               UpdatedPlantingSeasonModel(
-                  startDate = pastStartDate, endDate = pastEndDate, id = pastPlantingSeasonId),
+                  startDate = pastStartDate,
+                  endDate = pastEndDate,
+                  id = pastPlantingSeasonId,
+              ),
               UpdatedPlantingSeasonModel(
                   startDate = activeStartDate,
                   endDate = activeEndDate,
-                  id = activePlantingSeasonId),
+                  id = activePlantingSeasonId,
+              ),
               UpdatedPlantingSeasonModel(
                   startDate = futureStartDate,
                   endDate = futureEndDate,
-                  id = futurePlantingSeasonId),
-          )) {
-            it.copy(timeZone = timeZone)
-          }
+                  id = futurePlantingSeasonId,
+              ),
+          ),
+      ) {
+        it.copy(timeZone = timeZone)
+      }
 
       val expected =
           listOf(
@@ -341,14 +388,16 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           plantingSiteId,
           listOf(
               UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate),
-          )) {
-            it
-          }
+          ),
+      ) {
+        it
+      }
 
       val plantingSeasonId = plantingSeasonsDao.findAll().first().id!!
 
       eventPublisher.assertEventPublished(
-          PlantingSeasonScheduledEvent(plantingSiteId, plantingSeasonId, startDate, endDate))
+          PlantingSeasonScheduledEvent(plantingSiteId, plantingSeasonId, startDate, endDate)
+      )
     }
 
     @Test
@@ -365,27 +414,39 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           plantingSiteId,
           listOf(
               UpdatedPlantingSeasonModel(
-                  startDate = newStartDate, endDate = newEndDate, id = plantingSeasonId),
-          )) {
-            it
-          }
+                  startDate = newStartDate,
+                  endDate = newEndDate,
+                  id = plantingSeasonId,
+              ),
+          ),
+      ) {
+        it
+      }
 
       eventPublisher.assertEventPublished(
           PlantingSeasonRescheduledEvent(
-              plantingSiteId, plantingSeasonId, oldStartDate, oldEndDate, newStartDate, newEndDate))
+              plantingSiteId,
+              plantingSeasonId,
+              oldStartDate,
+              oldEndDate,
+              newStartDate,
+              newEndDate,
+          )
+      )
     }
 
     private inline fun <reified T : Exception> assertPlantingSeasonUpdateThrows(
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ) {
       assertThrows<T> {
         store.updatePlantingSite(
             inserted.plantingSiteId,
             plantingSeasons =
-                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate))) {
-              it
-            }
+                listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
+        ) {
+          it
+        }
       }
     }
   }

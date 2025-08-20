@@ -31,21 +31,23 @@ class PlantingSubzonesController(
       summary = "Gets a list of the species that may have been planted in a planting subzone.",
       description =
           "The list is based on nursery withdrawals to the planting site as well as past " +
-              "observations.")
+              "observations.",
+  )
   fun listPlantingSubzoneSpecies(
       @PathVariable id: PlantingSubzoneId,
   ): ListPlantingSubzoneSpeciesResponsePayload {
     val species = speciesStore.fetchSiteSpeciesByPlantingSubzoneId(id)
 
     return ListPlantingSubzoneSpeciesResponsePayload(
-        species.map { PlantingSubzoneSpeciesPayload(it) })
+        species.map { PlantingSubzoneSpeciesPayload(it) }
+    )
   }
 
   @Operation(summary = "Updates the planting-completed state of a planting subzone.")
   @PutMapping("/{id}")
   fun updatePlantingSubzone(
       @PathVariable id: PlantingSubzoneId,
-      @RequestBody payload: UpdatePlantingSubzoneRequestPayload
+      @RequestBody payload: UpdatePlantingSubzoneRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSubzoneCompleted(id, payload.plantingCompleted)
 

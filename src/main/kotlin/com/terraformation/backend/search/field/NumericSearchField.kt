@@ -51,7 +51,9 @@ abstract class NumericSearchField<T : Number>(
         DSL.or(
             listOfNotNull(
                 if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
-                if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+                if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+            )
+        )
       }
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->

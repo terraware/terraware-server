@@ -22,6 +22,8 @@ abstract class VersionFileTask : DefaultTask() {
     val path = outputFile.get().asFile.toPath()
     Files.createDirectories(path.parent)
     Files.writeString(
-        path, "package com.terraformation.backend\nconst val VERSION = \"$version\"\n")
+        path,
+        "package com.terraformation.backend\nconst val VERSION = \"$version\"\n",
+    )
   }
 }

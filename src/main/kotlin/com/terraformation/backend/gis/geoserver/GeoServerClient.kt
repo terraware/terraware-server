@@ -40,7 +40,9 @@ class GeoServerClient(
   fun describeFeatureType(featureType: String): FeatureTypeDescription {
     val descriptions =
         sendGetRequest<FeatureTypeDescriptions>(
-            "DescribeFeatureType", mapOf("typeNames" to featureType))
+            "DescribeFeatureType",
+            mapOf("typeNames" to featureType),
+        )
     return descriptions.featureTypes.first().copy(targetPrefix = descriptions.targetPrefix)
   }
 
@@ -60,7 +62,9 @@ class GeoServerClient(
                         "typeNames" to featureType,
                         properties?.let { "properties" to it.joinToString(",") },
                     )
-                    .toMap()))
+                    .toMap(),
+            )
+        )
   }
 
   fun getCapabilities(): WfsCapabilities {
@@ -80,7 +84,7 @@ class GeoServerClient(
 
   private inline fun <reified T> sendGetRequest(
       command: String,
-      params: Map<String, Any> = emptyMap()
+      params: Map<String, Any> = emptyMap(),
   ): T {
     return runBlocking { sendRequest(HttpMethod.Get, command, params).body() }
   }
@@ -120,7 +124,9 @@ class GeoServerClient(
                     .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
                     .defaultUseWrapper(false)
                     .build()
-                    .registerKotlinModule()))
+                    .registerKotlinModule()
+            ),
+        )
       }
 
       // By default, throw exceptions if we get non-2xx responses.

@@ -13,7 +13,8 @@ class CreateAttachmentsHttpRequest(issueId: String, attachmentIds: List<String>,
   private val requestBody =
       CreateAttachmentsRequestBody(
           temporaryAttachmentIds = attachmentIds,
-          additionalComment = comment?.let { CreateAttachmentsAdditionalComment(comment) })
+          additionalComment = comment?.let { CreateAttachmentsAdditionalComment(comment) },
+      )
 
   override fun buildRequest(requestBuilder: HttpRequestBuilder) {
     with(requestBuilder) {

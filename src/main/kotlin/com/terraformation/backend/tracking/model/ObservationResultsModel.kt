@@ -256,7 +256,7 @@ data class ObservationPlantingZoneRollupResultsModel(
         areaHa: BigDecimal,
         plantingZoneId: PlantingZoneId,
         /** Must include every subzone in the planting zone */
-        subzoneResults: Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel?>
+        subzoneResults: Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel?>,
     ): ObservationPlantingZoneRollupResultsModel? {
       val nonNullSubzoneResults = subzoneResults.values.filterNotNull()
       if (nonNullSubzoneResults.isEmpty()) {
@@ -353,7 +353,7 @@ data class ObservationRollupResultsModel(
     fun of(
         plantingSiteId: PlantingSiteId,
         /** Must include every zone in the planting site */
-        zoneResults: Map<PlantingZoneId, ObservationPlantingZoneRollupResultsModel?>
+        zoneResults: Map<PlantingZoneId, ObservationPlantingZoneRollupResultsModel?>,
     ): ObservationRollupResultsModel? {
       val nonNullZoneResults = zoneResults.values.filterNotNull()
       if (nonNullZoneResults.isEmpty()) {

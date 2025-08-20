@@ -65,10 +65,15 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
               ExistingParticipantProjectSpeciesModel(
                   id = ParticipantProjectSpeciesId(1),
                   speciesId = speciesId,
-                  projectId = projectId))
+                  projectId = projectId,
+              ),
+          )
       val expectedEvent =
           ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
-              deliverableId, projectId, speciesId)
+              deliverableId,
+              projectId,
+              speciesId,
+          )
 
       notifier.on(inputEvent)
 
@@ -90,13 +95,15 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
               id = participantProjectSpeciesId,
               speciesId = speciesId,
               projectId = projectId,
-              submissionStatus = SubmissionStatus.NotSubmitted)
+              submissionStatus = SubmissionStatus.NotSubmitted,
+          )
       val new =
           ExistingParticipantProjectSpeciesModel(
               id = participantProjectSpeciesId,
               speciesId = speciesId,
               projectId = projectId,
-              submissionStatus = SubmissionStatus.InReview)
+              submissionStatus = SubmissionStatus.InReview,
+          )
 
       notifier.on(ParticipantProjectSpeciesEditedEvent(old, new, projectId))
 
@@ -114,7 +121,8 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
               id = participantProjectSpeciesId,
               speciesId = speciesId,
               projectId = projectId,
-              submissionStatus = SubmissionStatus.Approved)
+              submissionStatus = SubmissionStatus.Approved,
+          )
 
       notifier.on(ParticipantProjectSpeciesEditedEvent(model, model, projectId))
 
@@ -132,17 +140,22 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
               id = participantProjectSpeciesId,
               speciesId = speciesId,
               projectId = projectId,
-              submissionStatus = SubmissionStatus.Approved)
+              submissionStatus = SubmissionStatus.Approved,
+          )
       val new =
           ExistingParticipantProjectSpeciesModel(
               id = participantProjectSpeciesId,
               speciesId = speciesId,
               projectId = projectId,
-              submissionStatus = SubmissionStatus.InReview)
+              submissionStatus = SubmissionStatus.InReview,
+          )
 
       val expectedEvent =
           ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-              deliverableId, projectId, speciesId)
+              deliverableId,
+              projectId,
+              speciesId,
+          )
 
       notifier.on(ParticipantProjectSpeciesEditedEvent(old, new, projectId))
 

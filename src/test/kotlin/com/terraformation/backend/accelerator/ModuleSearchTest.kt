@@ -31,7 +31,10 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+        userId = inserted.userId,
+        organizationId = inserted.organizationId,
+        role = Role.Admin,
+    )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -80,7 +83,9 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                     "preparationMaterials" to "<i> Preps </i>",
                     "phase" to CohortPhase.Phase1FeasibilityStudy.getDisplayName(Locales.GIBBERISH),
                     "workshopDescription" to "Workshop ideas",
-                )))
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -111,14 +116,34 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val cohort2 = insertCohort()
 
     insertCohortModule(
-        cohort1, module1, "Week 1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 2))
+        cohort1,
+        module1,
+        "Week 1",
+        LocalDate.of(2024, 1, 1),
+        LocalDate.of(2024, 1, 2),
+    )
     insertCohortModule(
-        cohort1, module2, "Week 2", LocalDate.of(2024, 1, 3), LocalDate.of(2024, 1, 4))
+        cohort1,
+        module2,
+        "Week 2",
+        LocalDate.of(2024, 1, 3),
+        LocalDate.of(2024, 1, 4),
+    )
 
     insertCohortModule(
-        cohort2, module2, "Module 1", LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 2))
+        cohort2,
+        module2,
+        "Module 1",
+        LocalDate.of(2024, 2, 1),
+        LocalDate.of(2024, 2, 2),
+    )
     insertCohortModule(
-        cohort2, module3, "Module 2", LocalDate.of(2024, 2, 3), LocalDate.of(2024, 2, 4))
+        cohort2,
+        module3,
+        "Module 2",
+        LocalDate.of(2024, 2, 3),
+        LocalDate.of(2024, 2, 4),
+    )
 
     val event1A = insertEvent(moduleId = module1)
     val event1B = insertEvent(moduleId = module1)
@@ -154,13 +179,16 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                                 "title" to "Week 2",
                                 "startDate" to LocalDate.of(2024, 1, 3).toString(),
                                 "endDate" to LocalDate.of(2024, 1, 4).toString(),
-                                "cohort" to mapOf("id" to "$cohort1")),
+                                "cohort" to mapOf("id" to "$cohort1"),
+                            ),
                             mapOf(
                                 "title" to "Module 1",
                                 "startDate" to LocalDate.of(2024, 2, 1).toString(),
                                 "endDate" to LocalDate.of(2024, 2, 2).toString(),
-                                "cohort" to mapOf("id" to "$cohort2")),
-                        )),
+                                "cohort" to mapOf("id" to "$cohort2"),
+                            ),
+                        ),
+                ),
                 mapOf(
                     "id" to "$module3",
                     "cohortModules" to
@@ -179,7 +207,8 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
     assertJsonEquals(expected, actual)
@@ -224,7 +253,8 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                     "cohortModules" to listOf(mapOf("cohort" to mapOf("id" to "$userCohort"))),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
     assertJsonEquals(expected, actual)

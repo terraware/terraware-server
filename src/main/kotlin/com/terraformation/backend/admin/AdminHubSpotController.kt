@@ -88,7 +88,7 @@ class AdminHubSpotController(
       @RequestParam orgName: String,
       @RequestParam reforestableLand: BigDecimal?,
       @RequestParam website: String?,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val dealUrl =
@@ -116,7 +116,7 @@ class AdminHubSpotController(
       @RequestParam dealName: String,
       @RequestParam countryName: String,
       @RequestParam reforestableLand: BigDecimal,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val dealId = hubSpotService.createDeal(dealName, countryName, reforestableLand)
@@ -134,7 +134,7 @@ class AdminHubSpotController(
       @RequestParam name: String,
       @RequestParam email: String,
       @RequestParam dealId: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val contactId = hubSpotService.createContact(email, name, dealId)
@@ -152,7 +152,7 @@ class AdminHubSpotController(
       @RequestParam name: String,
       @RequestParam website: String,
       @RequestParam dealId: String,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val companyId = hubSpotService.createCompany(name, website, dealId)

@@ -63,7 +63,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 reference = "3.0",
                 type = MetricType.Activity,
             ),
-            store.fetchOneStandardMetric(metricId))
+            store.fetchOneStandardMetric(metricId),
+        )
       }
 
       @Test
@@ -155,7 +156,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     type = MetricType.Outcome,
                 ),
             ),
-            store.fetchAllStandardMetrics())
+            store.fetchAllStandardMetrics(),
+        )
       }
 
       @Test
@@ -178,7 +180,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 metricId1, // 2.0.2
                 metricId2, // 10.0
             ),
-            store.fetchAllStandardMetrics().map { it.id })
+            store.fetchAllStandardMetrics().map { it.id },
+        )
       }
 
       @Test
@@ -206,7 +209,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 projectId = projectId,
                 reference = "3.0",
                 type = MetricType.Activity,
-                unit = "degrees")
+                unit = "degrees",
+            )
 
         assertEquals(
             ExistingProjectMetricModel(
@@ -220,7 +224,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 type = MetricType.Activity,
                 unit = "degrees",
             ),
-            store.fetchOneProjectMetric(metricId))
+            store.fetchOneProjectMetric(metricId),
+        )
       }
 
       @Test
@@ -253,7 +258,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 metricId1, // 2.0.2
                 metricId2, // 10.0
             ),
-            store.fetchProjectMetricsForProject(projectId).map { it.id })
+            store.fetchProjectMetricsForProject(projectId).map { it.id },
+        )
       }
 
       @Test
@@ -359,7 +365,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     unit = "meters",
                 ),
             ),
-            store.fetchProjectMetricsForProject(projectId))
+            store.fetchProjectMetricsForProject(projectId),
+        )
       }
 
       @Test
@@ -455,7 +462,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "1.0",
                     typeId = MetricType.Impact,
-                )))
+                ),
+            )
+        )
       }
 
       @Test
@@ -532,7 +541,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "1.0",
                     typeId = MetricType.Impact,
                     unit = "%",
-                )))
+                ),
+            )
+        )
       }
 
       @Test
@@ -596,7 +607,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "1.0",
                     typeId = MetricType.Impact,
-                )))
+                )
+            )
+        )
       }
 
       @Test
@@ -664,7 +677,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reference = "1.0",
                   typeId = MetricType.Impact,
                   unit = "inches",
-              )))
+              )
+          )
+      )
     }
 
     @Test

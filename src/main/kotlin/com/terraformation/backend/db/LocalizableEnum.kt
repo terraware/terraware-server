@@ -21,7 +21,7 @@ interface LocalizableEnum<T : Enum<T>> {
 
     fun <T : LocalizableEnum<T>> loadLocalizedDisplayNames(
         locale: Locale,
-        values: List<T>
+        values: List<T>,
     ): Map<T, String> {
       val enumClass = values.first().javaClass
       val enumName = enumClass.simpleName

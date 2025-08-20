@@ -158,7 +158,8 @@ class ApplicationStore(
           else ->
               DSL.or(
                   MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
-                  MODULES.PHASE_ID.eq(CohortPhase.Application))
+                  MODULES.PHASE_ID.eq(CohortPhase.Application),
+              )
         }
 
     return with(MODULES) {
@@ -166,7 +167,8 @@ class ApplicationStore(
           .select(
               asterisk(),
               APPLICATION_MODULES.APPLICATION_ID,
-              APPLICATION_MODULES.APPLICATION_MODULE_STATUS_ID)
+              APPLICATION_MODULES.APPLICATION_MODULE_STATUS_ID,
+          )
           .from(this)
           .join(APPLICATION_MODULES)
           .on(APPLICATION_MODULES.MODULE_ID.eq(ID))
@@ -207,14 +209,16 @@ class ApplicationStore(
             DSL.or(
                 MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
                 MODULES.PHASE_ID.eq(CohortPhase.Application),
-            ))
+            ),
+        )
 
     val documentsMultiset =
         DSL.multiset(
                 DSL.select(SUBMISSION_DOCUMENTS.asterisk())
                     .from(SUBMISSION_DOCUMENTS)
                     .where(SUBMISSION_DOCUMENTS.SUBMISSION_ID.eq(SUBMISSIONS.ID))
-                    .orderBy(SUBMISSION_DOCUMENTS.ID))
+                    .orderBy(SUBMISSION_DOCUMENTS.ID)
+            )
             .convertFrom { result -> result.map { SubmissionDocumentModel.of(it) } }
 
     return dslContext
@@ -331,7 +335,7 @@ class ApplicationStore(
 
   fun review(
       applicationId: ApplicationId,
-      updateFunc: (ExistingApplicationModel) -> ExistingApplicationModel
+      updateFunc: (ExistingApplicationModel) -> ExistingApplicationModel,
   ) {
     requirePermissions { reviewApplication(applicationId) }
 
@@ -381,7 +385,8 @@ class ApplicationStore(
     return if (existing.status == ApplicationStatus.NotSubmitted) {
       if (applicationVariableValues == null) {
         throw IllegalArgumentException(
-            "No pre-screen variable values supplied for pre-screen submission")
+            "No pre-screen variable values supplied for pre-screen submission"
+        )
       }
 
       val problems = checkPreScreenCriteria(existing, applicationVariableValues, boundarySubmission)
@@ -409,7 +414,8 @@ class ApplicationStore(
       }
     } else {
       log.info(
-          "Application $applicationId has status ${existing.status}; ignoring submission request")
+          "Application $applicationId has status ${existing.status}; ignoring submission request"
+      )
       ApplicationSubmissionResult(existing, emptyList())
     }
   }
@@ -417,7 +423,7 @@ class ApplicationStore(
   fun updateModuleStatus(
       projectId: ProjectId,
       moduleId: ModuleId,
-      status: ApplicationModuleStatus
+      status: ApplicationModuleStatus,
   ) {
     val application =
         fetchByProjectId(projectId).firstOrNull()
@@ -442,9 +448,12 @@ class ApplicationStore(
     val feedbackField =
         if (feedback.isNotEmpty()) {
           feedback.joinToString(
-              prefix = "<ul>\n<li>", separator = "</li>\n<li>", postfix = "</li>\n</ul>") {
-                HtmlUtils.htmlEscape(it)
-              }
+              prefix = "<ul>\n<li>",
+              separator = "</li>\n<li>",
+              postfix = "</li>\n</ul>",
+          ) {
+            HtmlUtils.htmlEscape(it)
+          }
         } else {
           null
         }
@@ -567,7 +576,8 @@ class ApplicationStore(
                   DSL.or(
                       COUNTRY_CODE.notEqual(countryCode),
                       COUNTRY_CODE.isNull(),
-                  ))
+                  )
+              )
               .execute()
         }
 
@@ -586,7 +596,8 @@ class ApplicationStore(
             APPLICATION_HISTORIES.FEEDBACK,
             APPLICATION_HISTORIES.INTERNAL_COMMENT,
             APPLICATION_HISTORIES.MODIFIED_BY,
-            APPLICATION_HISTORIES.MODIFIED_TIME)
+            APPLICATION_HISTORIES.MODIFIED_TIME,
+        )
         .select(
             DSL.select(
                     APPLICATIONS.ID,
@@ -595,9 +606,11 @@ class ApplicationStore(
                     APPLICATIONS.FEEDBACK,
                     APPLICATIONS.INTERNAL_COMMENT,
                     APPLICATIONS.MODIFIED_BY,
-                    APPLICATIONS.MODIFIED_TIME)
+                    APPLICATIONS.MODIFIED_TIME,
+                )
                 .from(APPLICATIONS)
-                .where(APPLICATIONS.ID.eq(applicationId)))
+                .where(APPLICATIONS.ID.eq(applicationId))
+        )
         .execute()
   }
 
@@ -606,14 +619,20 @@ class ApplicationStore(
       with(APPLICATION_MODULES) {
         dslContext
             .insertInto(
-                APPLICATION_MODULES, APPLICATION_ID, MODULE_ID, APPLICATION_MODULE_STATUS_ID)
+                APPLICATION_MODULES,
+                APPLICATION_ID,
+                MODULE_ID,
+                APPLICATION_MODULE_STATUS_ID,
+            )
             .select(
                 DSL.select(
                         DSL.value(applicationId),
                         MODULES.ID,
-                        DSL.value(ApplicationModuleStatus.Incomplete))
+                        DSL.value(ApplicationModuleStatus.Incomplete),
+                    )
                     .from(MODULES)
-                    .where(MODULES.PHASE_ID.eq(phase)))
+                    .where(MODULES.PHASE_ID.eq(phase))
+            )
             .onConflict()
             .doNothing()
             .execute()
@@ -640,7 +659,8 @@ class ApplicationStore(
                 .from(APPLICATION_HISTORIES)
                 .where(APPLICATION_HISTORIES.APPLICATION_ID.eq(APPLICATIONS.ID))
                 .orderBy(APPLICATION_HISTORIES.MODIFIED_TIME.desc())
-                .limit(1))
+                .limit(1)
+        )
 
     return dslContext
         .select(
@@ -675,8 +695,9 @@ class ApplicationStore(
         1 -> boundaryCountryCode = countries.first()
         else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
       }
-    } else if (boundarySubmission == null ||
-        boundarySubmission.status != SubmissionStatus.Completed) {
+    } else if (
+        boundarySubmission == null || boundarySubmission.status != SubmissionStatus.Completed
+    ) {
       problems.add(messages.applicationPreScreenFailureNoBoundary())
     }
 
@@ -697,12 +718,16 @@ class ApplicationStore(
       if (projectCountriesRow.eligible != true) {
         // First, check if the application country is eligible
         problems.add(
-            messages.applicationPreScreenFailureIneligibleCountry(projectCountriesRow.name!!))
+            messages.applicationPreScreenFailureIneligibleCountry(projectCountriesRow.name!!)
+        )
       } else if (boundaryCountriesRow != null && boundaryCountriesRow != projectCountriesRow) {
         // Second, check if the provided boundary matches the country
         problems.add(
             messages.applicationPreScreenFailureMismatchCountries(
-                boundaryCountriesRow.name!!, projectCountriesRow.name!!))
+                boundaryCountriesRow.name!!,
+                projectCountriesRow.name!!,
+            )
+        )
       }
 
       // Third, check minimum hectares requirements
@@ -714,21 +739,27 @@ class ApplicationStore(
           applicationVariableValues.landUseModelHectares[LandUseModelType.Mangroves]?.toDouble()
               ?: 0.0
 
-      if (!(totalLandUseArea >= minimumHectares ||
-          minimumMangroveHectares?.let { mangroveLandUseArea >= it } ?: false) ||
-          totalLandUseArea > defaultMaximumHectares) {
+      if (
+          !(totalLandUseArea >= minimumHectares ||
+              minimumMangroveHectares?.let { mangroveLandUseArea >= it } ?: false) ||
+              totalLandUseArea > defaultMaximumHectares
+      ) {
         problems.add(
             messages.applicationPreScreenFailureBadSize(
                 projectCountriesRow.name!!,
                 minimumHectares,
                 defaultMaximumHectares,
-                minimumMangroveHectares))
+                minimumMangroveHectares,
+            )
+        )
       }
     }
 
     val minimumSpecies = minimumSpeciesByProjectType[applicationVariableValues.projectType]
-    if (minimumSpecies != null &&
-        (applicationVariableValues.numSpeciesToBePlanted ?: 0) < minimumSpecies) {
+    if (
+        minimumSpecies != null &&
+            (applicationVariableValues.numSpeciesToBePlanted ?: 0) < minimumSpecies
+    ) {
       problems.add(messages.applicationPreScreenFailureTooFewSpecies(minimumSpecies))
     }
 

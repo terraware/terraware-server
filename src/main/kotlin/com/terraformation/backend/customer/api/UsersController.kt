@@ -83,7 +83,8 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   @DeleteMapping("/me")
   @Operation(
       summary = "Deletes the current user's account.",
-      description = "WARNING! This operation is not reversible.")
+      description = "WARNING! This operation is not reversible.",
+  )
   fun deleteMyself(session: HttpSession?): SimpleSuccessResponsePayload {
     userStore.deleteSelf()
     session?.invalidate()
@@ -126,7 +127,8 @@ class UsersController(private val clock: InstantSource, private val userStore: U
       @Schema(
           description =
               "If present, get the user's per-organization preferences for this organization. " +
-                  "If not present, get the user's global preferences.")
+                  "If not present, get the user's global preferences."
+      )
       organizationId: OrganizationId?
   ): GetUserPreferencesResponsePayload {
     val preferences = userStore.fetchPreferences(organizationId)
@@ -175,26 +177,30 @@ data class UserProfilePayload(
     @Schema(
         description =
             "If true, the user has consented to the use of analytics cookies. If false, the " +
-                "user has declined. If null, the user has not made a consent selection yet.")
+                "user has declined. If null, the user has not made a consent selection yet."
+    )
     val cookiesConsented: Boolean?,
     @Schema(
         description =
             "If the user has selected whether or not to consent to analytics cookies, the date " +
-                "and time of the selection.")
+                "and time of the selection."
+    )
     val cookiesConsentedTime: Instant?,
     @Schema(description = "Two-letter code of the user's country.", example = "US")
     val countryCode: String?,
     @Schema(
         description =
             "User's unique ID. This should not be shown to the user, but is a required input to " +
-                "some API endpoints.")
+                "some API endpoints."
+    )
     val id: UserId,
     val email: String,
     @Schema(
         description =
             "If true, the user wants to receive all the notifications for their organizations " +
                 "via email. This does not apply to certain kinds of notifications such as " +
-                "\"You've been added to a new organization.\"")
+                "\"You've been added to a new organization.\""
+    )
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val globalRoles: Set<GlobalRole>,
@@ -233,7 +239,8 @@ data class UpdateUserRequestPayload(
             "If true, the user wants to receive all the notifications for their organizations " +
                 "via email. This does not apply to certain kinds of notifications such as " +
                 "\"You've been added to a new organization.\" If null, leave the existing value " +
-                "as-is.")
+                "as-is."
+    )
     val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
@@ -245,7 +252,8 @@ data class UpdateUserRequestPayload(
 data class UpdateUserCookieConsentRequestPayload(
     @Schema(
         description =
-            "If true, the user consents to the use of analytics cookies. If false, they decline.")
+            "If true, the user consents to the use of analytics cookies. If false, they decline."
+    )
     val cookiesConsented: Boolean,
 )
 
@@ -259,7 +267,8 @@ data class UpdateUserPreferencesRequestPayload(
     @Schema(
         description =
             "If present, update the user's per-organization preferences for this organization. " +
-                "If not present, update the user's global preferences.")
+                "If not present, update the user's global preferences."
+    )
     val organizationId: OrganizationId?,
     val preferences: ArbitraryJsonObject,
 )

@@ -25,11 +25,16 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-            ))
+            )
+        )
 
     val actual =
         searchAccessions(
-            memberFacilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+            memberFacilityId,
+            fields,
+            criteria = NoConditionNode(),
+            sortOrder = sortOrder,
+        )
 
     assertEquals(expected, actual)
   }

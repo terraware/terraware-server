@@ -49,7 +49,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ProjectReportsController(
     private val metricStore: ReportMetricStore,
-    private val reportStore: ReportStore
+    private val reportStore: ReportStore,
 ) {
   @ApiResponse200
   @GetMapping
@@ -57,7 +57,8 @@ class ProjectReportsController(
       summary = "List project accelerator reports.",
       description =
           "By default, reports more than 30 days in the future, or marked as Not Needed will be " +
-              "omitted. Optionally query by year, or include metrics.")
+              "omitted. Optionally query by year, or include metrics.",
+  )
   fun listAcceleratorReports(
       @PathVariable projectId: ProjectId,
       @RequestParam year: Int? = null,
@@ -215,13 +216,15 @@ class ProjectReportsController(
       summary = "Insert accelerator report configuration.",
       description =
           "Set up an accelerator report configuration for a project. This will create" +
-              "all the reports within the reporting period.")
+              "all the reports within the reporting period.",
+  )
   fun createAcceleratorReportConfig(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: CreateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
     reportStore.insertProjectReportConfig(
-        payload.config.toModel(projectId, ReportFrequency.Quarterly))
+        payload.config.toModel(projectId, ReportFrequency.Quarterly)
+    )
     reportStore.insertProjectReportConfig(payload.config.toModel(projectId, ReportFrequency.Annual))
 
     return SimpleSuccessResponsePayload()
@@ -237,7 +240,8 @@ class ProjectReportsController(
   ): ListAcceleratorReportConfigResponsePayload {
     val configs = reportStore.fetchProjectReportConfigs(projectId)
     return ListAcceleratorReportConfigResponsePayload(
-        configs.map { ExistingAcceleratorReportConfigPayload(it) })
+        configs.map { ExistingAcceleratorReportConfigPayload(it) }
+    )
   }
 
   @ApiResponse200
@@ -253,7 +257,8 @@ class ProjectReportsController(
         projectId,
         payload.config.reportingStartDate,
         payload.config.reportingEndDate,
-        payload.config.logframeUrl)
+        payload.config.logframeUrl,
+    )
     return SimpleSuccessResponsePayload()
   }
 
@@ -270,7 +275,8 @@ class ProjectReportsController(
         configId,
         payload.config.reportingStartDate,
         payload.config.reportingEndDate,
-        payload.config.logframeUrl)
+        payload.config.logframeUrl,
+    )
     return SimpleSuccessResponsePayload()
   }
 
@@ -440,7 +446,7 @@ data class ReportStandardMetricPayload(
     val value: Int?,
     val status: ReportMetricStatus?,
     val underperformanceJustification: String?,
-    val progressNotes: String?
+    val progressNotes: String?,
 ) {
   constructor(
       model: ReportStandardMetricModel
@@ -456,7 +462,8 @@ data class ReportStandardMetricPayload(
       value = model.entry.value,
       status = model.entry.status,
       underperformanceJustification = model.entry.underperformanceJustification,
-      progressNotes = model.entry.progressNotes)
+      progressNotes = model.entry.progressNotes,
+  )
 }
 
 data class ReportStandardMetricEntriesPayload(
@@ -490,7 +497,7 @@ data class ReportSystemMetricPayload(
     val overrideValue: Int?,
     val status: ReportMetricStatus?,
     val underperformanceJustification: String?,
-    val progressNotes: String?
+    val progressNotes: String?,
 ) {
   constructor(
       model: ReportSystemMetricModel
@@ -507,7 +514,8 @@ data class ReportSystemMetricPayload(
       overrideValue = model.entry.overrideValue,
       status = model.entry.status,
       underperformanceJustification = model.entry.underperformanceJustification,
-      progressNotes = model.entry.progressNotes)
+      progressNotes = model.entry.progressNotes,
+  )
 }
 
 data class ReportSystemMetricEntriesPayload(

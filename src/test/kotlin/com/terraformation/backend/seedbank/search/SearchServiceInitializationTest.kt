@@ -67,7 +67,8 @@ internal class SearchServiceInitializationTest : SearchServiceTest() {
                     "plantsCollectedFrom" to "2",
                     "active" to "Active",
                 ),
-            ))
+            )
+        )
 
     assertEquals(expected, result)
   }

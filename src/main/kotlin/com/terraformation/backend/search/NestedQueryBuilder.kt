@@ -848,7 +848,8 @@ class NestedQueryBuilder(
       val queryBuilder = NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
       if (criteria != null) {
         queryBuilder.addCondition(
-            filterResults(SearchFieldPrefix(relativeField.searchTable), criteria, true))
+            filterResults(SearchFieldPrefix(relativeField.searchTable), criteria, true)
+        )
       }
       queryBuilder
     }
@@ -997,9 +998,11 @@ class NestedQueryBuilder(
             // by it.
             val selectFieldIndex = selectFieldPositions[relativeName]
             val orderByField = field.orderByField
-            if (selectFieldIndex != null &&
-                field.selectFields.size == 1 &&
-                field.selectFields[0] == orderByField) {
+            if (
+                selectFieldIndex != null &&
+                    field.selectFields.size == 1 &&
+                    field.selectFields[0] == orderByField
+            ) {
               sortFieldPositions[relativeName] = selectFieldIndex
               null
             } else {
@@ -1086,7 +1089,7 @@ class NestedQueryBuilder(
    */
   private fun buildMultisetFieldExpression(
       parentExpression: String,
-      field: SearchFieldPath
+      field: SearchFieldPath,
   ): String {
     val relativeField = field.relativeTo(prefix)
     val relativeName = "$relativeField"
@@ -1144,7 +1147,8 @@ class NestedQueryBuilder(
     val conditions =
         listOfNotNull(
             rootCriterion.toCondition(),
-            rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
+            rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) },
+        )
 
     val primaryKey = rootTable.primaryKey
 
@@ -1156,7 +1160,8 @@ class NestedQueryBuilder(
         joinWithSecondaryTables(
                 DSL.select(primaryKey).from(rootTable.fromTable),
                 rootPrefix,
-                secondaryTablesCriteria)
+                secondaryTablesCriteria,
+            )
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -1185,7 +1190,7 @@ class NestedQueryBuilder(
   private fun <T : Record> joinForVisibility(
       query: SelectJoinStep<T>,
       referencedTables: Set<SearchTable>,
-      searchTable: SearchTable
+      searchTable: SearchTable,
   ): SelectJoinStep<T> {
     val inheritsVisibilityFrom = searchTable.inheritsVisibilityFrom ?: return query
 
@@ -1199,7 +1204,8 @@ class NestedQueryBuilder(
       joinForVisibility(
           searchTable.joinForVisibility(query),
           referencedTables + inheritsVisibilityFrom,
-          inheritsVisibilityFrom)
+          inheritsVisibilityFrom,
+      )
     }
   }
 

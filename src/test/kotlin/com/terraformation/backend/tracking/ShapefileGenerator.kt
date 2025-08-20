@@ -82,7 +82,8 @@ class ShapefileGenerator(
         southwest,
         northeast.first to southwest.second,
         northeast,
-        southwest.first to northeast.second)
+        southwest.first to northeast.second,
+    )
   }
 
   /**

@@ -146,8 +146,9 @@ class RateLimitedEventPublisherImpl(
                 try {
                   val event =
                       objectMapper.readValue(
-                          record.pendingEvent!!.data(), Class.forName(record.eventClass))
-                          as RateLimitedEvent<*>
+                          record.pendingEvent!!.data(),
+                          Class.forName(record.eventClass),
+                      ) as RateLimitedEvent<*>
 
                   // Reset the timer so that any subsequent events within the interval will get
                   // deferred.
@@ -177,7 +178,8 @@ class RateLimitedEventPublisherImpl(
                 // event has been deferred in the meantime; delete the rate limiting record since it
                 // no longer matters.
                 log.debug(
-                    "Deleting rate limit record for event ${record.eventClass} ${record.rateLimitKey}")
+                    "Deleting rate limit record for event ${record.eventClass} ${record.rateLimitKey}"
+                )
                 dslContext
                     .deleteFrom(RATE_LIMITED_EVENTS)
                     .where(EVENT_CLASS.eq(record.eventClass))

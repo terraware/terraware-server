@@ -29,8 +29,9 @@ class LogController(private val objectMapper: ObjectMapper) {
               "Values to log. This can be an arbitrary bucket of key/value pairs, but the " +
                   "'level' field should be set to one of 'debug', 'info', 'warn', or " +
                   "'error'. Default level is 'info'. If there is a human-readable message, " +
-                  "it should go in the 'message' field.")
-      payload: Map<String, Any>
+                  "it should go in the 'message' field."
+      )
+      payload: Map<String, Any>,
   ) {
     val level =
         when (payload["level"]?.toString()?.lowercase()) {

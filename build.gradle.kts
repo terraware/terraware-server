@@ -340,7 +340,8 @@ openApi {
 
     // Spring Boot Devtools aren't useful for a one-shot server run, and they add log output.
     classpath.setFrom(
-        sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name })
+        sourceSets.main.get().runtimeClasspath.filter { "spring-boot-devtools" !in it.name }
+    )
   }
 
   apiDocsUrl = "http://localhost:$listenPort/v3/api-docs.yaml"

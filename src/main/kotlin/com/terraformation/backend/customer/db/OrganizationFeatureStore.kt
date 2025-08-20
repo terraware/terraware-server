@@ -55,7 +55,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .from(APPLICATIONS)
                   .join(PROJECTS)
                   .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+          )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
   private val deliverableProjectIdsField =
@@ -74,7 +75,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
                   .or(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                  .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)))
+                  .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application))
+          )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
   private val moduleProjectIdsField =
@@ -85,7 +87,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                   .join(PROJECTS)
                   .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+          )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
   private val reportProjectIdsField =
@@ -95,7 +98,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .join(PROJECTS)
                   .on(PROJECTS.ID.eq(REPORTS.PROJECT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                  .and(REPORTS.STATUS_ID.notEqual(ReportStatus.NotNeeded)))
+                  .and(REPORTS.STATUS_ID.notEqual(ReportStatus.NotNeeded))
+          )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
   private val seedFundReportProjectIdsField =
@@ -104,6 +108,7 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .from(SEED_FUND_REPORTS)
                   .join(PROJECTS)
                   .on(PROJECTS.ID.eq(SEED_FUND_REPORTS.PROJECT_ID))
-                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+          )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 }

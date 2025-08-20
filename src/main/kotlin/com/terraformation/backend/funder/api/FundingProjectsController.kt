@@ -56,7 +56,8 @@ class FundingProjectsController(
 
     val models = funderProjectService.fetchListByProjectIds(projectIds)
     return GetFundingProjectResponsePayload(
-        projects = models.map { FunderProjectDetailsPayload(it) })
+        projects = models.map { FunderProjectDetailsPayload(it) }
+    )
   }
 
   @ApiResponse200
@@ -65,7 +66,7 @@ class FundingProjectsController(
   @Operation(summary = "Publishes project detail information for funders")
   fun publishProjectProfile(
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: PublishProjectProfileRequestPayload
+      @RequestBody payload: PublishProjectProfileRequestPayload,
   ): SimpleSuccessResponsePayload {
     funderProjectService.publishProjectProfile(payload.details.toModel(projectId))
     return SimpleSuccessResponsePayload()

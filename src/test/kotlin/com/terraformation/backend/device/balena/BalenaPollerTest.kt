@@ -29,7 +29,8 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
         clock,
         DeviceManagerStore(clock, deviceManagersDao, dslContext),
         dslContext,
-        SystemUser(usersDao))
+        SystemUser(usersDao),
+    )
   }
 
   @BeforeEach
@@ -51,13 +52,16 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   fun `scans since most recent modified timestamp from Balena servers`() {
     insertDeviceManager(
         balenaModifiedTime = Instant.ofEpochSecond(1000),
-        refreshedTime = Instant.ofEpochSecond(5000))
+        refreshedTime = Instant.ofEpochSecond(5000),
+    )
     insertDeviceManager(
         balenaModifiedTime = Instant.ofEpochSecond(3000),
-        refreshedTime = Instant.ofEpochSecond(6000))
+        refreshedTime = Instant.ofEpochSecond(6000),
+    )
     insertDeviceManager(
         balenaModifiedTime = Instant.ofEpochSecond(2000),
-        refreshedTime = Instant.ofEpochSecond(7000))
+        refreshedTime = Instant.ofEpochSecond(7000),
+    )
 
     poller.updateBalenaDevices()
 
@@ -85,7 +89,8 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
                 isOnline = false,
                 refreshedTime = Instant.EPOCH,
                 sensorKitId = "$balenaId",
-            ))
+            )
+        )
     val actual = deviceManagersDao.findAll().onEach { it.id = null }
 
     assertEquals(expected, actual)
@@ -130,7 +135,9 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
                 isOnline = device.isOnline,
                 lastConnectivityEvent = device.lastConnectivityEvent,
                 refreshedTime = clock.instant(),
-                updateProgress = device.overallProgress))
+                updateProgress = device.overallProgress,
+            )
+        )
     val actual = deviceManagersDao.findAll()
 
     assertEquals(expected, actual)
@@ -158,6 +165,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
         overallProgress = overallProgress,
         provisioningState = provisioningState,
         status = status,
-        uuid = uuid)
+        uuid = uuid,
+    )
   }
 }

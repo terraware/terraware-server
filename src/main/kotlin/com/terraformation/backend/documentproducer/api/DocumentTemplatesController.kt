@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class DocumentTemplatesController(
     val documentTemplatesDao: DocumentTemplatesDao,
-    val variableManifestStore: VariableManifestStore
+    val variableManifestStore: VariableManifestStore,
 ) {
   @GetMapping
   @Operation(summary = "Gets a list of all the valid document templates.")
@@ -41,7 +41,8 @@ data class DocumentTemplatePayload(
     val id: DocumentTemplateId,
     val name: String,
     @Schema(
-        description = "ID of the most recent variable manifest for the document template, if any.")
+        description = "ID of the most recent variable manifest for the document template, if any."
+    )
     val variableManifestId: VariableManifestId?,
 )
 

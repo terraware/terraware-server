@@ -36,7 +36,12 @@ class SpeciesSubmissionUpdater(
 
     if (submissionStatus == SubmissionStatus.Approved) {
       submissionStore.updateSubmissionStatus(
-          deliverableId, projectId, SubmissionStatus.NotSubmitted, feedback, internalComment)
+          deliverableId,
+          projectId,
+          SubmissionStatus.NotSubmitted,
+          feedback,
+          internalComment,
+      )
     }
   }
 }

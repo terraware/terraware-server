@@ -17,7 +17,8 @@ class EnumFromReferenceTableConverter(private val objectMapper: ObjectMapper) : 
   // Specify the conversion pair: String to Enum that implements MyEnumInterface
   override fun getConvertibleTypes(): Set<GenericConverter.ConvertiblePair> {
     return setOf(
-        GenericConverter.ConvertiblePair(String::class.java, EnumFromReferenceTable::class.java))
+        GenericConverter.ConvertiblePair(String::class.java, EnumFromReferenceTable::class.java)
+    )
   }
 
   override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {

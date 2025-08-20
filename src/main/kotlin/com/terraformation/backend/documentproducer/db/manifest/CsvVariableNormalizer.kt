@@ -32,7 +32,8 @@ class CsvVariableNormalizer {
                 scrubHyphenPrefix(it)
               },
           stableId = StableId(rawValues[MANIFEST_CSV_COLUMN_INDEX_STABLE_ID]),
-          variablePath = getVariablePath(name, parent))
+          variablePath = getVariablePath(name, parent),
+      )
     }
   }
 

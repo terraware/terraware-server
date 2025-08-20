@@ -109,7 +109,8 @@ class DisclaimerStore(
     if (currentDisclaimer.acceptedOn != null) {
       log.warn(
           "Disclaimer ${currentDisclaimer.id} has already been accepted by user " +
-              "${currentUser().userId}")
+              "${currentUser().userId}"
+      )
       return
     }
 
@@ -118,7 +119,8 @@ class DisclaimerStore(
             disclaimerId = currentDisclaimer.id,
             userId = currentUser().userId,
             acceptedOn = clock.instant(),
-        ))
+        )
+    )
   }
 
   private fun fetchDisclaimersByCondition(condition: Condition): List<DisclaimerModel> {
@@ -130,7 +132,8 @@ class DisclaimerStore(
                           ACCEPTED_ON,
                       )
                       .from(this)
-                      .where(DISCLAIMER_ID.eq(DISCLAIMERS.ID)))
+                      .where(DISCLAIMER_ID.eq(DISCLAIMERS.ID))
+              )
               .convertFrom { result ->
                 result.associate { record -> record[USER_ID]!! to record[ACCEPTED_ON]!! }
               }

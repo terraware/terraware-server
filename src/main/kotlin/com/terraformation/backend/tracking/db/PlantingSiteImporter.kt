@@ -77,7 +77,8 @@ class PlantingSiteImporter(
   ): NewPlantingSiteModel {
     if (shapefiles.isEmpty() || shapefiles.size > 2) {
       throw ShapefilesInvalidException(
-          "Expected subzones and optionally exclusions but found ${shapefiles.size} shapefiles")
+          "Expected subzones and optionally exclusions but found ${shapefiles.size} shapefiles"
+      )
     }
 
     var subzonesFile: Shapefile? = null
@@ -102,7 +103,8 @@ class PlantingSiteImporter(
         subzonesFile
             ?: throw ShapefilesInvalidException(
                 "Subzones shapefile features must include one of these properties: " +
-                    subzoneNameProperties.joinToString()),
+                    subzoneNameProperties.joinToString()
+            ),
         exclusionsFile,
         gridOrigin,
         requireStableIds,
@@ -149,7 +151,7 @@ class PlantingSiteImporter(
    */
   private fun getExclusion(
       exclusionsFile: Shapefile?,
-      problems: MutableList<String>
+      problems: MutableList<String>,
   ): MultiPolygon? {
     if (exclusionsFile == null || exclusionsFile.features.isEmpty()) {
       return null
@@ -187,7 +189,7 @@ class PlantingSiteImporter(
           fun checkProperty(
               description: String,
               properties: Set<String>,
-              require: Boolean = true
+              require: Boolean = true,
           ): String? {
             return if (require && feature.getProperty(properties).isNullOrBlank()) {
               val subzoneName = feature.getProperty(subzoneNameProperties) ?: "<no name>"
@@ -353,7 +355,8 @@ class PlantingSiteImporter(
    */
   private fun convertToXY(geometry: Geometry): Geometry {
     return precisionReducer.reduce(
-        GeometryEditor(geometry.factory).edit(geometry, XYEditorOperation))
+        GeometryEditor(geometry.factory).edit(geometry, XYEditorOperation)
+    )
   }
 
   /** Geometry editor operation that converts XYZ or XYZM coordinates to XY ones. */

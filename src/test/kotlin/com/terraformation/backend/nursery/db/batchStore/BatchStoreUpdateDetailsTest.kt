@@ -38,7 +38,8 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
                 treatmentId = SeedTreatment.Light,
             ),
             readyQuantity = 1,
-            speciesId = speciesId)
+            speciesId = speciesId,
+        )
     insertBatchSubLocation(subLocationId = subLocationId)
 
     clock.instant = updateTime
@@ -84,12 +85,14 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             treatmentNotes = "Treatment notes",
             version = 2,
         ),
-        after)
+        after,
+    )
 
     assertEquals(
         setOf(newSubLocationId1, newSubLocationId2),
         batchSubLocationsDao.findAll().map { it.subLocationId }.toSet(),
-        "Should have replaced sub-locations list")
+        "Should have replaced sub-locations list",
+    )
 
     assertEquals(
         listOf(
@@ -110,18 +113,25 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
                 version = 2,
             ),
         ),
-        batchDetailsHistoryDao.findAll().map { it.copy(id = null) })
+        batchDetailsHistoryDao.findAll().map { it.copy(id = null) },
+    )
 
     assertEquals(
         setOf(
             BatchDetailsHistorySubLocationsRow(
-                subLocationId = newSubLocationId1, subLocationName = "New Location 1"),
+                subLocationId = newSubLocationId1,
+                subLocationName = "New Location 1",
+            ),
             BatchDetailsHistorySubLocationsRow(
-                subLocationId = newSubLocationId2, subLocationName = "New Location 2")),
+                subLocationId = newSubLocationId2,
+                subLocationName = "New Location 2",
+            ),
+        ),
         batchDetailsHistorySubLocationsDao
             .findAll()
             .map { it.copy(batchDetailsHistoryId = null) }
-            .toSet())
+            .toSet(),
+    )
   }
 
   @Test
@@ -147,8 +157,10 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             modifiedTime = updateTime,
             projectId = null,
             readyByDate = null,
-            version = 2),
-        after)
+            version = 2,
+        ),
+        after,
+    )
     assertTableEmpty(BATCH_SUB_LOCATIONS, "Should have removed sub-locations")
   }
 

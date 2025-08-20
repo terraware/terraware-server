@@ -63,7 +63,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
-            speciesProblemsDao)
+            speciesProblemsDao,
+        )
 
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -96,7 +97,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             rare = false,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
-            woodDensityLevel = WoodDensityLevel.Family)
+            woodDensityLevel = WoodDensityLevel.Family,
+        )
 
     val speciesId = store.createSpecies(model)
     assertNotNull(speciesId, "Should have returned ID")
@@ -129,7 +131,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 scientificName = "test",
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 woodDensityLevelId = WoodDensityLevel.Family,
-            ))
+            )
+        )
 
     val actual = speciesDao.findAll()
     assertEquals(expected, actual)
@@ -170,7 +173,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 scientificName = "test",
                 seedStorageBehavior = SeedStorageBehavior.Orthodox,
                 successionalGroups = setOf(SuccessionalGroup.Pioneer),
-                woodDensityLevel = WoodDensityLevel.Family))
+                woodDensityLevel = WoodDensityLevel.Family,
+            )
+        )
     val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
     store.deleteSpecies(originalSpeciesId)
@@ -197,7 +202,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
             successionalGroups = setOf(SuccessionalGroup.Mature),
-            woodDensityLevel = WoodDensityLevel.Species)
+            woodDensityLevel = WoodDensityLevel.Species,
+        )
 
     val newInstant = Instant.ofEpochSecond(500)
     clock.instant = newInstant
@@ -246,7 +252,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val expectedPlantMaterialSourcingMethods =
         listOf(
             SpeciesPlantMaterialSourcingMethodsRow(
-                originalSpeciesId, PlantMaterialSourcingMethod.WildlingHarvest))
+                originalSpeciesId,
+                PlantMaterialSourcingMethod.WildlingHarvest,
+            )
+        )
     val actualPlantMaterialSourcingMethods =
         speciesPlantMaterialSourcingMethodsDao.fetchBySpeciesId(originalSpeciesId)
     assertEquals(expectedPlantMaterialSourcingMethods, actualPlantMaterialSourcingMethods)
@@ -270,7 +279,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSpecies(organizationId) } returns false
     assertThrows<AccessDeniedException> {
       store.createSpecies(
-          NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
+          NewSpeciesModel(organizationId = organizationId, scientificName = "dummy")
+      )
     }
   }
 
@@ -298,7 +308,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             scientificName = "original scientific",
             seedStorageBehavior = SeedStorageBehavior.Unknown,
             successionalGroups = setOf(SuccessionalGroup.Pioneer),
-            woodDensityLevel = WoodDensityLevel.Family)
+            woodDensityLevel = WoodDensityLevel.Family,
+        )
     val speciesId = store.createSpecies(initial)
 
     val bogusOrganizationId = OrganizationId(-1)
@@ -386,7 +397,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val expectedPlantMaterialSourcingMethods =
         listOf(
             SpeciesPlantMaterialSourcingMethodsRow(
-                speciesId, PlantMaterialSourcingMethod.WildlingHarvest))
+                speciesId,
+                PlantMaterialSourcingMethod.WildlingHarvest,
+            )
+        )
     val actualPlantMaterialSourcingMethods =
         speciesPlantMaterialSourcingMethodsDao.fetchBySpeciesId(speciesId)
     assertEquals(expectedPlantMaterialSourcingMethods, actualPlantMaterialSourcingMethods)
@@ -409,7 +423,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               id = speciesId,
               modifiedTime = Instant.EPOCH,
               organizationId = organizationId,
-              scientificName = "Test 1"))
+              scientificName = "Test 1",
+          )
+      )
     }
   }
 
@@ -419,7 +435,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy")
+        )
 
     assertThrows<AccessDeniedException> {
       store.updateSpecies(
@@ -428,7 +445,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               id = speciesId,
               modifiedTime = Instant.EPOCH,
               organizationId = organizationId,
-              scientificName = "other"))
+              scientificName = "other",
+          )
+      )
     }
   }
 
@@ -440,7 +459,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "to delete"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "to delete")
+        )
 
     store.deleteSpecies(speciesId)
 
@@ -454,7 +474,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy")
+        )
 
     assertThrows<AccessDeniedException> { store.deleteSpecies(speciesId) }
   }
@@ -471,7 +492,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             NewSpeciesModel(
                 ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
                 organizationId = organizationId,
-                scientificName = "test"))
+                scientificName = "test",
+            )
+        )
 
     val expected =
         ExistingSpeciesModel(
@@ -492,7 +515,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchSpeciesById throws exception if species is deleted`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "test"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "test")
+        )
     store.deleteSpecies(speciesId)
 
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
@@ -611,7 +635,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 observationId = inserted.observationId,
                 plantingSiteId = inserted.plantingSiteId,
                 speciesId = observedSpeciesId,
-                totalLive = 1)
+                totalLive = 1,
+            )
             .attach(dslContext)
             .insert()
       }
@@ -669,7 +694,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchAllUncheckedSpeciesIds does not return deleted species`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy")
+        )
     store.deleteSpecies(speciesId)
 
     assertEquals(emptyList<SpeciesId>(), store.fetchUncheckedSpeciesIds(organizationId))
@@ -679,18 +705,22 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `findAllProblems does not return problems with deleted species`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy")
+        )
     speciesProblemsDao.insert(
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
             fieldId = SpeciesProblemField.ScientificName,
             speciesId = speciesId,
             typeId = SpeciesProblemType.NameNotFound,
-        ))
+        )
+    )
     store.deleteSpecies(speciesId)
 
     assertEquals(
-        emptyMap<SpeciesId, List<SpeciesProblemsRow>>(), store.findAllProblems(organizationId))
+        emptyMap<SpeciesId, List<SpeciesProblemsRow>>(),
+        store.findAllProblems(organizationId),
+    )
   }
 
   @Test
@@ -698,7 +728,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val scientificName = "species"
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = scientificName))
+            NewSpeciesModel(organizationId = organizationId, scientificName = scientificName)
+        )
 
     every { user.canReadOrganization(organizationId) } returns false
     every { user.canReadSpecies(speciesId) } returns false
@@ -713,17 +744,20 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `acceptProblemSuggestion throws exception if suggested scientific name is already in use`() {
     store.createSpecies(
-        NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name"))
+        NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name")
+    )
     val speciesIdWithOutdatedName =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "Outdated name"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "Outdated name")
+        )
     val problemsRow =
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
             fieldId = SpeciesProblemField.ScientificName,
             speciesId = speciesIdWithOutdatedName,
             suggestedValue = "Correct name",
-            typeId = SpeciesProblemType.NameIsSynonym)
+            typeId = SpeciesProblemType.NameIsSynonym,
+        )
     speciesProblemsDao.insert(problemsRow)
 
     assertThrows<ScientificNameExistsException> { store.acceptProblemSuggestion(problemsRow.id!!) }
@@ -742,7 +776,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in batches`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch")
+        )
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create a batch with 'other' species
@@ -766,7 +801,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in accessions`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch")
+        )
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create an accession with 'other' species
@@ -790,7 +826,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in observations`() {
     val inUseSpeciesId =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "observed"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "observed")
+        )
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     insertPlantingSite(x = 0)
@@ -811,7 +848,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in plantings`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch")
+        )
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create plantings with 'other' species

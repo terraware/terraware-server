@@ -78,7 +78,7 @@ class ParticipantProjectSpeciesStore(
 
   fun create(
       projectIds: Set<ProjectId>,
-      speciesIds: Set<SpeciesId>
+      speciesIds: Set<SpeciesId>,
   ): List<ExistingParticipantProjectSpeciesModel> {
     // Participant project species can only be associated
     // to projects that are associated to a participant
@@ -117,7 +117,8 @@ class ParticipantProjectSpeciesStore(
 
     return fetch(
         PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.`in`(projectIds)
-            .and(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.`in`(speciesIds)))
+            .and(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.`in`(speciesIds))
+    )
   }
 
   fun delete(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
@@ -145,7 +146,8 @@ class ParticipantProjectSpeciesStore(
             PARTICIPANT_PROJECT_SPECIES.ID,
             PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
             PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID,
-            SPECIES.ID)
+            SPECIES.ID,
+        )
         .from(SPECIES)
         .join(PARTICIPANT_PROJECT_SPECIES)
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
@@ -156,13 +158,15 @@ class ParticipantProjectSpeciesStore(
         .leftOuterJoin(COHORT_MODULES)
         .on(
             COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID),
-            COHORT_MODULES.START_DATE.lessOrEqual(today))
+            COHORT_MODULES.START_DATE.lessOrEqual(today),
+        )
         .leftOuterJoin(MODULES)
         .on(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
         .leftOuterJoin(DELIVERABLES)
         .on(
             DELIVERABLES.MODULE_ID.eq(MODULES.ID),
-            DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
+            DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species),
+        )
         .where(SPECIES.ID.eq(speciesId))
         .groupBy(PROJECTS.ID, PARTICIPANT_PROJECT_SPECIES.ID, SPECIES.ID)
         .orderBy(PROJECTS.ID, PARTICIPANT_PROJECT_SPECIES.ID, SPECIES.ID)
@@ -210,7 +214,8 @@ class ParticipantProjectSpeciesStore(
 
   fun update(
       participantProjectSpeciesId: ParticipantProjectSpeciesId,
-      updateFunc: (ExistingParticipantProjectSpeciesModel) -> ExistingParticipantProjectSpeciesModel
+      updateFunc:
+          (ExistingParticipantProjectSpeciesModel) -> ExistingParticipantProjectSpeciesModel,
   ) {
     requirePermissions { updateParticipantProjectSpecies(participantProjectSpeciesId) }
 
@@ -238,9 +243,12 @@ class ParticipantProjectSpeciesStore(
         ParticipantProjectSpeciesEditedEvent(
             newParticipantProjectSpecies =
                 ExistingParticipantProjectSpeciesModel.of(
-                    fetchOneRecordById(participantProjectSpeciesId)),
+                    fetchOneRecordById(participantProjectSpeciesId)
+                ),
             oldParticipantProjectSpecies = oldParticipantProjectSpecies,
-            projectId = participantProjectSpecies.projectId!!))
+            projectId = participantProjectSpecies.projectId!!,
+        )
+    )
   }
 
   private fun fetch(condition: Condition?): List<ExistingParticipantProjectSpeciesModel> {
@@ -259,7 +267,7 @@ class ParticipantProjectSpeciesStore(
 
   private fun fetchLastSpeciesTime(
       projectId: ProjectId,
-      field: TableField<ParticipantProjectSpeciesRecord, Instant?>
+      field: TableField<ParticipantProjectSpeciesRecord, Instant?>,
   ): Instant {
     requirePermissions { readProject(projectId) }
 
@@ -278,6 +286,6 @@ class ParticipantProjectSpeciesStore(
   ): ParticipantProjectSpeciesRecord =
       dslContext.fetchOne(
           PARTICIPANT_PROJECT_SPECIES,
-          PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
-          ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+          PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId),
+      ) ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
 }

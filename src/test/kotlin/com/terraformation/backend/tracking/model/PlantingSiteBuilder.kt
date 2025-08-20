@@ -100,7 +100,7 @@ private constructor(
         width: Int = 500,
         height: Int = 500,
         countryCode: String? = null,
-        func: PlantingSiteBuilder.() -> Unit = {}
+        func: PlantingSiteBuilder.() -> Unit = {},
     ): NewPlantingSiteModel = existingSite(x, y, width, height, countryCode, func).toNew()
   }
 
@@ -144,7 +144,7 @@ private constructor(
       numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: StableId = StableId(name),
-      func: ZoneBuilder.() -> Unit = {}
+      func: ZoneBuilder.() -> Unit = {},
   ): ExistingPlantingZoneModel {
     ++currentZoneId
 

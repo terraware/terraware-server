@@ -57,14 +57,17 @@ class LocalizedTextField(
                   } else {
                     null
                   },
-                  if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+                  if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+              )
+          )
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for localized text fields")
       SearchFilterType.PhraseMatch ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(phaseMatchCondition(nonNullFieldValues.filterNotNull())))
+                  .plus(phaseMatchCondition(nonNullFieldValues.filterNotNull()))
+          )
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for localized text fields")
     }

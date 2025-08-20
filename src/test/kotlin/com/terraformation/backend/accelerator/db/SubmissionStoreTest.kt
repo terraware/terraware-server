@@ -68,7 +68,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdActive,
               submissionId = null,
           ),
-          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId),
+      )
     }
 
     @Test
@@ -87,7 +88,9 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdMostRecent =
           insertDeliverable(
-              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+              moduleId = moduleIdMostRecent,
+              deliverableTypeId = DeliverableType.Species,
+          )
 
       // Clock date is between these two modules
 
@@ -97,7 +100,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           cohortId = cohortId,
           endDate = LocalDate.EPOCH.plusDays(30),
           moduleId = moduleIdFuture,
-          startDate = LocalDate.EPOCH.plusDays(20))
+          startDate = LocalDate.EPOCH.plusDays(20),
+      )
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
       // Set clock to a week after the most recent module deliverable was active
@@ -108,7 +112,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdMostRecent,
               submissionId = null,
           ),
-          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId),
+      )
     }
 
     @Test
@@ -146,7 +151,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdActive,
               submissionId = submissionIdActive,
           ),
-          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId),
+      )
     }
 
     @Test
@@ -167,7 +173,9 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdActive =
           insertDeliverable(
-              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+              moduleId = moduleIdMostRecent,
+              deliverableTypeId = DeliverableType.Species,
+          )
       val submissionIdActive =
           insertSubmission(deliverableId = deliverableIdActive, projectId = projectId)
 
@@ -179,7 +187,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           cohortId = cohortId,
           endDate = LocalDate.EPOCH.plusDays(30),
           moduleId = moduleIdFuture,
-          startDate = LocalDate.EPOCH.plusDays(20))
+          startDate = LocalDate.EPOCH.plusDays(20),
+      )
       val deliverableIdFuture =
           insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
       insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
@@ -192,7 +201,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdActive,
               submissionId = submissionIdActive,
           ),
-          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId),
+      )
     }
 
     @Test
@@ -251,8 +261,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
                   projectId = projectId,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.findAll())
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              )
+          ),
+          submissionsDao.findAll(),
+      )
     }
 
     @Test
@@ -277,8 +290,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
                   projectId = projectId,
-                  submissionStatusId = SubmissionStatus.Completed)),
-          submissionsDao.findAll())
+                  submissionStatusId = SubmissionStatus.Completed,
+              )
+          ),
+          submissionsDao.findAll(),
+      )
     }
 
     @Test
@@ -342,8 +358,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
                   projectId = projectId,
-                  submissionStatusId = SubmissionStatus.InReview)),
-          submissionsDao.findAll())
+                  submissionStatusId = SubmissionStatus.InReview,
+              )
+          ),
+          submissionsDao.findAll(),
+      )
     }
 
     @Test
@@ -359,7 +378,12 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(123)
 
       store.updateSubmissionStatus(
-          deliverableId, projectId, SubmissionStatus.Approved, feedback, internalComment)
+          deliverableId,
+          projectId,
+          SubmissionStatus.Approved,
+          feedback,
+          internalComment,
+      )
 
       assertEquals(
           listOf(
@@ -373,8 +397,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
                   projectId = projectId,
-                  submissionStatusId = SubmissionStatus.Approved)),
-          submissionsDao.findAll())
+                  submissionStatusId = SubmissionStatus.Approved,
+              )
+          ),
+          submissionsDao.findAll(),
+      )
     }
 
     @Test
@@ -389,7 +416,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           projectId,
           SubmissionStatus.Rejected,
           "This is a picture of a duck, not a budget",
-          "Quack")
+          "Quack",
+      )
 
       eventPublisher.assertEventPublished(
           DeliverableStatusUpdatedEvent(
@@ -397,7 +425,9 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               projectId,
               SubmissionStatus.InReview,
               SubmissionStatus.Rejected,
-              submissionId))
+              submissionId,
+          )
+      )
     }
 
     @Test
@@ -408,7 +438,12 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       insertSubmission(submissionStatus = SubmissionStatus.InReview)
 
       store.updateSubmissionStatus(
-          deliverableId, projectId, SubmissionStatus.InReview, null, "This is amazing")
+          deliverableId,
+          projectId,
+          SubmissionStatus.InReview,
+          null,
+          "This is amazing",
+      )
 
       eventPublisher.assertNoEventsPublished()
     }
@@ -424,10 +459,17 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateSubmissionStatus(deliverableId, projectId) } returns false
 
       store.updateSubmissionStatus(
-          deliverableId, projectId, SubmissionStatus.NotSubmitted, null, null)
+          deliverableId,
+          projectId,
+          SubmissionStatus.NotSubmitted,
+          null,
+          null,
+      )
 
       assertEquals(
-          SubmissionStatus.NotSubmitted, submissionsDao.findAll().first().submissionStatusId)
+          SubmissionStatus.NotSubmitted,
+          submissionsDao.findAll().first().submissionStatusId,
+      )
     }
 
     @Test
@@ -442,7 +484,12 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.updateSubmissionStatus(
-            deliverableId, projectId, SubmissionStatus.Rejected, null, null)
+            deliverableId,
+            projectId,
+            SubmissionStatus.Rejected,
+            null,
+            null,
+        )
       }
     }
   }

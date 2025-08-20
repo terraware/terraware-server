@@ -6,7 +6,7 @@ import java.math.BigDecimal
 enum class PreScreenProjectType {
   Mangrove,
   Terrestrial,
-  Mixed
+  Mixed,
 }
 
 /**

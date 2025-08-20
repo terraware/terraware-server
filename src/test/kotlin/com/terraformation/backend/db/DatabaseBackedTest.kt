@@ -534,13 +534,15 @@ import org.testcontainers.utility.DockerImageName
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ComponentScan(basePackageClasses = [UsersDao::class])
 @ContextConfiguration(
-    initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
+    initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class]
+)
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Suppress("MemberVisibilityCanBePrivate") // Some DAOs are not used in tests yet
 @Testcontainers
 @TestExecutionListeners(
     InheritedTransactionRemover::class,
-    mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
+    mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,
+)
 @Transactional
 abstract class DatabaseBackedTest {
   @Autowired
@@ -989,7 +991,8 @@ abstract class DatabaseBackedTest {
       insertPublishedProjectLandHectare(
           projectId = projectId,
           landUseModelType = landType,
-          landUseHectares = landUseModelHectares[landType])
+          landUseHectares = landUseModelHectares[landType],
+      )
     }
 
     return rowWithDefaults
@@ -1045,7 +1048,8 @@ abstract class DatabaseBackedTest {
       landUseModelType: LandUseModelType = LandUseModelType.OtherLandUseModel,
   ) {
     projectLandUseModelTypesDao.insert(
-        ProjectLandUseModelTypesRow(landUseModelTypeId = landUseModelType, projectId = projectId))
+        ProjectLandUseModelTypesRow(landUseModelTypeId = landUseModelType, projectId = projectId)
+    )
   }
 
   protected fun insertProjectMetric(
@@ -1227,7 +1231,8 @@ abstract class DatabaseBackedTest {
             deliverableId = deliverableId,
             position = position,
             variableId = variableId,
-        ))
+        )
+    )
   }
 
   private var nextDeviceNumber = 1
@@ -1236,7 +1241,7 @@ abstract class DatabaseBackedTest {
       facilityId: FacilityId = inserted.facilityId,
       name: String = "device ${nextDeviceNumber++}",
       createdBy: UserId = currentUser().userId,
-      type: String = "type"
+      type: String = "type",
   ): DeviceId {
     return with(DEVICES) {
       dslContext
@@ -1427,7 +1432,8 @@ abstract class DatabaseBackedTest {
           .set(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID, actualSpeciesId)
           .set(
               SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
-              plantMaterialSourcingMethod)
+              plantMaterialSourcingMethod,
+          )
           .execute()
     }
 
@@ -1568,7 +1574,8 @@ abstract class DatabaseBackedTest {
             userId = userId,
             disclaimerId = disclaimerId,
             acceptedOn = acceptedOn,
-        ))
+        )
+    )
   }
 
   fun insertUserInternalInterest(
@@ -1583,7 +1590,8 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             internalInterestId = internalInterest,
             userId = userId,
-        ))
+        )
+    )
   }
 
   fun insertUserGlobalRole(
@@ -2101,7 +2109,7 @@ abstract class DatabaseBackedTest {
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       hardeningOffQuantityWithdrawn: Int = row.hardeningOffQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
-      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId
+      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -2149,7 +2157,8 @@ abstract class DatabaseBackedTest {
                   width.toDouble() * MONITORING_PLOT_SIZE,
                   height.toDouble() * MONITORING_PLOT_SIZE,
                   x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE)
+                  y.toDouble() * MONITORING_PLOT_SIZE,
+              )
           else -> null
         }
 
@@ -2268,7 +2277,8 @@ abstract class DatabaseBackedTest {
                   width.toDouble() * MONITORING_PLOT_SIZE,
                   height.toDouble() * MONITORING_PLOT_SIZE,
                   x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE),
+                  y.toDouble() * MONITORING_PLOT_SIZE,
+              ),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
@@ -2361,7 +2371,8 @@ abstract class DatabaseBackedTest {
                   width.toDouble() * MONITORING_PLOT_SIZE,
                   height.toDouble() * MONITORING_PLOT_SIZE,
                   x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE),
+                  y.toDouble() * MONITORING_PLOT_SIZE,
+              ),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       observedTime: Instant? = row.observedTime,
@@ -2484,7 +2495,8 @@ abstract class DatabaseBackedTest {
                   sizeMeters,
                   sizeMeters,
                   x.toDouble() * sizeMeters.toDouble(),
-                  y.toDouble() * sizeMeters.toDouble()),
+                  y.toDouble() * sizeMeters.toDouble(),
+              ),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isAdHoc: Boolean = row.isAdHoc ?: false,
@@ -2655,7 +2667,7 @@ abstract class DatabaseBackedTest {
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
       plantingSubzoneId: PlantingSubzoneId? =
           row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
-      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
   ): PlantingId {
     val rowWithDefaults =
         row.copy(
@@ -2686,7 +2698,8 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ))
+        )
+    )
   }
 
   fun insertPlantingSubzonePopulation(
@@ -2701,7 +2714,8 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ))
+        )
+    )
   }
 
   fun insertPlantingZonePopulation(
@@ -2716,7 +2730,8 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ))
+        )
+    )
   }
 
   fun addPlantingSubzonePopulation(
@@ -2736,7 +2751,8 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
+          )
           .execute()
     }
   }
@@ -2758,7 +2774,8 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
+          )
           .execute()
     }
   }
@@ -3093,17 +3110,19 @@ abstract class DatabaseBackedTest {
         row.copy(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
-            conditionId = condition)
+            conditionId = condition,
+        )
 
     observationPlotConditionsDao.insert(rowWithDefaults)
   }
 
   fun insertObservationRequestedSubzone(
       observationId: ObservationId = inserted.observationId,
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
   ) {
     observationRequestedSubzonesDao.insert(
-        ObservationRequestedSubzonesRow(observationId, plantingSubzoneId))
+        ObservationRequestedSubzonesRow(observationId, plantingSubzoneId)
+    )
   }
 
   fun insertObservedCoordinates(
@@ -3441,7 +3460,7 @@ abstract class DatabaseBackedTest {
       quarter: ReportQuarter? = ReportQuarter.Q1,
       publishedBy: UserId = currentUser().userId,
       publishedTime: Instant = Instant.EPOCH,
-      highlights: String? = null
+      highlights: String? = null,
   ) {
     with(PUBLISHED_REPORTS) {
       dslContext
@@ -3462,7 +3481,7 @@ abstract class DatabaseBackedTest {
   protected fun insertPublishedReportAchievement(
       reportId: ReportId = inserted.reportId,
       position: Int = 1,
-      achievement: String = "Achievement"
+      achievement: String = "Achievement",
   ) {
     with(PUBLISHED_REPORT_ACHIEVEMENTS) {
       dslContext
@@ -3478,7 +3497,7 @@ abstract class DatabaseBackedTest {
       reportId: ReportId = inserted.reportId,
       position: Int = 1,
       challenge: String = "Challenge",
-      mitigationPlan: String = "Mitigation"
+      mitigationPlan: String = "Mitigation",
   ) {
     with(PUBLISHED_REPORT_CHALLENGES) {
       dslContext
@@ -3600,7 +3619,9 @@ abstract class DatabaseBackedTest {
             internalTagId = tagId,
             organizationId = organizationId,
             createdBy = createdBy,
-            createdTime = createdTime))
+            createdTime = createdTime,
+        )
+    )
   }
 
   fun insertApplication(
@@ -3722,7 +3743,8 @@ abstract class DatabaseBackedTest {
             rationale = rationale,
             speciesId = speciesId,
             speciesNativeCategoryId = speciesNativeCategory,
-            submissionStatusId = submissionStatus)
+            submissionStatusId = submissionStatus,
+        )
 
     participantProjectSpeciesDao.insert(row)
 
@@ -3969,7 +3991,10 @@ abstract class DatabaseBackedTest {
     val actualId =
         id
             ?: insertVariable(
-                type = VariableType.Number, deliverableId = deliverableId, stableId = stableId)
+                type = VariableType.Number,
+                deliverableId = deliverableId,
+                stableId = stableId,
+            )
 
     val row =
         VariableNumbersRow(
@@ -4019,7 +4044,8 @@ abstract class DatabaseBackedTest {
               variableId = variableId,
               listPosition = listPosition,
               type = VariableType.Section,
-              projectId = projectId),
+              projectId = projectId,
+          ),
       textValue: String? = null,
       usedVariableId: VariableId? = null,
       usageType: VariableUsageType? =
@@ -4225,7 +4251,8 @@ abstract class DatabaseBackedTest {
                 type = VariableType.Table,
                 deliverableId = deliverableId,
                 stableId = stableId,
-                isList = true)
+                isList = true,
+            )
 
     val row =
         VariableTablesRow(
@@ -4248,7 +4275,10 @@ abstract class DatabaseBackedTest {
     val actualId =
         id
             ?: insertVariable(
-                type = VariableType.Text, deliverableId = deliverableId, stableId = stableId)
+                type = VariableType.Text,
+                deliverableId = deliverableId,
+                stableId = stableId,
+            )
 
     val row =
         VariableTextsRow(
@@ -4351,7 +4381,7 @@ abstract class DatabaseBackedTest {
       name: String = "Variable $nextVariableNumber",
       replacesVariableId: VariableId? = null,
       stableId: String = "$nextVariableNumber",
-      type: VariableType = VariableType.Text
+      type: VariableType = VariableType.Text,
   ): VariableId {
     nextVariableNumber++
 
@@ -4469,12 +4499,14 @@ abstract class DatabaseBackedTest {
     return when (type) {
       VariableType.Number ->
           insertNumberVariable(
-              insertVariable(type = VariableType.Number, stableId = stableId.value))
+              insertVariable(type = VariableType.Number, stableId = stableId.value)
+          )
       VariableType.Text ->
           insertTextVariable(insertVariable(type = VariableType.Text, stableId = stableId.value))
       VariableType.Select ->
           insertSelectVariable(
-              insertVariable(type = VariableType.Select, stableId = stableId.value))
+              insertVariable(type = VariableType.Select, stableId = stableId.value)
+          )
       VariableType.Table ->
           insertTableVariable(insertVariable(type = VariableType.Table, stableId = stableId.value))
       else -> insertVariable(type = type, stableId = stableId.value)
@@ -4507,7 +4539,8 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = inserted.projectId,
   ) {
     fundingEntityProjectsDao.insert(
-        FundingEntityProjectsRow(fundingEntityId = fundingEntityId, projectId = projectId))
+        FundingEntityProjectsRow(fundingEntityId = fundingEntityId, projectId = projectId)
+    )
   }
 
   protected fun insertFundingEntityUser(
@@ -4515,7 +4548,8 @@ abstract class DatabaseBackedTest {
       userId: UserId = inserted.userId,
   ) {
     fundingEntityUsersDao.insert(
-        FundingEntityUsersRow(fundingEntityId = fundingEntityId, userId = userId))
+        FundingEntityUsersRow(fundingEntityId = fundingEntityId, userId = userId)
+    )
   }
 
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
@@ -4630,7 +4664,8 @@ abstract class DatabaseBackedTest {
                 transformed.copy() as R
               }
             }
-            .sorted())
+            .sorted()
+    )
 
     assertEquals(expectedResult, actualResult, message)
   }
@@ -4686,7 +4721,11 @@ abstract class DatabaseBackedTest {
       transform: ((R) -> R)? = null,
   ) {
     assertTableEquals(
-        expected = listOf(expected), message = message, where = where, transform = transform)
+        expected = listOf(expected),
+        message = message,
+        where = where,
+        transform = transform,
+    )
   }
 
   /**

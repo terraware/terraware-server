@@ -40,7 +40,8 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
         clock,
         TestEventPublisher(),
         mockk(),
-        mockk())
+        mockk(),
+    )
   }
   private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
@@ -76,13 +77,17 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
             number = "22-1-001",
             remainingQuantity = BigDecimal.TEN,
             remainingUnitsId = SeedQuantityUnits.Seeds,
-            speciesId = speciesId1))
+            speciesId = speciesId1,
+        )
+    )
     insertAccession(
         AccessionsRow(
             number = "22-1-002",
             remainingQuantity = BigDecimal.ONE,
             remainingUnitsId = SeedQuantityUnits.Kilograms,
-            speciesId = speciesId2))
+            speciesId = speciesId2,
+        )
+    )
 
     val accessionNumberField =
         SearchFieldPrefix(root = searchTables.accessions).resolve("accessionNumber")
@@ -101,9 +106,11 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
                   subtotalByWeightEstimate = 0L,
                   totalSeedsRemaining = 10L,
                   seedsWithdrawn = 0L,
-                  unknownQuantityAccessions = 0),
+                  unknownQuantityAccessions = 0,
+              ),
               service.getSearchSummaryStatistics(criteriaWithExactMatch),
-              "Statistics for fuzzy search that has an exact match")
+              "Statistics for fuzzy search that has an exact match",
+          )
         },
         {
           assertEquals(
@@ -114,9 +121,11 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
                   subtotalByWeightEstimate = 0L,
                   totalSeedsRemaining = 10L,
                   seedsWithdrawn = 0L,
-                  unknownQuantityAccessions = 1),
+                  unknownQuantityAccessions = 1,
+              ),
               service.getSearchSummaryStatistics(criteriaWithoutExactMatch),
-              "Statistics for fuzzy search that does not have an exact match")
+              "Statistics for fuzzy search that does not have an exact match",
+          )
         },
     )
   }

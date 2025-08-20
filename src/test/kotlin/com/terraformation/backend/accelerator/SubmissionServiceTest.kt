@@ -73,7 +73,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `publishes event and throws exception if project accelerator details not configured`() {
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
-          FailureReason.ProjectNotConfigured)
+          FailureReason.ProjectNotConfigured
+      )
     }
 
     @Test
@@ -81,7 +82,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       insertProjectAcceleratorDetails()
 
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
-          FailureReason.FileNamingNotConfigured)
+          FailureReason.FileNamingNotConfigured
+      )
     }
 
     @Test
@@ -92,7 +94,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       insertProjectAcceleratorDetails(fileNaming = "xyz")
 
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
-          FailureReason.FolderNotConfigured)
+          FailureReason.FolderNotConfigured
+      )
     }
 
     @Test
@@ -101,7 +104,9 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       deliverableId = insertDeliverable(isSensitive = true)
 
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
-          FailureReason.FolderNotConfigured, DocumentStore.Dropbox)
+          FailureReason.FolderNotConfigured,
+          DocumentStore.Dropbox,
+      )
     }
 
     @Test
@@ -114,13 +119,17 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       verify(exactly = 1) {
         googleDriveWriter.findOrCreateFolders(
-            googleDriveId, googleDriveParentFolderId, listOf("$fileNaming [Internal]"))
+            googleDriveId,
+            googleDriveParentFolderId,
+            listOf("$fileNaming [Internal]"),
+        )
       }
 
       assertEquals(
           googleDriveNewFolderUrl,
           projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
-          "Google folder URL")
+          "Google folder URL",
+      )
     }
 
     @Test
@@ -138,7 +147,16 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       verify {
         googleDriveWriter.uploadFile(
-            any(), expectedFileName, any(), any(), any(), any(), any(), any(), any())
+            any(),
+            expectedFileName,
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+        )
       }
     }
 
@@ -152,13 +170,17 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       verify(exactly = 1) {
         googleDriveWriter.findOrCreateFolders(
-            googleDriveId, googleDriveParentFolderId, listOf("$fileNaming [Internal]"))
+            googleDriveId,
+            googleDriveParentFolderId,
+            listOf("$fileNaming [Internal]"),
+        )
       }
 
       assertEquals(
           googleDriveNewFolderUrl,
           projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
-          "Google folder URL")
+          "Google folder URL",
+      )
     }
 
     @Test
@@ -178,7 +200,8 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
           DocumentStore.Google,
           googleDriveFolder,
           "Deliverable 1_1970-01-01_${fileNaming}_description.doc",
-          ProjectDocumentStorageFailedException(projectId, cause = exception))
+          ProjectDocumentStorageFailedException(projectId, cause = exception),
+      )
     }
 
     @Test
@@ -209,18 +232,27 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               originalName,
               folder,
               fileName,
-              cause))
+              cause,
+          )
+      )
     }
 
     private fun receiveDocument(description: String = "description"): SubmissionDocumentId =
         service.receiveDocument(
-            inputStream, originalName, projectId, deliverableId, description, contentType)
+            inputStream,
+            originalName,
+            projectId,
+            deliverableId,
+            description,
+            contentType,
+        )
   }
 
   private fun configureMockGoogleDrive() {
     every { config.accelerator } returns
         TerrawareServerConfig.AcceleratorConfig(
-            applicationGoogleFolderId = googleDriveParentFolderId)
+            applicationGoogleFolderId = googleDriveParentFolderId
+        )
     every {
       googleDriveWriter.findOrCreateFolders(googleDriveId, googleDriveParentFolderId, any())
     } returns googleDriveNewFolderId

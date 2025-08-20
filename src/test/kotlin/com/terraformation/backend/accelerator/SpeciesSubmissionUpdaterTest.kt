@@ -59,7 +59,8 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
               feedback = "So far so good",
               internalComment = "Internal comment",
               projectId = projectId,
-              submissionStatus = SubmissionStatus.Approved)
+              submissionStatus = SubmissionStatus.Approved,
+          )
 
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -73,7 +74,9 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
                       projectId = projectId,
                       speciesId = speciesId,
                       submissionStatus = SubmissionStatus.NotSubmitted,
-                  )))
+                  ),
+          )
+      )
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -90,7 +93,8 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
-              submissionStatusId = SubmissionStatus.NotSubmitted)
+              submissionStatusId = SubmissionStatus.NotSubmitted,
+          )
 
       assertEquals(expected, actual, "The submission's status was not updated to 'Not Submitted'")
     }
@@ -110,7 +114,8 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
               feedback = "So far so good",
               internalComment = "Internal comment",
               projectId = projectId,
-              submissionStatus = SubmissionStatus.InReview)
+              submissionStatus = SubmissionStatus.InReview,
+          )
 
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -126,7 +131,9 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
                       projectId = projectId,
                       speciesId = speciesId,
                       submissionStatus = SubmissionStatus.NotSubmitted,
-                  )))
+                  ),
+          )
+      )
 
       val after = submissionsDao.fetchOneById(submissionId)
 

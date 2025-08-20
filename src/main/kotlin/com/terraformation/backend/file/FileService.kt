@@ -49,7 +49,7 @@ class FileService(
       data: InputStream,
       metadata: NewFileMetadata,
       validateFile: ((URI) -> Unit)? = null,
-      insertChildRows: (FileId) -> Unit
+      insertChildRows: (FileId) -> Unit,
   ): FileId {
     val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
 

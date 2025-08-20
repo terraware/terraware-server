@@ -50,11 +50,13 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
-            Messages()),
+            Messages(),
+        ),
         DeliverableStore(dslContext),
         ModuleStore(dslContext),
         SubmissionStore(clock, dslContext, eventPublisher),
-        SystemUser(usersDao))
+        SystemUser(usersDao),
+    )
   }
 
   private lateinit var applicationId: ApplicationId
@@ -92,7 +94,8 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(
               deliverableTypeId = DeliverableType.Document,
               moduleId = applicationModuleId,
-              isRequired = true)
+              isRequired = true,
+          )
       insertApplicationModule(applicationId, applicationModuleId)
     }
 
@@ -102,15 +105,18 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
       insertSubmission()
 
       completer.on(
-          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId))
+          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId)
+      )
 
       assertEquals(
           mapOf(
               deliverableId to SubmissionStatus.Completed,
-              otherDeliverableId to SubmissionStatus.NotSubmitted),
+              otherDeliverableId to SubmissionStatus.NotSubmitted,
+          ),
           submissionsDao.fetchByProjectId(projectId).associate {
             it.deliverableId to it.submissionStatusId
-          })
+          },
+      )
     }
 
     @Test
@@ -118,22 +124,26 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
       insertDeliverable(
           deliverableTypeId = DeliverableType.Document,
           moduleId = applicationModuleId,
-          isRequired = false)
+          isRequired = false,
+      )
       insertDeliverable(
           deliverableTypeId = DeliverableType.Document,
           moduleId = applicationModuleId,
-          isRequired = true)
+          isRequired = true,
+      )
       insertSubmission(submissionStatus = SubmissionStatus.Completed, projectId = projectId)
 
       completer.on(
-          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId))
+          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId)
+      )
 
       assertEquals(
           ApplicationModuleStatus.Complete,
           applicationModulesDao
               .fetchByModuleId(applicationModuleId)
               .single()
-              .applicationModuleStatusId)
+              .applicationModuleStatusId,
+      )
     }
 
     @Test
@@ -141,17 +151,20 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
       insertDeliverable(
           deliverableTypeId = DeliverableType.Document,
           moduleId = applicationModuleId,
-          isRequired = true)
+          isRequired = true,
+      )
 
       completer.on(
-          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId))
+          DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId)
+      )
 
       assertEquals(
           ApplicationModuleStatus.Incomplete,
           applicationModulesDao
               .fetchByModuleId(applicationModuleId)
               .single()
-              .applicationModuleStatusId)
+              .applicationModuleStatusId,
+      )
     }
 
     @Test
@@ -161,11 +174,16 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
 
       completer.on(
           DeliverableDocumentUploadedEvent(
-              otherModuleDeliverableId, SubmissionDocumentId(1), projectId))
+              otherModuleDeliverableId,
+              SubmissionDocumentId(1),
+              projectId,
+          )
+      )
 
       assertEquals(
           emptyList<SubmissionsRow>(),
-          submissionsDao.fetchByDeliverableId(otherModuleDeliverableId))
+          submissionsDao.fetchByDeliverableId(otherModuleDeliverableId),
+      )
     }
   }
 
@@ -177,7 +195,9 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
     fun setUp() {
       deliverableId =
           insertDeliverable(
-              deliverableTypeId = DeliverableType.Species, moduleId = applicationModuleId)
+              deliverableTypeId = DeliverableType.Species,
+              moduleId = applicationModuleId,
+          )
       insertApplicationModule(applicationId, applicationModuleId)
     }
 
@@ -190,11 +210,14 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
                   id = ParticipantProjectSpeciesId(1),
                   projectId = projectId,
                   speciesId = SpeciesId(1),
-              )))
+              ),
+          )
+      )
 
       assertEquals(
           SubmissionStatus.Completed,
-          submissionsDao.fetchByProjectId(projectId).single().submissionStatusId)
+          submissionsDao.fetchByProjectId(projectId).single().submissionStatusId,
+      )
     }
   }
 }

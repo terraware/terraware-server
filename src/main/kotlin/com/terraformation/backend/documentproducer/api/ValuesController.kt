@@ -43,39 +43,45 @@ class ValuesController(
       description =
           "This may be used to fetch the full set of current values (the default behavior), the " +
               "values from a saved version (if maxValueId is specified), or to poll for recent " +
-              "edits (if minValueId is specified).")
+              "edits (if minValueId is specified).",
+  )
   fun listProjectVariableValues(
       @PathVariable projectId: ProjectId,
       @Parameter(
           description =
               "If specified, only return values that belong to variables that are associated " +
-                  "to the given ID")
+                  "to the given ID"
+      )
       @RequestParam
       deliverableId: DeliverableId? = null,
       @Parameter(
           description =
               "If specified, only return values with this ID or higher. Use this to poll for " +
                   "incremental updates to a document. Incremental results may include values of " +
-                  "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
+                  "type 'Deleted' in cases where, e.g., elements have been removed from a list."
+      )
       @RequestParam
       minValueId: VariableValueId? = null,
       @Parameter(
           description =
               "If specified, only return values with this ID or lower. Use this to retrieve " +
-                  "saved document versions.")
+                  "saved document versions."
+      )
       @RequestParam
       maxValueId: VariableValueId? = null,
       @Parameter(
           description =
               "If specified, return the value of the variable with this stable ID. May be " +
                   "specified more than once to return values for multiple variables. Ignored if " +
-                  "variableId is specified.")
+                  "variableId is specified."
+      )
       @RequestParam
       stableId: List<StableId>? = null,
       @Parameter(
           description =
               "If specified, return the value of this variable. May be specified more than once " +
-                  "to return values for multiple variables.")
+                  "to return values for multiple variables."
+      )
       @RequestParam
       variableId: List<VariableId>? = null,
   ): ListVariableValuesResponsePayload {
@@ -120,7 +126,8 @@ class ValuesController(
               workflowDetails?.feedback,
               workflowDetails?.internalComment,
               status,
-              values.map { ExistingValuePayload.of(it) })
+              values.map { ExistingValuePayload.of(it) },
+          )
         }
 
     val valuelessWorkflowDetailsPayloads =
@@ -134,11 +141,14 @@ class ValuesController(
                   workflowDetails.feedback,
                   workflowDetails.internalComment,
                   workflowDetails.status,
-                  emptyList())
+                  emptyList(),
+              )
             }
 
     return ListVariableValuesResponsePayload(
-        nextValueId, valuePayloads + valuelessWorkflowDetailsPayloads)
+        nextValueId,
+        valuePayloads + valuelessWorkflowDetailsPayloads,
+    )
   }
 
   @Operation(
@@ -148,11 +158,12 @@ class ValuesController(
               "order and are treated as an atomic unit. That is, the changes will either all " +
               "succeed or all fail; there won't be a case where some of the changes are applied " +
               "and some aren't. See the payload descriptions for more details about the " +
-              "operations you can perform on values.")
+              "operations you can perform on values.",
+  )
   @PostMapping("/projects/{projectId}/values")
   fun updateProjectVariableValues(
       @PathVariable projectId: ProjectId,
-      @RequestBody payload: UpdateVariableValuesRequestPayload
+      @RequestBody payload: UpdateVariableValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
     val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
     val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
@@ -172,7 +183,8 @@ data class ListVariableValuesResponsePayload(
     @Schema(
         description =
             "The next unused value ID. You can pass this back to the endpoint as the minValueId " +
-                "parameter to poll for newly-updated values.")
+                "parameter to poll for newly-updated values."
+    )
     val nextValueId: VariableValueId,
     @ArraySchema(
         arraySchema =
@@ -181,7 +193,9 @@ data class ListVariableValuesResponsePayload(
                     "Variable values organized by variable ID and table row. If you are getting " +
                         "incremental values (that is, you passed minValueId to the endpoint) " +
                         "this list may include values of type \"Deleted\" to indicate that " +
-                        "existing values were deleted and not replaced with new values."))
+                        "existing values were deleted and not replaced with new values."
+            )
+    )
     val values: List<ExistingVariableValuesPayload>,
 ) : SuccessResponsePayload
 
@@ -192,12 +206,15 @@ data class UpdateVariableValuesRequestPayload(
                 description =
                     "List of operations to perform on the document's values. The operations are " +
                         "applied in order, and atomically: if any of them fail, none of them " +
-                        "will be applied."))
+                        "will be applied."
+            )
+    )
     val operations: List<ValueOperationPayload>,
     @Schema(
         description =
             "Whether to update variable statuses. Defaults to true. Accelerator admins can " +
-                "bypass the status updates by setting the flag to false.")
+                "bypass the status updates by setting the flag to false."
+    )
     val updateStatuses: Boolean? = true,
 ) {
   companion object {
@@ -210,25 +227,34 @@ data class UpdateVariableValuesRequestPayload(
                         "Append a new row to a table and include values for its columns. In this " +
                             "example, the table is variable ID 171 and it has two columns, a " +
                             "non-list text variable (172) and a date list (173). We will add two " +
-                            "values to the date list.")
+                            "values to the date list."
+                    )
                     .value(
                         UpdateVariableValuesRequestPayload(
                             listOf(
                                 AppendValueOperationPayload(
                                     variableId = VariableId(171),
-                                    value = NewTableValuePayload(null)),
+                                    value = NewTableValuePayload(null),
+                                ),
                                 AppendValueOperationPayload(
                                     variableId = VariableId(172),
                                     value =
                                         NewTextValuePayload(
-                                            "Citation for text value", "Value of first column")),
+                                            "Citation for text value",
+                                            "Value of first column",
+                                        ),
+                                ),
                                 AppendValueOperationPayload(
                                     variableId = VariableId(173),
-                                    value = NewDateValuePayload(null, LocalDate.of(2021, 7, 3))),
+                                    value = NewDateValuePayload(null, LocalDate.of(2021, 7, 3)),
+                                ),
                                 AppendValueOperationPayload(
                                     variableId = VariableId(173),
-                                    value = NewDateValuePayload(null, LocalDate.of(2023, 4, 19))),
-                            ))),
+                                    value = NewDateValuePayload(null, LocalDate.of(2023, 4, 19)),
+                                ),
+                            )
+                        )
+                    ),
         )
   }
 }

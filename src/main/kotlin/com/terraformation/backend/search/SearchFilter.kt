@@ -102,7 +102,7 @@ data class NotNode(val child: SearchNode) : SearchNode {
 data class FieldNode(
     val field: SearchFieldPath,
     val values: List<String?>,
-    val type: SearchFilterType = SearchFilterType.Exact
+    val type: SearchFilterType = SearchFilterType.Exact,
 ) : SearchNode {
   init {
     if (values.isEmpty()) {

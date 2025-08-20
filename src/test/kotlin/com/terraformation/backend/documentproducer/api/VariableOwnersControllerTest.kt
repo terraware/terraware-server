@@ -68,7 +68,8 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
                   }
               """
                     .trimIndent(),
-                strict = true)
+                strict = true,
+            )
       }
     }
 
@@ -86,7 +87,7 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
 
     private fun path(
         projectId: ProjectId = inserted.projectId,
-        variableId: VariableId = sectionId
+        variableId: VariableId = sectionId,
     ) = "/api/v1/document-producer/projects/$projectId/owners/$variableId"
 
     @BeforeEach
@@ -113,7 +114,8 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
         assertEquals(
             listOf(VariableOwnersRow(inserted.projectId, sectionId, user.userId)),
             variableOwnersDao.findAll(),
-            "New owner should have been stored in database")
+            "New owner should have been stored in database",
+        )
       }
 
       @Test
@@ -132,7 +134,8 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
                 VariableOwnersRow(inserted.projectId, otherSectionId, user.userId),
             ),
             variableOwnersDao.findAll().toSet(),
-            "New owner should have been stored in database")
+            "New owner should have been stored in database",
+        )
       }
 
       @Test
@@ -145,7 +148,8 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
         assertEquals(
             listOf(VariableOwnersRow(inserted.projectId, otherSectionId, user.userId)),
             variableOwnersDao.findAll(),
-            "Should have deleted existing owner")
+            "Should have deleted existing owner",
+        )
       }
 
       @Test

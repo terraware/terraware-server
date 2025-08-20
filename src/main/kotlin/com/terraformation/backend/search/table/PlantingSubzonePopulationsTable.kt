@@ -20,10 +20,13 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
     with(tables) {
       listOf(
           species.asSingleValueSublist(
-              "species", PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID)),
+              "species",
+              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(SPECIES.ID),
+          ),
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone",
-              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
+              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+          ),
       )
     }
   }
@@ -32,7 +35,8 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
       listOf(
           integerField(
               "plantsSinceLastObservation",
-              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION),
+              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+          ),
           integerField("totalPlants", PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS),
       )
 
@@ -51,5 +55,6 @@ class PlantingSubzonePopulationsTable(private val tables: SearchTables) : Search
     get() =
         listOf(
             PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
-            PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
+            PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
+        )
 }

@@ -98,7 +98,8 @@ class ReportsController(
       summary = "Locks a report.",
       description =
           "Only succeeds if the report is not currently locked or if it is locked by the " +
-              "current user.")
+              "current user.",
+  )
   @PostMapping("/{id}/lock")
   fun lockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     seedFundReportStore.lock(id)
@@ -134,7 +135,7 @@ class ReportsController(
   @PutMapping("/{id}")
   fun updateReport(
       @PathVariable("id") id: SeedFundReportId,
-      @RequestBody payload: PutReportRequestPayload
+      @RequestBody payload: PutReportRequestPayload,
   ): SimpleSuccessResponsePayload {
     seedFundReportService.update(id) { payload.report.copyTo(it) }
 
@@ -148,7 +149,8 @@ class ReportsController(
       summary = "Submits a report.",
       description =
           "The report must be locked by the current user. Submitting a report releases the lock. " +
-              "Once a report is submitted, it may no longer be locked or updated.")
+              "Once a report is submitted, it may no longer be locked or updated.",
+  )
   @PostMapping("/{id}/submit")
   fun submitReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     try {
@@ -193,7 +195,7 @@ class ReportsController(
   fun updateReportPhoto(
       @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("photoId") photoId: FileId,
-      @RequestBody payload: UpdateReportPhotoRequestPayload
+      @RequestBody payload: UpdateReportPhotoRequestPayload,
   ): SimpleSuccessResponsePayload {
     val existing = seedFundReportFileService.getPhotoModel(reportId, photoId)
     val model = payload.applyTo(existing)
@@ -208,14 +210,17 @@ class ReportsController(
   @RequestBodyPhotoFile
   fun uploadReportPhoto(
       @PathVariable("reportId") reportId: SeedFundReportId,
-      @RequestPart("file") file: MultipartFile
+      @RequestPart("file") file: MultipartFile,
   ): UploadReportFileResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename()
 
     val fileId =
         seedFundReportFileService.storePhoto(
-            reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
+            reportId,
+            file.inputStream,
+            FileMetadata.of(contentType, filename, file.size),
+        )
 
     return UploadReportFileResponsePayload(fileId)
   }
@@ -225,7 +230,7 @@ class ReportsController(
   @DeleteMapping("/{reportId}/photos/{photoId}")
   fun deleteReportPhoto(
       @PathVariable("reportId") reportId: SeedFundReportId,
-      @PathVariable("photoId") photoId: FileId
+      @PathVariable("photoId") photoId: FileId,
   ): SimpleSuccessResponsePayload {
     seedFundReportFileService.deletePhoto(reportId, photoId)
 
@@ -247,7 +252,10 @@ class ReportsController(
           [
               Content(
                   schema = Schema(type = "string", format = "binary"),
-                  mediaType = MediaType.ALL_VALUE)])
+                  mediaType = MediaType.ALL_VALUE,
+              )
+          ],
+  )
   @GetMapping("{reportId}/files/{fileId}")
   @Operation(summary = "Downloads a file associated with a report.")
   @Produces
@@ -270,17 +278,21 @@ class ReportsController(
   @Operation(summary = "Uploads a file to associate with a report.")
   @PostMapping("/{reportId}/files", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])]
+  )
   fun uploadReportFile(
       @PathVariable("reportId") reportId: SeedFundReportId,
-      @RequestPart("file") file: MultipartFile
+      @RequestPart("file") file: MultipartFile,
   ): UploadReportFileResponsePayload {
     val contentType = file.getPlainContentType() ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
     val filename = file.getFilename()
 
     val fileId =
         seedFundReportFileService.storeFile(
-            reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
+            reportId,
+            file.inputStream,
+            FileMetadata.of(contentType, filename, file.size),
+        )
 
     return UploadReportFileResponsePayload(fileId)
   }
@@ -290,7 +302,7 @@ class ReportsController(
   @DeleteMapping("/{reportId}/files/{fileId}")
   fun deleteReportFile(
       @PathVariable("reportId") reportId: SeedFundReportId,
-      @PathVariable("fileId") fileId: FileId
+      @PathVariable("fileId") fileId: FileId,
   ): SimpleSuccessResponsePayload {
     seedFundReportFileService.deleteFile(reportId, fileId)
 

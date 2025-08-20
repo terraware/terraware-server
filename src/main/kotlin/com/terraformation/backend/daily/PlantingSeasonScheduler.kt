@@ -29,9 +29,11 @@ class PlantingSeasonScheduler(
   fun schedule(scheduler: JobScheduler) {
     if (config.dailyTasks.enabled) {
       scheduler.scheduleRecurrently<PlantingSeasonScheduler>(
-          javaClass.simpleName, Cron.every15minutes()) {
-            transitionPlantingSeasons()
-          }
+          javaClass.simpleName,
+          Cron.every15minutes(),
+      ) {
+        transitionPlantingSeasons()
+      }
     }
   }
 
@@ -51,7 +53,9 @@ class PlantingSeasonScheduler(
     NotificationCriteria.FirstPlantingSeasonNotScheduled.notifications.forEach { criteria ->
       plantingSiteStore
           .fetchPartiallyPlantedDetailedSitesWithNoPlantingSeasons(
-              criteria.weeksSinceCreation, criteria.notificationNotCompletedCondition())
+              criteria.weeksSinceCreation,
+              criteria.notificationNotCompletedCondition(),
+          )
           .forEach { plantingSiteId ->
             sendNotification(criteria, criteria.notificationEvent(plantingSiteId))
           }
@@ -60,7 +64,9 @@ class PlantingSeasonScheduler(
     NotificationCriteria.NextPlantingSeasonNotScheduled.notifications.forEach { criteria ->
       plantingSiteStore
           .fetchPartiallyPlantedDetailedSitesWithNoUpcomingPlantingSeasons(
-              criteria.weeksSinceLastSeason, criteria.notificationNotCompletedCondition())
+              criteria.weeksSinceLastSeason,
+              criteria.notificationNotCompletedCondition(),
+          )
           .forEach { plantingSiteId ->
             sendNotification(criteria, criteria.notificationEvent(plantingSiteId))
           }
@@ -69,19 +75,23 @@ class PlantingSeasonScheduler(
 
   private fun sendNotification(
       criteria: NotificationCriteria,
-      event: PlantingSeasonSchedulingNotificationEvent
+      event: PlantingSeasonSchedulingNotificationEvent,
   ) {
     try {
       // Mark the notification complete first to guard against concurrent attempts to send the
       // same notification, which will cause all but one of the attempts to fail with an integrity
       // constraint violation.
       plantingSiteStore.markNotificationComplete(
-          event.plantingSiteId, criteria.notificationType, criteria.notificationNumber)
+          event.plantingSiteId,
+          criteria.notificationType,
+          criteria.notificationNumber,
+      )
     } catch (e: Exception) {
       log.warn(
           "Failed to mark notification complete for planting site ${event.plantingSiteId}; " +
               "not sending it",
-          e)
+          e,
+      )
 
       return
     }

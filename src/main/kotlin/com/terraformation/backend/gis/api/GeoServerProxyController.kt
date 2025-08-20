@@ -24,7 +24,8 @@ class GeoServerProxyController(private val geoServerClient: GeoServerClient) {
       description =
           "Query string parameters are passed to GeoServer, but headers aren't. The response " +
               "from GeoServer, if any, will be returned verbatim. Only available for internal " +
-              "users.")
+              "users.",
+  )
   fun proxyGetRequest(
       request: HttpServletRequest,
   ): ResponseEntity<ByteArray> {
@@ -36,7 +37,9 @@ class GeoServerProxyController(private val geoServerClient: GeoServerClient) {
       ResponseEntity.status(response.status.value)
           .contentType(mediaType)
           .header(
-              HttpHeaders.CONTENT_DISPOSITION, response.headers[HttpHeaders.CONTENT_DISPOSITION])
+              HttpHeaders.CONTENT_DISPOSITION,
+              response.headers[HttpHeaders.CONTENT_DISPOSITION],
+          )
           .body(response.bodyAsBytes())
     }
   }

@@ -174,14 +174,16 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventStatus.NotStarted,
           eventsDao.fetchOneById(moduleEventId)!!.eventStatusId,
-          "Status before update.")
+          "Status before update.",
+      )
 
       service.updateEventStatusIfEventUpToDate(notificationEvent, EventStatus.Ended)
 
       assertEquals(
           EventStatus.Ended,
           eventsDao.fetchOneById(moduleEventId)!!.eventStatusId,
-          "Status after update.")
+          "Status after update.",
+      )
     }
 
     @Test
@@ -192,14 +194,16 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventStatus.NotStarted,
           eventsDao.fetchOneById(moduleEventId)!!.eventStatusId,
-          "Status before update.")
+          "Status before update.",
+      )
 
       service.updateEventStatusIfEventUpToDate(notificationEvent, EventStatus.Ended)
 
       assertEquals(
           EventStatus.NotStarted,
           eventsDao.fetchOneById(moduleEventId)!!.eventStatusId,
-          "Status after update.")
+          "Status after update.",
+      )
     }
 
     @Test

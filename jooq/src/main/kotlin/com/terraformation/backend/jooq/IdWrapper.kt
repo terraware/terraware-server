@@ -34,6 +34,7 @@ class IdWrapper(private val className: String, includeExpressions: List<String>)
       }
 
     """
-            .trimIndent())
+            .trimIndent()
+    )
   }
 }

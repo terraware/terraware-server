@@ -29,7 +29,9 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
       identifierGenerator.generateNumericIdentifier(
-          organizationId, NumericIdentifierType.PlotNumber)
+          organizationId,
+          NumericIdentifierType.PlotNumber,
+      )
 
       val plotBoundary = Turtle(point(0)).makePolygon { square(25) }
       val newPlotId = store.createTemporaryPlot(plantingSiteId, plantingZoneId, plotBoundary)
@@ -65,7 +67,9 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
                   plantingSiteId = plantingSiteId,
                   plantingSubzoneHistoryId = plantingSubzoneHistoryId,
                   plantingSubzoneId = plantingSubzoneId,
-              )))
+              )
+          )
+      )
     }
 
     @Test
@@ -100,7 +104,10 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
 
       assertThrows<AccessDeniedException> {
         store.createTemporaryPlot(
-            plantingSiteId, plantingZoneId, Turtle(point(0)).makePolygon { square(25) })
+            plantingSiteId,
+            plantingZoneId,
+            Turtle(point(0)).makePolygon { square(25) },
+        )
       }
     }
   }

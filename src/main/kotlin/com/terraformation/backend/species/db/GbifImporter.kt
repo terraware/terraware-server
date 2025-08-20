@@ -289,7 +289,8 @@ class GbifImporter(
                 GBIF_NAMES.ID,
                 GBIF_TAXA.GENERIC_NAME,
                 GBIF_TAXA.SPECIFIC_EPITHET,
-                GBIF_TAXA.INFRASPECIFIC_EPITHET)
+                GBIF_TAXA.INFRASPECIFIC_EPITHET,
+            )
             .from(GBIF_NAMES)
             .join(GBIF_TAXA)
             .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))

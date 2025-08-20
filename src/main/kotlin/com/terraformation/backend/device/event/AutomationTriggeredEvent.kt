@@ -31,5 +31,5 @@ data class SensorBoundsAlertTriggeredEvent(
 data class UnknownAutomationTriggeredEvent(
     override val automationId: AutomationId,
     override val type: String,
-    override val message: String?
+    override val message: String?,
 ) : AutomationTriggeredEvent

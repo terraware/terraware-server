@@ -176,7 +176,9 @@ class PlantingSiteStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchSiteHistoriesByCondition(
-        PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId), depth)
+        PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId),
+        depth,
+    )
   }
 
   fun fetchSiteHistoryById(
@@ -189,13 +191,14 @@ class PlantingSiteStore(
     return fetchSiteHistoriesByCondition(
             PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)
                 .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId)),
-            depth)
+            depth,
+        )
         .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
   }
 
   private fun fetchSitesByCondition(
       condition: Condition,
-      depth: PlantingSiteDepth
+      depth: PlantingSiteDepth,
   ): List<ExistingPlantingSiteModel> {
     val zonesField =
         if (depth != PlantingSiteDepth.Site) {
@@ -208,7 +211,8 @@ class PlantingSiteStore(
         if (depth == PlantingSiteDepth.Plot) {
           monitoringPlotsMultiset(
               PLANTING_SITES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.IS_AD_HOC.isTrue))
+                  .and(MONITORING_PLOTS.IS_AD_HOC.isTrue)
+          )
         } else {
           null
         }
@@ -218,7 +222,8 @@ class PlantingSiteStore(
           monitoringPlotsMultiset(
               PLANTING_SITES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
                   .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull)
-                  .and(MONITORING_PLOTS.IS_AD_HOC.isFalse))
+                  .and(MONITORING_PLOTS.IS_AD_HOC.isFalse)
+          )
         } else {
           null
         }
@@ -227,7 +232,8 @@ class PlantingSiteStore(
         OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
             DSL.select(MONITORING_PLOTS.ID)
                 .from(MONITORING_PLOTS)
-                .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)))
+                .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        )
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
     val latestObservationTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
@@ -240,7 +246,8 @@ class PlantingSiteStore(
             adHocPlotsField,
             exteriorPlotsField,
             latestObservationIdField,
-            latestObservationTimeField)
+            latestObservationTimeField,
+        )
         .from(PLANTING_SITES)
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
@@ -252,13 +259,14 @@ class PlantingSiteStore(
               adHocPlotsField,
               exteriorPlotsField,
               latestObservationIdField,
-              latestObservationTimeField)
+              latestObservationTimeField,
+          )
         }
   }
 
   private fun fetchSiteHistoriesByCondition(
       condition: Condition,
-      depth: PlantingSiteDepth
+      depth: PlantingSiteDepth,
   ): List<PlantingSiteHistoryModel> {
     val boundaryField = PLANTING_SITE_HISTORIES.BOUNDARY.forMultiset()
     val exclusionField = PLANTING_SITE_HISTORIES.EXCLUSION.forMultiset()
@@ -280,7 +288,8 @@ class PlantingSiteStore(
             boundaryField,
             exclusionField,
             gridOriginField,
-            zonesField)
+            zonesField,
+        )
         .from(PLANTING_SITE_HISTORIES)
         .where(condition)
         .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
@@ -310,7 +319,8 @@ class PlantingSiteStore(
                     .join(PLANTING_SUBZONES)
                     .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
                     .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                    .groupBy(PLANTING_SUBZONES.ID))
+                    .groupBy(PLANTING_SUBZONES.ID)
+            )
             .convertFrom { results -> results.associate { it.value1() to it.value2() } }
 
     return dslContext
@@ -364,8 +374,10 @@ class PlantingSiteStore(
       newModel.projectId?.let { readProject(it) }
     }
 
-    if (newModel.projectId != null &&
-        newModel.organizationId != parentStore.getOrganizationId(newModel.projectId)) {
+    if (
+        newModel.projectId != null &&
+            newModel.organizationId != parentStore.getOrganizationId(newModel.projectId)
+    ) {
       throw ProjectInDifferentOrganizationException()
     }
 
@@ -483,8 +495,10 @@ class PlantingSiteStore(
           initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
       )
 
-      if (edited.boundary != null && !edited.boundary.equalsOrBothNull(initial.boundary) ||
-          !edited.exclusion.equalsOrBothNull(initial.exclusion)) {
+      if (
+          edited.boundary != null && !edited.boundary.equalsOrBothNull(initial.boundary) ||
+              !edited.exclusion.equalsOrBothNull(initial.exclusion)
+      ) {
         val historiesRecord =
             PlantingSiteHistoriesRecord(
                     areaHa = editedArea,
@@ -502,14 +516,15 @@ class PlantingSiteStore(
 
       if (initialTimeZone != editedTimeZone) {
         eventPublisher.publishEvent(
-            PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone))
+            PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone)
+        )
       }
     }
   }
 
   fun applyPlantingSiteEdit(
       plantingSiteEdit: PlantingSiteEdit,
-      subzonesToMarkIncomplete: Set<PlantingSubzoneId> = emptySet()
+      subzonesToMarkIncomplete: Set<PlantingSubzoneId> = emptySet(),
   ): ExistingPlantingSiteModel {
     val plantingSiteId = plantingSiteEdit.existingModel.id
 
@@ -526,9 +541,11 @@ class PlantingSiteStore(
       val userId = currentUser().userId
       val replacementResults = mutableListOf<ReplacementResult>()
 
-      if (plantingSiteEdit.plantingZoneEdits.isEmpty() &&
-          existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
-          existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)) {
+      if (
+          plantingSiteEdit.plantingZoneEdits.isEmpty() &&
+              existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
+              existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)
+      ) {
         log.debug("No-op edit for planting site $plantingSiteId")
         return@withLockedPlantingSite existing
       }
@@ -566,7 +583,13 @@ class PlantingSiteStore(
       plantingSiteEdit.plantingZoneEdits.forEach {
         replacementResults.add(
             applyPlantingZoneEdit(
-                it, plantingSiteId, plantingSiteHistoryId, subzonesToMarkIncomplete, now))
+                it,
+                plantingSiteId,
+                plantingSiteHistoryId,
+                subzonesToMarkIncomplete,
+                now,
+            )
+        )
       }
 
       // If any zones weren't edited, we still want to include them and their subzones in the site's
@@ -589,8 +612,10 @@ class PlantingSiteStore(
               DSL.selectOne()
                   .from(MONITORING_PLOT_HISTORIES)
                   .where(
-                      MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(plantingSiteHistoryId))
-                  .and(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)))
+                      MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(plantingSiteHistoryId)
+                  )
+                  .and(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+          )
           .fetch()
           .forEach { (monitoringPlotId, plantingSubzoneId) ->
             insertMonitoringPlotHistory(monitoringPlotId, plantingSiteId, plantingSubzoneId)
@@ -602,7 +627,11 @@ class PlantingSiteStore(
 
       eventPublisher.publishEvent(
           PlantingSiteMapEditedEvent(
-              edited, plantingSiteEdit, ReplacementResult.merge(replacementResults)))
+              edited,
+              plantingSiteEdit,
+              ReplacementResult.merge(replacementResults),
+          )
+      )
 
       edited
     }
@@ -659,7 +688,7 @@ class PlantingSiteStore(
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
       subzonesToMarkIncomplete: Set<PlantingSubzoneId>,
-      now: Instant
+      now: Instant,
   ): ReplacementResult {
     val replacementResults = mutableListOf<ReplacementResult>()
 
@@ -670,7 +699,13 @@ class PlantingSiteStore(
             insertPlantingZoneHistory(edit.desiredModel, plantingSiteHistoryId, plantingZoneId)
         edit.plantingSubzoneEdits.forEach {
           applyPlantingSubzoneEdit(
-              it, plantingSiteId, plantingZoneId, plantingZoneHistoryId, emptySet(), now)
+              it,
+              plantingSiteId,
+              plantingZoneId,
+              plantingZoneHistoryId,
+              emptySet(),
+              now,
+          )
         }
       }
       is PlantingZoneEdit.Delete -> {
@@ -684,7 +719,8 @@ class PlantingSiteStore(
                   subzonesToMarkIncomplete = emptySet(),
                   now = now,
               )
-            })
+            }
+        )
 
         val rowsDeleted =
             dslContext
@@ -726,7 +762,10 @@ class PlantingSiteStore(
         }
         val plantingZoneHistoryId =
             insertPlantingZoneHistory(
-                edit.desiredModel, plantingSiteHistoryId, edit.existingModel.id)
+                edit.desiredModel,
+                plantingSiteHistoryId,
+                edit.existingModel.id,
+            )
 
         replacementResults.addAll(
             edit.plantingSubzoneEdits.map { subzoneEdit ->
@@ -738,7 +777,8 @@ class PlantingSiteStore(
                   subzonesToMarkIncomplete = subzonesToMarkIncomplete,
                   now = now,
               )
-            })
+            }
+        )
 
         // If any subzones weren't edited, we still want to include them in the site's map history.
         edit.existingModel.plantingSubzones.forEach { existingSubzone ->
@@ -762,7 +802,11 @@ class PlantingSiteStore(
             .forEach { (region, plotEdits) ->
               val newPlotIds =
                   createPermanentPlots(
-                      updatedSite, updatedZone, plotEdits.map { it.permanentIndex!! }, region)
+                      updatedSite,
+                      updatedZone,
+                      plotEdits.map { it.permanentIndex!! },
+                      region,
+                  )
               replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
             }
       }
@@ -777,7 +821,7 @@ class PlantingSiteStore(
       plantingZoneId: PlantingZoneId,
       plantingZoneHistoryId: PlantingZoneHistoryId?,
       subzonesToMarkIncomplete: Set<PlantingSubzoneId>,
-      now: Instant
+      now: Instant,
   ): ReplacementResult {
     val replacementResults = mutableListOf<ReplacementResult>()
 
@@ -793,7 +837,8 @@ class PlantingSiteStore(
 
         edit.monitoringPlotEdits.forEach { plotEdit ->
           replacementResults.add(
-              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now))
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now)
+          )
         }
       }
       is PlantingSubzoneEdit.Delete -> {
@@ -805,7 +850,8 @@ class PlantingSiteStore(
             .execute()
 
         replacementResults.add(
-            ReplacementResult(emptySet(), edit.existingModel.monitoringPlots.map { it.id }.toSet()))
+            ReplacementResult(emptySet(), edit.existingModel.monitoringPlots.map { it.id }.toSet())
+        )
       }
       is PlantingSubzoneEdit.Update -> {
         if (plantingZoneHistoryId == null) {
@@ -839,7 +885,8 @@ class PlantingSiteStore(
 
         edit.monitoringPlotEdits.forEach { plotEdit ->
           replacementResults.add(
-              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now))
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now)
+          )
         }
       }
     }
@@ -873,7 +920,8 @@ class PlantingSiteStore(
 
       is MonitoringPlotEdit.Create ->
           throw IllegalStateException(
-              "BUG! Monitoring plot creation should be handled at zone level")
+              "BUG! Monitoring plot creation should be handled at zone level"
+          )
 
       is MonitoringPlotEdit.Eject -> {
         with(MONITORING_PLOTS) {
@@ -980,15 +1028,19 @@ class PlantingSiteStore(
     seasonsToUpdate.forEach { desiredSeason ->
       val existingSeason = existingSeasonsById[desiredSeason.id]!!
       val startTime =
-          if (existingSeason.startDate != desiredSeason.startDate ||
-              existingSeason.startTime >= now && existingTimeZone != desiredTimeZone) {
+          if (
+              existingSeason.startDate != desiredSeason.startDate ||
+                  existingSeason.startTime >= now && existingTimeZone != desiredTimeZone
+          ) {
             desiredSeason.startDate.toInstant(desiredTimeZone)
           } else {
             existingSeason.startTime
           }
       val endTime =
-          if (existingSeason.endDate != desiredSeason.endDate ||
-              existingSeason.endTime >= now && existingTimeZone != desiredTimeZone) {
+          if (
+              existingSeason.endDate != desiredSeason.endDate ||
+                  existingSeason.endTime >= now && existingTimeZone != desiredTimeZone
+          ) {
             desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
           } else {
             existingSeason.endTime
@@ -1013,7 +1065,9 @@ class PlantingSiteStore(
               existingSeason.startDate,
               existingSeason.endDate,
               desiredSeason.startDate,
-              desiredSeason.endDate))
+              desiredSeason.endDate,
+          )
+      )
     }
 
     if (seasonsToInsert.isNotEmpty()) {
@@ -1022,14 +1076,19 @@ class PlantingSiteStore(
       seasonsToInsert.forEach { season ->
         eventPublisher.publishEvent(
             PlantingSeasonScheduledEvent(
-                plantingSiteId, season.id!!, season.startDate!!, season.endDate!!))
+                plantingSiteId,
+                season.id!!,
+                season.startDate!!,
+                season.endDate!!,
+            )
+        )
       }
     }
   }
 
   fun updatePlantingZone(
       plantingZoneId: PlantingZoneId,
-      editFunc: (PlantingZonesRow) -> PlantingZonesRow
+      editFunc: (PlantingZonesRow) -> PlantingZonesRow,
   ) {
     requirePermissions { updatePlantingZone(plantingZoneId) }
 
@@ -1130,7 +1189,7 @@ class PlantingSiteStore(
   private fun createPlantingZone(
       zone: NewPlantingZoneModel,
       plantingSiteId: PlantingSiteId,
-      now: Instant = clock.instant()
+      now: Instant = clock.instant(),
   ): PlantingZoneId {
     val userId = currentUser().userId
 
@@ -1164,7 +1223,7 @@ class PlantingSiteStore(
       subzone: NewPlantingSubzoneModel,
       plantingSiteId: PlantingSiteId,
       plantingZoneId: PlantingZoneId,
-      now: Instant = clock.instant()
+      now: Instant = clock.instant(),
   ): PlantingSubzoneId {
     val userId = currentUser().userId
 
@@ -1296,7 +1355,9 @@ class PlantingSiteStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext.fetchExists(
-        PLANTING_SUBZONES, PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        PLANTING_SUBZONES,
+        PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId),
+    )
   }
 
   fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
@@ -1337,13 +1398,14 @@ class PlantingSiteStore(
             DSL.selectOne()
                 .from(PLANTINGS)
                 .where(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+                .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull)
+        )
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
   fun fetchPartiallyPlantedDetailedSitesWithNoPlantingSeasons(
       weeksSinceCreation: Int,
-      additionalCondition: Condition
+      additionalCondition: Condition,
   ): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
@@ -1357,19 +1419,21 @@ class PlantingSiteStore(
         .andNotExists(
             DSL.selectOne()
                 .from(PLANTING_SEASONS)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID)))
+                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
+        )
         .andExists(
             DSL.selectOne()
                 .from(PLANTING_SUBZONES)
                 .where(PLANTING_SITES.ID.eq(PLANTING_SUBZONES.PLANTING_SITE_ID))
-                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))
+                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull)
+        )
         .orderBy(PLANTING_SITES.ID)
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
   fun fetchPartiallyPlantedDetailedSitesWithNoUpcomingPlantingSeasons(
       weeksSinceLastSeason: Int,
-      additionalCondition: Condition
+      additionalCondition: Condition,
   ): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
@@ -1383,13 +1447,16 @@ class PlantingSiteStore(
             DSL.field(
                     DSL.select(DSL.max(PLANTING_SEASONS.END_TIME))
                         .from(PLANTING_SEASONS)
-                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID)))
-                .le(maxEndTime))
+                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
+                )
+                .le(maxEndTime)
+        )
         .andExists(
             DSL.selectOne()
                 .from(PLANTING_SUBZONES)
                 .where(PLANTING_SITES.ID.eq(PLANTING_SUBZONES.PLANTING_SITE_ID))
-                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull))
+                .and(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull)
+        )
         .orderBy(PLANTING_SITES.ID)
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
@@ -1449,7 +1516,9 @@ class PlantingSiteStore(
           .execute()
 
       ReplacementResult(
-          addedMonitoringPlotIds = emptySet(), removedMonitoringPlotIds = setOf(monitoringPlotId))
+          addedMonitoringPlotIds = emptySet(),
+          removedMonitoringPlotIds = setOf(monitoringPlotId),
+      )
     } else {
       ReplacementResult(emptySet(), emptySet())
     }
@@ -1576,7 +1645,9 @@ class PlantingSiteStore(
             ?: throw PlantingSiteNotFoundException(plantingSiteId)
     val plotNumber =
         identifierGenerator.generateNumericIdentifier(
-            organizationId, NumericIdentifierType.PlotNumber)
+            organizationId,
+            NumericIdentifierType.PlotNumber,
+        )
 
     val monitoringPlotsRow =
         MonitoringPlotsRow(
@@ -1646,7 +1717,8 @@ class PlantingSiteStore(
                   return 0
                 }
                 .map { (plotId, elevation) -> DSL.row(plotId, elevation) }
-                .toTypedArray())
+                .toTypedArray()
+        )
 
     val plotIdField =
         elevationTable.field(0, SQLDataType.BIGINT.asConvertedDataType(MonitoringPlotIdConverter()))
@@ -1706,10 +1778,13 @@ class PlantingSiteStore(
         val subzone =
             plantingZone.findPlantingSubzone(plotBoundary)
                 ?: throw IllegalStateException(
-                    "Planting zone ${plantingZone.id} not fully covered by subzones")
+                    "Planting zone ${plantingZone.id} not fully covered by subzones"
+                )
         val plotNumber =
             identifierGenerator.generateNumericIdentifier(
-                plantingSite.organizationId, NumericIdentifierType.PlotNumber)
+                plantingSite.organizationId,
+                NumericIdentifierType.PlotNumber,
+            )
 
         val monitoringPlotsRow =
             MonitoringPlotsRow(
@@ -1758,11 +1833,14 @@ class PlantingSiteStore(
       } else {
         val plotNumber =
             identifierGenerator.generateNumericIdentifier(
-                plantingSite.organizationId, NumericIdentifierType.PlotNumber)
+                plantingSite.organizationId,
+                NumericIdentifierType.PlotNumber,
+            )
         val subzone =
             plantingZone.findPlantingSubzone(plotBoundary)
                 ?: throw IllegalStateException(
-                    "Planting zone $plantingZoneId not fully covered by subzones")
+                    "Planting zone $plantingZoneId not fully covered by subzones"
+                )
 
         val monitoringPlotsRow =
             MonitoringPlotsRow(
@@ -1776,7 +1854,8 @@ class PlantingSiteStore(
                 plantingSiteId = plantingSiteId,
                 plantingSubzoneId = subzone.id,
                 plotNumber = plotNumber,
-                sizeMeters = MONITORING_PLOT_SIZE_INT)
+                sizeMeters = MONITORING_PLOT_SIZE_INT,
+            )
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
         insertMonitoringPlotHistory(monitoringPlotsRow)
@@ -1788,7 +1867,7 @@ class PlantingSiteStore(
 
   fun migrateSimplePlantingSites(
       addSuccessMessage: (String) -> Unit,
-      addFailureMessage: (String) -> Unit
+      addFailureMessage: (String) -> Unit,
   ) {
     // These are the names we use in terraware-web when creating a new planting site without
     // specifying zones or subzones. They are not translated into the user's language.
@@ -1805,7 +1884,8 @@ class PlantingSiteStore(
               .andNotExists(
                   DSL.selectOne()
                       .from(PLANTING_ZONES)
-                      .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID)))
+                      .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+              )
               .orderBy(PLANTING_SITES.ID)
               .fetch(PLANTING_SITES.ID.asNonNullable())
 
@@ -1829,7 +1909,8 @@ class PlantingSiteStore(
 
           if (newSite.areaHa == null || newSite.areaHa.equalsIgnoreScale(BigDecimal.ZERO)) {
             addFailureMessage(
-                "Planting site $siteId (${existingSite.name}) area too small to convert")
+                "Planting site $siteId (${existingSite.name}) area too small to convert"
+            )
             continue
           }
 
@@ -1897,18 +1978,22 @@ class PlantingSiteStore(
                     PLANTING_ZONE_ID,
                     SPECIES_ID,
                     TOTAL_PLANTS,
-                    PLANTS_SINCE_LAST_OBSERVATION)
+                    PLANTS_SINCE_LAST_OBSERVATION,
+                )
                 .select(
                     DSL.select(
                             PLANTING_ZONES.ID,
                             PLANTING_SITE_POPULATIONS.SPECIES_ID,
                             PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
-                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+                        )
                         .from(PLANTING_SITE_POPULATIONS)
                         .join(PLANTING_ZONES)
                         .on(
                             PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
-                                PLANTING_ZONES.PLANTING_SITE_ID))
+                                PLANTING_ZONES.PLANTING_SITE_ID
+                            )
+                        )
                         .whereNotExists(
                             DSL.selectOne()
                                 .from(PLANTING_ZONE_POPULATIONS)
@@ -1916,7 +2001,10 @@ class PlantingSiteStore(
                                 .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
                                 .where(
                                     PLANTING_ZONES.PLANTING_SITE_ID.eq(
-                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID
+                                    )
+                                )
+                        )
                         .and(
                             DSL.value(1)
                                 .eq(
@@ -1924,7 +2012,12 @@ class PlantingSiteStore(
                                         .from(PLANTING_ZONES)
                                         .where(
                                             PLANTING_ZONES.PLANTING_SITE_ID.eq(
-                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID
+                                            )
+                                        )
+                                )
+                        )
+                )
                 .execute()
 
         log.info("Inserted $rowsInserted planting zone populations")
@@ -1938,18 +2031,22 @@ class PlantingSiteStore(
                     PLANTING_SUBZONE_ID,
                     SPECIES_ID,
                     TOTAL_PLANTS,
-                    PLANTS_SINCE_LAST_OBSERVATION)
+                    PLANTS_SINCE_LAST_OBSERVATION,
+                )
                 .select(
                     DSL.select(
                             PLANTING_SUBZONES.ID,
                             PLANTING_SITE_POPULATIONS.SPECIES_ID,
                             PLANTING_SITE_POPULATIONS.TOTAL_PLANTS,
-                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
+                            PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+                        )
                         .from(PLANTING_SITE_POPULATIONS)
                         .join(PLANTING_SUBZONES)
                         .on(
                             PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID.eq(
-                                PLANTING_SUBZONES.PLANTING_SITE_ID))
+                                PLANTING_SUBZONES.PLANTING_SITE_ID
+                            )
+                        )
                         .whereNotExists(
                             DSL.selectOne()
                                 .from(PLANTING_SUBZONE_POPULATIONS)
@@ -1957,7 +2054,10 @@ class PlantingSiteStore(
                                 .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
                                 .where(
                                     PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
-                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))
+                                        PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID
+                                    )
+                                )
+                        )
                         .and(
                             DSL.value(1)
                                 .eq(
@@ -1965,7 +2065,12 @@ class PlantingSiteStore(
                                         .from(PLANTING_SUBZONES)
                                         .where(
                                             PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
-                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID)))))
+                                                PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID
+                                            )
+                                        )
+                                )
+                        )
+                )
                 .execute()
 
         log.info("Inserted $rowsInserted planting subzone populations")
@@ -1986,19 +2091,24 @@ class PlantingSiteStore(
                 PLANTINGS.PLANTING_SUBZONE_ID,
                 DSL.select(PLANTING_SUBZONES.ID)
                     .from(PLANTING_SUBZONES)
-                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)))
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)),
+            )
             .where(PLANTINGS.PLANTING_SUBZONE_ID.isNull)
             .andExists(
                 DSL.selectOne()
                     .from(PLANTING_SUBZONES)
-                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)))
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID))
+            )
             .and(
                 DSL.value(1)
                     .eq(
                         DSL.selectCount()
                             .from(PLANTING_SUBZONES)
                             .where(
-                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID))))
+                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(PLANTINGS.PLANTING_SITE_ID)
+                            )
+                    )
+            )
             .execute()
 
     log.info("Populated planting subzones for $rowsUpdated plantings")
@@ -2012,10 +2122,12 @@ class PlantingSiteStore(
                       PLANTING_SEASONS.ID,
                       PLANTING_SEASONS.IS_ACTIVE,
                       PLANTING_SEASONS.START_DATE,
-                      PLANTING_SEASONS.START_TIME)
+                      PLANTING_SEASONS.START_TIME,
+                  )
                   .from(PLANTING_SEASONS)
                   .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
-                  .orderBy(PLANTING_SEASONS.START_DATE))
+                  .orderBy(PLANTING_SEASONS.START_DATE)
+          )
           .convertFrom { result ->
             result.map { record ->
               ExistingPlantingSeasonModel(
@@ -2044,7 +2156,8 @@ class PlantingSiteStore(
               .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
               .and(observationPlotCondition)
               .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
-              .limit(1))
+              .limit(1)
+      )
 
   private fun monitoringPlotsMultiset(condition: Condition): Field<List<MonitoringPlotModel>> {
     return DSL.multiset(
@@ -2060,7 +2173,8 @@ class PlantingSiteStore(
                 )
                 .from(MONITORING_PLOTS)
                 .where(condition)
-                .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
+                .orderBy(MONITORING_PLOTS.PLOT_NUMBER)
+        )
         .convertFrom { result ->
           result.map { record ->
             MonitoringPlotModel(
@@ -2085,14 +2199,18 @@ class PlantingSiteStore(
                       MONITORING_PLOT_HISTORIES.ID,
                       MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
                       MONITORING_PLOTS.SIZE_METERS,
-                      monitoringPlotBoundaryField)
+                      monitoringPlotBoundaryField,
+                  )
                   .from(MONITORING_PLOT_HISTORIES)
                   .join(MONITORING_PLOTS)
                   .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                   .where(
                       PLANTING_SUBZONE_HISTORIES.ID.eq(
-                          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID))
-                  .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
+                          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
+                      )
+                  )
+                  .orderBy(MONITORING_PLOTS.PLOT_NUMBER)
+          )
           .convertFrom { result ->
             result.map { record ->
               MonitoringPlotHistoryModel(
@@ -2115,14 +2233,16 @@ class PlantingSiteStore(
                 DSL.and(
                     PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID),
                     MONITORING_PLOTS.IS_AD_HOC.isFalse(),
-                ))
+                )
+            )
         else null
 
     val observationPlotCondition =
         OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(
             DSL.select(MONITORING_PLOTS.ID)
                 .from(MONITORING_PLOTS)
-                .where(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
+                .where(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+        )
 
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
     val latestObservationTimeField =
@@ -2140,10 +2260,12 @@ class PlantingSiteStore(
                     plantingSubzoneBoundaryField,
                     latestObservationIdField,
                     latestObservationTimeField,
-                    plotsField)
+                    plotsField,
+                )
                 .from(PLANTING_SUBZONES)
                 .where(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
-                .orderBy(PLANTING_SUBZONES.FULL_NAME))
+                .orderBy(PLANTING_SUBZONES.FULL_NAME)
+        )
         .convertFrom { result ->
           result.map { record: Record ->
             ExistingPlantingSubzoneModel(
@@ -2178,12 +2300,16 @@ class PlantingSiteStore(
                     PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
                     PLANTING_SUBZONE_HISTORIES.STABLE_ID,
                     boundaryField,
-                    plotsField)
+                    plotsField,
+                )
                 .from(PLANTING_SUBZONE_HISTORIES)
                 .where(
                     PLANTING_ZONE_HISTORIES.ID.eq(
-                        PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID))
-                .orderBy(PLANTING_SUBZONE_HISTORIES.FULL_NAME))
+                        PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID
+                    )
+                )
+                .orderBy(PLANTING_SUBZONE_HISTORIES.FULL_NAME)
+        )
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingSubzoneHistoryModel(
@@ -2216,7 +2342,8 @@ class PlantingSiteStore(
                 .from(MONITORING_PLOTS)
                 .join(PLANTING_SUBZONES)
                 .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
-                .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)))
+                .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+        )
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
     val latestObservationTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
@@ -2237,10 +2364,12 @@ class PlantingSiteStore(
                     plantingZonesBoundaryField,
                     latestObservationIdField,
                     latestObservationTimeField,
-                    subzonesField)
+                    subzonesField,
+                )
                 .from(PLANTING_ZONES)
                 .where(PLANTING_SITES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID))
-                .orderBy(PLANTING_ZONES.NAME))
+                .orderBy(PLANTING_ZONES.NAME)
+        )
         .convertFrom { result ->
           result.map { record: Record ->
             ExistingPlantingZoneModel(
@@ -2283,11 +2412,14 @@ class PlantingSiteStore(
                     PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
                     PLANTING_ZONE_HISTORIES.STABLE_ID,
                     boundaryField,
-                    subzonesField)
+                    subzonesField,
+                )
                 .from(PLANTING_ZONE_HISTORIES)
                 .where(
-                    PLANTING_SITE_HISTORIES.ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID))
-                .orderBy(PLANTING_ZONE_HISTORIES.NAME))
+                    PLANTING_SITE_HISTORIES.ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID)
+                )
+                .orderBy(PLANTING_ZONE_HISTORIES.NAME)
+        )
         .convertFrom { result ->
           result.map { record: Record ->
             PlantingZoneHistoryModel(
@@ -2305,7 +2437,7 @@ class PlantingSiteStore(
 
   private fun fetchPermanentPlotId(
       plantingZoneId: PlantingZoneId,
-      permanentIndex: Int
+      permanentIndex: Int,
   ): MonitoringPlotId? {
     return dslContext
         .select(MONITORING_PLOTS.ID)
@@ -2328,7 +2460,8 @@ class PlantingSiteStore(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
                     .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                    .and(OBSERVATION_PLOTS.IS_PERMANENT))
+                    .and(OBSERVATION_PLOTS.IS_PERMANENT)
+            )
             .asNonNullable()
 
     val (maxIndex, maxIndexWasPreviouslyUsed) =
@@ -2352,7 +2485,7 @@ class PlantingSiteStore(
 
   private fun <ID> speciesCountMultiset(
       scopeIdField: TableField<*, ID?>,
-      tableIdField: Field<ID>
+      tableIdField: Field<ID>,
   ): Field<List<PlantingSiteReportedPlantTotals.Species>> {
     val table = scopeIdField.table!!
 
@@ -2369,7 +2502,8 @@ class PlantingSiteStore(
                     totalPlantsField,
                 )
                 .from(table)
-                .where(tableIdField.eq(scopeIdField)))
+                .where(tableIdField.eq(scopeIdField))
+        )
         .convertFrom { result ->
           result.map { record ->
             PlantingSiteReportedPlantTotals.Species(
@@ -2390,7 +2524,8 @@ class PlantingSiteStore(
                 DSL.select(PLANTING_SUBZONES.ID, subzoneSpeciesField)
                     .from(PLANTING_SUBZONES)
                     .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                    .orderBy(PLANTING_SUBZONES.ID))
+                    .orderBy(PLANTING_SUBZONES.ID)
+            )
             .convertFrom { result ->
               result.map { record ->
                 val species = record[subzoneSpeciesField]
@@ -2421,7 +2556,8 @@ class PlantingSiteStore(
                     )
                     .from(PLANTING_ZONES)
                     .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-                    .orderBy(PLANTING_ZONES.ID))
+                    .orderBy(PLANTING_ZONES.ID)
+            )
             .convertFrom { result ->
               result.map { record ->
                 val targetPlants =
@@ -2477,11 +2613,15 @@ class PlantingSiteStore(
         desiredSeason.id
             ?.let { existingPlantingSeasons[it] }
             ?.let { existingSeason ->
-              if (existingSeason.endDate < todayAtSite &&
-                  (existingSeason.startDate != desiredSeason.startDate ||
-                      existingSeason.endDate != desiredSeason.endDate)) {
+              if (
+                  existingSeason.endDate < todayAtSite &&
+                      (existingSeason.startDate != desiredSeason.startDate ||
+                          existingSeason.endDate != desiredSeason.endDate)
+              ) {
                 throw CannotUpdatePastPlantingSeasonException(
-                    existingSeason.id, existingSeason.endDate)
+                    existingSeason.id,
+                    existingSeason.endDate,
+                )
               }
             }
       }
@@ -2491,7 +2631,11 @@ class PlantingSiteStore(
           .reduce { previous, next ->
             if (next.startDate <= previous.endDate) {
               throw PlantingSeasonsOverlapException(
-                  previous.startDate, previous.endDate, next.startDate, next.endDate)
+                  previous.startDate,
+                  previous.endDate,
+                  next.startDate,
+                  next.endDate,
+              )
             }
 
             next
@@ -2501,7 +2645,7 @@ class PlantingSiteStore(
 
   private fun startPlantingSeason(
       plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId
+      plantingSeasonId: PlantingSeasonId,
   ) {
     dslContext.transaction { _ ->
       val rowsUpdated =
@@ -2526,7 +2670,9 @@ class PlantingSiteStore(
 
     dslContext
         .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(), PLANTING_SEASONS.ID.asNonNullable())
+            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
+            PLANTING_SEASONS.ID.asNonNullable(),
+        )
         .from(PLANTING_SEASONS)
         .where(PLANTING_SEASONS.START_TIME.le(now))
         .and(PLANTING_SEASONS.END_TIME.gt(now))
@@ -2539,7 +2685,7 @@ class PlantingSiteStore(
 
   private fun endPlantingSeason(
       plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId
+      plantingSeasonId: PlantingSeasonId,
   ) {
     dslContext.transaction { _ ->
       val rowsUpdated =
@@ -2563,7 +2709,9 @@ class PlantingSiteStore(
   private fun endPlantingSeasons() {
     dslContext
         .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(), PLANTING_SEASONS.ID.asNonNullable())
+            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
+            PLANTING_SEASONS.ID.asNonNullable(),
+        )
         .from(PLANTING_SEASONS)
         .where(PLANTING_SEASONS.END_TIME.le(clock.instant()))
         .and(PLANTING_SEASONS.IS_ACTIVE.isTrue)
@@ -2585,7 +2733,8 @@ class PlantingSiteStore(
         .and(
             PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.`in`(
                 NotificationType.SchedulePlantingSeason,
-            ))
+            )
+        )
         .execute()
   }
 
@@ -2705,13 +2854,15 @@ class PlantingSiteStore(
               PLANTING_SITE_HISTORY_ID,
               DSL.select(DSL.max(PLANTING_SITE_HISTORIES.ID))
                   .from(PLANTING_SITE_HISTORIES)
-                  .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)))
+                  .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)),
+          )
           .set(PLANTING_SITE_ID, plantingSiteId)
           .set(
               PLANTING_SUBZONE_HISTORY_ID,
               DSL.select(DSL.max(PLANTING_SUBZONE_HISTORIES.ID))
                   .from(PLANTING_SUBZONE_HISTORIES)
-                  .where(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)))
+                  .where(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)),
+          )
           .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
           .returning(ID)
           .fetchOne(ID)!!

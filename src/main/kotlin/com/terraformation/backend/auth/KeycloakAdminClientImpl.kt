@@ -65,7 +65,7 @@ class KeycloakAdminClientImpl(
       clientId: String,
       redirectUri: String,
       lifespan: Int,
-      actions: List<String>
+      actions: List<String>,
   ) {
     webClient
         .put()
@@ -140,7 +140,8 @@ class KeycloakAdminClientImpl(
               .bodyToMono<String>()
               .flatMap { responseBody ->
                 Mono.just(
-                    Response.status(response.statusCode().value()).entity(responseBody).build())
+                    Response.status(response.statusCode().value()).entity(responseBody).build()
+                )
               }
               .defaultIfEmpty(Response.status(response.statusCode().value()).build())
         }
@@ -168,7 +169,9 @@ class KeycloakAdminClientImpl(
 
     val filter =
         ServletOAuth2AuthorizedClientExchangeFilterFunction(
-            adminRepository, InMemoryAuthorizedClientRepository())
+            adminRepository,
+            InMemoryAuthorizedClientRepository(),
+        )
     filter.setDefaultClientRegistrationId("keycloak")
 
     // Issuer URI is, e.g., http://host/realms/funder. We want http://host/admin/realms/funder
@@ -187,7 +190,7 @@ class KeycloakAdminClientImpl(
     override fun <T : OAuth2AuthorizedClient?> loadAuthorizedClient(
         clientRegistrationId: String,
         principal: Authentication?,
-        request: HttpServletRequest?
+        request: HttpServletRequest?,
     ): T {
       @Suppress("UNCHECKED_CAST")
       return clients[clientRegistrationId] as T
@@ -197,7 +200,7 @@ class KeycloakAdminClientImpl(
         authorizedClient: OAuth2AuthorizedClient,
         principal: Authentication?,
         request: HttpServletRequest?,
-        response: HttpServletResponse?
+        response: HttpServletResponse?,
     ) {
       clients[authorizedClient.clientRegistration.registrationId] = authorizedClient
     }
@@ -206,7 +209,7 @@ class KeycloakAdminClientImpl(
         clientRegistrationId: String,
         principal: Authentication?,
         request: HttpServletRequest?,
-        response: HttpServletResponse?
+        response: HttpServletResponse?,
     ) {
       clients.remove(clientRegistrationId)
     }

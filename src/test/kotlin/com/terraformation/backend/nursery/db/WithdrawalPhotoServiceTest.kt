@@ -45,7 +45,8 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
         mockk(),
         filesDao,
         fileStore,
-        thumbnailStore)
+        thumbnailStore,
+    )
   }
   private val service: WithdrawalPhotoService by lazy {
     WithdrawalPhotoService(dslContext, fileService, ImageUtils(fileStore), withdrawalPhotosDao)
@@ -148,14 +149,15 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(WithdrawalPhotosRow(fileId = otherOrgfileId, withdrawalId = otherOrgWithdrawalId)),
         withdrawalPhotosDao.findAll(),
-        "Remaining withdrawal photos")
+        "Remaining withdrawal photos",
+    )
 
     assertIsEventListener<OrganizationDeletionStartedEvent>(service)
   }
 
   private fun storePhoto(
       withdrawalId: WithdrawalId = this.withdrawalId,
-      content: ByteArray = onePixelPng
+      content: ByteArray = onePixelPng,
   ): FileId {
     return service.storePhoto(withdrawalId, content.inputStream(), metadata)
   }

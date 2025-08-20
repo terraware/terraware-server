@@ -17,7 +17,9 @@ class ObservationStoreMarkUpcomingNotificationCompleteTest : BaseObservationStor
     store.markUpcomingNotificationComplete(observationId)
 
     assertEquals(
-        clock.instant, observationsDao.fetchOneById(observationId)?.upcomingNotificationSentTime)
+        clock.instant,
+        observationsDao.fetchOneById(observationId)?.upcomingNotificationSentTime,
+    )
   }
 
   @Test

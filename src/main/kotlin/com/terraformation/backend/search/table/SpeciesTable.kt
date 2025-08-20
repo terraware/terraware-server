@@ -30,24 +30,40 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
                   .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
-              isRequired = false),
+              isRequired = false,
+          ),
           nurserySpeciesProjects.asMultiValueSublist(
-              "nurseryProjects", SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
+              "nurseryProjects",
+              SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID),
+          ),
           organizations.asSingleValueSublist(
-              "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           participantProjectSpecies.asMultiValueSublist(
-              "participantProjectSpecies", SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID)),
+              "participantProjectSpecies",
+              SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID),
+          ),
           speciesEcosystemTypes.asMultiValueSublist(
-              "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
+              "ecosystemTypes",
+              SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID),
+          ),
           speciesGrowthForms.asMultiValueSublist(
-              "growthForms", SPECIES.ID.eq(SPECIES_GROWTH_FORMS.SPECIES_ID)),
+              "growthForms",
+              SPECIES.ID.eq(SPECIES_GROWTH_FORMS.SPECIES_ID),
+          ),
           speciesPlantMaterialSourcingMethods.asMultiValueSublist(
               "plantMaterialSourcingMethods",
-              SPECIES.ID.eq(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID)),
+              SPECIES.ID.eq(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID),
+          ),
           speciesProblems.asMultiValueSublist(
-              "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
+              "problems",
+              SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID),
+          ),
           speciesSuccessionalGroups.asMultiValueSublist(
-              "successionalGroups", SPECIES.ID.eq(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID)),
+              "successionalGroups",
+              SPECIES.ID.eq(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID),
+          ),
       )
     }
   }

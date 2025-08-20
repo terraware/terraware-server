@@ -21,7 +21,7 @@ data class SubmissionModel<ID : SubmissionId?>(
   companion object {
     fun of(
         record: Record,
-        submissionDocumentIds: Field<Set<SubmissionDocumentId>>? = null
+        submissionDocumentIds: Field<Set<SubmissionDocumentId>>? = null,
     ): ExistingSubmissionModel {
       return ExistingSubmissionModel(
           id = record[SUBMISSIONS.ID]!!,

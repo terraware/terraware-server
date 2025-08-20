@@ -103,7 +103,8 @@ class ObservationStore(
         DSL.multiset(
                 DSL.select(PLANTING_SUBZONE_ID)
                     .from(OBSERVATION_REQUESTED_SUBZONES)
-                    .where(OBSERVATION_ID.eq(OBSERVATIONS.ID)))
+                    .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+            )
             .convertFrom { result -> result.map { it[PLANTING_SUBZONE_ID]!! }.toSet() }
       }
 
@@ -158,7 +159,7 @@ class ObservationStore(
 
   fun fetchOneObservationPlotDetails(
       observationId: ObservationId,
-      plotId: MonitoringPlotId
+      plotId: MonitoringPlotId,
   ): AssignedPlotDetails {
     requirePermissions { readObservation(observationId) }
 
@@ -166,7 +167,8 @@ class ObservationStore(
             DSL.and(
                 OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
                 OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId),
-            ))
+            )
+        )
         .firstOrNull() ?: throw ObservationPlotNotFoundException(observationId, plotId)
   }
 
@@ -178,12 +180,12 @@ class ObservationStore(
         }
     val claimedByNameField =
         DSL.field(
-            DSL.select(fullNameField).from(USERS).where(USERS.ID.eq(OBSERVATION_PLOTS.CLAIMED_BY)))
+            DSL.select(fullNameField).from(USERS).where(USERS.ID.eq(OBSERVATION_PLOTS.CLAIMED_BY))
+        )
     val completedByNameField =
         DSL.field(
-            DSL.select(fullNameField)
-                .from(USERS)
-                .where(USERS.ID.eq(OBSERVATION_PLOTS.COMPLETED_BY)))
+            DSL.select(fullNameField).from(USERS).where(USERS.ID.eq(OBSERVATION_PLOTS.COMPLETED_BY))
+        )
 
     val earlierObservationPlots = OBSERVATION_PLOTS.`as`("earlier_plots")
     val isFirstObservationField =
@@ -192,8 +194,11 @@ class ObservationStore(
                 .from(earlierObservationPlots)
                 .where(
                     earlierObservationPlots.MONITORING_PLOT_ID.eq(
-                        OBSERVATION_PLOTS.MONITORING_PLOT_ID))
-                .and(earlierObservationPlots.OBSERVATION_ID.lt(OBSERVATION_PLOTS.OBSERVATION_ID)))
+                        OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                    )
+                )
+                .and(earlierObservationPlots.OBSERVATION_ID.lt(OBSERVATION_PLOTS.OBSERVATION_ID))
+        )
 
     return dslContext
         .select(
@@ -241,7 +246,8 @@ class ObservationStore(
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_REQUESTED_SUBZONES)
-              .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(OBSERVATIONS.ID)))
+              .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+      )
 
   /**
    * Returns a list of observations that are starting in 1 month or less and for which we have yet
@@ -257,9 +263,10 @@ class ObservationStore(
             OBSERVATIONS.START_DATE.le(maxStartDate),
             OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME.isNull,
             observationHasRequestedSubzones,
-        )) { todayAtSite, record ->
-          record[OBSERVATIONS.START_DATE]!! <= todayAtSite.plusMonths(1)
-        }
+        )
+    ) { todayAtSite, record ->
+      record[OBSERVATIONS.START_DATE]!! <= todayAtSite.plusMonths(1)
+    }
   }
 
   fun fetchStartableObservations(
@@ -273,9 +280,10 @@ class ObservationStore(
             OBSERVATIONS.START_DATE.le(maxStartDate),
             observationHasRequestedSubzones,
             plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
-        )) { todayAtSite, record ->
-          record[OBSERVATIONS.START_DATE]!! <= todayAtSite
-        }
+        )
+    ) { todayAtSite, record ->
+      record[OBSERVATIONS.START_DATE]!! <= todayAtSite
+    }
   }
 
   fun fetchObservationsPastEndDate(
@@ -288,9 +296,10 @@ class ObservationStore(
             OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress),
             OBSERVATIONS.END_DATE.le(maxEndDate),
             plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
-        )) { todayAtSite, record ->
-          record[OBSERVATIONS.END_DATE]!! < todayAtSite
-        }
+        )
+    ) { todayAtSite, record ->
+      record[OBSERVATIONS.END_DATE]!! < todayAtSite
+    }
   }
 
   /**
@@ -299,12 +308,13 @@ class ObservationStore(
    */
   private fun fetchWithDateFilter(
       conditions: List<Condition>,
-      predicate: (LocalDate, Record) -> Boolean
+      predicate: (LocalDate, Record) -> Boolean,
   ): List<ExistingObservationModel> {
     val timeZoneField =
         DSL.coalesce(
             OBSERVATIONS.plantingSites.TIME_ZONE,
-            OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
+            OBSERVATIONS.plantingSites.organizations.TIME_ZONE,
+        )
 
     return dslContext
         .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField, timeZoneField)
@@ -330,7 +340,7 @@ class ObservationStore(
    */
   fun fetchActiveObservationIds(
       plantingSiteId: PlantingSiteId,
-      plantingZoneIds: Collection<PlantingZoneId>
+      plantingZoneIds: Collection<PlantingZoneId>,
   ): List<ObservationId> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -351,10 +361,17 @@ class ObservationStore(
                       .from(OBSERVATION_PLOTS)
                       .where(
                           OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.`in`(
-                              plantingZoneIds))
+                              plantingZoneIds
+                          )
+                      )
                       .and(
                           OBSERVATION_PLOTS.STATUS_ID.`in`(
-                              ObservationPlotStatus.Claimed, ObservationPlotStatus.Unclaimed))))
+                              ObservationPlotStatus.Claimed,
+                              ObservationPlotStatus.Unclaimed,
+                          )
+                      )
+              )
+          )
           .orderBy(ID)
           .fetch(ID.asNonNullable())
     }
@@ -440,7 +457,7 @@ class ObservationStore(
    */
   fun <T> withLockedObservation(
       observationId: ObservationId,
-      func: (ExistingObservationModel) -> T
+      func: (ExistingObservationModel) -> T,
   ): T {
     requirePermissions { updateObservation(observationId) }
 
@@ -465,7 +482,8 @@ class ObservationStore(
     return dslContext.fetchExists(
         DSL.selectOne()
             .from(OBSERVATION_PLOTS)
-            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)))
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+    )
   }
 
   fun createObservation(newModel: NewObservationModel): ObservationId {
@@ -522,7 +540,7 @@ class ObservationStore(
   fun rescheduleObservation(
       observationId: ObservationId,
       startDate: LocalDate,
-      endDate: LocalDate
+      endDate: LocalDate,
   ) {
     requirePermissions { updateObservation(observationId) }
 
@@ -610,7 +628,9 @@ class ObservationStore(
           .execute()
 
       observation.copy(
-          plantingSiteHistoryId = plantingSiteHistoryId, state = ObservationState.InProgress)
+          plantingSiteHistoryId = plantingSiteHistoryId,
+          state = ObservationState.InProgress,
+      )
     }
   }
 
@@ -643,7 +663,7 @@ class ObservationStore(
   fun addPlotsToObservation(
       observationId: ObservationId,
       plotIds: Collection<MonitoringPlotId>,
-      isPermanent: Boolean
+      isPermanent: Boolean,
   ) {
     if (!currentUser().canManageObservation(observationId)) {
       requirePermissions { replaceObservationPlot(observationId) }
@@ -666,7 +686,7 @@ class ObservationStore(
 
   fun removePlotsFromObservation(
       observationId: ObservationId,
-      plotIds: Collection<MonitoringPlotId>
+      plotIds: Collection<MonitoringPlotId>,
   ) {
     if (!currentUser().canManageObservation(observationId)) {
       requirePermissions { replaceObservationPlot(observationId) }
@@ -719,7 +739,9 @@ class ObservationStore(
                 OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Unclaimed)
                     .or(
                         OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Claimed)
-                            .and(OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId))))
+                            .and(OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId))
+                    )
+            )
             .execute()
 
     if (rowsUpdated == 0) {
@@ -793,7 +815,8 @@ class ObservationStore(
                   MONITORING_PLOTS.PLANTING_SUBZONE_ID,
                   MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID,
                   MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
-                  MONITORING_PLOTS.IS_AD_HOC.asNonNullable())
+                  MONITORING_PLOTS.IS_AD_HOC.asNonNullable(),
+              )
               .from(MONITORING_PLOTS)
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .fetchOne()!!
@@ -815,13 +838,16 @@ class ObservationStore(
               .fetchOneInto(ObservationPlotsRow::class.java)
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
 
-      if (observationPlotsRow.statusId == ObservationPlotStatus.Completed ||
-          observationPlotsRow.statusId == ObservationPlotStatus.NotObserved) {
+      if (
+          observationPlotsRow.statusId == ObservationPlotStatus.Completed ||
+              observationPlotsRow.statusId == ObservationPlotStatus.NotObserved
+      ) {
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
       observationPlotConditionsDao.insert(
-          conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) })
+          conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) }
+      )
 
       val plantsRows =
           plants.map { it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId) }
@@ -846,7 +872,8 @@ class ObservationStore(
           isAdHoc,
           observationPlotsRow.isPermanent!!,
           plantCountsBySpecies,
-          cumulativeDeadFromCurrentObservation = true)
+          cumulativeDeadFromCurrentObservation = true,
+      )
 
       observationPlotsDao.update(
           observationPlotsRow.copy(
@@ -855,7 +882,8 @@ class ObservationStore(
               notes = notes,
               observedTime = observedTime,
               statusId = ObservationPlotStatus.Completed,
-          ))
+          )
+      )
 
       if (plantingSubzoneId != null) {
         updateSubzoneObservedTime(plantingSubzoneId, observedTime)
@@ -882,7 +910,7 @@ class ObservationStore(
    */
   private fun updateSubzoneObservedTime(
       plantingSubzoneId: PlantingSubzoneId,
-      observedTime: Instant
+      observedTime: Instant,
   ) {
     with(PLANTING_SUBZONES) {
       dslContext
@@ -899,7 +927,7 @@ class ObservationStore(
   fun insertBiomassDetails(
       observationId: ObservationId,
       plotId: MonitoringPlotId,
-      model: NewBiomassDetailsModel
+      model: NewBiomassDetailsModel,
   ) {
     requirePermissions { updateObservation(observationId) }
 
@@ -908,13 +936,15 @@ class ObservationStore(
           dslContext
               .select(
                   observations.OBSERVATION_TYPE_ID.asNonNullable(),
-                  observations.STATE_ID.asNonNullable())
+                  observations.STATE_ID.asNonNullable(),
+              )
               .from(this)
               .where(OBSERVATION_ID.eq(observationId))
               .and(MONITORING_PLOT_ID.eq(plotId))
               .fetchOne()
               ?: throw IllegalStateException(
-                  "Plot $plotId is not part of observation $observationId")
+                  "Plot $plotId is not part of observation $observationId"
+              )
         }
 
     if (observationState == ObservationState.Completed) {
@@ -997,7 +1027,8 @@ class ObservationStore(
                       biomassSpeciesIdsBySpeciesIdentifiers[
                           BiomassSpeciesKey(it.speciesId, it.speciesName)]
                           ?: throw IllegalArgumentException(
-                              "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."),
+                              "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."
+                          ),
                   abundancePercent = it.abundancePercent,
               )
             }
@@ -1013,25 +1044,32 @@ class ObservationStore(
                     biomassSpeciesIdsBySpeciesIdentifiers[
                         BiomassSpeciesKey(it.speciesId, it.speciesName)]
                         ?: throw IllegalArgumentException(
-                            "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."),
+                            "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."
+                        ),
                 treeNumber = it.treeNumber,
                 trunkNumber = it.trunkNumber,
                 treeGrowthFormId = it.treeGrowthForm,
                 gpsCoordinates = it.gpsCoordinates,
                 isDead = it.isDead,
                 diameterAtBreastHeightCm =
-                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
-                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                    if (
+                        it.treeGrowthForm == TreeGrowthForm.Tree ||
+                            it.treeGrowthForm == TreeGrowthForm.Trunk
+                    )
                         it.diameterAtBreastHeightCm
                     else null,
                 pointOfMeasurementM =
-                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
-                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                    if (
+                        it.treeGrowthForm == TreeGrowthForm.Tree ||
+                            it.treeGrowthForm == TreeGrowthForm.Trunk
+                    )
                         it.pointOfMeasurementM
                     else null,
                 heightM =
-                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
-                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                    if (
+                        it.treeGrowthForm == TreeGrowthForm.Tree ||
+                            it.treeGrowthForm == TreeGrowthForm.Trunk
+                    )
                         it.heightM
                     else null,
                 shrubDiameterCm =
@@ -1112,7 +1150,8 @@ class ObservationStore(
                         RecordedSpeciesKey(
                             it[RECORDED_PLANTS.CERTAINTY_ID]!!,
                             it[RECORDED_PLANTS.SPECIES_ID],
-                            it[RECORDED_PLANTS.SPECIES_NAME])
+                            it[RECORDED_PLANTS.SPECIES_NAME],
+                        )
                       }
                       .mapValues { (_, statusTotals) ->
                         statusTotals.associate {
@@ -1123,14 +1162,16 @@ class ObservationStore(
               NegativeCount(
                   observationId,
                   records.first()[OBSERVATION_PLOTS.IS_PERMANENT]!!,
-                  plantCountsBySpecies)
+                  plantCountsBySpecies,
+              )
             }
 
     negativeCounts.forEach { negativeCount ->
       log.debug(
           "Subtracting plant counts for plot $monitoringPlotId from site $plantingSiteId and " +
               "zone $plantingZoneId in observation ${negativeCount.observationId}: " +
-              "${negativeCount.plantCountsBySpecies}")
+              "${negativeCount.plantCountsBySpecies}"
+      )
 
       updateSpeciesTotals(
           negativeCount.observationId,
@@ -1140,7 +1181,8 @@ class ObservationStore(
           null,
           isAdHoc,
           negativeCount.isPermanent,
-          negativeCount.plantCountsBySpecies)
+          negativeCount.plantCountsBySpecies,
+      )
     }
   }
 
@@ -1153,7 +1195,7 @@ class ObservationStore(
   fun mergeOtherSpecies(
       observationId: ObservationId,
       otherSpeciesName: String,
-      speciesId: SpeciesId
+      speciesId: SpeciesId,
   ) {
     requirePermissions {
       updateObservation(observationId)
@@ -1177,20 +1219,23 @@ class ObservationStore(
   private fun mergeOtherSpeciesForBiomass(
       observation: ExistingObservationModel,
       speciesId: SpeciesId,
-      otherSpeciesName: String
+      otherSpeciesName: String,
   ) {
     val observationId = observation.id
 
     val otherBiomassSpeciesId =
         with(OBSERVATION_BIOMASS_SPECIES) {
           dslContext.fetchValue(
-              ID, SCIENTIFIC_NAME.eq(otherSpeciesName).and(OBSERVATION_ID.eq(observationId)))
+              ID,
+              SCIENTIFIC_NAME.eq(otherSpeciesName).and(OBSERVATION_ID.eq(observationId)),
+          )
         }
 
     if (otherBiomassSpeciesId == null) {
       log.warn(
           "Biomass observation $observationId does not contain species name $otherSpeciesName; " +
-              "merge is a no-op")
+              "merge is a no-op"
+      )
       return
     }
 
@@ -1238,7 +1283,8 @@ class ObservationStore(
               DSL.selectOne()
                   .from(quadratSpeciesTable2)
                   .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
-                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))
+                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+          )
           .execute()
 
       dslContext
@@ -1250,13 +1296,17 @@ class ObservationStore(
                       DSL.select(quadratSpeciesTable2.ABUNDANCE_PERCENT)
                           .from(quadratSpeciesTable2)
                           .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-                          .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))))
+                          .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+                  )
+              ),
+          )
           .where(BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
           .andExists(
               DSL.selectOne()
                   .from(quadratSpeciesTable2)
                   .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID)))
+                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+          )
           .execute()
     }
 
@@ -1268,12 +1318,14 @@ class ObservationStore(
               IS_INVASIVE,
               DSL.select(DSL.boolOr(IS_INVASIVE))
                   .from(OBSERVATION_BIOMASS_SPECIES)
-                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)))
+                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)),
+          )
           .set(
               IS_THREATENED,
               DSL.select(DSL.boolOr(IS_THREATENED))
                   .from(OBSERVATION_BIOMASS_SPECIES)
-                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)))
+                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)),
+          )
           .where(ID.eq(targetBiomassSpeciesId))
           .execute()
     }
@@ -1288,7 +1340,7 @@ class ObservationStore(
   private fun mergeOtherSpeciesForMonitoring(
       observation: ExistingObservationModel,
       speciesId: SpeciesId,
-      otherSpeciesName: String
+      otherSpeciesName: String,
   ) {
     val observationId = observation.id
     val observationPlotDetails =
@@ -1427,14 +1479,17 @@ class ObservationStore(
                     OBSERVATIONS.STATE_ID.`in`(
                         ObservationState.InProgress,
                         ObservationState.Overdue,
-                        ObservationState.Upcoming)))
+                        ObservationState.Upcoming,
+                    )
+                )
+        )
         .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
   }
 
   fun updatePlotObservation(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
-      coordinates: List<NewObservedPlotCoordinatesModel>
+      coordinates: List<NewObservedPlotCoordinatesModel>,
   ) {
     requirePermissions { updateObservation(observationId) }
 
@@ -1493,8 +1548,10 @@ class ObservationStore(
 
     val observation = fetchObservationById(observationId)
 
-    if (observation.state == ObservationState.Completed ||
-        observation.state == ObservationState.Abandoned) {
+    if (
+        observation.state == ObservationState.Completed ||
+            observation.state == ObservationState.Abandoned
+    ) {
       throw ObservationAlreadyEndedException(observationId)
     }
 
@@ -1502,7 +1559,8 @@ class ObservationStore(
         dslContext.fetchExists(
             OBSERVATION_PLOTS,
             OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
-            OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+            OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed),
+        )
 
     if (hasCompletedPlots) {
       dslContext.transaction { _ ->
@@ -1568,12 +1626,15 @@ class ObservationStore(
                   .join(OBSERVATION_REQUESTED_SUBZONES)
                   .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID))
                   .where(
-                      OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                      OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)
+                  )
                   .and(
                       OBSERVATIONS.COMPLETED_TIME.le(
                           DSL.select(OBSERVATIONS.COMPLETED_TIME)
                               .from(OBSERVATIONS)
-                              .where(OBSERVATIONS.ID.eq(observationId))))
+                              .where(OBSERVATIONS.ID.eq(observationId))
+                      )
+                  )
                   .and(OBSERVATIONS.IS_AD_HOC.isFalse)
                   .orderBy(
                       // Prefer results from this observation if any. True is considered
@@ -1581,7 +1642,8 @@ class ObservationStore(
                       // order means the matches come first.
                       OBSERVATION_ID.eq(observationId).desc(),
                       // Otherwise take the results from the latest observation.
-                      OBSERVATIONS.COMPLETED_TIME.desc())
+                      OBSERVATIONS.COMPLETED_TIME.desc(),
+                  )
                   .limit(1)
 
           dslContext
@@ -1720,7 +1782,9 @@ class ObservationStore(
             PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.`in`(
                 DSL.select(PLANTING_ZONES.ID)
                     .from(PLANTING_ZONES)
-                    .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+                    .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            )
+        )
         .execute()
 
     dslContext
@@ -1730,7 +1794,9 @@ class ObservationStore(
             PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.`in`(
                 DSL.select(PLANTING_SUBZONES.ID)
                     .from(PLANTING_SUBZONES)
-                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+                    .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            )
+        )
         .execute()
   }
 
@@ -1771,7 +1837,8 @@ class ObservationStore(
                 MORTALITY_RATE,
                 OBSERVATION_ID,
                 SPECIES_ID,
-                SPECIES_NAME)
+                SPECIES_NAME,
+            )
             .select(
                 DSL.select(
                         CERTAINTY_ID,
@@ -1780,7 +1847,8 @@ class ObservationStore(
                         DSL.value(100),
                         DSL.value(observationId),
                         SPECIES_ID,
-                        SPECIES_NAME)
+                        SPECIES_NAME,
+                    )
                     .distinctOn(MONITORING_PLOT_ID, CERTAINTY_ID, SPECIES_ID, SPECIES_NAME)
                     .from(OBSERVED_PLOT_SPECIES_TOTALS)
                     .join(OBSERVATION_PLOTS)
@@ -1795,7 +1863,9 @@ class ObservationStore(
                         CERTAINTY_ID,
                         SPECIES_ID,
                         SPECIES_NAME,
-                        OBSERVATIONS.COMPLETED_TIME.desc()))
+                        OBSERVATIONS.COMPLETED_TIME.desc(),
+                    )
+            )
             .execute()
       }
 
@@ -1812,7 +1882,8 @@ class ObservationStore(
                 OBSERVATION_ID,
                 PLANTING_SUBZONE_ID,
                 SPECIES_ID,
-                SPECIES_NAME)
+                SPECIES_NAME,
+            )
             .select(
                 DSL.select(
                         OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
@@ -1822,7 +1893,8 @@ class ObservationStore(
                         DSL.value(observationId),
                         MONITORING_PLOTS.PLANTING_SUBZONE_ID,
                         OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME)
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME,
+                    )
                     .from(OBSERVED_PLOT_SPECIES_TOTALS)
                     .join(MONITORING_PLOTS)
                     .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
@@ -1831,7 +1903,9 @@ class ObservationStore(
                         OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
                         MONITORING_PLOTS.PLANTING_SUBZONE_ID,
                         OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME))
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME,
+                    )
+            )
             .execute()
       }
 
@@ -1847,7 +1921,8 @@ class ObservationStore(
                 OBSERVATION_ID,
                 PLANTING_ZONE_ID,
                 SPECIES_ID,
-                SPECIES_NAME)
+                SPECIES_NAME,
+            )
             .select(
                 DSL.select(
                         OBSERVED_SUBZONE_SPECIES_TOTALS.CERTAINTY_ID,
@@ -1857,18 +1932,21 @@ class ObservationStore(
                         DSL.value(observationId),
                         PLANTING_SUBZONES.PLANTING_ZONE_ID,
                         OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME)
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME,
+                    )
                     .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
                     .join(PLANTING_SUBZONES)
                     .on(
-                        PLANTING_SUBZONES.ID.eq(
-                            OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID))
+                        PLANTING_SUBZONES.ID.eq(OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID)
+                    )
                     .where(OBSERVED_SUBZONE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
                     .groupBy(
                         OBSERVED_SUBZONE_SPECIES_TOTALS.CERTAINTY_ID,
                         PLANTING_SUBZONES.PLANTING_ZONE_ID,
                         OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME))
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME,
+                    )
+            )
             .execute()
       }
 
@@ -1884,7 +1962,8 @@ class ObservationStore(
                 OBSERVATION_ID,
                 PLANTING_SITE_ID,
                 SPECIES_ID,
-                SPECIES_NAME)
+                SPECIES_NAME,
+            )
             .select(
                 DSL.select(
                         OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID,
@@ -1894,13 +1973,16 @@ class ObservationStore(
                         DSL.value(observationId),
                         DSL.value(observation.plantingSiteId),
                         OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME)
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME,
+                    )
                     .from(OBSERVED_ZONE_SPECIES_TOTALS)
                     .where(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
                     .groupBy(
                         OBSERVED_ZONE_SPECIES_TOTALS.CERTAINTY_ID,
                         OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME))
+                        OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_NAME,
+                    )
+            )
             .execute()
       }
     }
@@ -1921,7 +2003,7 @@ class ObservationStore(
   private fun insertObservationPlots(
       observationId: ObservationId,
       plotIds: Collection<MonitoringPlotId>,
-      isPermanent: Boolean
+      isPermanent: Boolean,
   ) {
     val createdBy = currentUser().userId
     val createdTime = clock.instant()
@@ -1939,7 +2021,8 @@ class ObservationStore(
                 MONITORING_PLOT_HISTORY_ID,
                 DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
                     .from(MONITORING_PLOT_HISTORIES)
-                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)))
+                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)),
+            )
             .set(MONITORING_PLOT_ID, plotId)
             .set(OBSERVATION_ID, observationId)
             .set(STATUS_ID, ObservationPlotStatus.Unclaimed)
@@ -2034,11 +2117,14 @@ class ObservationStore(
     val table = scopeIdField.table!!
     val observationIdField =
         table.field(
-            "observation_id", SQLDataType.BIGINT.asConvertedDataType(ObservationIdConverter()))!!
+            "observation_id",
+            SQLDataType.BIGINT.asConvertedDataType(ObservationIdConverter()),
+        )!!
     val certaintyField =
         table.field(
             "certainty_id",
-            SQLDataType.INTEGER.asConvertedDataType(RecordedSpeciesCertaintyConverter()))!!
+            SQLDataType.INTEGER.asConvertedDataType(RecordedSpeciesCertaintyConverter()),
+        )!!
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val speciesNameField = table.field("species_name", String::class.java)!!
@@ -2078,10 +2164,12 @@ class ObservationStore(
                   .and(certaintyField.eq(speciesKey.certainty))
                   .and(
                       if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
-                      else speciesIdField.isNull)
+                      else speciesIdField.isNull
+                  )
                   .and(
                       if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
-                      else speciesNameField.isNull)
+                      else speciesNameField.isNull
+                  )
                   .orderBy(observationIdField.desc())
                   .limit(1)
                   .fetchOne(cumulativeDeadField) ?: 0
@@ -2119,7 +2207,8 @@ class ObservationStore(
                     totalExistingField,
                     cumulativeDeadField,
                     permanentLiveField,
-                    mortalityRateField)
+                    mortalityRateField,
+                )
                 .values(
                     observationId,
                     scopeId,
@@ -2131,7 +2220,8 @@ class ObservationStore(
                     totalExisting,
                     cumulativeDead,
                     permanentLive,
-                    mortalityRate)
+                    mortalityRate,
+                )
                 .onConflictDoNothing()
                 .execute()
 
@@ -2141,10 +2231,12 @@ class ObservationStore(
                   .eq(scopeId)
                   .and(
                       if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
-                      else speciesIdField.isNull)
+                      else speciesIdField.isNull
+                  )
                   .and(
                       if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
-                      else speciesNameField.isNull)
+                      else speciesNameField.isNull
+                  )
 
           // If we are updating a past observation (e.g., when removing a plot due to a map edit),
           // the cumulative dead counts for the current observation as well as any subsequent ones
@@ -2158,7 +2250,8 @@ class ObservationStore(
                         // For this observation, the adjustment to the live plants count needs to be
                         // included in the mortality rate denominator. But the live plant counts
                         // in subsequent observations are already correct.
-                        DSL.case_(observationIdField).`when`(observationId, permanentLive).else_(0))
+                        DSL.case_(observationIdField).`when`(observationId, permanentLive).else_(0)
+                    )
 
             dslContext
                 .update(table)
@@ -2173,7 +2266,9 @@ class ObservationStore(
                                     .plus(permanentDead)
                                     .times(100)
                                     .div(mortalityRateDenominatorField))
-                                .cast(SQLDataType.INTEGER)))
+                                .cast(SQLDataType.INTEGER)
+                        ),
+                )
                 .where(observationIdField.ge(observationId))
                 .and(scopeIdAndSpeciesCondition)
                 .execute()
@@ -2207,7 +2302,7 @@ class ObservationStore(
 
   private fun validateAdHocPlotInPlantingSite(
       plantingSiteId: PlantingSiteId,
-      plotId: MonitoringPlotId
+      plotId: MonitoringPlotId,
   ) {
     val isAdHoc =
         dslContext
@@ -2219,17 +2314,20 @@ class ObservationStore(
 
     if (isAdHoc != true) {
       throw IllegalStateException(
-          "BUG! Only an ad-hoc plot in the planting site can be added to an ad-hoc observation.")
+          "BUG! Only an ad-hoc plot in the planting site can be added to an ad-hoc observation."
+      )
     }
   }
 
   private fun validateNonAdHocPlotsInPlantingSite(
       plantingSiteId: PlantingSiteId,
-      plotIds: Collection<MonitoringPlotId>
+      plotIds: Collection<MonitoringPlotId>,
   ) {
     val plantingSiteField =
         DSL.ifnull(
-            MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID, MONITORING_PLOTS.PLANTING_SITE_ID)
+            MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID,
+            MONITORING_PLOTS.PLANTING_SITE_ID,
+        )
 
     val nonMatchingPlot =
         dslContext
@@ -2240,17 +2338,20 @@ class ObservationStore(
                 DSL.or(
                     plantingSiteField.ne(plantingSiteId),
                     MONITORING_PLOTS.IS_AD_HOC.isTrue(),
-                ))
+                )
+            )
             .limit(1)
             .fetchOne()
 
     if (nonMatchingPlot != null) {
       if (nonMatchingPlot[plantingSiteField] != plantingSiteId) {
         throw IllegalStateException(
-            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is in site ${nonMatchingPlot[plantingSiteField]}, not $plantingSiteId")
+            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is in site ${nonMatchingPlot[plantingSiteField]}, not $plantingSiteId"
+        )
       } else {
         throw IllegalStateException(
-            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is an ad-hoc plot")
+            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is an ad-hoc plot"
+        )
       }
     }
   }

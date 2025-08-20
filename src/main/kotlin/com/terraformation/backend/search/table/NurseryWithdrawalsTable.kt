@@ -24,13 +24,22 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
     with(tables) {
       listOf(
           batchWithdrawals.asMultiValueSublist(
-              "batchWithdrawals", WITHDRAWAL_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID)),
+              "batchWithdrawals",
+              WITHDRAWAL_SUMMARIES.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID),
+          ),
           deliveries.asSingleValueSublist(
-              "delivery", WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID), isRequired = false),
+              "delivery",
+              WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID),
+              isRequired = false,
+          ),
           facilities.asSingleValueSublist(
-              "facility", WITHDRAWAL_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID)),
+              "facility",
+              WITHDRAWAL_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID),
+          ),
           organizations.asSingleValueSublist(
-              "organization", WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              WITHDRAWAL_SUMMARIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
       )
     }
   }

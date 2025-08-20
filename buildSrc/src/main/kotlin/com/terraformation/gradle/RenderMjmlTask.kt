@@ -48,7 +48,8 @@ constructor(
               objectFactory
                   .fileTree()
                   .from(resourcesSourceDir.resolve("templates/email"))
-                  .include("**/body.ftlh.mjml"))
+                  .include("**/body.ftlh.mjml")
+          )
 
   @get:OutputDirectory val outputDir = resourcesBuildDir.resolve("templates/email")
 
@@ -84,8 +85,16 @@ constructor(
         nodeExtension,
         NodeExecConfiguration(
             listOf(
-                "mjml", "--config.useMjmlConfigOptions", "true", "-o", "$targetFile", "$mjmlFile")),
-        VariantComputer())
+                "mjml",
+                "--config.useMjmlConfigOptions",
+                "true",
+                "-o",
+                "$targetFile",
+                "$mjmlFile",
+            )
+        ),
+        VariantComputer(),
+    )
   }
 
   /**

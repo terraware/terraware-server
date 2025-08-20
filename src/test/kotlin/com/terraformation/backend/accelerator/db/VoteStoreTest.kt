@@ -111,8 +111,10 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   phase = phase,
                   userId = user3,
                   voteOption = vote3,
-              )),
-          store.fetchAllVotes(projectId))
+              ),
+          ),
+          store.fetchAllVotes(projectId),
+      )
     }
 
     @Test
@@ -166,8 +168,10 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   phase = phase0,
                   userId = user2,
                   voteOption = votes[VoteKey(user2, projectId, phase0)],
-              )),
-          store.fetchAllVotes(projectId, phase0))
+              ),
+          ),
+          store.fetchAllVotes(projectId, phase0),
+      )
     }
 
     @Test
@@ -201,7 +205,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               VoteDecisionModel(phase, clock.instant, VoteOption.Yes),
           ),
-          store.fetchAllVoteDecisions(projectId))
+          store.fetchAllVoteDecisions(projectId),
+      )
     }
 
     @Test
@@ -217,7 +222,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               VoteDecisionModel(phase0, clock.instant, VoteOption.Yes),
           ),
-          store.fetchAllVoteDecisions(projectId, phase0))
+          store.fetchAllVoteDecisions(projectId, phase0),
+      )
     }
   }
 
@@ -281,7 +287,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
     }
 
     @Test
@@ -307,25 +315,29 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
           phase0,
           user1,
           votes[VoteKey(user1, projectId, phase0)],
-          createdTime = clock.instant)
+          createdTime = clock.instant,
+      )
       insertVote(
           projectId,
           phase0,
           user2,
           votes[VoteKey(user2, projectId, phase0)],
-          createdTime = clock.instant)
+          createdTime = clock.instant,
+      )
       insertVote(
           projectId,
           phase1,
           user1,
           votes[VoteKey(user1, projectId, phase1)],
-          createdTime = clock.instant)
+          createdTime = clock.instant,
+      )
       insertVote(
           projectId,
           phase1,
           user2,
           votes[VoteKey(user2, projectId, phase1)],
-          createdTime = clock.instant)
+          createdTime = clock.instant,
+      )
 
       store.delete(projectId, phase1)
 
@@ -352,7 +364,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
     }
 
     @Test
@@ -451,7 +465,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -474,7 +489,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -499,7 +515,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -530,7 +547,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = createdTime,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -593,7 +611,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
     }
 
     @Test
@@ -640,7 +660,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
     }
 
     @Test
@@ -687,7 +709,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
     }
 
     @Test

@@ -35,7 +35,8 @@ class VariableServiceTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
 
   private val variableImporter: VariableImporter by lazy {
@@ -58,7 +59,8 @@ class VariableServiceTest : DatabaseTest(), RunsAsUser {
             variableSectionValuesDao,
             variableSelectOptionValuesDao,
             variableValuesDao,
-            variableValueTableRowsDao),
+            variableValueTableRowsDao,
+        ),
         eventPublisher,
     )
   }

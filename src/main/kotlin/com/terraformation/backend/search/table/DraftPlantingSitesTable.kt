@@ -25,9 +25,14 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
           users.asSingleValueSublist("createdBy", DRAFT_PLANTING_SITES.CREATED_BY.eq(USERS.ID)),
           users.asSingleValueSublist("modifiedBy", DRAFT_PLANTING_SITES.MODIFIED_BY.eq(USERS.ID)),
           organizations.asSingleValueSublist(
-              "organization", DRAFT_PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              DRAFT_PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           projects.asSingleValueSublist(
-              "project", DRAFT_PLANTING_SITES.PROJECT_ID.eq(PROJECTS.ID), isRequired = false),
+              "project",
+              DRAFT_PLANTING_SITES.PROJECT_ID.eq(PROJECTS.ID),
+              isRequired = false,
+          ),
       )
     }
   }
@@ -46,7 +51,8 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return DRAFT_PLANTING_SITES.ORGANIZATION_ID.`in`(
-        currentUser().organizationRoles.filter { it.value != Role.Contributor }.keys)
+        currentUser().organizationRoles.filter { it.value != Role.Contributor }.keys
+    )
   }
 
   override val defaultOrderFields: List<OrderField<*>>

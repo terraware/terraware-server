@@ -71,7 +71,10 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
     helper.insertPlantedSite(timeZone = timeZone)
     val startableObservationId =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Another planting site with no requested subzones.
@@ -108,14 +111,20 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
     helper.insertPlantedSite(timeZone = null)
     val observationId1 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Start date plus 1 month is an hour ago.
     helper.insertPlantedSite(timeZone = zone3)
     val observationId2 =
         insertObservation(
-            endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+            endDate = endDate,
+            startDate = startDate,
+            state = ObservationState.Upcoming,
+        )
     insertObservationRequestedSubzone()
 
     // Start date plus 1 month hasn't arrived yet in the site's time zone.

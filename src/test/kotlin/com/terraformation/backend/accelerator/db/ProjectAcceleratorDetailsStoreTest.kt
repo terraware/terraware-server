@@ -145,7 +145,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = detailsRow.totalExpansionPotential,
               whatNeedsToBeTrue = detailsRow.whatNeedsToBeTrue,
           ),
-          store.fetchOneById(projectId, variableValues))
+          store.fetchOneById(projectId, variableValues),
+      )
     }
 
     @Test
@@ -157,7 +158,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
           ),
           store.fetchOneById(
-              projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId)))
+              projectId,
+              ProjectAcceleratorVariableValuesModel(projectId = projectId),
+          ),
+      )
     }
 
     @Test
@@ -193,7 +197,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               ProjectAcceleratorDetailsModel(
                   projectId = projectWithDetails,
                   dealName = "Project deal name",
-              )),
+              ),
+          ),
           store
               .fetch(DSL.trueCondition()) {
                 if (it == projectWithDetails) {
@@ -202,7 +207,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
                   ProjectAcceleratorVariableValuesModel(projectId = it)
                 }
               }
-              .toSet())
+              .toSet(),
+      )
     }
 
     @Test
@@ -216,7 +222,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           listOf(ProjectAcceleratorDetailsModel(projectId = visibleProject)),
           store.fetch(DSL.trueCondition()) {
             ProjectAcceleratorVariableValuesModel(projectId = it)
-          })
+          },
+      )
     }
 
     @Test
@@ -228,7 +235,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           listOf(ProjectAcceleratorDetailsModel(projectId = projectId)),
           store.fetch(PROJECTS.ID.eq(projectId)) {
             ProjectAcceleratorVariableValuesModel(projectId = it)
-          })
+          },
+      )
     }
   }
 
@@ -277,7 +285,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           updatedDetails.copy(region = Region.EastAsiaPacific),
-          store.fetchOneById(projectId, updatedValues))
+          store.fetchOneById(projectId, updatedValues),
+      )
     }
 
     @Test
@@ -360,19 +369,25 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val otherDetails =
           store.fetchOneById(
-              otherProjectId, ProjectAcceleratorVariableValuesModel(projectId = otherProjectId))
+              otherProjectId,
+              ProjectAcceleratorVariableValuesModel(projectId = otherProjectId),
+          )
 
       store.update(projectId, existingValues) { updatedDetails }
 
       assertEquals(
           updatedDetails.copy(region = Region.EastAsiaPacific),
           store.fetchOneById(projectId, updatedValues),
-          "Should have updated project details")
+          "Should have updated project details",
+      )
       assertEquals(
           otherDetails,
           store.fetchOneById(
-              otherProjectId, ProjectAcceleratorVariableValuesModel(projectId = otherProjectId)),
-          "Should not have updated details of other project")
+              otherProjectId,
+              ProjectAcceleratorVariableValuesModel(projectId = otherProjectId),
+          ),
+          "Should not have updated details of other project",
+      )
     }
 
     @Test
@@ -444,11 +459,14 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
         existing.copy(maxCarbonAccumulation = BigDecimal(50))
       }
       eventPublisher.assertEventNotPublished<ParticipantProjectFileNamingUpdatedEvent>(
-          "File naming not updated")
+          "File naming not updated"
+      )
 
       store.update(projectId, existingValues) { existing.copy(fileNaming = "new naming") }
       eventPublisher.assertEventPublished(
-          ParticipantProjectFileNamingUpdatedEvent(projectId), "File naming updated")
+          ParticipantProjectFileNamingUpdatedEvent(projectId),
+          "File naming updated",
+      )
     }
 
     @Test
@@ -474,7 +492,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           originalRow.copy(fileNaming = "new naming"),
-          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId))
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId),
+      )
     }
 
     @Test

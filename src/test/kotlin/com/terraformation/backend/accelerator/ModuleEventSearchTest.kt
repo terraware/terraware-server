@@ -35,7 +35,10 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+        userId = inserted.userId,
+        organizationId = inserted.organizationId,
+        role = Role.Admin,
+    )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
     insertParticipant(cohortId = inserted.cohortId)
@@ -57,7 +60,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         slidesUrl = "https://slides.google.com",
         recordingUrl = "https://recording.google.com",
         startTime = startTime,
-        endTime = endTime)
+        endTime = endTime,
+    )
 
     val prefix = SearchFieldPrefix(searchTables.events)
     val fields =
@@ -85,7 +89,9 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                     "meetingUrl" to "https://meet.google.com",
                     "slidesUrl" to "https://slides.google.com",
                     "recordingUrl" to "https://recording.google.com",
-                )))
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -111,7 +117,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf("id" to "$event1"),
                 mapOf("id" to "$event2"),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -132,8 +139,10 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf("id" to "$event", "module" to mapOf("id" to "$module")),
-                mapOf("id" to "$otherEvent", "module" to mapOf("id" to "$otherModule"))),
-            null)
+                mapOf("id" to "$otherEvent", "module" to mapOf("id" to "$otherModule")),
+            ),
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -170,7 +179,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$project1"),
                             mapOf("id" to "$project2"),
-                            mapOf("id" to "$project3")),
+                            mapOf("id" to "$project3"),
+                        ),
                 ),
                 mapOf(
                     "id" to "$event2",
@@ -178,10 +188,12 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$project4"),
                             mapOf("id" to "$project5"),
-                            mapOf("id" to "$project6")),
+                            mapOf("id" to "$project6"),
+                        ),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -223,13 +235,15 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                     "projects" to listOf(mapOf("id" to "$project1"), mapOf("id" to "$project2")),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual =
         searchService.search(
             prefix,
             fields,
-            mapOf(prefix to FieldNode(prefix.resolve("projects.id"), listOf("$project1"))))
+            mapOf(prefix to FieldNode(prefix.resolve("projects.id"), listOf("$project1"))),
+        )
 
     assertJsonEquals(expected, actual)
   }
@@ -260,14 +274,16 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$event1"),
                             mapOf("id" to "$event2"),
-                            mapOf("id" to "$event3")),
+                            mapOf("id" to "$event3"),
+                        ),
                 ),
                 mapOf(
                     "id" to "$project2",
                     "events" to listOf(mapOf("id" to "$event3"), mapOf("id" to "$event4")),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -278,18 +294,24 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
   fun `can only search for events for organization projects for non accelerator admins`() {
     val userProject =
         insertProject(
-            organizationId = inserted.organizationId, participantId = inserted.participantId)
+            organizationId = inserted.organizationId,
+            participantId = inserted.participantId,
+        )
 
     val otherUser = insertUser()
     val otherOrganization = insertOrganization(createdBy = otherUser)
     insertOrganizationUser(
-        userId = otherUser, organizationId = otherOrganization, role = Role.Admin)
+        userId = otherUser,
+        organizationId = otherOrganization,
+        role = Role.Admin,
+    )
     val otherParticipant = insertParticipant(cohortId = inserted.cohortId)
     val otherProject =
         insertProject(
             organizationId = otherOrganization,
             participantId = otherParticipant,
-            createdBy = otherUser)
+            createdBy = otherUser,
+        )
 
     val event1 = insertEvent()
     val event2 = insertEvent()
@@ -314,18 +336,25 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$event1"),
                             mapOf("id" to "$event2"),
-                            mapOf("id" to "$event3")),
-                )))
+                            mapOf("id" to "$event3"),
+                        ),
+                )
+            )
+        )
     val projectActual =
         searchService.search(
-            projectPrefix, projectFields, mapOf(projectPrefix to NoConditionNode()))
+            projectPrefix,
+            projectFields,
+            mapOf(projectPrefix to NoConditionNode()),
+        )
 
     val eventPrefix = SearchFieldPrefix(searchTables.events)
     val eventFields = listOf("id").map { eventPrefix.resolve(it) }
     val eventExpected =
         SearchResults(
             listOf(mapOf("id" to "$event1"), mapOf("id" to "$event2"), mapOf("id" to "$event3")),
-            null)
+            null,
+        )
     val eventActual =
         searchService.search(eventPrefix, eventFields, mapOf(eventPrefix to NoConditionNode()))
 

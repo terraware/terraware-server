@@ -45,8 +45,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             number = "70-1-1-001",
-            stateId = AccessionState.AwaitingCheckIn),
-        accessionsDao.fetchOneById(accessionId))
+            stateId = AccessionState.AwaitingCheckIn,
+        ),
+        accessionsDao.fetchOneById(accessionId),
+    )
   }
 
   @Test
@@ -67,7 +69,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     assertNotEquals(
         model1.accessionNumber,
         model2.accessionNumber,
-        "Accession numbers should be unique within facility")
+        "Accession numbers should be unique within facility",
+    )
   }
 
   @Test
@@ -143,8 +146,11 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
                 createdTime = Instant.EPOCH,
                 historyTypeId = AccessionQuantityHistoryType.Observed,
                 remainingQuantity = BigDecimal.TEN,
-                remainingUnitsId = SeedQuantityUnits.Seeds)),
-        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) })
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+            )
+        ),
+        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) },
+    )
   }
 
   @Test
@@ -171,7 +177,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
                     Geolocation(
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
-                        accuracy = BigDecimal(3))),
+                        accuracy = BigDecimal(3),
+                    )
+                ),
             collectionSiteCountryCode = "UG",
             collectionSiteCountrySubdivision = "subdivision",
             collectionSiteLandowner = "landowner",
@@ -222,9 +230,11 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
         listOf(
             AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
             AccessionCollectorsRow(stored.id, 1, "second1"),
-            AccessionCollectorsRow(stored.id, 2, "second2")),
+            AccessionCollectorsRow(stored.id, 2, "second2"),
+        ),
         accessionCollectorsDao.findAll().sortedBy { it.position },
-        "Collectors are stored")
+        "Collectors are stored",
+    )
   }
 
   @Test

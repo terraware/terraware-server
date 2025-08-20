@@ -40,7 +40,8 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
-        plantingZonesDao)
+        plantingZonesDao,
+    )
   }
 
   @BeforeEach

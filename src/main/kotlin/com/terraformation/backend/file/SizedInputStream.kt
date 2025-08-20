@@ -17,7 +17,7 @@ import org.springframework.http.MediaType
 class SizedInputStream(
     private val stream: InputStream,
     val size: Long,
-    val contentType: MediaType? = null
+    val contentType: MediaType? = null,
 ) : InputStream() {
   override fun available(): Int = stream.available()
 

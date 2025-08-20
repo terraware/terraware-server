@@ -78,7 +78,8 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
-            speciesProblemsDao)
+            speciesProblemsDao,
+        )
   }
 
   protected fun createAccessionWithViabilityTest(): AccessionModel {
@@ -89,7 +90,9 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
               ViabilityTestModel(
                   seedsTested = 5,
                   startDate = LocalDate.of(2021, 4, 1),
-                  testType = ViabilityTestType.Lab))
+                  testType = ViabilityTestType.Lab,
+              )
+          )
         }
   }
 

@@ -37,13 +37,20 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+        userId = inserted.userId,
+        organizationId = inserted.organizationId,
+        role = Role.Admin,
+    )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
     insertParticipant(cohortId = inserted.cohortId)
     insertModule()
     insertCohortModule(
-        inserted.cohortId, inserted.moduleId, startDate = moduleStartDate, endDate = moduleEndDate)
+        inserted.cohortId,
+        inserted.moduleId,
+        startDate = moduleStartDate,
+        endDate = moduleEndDate,
+    )
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -133,7 +140,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "type" to DeliverableType.Document.getDisplayName(Locales.GIBBERISH),
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -159,7 +167,9 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "$deliverableId",
                     "project_id" to "$projectId",
                     "module_id" to "${inserted.moduleId}",
-                )))
+                )
+            )
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -176,13 +186,15 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         insertSubmission(
             deliverableId = deliverableWithSubmission,
             projectId = projectId,
-            submissionStatus = SubmissionStatus.Approved)
+            submissionStatus = SubmissionStatus.Approved,
+        )
 
     val hiddenProject = insertProject(participantId = inserted.participantId)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = hiddenProject,
-        submissionStatus = SubmissionStatus.Rejected)
+        submissionStatus = SubmissionStatus.Rejected,
+    )
 
     val deliverableWithoutSubmissions = insertDeliverable(moduleId = moduleId)
 
@@ -203,13 +215,15 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "$deliverableWithoutSubmissions",
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual =
         searchService.search(
             prefix,
             fields,
-            mapOf(prefix to FieldNode(prefix.resolve("project.id"), listOf("$projectId"))))
+            mapOf(prefix to FieldNode(prefix.resolve("project.id"), listOf("$projectId"))),
+        )
 
     assertJsonEquals(expected, actual)
   }
@@ -234,7 +248,10 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$deliverableWithSubmission"),
                             mapOf("id" to "$deliverableWithoutSubmissions"),
-                        ))))
+                        ),
+                )
+            )
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
@@ -253,9 +270,11 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$moduleEndDate"),
-            )),
+            )
+        ),
         searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
-        "Search project deliverables with module end date")
+        "Search project deliverables with module end date",
+    )
 
     val cohortDueDate = moduleEndDate.plusDays(5)
     insertDeliverableCohortDueDate(deliverableId, inserted.cohortId, cohortDueDate)
@@ -263,9 +282,11 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$cohortDueDate"),
-            )),
+            )
+        ),
         searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
-        "Search project deliverables with cohort due date override")
+        "Search project deliverables with cohort due date override",
+    )
 
     val projectDueDate = moduleEndDate.plusDays(5)
     insertDeliverableProjectDueDate(deliverableId, projectId, projectDueDate)
@@ -273,9 +294,11 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf("id" to "$deliverableId", "dueDate" to "$projectDueDate"),
-            )),
+            )
+        ),
         searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
-        "Search project deliverables with project due date override")
+        "Search project deliverables with project due date override",
+    )
   }
 
   @Test
@@ -290,7 +313,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         insertSubmission(
             deliverableId = deliverableWithSubmission,
             projectId = projectId,
-            submissionStatus = SubmissionStatus.Approved)
+            submissionStatus = SubmissionStatus.Approved,
+        )
     val deliverableWithoutSubmissions = insertDeliverable(moduleId = moduleId)
 
     val otherCohort = insertCohort()
@@ -303,7 +327,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = otherProject,
-        submissionStatus = SubmissionStatus.Rejected)
+        submissionStatus = SubmissionStatus.Rejected,
+    )
 
     val hiddenModule = insertModule(name = "Hidden module")
     insertDeliverable(moduleId = hiddenModule)
@@ -324,7 +349,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "project_id" to "$projectId",
                 ),
             ),
-            null)
+            null,
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 

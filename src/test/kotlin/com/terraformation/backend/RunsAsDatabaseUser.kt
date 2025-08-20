@@ -50,7 +50,8 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.id!!,
                     record.authId!!,
                     ParentStore(dslContext),
-                    PermissionStore(dslContext))
+                    PermissionStore(dslContext),
+                )
             UserType.Individual ->
                 IndividualUser(
                     record.createdTime!!,
@@ -67,7 +68,8 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.timeZone,
                     record.userTypeId!!,
                     ParentStore(dslContext),
-                    PermissionStore(dslContext))
+                    PermissionStore(dslContext),
+                )
             UserType.System -> SystemUser(UsersDao(dslContext.configuration()))
             UserType.Funder ->
                 FunderUser(
@@ -107,7 +109,8 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     "\nEarlier:" +
                     "\n${earlierCheck.prettyPrintStack()}" +
                     "\nLater:" +
-                    "\n${laterCheck.prettyPrintStack()}")
+                    "\n${laterCheck.prettyPrintStack()}"
+            )
           }
         }
       }

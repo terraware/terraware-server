@@ -56,7 +56,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ))
+              )
+          )
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Exact)
@@ -90,7 +91,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ))
+              )
+          )
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koaa"), SearchFilterType.Fuzzy)
@@ -114,7 +116,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       assertJsonEquals(
           SearchResults(emptyList()),
-          searchService.search(prefix, fields, mapOf(prefix to conditions)))
+          searchService.search(prefix, fields, mapOf(prefix to conditions)),
+      )
     }
 
     @Test
@@ -139,7 +142,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ))
+              )
+          )
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.PhraseMatch)
@@ -185,11 +189,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$brightRedAppleTreeFarm",
                       "scientificName" to "Bright Red Apple Tree Farm",
                   ),
-              ))
+              )
+          )
 
       val conditions =
           FieldNode(
-              prefix.resolve("scientificName"), listOf("Apple Tree"), SearchFilterType.PhraseMatch)
+              prefix.resolve("scientificName"),
+              listOf("Apple Tree"),
+              SearchFilterType.PhraseMatch,
+          )
 
       assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }

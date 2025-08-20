@@ -42,7 +42,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val store: ProjectStore by lazy {
     ProjectStore(
-        clock, dslContext, eventPublisher, parentStore, projectsDao, projectInternalUsersDao)
+        clock,
+        dslContext,
+        eventPublisher,
+        parentStore,
+        projectsDao,
+        projectInternalUsersDao,
+    )
   }
 
   private lateinit var organizationId: OrganizationId
@@ -67,7 +73,9 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   description = "Project description",
                   id = null,
                   name = "Project name",
-                  organizationId = organizationId))
+                  organizationId = organizationId,
+              )
+          )
 
       val expected =
           ProjectsRow(
@@ -100,7 +108,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ProjectNameInUseException> {
         store.create(
-            NewProjectModel(id = null, name = "Project 1", organizationId = organizationId))
+            NewProjectModel(id = null, name = "Project 1", organizationId = organizationId)
+        )
       }
     }
   }
@@ -307,7 +316,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no project`() {
       assertThrows<ProjectNotFoundException> {
         store.addInternalUser(
-            ProjectId(Long.MAX_VALUE), user.userId, ProjectInternalRole.ProjectLead)
+            ProjectId(Long.MAX_VALUE),
+            user.userId,
+            ProjectInternalRole.ProjectLead,
+        )
       }
     }
 
@@ -329,11 +341,17 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(ProjectInternalUsersRow(projectId, user.userId, ProjectInternalRole.ProjectLead)),
           store.fetchInternalUsers(projectId),
-          "Should have added user to internal users")
+          "Should have added user to internal users",
+      )
 
       eventPublisher.assertEventPublished(
           ProjectInternalUserAddedEvent(
-              projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead))
+              projectId,
+              organizationId,
+              user.userId,
+              role = ProjectInternalRole.ProjectLead,
+          )
+      )
     }
 
     @Test
@@ -346,10 +364,16 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(ProjectInternalUsersRow(projectId, user.userId, roleName = "TheBestRole")),
           store.fetchInternalUsers(projectId),
-          "Should have added user to internal users")
+          "Should have added user to internal users",
+      )
       eventPublisher.assertEventPublished(
           ProjectInternalUserAddedEvent(
-              projectId, organizationId, user.userId, roleName = "TheBestRole"))
+              projectId,
+              organizationId,
+              user.userId,
+              roleName = "TheBestRole",
+          )
+      )
     }
 
     @Test
@@ -364,7 +388,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               userId = user.userId,
               projectInternalRoleId = ProjectInternalRole.Consultant,
-          ))
+          )
+      )
 
       store.addInternalUser(projectId, user.userId, roleName = "A Different Role")
 
@@ -374,17 +399,31 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               userId = user.userId,
               projectInternalRoleId = null,
               roleName = "A Different Role",
-          ))
+          )
+      )
       eventPublisher.assertExactEventsPublished(
           listOf(
               ProjectInternalUserAddedEvent(
-                  projectId, organizationId, user.userId, role = ProjectInternalRole.ProjectLead),
+                  projectId,
+                  organizationId,
+                  user.userId,
+                  role = ProjectInternalRole.ProjectLead,
+              ),
               ProjectInternalUserAddedEvent(
-                  projectId, organizationId, user.userId, role = ProjectInternalRole.Consultant),
+                  projectId,
+                  organizationId,
+                  user.userId,
+                  role = ProjectInternalRole.Consultant,
+              ),
               ProjectInternalUserAddedEvent(
-                  projectId, organizationId, user.userId, roleName = "A Different Role"),
+                  projectId,
+                  organizationId,
+                  user.userId,
+                  roleName = "A Different Role",
+              ),
           ),
-          "Should have published events in specific order")
+          "Should have published events in specific order",
+      )
     }
   }
 
@@ -415,10 +454,12 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           emptyList<ProjectInternalUsersRow>(),
           store.fetchInternalUsers(projectId),
-          "Should have no internal users")
+          "Should have no internal users",
+      )
 
       eventPublisher.assertEventPublished(
-          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId)
+      )
 
       assertTableEquals(
           OrganizationUsersRecord(
@@ -429,7 +470,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = clock.instant,
               createdBy = user.userId,
               modifiedBy = user.userId,
-          ))
+          )
+      )
     }
 
     @Test
@@ -442,9 +484,11 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           emptyList<ProjectInternalUsersRow>(),
           store.fetchInternalUsers(projectId),
-          "Should have no internal users")
+          "Should have no internal users",
+      )
       eventPublisher.assertEventPublished(
-          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId))
+          ProjectInternalUserRemovedEvent(projectId, organizationId, user.userId)
+      )
     }
 
     @Test
@@ -456,7 +500,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           emptyList<ProjectInternalUsersRow>(),
           store.fetchInternalUsers(projectId),
-          "Should still have no internal users")
+          "Should still have no internal users",
+      )
       eventPublisher.assertEventNotPublished<ProjectInternalUserRemovedEvent>()
     }
   }
@@ -481,7 +526,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ProjectInternalUsersRow(projectId, userId2, roleName = "Rock Star"),
           ),
           store.fetchInternalUsers(projectId),
-          "Should have 2 internal users")
+          "Should have 2 internal users",
+      )
     }
   }
 
@@ -496,9 +542,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateParticipant(projectId, participantId)
 
       assertEquals(
-          participantId, projectsDao.fetchOneById(projectId)!!.participantId, "Participant ID")
+          participantId,
+          projectsDao.fetchOneById(projectId)!!.participantId,
+          "Participant ID",
+      )
       eventPublisher.assertEventPublished(
-          ParticipantProjectAddedEvent(user.userId, participantId, projectId))
+          ParticipantProjectAddedEvent(user.userId, participantId, projectId)
+      )
     }
 
     @Test
@@ -511,9 +561,12 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateParticipant(projectIdWithParticipant, null)
 
       assertNull(
-          projectsDao.fetchOneById(projectIdWithParticipant)!!.participantId, "Participant ID")
+          projectsDao.fetchOneById(projectIdWithParticipant)!!.participantId,
+          "Participant ID",
+      )
       eventPublisher.assertEventPublished(
-          ParticipantProjectRemovedEvent(participantId, projectIdWithParticipant, user.userId))
+          ParticipantProjectRemovedEvent(participantId, projectIdWithParticipant, user.userId)
+      )
     }
 
     @Test

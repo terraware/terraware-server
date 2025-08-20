@@ -39,7 +39,8 @@ class ProjectAcceleratorDetailsModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Mangroves to BigDecimal(1001),
-                    LandUseModelType.Silvopasture to BigDecimal(2002)),
+                    LandUseModelType.Silvopasture to BigDecimal(2002),
+                ),
             maxCarbonAccumulation = BigDecimal(5),
             methodologyNumber = "methodologyNumber",
             minCarbonAccumulation = BigDecimal(4),
@@ -58,7 +59,8 @@ class ProjectAcceleratorDetailsModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.AffordableEnergy,
-                    SustainableDevelopmentGoal.ClimateAction),
+                    SustainableDevelopmentGoal.ClimateAction,
+                ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
             totalCarbon = BigDecimal(9),
@@ -87,7 +89,8 @@ class ProjectAcceleratorDetailsModelTest {
             landUseModelHectares =
                 mapOf(
                     LandUseModelType.Mangroves to BigDecimal(1001),
-                    LandUseModelType.Silvopasture to BigDecimal(2002)),
+                    LandUseModelType.Silvopasture to BigDecimal(2002),
+                ),
             maxCarbonAccumulation = BigDecimal(5),
             methodologyNumber = "methodologyNumber",
             minCarbonAccumulation = BigDecimal(4),
@@ -103,7 +106,8 @@ class ProjectAcceleratorDetailsModelTest {
             sdgList =
                 setOf(
                     SustainableDevelopmentGoal.AffordableEnergy,
-                    SustainableDevelopmentGoal.ClimateAction),
+                    SustainableDevelopmentGoal.ClimateAction,
+                ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
             totalCarbon = BigDecimal(9),
@@ -112,6 +116,7 @@ class ProjectAcceleratorDetailsModelTest {
             verraLink = URI("https://verraLink"),
             whatNeedsToBeTrue = null,
         ),
-        model.toVariableValuesModel())
+        model.toVariableValuesModel(),
+    )
   }
 }

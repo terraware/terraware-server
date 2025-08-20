@@ -56,7 +56,8 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(fundingEntityId, store.getFundingEntityId(testUserId))
     assertTableEquals(
-        FundingEntityUsersRecord(fundingEntityId = fundingEntityId, userId = testUserId))
+        FundingEntityUsersRecord(fundingEntityId = fundingEntityId, userId = testUserId)
+    )
   }
 
   @Test
@@ -95,8 +96,11 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
             projects =
                 listOf(
                     FundingProjectModel(projectId1, "Deal name 1"),
-                    FundingProjectModel(projectId2, "Project name 2"))),
-        store.fetchEntityByUserId(testUserId))
+                    FundingProjectModel(projectId2, "Project name 2"),
+                ),
+        ),
+        store.fetchEntityByUserId(testUserId),
+    )
   }
 
   @Test
@@ -118,7 +122,8 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
             lastName = "Wayne",
             email = "batman@justice.league",
             createdTime = Instant.ofEpochSecond(6000),
-            authId = "BATMAN")
+            authId = "BATMAN",
+        )
     val userId2 =
         insertUser(
             firstName = "Clark",
@@ -178,6 +183,7 @@ class FundingEntityUserStoreTest : DatabaseTest(), RunsAsUser {
                 accountCreated = false,
             ),
         ),
-        store.fetchFundersForEntity(fundingEntityId))
+        store.fetchFundersForEntity(fundingEntityId),
+    )
   }
 }

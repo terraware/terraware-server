@@ -24,12 +24,17 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
     with(tables) {
       listOf(
           facilities.asSingleValueSublist(
-              "facility", FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITIES.ID)),
+              "facility",
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITIES.ID),
+          ),
           facilityInventories.asMultiValueSublist(
               "facilityInventories",
-              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITY_INVENTORIES.FACILITY_ID)),
+              FACILITY_INVENTORY_TOTALS.FACILITY_ID.eq(FACILITY_INVENTORIES.FACILITY_ID),
+          ),
           organizations.asSingleValueSublist(
-              "organization", FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              FACILITY_INVENTORY_TOTALS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
       )
     }
   }
@@ -39,19 +44,23 @@ class FacilityInventoryTotalsTable(private val tables: SearchTables) : SearchTab
           longField(
               "activeGrowthQuantity",
               FACILITY_INVENTORY_TOTALS.ACTIVE_GROWTH_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField(
               "germinatingQuantity",
               FACILITY_INVENTORY_TOTALS.GERMINATING_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField(
               "hardeningOffQuantity",
               FACILITY_INVENTORY_TOTALS.HARDENING_OFF_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField(
               "notReadyQuantity",
               FACILITY_INVENTORY_TOTALS.ACTIVE_GROWTH_QUANTITY,
-              nullable = false),
+              nullable = false,
+          ),
           longField("readyQuantity", FACILITY_INVENTORY_TOTALS.READY_QUANTITY, nullable = false),
           longField("totalQuantity", FACILITY_INVENTORY_TOTALS.TOTAL_QUANTITY, nullable = false),
           longField("totalSpecies", FACILITY_INVENTORY_TOTALS.TOTAL_SPECIES, nullable = false),

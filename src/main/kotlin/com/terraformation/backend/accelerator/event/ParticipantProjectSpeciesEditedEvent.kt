@@ -7,5 +7,5 @@ import com.terraformation.backend.db.default_schema.ProjectId
 data class ParticipantProjectSpeciesEditedEvent(
     val oldParticipantProjectSpecies: ExistingParticipantProjectSpeciesModel,
     val newParticipantProjectSpecies: ExistingParticipantProjectSpeciesModel,
-    val projectId: ProjectId
+    val projectId: ProjectId,
 )

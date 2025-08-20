@@ -38,7 +38,7 @@ class AdminDocumentProducerController(
   fun createDocumentTemplate(
       @RequestParam name: String,
       model: Model,
-      redirectAttributes: RedirectAttributes
+      redirectAttributes: RedirectAttributes,
   ): String {
     val row = DocumentTemplatesRow(name = name)
 
@@ -92,7 +92,8 @@ class AdminDocumentProducerController(
       @Schema(
           format = "int64",
           type = "integer",
-          description = "The Document Template ID that this manifest is defined for")
+          description = "The Document Template ID that this manifest is defined for",
+      )
       @RequestPart("documentTemplateId")
       documentTemplateIdString: String,
       redirectAttributes: RedirectAttributes,

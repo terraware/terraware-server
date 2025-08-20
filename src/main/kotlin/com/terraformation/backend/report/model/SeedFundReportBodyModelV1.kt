@@ -124,7 +124,7 @@ data class SeedFundReportBodyModelV1(
   ) {
     constructor(
         model: ExistingPlantingSiteModel,
-        species: List<ExistingSpeciesModel>
+        species: List<ExistingSpeciesModel>,
     ) : this(
         id = model.id,
         name = model.name,
@@ -133,7 +133,7 @@ data class SeedFundReportBodyModelV1(
 
     fun populate(
         model: ExistingPlantingSiteModel,
-        speciesModels: List<ExistingSpeciesModel>
+        speciesModels: List<ExistingSpeciesModel>,
     ): PlantingSite {
       return copy(
           name = model.name,

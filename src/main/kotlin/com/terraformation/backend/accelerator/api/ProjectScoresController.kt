@@ -45,7 +45,8 @@ class ProjectScoresController(
           PhaseScores(
               phase,
               scoreModels.map { Score(it.category, it.modifiedTime, it.qualitative, it.score) },
-              ProjectScoreModel.totalScore(phase, scoreModels))
+              ProjectScoreModel.totalScore(phase, scoreModels),
+          )
         }
 
     return GetProjectScoresResponsePayload(phaseScores)
@@ -58,7 +59,8 @@ class ProjectScoresController(
       summary = "Upserts score selections for a single project.",
       description =
           "Update the scores for the project phase. If the (project, phase, category) does not " +
-              "exist, a new entry is created. Setting a `score` to `null` removes the score.")
+              "exist, a new entry is created. Setting a `score` to `null` removes the score.",
+  )
   fun upsertProjectScores(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody @Valid payload: UpsertProjectScoresRequestPayload,
@@ -74,7 +76,10 @@ data class Score(
     val modifiedTime: Instant,
     val qualitative: String? = null,
     @Schema(
-        description = "If `null`, a score has not been selected.", minimum = "-2", maximum = "2")
+        description = "If `null`, a score has not been selected.",
+        minimum = "-2",
+        maximum = "2",
+    )
     val value: Int? = null,
 )
 
@@ -84,7 +89,10 @@ data class UpsertScore(
     @field:Min(-2)
     @field:Max(2)
     @Schema(
-        description = "If set to `null`, remove the selected score.", minimum = "-2", maximum = "2")
+        description = "If set to `null`, remove the selected score.",
+        minimum = "-2",
+        maximum = "2",
+    )
     val value: Int? = null,
 ) {
   fun toModel() = NewProjectScoreModel(category, null, qualitative, value)

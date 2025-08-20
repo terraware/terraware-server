@@ -37,7 +37,9 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             germinatingQuantity = 1,
             readyQuantity = 3,
             hardeningOffQuantity = 4,
-            version = 1))
+            version = 1,
+        )
+    )
 
     store.delete(batchId)
 
@@ -55,7 +57,8 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             activeGrowthQuantity = 2,
             hardeningOffQuantity = 3,
             readyQuantity = 4,
-            speciesId = speciesId)
+            speciesId = speciesId,
+        )
     insertNurseryWithdrawal()
     insertBatchWithdrawal()
 
@@ -82,7 +85,9 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             modifiedBy = user.userId,
-            modifiedTime = Instant.EPOCH))
+            modifiedTime = Instant.EPOCH,
+        )
+    )
 
     eventPublisher.assertEventNotPublished<BatchDeletionStartedEvent>()
   }
@@ -155,9 +160,13 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             speciesId = speciesId,
             totalDead = 90,
             totalQuantity = 909,
-            totalWithdrawn = 90)
+            totalWithdrawn = 90,
+        )
     assertEquals(
-        summaryBeforeDelete, store.getSpeciesSummary(speciesId), "Summary before deleting batch")
+        summaryBeforeDelete,
+        store.getSpeciesSummary(speciesId),
+        "Summary before deleting batch",
+    )
 
     store.delete(batchId)
 
@@ -174,9 +183,11 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
             speciesId = speciesId,
             totalDead = 90,
             totalQuantity = 900,
-            totalWithdrawn = 90),
+            totalWithdrawn = 90,
+        ),
         store.getSpeciesSummary(speciesId),
-        "Summary after deleting batch")
+        "Summary after deleting batch",
+    )
   }
 
   @Test

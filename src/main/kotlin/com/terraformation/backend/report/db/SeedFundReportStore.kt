@@ -216,7 +216,8 @@ class SeedFundReportStore(
             .where(SEED_FUND_REPORTS.ID.eq(reportId))
             .and(
                 SEED_FUND_REPORTS.LOCKED_BY.eq(currentUser().userId)
-                    .or(SEED_FUND_REPORTS.LOCKED_BY.isNull))
+                    .or(SEED_FUND_REPORTS.LOCKED_BY.isNull)
+            )
             .and(SEED_FUND_REPORTS.STATUS_ID.notEqual(SeedFundReportStatus.Submitted))
             .execute()
 
@@ -301,7 +302,8 @@ class SeedFundReportStore(
       val metadata = SeedFundReportMetadata(row)
 
       log.info(
-          "Created ${row.year}-Q${row.quarter} report ${row.id} for organization $organizationId")
+          "Created ${row.year}-Q${row.quarter} report ${row.id} for organization $organizationId"
+      )
 
       eventPublisher.publishEvent(SeedFundReportCreatedEvent(metadata))
 
@@ -392,7 +394,9 @@ class SeedFundReportStore(
               PROJECT_REPORT_SETTINGS.PROJECT_ID.`in`(
                   DSL.select(PROJECTS.ID)
                       .from(PROJECTS)
-                      .where(PROJECTS.ORGANIZATION_ID.eq(model.organizationId))))
+                      .where(PROJECTS.ORGANIZATION_ID.eq(model.organizationId))
+              )
+          )
           .execute()
 
       val projectRecords =
@@ -422,17 +426,21 @@ class SeedFundReportStore(
             DSL.selectOne()
                 .from(SEED_FUND_REPORTS)
                 .where(
-                    SEED_FUND_REPORTS.ORGANIZATION_ID.eq(
-                        ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
+                    SEED_FUND_REPORTS.ORGANIZATION_ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
+                )
                 .and(SEED_FUND_REPORTS.QUARTER.eq(lastQuarter.quarter))
-                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year)))
+                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year))
+        )
         .andNotExists(
             DSL.selectOne()
                 .from(ORGANIZATION_REPORT_SETTINGS)
                 .where(
                     ORGANIZATION_REPORT_SETTINGS.ORGANIZATION_ID.eq(
-                        ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
-                .and(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED.isFalse))
+                        ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID
+                    )
+                )
+                .and(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED.isFalse)
+        )
         .orderBy(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
         .fetch(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.asNonNullable())
         .filter { currentUser().canCreateSeedFundReport(it) }
@@ -457,12 +465,14 @@ class SeedFundReportStore(
                 .from(SEED_FUND_REPORTS)
                 .where(SEED_FUND_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
                 .and(SEED_FUND_REPORTS.QUARTER.eq(lastQuarter.quarter))
-                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year)))
+                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year))
+        )
         .andNotExists(
             DSL.selectOne()
                 .from(PROJECT_REPORT_SETTINGS)
                 .where(PROJECT_REPORT_SETTINGS.PROJECT_ID.eq(PROJECTS.ID))
-                .and(PROJECT_REPORT_SETTINGS.IS_ENABLED.isFalse))
+                .and(PROJECT_REPORT_SETTINGS.IS_ENABLED.isFalse)
+        )
         .orderBy(PROJECTS.ID)
         .fetch()
         .filter {
@@ -583,9 +593,11 @@ class SeedFundReportStore(
         .filter { it.selected }
         .forEach {
           val seedBank = facilitiesDao.fetchOneById(it.id)
-          if (it.buildStartedDate == seedBank?.buildStartedDate &&
-              it.buildCompletedDate == seedBank?.buildCompletedDate &&
-              it.operationStartedDate == seedBank?.operationStartedDate) {
+          if (
+              it.buildStartedDate == seedBank?.buildStartedDate &&
+                  it.buildCompletedDate == seedBank?.buildCompletedDate &&
+                  it.operationStartedDate == seedBank?.operationStartedDate
+          ) {
             return
           }
           dslContext
@@ -593,10 +605,12 @@ class SeedFundReportStore(
               .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate ?: seedBank?.buildStartedDate)
               .set(
                   FACILITIES.BUILD_COMPLETED_DATE,
-                  it.buildCompletedDate ?: seedBank?.buildCompletedDate)
+                  it.buildCompletedDate ?: seedBank?.buildCompletedDate,
+              )
               .set(
                   FACILITIES.OPERATION_STARTED_DATE,
-                  it.operationStartedDate ?: seedBank?.operationStartedDate)
+                  it.operationStartedDate ?: seedBank?.operationStartedDate,
+              )
               .where(FACILITIES.TYPE_ID.eq(FacilityType.SeedBank))
               .and(FACILITIES.ID.eq(it.id))
               .execute()
@@ -610,10 +624,12 @@ class SeedFundReportStore(
         .filter { it.selected }
         .forEach {
           val nursery = facilitiesDao.fetchOneById(it.id)
-          if (it.buildStartedDate == nursery?.buildStartedDate &&
-              it.buildCompletedDate == nursery?.buildCompletedDate &&
-              it.operationStartedDate == nursery?.operationStartedDate &&
-              it.capacity == nursery?.capacity) {
+          if (
+              it.buildStartedDate == nursery?.buildStartedDate &&
+                  it.buildCompletedDate == nursery?.buildCompletedDate &&
+                  it.operationStartedDate == nursery?.operationStartedDate &&
+                  it.capacity == nursery?.capacity
+          ) {
             return
           }
           dslContext
@@ -621,10 +637,12 @@ class SeedFundReportStore(
               .set(FACILITIES.BUILD_STARTED_DATE, it.buildStartedDate ?: nursery?.buildStartedDate)
               .set(
                   FACILITIES.BUILD_COMPLETED_DATE,
-                  it.buildCompletedDate ?: nursery?.buildCompletedDate)
+                  it.buildCompletedDate ?: nursery?.buildCompletedDate,
+              )
               .set(
                   FACILITIES.OPERATION_STARTED_DATE,
-                  it.operationStartedDate ?: nursery?.operationStartedDate)
+                  it.operationStartedDate ?: nursery?.operationStartedDate,
+              )
               .set(FACILITIES.CAPACITY, it.capacity ?: nursery?.capacity)
               .where(FACILITIES.TYPE_ID.eq(FacilityType.Nursery))
               .and(FACILITIES.ID.eq(it.id))

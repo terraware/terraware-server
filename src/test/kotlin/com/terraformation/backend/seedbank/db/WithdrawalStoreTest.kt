@@ -320,7 +320,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
-            withdrawn = grams(1))
+            withdrawn = grams(1),
+        )
 
     assertThrows<IllegalArgumentException> {
       store.updateWithdrawals(accessionId, emptyList(), listOf(desired))
@@ -334,7 +335,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.Other,
             viabilityTestId = ViabilityTestId(9999),
-            withdrawn = grams(1))
+            withdrawn = grams(1),
+        )
 
     assertThrows<IllegalArgumentException> {
       store.updateWithdrawals(accessionId, emptyList(), listOf(desired))
@@ -353,7 +355,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
             viabilityTestId = viabilityTestId,
-            withdrawn = seeds(1))
+            withdrawn = seeds(1),
+        )
 
     val expected =
         listOf(
@@ -391,7 +394,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
             viabilityTestId = viabilityTestId,
-            withdrawn = seeds(1))
+            withdrawn = seeds(1),
+        )
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val inserted = store.fetchWithdrawals(accessionId).first()
 
@@ -399,7 +403,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
       store.updateWithdrawals(
           accessionId,
           listOf(inserted),
-          listOf(inserted.copy(viabilityTestId = ViabilityTestId(viabilityTestId.value + 1))))
+          listOf(inserted.copy(viabilityTestId = ViabilityTestId(viabilityTestId.value + 1))),
+      )
     }
   }
 
@@ -424,7 +429,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             destination = "updated dest",
             notes = "updated notes",
             purpose = null,
-            withdrawn = grams(2))
+            withdrawn = grams(2),
+        )
 
     val expected =
         listOf(
@@ -533,7 +539,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           emptyList(),
           listOf(
               WithdrawalModel(
-                  date = LocalDate.now(), purpose = WithdrawalPurpose.Other, withdrawn = grams(0))))
+                  date = LocalDate.now(),
+                  purpose = WithdrawalPurpose.Other,
+                  withdrawn = grams(0),
+              )
+          ),
+      )
     }
   }
 
@@ -573,15 +584,20 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     insertSeedbankWithdrawal(
         withdrawnQuantity = BigDecimal(3),
         purpose = WithdrawalPurpose.ViabilityTesting,
-        viabilityTestId = viabilityTestId1)
+        viabilityTestId = viabilityTestId1,
+    )
     insertSeedbankWithdrawal(
-        withdrawnQuantity = BigDecimal(4), purpose = WithdrawalPurpose.OutPlanting)
+        withdrawnQuantity = BigDecimal(4),
+        purpose = WithdrawalPurpose.OutPlanting,
+    )
     insertSeedbankWithdrawal(withdrawnQuantity = BigDecimal(5), purpose = WithdrawalPurpose.Nursery)
 
     // no quantity, all 4 purposes
     insertSeedbankWithdrawal(purpose = WithdrawalPurpose.Other)
     insertSeedbankWithdrawal(
-        purpose = WithdrawalPurpose.ViabilityTesting, viabilityTestId = viabilityTestId2)
+        purpose = WithdrawalPurpose.ViabilityTesting,
+        viabilityTestId = viabilityTestId2,
+    )
     insertSeedbankWithdrawal(purpose = WithdrawalPurpose.OutPlanting)
     insertSeedbankWithdrawal(purpose = WithdrawalPurpose.Nursery)
 

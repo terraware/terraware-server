@@ -32,7 +32,8 @@ class DevicesController(
 ) {
   @ApiResponse(responseCode = "200", description = "Successfully listed the facility's devices.")
   @ApiResponse404(
-      description = "The facility does not exist or is not accessible by the current user.")
+      description = "The facility does not exist or is not accessible by the current user."
+  )
   @GetMapping("/api/v1/facility/{facilityId}/devices", "/api/v1/facilities/{facilityId}/devices")
   @Operation(summary = "Lists the configurations of all the devices at a facility.")
   fun listFacilityDevices(@PathVariable facilityId: FacilityId): ListDeviceConfigsResponse {
@@ -64,7 +65,7 @@ class DevicesController(
   @PutMapping("/api/v1/devices/{id}")
   fun updateDevice(
       @PathVariable("id") deviceId: DeviceId,
-      @RequestBody payload: UpdateDeviceRequestPayload
+      @RequestBody payload: UpdateDeviceRequestPayload,
   ): SimpleSuccessResponsePayload {
     val devicesRow = payload.toRow(deviceId)
     deviceService.update(devicesRow)
@@ -75,16 +76,18 @@ class DevicesController(
   @ApiResponse404
   @Operation(
       summary = "Marks a device as unresponsive.",
-      description = "Notifies the appropriate users so they can troubleshoot the problem.")
+      description = "Notifies the appropriate users so they can troubleshoot the problem.",
+  )
   @PostMapping("/api/v1/devices/{id}/unresponsive")
   fun deviceUnresponsive(
       @PathVariable("id") deviceId: DeviceId,
-      @RequestBody payload: DeviceUnresponsiveRequestPayload
+      @RequestBody payload: DeviceUnresponsiveRequestPayload,
   ): SimpleSuccessResponsePayload {
     deviceService.markUnresponsive(
         deviceId,
         payload.lastRespondedTime,
-        payload.expectedIntervalSecs?.let { Duration.ofSeconds(it.toLong()) })
+        payload.expectedIntervalSecs?.let { Duration.ofSeconds(it.toLong()) },
+    )
     return SimpleSuccessResponsePayload()
   }
 }
@@ -106,7 +109,8 @@ data class DeviceConfig(
         description =
             "High-level type of the device. Device manager may use this in conjunction " +
                 "with the make and model to determine which metrics to report.",
-        example = "inverter")
+        example = "inverter",
+    )
     val type: String,
     @Schema(description = "Name of device manufacturer.", example = "InHand Networks")
     val make: String,
@@ -117,14 +121,16 @@ data class DeviceConfig(
     @Schema(
         description =
             "Protocol-specific address of device, e.g., an IP address or a Bluetooth device ID.",
-        example = "192.168.1.100")
+        example = "192.168.1.100",
+    )
     val address: String?,
     @Schema(description = "Port number if relevant for the protocol.", example = "50000")
     val port: Int?,
     @Schema(
         description =
             "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
-                "the exact settings depend on the device type.")
+                "the exact settings depend on the device type."
+    )
     val settings: ArbitraryJsonObject?,
     @Schema(
         description = "Level of diagnostic information to log.",
@@ -163,7 +169,8 @@ data class CreateDeviceRequestPayload(
         description =
             "High-level type of the device. Device manager may use this in conjunction " +
                 "with the make and model to determine which metrics to report.",
-        example = "inverter")
+        example = "inverter",
+    )
     val type: String,
     @Schema(description = "Name of device manufacturer.", example = "InHand Networks")
     val make: String,
@@ -174,14 +181,16 @@ data class CreateDeviceRequestPayload(
     @Schema(
         description =
             "Protocol-specific address of device, e.g., an IP address or a Bluetooth device ID.",
-        example = "192.168.1.100")
+        example = "192.168.1.100",
+    )
     val address: String? = null,
     @Schema(description = "Port number if relevant for the protocol.", example = "50000")
     val port: Int? = null,
     @Schema(
         description =
             "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
-                "the exact settings depend on the device type.")
+                "the exact settings depend on the device type."
+    )
     val settings: ArbitraryJsonObject? = null,
     @Schema(
         description = "Level of diagnostic information to log.",
@@ -189,7 +198,8 @@ data class CreateDeviceRequestPayload(
     val verbosity: Int?,
     @Schema(
         description =
-            "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
+            "ID of parent device such as a hub or gateway, if any. The parent device must exist."
+    )
     val parentId: DeviceId? = null,
 ) {
   fun toRow(): DevicesRow {
@@ -221,7 +231,8 @@ data class UpdateDeviceRequestPayload(
         description =
             "High-level type of the device. Device manager may use this in conjunction " +
                 "with the make and model to determine which metrics to report.",
-        example = "inverter")
+        example = "inverter",
+    )
     val type: String,
     @Schema(description = "Name of device manufacturer.", example = "InHand Networks")
     val make: String,
@@ -232,14 +243,16 @@ data class UpdateDeviceRequestPayload(
     @Schema(
         description =
             "Protocol-specific address of device, e.g., an IP address or a Bluetooth device ID.",
-        example = "192.168.1.100")
+        example = "192.168.1.100",
+    )
     val address: String? = null,
     @Schema(description = "Port number if relevant for the protocol.", example = "50000")
     val port: Int? = null,
     @Schema(
         description =
             "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
-                "the exact settings depend on the device type.")
+                "the exact settings depend on the device type."
+    )
     val settings: ArbitraryJsonObject? = null,
     @Schema(
         description = "Level of diagnostic information to log.",
@@ -247,7 +260,8 @@ data class UpdateDeviceRequestPayload(
     val verbosity: Int?,
     @Schema(
         description =
-            "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
+            "ID of parent device such as a hub or gateway, if any. The parent device must exist."
+    )
     val parentId: DeviceId? = null,
 ) {
   fun toRow(deviceId: DeviceId): DevicesRow {
@@ -273,13 +287,15 @@ data class DeviceUnresponsiveRequestPayload(
     @Schema(
         description =
             "When the device most recently responded. Null or absent if the device has never " +
-                "responded.")
+                "responded."
+    )
     val lastRespondedTime: Instant?,
     @Schema(
         description =
             "The expected amount of time between updates from the device. Null or absent if " +
-                "there is no fixed update interval.")
-    val expectedIntervalSecs: Int?
+                "there is no fixed update interval."
+    )
+    val expectedIntervalSecs: Int?,
 )
 
 data class GetDeviceResponsePayload(val device: DeviceConfig) : SuccessResponsePayload

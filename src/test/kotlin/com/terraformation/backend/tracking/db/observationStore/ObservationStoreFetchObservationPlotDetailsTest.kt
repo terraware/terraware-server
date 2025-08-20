@@ -37,7 +37,9 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
         ObservationPlotsRow(
             claimedBy = userId1,
             claimedTime = claimedTime12,
-            statusId = ObservationPlotStatus.Claimed))
+            statusId = ObservationPlotStatus.Claimed,
+        )
+    )
 
     val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
@@ -55,7 +57,8 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
             notes = "Some notes",
             observedTime = observedTime21,
             statusId = ObservationPlotStatus.Completed,
-        ))
+        )
+    )
 
     val expected =
         listOf(
@@ -117,7 +120,8 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 plantingSubzoneName = "Z1-S2",
                 plotNumber = 3,
                 sizeMeters = 30,
-            ))
+            ),
+        )
 
     val actual = store.fetchObservationPlotDetails(observationId)
 

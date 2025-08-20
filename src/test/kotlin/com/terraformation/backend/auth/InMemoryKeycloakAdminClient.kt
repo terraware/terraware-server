@@ -28,11 +28,13 @@ class InMemoryKeycloakAdminClient : KeycloakAdminClient {
       throw IOException("Simulated request failure")
     }
 
-    if (users.any {
-      it.email == representation.email ||
-          it.username == representation.username ||
-          it.id == representation.id
-    }) {
+    if (
+        users.any {
+          it.email == representation.email ||
+              it.username == representation.username ||
+              it.id == representation.id
+        }
+    ) {
       return Response.status(Response.Status.CONFLICT).entity("Dupe!").build()
     }
 
@@ -66,7 +68,7 @@ class InMemoryKeycloakAdminClient : KeycloakAdminClient {
       clientId: String,
       redirectUri: String,
       lifespan: Int,
-      actions: List<String>
+      actions: List<String>,
   ) {
     if (simulateRequestFailures) {
       throw IOException("Simulated request failure")

@@ -65,17 +65,21 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             boundary = plantingSiteGeometry,
             countryCode = "CI",
             exclusion = exclusionGeometry,
-            projectId = projectId)
+            projectId = projectId,
+        )
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
     val plantingSeasonId1 =
         insertPlantingSeason(
             startDate = LocalDate.of(1970, 1, 1),
             endDate = LocalDate.of(1970, 2, 15),
-            isActive = true)
+            isActive = true,
+        )
     val plantingSeasonId2 =
         insertPlantingSeason(
-            startDate = LocalDate.of(1970, 3, 1), endDate = LocalDate.of(1970, 6, 5))
+            startDate = LocalDate.of(1970, 3, 1),
+            endDate = LocalDate.of(1970, 6, 5),
+        )
 
     val plantingZoneId2 = insertPlantingZone(boundary = plantingZoneGeometry, name = "Z2")
 
@@ -83,7 +87,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertPlantingSubzone(
             boundary = plantingSubzoneGeometry3,
             name = "3",
-            observedTime = Instant.ofEpochSecond(1))
+            observedTime = Instant.ofEpochSecond(1),
+        )
     val monitoringPlotId5 = insertMonitoringPlot(boundary = monitoringPlotGeometry5)
     val monitoringPlotId6 = insertMonitoringPlot(boundary = monitoringPlotGeometry6)
 
@@ -91,7 +96,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertPlantingSubzone(
             boundary = plantingSubzoneGeometry4,
             plantingCompletedTime = Instant.ofEpochSecond(1),
-            name = "4")
+            name = "4",
+        )
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
     val monitoringPlotId8 =
         insertMonitoringPlot(boundary = monitoringPlotGeometry8, sizeMeters = 25)
@@ -110,27 +116,38 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     val plantingId1 =
         insertPlanting(
-            numPlants = 1, plantingSubzoneId = plantingSubzoneId3, speciesId = speciesId1)
+            numPlants = 1,
+            plantingSubzoneId = plantingSubzoneId3,
+            speciesId = speciesId1,
+        )
 
     val plantingId3 =
         insertPlanting(
             numPlants = -2,
             plantingTypeId = PlantingType.ReassignmentFrom,
             plantingSubzoneId = plantingSubzoneId3,
-            speciesId = speciesId1)
+            speciesId = speciesId1,
+        )
     val plantingId4 =
         insertPlanting(
             numPlants = 2,
             plantingTypeId = PlantingType.ReassignmentTo,
             plantingSubzoneId = plantingSubzoneId4,
-            speciesId = speciesId1)
+            speciesId = speciesId1,
+        )
     val plantingId5 =
         insertPlanting(
-            numPlants = 8, plantingSubzoneId = plantingSubzoneId4, speciesId = speciesId2)
+            numPlants = 8,
+            plantingSubzoneId = plantingSubzoneId4,
+            speciesId = speciesId2,
+        )
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId)
     val plantingId2 =
         insertPlanting(
-            numPlants = 4, plantingSubzoneId = plantingSubzoneId3, speciesId = speciesId1)
+            numPlants = 4,
+            plantingSubzoneId = plantingSubzoneId3,
+            speciesId = speciesId1,
+        )
 
     // These population numbers are arbitrary; we just need them to be unique to test that the
     // searches are querying the right columns from the right tables.
@@ -162,7 +179,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertObservation(
             plantingSiteId = plantingSiteId,
             startDate = LocalDate.of(2024, 2, 2),
-            endDate = LocalDate.of(2024, 2, 28))
+            endDate = LocalDate.of(2024, 2, 28),
+        )
     insertObservationPlot(monitoringPlotId = monitoringPlotId5, isPermanent = true)
 
     val observationId3 =
@@ -464,7 +482,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "plantsSinceLastObservation" to "9",
                                                         "species_id" to "$speciesId1",
                                                         "totalPlants" to "10",
-                                                    )),
+                                                    )
+                                                ),
                                             "monitoringPlots" to
                                                 listOf(
                                                     mapOf(
@@ -492,7 +511,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "southeastLongitude" to "8",
                                                         "southwestLatitude" to "7",
                                                         "southwestLongitude" to "6",
-                                                    ))),
+                                                    ),
+                                                ),
+                                        ),
                                         mapOf(
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
@@ -514,7 +535,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "plantsSinceLastObservation" to "13",
                                                         "species_id" to "$speciesId2",
                                                         "totalPlants" to "14",
-                                                    )),
+                                                    ),
+                                                ),
                                             "monitoringPlots" to
                                                 listOf(
                                                     mapOf(
@@ -542,7 +564,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "southeastLongitude" to "10",
                                                         "southwestLatitude" to "9",
                                                         "southwestLongitude" to "8",
-                                                    )))),
+                                                    ),
+                                                ),
+                                        ),
+                                    ),
                                 "populations" to
                                     listOf(
                                         mapOf(
@@ -554,7 +579,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "plantsSinceLastObservation" to "7",
                                             "species_id" to "$speciesId2",
                                             "totalPlants" to "8",
-                                        )))),
+                                        ),
+                                    ),
+                            )
+                        ),
                     "populations" to
                         listOf(
                             mapOf(
@@ -566,15 +594,20 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "plantsSinceLastObservation" to "3",
                                 "species_id" to "$speciesId2",
                                 "totalPlants" to "4",
-                            )),
+                            ),
+                        ),
                     "project" to
                         mapOf(
                             "createdTime" to "1970-01-01T00:00:00Z",
                             "description" to "Project 1 description",
                             "id" to "$projectId",
                             "modifiedTime" to "1970-01-01T00:00:00Z",
-                            "name" to "Project 1"),
-                    "totalPlants" to "6")))
+                            "name" to "Project 1",
+                        ),
+                    "totalPlants" to "6",
+                )
+            )
+        )
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
     val fields =
@@ -705,7 +738,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val expected = SearchResults(emptyList())
     val actual =
         searchService.search(
-            prefix, listOf(prefix.resolve("id")), mapOf(prefix to NoConditionNode()))
+            prefix,
+            listOf(prefix.resolve("id")),
+            mapOf(prefix to NoConditionNode()),
+        )
 
     assertEquals(expected, actual)
   }
@@ -719,7 +755,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     return dslContext
         .resultQuery(
             "SELECT ST_AsGeoJSON(?::geometry)",
-            DSL.value("SRID=${geometry.srid};${geometry.toText()}"))
+            DSL.value("SRID=${geometry.srid};${geometry.toText()}"),
+        )
         .fetchOne()!!
         .get(0)!!
         .toString()

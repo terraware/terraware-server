@@ -81,7 +81,7 @@ class DocumentsController(
   @PutMapping("/{id}")
   fun updateDocument(
       @PathVariable("id") id: DocumentId,
-      @RequestBody payload: UpdateDocumentRequestPayload
+      @RequestBody payload: UpdateDocumentRequestPayload,
   ): SimpleSuccessResponsePayload {
     documentStore.updateDocument(id) { payload.applyChanges(it) }
 
@@ -91,7 +91,8 @@ class DocumentsController(
   @Operation(
       summary =
           "Gets the history of a document. This includes both information about document edits " +
-              "and information about saved versions.")
+              "and information about saved versions."
+  )
   @GetMapping("/{id}/history")
   fun getDocumentHistory(@PathVariable id: DocumentId): GetDocumentHistoryResponsePayload {
     val document = documentStore.fetchDocumentById(id)
@@ -143,13 +144,16 @@ class DocumentsController(
 
   @ApiResponse200
   @ApiResponse404(
-      description = "The document does not exist or the requested manifest does not exist.")
+      description = "The document does not exist or the requested manifest does not exist."
+  )
   @ApiResponse409(
       description =
-          "The requested manifest is for a different document template than the current one.")
+          "The requested manifest is for a different document template than the current one."
+  )
   @Operation(
       summary = "Upgrades a document to a newer manifest.",
-      description = "The manifest must be for the same document template as the existing manifest.")
+      description = "The manifest must be for the same document template as the existing manifest.",
+  )
   @PostMapping("/{documentId}/upgrade")
   fun upgradeManifest(
       @PathVariable documentId: DocumentId,
@@ -204,7 +208,8 @@ data class DocumentPayload(
 @Schema(
     description =
         "Information about a saved version of a document. The maxVariableValueId and " +
-            "variableManifestId may be used to retrieve the contents of the saved version.")
+            "variableManifestId may be used to retrieve the contents of the saved version."
+)
 data class DocumentSavedVersionPayload(
     val createdBy: UserId,
     val createdTime: Instant,
@@ -272,7 +277,8 @@ data class UpgradeManifestRequestPayload(
         description =
             "ID of manifest to upgrade the document to. This must be greater than the document's " +
                 "current manifest ID (downgrades are not supported) and must be for the same " +
-                "document template as the current manifest.")
+                "document template as the current manifest."
+    )
     val variableManifestId: VariableManifestId
 )
 
@@ -288,7 +294,9 @@ data class GetDocumentHistoryResponsePayload(
             Schema(
                 description =
                     "List of events in the document's history in reverse chronological order. " +
-                        "The last element is always the \"Created\" event."))
+                        "The last element is always the \"Created\" event."
+            )
+    )
     val history: List<DocumentHistoryPayload>,
 ) : SuccessResponsePayload
 

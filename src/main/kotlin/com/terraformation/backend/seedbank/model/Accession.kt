@@ -24,7 +24,7 @@ import java.time.LocalDate
  */
 enum class AccessionActive {
   Inactive,
-  Active
+  Active,
 }
 
 fun AccessionState.toActiveEnum() = if (active) AccessionActive.Active else AccessionActive.Inactive
@@ -170,28 +170,38 @@ data class AccessionModel(
     if (quantity == null) {
       if (viabilityTests.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Cannot create viability tests before setting total accession size")
+            "Cannot create viability tests before setting total accession size"
+        )
       }
       if (withdrawals.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Cannot withdraw from accession before setting total accession size")
+            "Cannot withdraw from accession before setting total accession size"
+        )
       }
     }
   }
 
   private fun assertNoQuantityTypeChangeWithoutSubsetInfo() {
-    if (latestObservedQuantity != null &&
-        (viabilityTests.isNotEmpty() || withdrawals.isNotEmpty()) &&
-        (subsetWeightQuantity == null || subsetCount == null)) {
-      if (latestObservedQuantity.units == SeedQuantityUnits.Seeds &&
-          remaining?.units != SeedQuantityUnits.Seeds) {
+    if (
+        latestObservedQuantity != null &&
+            (viabilityTests.isNotEmpty() || withdrawals.isNotEmpty()) &&
+            (subsetWeightQuantity == null || subsetCount == null)
+    ) {
+      if (
+          latestObservedQuantity.units == SeedQuantityUnits.Seeds &&
+              remaining?.units != SeedQuantityUnits.Seeds
+      ) {
         throw IllegalArgumentException(
-            "Cannot change remaining quantity from seeds to weight without subset weight and count")
+            "Cannot change remaining quantity from seeds to weight without subset weight and count"
+        )
       }
-      if (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
-          remaining?.units == SeedQuantityUnits.Seeds) {
+      if (
+          latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
+              remaining?.units == SeedQuantityUnits.Seeds
+      ) {
         throw IllegalArgumentException(
-            "Cannot change remaining quantity from weight to seeds without subset weight and count")
+            "Cannot change remaining quantity from weight to seeds without subset weight and count"
+        )
       }
     }
   }
@@ -212,8 +222,10 @@ data class AccessionModel(
     return if (latestObservedQuantityCalculated) {
       latestObservedTime
     } else {
-      if (remaining != null &&
-          (existing.remaining != remaining || existing.latestObservedQuantity == null)) {
+      if (
+          remaining != null &&
+              (existing.remaining != remaining || existing.latestObservedQuantity == null)
+      ) {
         clock.instant()
       } else {
         existing.latestObservedTime
@@ -223,9 +235,11 @@ data class AccessionModel(
 
   fun calculateRemaining(existing: AccessionModel = this): SeedQuantityModel? {
     val newRemaining =
-        if (latestObservedQuantity == null ||
-            latestObservedTime == null ||
-            remaining != existing.remaining) {
+        if (
+            latestObservedQuantity == null ||
+                latestObservedTime == null ||
+                remaining != existing.remaining
+        ) {
           remaining
         } else {
           val newWithdrawals =
@@ -237,9 +251,11 @@ data class AccessionModel(
           // always measured in seeds), we can't rely on the seeds-to-weight calculation precisely
           // matching the remaining weight quantity because weights have limited precision. Force
           // the remaining quantity to zero in that case.
-          if (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
-              mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
-              mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount) {
+          if (
+              latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
+                  mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
+                  mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount
+          ) {
             SeedQuantityModel.of(BigDecimal.ZERO, latestObservedQuantity.units)
           } else {
             newWithdrawals.fold(latestObservedQuantity) { runningRemaining, withdrawal ->
@@ -324,7 +340,10 @@ data class AccessionModel(
           estimatedCount = withdrawal.calculateEstimatedCount(subsetWeightQuantity, subsetCount),
           estimatedWeight =
               withdrawal.calculateEstimatedWeight(
-                  subsetWeightQuantity, subsetCount, remaining?.units),
+                  subsetWeightQuantity,
+                  subsetCount,
+                  remaining?.units,
+              ),
       )
     }
   }
@@ -366,7 +385,7 @@ data class AccessionModel(
 
   fun updateWithdrawal(
       withdrawalId: WithdrawalId,
-      edit: (WithdrawalModel) -> WithdrawalModel
+      edit: (WithdrawalModel) -> WithdrawalModel,
   ): AccessionModel {
     if (withdrawals.none { it.id == withdrawalId }) {
       throw WithdrawalNotFoundException(withdrawalId)
@@ -392,7 +411,7 @@ data class AccessionModel(
 
   fun updateViabilityTest(
       viabilityTestId: ViabilityTestId,
-      edit: (ViabilityTestModel) -> ViabilityTestModel
+      edit: (ViabilityTestModel) -> ViabilityTestModel,
   ): AccessionModel {
     if (viabilityTests.none { it.id == viabilityTestId }) {
       throw ViabilityTestNotFoundException(viabilityTestId)

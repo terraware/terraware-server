@@ -60,7 +60,8 @@ class SeedFundReportRenderer(
             "bestMonths",
             report.body.annualDetails?.bestMonthsForObservation?.sorted()?.joinToString {
               Month.of(it).getDisplayName(TextStyle.FULL, Locale.US)
-            })
+            },
+        )
         templateEngine.process("/reports/v1/index.html", context)
       }
     }
@@ -105,7 +106,8 @@ class SeedFundReportRenderer(
                           val weight =
                               (site.totalPlantsPlanted ?: 0) + (site.totalTreesPlanted ?: 0)
                           (site.mortalityRate ?: 0) to weight.toLong()
-                        }),
+                        }
+                    ),
                 "Planted: Species" to
                     plantingSites
                         .flatMap { it.species.map { species -> species.scientificName } }
@@ -133,7 +135,8 @@ class SeedFundReportRenderer(
             CSVWriter.DEFAULT_SEPARATOR,
             CSVWriter.DEFAULT_QUOTE_CHARACTER,
             CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-            CSVWriter.RFC4180_LINE_END)
+            CSVWriter.RFC4180_LINE_END,
+        )
         .use { csvWriter ->
           csvWriter.writeNext(columnValues.map { it.first })
           csvWriter.writeNext(columnValues.map { it.second })

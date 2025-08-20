@@ -18,25 +18,29 @@ class SearchFieldPrefixTest {
           name = "accessions",
           searchTable = tables.accessions,
           isMultiValue = true,
-          conditionForMultiset = PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID))
+          conditionForMultiset = PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID),
+      )
   private val viabilityTestsField =
       SublistField(
           name = "viabilityTests",
           searchTable = tables.viabilityTests,
           isMultiValue = true,
-          conditionForMultiset = ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID))
+          conditionForMultiset = ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID),
+      )
   private val viabilityTestsResultsField =
       SublistField(
           name = "viabilityTestResults",
           searchTable = tables.viabilityTestResults,
           isMultiValue = true,
-          conditionForMultiset = VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID))
+          conditionForMultiset = VIABILITY_TESTS.ID.eq(VIABILITY_TEST_RESULTS.TEST_ID),
+      )
 
   @Test
   fun `relativeSublistPrefix non-existent`() {
     assertNull(
         SearchFieldPrefix(root = tables.accessions).relativeSublistPrefix("someBadPath"),
-        "Relative sublist prefix should be null for non existent sublist")
+        "Relative sublist prefix should be null for non existent sublist",
+    )
   }
 
   @Test
@@ -52,7 +56,8 @@ class SearchFieldPrefixTest {
     val expected =
         SearchFieldPrefix(
             root = tables.accessions,
-            sublists = listOf(viabilityTestsField, viabilityTestsResultsField))
+            sublists = listOf(viabilityTestsField, viabilityTestsResultsField),
+        )
     val actual =
         SearchFieldPrefix(root = tables.accessions)
             .relativeSublistPrefix("viabilityTests.viabilityTestResults")
@@ -64,7 +69,8 @@ class SearchFieldPrefixTest {
     val expected =
         SearchFieldPrefix(
             root = tables.projects,
-            sublists = listOf(accessionsField, viabilityTestsField, viabilityTestsResultsField))
+            sublists = listOf(accessionsField, viabilityTestsField, viabilityTestsResultsField),
+        )
     val actual =
         SearchFieldPrefix(root = tables.projects)
             .relativeSublistPrefix("accessions.viabilityTests.viabilityTestResults")

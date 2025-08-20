@@ -17,10 +17,13 @@ class CountrySubdivisionsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           countries.asSingleValueSublist(
-              "country", COUNTRY_SUBDIVISIONS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
+              "country",
+              COUNTRY_SUBDIVISIONS.COUNTRY_CODE.eq(COUNTRIES.CODE),
+          ),
           organizations.asMultiValueSublist(
               "organizations",
-              COUNTRY_SUBDIVISIONS.CODE.eq(ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE)),
+              COUNTRY_SUBDIVISIONS.CODE.eq(ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE),
+          ),
       )
     }
   }

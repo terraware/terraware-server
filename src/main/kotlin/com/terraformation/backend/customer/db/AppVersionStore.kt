@@ -10,7 +10,7 @@ import org.jooq.DSLContext
 @Named
 class AppVersionStore(
     private val appVersionsDao: AppVersionsDao,
-    private val dslContext: DSLContext
+    private val dslContext: DSLContext,
 ) {
   fun findAll(): List<AppVersionsRow> {
     return dslContext

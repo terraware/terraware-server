@@ -26,13 +26,18 @@ class InventoriesTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           species.asSingleValueSublist("species", INVENTORIES.SPECIES_ID.eq(SPECIES.ID)),
           organizations.asSingleValueSublist(
-              "organization", INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              INVENTORIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           nurserySpeciesProjects.asMultiValueSublist(
-              "projects", INVENTORIES.SPECIES_ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
+              "projects",
+              INVENTORIES.SPECIES_ID.eq(SPECIES_PROJECTS.SPECIES_ID),
+          ),
           facilityInventories.asMultiValueSublist(
               "facilityInventories",
               INVENTORIES.ORGANIZATION_ID.eq(FACILITY_INVENTORIES.ORGANIZATION_ID)
-                  .and(INVENTORIES.SPECIES_ID.eq(FACILITY_INVENTORIES.SPECIES_ID))),
+                  .and(INVENTORIES.SPECIES_ID.eq(FACILITY_INVENTORIES.SPECIES_ID)),
+          ),
       )
     }
   }

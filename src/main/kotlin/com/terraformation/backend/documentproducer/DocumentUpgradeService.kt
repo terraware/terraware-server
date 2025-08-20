@@ -25,7 +25,8 @@ class DocumentUpgradeService(
                 documentStore,
                 variableManifestsDao,
                 variableStore,
-                variableValueStore)
+                variableValueStore,
+            )
             .calculateOperations()
 
     dslContext.transaction { _ ->

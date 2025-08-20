@@ -17,7 +17,9 @@ class SpeciesEcosystemTypesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           species.asSingleValueSublist(
-              "species", SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID)),
+              "species",
+              SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID),
+          ),
       )
     }
   }

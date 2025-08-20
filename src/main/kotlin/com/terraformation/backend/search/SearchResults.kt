@@ -60,7 +60,7 @@ data class SearchResults(
   /** Converts nested search results into a flat list of pairs of field names and values. */
   private fun expandNestedFields(
       result: Map<*, *>,
-      prefix: String = ""
+      prefix: String = "",
   ): List<Pair<String, String>> {
     return result.entries.flatMap { (key, value) ->
       when (value) {

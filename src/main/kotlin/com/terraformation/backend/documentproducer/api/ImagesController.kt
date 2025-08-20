@@ -35,7 +35,8 @@ class ImagesController(
   @GetMapping(
       "/projects/{projectId}/images/{valueId}",
       produces =
-          [MediaType.APPLICATION_JSON_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
+          [MediaType.APPLICATION_JSON_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
   @Operation(
       summary = "Gets the contents of an image variable value.",
       description =
@@ -45,7 +46,8 @@ class ImagesController(
               "ratio of the original image is maintained, so the returned image may be smaller " +
               "than the requested width and height. If only maxWidth or only maxHeight is " +
               "supplied, the other dimension will be computed based on the original image's " +
-              "aspect ratio.")
+              "aspect ratio.",
+  )
   fun getProjectImageValue(
       @PathVariable projectId: ProjectId,
       @PathVariable valueId: VariableValueId,
@@ -55,7 +57,8 @@ class ImagesController(
               "Maximum desired width in pixels. If neither this nor maxHeight is specified, the " +
                   "full-sized original image will be returned. If this is specified, an image no " +
                   "wider than this will be returned. The image may be narrower than this value " +
-                  "if needed to preserve the aspect ratio of the original.")
+                  "if needed to preserve the aspect ratio of the original."
+      )
       maxWidth: Int? = null,
       @RequestParam
       @Schema(
@@ -63,7 +66,8 @@ class ImagesController(
               "Maximum desired height in pixels. If neither this nor maxWidth is specified, the " +
                   "full-sized original image will be returned. If this is specified, an image no " +
                   "taller than this will be returned. The image may be shorter than this value " +
-                  "if needed to preserve the aspect ratio of the original.")
+                  "if needed to preserve the aspect ratio of the original."
+      )
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     return variableFileService
@@ -87,14 +91,16 @@ class ImagesController(
                   "variable is a list, or will replace any existing image if the variable is " +
                   "not a list.",
           format = "int32",
-          type = "integer")
+          type = "integer",
+      )
       listPosition: String? = null,
       @RequestPart(required = false)
       @Schema(
           description =
               "If the variable is a table column, value ID of the row the value should belong to.",
           format = "int64",
-          type = "integer")
+          type = "integer",
+      )
       rowValueId: String? = null,
   ): UploadImageFileResponsePayload {
     val newMetadata =

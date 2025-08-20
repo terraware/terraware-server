@@ -47,14 +47,17 @@ class PlantingSiteEditCalculator(
             .map { desiredZone ->
               val monitoringPlotEdits =
                   calculateMonitoringPlotEdits(
-                      desiredZone, desiredZone.boundary.differenceNullable(desiredSite.exclusion))
+                      desiredZone,
+                      desiredZone.boundary.differenceNullable(desiredSite.exclusion),
+                  )
 
               PlantingZoneEdit.Create(
                   desiredModel = desiredZone,
                   monitoringPlotEdits =
                       monitoringPlotEdits.filterIsInstance<MonitoringPlotEdit.Create>(),
                   plantingSubzoneEdits =
-                      calculateSubzoneEdits(null, desiredZone, monitoringPlotEdits))
+                      calculateSubzoneEdits(null, desiredZone, monitoringPlotEdits),
+              )
             }
 
     val deleteEdits =
@@ -67,7 +70,8 @@ class PlantingSiteEditCalculator(
                         existingSubzone,
                         existingSubzone.monitoringPlots
                             .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
-                            .map { MonitoringPlotEdit.Eject(it.id) })
+                            .map { MonitoringPlotEdit.Eject(it.id) },
+                    )
                   }
 
           PlantingZoneEdit.Delete(
@@ -86,7 +90,10 @@ class PlantingSiteEditCalculator(
                   desiredZone.boundary.differenceNullable(desiredSite.exclusion)
               val monitoringPlotEdits =
                   calculateMonitoringPlotEdits(
-                      desiredZone, desiredUsableBoundary, existingUsableBoundary)
+                      desiredZone,
+                      desiredUsableBoundary,
+                      existingUsableBoundary,
+                  )
 
               val createMonitoringPlotEdits =
                   monitoringPlotEdits.filterIsInstance<MonitoringPlotEdit.Create>()
@@ -94,14 +101,16 @@ class PlantingSiteEditCalculator(
               val subzoneEdits =
                   calculateSubzoneEdits(existingZone, desiredZone, monitoringPlotEdits)
 
-              if (subzoneEdits.isEmpty() &&
-                  createMonitoringPlotEdits.isEmpty() &&
-                  existingZone.errorMargin == desiredZone.errorMargin &&
-                  existingZone.name == desiredZone.name &&
-                  existingZone.studentsT == desiredZone.studentsT &&
-                  existingZone.targetPlantingDensity == desiredZone.targetPlantingDensity &&
-                  existingZone.variance == desiredZone.variance &&
-                  existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)) {
+              if (
+                  subzoneEdits.isEmpty() &&
+                      createMonitoringPlotEdits.isEmpty() &&
+                      existingZone.errorMargin == desiredZone.errorMargin &&
+                      existingZone.name == desiredZone.name &&
+                      existingZone.studentsT == desiredZone.studentsT &&
+                      existingZone.targetPlantingDensity == desiredZone.targetPlantingDensity &&
+                      existingZone.variance == desiredZone.variance &&
+                      existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)
+              ) {
                 null
               } else {
                 PlantingZoneEdit.Update(
@@ -129,7 +138,7 @@ class PlantingSiteEditCalculator(
   private fun calculateMonitoringPlotEdits(
       desiredZone: AnyPlantingZoneModel,
       desiredUsableBoundary: Geometry,
-      existingUsableBoundary: Geometry = desiredUsableBoundary.factory.createMultiPolygon()
+      existingUsableBoundary: Geometry = desiredUsableBoundary.factory.createMultiPolygon(),
   ): List<MonitoringPlotEdit> {
     // Now we need two lists of existing monitoring plots: the ones in the part of the
     // zone that overlap with the zone's old geometry, and the ones in the newly-added
@@ -167,7 +176,7 @@ class PlantingSiteEditCalculator(
     // either the overlapping or the non-overlapping part of the zone.
     fun nextPlotForArea(
         plotList: MutableList<MonitoringPlotModel>,
-        boundary: MultiPolygon
+        boundary: MultiPolygon,
     ): (Int) -> MonitoringPlotEdit {
       return { index ->
         val permanentIndex = index + 1
@@ -233,7 +242,8 @@ class PlantingSiteEditCalculator(
               existingSubzone,
               existingSubzone.monitoringPlots
                   .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
-                  .map { MonitoringPlotEdit.Eject(it.id) })
+                  .map { MonitoringPlotEdit.Eject(it.id) },
+          )
         } ?: emptyList()
 
     val updateEdits =
@@ -264,12 +274,14 @@ class PlantingSiteEditCalculator(
                       .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
                       .map { MonitoringPlotEdit.Eject(it.id) }
 
-              if (existingSubzone.fullName == desiredSubzone.fullName &&
-                  existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
-                  existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001) &&
-                  existingZonesByExistingSubzone[existingSubzone] == existingZone &&
-                  adoptEdits.isEmpty() &&
-                  ejectEdits.isEmpty()) {
+              if (
+                  existingSubzone.fullName == desiredSubzone.fullName &&
+                      existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
+                      existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001) &&
+                      existingZonesByExistingSubzone[existingSubzone] == existingZone &&
+                      adoptEdits.isEmpty() &&
+                      ejectEdits.isEmpty()
+              ) {
                 null
               } else {
                 PlantingSubzoneEdit.Update(
@@ -279,7 +291,9 @@ class PlantingSiteEditCalculator(
                             .toNormalizedMultiPolygon(),
                     areaHaDifference =
                         calculateAreaHaDifference(
-                            existingSubzone.boundary, desiredSubzone.boundary),
+                            existingSubzone.boundary,
+                            desiredSubzone.boundary,
+                        ),
                     desiredModel = desiredSubzone,
                     existingModel = existingSubzone,
                     monitoringPlotEdits = ejectEdits + adoptEdits,
@@ -357,7 +371,8 @@ class PlantingSiteEditCalculator(
           plantingZone.plantingSubzones.flatMap { it.monitoringPlots }
         }
     (plotsInSubzones + existingSite.exteriorPlots).sortedWith(
-        compareBy({ it.permanentIndex ?: Int.MAX_VALUE }, { it.plotNumber }))
+        compareBy({ it.permanentIndex ?: Int.MAX_VALUE }, { it.plotNumber })
+    )
   }
 
   private val existingMonitoringPlotsById: Map<MonitoringPlotId, MonitoringPlotModel> by lazy {

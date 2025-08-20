@@ -28,7 +28,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             totalGerminated = 100,
             totalGerminationCandidates = 200,
             totalLost = 300,
-            totalLossCandidates = 400)
+            totalLossCandidates = 400,
+        )
     val batchId2 =
         insertBatch(
             facilityId = facilityId,
@@ -38,7 +39,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
             readyQuantity = 6,
             hardeningOffQuantity = 7,
             totalLost = 500,
-            totalLossCandidates = 600)
+            totalLossCandidates = 600,
+        )
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
@@ -46,13 +48,15 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 10,
         activeGrowthQuantityWithdrawn = 11,
         readyQuantityWithdrawn = 12,
-        hardeningOffQuantityWithdrawn = 13)
+        hardeningOffQuantityWithdrawn = 13,
+    )
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 13,
         activeGrowthQuantityWithdrawn = 14,
         readyQuantityWithdrawn = 15,
-        hardeningOffQuantityWithdrawn = 16)
+        hardeningOffQuantityWithdrawn = 16,
+    )
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
@@ -60,7 +64,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 16,
         activeGrowthQuantityWithdrawn = 17,
         readyQuantityWithdrawn = 18,
-        hardeningOffQuantityWithdrawn = 19)
+        hardeningOffQuantityWithdrawn = 19,
+    )
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
@@ -68,13 +73,15 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 19,
         activeGrowthQuantityWithdrawn = 20,
         readyQuantityWithdrawn = 21,
-        hardeningOffQuantityWithdrawn = 22)
+        hardeningOffQuantityWithdrawn = 22,
+    )
     insertBatchWithdrawal(
         batchId = batchId2,
         germinatingQuantityWithdrawn = 22,
         activeGrowthQuantityWithdrawn = 23,
         readyQuantityWithdrawn = 24,
-        hardeningOffQuantityWithdrawn = 25)
+        hardeningOffQuantityWithdrawn = 25,
+    )
 
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
@@ -82,7 +89,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 25,
         activeGrowthQuantityWithdrawn = 26,
         readyQuantityWithdrawn = 27,
-        hardeningOffQuantityWithdrawn = 28)
+        hardeningOffQuantityWithdrawn = 28,
+    )
 
     insertBatch(
         facilityId = otherNurseryId,
@@ -94,20 +102,23 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         totalGerminated = 700,
         totalGerminationCandidates = 800,
         totalLost = 900,
-        totalLossCandidates = 1000)
+        totalLossCandidates = 1000,
+    )
     insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.OutPlant)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 28,
         activeGrowthQuantityWithdrawn = 29,
         readyQuantityWithdrawn = 30,
-        hardeningOffQuantityWithdrawn = 31)
+        hardeningOffQuantityWithdrawn = 31,
+    )
 
     insertNurseryWithdrawal(facilityId = otherNurseryId, purpose = WithdrawalPurpose.Dead)
     insertBatchWithdrawal(
         germinatingQuantityWithdrawn = 31,
         activeGrowthQuantityWithdrawn = 32,
         readyQuantityWithdrawn = 33,
-        hardeningOffQuantityWithdrawn = 34)
+        hardeningOffQuantityWithdrawn = 34,
+    )
 
     // Withdrawal that is undone should not affect stats.
     insertNurseryWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
@@ -116,17 +127,20 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         germinatingQuantityWithdrawn = 34,
         activeGrowthQuantityWithdrawn = 35,
         readyQuantityWithdrawn = 36,
-        hardeningOffQuantityWithdrawn = 37)
+        hardeningOffQuantityWithdrawn = 37,
+    )
     insertNurseryWithdrawal(
         facilityId = facilityId,
         purpose = WithdrawalPurpose.Undo,
-        undoesWithdrawalId = inserted.withdrawalId)
+        undoesWithdrawalId = inserted.withdrawalId,
+    )
     insertBatchWithdrawal(
         batchId = batchId1,
         germinatingQuantityWithdrawn = -34,
         activeGrowthQuantityWithdrawn = -35,
         readyQuantityWithdrawn = -36,
-        hardeningOffQuantityWithdrawn = -37)
+        hardeningOffQuantityWithdrawn = -37,
+    )
 
     // Batch in other organization's facility should not affect stats.
     insertOrganization()
@@ -140,7 +154,8 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         totalGerminated = 10000,
         totalGerminationCandidates = 20000,
         totalLost = 30000,
-        totalLossCandidates = 40000)
+        totalLossCandidates = 40000,
+    )
 
     assertJsonEquals(
         NurseryStats(
@@ -158,9 +173,11 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
                         11L + 12L + 13L + 14L + 15L + 16L + 17L + 18L + 19L,
                     WithdrawalPurpose.NurseryTransfer to 0L,
                     WithdrawalPurpose.Other to 0L,
-                )),
+                ),
+        ),
         store.getNurseryStats(facilityId),
-        "Stats for single facility")
+        "Stats for single facility",
+    )
 
     assertJsonEquals(
         NurseryStats(
@@ -179,8 +196,10 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
                         11L + 12L + 13L + 14L + 15L + 16L + 17L + 18L + 19L + 29L + 30L + 31L,
                     WithdrawalPurpose.NurseryTransfer to 0L,
                     WithdrawalPurpose.Other to 0L,
-                )),
+                ),
+        ),
         store.getNurseryStats(organizationId = organizationId),
-        "Stats for organization")
+        "Stats for organization",
+    )
   }
 }

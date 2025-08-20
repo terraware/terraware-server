@@ -117,7 +117,7 @@ fun GeometryFactory.createRectangle(
     west: Double,
     south: Double,
     east: Double,
-    north: Double
+    north: Double,
 ): Polygon {
   return createPolygon(
       arrayOf(
@@ -125,7 +125,9 @@ fun GeometryFactory.createRectangle(
           Coordinate(east, south),
           Coordinate(east, north),
           Coordinate(west, north),
-          Coordinate(west, south)))
+          Coordinate(west, south),
+      )
+  )
 }
 
 /**

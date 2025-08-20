@@ -46,7 +46,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             readyQuantity = 30,
             hardeningOffQuantity = 40,
             totalLost = 0,
-            totalLossCandidates = 20 + 30 + 40)
+            totalLossCandidates = 20 + 30 + 40,
+        )
     species1Batch2Id =
         insertBatch(
             speciesId = speciesId,
@@ -56,7 +57,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             readyQuantity = 60,
             hardeningOffQuantity = 70,
             totalLost = 0,
-            totalLossCandidates = 50 + 60 + 70)
+            totalLossCandidates = 50 + 60 + 70,
+        )
     species2Batch1Id =
         insertBatch(
             speciesId = speciesId2,
@@ -66,7 +68,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             readyQuantity = 90,
             hardeningOffQuantity = 100,
             totalLost = 0,
-            totalLossCandidates = 80 + 90 + 100)
+            totalLossCandidates = 80 + 90 + 100,
+        )
   }
 
   @Test
@@ -93,19 +96,25 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 1,
                             activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 3,
-                            hardeningOffQuantityWithdrawn = 4),
+                            hardeningOffQuantityWithdrawn = 4,
+                        ),
                         BatchWithdrawalModel(
                             batchId = species1Batch2Id,
                             germinatingQuantityWithdrawn = 4,
                             activeGrowthQuantityWithdrawn = 5,
                             readyQuantityWithdrawn = 6,
-                            hardeningOffQuantityWithdrawn = 7),
+                            hardeningOffQuantityWithdrawn = 7,
+                        ),
                         BatchWithdrawalModel(
                             batchId = species2Batch1Id,
                             germinatingQuantityWithdrawn = 7,
                             activeGrowthQuantityWithdrawn = 8,
                             readyQuantityWithdrawn = 9,
-                            hardeningOffQuantityWithdrawn = 10))))
+                            hardeningOffQuantityWithdrawn = 10,
+                        ),
+                    ),
+            )
+        )
 
     assertAll(
         {
@@ -140,7 +149,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               ),
               batchesDao.findAll().sortedBy { it.germinatingQuantity!! },
-              "Should have deducted withdrawn quantities from batches")
+              "Should have deducted withdrawn quantities from batches",
+          )
         },
         {
           val newHistoryRow =
@@ -149,7 +159,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
                   withdrawalId = withdrawal.id,
-                  version = 2)
+                  version = 2,
+              )
 
           assertEquals(
               listOf(
@@ -158,24 +169,29 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantity = 9,
                       activeGrowthQuantity = 18,
                       readyQuantity = 27,
-                      hardeningOffQuantity = 36),
+                      hardeningOffQuantity = 36,
+                  ),
                   newHistoryRow.copy(
                       batchId = species1Batch2Id,
                       germinatingQuantity = 36,
                       activeGrowthQuantity = 45,
                       readyQuantity = 54,
-                      hardeningOffQuantity = 63),
+                      hardeningOffQuantity = 63,
+                  ),
                   newHistoryRow.copy(
                       batchId = species2Batch1Id,
                       germinatingQuantity = 63,
                       activeGrowthQuantity = 72,
                       readyQuantity = 81,
-                      hardeningOffQuantity = 90)),
+                      hardeningOffQuantity = 90,
+                  ),
+              ),
               batchQuantityHistoryDao
                   .findAll()
                   .map { it.copy(id = null) }
                   .sortedBy { it.germinatingQuantity!! },
-              "Should have inserted quantity history rows")
+              "Should have inserted quantity history rows",
+          )
         },
         {
           assertEquals(
@@ -189,10 +205,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
-                      modifiedTime = withdrawalTime)),
+                      modifiedTime = withdrawalTime,
+                  )
+              ),
               nurseryWithdrawalsDao.findAll(),
-              "Should have inserted withdrawals row")
-        })
+              "Should have inserted withdrawals row",
+          )
+        },
+    )
   }
 
   @Test
@@ -221,14 +241,19 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 100000,
                             activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 3,
-                            hardeningOffQuantityWithdrawn = 4))))
+                            hardeningOffQuantityWithdrawn = 4,
+                        )
+                    ),
+            )
+        )
 
     assertAll(
         {
           assertEquals(
               species1Batch1.copy(version = 2, modifiedTime = withdrawalTime),
               batchesDao.fetchOneById(species1Batch1Id),
-              "Should not have deducted withdrawn quantities from batch")
+              "Should not have deducted withdrawn quantities from batch",
+          )
         },
         {
           assertTableEmpty(BATCH_QUANTITY_HISTORY, "Should not have inserted quantity history row")
@@ -244,9 +269,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
-                      modifiedTime = withdrawalTime)),
+                      modifiedTime = withdrawalTime,
+                  )
+              ),
               nurseryWithdrawalsDao.findAll(),
-              "Should have inserted withdrawals row")
+              "Should have inserted withdrawals row",
+          )
         },
         {
           assertEquals(
@@ -257,9 +285,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 100000,
                       activeGrowthQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
-                      hardeningOffQuantityWithdrawn = 4)),
+                      hardeningOffQuantityWithdrawn = 4,
+                  )
+              ),
               batchWithdrawalsDao.findAll(),
-              "Should have inserted batch withdrawals row")
+              "Should have inserted batch withdrawals row",
+          )
         },
     )
   }
@@ -296,7 +327,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 1,
                             activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 3,
-                            hardeningOffQuantityWithdrawn = 4))))
+                            hardeningOffQuantityWithdrawn = 4,
+                        )
+                    ),
+            )
+        )
 
     assertAll(
         {
@@ -311,7 +346,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   totalLossCandidates = 20 + 30 + 40 - 2 - 3 - 4,
               ),
               batchesDao.fetchOneById(species1Batch1Id),
-              "Should have deducted withdrawn quantities from batch")
+              "Should have deducted withdrawn quantities from batch",
+          )
         },
         {
           assertEquals(
@@ -330,7 +366,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) },
-              "Should have inserted quantity history row")
+              "Should have inserted quantity history row",
+          )
         },
         {
           assertEquals(
@@ -343,9 +380,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdBy = user.userId,
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
-                      modifiedTime = withdrawalTime)),
+                      modifiedTime = withdrawalTime,
+                  )
+              ),
               nurseryWithdrawalsDao.findAll(),
-              "Should have inserted withdrawals row")
+              "Should have inserted withdrawals row",
+          )
         },
         {
           assertEquals(
@@ -356,9 +396,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       germinatingQuantityWithdrawn = 1,
                       activeGrowthQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
-                      hardeningOffQuantityWithdrawn = 4)),
+                      hardeningOffQuantityWithdrawn = 4,
+                  )
+              ),
               batchWithdrawalsDao.findAll(),
-              "Should have inserted batch withdrawals row")
+              "Should have inserted batch withdrawals row",
+          )
         },
     )
   }
@@ -378,7 +421,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             activeGrowthQuantity = 20,
             readyQuantity = 30,
             hardeningOffQuantity = 40,
-            version = 1))
+            version = 1,
+        )
+    )
 
     val initialSummary = store.getSpeciesSummary(speciesId)
 
@@ -395,7 +440,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                         germinatingQuantityWithdrawn = 1,
                         activeGrowthQuantityWithdrawn = 2,
                         readyQuantityWithdrawn = 3,
-                        hardeningOffQuantityWithdrawn = 4))))
+                        hardeningOffQuantityWithdrawn = 4,
+                    )
+                ),
+        )
+    )
 
     assertEquals(
         initialSummary.copy(
@@ -408,7 +457,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             totalQuantity = initialSummary.totalQuantity - 9,
             totalWithdrawn = 9,
         ),
-        store.getSpeciesSummary(speciesId))
+        store.getSpeciesSummary(speciesId),
+    )
   }
 
   @Test
@@ -427,13 +477,18 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 0,
                           activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 1,
-                          hardeningOffQuantityWithdrawn = 0),
+                          hardeningOffQuantityWithdrawn = 0,
+                      ),
                       BatchWithdrawalModel(
                           batchId = species1Batch1Id,
                           germinatingQuantityWithdrawn = 0,
                           activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 1,
-                          hardeningOffQuantityWithdrawn = 0))))
+                          hardeningOffQuantityWithdrawn = 0,
+                      ),
+                  ),
+          )
+      )
     }
   }
 
@@ -453,7 +508,11 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 1000,
                           activeGrowthQuantityWithdrawn = 2000,
                           readyQuantityWithdrawn = 3000,
-                          hardeningOffQuantityWithdrawn = 4000))))
+                          hardeningOffQuantityWithdrawn = 4000,
+                      )
+                  ),
+          )
+      )
     }
   }
 
@@ -471,18 +530,22 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 1,
                           readyQuantityWithdrawn = 1,
-                          hardeningOffQuantityWithdrawn = 1),
+                          hardeningOffQuantityWithdrawn = 1,
+                      ),
                       BatchWithdrawalModel(
                           batchId = species1Batch2Id,
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 1,
                           readyQuantityWithdrawn = 1,
-                          hardeningOffQuantityWithdrawn = 1),
+                          hardeningOffQuantityWithdrawn = 1,
+                      ),
                   ),
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.Dead,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 
@@ -502,18 +565,22 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 1,
                           readyQuantityWithdrawn = 1,
-                          hardeningOffQuantityWithdrawn = 1),
+                          hardeningOffQuantityWithdrawn = 1,
+                      ),
                       BatchWithdrawalModel(
                           batchId = otherFacilityBatchId,
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 0,
-                          hardeningOffQuantityWithdrawn = 0),
+                          hardeningOffQuantityWithdrawn = 0,
+                      ),
                   ),
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.Dead,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 
@@ -545,20 +612,26 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 1,
                             activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 3,
-                            hardeningOffQuantityWithdrawn = 4),
+                            hardeningOffQuantityWithdrawn = 4,
+                        ),
                         BatchWithdrawalModel(
                             batchId = species1Batch2Id,
                             germinatingQuantityWithdrawn = 4,
                             activeGrowthQuantityWithdrawn = 5,
                             readyQuantityWithdrawn = 6,
-                            hardeningOffQuantityWithdrawn = 7),
+                            hardeningOffQuantityWithdrawn = 7,
+                        ),
                         BatchWithdrawalModel(
                             batchId = species2Batch1Id,
                             germinatingQuantityWithdrawn = 10,
                             activeGrowthQuantityWithdrawn = 11,
                             readyQuantityWithdrawn = 12,
-                            hardeningOffQuantityWithdrawn = 13))),
-            newReadyByDate)
+                            hardeningOffQuantityWithdrawn = 13,
+                        ),
+                    ),
+            ),
+            newReadyByDate,
+        )
 
     // The order the new batches get created is undefined, so either new batch ID/number could
     // be for either species. Need to load them to figure out which is which.
@@ -602,7 +675,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               ),
               batchesDao.fetchByFacilityId(facilityId).sortedBy { it.germinatingQuantity!! },
-              "Should have deducted withdrawn quantities from batches")
+              "Should have deducted withdrawn quantities from batches",
+          )
         },
         {
           val newBatch =
@@ -618,7 +692,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   modifiedTime = withdrawalTime,
                   organizationId = organizationId,
                   readyByDate = newReadyByDate,
-                  version = 1)
+                  version = 1,
+              )
 
           assertEquals(
               listOf(
@@ -668,7 +743,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               batchesDao.fetchByFacilityId(destinationFacilityId).sortedBy {
                 it.germinatingQuantity
               },
-              "Should have created new batches")
+              "Should have created new batches",
+          )
         },
         {
           assertEquals(
@@ -680,7 +756,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       activeGrowthQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
                       hardeningOffQuantityWithdrawn = 4,
-                      withdrawalId = withdrawal.id),
+                      withdrawalId = withdrawal.id,
+                  ),
                   BatchWithdrawalsRow(
                       batchId = species1Batch2Id,
                       destinationBatchId = newSpecies1Batch2.id,
@@ -688,7 +765,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       activeGrowthQuantityWithdrawn = 5,
                       readyQuantityWithdrawn = 6,
                       hardeningOffQuantityWithdrawn = 7,
-                      withdrawalId = withdrawal.id),
+                      withdrawalId = withdrawal.id,
+                  ),
                   BatchWithdrawalsRow(
                       batchId = species2Batch1Id,
                       destinationBatchId = newSpecies2Batch.id,
@@ -696,10 +774,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       activeGrowthQuantityWithdrawn = 11,
                       readyQuantityWithdrawn = 12,
                       hardeningOffQuantityWithdrawn = 13,
-                      withdrawalId = withdrawal.id),
+                      withdrawalId = withdrawal.id,
+                  ),
               ),
               batchWithdrawalsDao.findAll().sortedBy { it.germinatingQuantityWithdrawn },
-              "Should have created batch withdrawals")
+              "Should have created batch withdrawals",
+          )
         },
         {
           val destinationBatchHistoryRow =
@@ -707,13 +787,15 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   historyTypeId = BatchQuantityHistoryType.Observed,
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
-                  withdrawalId = withdrawal.id)
+                  withdrawalId = withdrawal.id,
+              )
           val originBatchHistoryRow =
               BatchQuantityHistoryRow(
                   historyTypeId = BatchQuantityHistoryType.Computed,
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
-                  withdrawalId = withdrawal.id)
+                  withdrawalId = withdrawal.id,
+              )
 
           assertEquals(
               listOf(
@@ -770,7 +852,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   .findAll()
                   .map { it.copy(id = null) }
                   .sortedBy { it.germinatingQuantity!! },
-              "Should have inserted quantity history rows")
+              "Should have inserted quantity history rows",
+          )
         },
         {
           assertEquals(
@@ -785,10 +868,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdTime = withdrawalTime,
                       modifiedBy = user.userId,
                       modifiedTime = withdrawalTime,
-                      destinationFacilityId = destinationFacilityId)),
+                      destinationFacilityId = destinationFacilityId,
+                  )
+              ),
               nurseryWithdrawalsDao.findAll(),
-              "Should have inserted withdrawals row")
-        })
+              "Should have inserted withdrawals row",
+          )
+        },
+    )
   }
 
   @Test
@@ -817,13 +904,18 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                         germinatingQuantityWithdrawn = 0,
                         activeGrowthQuantityWithdrawn = 0,
                         readyQuantityWithdrawn = 1,
-                        hardeningOffQuantityWithdrawn = 0),
+                        hardeningOffQuantityWithdrawn = 0,
+                    ),
                     BatchWithdrawalModel(
                         batchId = species1Batch2Id,
                         germinatingQuantityWithdrawn = 0,
                         activeGrowthQuantityWithdrawn = 0,
                         readyQuantityWithdrawn = 2,
-                        hardeningOffQuantityWithdrawn = 0))))
+                        hardeningOffQuantityWithdrawn = 0,
+                    ),
+                ),
+        )
+    )
 
     val newBatches =
         batchesDao.fetchByFacilityId(destinationFacilityId).associate {
@@ -831,7 +923,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         }
 
     assertEquals(
-        mapOf(accessionId1 to 1, accessionId2 to 2), newBatches, "Accession IDs of new batches")
+        mapOf(accessionId1 to 1, accessionId2 to 2),
+        newBatches,
+        "Accession IDs of new batches",
+    )
   }
 
   @Test
@@ -841,7 +936,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val destinationTimeZone = ZoneId.of("Asia/Tokyo")
     val destinationFacilityId =
         insertFacility(
-            type = FacilityType.Nursery, facilityNumber = 2, timeZone = destinationTimeZone)
+            type = FacilityType.Nursery,
+            facilityNumber = 2,
+            timeZone = destinationTimeZone,
+        )
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -862,8 +960,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 1,
                             activeGrowthQuantityWithdrawn = 2,
                             readyQuantityWithdrawn = 3,
-                            hardeningOffQuantityWithdrawn = 4))),
-            newReadyByDate)
+                            hardeningOffQuantityWithdrawn = 4,
+                        )
+                    ),
+            ),
+            newReadyByDate,
+        )
 
     val secondWithdrawalTime = ZonedDateTime.of(2023, 2, 2, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
     clock.instant = secondWithdrawalTime
@@ -883,8 +985,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                             germinatingQuantityWithdrawn = 4,
                             activeGrowthQuantityWithdrawn = 5,
                             readyQuantityWithdrawn = 6,
-                            hardeningOffQuantityWithdrawn = 7))),
-            newReadyByDate)
+                            hardeningOffQuantityWithdrawn = 7,
+                        )
+                    ),
+            ),
+            newReadyByDate,
+        )
 
     val newBatch = batchesDao.fetchByFacilityId(destinationFacilityId).first()
 
@@ -901,7 +1007,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   version = 3,
               ),
               batchesDao.fetchOneById(species1Batch1Id),
-              "Should have deducted withdrawn quantities from batch")
+              "Should have deducted withdrawn quantities from batch",
+          )
         },
         {
           assertEquals(
@@ -930,10 +1037,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       latestObservedActiveGrowthQuantity = 2,
                       latestObservedReadyQuantity = 3,
                       latestObservedHardeningOffQuantity = 4,
-                      version = 2),
+                      version = 2,
+                  ),
               ),
               batchesDao.fetchByFacilityId(destinationFacilityId),
-              "Should have created one new batch")
+              "Should have created one new batch",
+          )
         },
         {
           assertEquals(
@@ -945,7 +1054,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       activeGrowthQuantityWithdrawn = 2,
                       readyQuantityWithdrawn = 3,
                       hardeningOffQuantityWithdrawn = 4,
-                      withdrawalId = firstWithdrawal.id),
+                      withdrawalId = firstWithdrawal.id,
+                  ),
                   BatchWithdrawalsRow(
                       batchId = species1Batch1Id,
                       destinationBatchId = newBatch.id,
@@ -953,10 +1063,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       activeGrowthQuantityWithdrawn = 5,
                       readyQuantityWithdrawn = 6,
                       hardeningOffQuantityWithdrawn = 7,
-                      withdrawalId = secondWithdrawal.id),
+                      withdrawalId = secondWithdrawal.id,
+                  ),
               ),
               batchWithdrawalsDao.findAll().sortedBy { it.germinatingQuantityWithdrawn },
-              "Should have created batch withdrawals")
+              "Should have created batch withdrawals",
+          )
         },
         {
           assertEquals(
@@ -1011,7 +1123,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               ),
               batchQuantityHistoryDao.findAll().map { it.copy(id = null) }.toSet(),
-              "Should have inserted quantity history rows")
+              "Should have inserted quantity history rows",
+          )
         },
         {
           assertEquals(
@@ -1025,7 +1138,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdTime = firstWithdrawalTime,
                       modifiedBy = user.userId,
                       modifiedTime = firstWithdrawalTime,
-                      destinationFacilityId = destinationFacilityId),
+                      destinationFacilityId = destinationFacilityId,
+                  ),
                   WithdrawalsRow(
                       id = secondWithdrawal.id,
                       facilityId = facilityId,
@@ -1035,11 +1149,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       createdTime = secondWithdrawalTime,
                       modifiedBy = user.userId,
                       modifiedTime = secondWithdrawalTime,
-                      destinationFacilityId = destinationFacilityId),
+                      destinationFacilityId = destinationFacilityId,
+                  ),
               ),
               nurseryWithdrawalsDao.findAll().toSet(),
-              "Should have inserted withdrawals rows")
-        })
+              "Should have inserted withdrawals rows",
+          )
+        },
+    )
   }
 
   @Test
@@ -1057,12 +1174,16 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 0,
-                          hardeningOffQuantityWithdrawn = 0)),
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
               destinationFacilityId = otherOrgFacilityId,
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.NurseryTransfer,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 
@@ -1083,12 +1204,16 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                           germinatingQuantityWithdrawn = 1,
                           activeGrowthQuantityWithdrawn = 0,
                           readyQuantityWithdrawn = 0,
-                          hardeningOffQuantityWithdrawn = 0)),
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
               destinationFacilityId = destinationFacilityId,
               facilityId = facilityId,
               id = null,
               purpose = WithdrawalPurpose.NurseryTransfer,
-              withdrawnDate = LocalDate.EPOCH))
+              withdrawnDate = LocalDate.EPOCH,
+          )
+      )
     }
   }
 }

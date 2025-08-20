@@ -51,7 +51,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleDuplicateEntityException(
       ex: DuplicateEntityException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
@@ -60,7 +60,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleEntityNotFoundException(
       ex: EntityNotFoundException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.NOT_FOUND, request)
@@ -74,7 +74,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleMismatchedStateException(
       ex: MismatchedStateException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
@@ -83,7 +83,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleOperationInProgressException(
       ex: OperationInProgressException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.LOCKED, request)
@@ -92,37 +92,44 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleIllegalArgumentException(
       ex: IllegalArgumentException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(
-        ex.message ?: "An internal error has occurred.", HttpStatus.BAD_REQUEST, request)
+        ex.message ?: "An internal error has occurred.",
+        HttpStatus.BAD_REQUEST,
+        request,
+    )
   }
 
   @ExceptionHandler
   fun handleUnsupportedMediaTypeException(
       ex: UnsupportedMediaTypeException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     return simpleErrorResponse(
-        ex.message ?: "Unsupported media type.", HttpStatus.UNSUPPORTED_MEDIA_TYPE, request)
+        ex.message ?: "Unsupported media type.",
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+        request,
+    )
   }
 
   @ExceptionHandler
   fun handleWebApplicationException(
       ex: WebApplicationException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.",
         HttpStatus.valueOf(ex.response.status),
-        request)
+        request,
+    )
   }
 
   @ExceptionHandler
   fun handleGenericSpringResponseStatusException(
       ex: ResponseStatusException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     val description = request.getDescription(false)
     controllerLogger(ex)
@@ -148,7 +155,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleAccessDeniedException(
       ex: AccessDeniedException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(ex.localizedMessage, HttpStatus.FORBIDDEN, request)
@@ -158,7 +165,10 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   fun handleUnknownException(ex: Exception, request: WebRequest): ResponseEntity<*> {
     logError(ex, request)
     return simpleErrorResponse(
-        "An internal error has occurred.", HttpStatus.INTERNAL_SERVER_ERROR, request)
+        "An internal error has occurred.",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        request,
+    )
   }
 
   /**
@@ -169,7 +179,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleMethodArgumentTypeMismatchException(
       ex: MethodArgumentTypeMismatchException,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<*> {
     val parameter = ex.parameter
     val parameterName = parameter.parameterName
@@ -191,7 +201,8 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       return simpleErrorResponse(
           "Invalid value for URL path element ${nameFromSchema(pathVariable.name)}",
           HttpStatus.BAD_REQUEST,
-          request)
+          request,
+      )
     }
 
     val queryParamName =
@@ -201,7 +212,8 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       return simpleErrorResponse(
           "Invalid value for query string parameter ${nameFromSchema(queryParamName)}",
           HttpStatus.BAD_REQUEST,
-          request)
+          request,
+      )
     }
 
     return simpleErrorResponse("Invalid value in request URL", HttpStatus.BAD_REQUEST, request)
@@ -217,12 +229,15 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: MethodArgumentNotValidException,
       headers: HttpHeaders,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any> {
     val fieldName = ex.fieldError?.field ?: "field"
     val message = ex.fieldError?.defaultMessage ?: "invalid"
     return simpleErrorResponse(
-        "Field value invalid: $fieldName $message", HttpStatus.BAD_REQUEST, request)
+        "Field value invalid: $fieldName $message",
+        HttpStatus.BAD_REQUEST,
+        request,
+    )
   }
 
   /** Returns an actionable error message if the client submits a malformed request payload. */
@@ -230,7 +245,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: HttpMessageNotReadableException,
       headers: HttpHeaders,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any> {
     val cause = ex.cause
     if (cause is JsonMappingException) {
@@ -243,7 +258,10 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       // out how to start traversing it.
       if (cause.path.isEmpty()) {
         return simpleErrorResponse(
-            "Unable to parse request payload", HttpStatus.BAD_REQUEST, request)
+            "Unable to parse request payload",
+            HttpStatus.BAD_REQUEST,
+            request,
+        )
       }
 
       val path =
@@ -293,10 +311,13 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: MissingServletRequestParameterException,
       headers: HttpHeaders,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any> {
     return simpleErrorResponse(
-        "Missing required parameter: ${ex.parameterName}", HttpStatus.BAD_REQUEST, request)
+        "Missing required parameter: ${ex.parameterName}",
+        HttpStatus.BAD_REQUEST,
+        request,
+    )
   }
 
   private fun controllerLogger(ex: Exception): Logger {
@@ -322,7 +343,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   private fun simpleErrorResponse(
       message: String,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any> {
     val acceptHeaders = request.getHeaderValues(HttpHeaders.ACCEPT) ?: emptyArray()
     val acceptedTypes = MediaType.parseMediaTypes(acceptHeaders.toList())

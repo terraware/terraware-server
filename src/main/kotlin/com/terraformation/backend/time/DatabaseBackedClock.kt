@@ -80,7 +80,8 @@ private constructor(
       systemUser,
       config.timeZone,
       config.useTestClock,
-      refreshInterval = refreshInterval)
+      refreshInterval = refreshInterval,
+  )
 
   private val log = perClassLogger()
 

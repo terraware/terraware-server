@@ -61,7 +61,8 @@ class BatchesHistoryController(
           "Each event includes a version number. For events such as details edits that are " +
               "snapshots of the values at a particular time, clients can compare against the " +
               "event with the previous version number to see what has changed, e.g., to show " +
-              "a delta or a diff view.")
+              "a delta or a diff view.",
+  )
   fun getBatchHistory(@PathVariable batchId: BatchId): GetBatchHistoryResponsePayload {
     requirePermissions { readBatch(batchId) }
 
@@ -73,7 +74,9 @@ class BatchesHistoryController(
     val detailsPayloads =
         detailsHistoryRows.map { detailsHistoryRow ->
           BatchHistoryDetailsEditedPayload(
-              detailsHistoryRow, detailsSubLocations[detailsHistoryRow.id])
+              detailsHistoryRow,
+              detailsSubLocations[detailsHistoryRow.id],
+          )
         }
 
     val incomingBatchWithdrawals =
@@ -103,11 +106,17 @@ class BatchesHistoryController(
           when {
             incomingBatchWithdrawal != null && incomingWithdrawal != null -> {
               BatchHistoryIncomingWithdrawalPayload(
-                  quantityHistoryRow, incomingBatchWithdrawal, incomingWithdrawal)
+                  quantityHistoryRow,
+                  incomingBatchWithdrawal,
+                  incomingWithdrawal,
+              )
             }
             outgoingBatchWithdrawal != null && outgoingWithdrawal != null -> {
               BatchHistoryOutgoingWithdrawalPayload(
-                  quantityHistoryRow, outgoingBatchWithdrawal, outgoingWithdrawal)
+                  quantityHistoryRow,
+                  outgoingBatchWithdrawal,
+                  outgoingWithdrawal,
+              )
             }
             quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.StatusChanged -> {
               BatchHistoryStatusChangedPayload(quantityHistoryRow)
@@ -122,14 +131,19 @@ class BatchesHistoryController(
     val photoCreatedPayloads =
         batchPhotos.map { batchPhotosRow ->
           BatchHistoryPhotoCreatedPayload(
-              batchPhotosRow.createdBy!!, batchPhotosRow.createdTime!!, batchPhotosRow.fileId)
+              batchPhotosRow.createdBy!!,
+              batchPhotosRow.createdTime!!,
+              batchPhotosRow.fileId,
+          )
         }
     val photoDeletedPayloads =
         batchPhotos
             .filter { it.deletedTime != null }
             .map { batchPhotosRow ->
               BatchHistoryPhotoDeletedPayload(
-                  batchPhotosRow.deletedBy!!, batchPhotosRow.deletedTime!!)
+                  batchPhotosRow.deletedBy!!,
+                  batchPhotosRow.deletedTime!!,
+              )
             }
 
     val historyPayloads =
@@ -157,21 +171,33 @@ sealed interface BatchHistoryPayloadCommonProps {
     discriminatorMapping =
         [
             DiscriminatorMapping(
-                schema = BatchHistoryDetailsEditedPayload::class, value = "DetailsEdited"),
+                schema = BatchHistoryDetailsEditedPayload::class,
+                value = "DetailsEdited",
+            ),
             DiscriminatorMapping(
                 schema = BatchHistoryIncomingWithdrawalPayload::class,
-                value = "IncomingWithdrawal"),
+                value = "IncomingWithdrawal",
+            ),
             DiscriminatorMapping(
                 schema = BatchHistoryOutgoingWithdrawalPayload::class,
-                value = "OutgoingWithdrawal"),
+                value = "OutgoingWithdrawal",
+            ),
             DiscriminatorMapping(
-                schema = BatchHistoryPhotoCreatedPayload::class, value = "PhotoCreated"),
+                schema = BatchHistoryPhotoCreatedPayload::class,
+                value = "PhotoCreated",
+            ),
             DiscriminatorMapping(
-                schema = BatchHistoryPhotoDeletedPayload::class, value = "PhotoDeleted"),
+                schema = BatchHistoryPhotoDeletedPayload::class,
+                value = "PhotoDeleted",
+            ),
             DiscriminatorMapping(
-                schema = BatchHistoryQuantityEditedPayload::class, value = "QuantityEdited"),
+                schema = BatchHistoryQuantityEditedPayload::class,
+                value = "QuantityEdited",
+            ),
             DiscriminatorMapping(
-                schema = BatchHistoryStatusChangedPayload::class, value = "StatusChanged"),
+                schema = BatchHistoryStatusChangedPayload::class,
+                value = "StatusChanged",
+            ),
         ],
     discriminatorProperty = "type",
     oneOf =
@@ -192,12 +218,14 @@ data class BatchHistorySubLocationPayload(
     @Schema(
         description =
             "The ID of the sub-location if it still exists. If it was subsequently deleted, this " +
-                "will be null but the name will still be present.")
+                "will be null but the name will still be present."
+    )
     val id: SubLocationId?,
     @Schema(
         description =
             "The name of the sub-location at the time the details were edited. If the " +
-                "sub-location was subsequently renamed or deleted, this name remains the same.")
+                "sub-location was subsequently renamed or deleted, this name remains the same."
+    )
     val name: String,
 ) {
   constructor(
@@ -207,7 +235,8 @@ data class BatchHistorySubLocationPayload(
 
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
-    description = "A change to the non-quantity-related details of a batch.")
+    description = "A change to the non-quantity-related details of a batch.",
+)
 data class BatchHistoryDetailsEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
@@ -216,12 +245,14 @@ data class BatchHistoryDetailsEditedPayload(
     @Schema(
         description =
             "The ID of the batch's project if the project still exists. If the project was " +
-                "subsequently deleted, this will be null but the project name will still be set.")
+                "subsequently deleted, this will be null but the project name will still be set."
+    )
     val projectId: ProjectId?,
     @Schema(
         description =
             "The name of the project at the time the details were edited. If the project was " +
-                "subsequently renamed or deleted, this name remains the same.")
+                "subsequently renamed or deleted, this name remains the same."
+    )
     val projectName: String?,
     val readyByDate: LocalDate?,
     val seedsSownDate: LocalDate?,
@@ -234,7 +265,7 @@ data class BatchHistoryDetailsEditedPayload(
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
   constructor(
       row: BatchDetailsHistoryRow,
-      subLocationRows: Collection<BatchDetailsHistorySubLocationsRow>?
+      subLocationRows: Collection<BatchDetailsHistorySubLocationsRow>?,
   ) : this(
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
@@ -258,7 +289,8 @@ data class BatchHistoryDetailsEditedPayload(
 
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
-    description = "A manual edit of a batch's remaining quantities.")
+    description = "A manual edit of a batch's remaining quantities.",
+)
 data class BatchHistoryQuantityEditedPayload(
     val activeGrowthQuantity: Int,
     override val createdBy: UserId,
@@ -292,7 +324,8 @@ data class BatchHistoryQuantityEditedPayload(
     description =
         "The new quantities resulting from changing the statuses of seedlings in a batch. The " +
             "values here are the total quantities remaining after the status change, not the " +
-            "number of seedlings whose statuses were changed.")
+            "number of seedlings whose statuses were changed.",
+)
 data class BatchHistoryStatusChangedPayload(
     val activeGrowthQuantity: Int,
     override val createdBy: UserId,
@@ -324,7 +357,8 @@ data class BatchHistoryStatusChangedPayload(
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description =
-        "A nursery transfer withdrawal from another batch that added seedlings to this batch.")
+        "A nursery transfer withdrawal from another batch that added seedlings to this batch.",
+)
 data class BatchHistoryIncomingWithdrawalPayload(
     val activeGrowthQuantityAdded: Int,
     override val createdBy: UserId,
@@ -365,7 +399,8 @@ data class BatchHistoryIncomingWithdrawalPayload(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description =
         "A withdrawal that removed seedlings from this batch. This does not include the full " +
-            "details of the withdrawal; they can be retrieved using the withdrawal ID.")
+            "details of the withdrawal; they can be retrieved using the withdrawal ID.",
+)
 data class BatchHistoryOutgoingWithdrawalPayload(
     val activeGrowthQuantityWithdrawn: Int,
     override val createdBy: UserId,
@@ -381,7 +416,7 @@ data class BatchHistoryOutgoingWithdrawalPayload(
   constructor(
       historyRow: BatchQuantityHistoryRow,
       batchWithdrawalsRow: BatchWithdrawalsRow,
-      withdrawalsRow: WithdrawalsRow
+      withdrawalsRow: WithdrawalsRow,
   ) : this(
       activeGrowthQuantityWithdrawn = batchWithdrawalsRow.activeGrowthQuantityWithdrawn!!,
       createdBy = historyRow.createdBy!!,

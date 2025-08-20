@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 
 class CustomOAuth2AuthorizationRequestResolver(
     repo: ClientRegistrationRepository,
-    authorizationRequestBaseUri: String
+    authorizationRequestBaseUri: String,
 ) : OAuth2AuthorizationRequestResolver {
   private val delegate =
       DefaultOAuth2AuthorizationRequestResolver(repo, authorizationRequestBaseUri)
@@ -21,7 +21,7 @@ class CustomOAuth2AuthorizationRequestResolver(
 
   override fun resolve(
       request: HttpServletRequest?,
-      clientRegistrationId: String?
+      clientRegistrationId: String?,
   ): OAuth2AuthorizationRequest? {
     val authorizationRequest = delegate.resolve(request, clientRegistrationId) ?: return null
     return customizeAuthorizationRequest(authorizationRequest, request)
@@ -29,7 +29,7 @@ class CustomOAuth2AuthorizationRequestResolver(
 
   private fun customizeAuthorizationRequest(
       authorizationRequest: OAuth2AuthorizationRequest,
-      request: HttpServletRequest?
+      request: HttpServletRequest?,
   ): OAuth2AuthorizationRequest {
     val modifiedParams = authorizationRequest.additionalParameters.toMutableMap()
 

@@ -17,7 +17,7 @@ const val FLATTENED_SUBLIST_DELIMITER: Char = '_'
  */
 data class SearchFieldPrefix(
     val root: SearchTable,
-    val sublists: List<SublistField> = emptyList()
+    val sublists: List<SublistField> = emptyList(),
 ) {
   /**
    * True if this prefix represents a 1:N relationship with its parent prefix. Always false for a
@@ -235,8 +235,10 @@ class SearchFieldPath(val prefix: SearchFieldPrefix, val searchField: SearchFiel
     return SearchFieldPath(
         SearchFieldPrefix(
             root = otherPrefix.searchTable,
-            sublists = prefix.sublists.drop(otherPrefix.sublists.size)),
-        searchField = searchField)
+            sublists = prefix.sublists.drop(otherPrefix.sublists.size),
+        ),
+        searchField = searchField,
+    )
   }
 
   @JsonValue

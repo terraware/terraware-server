@@ -26,11 +26,13 @@ class MapboxController(
   @ApiResponse404(description = "The server is not configured to return Mapbox tokens.")
   @ApiResponse(
       responseCode = "503",
-      description = "The server is temporarily unable to generate a new Mapbox token.")
+      description = "The server is temporarily unable to generate a new Mapbox token.",
+  )
   @GetMapping("/token")
   @Operation(
       summary = "Gets an API token to use for displaying Mapbox maps.",
-      description = "Mapbox API tokens are short-lived; when a token expires, request a new one.")
+      description = "Mapbox API tokens are short-lived; when a token expires, request a new one.",
+  )
   fun getMapboxToken(): GetMapboxTokenResponsePayload {
     val token =
         if (mapboxService.enabled) {

@@ -37,14 +37,15 @@ class SubLocationsController(
     val accessionCounts = accessionStore.countActiveBySubLocation(facilityId)
 
     return ListSubLocationsResponsePayload(
-        locations.map { SubLocationPayload(it, accessionCounts[it.id!!], null) })
+        locations.map { SubLocationPayload(it, accessionCounts[it.id!!], null) }
+    )
   }
 
   @GetMapping("/{subLocationId}")
   @Operation(summary = "Gets information about a specific sub-location at a facility.")
   fun getSubLocation(
       @PathVariable facilityId: FacilityId,
-      @PathVariable subLocationId: SubLocationId
+      @PathVariable subLocationId: SubLocationId,
   ): GetSubLocationResponsePayload {
     val location = facilityStore.fetchSubLocation(subLocationId)
     val accessionCount = accessionStore.countActiveInSubLocation(subLocationId)
@@ -54,7 +55,8 @@ class SubLocationsController(
 
   @ApiResponse200
   @ApiResponse409(
-      description = "A sub-location with the requested name already exists at the facility.")
+      description = "A sub-location with the requested name already exists at the facility."
+  )
   @Operation(summary = "Creates a new sub-location at a facility.")
   @PostMapping
   fun createSubLocation(
@@ -70,12 +72,15 @@ class SubLocationsController(
             activeAccessions = accessionCount,
             facilityId = facilityId,
             id = id,
-            name = payload.name))
+            name = payload.name,
+        )
+    )
   }
 
   @ApiResponse200
   @ApiResponse409(
-      description = "A sub-location with the requested name already exists at the facility.")
+      description = "A sub-location with the requested name already exists at the facility."
+  )
   @Operation(summary = "Updates the name of a sub-location at a facility.")
   @PutMapping("/{subLocationId}")
   fun updateSubLocation(
@@ -95,14 +100,16 @@ class SubLocationsController(
 
   @ApiResponse200
   @ApiResponse409(
-      description = "The sub-location is in use, e.g., there are seeds or seedlings stored there.")
+      description = "The sub-location is in use, e.g., there are seeds or seedlings stored there."
+  )
   @DeleteMapping("/{subLocationId}")
   @Operation(
       summary = "Deletes a sub-location from a facility.",
-      description = "The sub-location must not be in use.")
+      description = "The sub-location must not be in use.",
+  )
   fun deleteSubLocation(
       @PathVariable facilityId: FacilityId,
-      @PathVariable subLocationId: SubLocationId
+      @PathVariable subLocationId: SubLocationId,
   ): SimpleSuccessResponsePayload {
     val location = facilityStore.fetchSubLocation(subLocationId)
     if (location.facilityId != facilityId) {
@@ -118,12 +125,14 @@ class SubLocationsController(
 data class SubLocationPayload(
     @Schema(
         description =
-            "If this sub-location is at a seed bank, the number of active accessions stored there.")
+            "If this sub-location is at a seed bank, the number of active accessions stored there."
+    )
     val activeAccessions: Int?,
     @Schema(
         description =
             "If this sub-location is at a nursery, the number of batches stored there that have " +
-                "seedlings.")
+                "seedlings."
+    )
     val activeBatches: Int? = null,
     val facilityId: FacilityId,
     val id: SubLocationId,

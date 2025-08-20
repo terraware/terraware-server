@@ -46,7 +46,9 @@ class WithdrawalStore(
     requirePermissions { readAccession(record[WITHDRAWALS.ACCESSION_ID]!!) }
 
     return WithdrawalModel(
-        record, TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+        record,
+        TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+    )
   }
 
   fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
@@ -62,7 +64,9 @@ class WithdrawalStore(
         .fetch()
         .map { record ->
           WithdrawalModel(
-              record, TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+              record,
+              TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+          )
         }
   }
 
@@ -123,12 +127,14 @@ class WithdrawalStore(
                 .leftJoin(USERS)
                 .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
                 .where(WITHDRAWALS.ACCESSION_ID.eq(idField))
-                .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc()))
+                .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
+        )
         .convertFrom { result ->
           result.map { record ->
             WithdrawalModel(
                 record,
-                TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+                TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+            )
           }
         }
   }
@@ -167,10 +173,13 @@ class WithdrawalStore(
       val existing = existingById[id]!!
       val desired = desiredById[id]!!
 
-      if ((existing.purpose == WithdrawalPurpose.ViabilityTesting || existing.purpose == null) xor
-          (desired.purpose == WithdrawalPurpose.ViabilityTesting)) {
+      if (
+          (existing.purpose == WithdrawalPurpose.ViabilityTesting || existing.purpose == null) xor
+              (desired.purpose == WithdrawalPurpose.ViabilityTesting)
+      ) {
         throw IllegalArgumentException(
-            "Cannot change withdrawal purpose to or from Germination Testing")
+            "Cannot change withdrawal purpose to or from Germination Testing"
+        )
       }
 
       if (existing.viabilityTestId != desired.viabilityTestId) {
@@ -179,13 +188,17 @@ class WithdrawalStore(
     }
 
     newWithdrawals.forEach { withdrawal ->
-      if (withdrawal.purpose == WithdrawalPurpose.ViabilityTesting &&
-          withdrawal.viabilityTestId == null) {
+      if (
+          withdrawal.purpose == WithdrawalPurpose.ViabilityTesting &&
+              withdrawal.viabilityTestId == null
+      ) {
         throw IllegalArgumentException("Viability testing withdrawals must have test IDs")
       }
 
-      if (withdrawal.purpose != WithdrawalPurpose.ViabilityTesting &&
-          withdrawal.viabilityTestId != null) {
+      if (
+          withdrawal.purpose != WithdrawalPurpose.ViabilityTesting &&
+              withdrawal.viabilityTestId != null
+      ) {
         throw IllegalArgumentException("Only viability testing withdrawals may have test IDs")
       }
     }
@@ -226,7 +239,8 @@ class WithdrawalStore(
 
         log.debug(
             "Inserted withdrawal $newId for accession $accessionId with computed seed " +
-                "count ${withdrawal.withdrawn}")
+                "count ${withdrawal.withdrawn}"
+        )
       }
 
       if (idsToDelete.isNotEmpty()) {

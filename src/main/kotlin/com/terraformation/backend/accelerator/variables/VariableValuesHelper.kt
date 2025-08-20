@@ -29,14 +29,14 @@ import java.net.URI
 
 fun getValueId(
     valuesByStableId: Map<StableId, ExistingValue>,
-    stableId: StableId
+    stableId: StableId,
 ): VariableValueId? {
   return (valuesByStableId[stableId])?.id
 }
 
 fun getNumberValue(
     valuesByStableId: Map<StableId, ExistingValue>,
-    stableId: StableId
+    stableId: StableId,
 ): BigDecimal? {
   return (valuesByStableId[stableId] as? ExistingNumberValue)?.value
 }
@@ -84,7 +84,10 @@ fun updateNumberValueOperation(
   if (newValue != null) {
     return AppendValueOperation(
         NewNumberValue(
-            BaseVariableValueProperties(null, projectId, 0, variable.id, null, null), newValue))
+            BaseVariableValueProperties(null, projectId, 0, variable.id, null, null),
+            newValue,
+        )
+    )
   } else if (existingValue != null) {
     return DeleteValueOperation(projectId, existingValue.id)
   } else {
@@ -102,7 +105,10 @@ fun updateTextValueOperation(
   if (newValue != null) {
     return AppendValueOperation(
         NewTextValue(
-            BaseVariableValueProperties(null, projectId, 0, variable.id, null, null), newValue))
+            BaseVariableValueProperties(null, projectId, 0, variable.id, null, null),
+            newValue,
+        )
+    )
   } else if (existingValue != null) {
     return DeleteValueOperation(projectId, existingValue.id)
   } else {
@@ -122,7 +128,9 @@ fun updateLinkValueOperation(
     return AppendValueOperation(
         NewLinkValue(
             BaseVariableValueProperties(null, projectId, 0, variable.id, null, null),
-            newValueDetails))
+            newValueDetails,
+        )
+    )
   } else if (existingValue != null) {
     return DeleteValueOperation(projectId, existingValue.id)
   } else {
@@ -142,7 +150,8 @@ fun updateSelectValueOperation(
         variable.options.firstOrNull { it.name == selection }
             ?: throw IllegalStateException(
                 "Selection $selection not recognized as an option for variable ${variable.name} " +
-                    "with stable ID ${variable.stableId}")
+                    "with stable ID ${variable.stableId}"
+            )
       }
   val optionIds = options.map { it.id }.toSet()
 
@@ -150,7 +159,10 @@ fun updateSelectValueOperation(
     return if (optionIds.isNotEmpty()) {
       AppendValueOperation(
           NewSelectValue(
-              BaseVariableValueProperties(null, projectId, 0, variable.id, null, null), optionIds))
+              BaseVariableValueProperties(null, projectId, 0, variable.id, null, null),
+              optionIds,
+          )
+      )
     } else {
       // Before and after are both empty. No-op
       null

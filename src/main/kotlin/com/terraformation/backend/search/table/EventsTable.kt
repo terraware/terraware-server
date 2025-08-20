@@ -24,7 +24,11 @@ class EventsTable(tables: SearchTables) : SearchTable() {
       listOf(
           modules.asSingleValueSublist("module", MODULES.ID.eq(EVENTS.MODULE_ID)),
           projects.asMultiValueSublist(
-              "projects", eventProjectsCondition, isTraversedForGetAllFields = false))
+              "projects",
+              eventProjectsCondition,
+              isTraversedForGetAllFields = false,
+          ),
+      )
     }
   }
 
@@ -50,7 +54,8 @@ class EventsTable(tables: SearchTables) : SearchTable() {
               .join(PROJECTS)
               .on(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
               .where(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 
@@ -61,5 +66,6 @@ class EventsTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(EVENT_PROJECTS)
               .where(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
-              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
+              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID))
+      )
 }

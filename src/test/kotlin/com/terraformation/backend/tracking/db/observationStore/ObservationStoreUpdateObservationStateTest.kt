@@ -27,14 +27,18 @@ class ObservationStoreUpdateObservationStateTest : BaseObservationStoreTest() {
         claimedTime = Instant.EPOCH,
         completedBy = currentUser().userId,
         completedTime = Instant.ofEpochSecond(6000),
-        statusId = ObservationPlotStatus.Completed)
+        statusId = ObservationPlotStatus.Completed,
+    )
 
     store.updateObservationState(observationId, ObservationState.Completed)
 
     assertEquals(
         initial.copy(
-            completedTime = Instant.ofEpochSecond(6000), state = ObservationState.Completed),
-        store.fetchObservationById(observationId))
+            completedTime = Instant.ofEpochSecond(6000),
+            state = ObservationState.Completed,
+        ),
+        store.fetchObservationById(observationId),
+    )
   }
 
   @Test
@@ -49,7 +53,8 @@ class ObservationStoreUpdateObservationStateTest : BaseObservationStoreTest() {
         monitoringPlotId = plotId,
         claimedBy = currentUser().userId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Claimed)
+        statusId = ObservationPlotStatus.Claimed,
+    )
 
     assertThrows<IllegalStateException> {
       store.updateObservationState(observationId, ObservationState.Completed)

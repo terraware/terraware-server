@@ -123,7 +123,8 @@ class SeedFundReportBodyModelV1Test {
     val withoutCatalytic =
         validModel.copy(
             annualDetails =
-                validModel.annualDetails!!.copy(isCatalytic = false, catalyticDetail = null))
+                validModel.annualDetails!!.copy(isCatalytic = false, catalyticDetail = null)
+        )
 
     assertDoesNotThrow { withoutCatalytic.validate() }
   }
@@ -137,7 +138,8 @@ class SeedFundReportBodyModelV1Test {
             plantingSites =
                 listOf(validModel.plantingSites[0].copy(selected = false, mortalityRate = null)),
             seedBanks =
-                listOf(validModel.seedBanks[0].copy(selected = false, buildStartedDate = null)))
+                listOf(validModel.seedBanks[0].copy(selected = false, buildStartedDate = null)),
+        )
 
     assertDoesNotThrow { withoutSelected.validate() }
   }
@@ -153,28 +155,28 @@ class SeedFundReportBodyModelV1Test {
   companion object {
     private fun testCase(
         name: String,
-        func: SeedFundReportBodyModelV1.() -> SeedFundReportBodyModelV1
+        func: SeedFundReportBodyModelV1.() -> SeedFundReportBodyModelV1,
     ): Arguments {
       return arguments(named(name, func))
     }
 
     private fun annualDetailsCase(
         name: String,
-        func: SeedFundReportBodyModelV1.AnnualDetails.() -> SeedFundReportBodyModelV1.AnnualDetails
+        func: SeedFundReportBodyModelV1.AnnualDetails.() -> SeedFundReportBodyModelV1.AnnualDetails,
     ): Arguments {
       return testCase("annualDetails.$name") { copy(annualDetails = annualDetails!!.func()) }
     }
 
     private fun nurseryCase(
         name: String,
-        func: SeedFundReportBodyModelV1.Nursery.() -> SeedFundReportBodyModelV1.Nursery
+        func: SeedFundReportBodyModelV1.Nursery.() -> SeedFundReportBodyModelV1.Nursery,
     ): Arguments {
       return testCase("nursery.$name") { copy(nurseries = listOf(nurseries[0].func())) }
     }
 
     private fun plantingSiteCase(
         name: String,
-        func: SeedFundReportBodyModelV1.PlantingSite.() -> SeedFundReportBodyModelV1.PlantingSite
+        func: SeedFundReportBodyModelV1.PlantingSite.() -> SeedFundReportBodyModelV1.PlantingSite,
     ): Arguments {
       return testCase("plantingSite.$name") {
         copy(plantingSites = listOf(plantingSites[0].func()))
@@ -185,14 +187,14 @@ class SeedFundReportBodyModelV1Test {
         name: String,
         func:
             SeedFundReportBodyModelV1.PlantingSite.Species.(
-                ) -> SeedFundReportBodyModelV1.PlantingSite.Species
+            ) -> SeedFundReportBodyModelV1.PlantingSite.Species,
     ): Arguments {
       return plantingSiteCase("species.$name") { copy(species = listOf(species[0].func())) }
     }
 
     private fun seedBankCase(
         name: String,
-        func: SeedFundReportBodyModelV1.SeedBank.() -> SeedFundReportBodyModelV1.SeedBank
+        func: SeedFundReportBodyModelV1.SeedBank.() -> SeedFundReportBodyModelV1.SeedBank,
     ): Arguments {
       return testCase("seedBank.$name") { copy(seedBanks = listOf(seedBanks[0].func())) }
     }

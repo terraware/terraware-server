@@ -436,7 +436,8 @@ class SchemaDocsGenerator : DatabaseTest() {
     val slicesList = System.getenv(slicesEnvVar)
     assumeTrue(
         slicesList == null || slice.subdirectory in slicesList.split(','),
-        "Skipping slice $slice because it is not in $slicesEnvVar")
+        "Skipping slice $slice because it is not in $slicesEnvVar",
+    )
 
     // SchemaSpy matches table names against a regex. Construct one that has all the tables in the
     // current slice. Table names should never include regex special characters.
@@ -518,11 +519,13 @@ class SchemaDocsGenerator : DatabaseTest() {
       assertEquals(
           emptySet<String>(),
           tablesFromDb - tables.keys,
-          "Tables not listed in $schemaName schema doc configuration")
+          "Tables not listed in $schemaName schema doc configuration",
+      )
       assertEquals(
           emptySet<String>(),
           tables.keys - tablesFromDb,
-          "Nonexistent tables listed in $schemaName schema doc configuration")
+          "Nonexistent tables listed in $schemaName schema doc configuration",
+      )
     }
   }
 
@@ -542,7 +545,8 @@ class SchemaDocsGenerator : DatabaseTest() {
     assertEquals(
         emptyList<String>(),
         tablesWithoutComments.sorted(),
-        "Tables without comments that are included in docs; please add them to R__Comments.sql")
+        "Tables without comments that are included in docs; please add them to R__Comments.sql",
+    )
   }
 
   /**

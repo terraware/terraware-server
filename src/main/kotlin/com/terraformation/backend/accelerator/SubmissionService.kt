@@ -71,7 +71,7 @@ class SubmissionService(
       projectId: ProjectId,
       deliverableId: DeliverableId,
       description: String,
-      contentType: String
+      contentType: String,
   ): SubmissionDocumentId {
     requirePermissions { createSubmission(projectId) }
 
@@ -107,7 +107,12 @@ class SubmissionService(
 
     if (projectAcceleratorDetails == null && applicationInternalName == null) {
       uploadFailed(
-          deliverableId, projectId, FailureReason.ProjectNotConfigured, documentStore, originalName)
+          deliverableId,
+          projectId,
+          FailureReason.ProjectNotConfigured,
+          documentStore,
+          originalName,
+      )
     }
 
     val now = clock.instant()
@@ -127,7 +132,8 @@ class SubmissionService(
                 projectId,
                 FailureReason.FileNamingNotConfigured,
                 documentStore,
-                originalName)
+                originalName,
+            )
 
     val rawFileName =
         listOf(
@@ -156,7 +162,8 @@ class SubmissionService(
                 projectId,
                 FailureReason.FolderNotConfigured,
                 documentStore,
-                originalName)
+                originalName,
+            )
 
     val receiver: SubmissionDocumentReceiver =
         if (isSensitive) {
@@ -177,7 +184,8 @@ class SubmissionService(
               originalName,
               folder.toString(),
               fileName,
-              e)
+              e,
+          )
         }
 
     val submissionId =
@@ -277,14 +285,16 @@ class SubmissionService(
               originalName,
               folder.toString(),
               submissionDocument.name,
-              e)
+              e,
+          )
         }
       }
 
       val documentId = submissionDocument.id!!
 
       eventPublisher.publishEvent(
-          DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
+          DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId)
+      )
 
       return documentId
     } catch (e: Exception) {
@@ -307,7 +317,8 @@ class SubmissionService(
         dslContext
             .select(
                 SUBMISSION_DOCUMENTS.DOCUMENT_STORE_ID,
-                SUBMISSION_DOCUMENTS.LOCATION.asNonNullable())
+                SUBMISSION_DOCUMENTS.LOCATION.asNonNullable(),
+            )
             .from(SUBMISSION_DOCUMENTS)
             .where(SUBMISSION_DOCUMENTS.ID.eq(documentId))
             .and(SUBMISSION_DOCUMENTS.submissions().DELIVERABLE_ID.eq(deliverableId))
@@ -369,7 +380,9 @@ class SubmissionService(
             originalName,
             documentStoreFolder,
             fileName,
-            exception))
+            exception,
+        )
+    )
 
     if (exception != null) {
       throw ProjectDocumentStorageFailedException(projectId, cause = exception)

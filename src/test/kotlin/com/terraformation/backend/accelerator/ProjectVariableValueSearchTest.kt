@@ -35,7 +35,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+        userId = inserted.userId,
+        organizationId = inserted.organizationId,
+        role = Role.Admin,
+    )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -60,11 +63,15 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
         insertVariable(
             stableId = linkStableId,
             type = VariableType.Link,
-            replacesVariableId = oldLinkVariableId)
+            replacesVariableId = oldLinkVariableId,
+        )
     val oldListVariableId = insertVariable(stableId = listStableId, isList = true)
     val newListVariableId =
         insertVariable(
-            stableId = listStableId, isList = true, replacesVariableId = oldListVariableId)
+            stableId = listStableId,
+            isList = true,
+            replacesVariableId = oldListVariableId,
+        )
 
     insertValue(variableId = oldVariableId, textValue = "OldVarOldVal")
     insertValue(variableId = oldVariableId, textValue = "OldVarNewVal")
@@ -118,7 +125,9 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "listPosition" to "0",
                                 "variableValueId" to "$newLinkValueId",
-                                "linkUrl" to "https://www.newValue.com")),
+                                "linkUrl" to "https://www.newValue.com",
+                            )
+                        ),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
@@ -151,7 +160,9 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "listPosition" to "0",
                                 "variableValueId" to "$newVarNewValueId",
-                                "textValue" to "NewVarNewVal")),
+                                "textValue" to "NewVarNewVal",
+                            )
+                        ),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
@@ -164,7 +175,9 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "listPosition" to "0",
                                 "variableValueId" to "$otherValueId",
-                                "numberValue" to "456.456")),
+                                "numberValue" to "456.456",
+                            )
+                        ),
                 ),
                 mapOf(
                     "projectId" to "$projectId",
@@ -177,7 +190,9 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "listPosition" to "0",
                                 "variableValueId" to "$dateValueId",
-                                "dateValue" to "2024-01-02")),
+                                "dateValue" to "2024-01-02",
+                            )
+                        ),
                 ),
             ),
             cursor = null,
@@ -217,7 +232,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                                 "variableId" to "$variableId2",
                                 "values" to listOf(mapOf("variableValueId" to "$valueId2")),
                             ),
-                        ))))
+                        ),
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -248,8 +266,10 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "projectId" to "$projectId",
                     "stableId" to referenceStableId,
-                )),
-            cursor = null)
+                )
+            ),
+            cursor = null,
+        )
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
@@ -274,7 +294,8 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                     "variableId" to "$variableId2",
                     "textValue" to "OtherValue",
                 ),
-            ))
+            )
+        )
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 
     assertJsonEquals(expected, actual)
@@ -309,7 +330,11 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "variableId" to "$variableId1",
                                 "values" to listOf(mapOf("variableValueId" to "$valueId1")),
-                            )))))
+                            )
+                        ),
+                )
+            )
+        )
 
     val actual =
         Locales.GIBBERISH.use {
@@ -347,7 +372,8 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                 "variables.projectId",
                 "variables.stableId",
                 "variables.variableId",
-                "variables.values.variableValueId")
+                "variables.values.variableValueId",
+            )
             .map { prefix.resolve(it) }
 
     val expected =
@@ -376,14 +402,16 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                 ),
             ),
-            cursor = null)
+            cursor = null,
+        )
 
     val search =
         AndNode(
             listOf(
                 FieldNode(prefix.resolve("id"), listOf(projectId1.toString())),
                 FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3)),
-            ))
+            )
+        )
     val actual =
         Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to search)) }
 

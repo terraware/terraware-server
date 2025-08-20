@@ -22,9 +22,12 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
           batches.asSingleValueSublist(
               "destinationBatch",
               BATCH_WITHDRAWALS.DESTINATION_BATCH_ID.eq(BATCHES.ID),
-              isRequired = false),
+              isRequired = false,
+          ),
           nurseryWithdrawals.asSingleValueSublist(
-              "withdrawal", BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID)),
+              "withdrawal",
+              BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_SUMMARIES.ID),
+          ),
       )
     }
   }
@@ -32,13 +35,21 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> by lazy {
     listOf(
         integerField(
-            "activeGrowthQuantityWithdrawn", BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN),
+            "activeGrowthQuantityWithdrawn",
+            BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN,
+        ),
         integerField(
-            "germinatingQuantityWithdrawn", BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN),
+            "germinatingQuantityWithdrawn",
+            BATCH_WITHDRAWALS.GERMINATING_QUANTITY_WITHDRAWN,
+        ),
         integerField(
-            "hardeningOffQuantityWithdrawn", BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN),
+            "hardeningOffQuantityWithdrawn",
+            BATCH_WITHDRAWALS.HARDENING_OFF_QUANTITY_WITHDRAWN,
+        ),
         integerField(
-            "notReadyQuantityWithdrawn", BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN),
+            "notReadyQuantityWithdrawn",
+            BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN,
+        ),
         integerField("readyQuantityWithdrawn", BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN),
     )
   }

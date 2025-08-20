@@ -77,7 +77,7 @@ class NotificationsController(private val notificationStore: NotificationStore) 
   @Operation(summary = "Update a single notification as read or unread")
   fun markRead(
       @PathVariable("id") notificationId: NotificationId,
-      @RequestBody @Valid payload: UpdateNotificationRequestPayload
+      @RequestBody @Valid payload: UpdateNotificationRequestPayload,
   ): SimpleSuccessResponsePayload {
     notificationStore.markRead(payload.read, notificationId)
     return SimpleSuccessResponsePayload()
@@ -137,7 +137,7 @@ data class UpdateNotificationRequestPayload(val read: Boolean)
 
 data class UpdateNotificationsRequestPayload(
     val read: Boolean,
-    val organizationId: OrganizationId?
+    val organizationId: OrganizationId?,
 )
 
 data class GetNotificationResponsePayload(val notification: NotificationPayload) :

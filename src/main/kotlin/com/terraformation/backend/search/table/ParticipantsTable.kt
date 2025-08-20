@@ -21,7 +21,10 @@ class ParticipantsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           cohorts.asSingleValueSublist(
-              "cohort", PARTICIPANTS.COHORT_ID.eq(COHORTS.ID), isRequired = false),
+              "cohort",
+              PARTICIPANTS.COHORT_ID.eq(COHORTS.ID),
+              isRequired = false,
+          ),
           projects.asMultiValueSublist("projects", PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID)),
       )
     }
@@ -41,7 +44,8 @@ class ParticipantsTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(PROJECTS)
               .where(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 }

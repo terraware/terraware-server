@@ -23,7 +23,10 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
-                    "plantsCollectedFrom" to "500")))
+                    "plantsCollectedFrom" to "500",
+                )
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -42,7 +45,10 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
-                    "plantsCollectedFrom" to "1")))
+                    "plantsCollectedFrom" to "1",
+                )
+            )
+        )
 
     assertEquals(expected, result)
   }
@@ -61,7 +67,10 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
-                    "plantsCollectedFrom" to "500")))
+                    "plantsCollectedFrom" to "500",
+                )
+            )
+        )
 
     assertEquals(expected, result)
   }

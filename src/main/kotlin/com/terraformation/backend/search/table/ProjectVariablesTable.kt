@@ -24,7 +24,8 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
           projectVariableValues.asMultiValueSublist(
               "values",
               PROJECT_VARIABLES.VARIABLE_ID.eq(PROJECT_VARIABLE_VALUES.VARIABLE_ID)
-                  .and(PROJECT_VARIABLES.PROJECT_ID.eq(PROJECT_VARIABLE_VALUES.PROJECT_ID))),
+                  .and(PROJECT_VARIABLES.PROJECT_ID.eq(PROJECT_VARIABLE_VALUES.PROJECT_ID)),
+          ),
       )
     }
   }
@@ -53,7 +54,8 @@ class ProjectVariablesTable(tables: SearchTables) : SearchTable() {
           DSL.selectOne()
               .from(PROJECTS)
               .where(PROJECT_VARIABLES.PROJECT_ID.eq(PROJECTS.ID))
-              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+      )
     }
   }
 

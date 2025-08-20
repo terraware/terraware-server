@@ -31,7 +31,8 @@ class ValuesController(
   @Operation(
       summary =
           "List the values of a set of search fields for a set of accessions matching certain " +
-              "filter criteria.")
+              "filter criteria."
+  )
   @PostMapping
   fun listFieldValues(
       @RequestBody payload: ListFieldValuesRequestPayload
@@ -50,7 +51,8 @@ class ValuesController(
                   rootPrefix,
                   searchField,
                   mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
-                  limit = limit)
+                  limit = limit,
+              )
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }
@@ -67,13 +69,16 @@ data class FieldValuesPayload(
                 description =
                     "List of values in the matching accessions. If there are accessions where " +
                         "the field has no value, this list will contain null (an actual null " +
-                        "value, not the string \"null\")."))
+                        "value, not the string \"null\")."
+            ),
+    )
     val values: List<String?>,
     @Schema(
         description =
             "If true, the list of values is too long to return in its entirety and \"values\" is " +
-                "a partial list.")
-    val partial: Boolean
+                "a partial list."
+    )
+    val partial: Boolean,
 )
 
 data class ListFieldValuesRequestPayload(

@@ -65,7 +65,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = clock.instant(),
             size = 1,
             fileName = "test.jpg",
-            storageUrl = photoStorageUrl)
+            storageUrl = photoStorageUrl,
+        )
     filesDao.insert(filesRow)
     fileId = filesRow.id!!
 
@@ -83,7 +84,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       width: Int,
       height: Int,
       imageData: ByteArray = Random.nextBytes(10),
-      storageUrl: URI = URI("file:///a/b/c/thumb/original-${width}x$height.jpg")
+      storageUrl: URI = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
   ): ThumbnailsRow {
     val thumbnailsRow =
         ThumbnailsRow(
@@ -93,7 +94,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             contentType = MediaType.IMAGE_JPEG_VALUE,
             createdTime = clock.instant(),
             size = imageData.size,
-            storageUrl = storageUrl)
+            storageUrl = storageUrl,
+        )
     thumbnailsDao.insert(thumbnailsRow)
 
     every { fileStore.delete(storageUrl) } just Runs
@@ -202,11 +204,13 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
         thumbUrlSlot.captured,
-        "Should have derived thumbnail URL from original photo URL")
+        "Should have derived thumbnail URL from original photo URL",
+    )
     assertArrayEquals(
         actual.readAllBytes(),
         streamSlot.captured.readAllBytes(),
-        "Should have written same image to file store that was returned to caller")
+        "Should have written same image to file store that was returned to caller",
+    )
   }
 
   @Test
@@ -284,8 +288,11 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
                 contentType = MediaType.IMAGE_JPEG_VALUE,
                 createdTime = Instant.EPOCH,
                 size = actual.size.toInt(),
-                storageUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"))),
-        thumbnailsDao.findAll().map { it.copy(id = null) })
+                storageUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
+            )
+        ),
+        thumbnailsDao.findAll().map { it.copy(id = null) },
+    )
   }
 
   @Test
@@ -311,8 +318,11 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
                 contentType = MediaType.IMAGE_JPEG_VALUE,
                 createdTime = Instant.EPOCH,
                 size = actual.size.toInt(),
-                storageUrl = existingRow.storageUrl!!)),
-        thumbnailsDao.findAll().map { it.copy(id = null) })
+                storageUrl = existingRow.storageUrl!!,
+            )
+        ),
+        thumbnailsDao.findAll().map { it.copy(id = null) },
+    )
   }
 
   @Test

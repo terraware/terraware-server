@@ -30,7 +30,10 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                     seedsTested = 10,
                     testResults =
                         listOf(
-                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 4))))
+                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 4)
+                        ),
+                )
+            )
 
     assertNull(model.totalViabilityPercent)
   }
@@ -58,7 +61,10 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                     seedsTested = 5,
                     testResults =
                         listOf(
-                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 5))))
+                            viabilityTestResult(recordingDate = january(2), seedsGerminated = 5)
+                        ),
+                )
+            )
 
     assertEquals(percent, model.totalViabilityPercent)
   }
@@ -90,7 +96,10 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                     listOf(
                         withdrawal(
                             purpose = WithdrawalPurpose.ViabilityTesting,
-                            viabilityTestId = viabilityTestId)))
+                            viabilityTestId = viabilityTestId,
+                        )
+                    ),
+            )
             .withCalculatedValues()
             .updateViabilityTest(viabilityTestId) {
               it.copy(withdrawnByUserId = newWithdrawnByUserId)
@@ -114,7 +123,10 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                     listOf(
                         withdrawal(
                             purpose = WithdrawalPurpose.ViabilityTesting,
-                            viabilityTestId = viabilityTestId)))
+                            viabilityTestId = viabilityTestId,
+                        )
+                    ),
+            )
             .withCalculatedValues()
             .updateViabilityTest(viabilityTestId) { it.copy(withdrawnByUserId = null) }
 
@@ -179,7 +191,8 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
         initial
             .copy(clock = fixedClock(2))
             .addViabilityTest(
-                ViabilityTestModel(seedsTested = 10, testType = ViabilityTestType.Lab))
+                ViabilityTestModel(seedsTested = 10, testType = ViabilityTestType.Lab)
+            )
 
     assertEquals(grams(95), withTest.remaining, "After test")
 
@@ -190,7 +203,9 @@ internal class AccessionModelViabilityTest : AccessionModelTest() {
                 WithdrawalModel(
                     date = LocalDate.EPOCH,
                     purpose = WithdrawalPurpose.Nursery,
-                    withdrawn = grams(95)))
+                    withdrawn = grams(95),
+                )
+            )
 
     assertEquals(grams(0), withWithdrawal.remaining, "After withdrawal")
   }

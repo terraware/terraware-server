@@ -34,7 +34,8 @@ class BatchesUploadsController(
   @GetMapping("/template")
   @Operation(
       summary =
-          "Gets a template file that contains the required header row for seedling batch uploads.")
+          "Gets a template file that contains the required header row for seedling batch uploads."
+  )
   @Produces("text/csv")
   fun getSeedlingBatchesUploadTemplate(): ResponseEntity<ByteArray> {
     val body = batchImporter.getCsvTemplate()
@@ -46,12 +47,14 @@ class BatchesUploadsController(
       description =
           "The file has been successfully received. It will be processed asynchronously; use " +
               "the ID returned in the response payload to poll for its status using the " +
-              "`/api/v1/nursery/batches/uploads/{uploadId}` GET endpoint.")
+              "`/api/v1/nursery/batches/uploads/{uploadId}` GET endpoint.",
+  )
   @Operation(
       summary = "Uploads a list of seedling batches to add to the nursery.",
       description =
           "The uploaded file must be in CSV format. A template with the correct headers may be " +
-              "downloaded from the `/api/v1/nursery/batches/uploads/template` endpoint.")
+              "downloaded from the `/api/v1/nursery/batches/uploads/template` endpoint.",
+  )
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
@@ -73,7 +76,8 @@ class BatchesUploadsController(
   @GetMapping("/{uploadId}")
   @Operation(
       summary = "Gets the status of a seedling batches list uploaded previously.",
-      description = "Clients may poll this endpoint to monitor the progress of the file.")
+      description = "Clients may poll this endpoint to monitor the progress of the file.",
+  )
   fun getSeedlingBatchesListUploadStatus(
       @PathVariable uploadId: UploadId
   ): GetUploadStatusResponsePayload {

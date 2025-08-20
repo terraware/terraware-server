@@ -49,7 +49,8 @@ class AccessionsV2Controller(
       responseCode = "200",
       description =
           "The accession was created successfully. Response includes fields populated by the " +
-              "server, including the accession number and ID.")
+              "server, including the accession number and ID.",
+  )
   @Operation(summary = "Creates a new accession.")
   @PostMapping
   fun createAccession(
@@ -64,12 +65,14 @@ class AccessionsV2Controller(
       responseCode = "200",
       description =
           "The accession was updated successfully. Response includes fields populated or " +
-              "modified by the server as a result of the update.")
+              "modified by the server as a result of the update.",
+  )
   @ApiResponse404(description = "The specified accession doesn't exist.")
   @ApiResponse409(
       description =
           "One of the requested changes couldn't be made because the accession is in a state " +
-              "that doesn't allow the change.")
+              "that doesn't allow the change."
+  )
   @Operation(summary = "Update an existing accession.")
   @PutMapping("/{id}")
   fun updateAccession(
@@ -79,8 +82,9 @@ class AccessionsV2Controller(
       @Schema(
           description =
               "If true, do not actually save the accession; just return the result that would " +
-                  "have been returned if it had been saved.")
-      simulate: Boolean?
+                  "have been returned if it had been saved."
+      )
+      simulate: Boolean?,
   ): UpdateAccessionResponsePayloadV2 {
     val existing = accessionStore.fetchOneById(accessionId)
     val editedModel = payload.applyToModel(existing)
@@ -156,10 +160,12 @@ data class AccessionPayloadV2(
         description =
             "Server-generated human-readable identifier for the accession. This is unique " +
                 "within a single seed bank, but different seed banks may have accessions with " +
-                "the same number.")
+                "the same number."
+    )
     val accessionNumber: String,
     @Schema(
-        description = "Server-calculated active indicator. This is based on the accession's state.")
+        description = "Server-calculated active indicator. This is based on the accession's state."
+    )
     val active: AccessionActive,
     val bagNumbers: Set<String>?,
     val collectedDate: LocalDate?,
@@ -177,33 +183,39 @@ data class AccessionPayloadV2(
     @Schema(
         description =
             "Estimated number of seeds remaining. Absent if there isn't enough " +
-                "information to calculate an estimate.")
+                "information to calculate an estimate."
+    )
     val estimatedCount: Int?,
     @Schema(
         description =
             "Estimated weight of seeds remaining. Absent if there isn't enough " +
-                "information to calculate an estimate.")
+                "information to calculate an estimate."
+    )
     val estimatedWeight: SeedQuantityPayload?,
     val facilityId: FacilityId,
     @Schema(
         description =
-            "If true, plants from this accession's seeds were delivered to a planting site.")
+            "If true, plants from this accession's seeds were delivered to a planting site."
+    )
     val hasDeliveries: Boolean,
     @Schema(
         description =
             "Server-generated unique identifier for the accession. This is unique across all " +
-                "seed banks, but is not suitable for display to end users.")
+                "seed banks, but is not suitable for display to end users."
+    )
     val id: AccessionId,
     @Schema(
         description =
             "Most recent user observation of seeds remaining in the accession. This is not " +
                 "directly editable; it is updated by the server whenever the " +
-                "\"remainingQuantity\" field is edited.")
+                "\"remainingQuantity\" field is edited."
+    )
     val latestObservedQuantity: SeedQuantityPayload?,
     @Schema(
         description =
             "Time of most recent user observation of seeds remaining in the accession. This is " +
-                "updated by the server whenever the \"remainingQuantity\" field is edited.")
+                "updated by the server whenever the \"remainingQuantity\" field is edited."
+    )
     val latestObservedTime: Instant?,
     val notes: String?,
     val photoFilenames: List<String>?,
@@ -215,7 +227,8 @@ data class AccessionPayloadV2(
     @Schema(
         description =
             "Number or weight of seeds remaining for withdrawal and testing. May be calculated " +
-                "by the server after withdrawals.")
+                "by the server after withdrawals."
+    )
     val remainingQuantity: SeedQuantityPayload?,
     @Schema(description = "Which source of data this accession originally came from.")
     val source: DataSource?,
@@ -236,17 +249,20 @@ data class AccessionPayloadV2(
     val subsetCount: Int?,
     @Schema(
         description =
-            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
+            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\"."
+    )
     val subsetWeight: SeedQuantityPayload?,
     @Schema(
         description =
             "Total number of seeds withdrawn. If withdrawals are measured by weight, this is an " +
-                "estimate based on the accession's subset count and weight.")
+                "estimate based on the accession's subset count and weight."
+    )
     val totalWithdrawnCount: Int?,
     @Schema(
         description =
             "Total weight of seeds withdrawn. If withdrawals are measured by seed " +
-                "count, this is an estimate based on the accession's subset count and weight.")
+                "count, this is an estimate based on the accession's subset count and weight."
+    )
     val totalWithdrawnWeight: SeedQuantityPayload?,
     val viabilityPercent: Int?,
     val viabilityTests: List<GetViabilityTestPayload>?,
@@ -382,7 +398,8 @@ data class UpdateAccessionRequestPayloadV2(
         description =
             "Quantity of seeds remaining in the accession. If this is different than the " +
                 "existing value, it is considered a new observation, and the new value will " +
-                "override any previously-calculated remaining quantities.")
+                "override any previously-calculated remaining quantities."
+    )
     val remainingQuantity: SeedQuantityPayload? = null,
     @Schema(description = "Notes associated with remaining quantity updates if any.")
     val remainingQuantityNotes: String? = null,
@@ -392,7 +409,8 @@ data class UpdateAccessionRequestPayloadV2(
     val subsetCount: Int? = null,
     @Schema(
         description =
-            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
+            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\"."
+    )
     val subsetWeight: SeedQuantityPayload? = null,
     val viabilityPercent: Int? = null,
 ) {

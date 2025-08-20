@@ -23,7 +23,8 @@ class PropertiesFilesTest {
     assertEquals(
         emptyList<String>(),
         invalidKeys,
-        "String contains both an ASCII apostrophe and a closing single quote")
+        "String contains both an ASCII apostrophe and a closing single quote",
+    )
   }
 
   companion object {

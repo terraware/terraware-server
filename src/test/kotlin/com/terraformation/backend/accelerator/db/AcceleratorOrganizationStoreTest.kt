@@ -95,7 +95,8 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
           ),
-          store.fetchWithUnassignedProjects())
+          store.fetchWithUnassignedProjects(),
+      )
     }
 
     @Test
@@ -127,7 +128,10 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProject(organizationId = untaggedOrgId)
       val assignedProjectId =
           insertProject(
-              organizationId = acceleratorOrgId1, name = "D", participantId = participantId)
+              organizationId = acceleratorOrgId1,
+              name = "D",
+              participantId = participantId,
+          )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
       val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
 
@@ -182,8 +186,10 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = acceleratorOrgIdWithoutProjects,
                   name = "Organization 3",
                   totalUsers = 0,
-              ) to emptyList()),
-          store.findAllWithAcceleratorTag())
+              ) to emptyList(),
+          ),
+          store.findAllWithAcceleratorTag(),
+      )
     }
 
     @Test
@@ -201,12 +207,16 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectApplicationOrg1Id = insertOrganization(name = "ProjectApplicationOrg1")
       val projectApplicationOrg1ProjectId = insertProject(organizationId = projectApplicationOrg1Id)
       insertApplication(
-          internalName = "Org1ProjectApplication", projectId = projectApplicationOrg1ProjectId)
+          internalName = "Org1ProjectApplication",
+          projectId = projectApplicationOrg1ProjectId,
+      )
 
       val projectApplicationOrg2Id = insertOrganization(name = "ProjectApplicationOrg2")
       val projectApplicationOrg2ProjectId = insertProject(organizationId = projectApplicationOrg2Id)
       insertApplication(
-          internalName = "Org2ProjectApplication", projectId = projectApplicationOrg2ProjectId)
+          internalName = "Org2ProjectApplication",
+          projectId = projectApplicationOrg2ProjectId,
+      )
 
       val otherOrgIdWithoutProjectApplication =
           insertOrganization(name = "OtherOrgWithoutProjectApplication")
@@ -253,7 +263,8 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
           ),
-          store.findAllWithProjectApplication())
+          store.findAllWithProjectApplication(),
+      )
     }
 
     @Test
@@ -285,19 +296,26 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProject(organizationId = untaggedOrgId)
       val assignedProjectId =
           insertProject(
-              organizationId = acceleratorOrgId1, name = "D", participantId = participantId)
+              organizationId = acceleratorOrgId1,
+              name = "D",
+              participantId = participantId,
+          )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
       val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
 
       val projectApplicationOrg1Id = insertOrganization(name = "ProjectApplicationOrg1")
       val projectApplicationOrg1ProjectId = insertProject(organizationId = projectApplicationOrg1Id)
       insertApplication(
-          internalName = "Org1ProjectApplication", projectId = projectApplicationOrg1ProjectId)
+          internalName = "Org1ProjectApplication",
+          projectId = projectApplicationOrg1ProjectId,
+      )
 
       val projectApplicationOrg2Id = insertOrganization(name = "ProjectApplicationOrg2")
       val projectApplicationOrg2ProjectId = insertProject(organizationId = projectApplicationOrg2Id)
       insertApplication(
-          internalName = "Org2ProjectApplication", projectId = projectApplicationOrg2ProjectId)
+          internalName = "Org2ProjectApplication",
+          projectId = projectApplicationOrg2ProjectId,
+      )
 
       val otherOrgIdWithoutProjectApplication =
           insertOrganization(name = "OtherOrgWithoutProjectApplication")
@@ -392,7 +410,8 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
           ),
-          store.findAll())
+          store.findAll(),
+      )
     }
   }
 }

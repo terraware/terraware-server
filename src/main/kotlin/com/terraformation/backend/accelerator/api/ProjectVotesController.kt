@@ -40,7 +40,8 @@ class ProjectVotesController(
       summary = "Gets vote selections for a single project.",
       description =
           "List every vote selection for this project, organized by phases. Each phase will " +
-              "contain a list of eligible voters and their selections. ")
+              "contain a list of eligible voters and their selections. ",
+  )
   fun getProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectVotesResponsePayload {
@@ -58,7 +59,8 @@ class ProjectVotesController(
       summary = "Upserts vote selections for a single project.",
       description =
           "Update the user's vote for the project phase. If the (user, project, phase) does not " +
-              "exist, a new entry is created. Setting a `voteOption` to `null` removes the vote.")
+              "exist, a new entry is created. Setting a `voteOption` to `null` removes the vote.",
+  )
   fun upsertProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
@@ -81,14 +83,16 @@ class ProjectVotesController(
           "Remove the voters from the project phase, making them ineligible from voting. This is " +
               "different from undoing a vote (by setting the `voteOption` to `null`). To remove " +
               "voters from the entire project phase, set `userId` to `null`, and set " +
-              "`phaseDelete` to `true`")
+              "`phaseDelete` to `true`",
+  )
   fun deleteProjectVotes(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
   ): SimpleSuccessResponsePayload {
     if (payload.userId == null && payload.phaseDelete != true) {
       throw BadRequestException(
-          "Phase delete flag much be set to True for deleting all voters in a phase")
+          "Phase delete flag much be set to True for deleting all voters in a phase"
+      )
     }
     voteStore.delete(projectId, payload.phase, payload.userId)
     return SimpleSuccessResponsePayload()
@@ -100,7 +104,8 @@ data class VoteSelection(
     @Schema(
         description =
             "The vote the user has selected. Can be yes/no/conditional or `null` if " +
-                "a vote is not yet selected.")
+                "a vote is not yet selected."
+    )
     val email: String,
     val firstName: String? = null,
     val lastName: String? = null,
@@ -122,7 +127,7 @@ data class VoteSelection(
 data class PhaseVotes(
     val decision: VoteOption? = null,
     val phase: CohortPhase,
-    val votes: List<VoteSelection> = emptyList()
+    val votes: List<VoteSelection> = emptyList(),
 )
 
 data class UpsertVoteSelection(
@@ -134,7 +139,7 @@ data class UpsertVoteSelection(
 
 data class UpsertProjectVotesRequestPayload(
     val phase: CohortPhase,
-    val votes: List<UpsertVoteSelection>
+    val votes: List<UpsertVoteSelection>,
 )
 
 data class DeleteProjectVotesRequestPayload(
@@ -142,7 +147,8 @@ data class DeleteProjectVotesRequestPayload(
     @Schema(
         description =
             "A safeguard flag that must be set to `true` for deleting all voters in " +
-                "a project phase. ")
+                "a project phase. "
+    )
     val phaseDelete: Boolean? = null,
     @Schema(description = "If set to `null`, all voters in the phase will be removed. ")
     val userId: UserId? = null,
@@ -153,7 +159,7 @@ data class ProjectVotesPayload(
 ) {
   constructor(
       votes: List<VoteModel>,
-      decisions: List<VoteDecisionModel>
+      decisions: List<VoteDecisionModel>,
   ) : this(
       phases =
           votes
@@ -169,7 +175,8 @@ data class ProjectVotesPayload(
                 )
               }
               .values
-              .toList())
+              .toList()
+  )
 }
 
 data class GetProjectVotesResponsePayload(val votes: ProjectVotesPayload) : SuccessResponsePayload

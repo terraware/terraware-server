@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class ObservationTestHelper(
     private val test: DatabaseTest,
     private val observationStore: ObservationStore,
-    private val userId: UserId? = null
+    private val userId: UserId? = null,
 ) {
   private val dslContext = test.dslContext
   private val effectiveUserId: UserId by lazy { userId ?: currentUser().userId }
@@ -77,7 +77,8 @@ class ObservationTestHelper(
         test.insertObservationPlot(
             claimedBy = effectiveUserId,
             isPermanent = plot.isPermanent,
-            monitoringPlotId = plot.plotId)
+            monitoringPlotId = plot.plotId,
+        )
       }
     }
 
@@ -101,7 +102,8 @@ class ObservationTestHelper(
                         gpsCoordinates = point(1),
                         speciesId = plant.speciesId,
                         speciesName = plant.speciesName,
-                        statusId = status)
+                        statusId = status,
+                    )
                   }
             }
 
@@ -111,7 +113,8 @@ class ObservationTestHelper(
             notes = null,
             observationId = test.inserted.observationId,
             observedTime = Instant.EPOCH,
-            plants = recordedPlantsRows)
+            plants = recordedPlantsRows,
+        )
       }
     }
   }

@@ -14,7 +14,8 @@ internal class GbifTaxonModelTest {
             scientificName = "name",
             familyName = "family",
             vernacularNames = emptyList(),
-            threatStatus = "least concern")
+            threatStatus = "least concern",
+        )
     assertEquals(ConservationCategory.LeastConcern, model.conservationCategory)
   }
 }

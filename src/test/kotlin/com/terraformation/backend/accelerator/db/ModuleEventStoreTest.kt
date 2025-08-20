@@ -92,7 +92,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               slidesUrl = "https://slides.com",
               recordingUrl = "https://recording.com",
               startTime = startTime,
-              endTime = endTime)
+              endTime = endTime,
+          )
 
       insertEventProject(workshop, project1)
       insertEventProject(workshop, project2)
@@ -113,8 +114,10 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               revision = 1,
               startTime = startTime,
               endTime = endTime,
-              projects = setOf(project1, project2)),
-          store.fetchOneById(workshop))
+              projects = setOf(project1, project2),
+          ),
+          store.fetchOneById(workshop),
+      )
     }
   }
 
@@ -142,21 +145,24 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               moduleId = moduleId,
               eventType = EventType.Workshop,
               startTime = time1,
-              endTime = time2)
+              endTime = time2,
+          )
 
       val eventId2 =
           insertEvent(
               moduleId = moduleId,
               eventType = EventType.LiveSession,
               startTime = time2,
-              endTime = time3)
+              endTime = time3,
+          )
 
       val eventId3 =
           insertEvent(
               moduleId = otherModule,
               eventType = EventType.OneOnOneSession,
               startTime = time3,
-              endTime = time4)
+              endTime = time4,
+          )
 
       insertEventProject(eventId1, project1)
       insertEventProject(eventId1, project2)
@@ -178,7 +184,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               revision = 1,
               startTime = time1,
               endTime = time2,
-              projects = setOf(project1, project2))
+              projects = setOf(project1, project2),
+          )
 
       val event2 =
           EventModel(
@@ -190,7 +197,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               revision = 1,
               startTime = time2,
               endTime = time3,
-              projects = setOf(project1))
+              projects = setOf(project1),
+          )
 
       val event3 =
           EventModel(
@@ -202,27 +210,34 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               revision = 1,
               startTime = time3,
               endTime = time4,
-              projects = setOf(project2))
+              projects = setOf(project2),
+          )
 
       assertEquals(listOf(event1, event2, event3), store.fetchById(), "Fetch all")
       assertEquals(
-          listOf(event1, event2), store.fetchById(projectId = project1), "Fetch by project ID")
+          listOf(event1, event2),
+          store.fetchById(projectId = project1),
+          "Fetch by project ID",
+      )
       assertEquals(listOf(event3), store.fetchById(moduleId = otherModule), "Fetch by module ID")
       assertEquals(listOf(event2), store.fetchById(eventId = eventId2), "Fetch by Event ID")
 
       assertEquals(
           listOf(event1),
           store.fetchById(projectId = project2, moduleId = moduleId),
-          "Fetch by projectId and module ID")
+          "Fetch by projectId and module ID",
+      )
       assertEquals(
           listOf(event3),
           store.fetchById(projectId = project2, eventId = eventId3),
-          "Fetch by projectId and event ID")
+          "Fetch by projectId and event ID",
+      )
 
       assertEquals(
           listOf(event3),
           store.fetchById(eventType = EventType.OneOnOneSession),
-          "Fetch by eventTypeId")
+          "Fetch by eventTypeId",
+      )
     }
   }
 
@@ -249,8 +264,10 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          eventsDao.findAll())
+              )
+          ),
+          eventsDao.findAll(),
+      )
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(model.id, model.revision))
     }
@@ -269,12 +286,20 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
       val endedEvent =
           store.create(
-              moduleId, EventType.Workshop, startTime = threeSecondsAgo, endTime = twoSecondsAgo)
+              moduleId,
+              EventType.Workshop,
+              startTime = threeSecondsAgo,
+              endTime = twoSecondsAgo,
+          )
       val endingEvent =
           store.create(moduleId, EventType.Workshop, startTime = twoSecondsAgo, endTime = now)
       val inProgressEvent =
           store.create(
-              moduleId, EventType.Workshop, startTime = twoSecondsAgo, endTime = twoSecondsLater)
+              moduleId,
+              EventType.Workshop,
+              startTime = twoSecondsAgo,
+              endTime = twoSecondsLater,
+          )
       val startingEvent =
           store.create(moduleId, EventType.Workshop, startTime = now, endTime = twoSecondsLater)
       val startingInSecondsEvent =
@@ -282,19 +307,22 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               moduleId,
               EventType.Workshop,
               startTime = twoSecondsLater,
-              endTime = threeSecondsLater)
+              endTime = threeSecondsLater,
+          )
       val startingSoonEvent =
           store.create(
               moduleId,
               EventType.Workshop,
               startTime = leadDurationLater,
-              endTime = leadDurationAndTwoSecondsLater)
+              endTime = leadDurationAndTwoSecondsLater,
+          )
       val futureEvent =
           store.create(
               moduleId,
               EventType.Workshop,
               startTime = leadDurationAndTwoSecondsLater,
-              endTime = leadDurationAndThreeSecondsLater)
+              endTime = leadDurationAndThreeSecondsLater,
+          )
 
       val results = eventsDao.findAll()
       val statuses = results.associate { it.id to it.eventStatusId }
@@ -304,23 +332,28 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           statuses[inProgressEvent.id],
           EventStatus.InProgress,
-          "start < now < end events has InProgress status")
+          "start < now < end events has InProgress status",
+      )
       assertEquals(
           statuses[startingEvent.id],
           EventStatus.InProgress,
-          "now = start events has InProgress status")
+          "now = start events has InProgress status",
+      )
       assertEquals(
           statuses[startingInSecondsEvent.id],
           EventStatus.StartingSoon,
-          "start < now < notify events has StartingSoon status")
+          "start < now < notify events has StartingSoon status",
+      )
       assertEquals(
           statuses[startingSoonEvent.id],
           EventStatus.StartingSoon,
-          "now = notify events has StartingSoon status")
+          "now = notify events has StartingSoon status",
+      )
       assertEquals(
           statuses[futureEvent.id],
           EventStatus.NotStarted,
-          "notify < now events has NotStarted status")
+          "notify < now events has NotStarted status",
+      )
     }
 
     @Test
@@ -331,7 +364,11 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val project2 = insertProject(participantId = inserted.participantId)
       val model =
           store.create(
-              moduleId, EventType.Workshop, startTime, projects = setOf(project1, project2))
+              moduleId,
+              EventType.Workshop,
+              startTime,
+              projects = setOf(project1, project2),
+          )
 
       assertNotNull(eventsDao.fetchOneById(model.id))
 
@@ -340,7 +377,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               EventProjectsRow(model.id, project1),
               EventProjectsRow(model.id, project2),
           ),
-          eventProjectsDao.findAll().toSet())
+          eventProjectsDao.findAll().toSet(),
+      )
     }
 
     @Test
@@ -382,7 +420,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               slidesUrl = "https://slides.com",
               recordingUrl = "https://recording.com",
               startTime = startTime,
-              endTime = endTime)
+              endTime = endTime,
+          )
 
       assertEquals(
           EventsRow(
@@ -401,7 +440,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
           ),
-          eventsDao.findById(workshop))
+          eventsDao.findById(workshop),
+      )
 
       store.updateEvent(workshop) { it.copy(meetingUrl = URI("https://newmeeting.com")) }
 
@@ -422,7 +462,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           ),
-          eventsDao.findById(workshop))
+          eventsDao.findById(workshop),
+      )
 
       eventPublisher.assertEventNotPublished<ModuleEventScheduledEvent>()
     }
@@ -438,7 +479,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               moduleId = moduleId,
               eventType = EventType.Workshop,
               startTime = startTime,
-              endTime = endTime)
+              endTime = endTime,
+          )
 
       val original = eventsDao.findById(workshop)
 
@@ -463,7 +505,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               eventType = EventType.Workshop,
               startTime = startTime,
               endTime = endTime,
-              revision = 1)
+              revision = 1,
+          )
       val original = eventsDao.findById(workshop)!!
 
       store.updateEvent(workshop) { it.copy(startTime = newStartTime) }
@@ -473,8 +516,10 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = newStartTime,
               endTime = endTime,
               revision = 2,
-              modifiedTime = clock.instant),
-          updated)
+              modifiedTime = clock.instant,
+          ),
+          updated,
+      )
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, 2))
     }
@@ -491,7 +536,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               eventType = EventType.Workshop,
               startTime = startTime,
               endTime = endTime,
-              revision = 1)
+              revision = 1,
+          )
       val original = eventsDao.findById(workshop)!!
 
       store.updateEvent(workshop) { it.copy(endTime = newEndTime) }
@@ -501,8 +547,10 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = newEndTime,
               revision = 2,
-              modifiedTime = clock.instant),
-          updated)
+              modifiedTime = clock.instant,
+          ),
+          updated,
+      )
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, 2))
     }
@@ -543,7 +591,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       }
       store.updateEvent(futureEvent) {
         it.copy(
-            startTime = leadDurationAndTwoSecondsLater, endTime = leadDurationAndThreeSecondsLater)
+            startTime = leadDurationAndTwoSecondsLater,
+            endTime = leadDurationAndThreeSecondsLater,
+        )
       }
 
       val results = eventsDao.findAll()
@@ -554,21 +604,28 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           statuses[inProgressEvent],
           EventStatus.InProgress,
-          "start < now < end events has InProgress status")
+          "start < now < end events has InProgress status",
+      )
       assertEquals(
-          statuses[startingEvent], EventStatus.InProgress, "now = start has InProgress status")
+          statuses[startingEvent],
+          EventStatus.InProgress,
+          "now = start has InProgress status",
+      )
       assertEquals(
           statuses[startingInSecondsEvent],
           EventStatus.StartingSoon,
-          "start < now < notify events has StartingSoon status")
+          "start < now < notify events has StartingSoon status",
+      )
       assertEquals(
           statuses[startingSoonEvent],
           EventStatus.StartingSoon,
-          "now = notify events has StartingSoon status")
+          "now = notify events has StartingSoon status",
+      )
       assertEquals(
           statuses[futureEvent],
           EventStatus.NotStarted,
-          "notify < now events has NotStarted status")
+          "notify < now events has NotStarted status",
+      )
     }
   }
 
@@ -583,14 +640,16 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventStatus.NotStarted,
           eventsDao.fetchOneById(eventId)!!.eventStatusId,
-          "Status before update. ")
+          "Status before update. ",
+      )
 
       store.updateEventStatus(eventId, EventStatus.Ended)
 
       assertEquals(
           EventStatus.Ended,
           eventsDao.fetchOneById(eventId)!!.eventStatusId,
-          "Status after update. ")
+          "Status after update. ",
+      )
     }
 
     @Test
@@ -636,7 +695,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           event2,
           eventsDao.findAll().firstOrNull()?.id,
-          "Events contain $event2 after one deletion")
+          "Events contain $event2 after one deletion",
+      )
       store.delete(event2)
       assertTableEmpty(EVENTS, "Events after all deletions")
     }

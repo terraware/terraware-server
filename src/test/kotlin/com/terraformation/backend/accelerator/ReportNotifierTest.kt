@@ -18,7 +18,8 @@ class ReportNotifierTest {
 
     notifier.on(event)
     rateLimitedEventPublisher.assertEventPublished(
-        RateLimitedAcceleratorReportSubmittedEvent(event.reportId))
+        RateLimitedAcceleratorReportSubmittedEvent(event.reportId)
+    )
     assertIsEventListener<AcceleratorReportSubmittedEvent>(notifier)
   }
 }

@@ -21,7 +21,8 @@ class SpeciesAdminController(
 ) {
   @Operation(
       summary = "Imports a GBIF backbone dataset into the system.",
-      description = "Only available for super-admin users.")
+      description = "Only available for super-admin users.",
+  )
   @PostMapping("/importGbif")
   fun importGbif(@FormParam("source") source: URI): SimpleSuccessResponsePayload {
     try {

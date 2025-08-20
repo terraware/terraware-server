@@ -27,12 +27,19 @@ data class ReportMetricTargetPayload(
     discriminatorMapping =
         [
             DiscriminatorMapping(
-                value = "project", schema = UpdateProjectMetricTargetsPayload::class),
+                value = "project",
+                schema = UpdateProjectMetricTargetsPayload::class,
+            ),
             DiscriminatorMapping(
-                value = "standard", schema = UpdateStandardMetricTargetsPayload::class),
+                value = "standard",
+                schema = UpdateStandardMetricTargetsPayload::class,
+            ),
             DiscriminatorMapping(
-                value = "system", schema = UpdateSystemMetricTargetsPayload::class),
-        ])
+                value = "system",
+                schema = UpdateSystemMetricTargetsPayload::class,
+            ),
+        ]
+)
 sealed interface UpdateMetricTargetsPayload {
   val targets: List<ReportMetricTargetPayload>
 
@@ -42,53 +49,56 @@ sealed interface UpdateMetricTargetsPayload {
 @JsonTypeName("project")
 data class UpdateProjectMetricTargetsPayload(
     val metricId: ProjectMetricId,
-    override val targets: List<ReportMetricTargetPayload>
+    override val targets: List<ReportMetricTargetPayload>,
 ) : UpdateMetricTargetsPayload {
   override fun updateMetricTargets(
       store: ReportStore,
       projectId: ProjectId,
-      updateSubmitted: Boolean
+      updateSubmitted: Boolean,
   ) {
     store.updateProjectMetricTargets(
         projectId = projectId,
         metricId = metricId,
         targets = targets.associate { it.reportId to it.target },
-        updateSubmitted = updateSubmitted)
+        updateSubmitted = updateSubmitted,
+    )
   }
 }
 
 @JsonTypeName("standard")
 data class UpdateStandardMetricTargetsPayload(
     val metricId: StandardMetricId,
-    override val targets: List<ReportMetricTargetPayload>
+    override val targets: List<ReportMetricTargetPayload>,
 ) : UpdateMetricTargetsPayload {
   override fun updateMetricTargets(
       store: ReportStore,
       projectId: ProjectId,
-      updateSubmitted: Boolean
+      updateSubmitted: Boolean,
   ) {
     store.updateStandardMetricTargets(
         projectId = projectId,
         metricId = metricId,
         targets = targets.associate { it.reportId to it.target },
-        updateSubmitted = updateSubmitted)
+        updateSubmitted = updateSubmitted,
+    )
   }
 }
 
 @JsonTypeName("system")
 data class UpdateSystemMetricTargetsPayload(
     val metric: SystemMetric,
-    override val targets: List<ReportMetricTargetPayload>
+    override val targets: List<ReportMetricTargetPayload>,
 ) : UpdateMetricTargetsPayload {
   override fun updateMetricTargets(
       store: ReportStore,
       projectId: ProjectId,
-      updateSubmitted: Boolean
+      updateSubmitted: Boolean,
   ) {
     store.updateSystemMetricTargets(
         projectId = projectId,
         metric = metric,
         targets = targets.associate { it.reportId to it.target },
-        updateSubmitted = updateSubmitted)
+        updateSubmitted = updateSubmitted,
+    )
   }
 }

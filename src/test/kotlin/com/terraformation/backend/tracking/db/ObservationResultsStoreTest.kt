@@ -88,7 +88,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         ParentStore(dslContext),
-        recordedPlantsDao)
+        recordedPlantsDao,
+    )
   }
   private val resultsStore by lazy { ObservationResultsStore(dslContext) }
 
@@ -125,7 +126,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               inProgressObservationId,
           ),
           results.map { it.observationId },
-          "Observation IDs")
+          "Observation IDs",
+      )
     }
 
     @Test
@@ -146,8 +148,14 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               ObservationMonitoringPlotPhotoModel(
-                  inserted.fileId, gpsCoordinates, position, ObservationPhotoType.Plot)),
-          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos)
+                  inserted.fileId,
+                  gpsCoordinates,
+                  position,
+                  ObservationPhotoType.Plot,
+              )
+          ),
+          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos,
+      )
     }
 
     @Test
@@ -174,7 +182,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(mostRecentlyCompletedObservationId),
           results.map { it.observationId },
-          "Observation IDs")
+          "Observation IDs",
+      )
     }
 
     @Test
@@ -191,7 +200,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingZone()
       val subzoneId2 = insertPlantingSubzone()
       monitoringPlotsDao.update(
-          monitoringPlotsDao.fetchOneById(plotId)!!.copy(plantingSubzoneId = subzoneId2))
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(plantingSubzoneId = subzoneId2)
+      )
       insertMonitoringPlotHistory()
 
       insertObservation(completedTime = Instant.ofEpochSecond(2))
@@ -207,7 +217,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
                 .map { it.plantingSubzoneId }
           },
-          "Subzone of monitoring plot in second observation")
+          "Subzone of monitoring plot in second observation",
+      )
       assertEquals(
           listOf(subzoneId1),
           results[1].plantingZones.flatMap { zone ->
@@ -215,7 +226,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
                 .map { it.plantingSubzoneId }
           },
-          "Subzone of monitoring plot in first observation")
+          "Subzone of monitoring plot in first observation",
+      )
     }
 
     @Test
@@ -231,7 +243,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
       assertNotEquals(
-          emptyList<ObservationResultsModel>(), results, "Should have returned observation result")
+          emptyList<ObservationResultsModel>(),
+          results,
+          "Should have returned observation result",
+      )
       assertEquals(
           listOf(plotId),
           results[0].plantingZones.flatMap { zone ->
@@ -239,7 +254,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               subzone.monitoringPlots.map { it.monitoringPlotId }
             }
           },
-          "Monitoring plot IDs in observation")
+          "Monitoring plot IDs in observation",
+      )
     }
 
     @Test
@@ -255,7 +271,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
       assertNotEquals(
-          emptyList<ObservationResultsModel>(), results, "Should have returned observation result")
+          emptyList<ObservationResultsModel>(),
+          results,
+          "Should have returned observation result",
+      )
       assertEquals(
           listOf(plotId),
           results[0].plantingZones.flatMap { zone ->
@@ -263,7 +282,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               subzone.monitoringPlots.map { it.monitoringPlotId }
             }
           },
-          "Monitoring plot IDs in observation")
+          "Monitoring plot IDs in observation",
+      )
     }
 
     @Test
@@ -280,13 +300,19 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       val id1 =
           insertObservedCoordinates(
-              position = ObservationPlotPosition.NorthwestCorner, gpsCoordinates = northwest)
+              position = ObservationPlotPosition.NorthwestCorner,
+              gpsCoordinates = northwest,
+          )
       val id2 =
           insertObservedCoordinates(
-              position = ObservationPlotPosition.SouthwestCorner, gpsCoordinates = southwest)
+              position = ObservationPlotPosition.SouthwestCorner,
+              gpsCoordinates = southwest,
+          )
       val id3 =
           insertObservedCoordinates(
-              position = ObservationPlotPosition.NortheastCorner, gpsCoordinates = northeast)
+              position = ObservationPlotPosition.NortheastCorner,
+              gpsCoordinates = northeast,
+          )
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -299,7 +325,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               ObservedPlotCoordinatesModel(id3, northeast, ObservationPlotPosition.NortheastCorner),
               ObservedPlotCoordinatesModel(id1, northwest, ObservationPlotPosition.NorthwestCorner),
           ),
-          actualCoordinates)
+          actualCoordinates,
+      )
     }
 
     @Test
@@ -339,11 +366,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf("Subzone 1"),
           zone1Result.plantingSubzones.map { it.name },
-          "Names of all subzones in zone 1")
+          "Names of all subzones in zone 1",
+      )
       assertEquals(
           listOf("Subzone 2"),
           zone2Result.plantingSubzones.map { it.name },
-          "Names of all subzones in zone 2")
+          "Names of all subzones in zone 2",
+      )
     }
 
     @Test
@@ -379,9 +408,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           setOf(
               ObservableCondition.AnimalDamage,
               ObservableCondition.Fungus,
-              ObservableCondition.UnfavorableWeather),
+              ObservableCondition.UnfavorableWeather,
+          ),
           plotResults.conditions,
-          "Plot conditions")
+          "Plot conditions",
+      )
     }
 
     @Test
@@ -403,7 +434,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           insertObservation(
               completedTime = Instant.EPOCH,
               isAdHoc = true,
-              observationType = ObservationType.BiomassMeasurements)
+              observationType = ObservationType.BiomassMeasurements,
+          )
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
       insertObservationBiomassDetails(
@@ -421,7 +453,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               tideId = MangroveTide.High,
               tideTime = Instant.ofEpochSecond(123),
               waterDepthCm = 2,
-          ))
+          )
+      )
 
       val biomassHerbaceousSpeciesId1 =
           insertObservationBiomassSpecies(
@@ -485,7 +518,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.NortheastCorner,
               description = "NE description",
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratDetails(
           ObservationBiomassQuadratDetailsRow(
@@ -493,7 +527,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.NorthwestCorner,
               description = "NW description",
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratDetails(
           ObservationBiomassQuadratDetailsRow(
@@ -501,7 +536,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.SoutheastCorner,
               description = "SE description",
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratDetails(
           ObservationBiomassQuadratDetailsRow(
@@ -509,7 +545,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.SouthwestCorner,
               description = "SW description",
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratSpecies(
           ObservationBiomassQuadratSpeciesRow(
@@ -518,7 +555,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               positionId = ObservationPlotPosition.NortheastCorner,
               abundancePercent = 40,
               biomassSpeciesId = biomassHerbaceousSpeciesId1,
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratSpecies(
           ObservationBiomassQuadratSpeciesRow(
@@ -527,7 +565,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               positionId = ObservationPlotPosition.NorthwestCorner,
               abundancePercent = 5,
               biomassSpeciesId = biomassHerbaceousSpeciesId3,
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratSpecies(
           ObservationBiomassQuadratSpeciesRow(
@@ -536,7 +575,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               positionId = ObservationPlotPosition.NorthwestCorner,
               abundancePercent = 60,
               biomassSpeciesId = biomassHerbaceousSpeciesId2,
-          ))
+          )
+      )
 
       insertObservationBiomassQuadratSpecies(
           ObservationBiomassQuadratSpeciesRow(
@@ -545,7 +585,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               positionId = ObservationPlotPosition.SoutheastCorner,
               abundancePercent = 90,
               biomassSpeciesId = biomassHerbaceousSpeciesId1,
-          ))
+          )
+      )
 
       val treeId1 =
           insertRecordedTree(
@@ -628,7 +669,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 40,
                                           speciesId = herbaceousSpeciesId1,
-                                      ))),
+                                      )
+                                  ),
+                          ),
                       ObservationPlotPosition.NorthwestCorner to
                           BiomassQuadratModel(
                               description = "NW description",
@@ -642,7 +685,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                                           abundancePercent = 5,
                                           speciesName = "Herbaceous species",
                                       ),
-                                  )),
+                                  ),
+                          ),
                       ObservationPlotPosition.SoutheastCorner to
                           BiomassQuadratModel(
                               description = "SE description",
@@ -651,7 +695,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 90,
                                           speciesId = herbaceousSpeciesId1,
-                                      ))),
+                                      )
+                                  ),
+                          ),
                       ObservationPlotPosition.SouthwestCorner to
                           BiomassQuadratModel(
                               description = "SW description",
@@ -744,25 +790,30 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                           treeGrowthForm = TreeGrowthForm.Trunk,
                           treeNumber = 3,
                           trunkNumber = 2,
-                      )),
+                      ),
+                  ),
               waterDepthCm = 2,
           )
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true)
       assertNull(
-          results.find { it.observationId == assignedObservationId }, "No assigned observation")
+          results.find { it.observationId == assignedObservationId },
+          "No assigned observation",
+      )
 
       val observationResults = results.first()
       assertEquals(observationId, observationResults.observationId, "Observation ID")
       assertEquals(
           ObservationType.BiomassMeasurements,
           observationResults.observationType,
-          "Observation type")
+          "Observation type",
+      )
       assertTrue(observationResults.isAdHoc, "Observation Is Ad Hoc")
       assertEquals(
           emptyList<ObservationPlantingZoneResultsModel>(),
           observationResults.plantingZones,
-          "No zone in observation")
+          "No zone in observation",
+      )
 
       assertEquals(expectedBiomassModel, observationResults.biomassDetails, "Biomass details")
 
@@ -838,7 +889,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = completePlotId,
                   speciesId = inserted.speciesId,
                   statusId = RecordedPlantStatus.Live,
-              )))
+              )
+          ),
+      )
 
       observationStore.abandonObservation(inserted.observationId)
 
@@ -855,17 +908,29 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(null, results.plantingDensityStdDev, "Site Planting Density Standard Deviation")
       assertEquals(11, zoneResults.plantingDensity, "Zone Planting Density")
       assertEquals(
-          null, zoneResults.plantingDensityStdDev, "Zone Planting Density Standard Deviation")
+          null,
+          zoneResults.plantingDensityStdDev,
+          "Zone Planting Density Standard Deviation",
+      )
       assertEquals(11, subzoneResults.plantingDensity, "Subzone Planting Density")
       assertEquals(
-          null, subzoneResults.plantingDensityStdDev, "Subzone Planting Density Standard Deviation")
+          null,
+          subzoneResults.plantingDensityStdDev,
+          "Subzone Planting Density Standard Deviation",
+      )
 
       assertEquals(11, completePlotResults.plantingDensity, "Completed Plot Planting Density")
       assertEquals(
-          ObservationPlotStatus.Completed, completePlotResults.status, "Completed Plot Status")
+          ObservationPlotStatus.Completed,
+          completePlotResults.status,
+          "Completed Plot Status",
+      )
       assertEquals(0, incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
       assertEquals(
-          ObservationPlotStatus.NotObserved, incompletePlotResults.status, "Incomplete Plot Status")
+          ObservationPlotStatus.NotObserved,
+          incompletePlotResults.status,
+          "Incomplete Plot Status",
+      )
     }
 
     @Test
@@ -888,9 +953,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(300)
       val observationId1 = insertObservation()
       insertObservationPlot(
-          observationId = observationId1, monitoringPlotId = plotId1, claimedBy = user.userId)
+          observationId = observationId1,
+          monitoringPlotId = plotId1,
+          claimedBy = user.userId,
+      )
       insertObservationPlot(
-          observationId = observationId1, monitoringPlotId = plotId2, claimedBy = user.userId)
+          observationId = observationId1,
+          monitoringPlotId = plotId2,
+          claimedBy = user.userId,
+      )
       observationStore.populateCumulativeDead(observationId1)
 
       observationStore.completePlot(
@@ -907,7 +978,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId1,
                   speciesId = speciesId1,
                   statusId = RecordedPlantStatus.Live,
-              )))
+              )
+          ),
+      )
 
       observationStore.completePlot(
           observationId1,
@@ -931,15 +1004,23 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId2,
                   speciesId = speciesId2,
                   statusId = RecordedPlantStatus.Live,
-              )))
+              ),
+          ),
+      )
 
       // For the second observation, plot2 and plot3 are both assigned, only plot 3 is completed.
       clock.instant = Instant.ofEpochSecond(600)
       val observationId2 = insertObservation()
       insertObservationPlot(
-          observationId = observationId2, monitoringPlotId = plotId2, claimedBy = user.userId)
+          observationId = observationId2,
+          monitoringPlotId = plotId2,
+          claimedBy = user.userId,
+      )
       insertObservationPlot(
-          observationId = observationId2, monitoringPlotId = plotId3, claimedBy = user.userId)
+          observationId = observationId2,
+          monitoringPlotId = plotId3,
+          claimedBy = user.userId,
+      )
 
       // Add a second plot to subzone 3, to test for if subzone has no completed time yet.
       insertObservationPlot(observationId = observationId2, monitoringPlotId = neverObservedPlotId)
@@ -978,33 +1059,39 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ObservationPlotStatus.Completed,
           observation1Subzone1Result.monitoringPlots[0].status,
-          "Plot status in observation 1 subzone 1")
+          "Plot status in observation 1 subzone 1",
+      )
       assertEquals(
           ObservationPlotStatus.Completed,
           observation1Subzone2Result.monitoringPlots[0].status,
-          "Plot status in observation 1 subzone 2")
+          "Plot status in observation 1 subzone 2",
+      )
       assertEquals(
           ObservationPlotStatus.NotObserved,
           observation2Subzone2Result.monitoringPlots[0].status,
-          "Plot status in observation 2 subzone 2")
+          "Plot status in observation 2 subzone 2",
+      )
       assertEquals(
           ObservationPlotStatus.Completed,
           observation2Subzone3Result.monitoringPlots
               .first { it.monitoringPlotId == plotId3 }
               .status,
-          "Plot status in observation 2 subzone 3")
+          "Plot status in observation 2 subzone 3",
+      )
       assertEquals(
           ObservationPlotStatus.NotObserved,
           observation2Subzone3Result.monitoringPlots
               .first { it.monitoringPlotId == neverObservedPlotId }
               .status,
-          "Plot status in observation 2 subzone 3")
+          "Plot status in observation 2 subzone 3",
+      )
 
       val summary = resultsStore.fetchSummariesForPlantingSite(inserted.plantingSiteId, 1).first()
       assertEquals(
           setOf(observation1Subzone1Result, observation1Subzone2Result, observation2Subzone3Result),
           summary.plantingZones.flatMap { it.plantingSubzones }.toSet(),
-          "Planting subzones used for summary did not include the Incomplete subzone result")
+          "Planting subzones used for summary did not include the Incomplete subzone result",
+      )
     }
   }
 
@@ -1033,7 +1120,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `permanent plots being added and removed`() {
       runScenario(
-          "/tracking/observation/PermanentPlotChanges", numObservations = 3, sizeMeters = 25)
+          "/tracking/observation/PermanentPlotChanges",
+          numObservations = 3,
+          sizeMeters = 25,
+      )
     }
 
     @Test
@@ -1042,7 +1132,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           "/tracking/observation/ObservationsSummary",
           numObservations = 3,
           numSpecies = 3,
-          sizeMeters = 25)
+          sizeMeters = 25,
+      )
     }
 
     private fun runScenario(prefix: String, numObservations: Int, sizeMeters: Int) {
@@ -1063,7 +1154,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           emptyList<ObservationRollupResultsModel>(),
           resultsStore.fetchSummariesForPlantingSite(plantingSiteId),
-          "No observations made yet.")
+          "No observations made yet.",
+      )
 
       val observationTimes =
           List(numObservations) {
@@ -1078,25 +1170,33 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           summaries.take(2),
           resultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit = 2),
-          "Partial summaries via limit should contain the latest observations.")
+          "Partial summaries via limit should contain the latest observations.",
+      )
 
       assertEquals(
           summaries.drop(1),
           resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId, maxCompletionTime = observationTimes[1]),
-          "Partial summaries via completion time should omit the more recent observations.")
+              plantingSiteId,
+              maxCompletionTime = observationTimes[1],
+          ),
+          "Partial summaries via completion time should omit the more recent observations.",
+      )
 
       assertEquals(
           listOf(summaries[1]),
           resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId, maxCompletionTime = observationTimes[1], limit = 1),
-          "Partial summaries via limit and completion time.")
+              plantingSiteId,
+              maxCompletionTime = observationTimes[1],
+              limit = 1,
+          ),
+          "Partial summaries via limit and completion time.",
+      )
     }
 
     private fun assertSummary(
         prefix: String,
         numSpecies: Int,
-        results: List<ObservationRollupResultsModel>
+        results: List<ObservationRollupResultsModel>,
     ) {
       assertAll(
           { assertSiteSummary(prefix, results) },
@@ -1244,7 +1344,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertSubzoneSummary(
         prefix: String,
-        allResults: List<ObservationRollupResultsModel>
+        allResults: List<ObservationRollupResultsModel>,
     ) {
       val rowKeys = subzoneIds.keys.map { listOf(it) }
 
@@ -1303,7 +1403,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertSiteSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsModel>
+        allResults: List<ObservationResultsModel>,
     ) {
       val rowKeys = allSpeciesNames.map { listOf(it) }
 
@@ -1325,7 +1425,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertSubzoneSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsModel>
+        allResults: List<ObservationResultsModel>,
     ) {
       val rowKeys =
           subzoneIds.keys.flatMap { zoneName ->
@@ -1353,7 +1453,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertZoneSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsModel>
+        allResults: List<ObservationResultsModel>,
     ) {
       val rowKeys =
           zoneIds.keys.flatMap { zoneName ->
@@ -1380,7 +1480,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun assertPlotSpeciesResults(
         prefix: String,
-        allResults: List<ObservationResultsModel>
+        allResults: List<ObservationResultsModel>,
     ) {
       val rowKeys =
           plotIds.keys.flatMap { plotName ->
@@ -1407,7 +1507,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun assertSiteSpeciesSummary(
         prefix: String,
         numSpecies: Int,
-        allResults: List<ObservationRollupResultsModel>
+        allResults: List<ObservationRollupResultsModel>,
     ) {
       val actual =
           makeActualCsv(allResults, listOf(emptyList())) { _, results ->
@@ -1420,7 +1520,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun assertZoneSpeciesSummary(
         prefix: String,
         numSpecies: Int,
-        allResults: List<ObservationRollupResultsModel>
+        allResults: List<ObservationRollupResultsModel>,
     ) {
       val rowKeys = zoneIds.keys.map { listOf(it) }
 
@@ -1438,7 +1538,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun assertSubzoneSpeciesSummary(
         prefix: String,
         numSpecies: Int,
-        allResults: List<ObservationRollupResultsModel>
+        allResults: List<ObservationRollupResultsModel>,
     ) {
       val rowKeys = subzoneIds.keys.map { listOf(it) }
 
@@ -1457,7 +1557,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun assertPlotSpeciesSummary(
         prefix: String,
         numSpecies: Int,
-        allResults: List<ObservationRollupResultsModel>
+        allResults: List<ObservationRollupResultsModel>,
     ) {
       val rowKeys = plotIds.keys.map { listOf(it) }
 
@@ -1476,7 +1576,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun makeCsvColumnsFromSpeciesSummary(
         numSpecies: Int,
-        speciesResults: List<ObservationSpeciesResultsModel>
+        speciesResults: List<ObservationSpeciesResultsModel>,
     ): List<String> {
       val knownSpecies =
           List(numSpecies) { speciesNum ->
@@ -1592,7 +1692,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 insertHistory = false,
                 plantingSubzoneId = subzoneId,
                 plotNumber = plotNumber.toLong(),
-                sizeMeters = sizeMeters)
+                sizeMeters = sizeMeters,
+            )
         insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId)
 
         if (cols[2] == "Permanent") {
@@ -1668,7 +1769,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
                       .from(MONITORING_PLOTS)
                       .where(
-                          MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() })))
+                          MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() })
+                      )
+              )
               .execute()
         }
 
@@ -1680,7 +1783,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             .groupBy { it.monitoringPlotId!! }
             .forEach { (plotId, plants) ->
               observationStore.completePlot(
-                  observationId, plotId, emptySet(), "Notes", Instant.EPOCH, plants)
+                  observationId,
+                  plotId,
+                  emptySet(),
+                  "Notes",
+                  Instant.EPOCH,
+                  plants,
+              )
             }
       }
     }
@@ -1690,7 +1799,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         prefix: String,
         numSpecies: Int,
         observationNum: Int,
-        observationTime: Instant
+        observationTime: Instant,
     ): ObservationId {
       clock.instant = observationTime
 
@@ -1854,7 +1963,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           .groupBy { it.monitoringPlotId!! }
           .forEach { (plotId, plants) ->
             observationStore.completePlot(
-                observationId, plotId, emptySet(), "Notes", Instant.EPOCH, plants)
+                observationId,
+                plotId,
+                emptySet(),
+                "Notes",
+                Instant.EPOCH,
+                plants,
+            )
           }
 
       return observationId
@@ -1878,7 +1993,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun <T> associateCsv(
         path: String,
         skipRows: Int = 1,
-        func: (Array<String>) -> Pair<String, T>
+        func: (Array<String>) -> Pair<String, T>,
     ): Map<String, T> {
       return mapCsv(path, skipRows, func).toMap()
     }
@@ -1900,7 +2015,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun <T> makeActualCsv(
         allResults: List<T>,
         rowKeys: List<List<String>>,
-        columnsFromResult: (List<String>, T) -> List<String>
+        columnsFromResult: (List<String>, T) -> List<String>,
     ): List<List<String>> {
       return rowKeys.mapNotNull { initialRow ->
         val dataColumns = allResults.flatMap { results -> columnsFromResult(initialRow, results) }

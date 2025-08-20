@@ -102,7 +102,7 @@ class VariableUpgradeCalculator(
   private fun tableOperations(
       oldTable: TableVariable,
       oldRows: List<ExistingValue>,
-      newTable: TableVariable
+      newTable: TableVariable,
   ): List<ValueOperation> {
     val oldColumnsByStableId = oldTable.columns.associate { it.variable.stableId to it.variable }
 
@@ -127,7 +127,14 @@ class VariableUpgradeCalculator(
           AppendValueOperation(
               NewTableValue(
                   BaseVariableValueProperties(
-                      null, oldRow.projectId, 0, newTable.id, oldRow.citation)))
+                      null,
+                      oldRow.projectId,
+                      0,
+                      newTable.id,
+                      oldRow.citation,
+                  )
+              )
+          )
 
       val columnOperations =
           newTable.columns
@@ -139,7 +146,11 @@ class VariableUpgradeCalculator(
                     ?.let { valuesOfOldCells[oldColumn.id]?.get(oldRow.id) }
                     ?.mapNotNull { oldValue ->
                       newColumn.convertValue(
-                          oldColumn, oldValue, null, variableStore::fetchOneVariable)
+                          oldColumn,
+                          oldValue,
+                          null,
+                          variableStore::fetchOneVariable,
+                      )
                     }
                     ?.map { AppendValueOperation(it) } ?: emptyList()
               }

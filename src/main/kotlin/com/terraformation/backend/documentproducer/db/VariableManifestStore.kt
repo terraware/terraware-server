@@ -26,7 +26,7 @@ class VariableManifestStore(
     private val documentTemplatesDao: DocumentTemplatesDao,
     private val dslContext: DSLContext,
     private val variableManifestsDao: VariableManifestsDao,
-    private val variableManifestEntriesDao: VariableManifestEntriesDao
+    private val variableManifestEntriesDao: VariableManifestEntriesDao,
 ) {
   private val log = perClassLogger()
 
@@ -41,7 +41,8 @@ class VariableManifestStore(
           .groupBy(VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID)
           .fetchMap(
               VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID.asNonNullable(),
-              DSL.max(VARIABLE_MANIFESTS.ID).asNonNullable())
+              DSL.max(VARIABLE_MANIFESTS.ID).asNonNullable(),
+          )
 
   fun fetchVariableManifestByDocumentTemplate(
       documentTemplateId: DocumentTemplateId
@@ -58,7 +59,8 @@ class VariableManifestStore(
 
     if (!documentTemplatesDao.existsById(newVariableManifestModel.documentTemplateId)) {
       throw IllegalArgumentException(
-          "Document Template ${newVariableManifestModel.documentTemplateId} does not exist")
+          "Document Template ${newVariableManifestModel.documentTemplateId} does not exist"
+      )
     }
 
     val currentUserId = currentUser().userId

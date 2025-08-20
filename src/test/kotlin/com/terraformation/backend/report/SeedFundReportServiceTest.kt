@@ -119,7 +119,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             projectsDao,
             subLocationsDao,
-            nurseryWithdrawalsDao),
+            nurseryWithdrawalsDao,
+        ),
         clock,
         mockk(),
         FacilityStore(
@@ -145,9 +146,16 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSeasonsDao,
             plantingSitesDao,
             plantingSubzonesDao,
-            plantingZonesDao),
+            plantingZonesDao,
+        ),
         ProjectStore(
-            clock, dslContext, publisher, parentStore, projectsDao, projectInternalUsersDao),
+            clock,
+            dslContext,
+            publisher,
+            parentStore,
+            projectsDao,
+            projectInternalUsersDao,
+        ),
         seedFundReportRenderer,
         seedFundReportStore,
         scheduler,
@@ -157,7 +165,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             speciesDao,
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
-            speciesProblemsDao),
+            speciesProblemsDao,
+        ),
         SystemUser(usersDao),
     )
   }
@@ -360,7 +369,11 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       // nursery that has batches for the project, they will count toward totalPlantsPropagated.
       insertSampleWithdrawals(speciesId, projectNurseryId, nonProjectPlantingSiteId)
       insertSampleWithdrawals(
-          speciesId, projectNurseryId, otherProjectPlantingSiteId, otherProjectId)
+          speciesId,
+          projectNurseryId,
+          otherProjectPlantingSiteId,
+          otherProjectId,
+      )
 
       // This sample is at a different nursery which won't appear in the per-project report because
       // it has no batches for the project in question.
@@ -503,7 +516,9 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
       assertEquals(
-          emptyList<Any>(), seedFundReportStore.fetchMetadataByOrganization(organizationId))
+          emptyList<Any>(),
+          seedFundReportStore.fetchMetadataByOrganization(organizationId),
+      )
     }
 
     @Test
@@ -522,11 +537,13 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           1,
           seedFundReportsDao.fetchByProjectId(reportsEnabledProject).size,
-          "Should have created report for project with no existing reports and reports enabled")
+          "Should have created report for project with no existing reports and reports enabled",
+      )
       assertEquals(
           2,
           seedFundReportsDao.fetchByProjectId(projectWithOlderReport).size,
-          "Should have created current-quarter report for project with older report")
+          "Should have created current-quarter report for project with older report",
+      )
     }
 
     @Test
@@ -540,7 +557,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           1,
           seedFundReportsDao.fetchByProjectId(projectId).size,
-          "Number of reports for project with no existing reports and no settings")
+          "Number of reports for project with no existing reports and no settings",
+      )
     }
 
     @Test
@@ -556,7 +574,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           emptyList<Any>(),
           seedFundReportsDao.fetchByProjectId(projectId),
-          "Should not have created report for project with reports disabled")
+          "Should not have created report for project with reports disabled",
+      )
     }
 
     @Test
@@ -572,7 +591,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(reportId),
           seedFundReportsDao.fetchByProjectId(projectId).map { it.id },
-          "Should not have created additional report when one was already in progress")
+          "Should not have created additional report when one was already in progress",
+      )
     }
 
     @Test
@@ -600,7 +620,10 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       service.on(OrganizationDeletionStartedEvent(organizationId))
 
       assertEquals(
-          listOf(otherOrgReportId), seedFundReportsDao.findAll().map { it.id }, "Report IDs")
+          listOf(otherOrgReportId),
+          seedFundReportsDao.findAll().map { it.id },
+          "Report IDs",
+      )
 
       assertIsEventListener<OrganizationDeletionStartedEvent>(service)
     }
@@ -622,13 +645,16 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertFalse(
           seedFundReportsDao.existsById(deletedProjectReportId),
-          "Should have deleted report for deleted project")
+          "Should have deleted report for deleted project",
+      )
       assertTrue(
           seedFundReportsDao.existsById(keptProjectReportId),
-          "Should not have deleted report for non-deleted project")
+          "Should not have deleted report for non-deleted project",
+      )
       assertTrue(
           seedFundReportsDao.existsById(orgLevelReportId),
-          "Should not have deleted org-level report")
+          "Should not have deleted org-level report",
+      )
     }
 
     @Test
@@ -648,10 +674,12 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           "Test Project",
           reportsRow?.projectName,
-          "Should have kept project name on submitted report")
+          "Should have kept project name on submitted report",
+      )
       assertNotNull(
           seedFundReportsDao.fetchOneById(orgLevelReportId),
-          "Should not have deleted org-level report")
+          "Should not have deleted org-level report",
+      )
     }
 
     @Test
@@ -965,19 +993,27 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               year = 1990,
               submittedBy = user.userId,
-              status = SeedFundReportStatus.Submitted)
+              status = SeedFundReportStatus.Submitted,
+          )
       val lockedReportId =
           insertSeedFundReport(
               projectId = projectId,
               year = 1991,
               lockedBy = user.userId,
-              status = SeedFundReportStatus.Locked)
+              status = SeedFundReportStatus.Locked,
+          )
       val newReportId =
           insertSeedFundReport(
-              projectId = projectId, year = 1992, status = SeedFundReportStatus.New)
+              projectId = projectId,
+              year = 1992,
+              status = SeedFundReportStatus.New,
+          )
       val otherProjectReportId =
           insertSeedFundReport(
-              projectId = otherProjectId, year = 1993, status = SeedFundReportStatus.New)
+              projectId = otherProjectId,
+              year = 1993,
+              status = SeedFundReportStatus.New,
+          )
       val orgReportId = insertSeedFundReport(status = SeedFundReportStatus.New, year = 1994)
 
       service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
@@ -990,7 +1026,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
               otherProjectReportId to "Other",
               orgReportId to null,
           ),
-          seedFundReportsDao.findAll().associate { it.id to it.projectName })
+          seedFundReportsDao.findAll().associate { it.id to it.projectName },
+      )
     }
   }
 
@@ -1017,7 +1054,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     insertBatchWithdrawal(
         readyQuantityWithdrawn = 20,
         activeGrowthQuantityWithdrawn = 30,
-        hardeningOffQuantityWithdrawn = 40)
+        hardeningOffQuantityWithdrawn = 40,
+    )
     insertDelivery(plantingSiteId = plantingSiteId)
     insertPlanting(plantingSiteId = plantingSiteId, speciesId = speciesId)
   }

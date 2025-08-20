@@ -231,13 +231,14 @@ class ThumbnailStore(
         }
 
     return log.debugWithTiming(
-        "Resizing image from ${originalImage.width} x ${originalImage.height} to $maxWidth x $maxHeight") {
-          Thumbnails.of(newImage)
-              .imageType(BufferedImage.TYPE_INT_RGB)
-              .scalingMode(scalingMode)
-              .size(maxWidth ?: Int.MAX_VALUE, maxHeight ?: Int.MAX_VALUE)
-              .asBufferedImage()
-        }
+        "Resizing image from ${originalImage.width} x ${originalImage.height} to $maxWidth x $maxHeight"
+    ) {
+      Thumbnails.of(newImage)
+          .imageType(BufferedImage.TYPE_INT_RGB)
+          .scalingMode(scalingMode)
+          .size(maxWidth ?: Int.MAX_VALUE, maxHeight ?: Int.MAX_VALUE)
+          .asBufferedImage()
+    }
   }
 
   /**

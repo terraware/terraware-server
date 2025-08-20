@@ -75,7 +75,12 @@ data class ProjectOverallScorePayload(
   constructor(
       model: ProjectOverallScoreModel
   ) : this(
-      model.detailsUrl, model.overallScore, model.summary, model.modifiedBy, model.modifiedTime)
+      model.detailsUrl,
+      model.overallScore,
+      model.summary,
+      model.modifiedBy,
+      model.modifiedTime,
+  )
 }
 
 data class UpdateProjectOverallScoreRequestPayload(

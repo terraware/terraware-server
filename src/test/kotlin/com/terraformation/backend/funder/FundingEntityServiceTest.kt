@@ -74,7 +74,13 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service by lazy {
     FundingEntityService(
-        clock, dslContext, fundingEntityStore, fundingEntityUserStore, publisher, userStore)
+        clock,
+        dslContext,
+        fundingEntityStore,
+        fundingEntityUserStore,
+        publisher,
+        userStore,
+    )
   }
 
   @BeforeEach
@@ -119,7 +125,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
             modifiedBy = newUserId,
             modifiedTime = clock.instant(),
             name = name,
-        ))
+        )
+    )
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
   }
 
@@ -144,7 +151,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
         listOf(
             FundingEntityProjectsRecord(fundingEntityId = inserted.id, projectId = projectId1),
             FundingEntityProjectsRecord(fundingEntityId = inserted.id, projectId = projectId2),
-        ))
+        )
+    )
   }
 
   @Test
@@ -178,7 +186,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   fun `update throws exception when no matching entity`() {
     assertThrows<FundingEntityNotFoundException> {
       service.update(
-          FundingEntitiesRow(id = FundingEntityId(1093), name = "Missing Funding Entity"))
+          FundingEntitiesRow(id = FundingEntityId(1093), name = "Missing Funding Entity")
+      )
     }
   }
 
@@ -227,7 +236,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     service.update(row, setOf(projectId1))
 
     assertTableEquals(
-        FundingEntityProjectsRecord(fundingEntityId = fundingEntityId, projectId = projectId1))
+        FundingEntityProjectsRecord(fundingEntityId = fundingEntityId, projectId = projectId1)
+    )
   }
 
   @Test
@@ -251,7 +261,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
                 fundingEntityId = fundingEntityId,
                 projectId = projectId2,
             ),
-        ))
+        )
+    )
 
     service.update(row, setOf(projectId2))
 
@@ -285,7 +296,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
                 fundingEntityId = fundingEntityId,
                 projectId = projectId2,
             ),
-        ))
+        )
+    )
 
     service.update(row, setOf(projectId3, projectId2))
 
@@ -299,7 +311,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
                 fundingEntityId = fundingEntityId,
                 projectId = projectId2,
             ),
-        ))
+        )
+    )
   }
 
   @Test
@@ -379,7 +392,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     service.deleteFunders(fundingEntityId, userIds = setOf(funderId1, funderId2))
 
     publisher.assertExactEventsPublished(
-        setOf(UserDeletionStartedEvent(funderId1), UserDeletionStartedEvent(funderId2)))
+        setOf(UserDeletionStartedEvent(funderId1), UserDeletionStartedEvent(funderId2))
+    )
   }
 
   @Nested
@@ -440,8 +454,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
       service.inviteFunder(fundingEntityId, email)
 
       publisher.assertExactEventsPublished(
-          setOf(
-              FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId)))
+          setOf(FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId))
+      )
     }
 
     @Test
@@ -457,11 +471,12 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(userRecord.email, email)
       assertEquals(userRecord.userTypeId, UserType.Funder)
       assertTableEquals(
-          FundingEntityUsersRecord(fundingEntityId = fundingEntityId, userId = userRecord.id))
+          FundingEntityUsersRecord(fundingEntityId = fundingEntityId, userId = userRecord.id)
+      )
 
       publisher.assertExactEventsPublished(
-          setOf(
-              FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId)))
+          setOf(FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId))
+      )
     }
   }
 }

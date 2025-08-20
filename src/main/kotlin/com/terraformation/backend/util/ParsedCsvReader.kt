@@ -19,12 +19,12 @@ import java.io.Reader
 abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
   constructor(
       reader: Reader,
-      csvParser: CSVParser
+      csvParser: CSVParser,
   ) : this(CSVReaderBuilder(reader).withCSVParser(csvParser).build())
 
   constructor(
       inputStream: InputStream,
-      csvParser: CSVParser
+      csvParser: CSVParser,
   ) : this(InputStreamReader(inputStream), csvParser)
 
   private lateinit var positions: Map<String, Int>

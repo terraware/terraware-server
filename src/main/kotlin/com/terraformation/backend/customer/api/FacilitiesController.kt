@@ -78,7 +78,7 @@ class FacilitiesController(
   @Operation(summary = "Updates information about a facility.")
   fun updateFacility(
       @PathVariable facilityId: FacilityId,
-      @RequestBody payload: UpdateFacilityRequestPayload
+      @RequestBody payload: UpdateFacilityRequestPayload,
   ): SimpleSuccessResponsePayload {
     val facility = facilityStore.fetchOneById(facilityId)
 
@@ -90,7 +90,9 @@ class FacilitiesController(
             description = payload.description?.ifEmpty { null },
             name = payload.name,
             operationStartedDate = payload.operationStartedDate,
-            timeZone = payload.timeZone))
+            timeZone = payload.timeZone,
+        )
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -100,12 +102,13 @@ class FacilitiesController(
       responseCode = "202",
       description =
           "The request was received, but the user is still configuring or placing sensors, so no " +
-              "notification has been generated.")
+              "notification has been generated.",
+  )
   @PostMapping("/{facilityId}/alert/send")
   @Operation(summary = "Sends an alert to the facility's configured alert recipients.")
   fun sendFacilityAlert(
       @PathVariable facilityId: FacilityId,
-      @RequestBody payload: SendFacilityAlertRequestPayload
+      @RequestBody payload: SendFacilityAlertRequestPayload,
   ): ResponseEntity<SimpleSuccessResponsePayload> {
     requirePermissions { sendAlert(facilityId) }
 
@@ -120,7 +123,12 @@ class FacilitiesController(
     try {
       publisher.publishEvent(
           FacilityAlertRequestedEvent(
-              facilityId, payload.subject, payload.body, currentUser().userId))
+              facilityId,
+              payload.subject,
+              payload.body,
+              currentUser().userId,
+          )
+      )
     } catch (e: Exception) {
       log.error("Unable to send alert email", e)
       throw InternalServerErrorException("Unable to send email message.")
@@ -130,7 +138,8 @@ class FacilitiesController(
   }
 
   @ApiResponse409(
-      description = "The facility's device manager was not in the process of being configured.")
+      description = "The facility's device manager was not in the process of being configured."
+  )
   @ApiResponseSimpleSuccess
   @Operation(
       summary = "Marks a facility as fully configured.",
@@ -138,16 +147,22 @@ class FacilitiesController(
           "After connecting a device manager and finishing any necessary configuration of the " +
               "facility's devices, send this request to enable processing of timeseries values " +
               "and alerts from the device manager. Only valid if the facility's connection " +
-              "state is `Connected`.")
+              "state is `Connected`.",
+  )
   @PostMapping("/{facilityId}/configured")
   fun postConfigured(@PathVariable facilityId: FacilityId): SimpleSuccessResponsePayload {
     try {
       facilityStore.updateConnectionState(
-          facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
+          facilityId,
+          FacilityConnectionState.Connected,
+          FacilityConnectionState.Configured,
+      )
       return SimpleSuccessResponsePayload()
     } catch (e: IllegalStateException) {
       throw WebApplicationException(
-          "Facility's devices are not being configured.", Response.Status.CONFLICT)
+          "Facility's devices are not being configured.",
+          Response.Status.CONFLICT,
+      )
     }
   }
 }
@@ -158,7 +173,8 @@ data class FacilityPayload(
     val buildStartedDate: LocalDate?,
     @Schema(
         description =
-            "For nursery facilities, the number of plants this nursery is capable of holding.")
+            "For nursery facilities, the number of plants this nursery is capable of holding."
+    )
     val capacity: Int?,
     val connectionState: FacilityConnectionState,
     val createdTime: Instant,
@@ -166,7 +182,8 @@ data class FacilityPayload(
     @Schema(
         description =
             "Short numeric identifier for this facility. Facility numbers start at 1 for each " +
-                "facility type in an organization.")
+                "facility type in an organization."
+    )
     val facilityNumber: Int,
     val id: FacilityId,
     val name: String,
@@ -199,7 +216,8 @@ data class CreateFacilityRequestPayload(
     val buildStartedDate: LocalDate?,
     @Schema(
         description =
-            "For nursery facilities, the number of plants this nursery is capable of holding.")
+            "For nursery facilities, the number of plants this nursery is capable of holding."
+    )
     val capacity: Int?,
     val description: String?,
     val name: String,
@@ -213,7 +231,9 @@ data class CreateFacilityRequestPayload(
                     "The list of sub-locations to create. If this is absent or null, the system " +
                         "will create a default set of sub-locations if the facility is a seed " +
                         "bank. If it is an empty list, the seed bank will not have any " +
-                        "sub-locations."))
+                        "sub-locations."
+            )
+    )
     val subLocationNames: Set<String>?,
     val timeZone: ZoneId?,
     val type: FacilityType,
@@ -229,7 +249,8 @@ data class CreateFacilityRequestPayload(
           organizationId = organizationId,
           subLocationNames = subLocationNames,
           timeZone = timeZone,
-          type = type)
+          type = type,
+      )
 }
 
 data class CreateFacilityResponsePayload(val id: FacilityId) : SuccessResponsePayload
@@ -241,7 +262,7 @@ data class ListFacilitiesResponse(val facilities: List<FacilityPayload>) : Succe
 data class SendFacilityAlertRequestPayload(
     val subject: String,
     @Schema(description = "Alert body in plain text. HTML alerts are not supported yet.")
-    val body: String
+    val body: String,
 )
 
 data class UpdateFacilityRequestPayload(
@@ -249,7 +270,8 @@ data class UpdateFacilityRequestPayload(
     val buildStartedDate: LocalDate?,
     @Schema(
         description =
-            "For nursery facilities, the number of plants this nursery is capable of holding.")
+            "For nursery facilities, the number of plants this nursery is capable of holding."
+    )
     val capacity: Int?,
     val description: String?,
     val name: String,

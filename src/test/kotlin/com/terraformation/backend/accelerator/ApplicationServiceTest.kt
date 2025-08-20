@@ -115,7 +115,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectName = "Project Name",
               organizationId = organizationId,
               organizationName = "Organization 1",
-              status = ApplicationStatus.NotSubmitted)
+              status = ApplicationStatus.NotSubmitted,
+          )
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
@@ -153,7 +154,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectName = "Project Name",
               organizationId = organizationId,
               organizationName = organizationName,
-              status = ApplicationStatus.PassedPreScreen)
+              status = ApplicationStatus.PassedPreScreen,
+          )
       val applicationVariableValues =
           ApplicationVariableValues(
               contactEmail = contactEmail,
@@ -174,7 +176,9 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           TerrawareServerConfig.HubSpotConfig(clientId = "", clientSecret = "", enabled = true)
       val submissionResult =
           ApplicationSubmissionResult(
-              applicationModel.copy(status = ApplicationStatus.Submitted), emptyList())
+              applicationModel.copy(status = ApplicationStatus.Submitted),
+              emptyList(),
+          )
 
       every { config.hubSpot } returns hubSpotConfig
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
@@ -199,7 +203,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           dealUrl,
           projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.hubspotUrl,
-          "HubSpot URL in project accelerator details")
+          "HubSpot URL in project accelerator details",
+      )
 
       verify(exactly = 1) { applicationStore.submit(applicationId, null, null) }
 
@@ -284,7 +289,9 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       // Verify that updates are written to variables
       verify(exactly = 1) {
         acceleratorProjectVariableValuesService.writeValues(
-            projectId, updatedVariableValues.copy(region = null))
+            projectId,
+            updatedVariableValues.copy(region = null),
+        )
       }
 
       // After variable writes, service should return updated variables
@@ -305,7 +312,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = totalExpansionPotential,
           ),
           projectAcceleratorDetailsService.fetchOneById(projectId),
-          "Project accelerator details after submission")
+          "Project accelerator details after submission",
+      )
     }
 
     @Test
@@ -376,7 +384,9 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       // Verify that updates are written to variables
       verify(exactly = 1) {
         acceleratorProjectVariableValuesService.writeValues(
-            projectId, updatedVariableValues.copy(region = null))
+            projectId,
+            updatedVariableValues.copy(region = null),
+        )
       }
 
       // After variable writes, service should return updated variables
@@ -397,7 +407,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = totalExpansionPotential,
           ),
           projectAcceleratorDetailsService.fetchOneById(projectId),
-          "Project accelerator details after submission")
+          "Project accelerator details after submission",
+      )
     }
   }
 
@@ -415,7 +426,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectName = "Project Name",
               organizationId = organizationId,
               organizationName = "Organization 1",
-              status = ApplicationStatus.NotSubmitted)
+              status = ApplicationStatus.NotSubmitted,
+          )
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.updateBoundary(applicationId, any()) } returns Unit

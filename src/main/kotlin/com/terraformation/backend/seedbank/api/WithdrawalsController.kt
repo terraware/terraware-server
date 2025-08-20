@@ -46,7 +46,7 @@ class WithdrawalsController(
   @Operation(summary = "Get a single withdrawal.")
   fun getWithdrawal(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
   ): GetWithdrawalResponsePayload {
     val model = withdrawalStore.fetchOneById(withdrawalId)
     return GetWithdrawalResponsePayload(GetWithdrawalPayload(model))
@@ -54,11 +54,12 @@ class WithdrawalsController(
 
   @Operation(
       summary = "Create a new withdrawal on an existing accession.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   @PostMapping
   fun createWithdrawal(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @RequestBody payload: CreateWithdrawalRequestPayload
+      @RequestBody payload: CreateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createWithdrawal(payload.toModel(accessionId))
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -66,12 +67,13 @@ class WithdrawalsController(
 
   @Operation(
       summary = "Update the details of an existing withdrawal.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   @PutMapping("/{withdrawalId}")
   fun updateWithdrawal(
       @PathVariable("accessionId") accessionId: AccessionId,
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
-      @RequestBody payload: UpdateWithdrawalRequestPayload
+      @RequestBody payload: UpdateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession =
         accessionService.updateWithdrawal(accessionId, withdrawalId, payload::applyToModel)
@@ -81,10 +83,11 @@ class WithdrawalsController(
   @DeleteMapping("/{withdrawalId}")
   @Operation(
       summary = "Delete an existing withdrawal.",
-      description = "May cause the accession's remaining quantity to change.")
+      description = "May cause the accession's remaining quantity to change.",
+  )
   fun deleteWithdrawal(
       @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.deleteWithdrawal(accessionId, withdrawalId)
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -99,14 +102,16 @@ data class GetWithdrawalPayload(
             "Number of seeds withdrawn. Calculated by server. This is an estimate if " +
                 "\"withdrawnQuantity\" is a weight quantity and the accession has subset weight " +
                 "and count data. Absent if \"withdrawnQuantity\" is a weight quantity and the " +
-                "accession has no subset weight and count.")
+                "accession has no subset weight and count."
+    )
     val estimatedCount: Int? = null,
     @Schema(
         description =
             "Weight of seeds withdrawn. Calculated by server. This is an estimate if " +
                 "\"withdrawnQuantity\" is a seed count and the accession has subset weight and " +
                 "count data. Absent if \"withdrawnQuantity\" is a seed count and the accession " +
-                "has no subset weight and count.")
+                "has no subset weight and count."
+    )
     val estimatedWeight: SeedQuantityPayload? = null,
     @Schema(description = "Server-assigned unique ID of this withdrawal.")
     val id: WithdrawalId? = null,
@@ -115,25 +120,29 @@ data class GetWithdrawalPayload(
     @Schema(
         description =
             "If this withdrawal is of purpose \"Viability Testing\", the ID of the test it is " +
-                "associated with.")
+                "associated with."
+    )
     val viabilityTestId: ViabilityTestId? = null,
     @Schema(
         description =
             "Full name of the person who withdrew the seeds. " +
                 "V1 COMPATIBILITY: This is the \"staffResponsible\" v1 field, which may not be " +
-                "the name of an organization user.")
+                "the name of an organization user."
+    )
     val withdrawnByName: String? = null,
     @Schema(
         description =
             "ID of the user who withdrew the seeds. Only present if the current user has " +
                 "permission to list the users in the organization. " +
                 "V1 COMPATIBILITY: Also absent if the withdrawal was written with the v1 API " +
-                "and we haven't yet written the code to figure out which user ID to assign.")
+                "and we haven't yet written the code to figure out which user ID to assign."
+    )
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
             "Quantity of seeds withdrawn. For viability testing withdrawals, this is always the " +
-                "same as the test's \"seedsTested\" value.")
+                "same as the test's \"seedsTested\" value."
+    )
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
   constructor(
@@ -163,13 +172,15 @@ data class CreateWithdrawalRequestPayload(
         description =
             "ID of the user who withdrew the seeds. Default is the current user's ID. If " +
                 "non-null, the current user must have permission to read the referenced user's " +
-                "membership details in the organization.")
+                "membership details in the organization."
+    )
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
             "Quantity of seeds withdrawn. If this quantity is in weight and the remaining " +
                 "quantity of the accession is in seeds or vice versa, the accession must have a " +
-                "subset weight and count.")
+                "subset weight and count."
+    )
     val withdrawnQuantity: SeedQuantityPayload,
 ) {
   fun toModel(accessionId: AccessionId): WithdrawalModel =
@@ -193,7 +204,8 @@ data class UpdateWithdrawalRequestPayload(
         description =
             "ID of the user who withdrew the seeds. Default is the withdrawal's existing user " +
                 "ID. If non-null, the current user must have permission to read the referenced " +
-                "user's membership details in the organization.")
+                "user's membership details in the organization."
+    )
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
@@ -201,7 +213,8 @@ data class UpdateWithdrawalRequestPayload(
                 "the same as the test's \"seedsTested\" value. Otherwise, it is a user-supplied " +
                 "value. If this quantity is in weight and the remaining quantity of the " +
                 "accession is in seeds or vice versa, the accession must have a subset weight " +
-                "and count.")
+                "and count."
+    )
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
   fun applyToModel(model: WithdrawalModel): WithdrawalModel =

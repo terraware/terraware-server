@@ -51,7 +51,8 @@ class ProjectsController(
       @Parameter(
           description =
               "If specified, list projects in this organization. If absent, list projects in all " +
-                  "the user's organizations.")
+                  "the user's organizations."
+      )
       @RequestParam(required = false)
       organizationId: OrganizationId? = null
   ): ListProjectsResponsePayload {
@@ -60,7 +61,8 @@ class ProjectsController(
             ?: projectStore.findAll()
 
     return ListProjectsResponsePayload(
-        projects.map { ProjectPayload(it, projectCohortFetcher.fetchCohortData(it.id)) })
+        projects.map { ProjectPayload(it, projectCohortFetcher.fetchCohortData(it.id)) }
+    )
   }
 
   @GetMapping("/{id}")
@@ -83,7 +85,9 @@ class ProjectsController(
                 description = payload.description,
                 id = null,
                 name = payload.name,
-                organizationId = payload.organizationId))
+                organizationId = payload.organizationId,
+            )
+        )
 
     return CreateProjectResponsePayload(projectId)
   }
@@ -93,7 +97,8 @@ class ProjectsController(
       summary = "Deletes an existing project.",
       description =
           "Any accessions, seedling batches, or planting sites that were assigned to the project " +
-              "will no longer be assigned to any project.")
+              "will no longer be assigned to any project.",
+  )
   fun deleteProject(@PathVariable id: ProjectId): SimpleSuccessResponsePayload {
     projectStore.delete(id)
 
@@ -104,7 +109,7 @@ class ProjectsController(
   @PutMapping("/{id}")
   fun updateProject(
       @PathVariable id: ProjectId,
-      @RequestBody payload: UpdateProjectRequestPayload
+      @RequestBody payload: UpdateProjectRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectStore.update(id, payload::applyTo)
 
@@ -113,17 +118,19 @@ class ProjectsController(
 
   @Operation(
       summary = "Assigns multiple entities to a project.",
-      description = "Overwrites any existing project assignments.")
+      description = "Overwrites any existing project assignments.",
+  )
   @PostMapping("/{id}/assign")
   fun assignProject(
       @PathVariable id: ProjectId,
-      @RequestBody payload: AssignProjectRequestPayload
+      @RequestBody payload: AssignProjectRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectService.assignProject(
         id,
         payload.accessionIds ?: emptyList(),
         payload.batchIds ?: emptyList(),
-        payload.plantingSiteIds ?: emptyList())
+        payload.plantingSiteIds ?: emptyList(),
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -136,14 +143,15 @@ class ProjectsController(
     val users = userStore.fetchManyById(projectInternalUsers.keys.filterNotNull())
 
     return ListProjectInternalUsersResponsePayload(
-        users.map { ProjectInternalUserResponsePayload(it, projectInternalUsers[it.userId]!!) })
+        users.map { ProjectInternalUserResponsePayload(it, projectInternalUsers[it.userId]!!) }
+    )
   }
 
   @Operation(summary = "Assign a user with global roles with an internal role for a project.")
   @PutMapping("/{id}/internalUsers")
   fun assignInternalUser(
       @PathVariable id: ProjectId,
-      @RequestBody payload: AssignProjectInternalUserRequestPayload
+      @RequestBody payload: AssignProjectInternalUserRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectService.addInternalUserRole(id, payload.userId, payload.role, payload.roleName)
 
@@ -153,7 +161,8 @@ class ProjectsController(
   @Operation(
       summary = "Remove a user with global roles as an internal user for a project.",
       description =
-          "Does not remove Terraformation Contact even if assigned role caused them to be added.")
+          "Does not remove Terraformation Contact even if assigned role caused them to be added.",
+  )
   @DeleteMapping("/{id}/internalUsers/{userId}")
   fun removeInternalUser(
       @PathVariable id: ProjectId,
@@ -181,7 +190,7 @@ data class ProjectPayload(
 ) {
   constructor(
       model: ExistingProjectModel,
-      cohortData: ProjectCohortData? = null
+      cohortData: ProjectCohortData? = null,
   ) : this(
       cohortId = cohortData?.cohortId,
       cohortPhase = cohortData?.cohortPhase,
@@ -206,7 +215,7 @@ data class AssignProjectRequestPayload(
 data class AssignProjectInternalUserRequestPayload(
     val userId: UserId,
     val role: ProjectInternalRole? = null,
-    val roleName: String? = null
+    val roleName: String? = null,
 )
 
 data class CreateProjectRequestPayload(
@@ -234,11 +243,11 @@ data class ProjectInternalUserResponsePayload(
     val firstName: String?,
     val lastName: String?,
     val role: ProjectInternalRole? = null,
-    val roleName: String? = null
+    val roleName: String? = null,
 ) {
   constructor(
       user: TerrawareUser,
-      projectInternalUser: ProjectInternalUsersRow
+      projectInternalUser: ProjectInternalUsersRow,
   ) : this(
       userId = user.userId,
       email = user.email,

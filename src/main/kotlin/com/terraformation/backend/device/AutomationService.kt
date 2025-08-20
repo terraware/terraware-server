@@ -39,7 +39,8 @@ class AutomationService(
 
     log.info(
         "Automation $automationId (${automation.type} ${automation.name}) triggered with " +
-            "value $timeseriesValue")
+            "value $timeseriesValue"
+    )
     eventPublisher.publishEvent(event)
   }
 }

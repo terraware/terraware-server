@@ -40,7 +40,8 @@ interface NotificationCriteria {
                 .from(PLANTING_SITE_NOTIFICATIONS)
                 .where(PLANTING_SITES.ID.eq(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID))
                 .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
-                .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.ge(notificationNumber)))
+                .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.ge(notificationNumber))
+        )
 
     val previousNotificationSent =
         if (requirePrevious && notificationNumber > 1) {
@@ -49,7 +50,8 @@ interface NotificationCriteria {
                   .from(PLANTING_SITE_NOTIFICATIONS)
                   .where(PLANTING_SITES.ID.eq(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID))
                   .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.eq(notificationType))
-                  .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.eq(notificationNumber - 1)))
+                  .and(PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_NUMBER.eq(notificationNumber - 1))
+          )
         } else {
           null
         }
@@ -60,14 +62,17 @@ interface NotificationCriteria {
               DSL.selectOne()
                   .from(ORGANIZATION_INTERNAL_TAGS)
                   .where(
-                      ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PLANTING_SITES.ORGANIZATION_ID))
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+                      ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PLANTING_SITES.ORGANIZATION_ID)
+                  )
+                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+          )
         } else {
           null
         }
 
     return DSL.and(
-        listOfNotNull(thisNotificationNotSent, previousNotificationSent, hasAcceleratorTag))
+        listOfNotNull(thisNotificationNotSent, previousNotificationSent, hasAcceleratorTag)
+    )
   }
 
   sealed interface ObservationScheduling : NotificationCriteria {
@@ -167,7 +172,7 @@ interface NotificationCriteria {
   data class NextPlantingSeasonNotScheduled(
       override val notificationType: NotificationType,
       override val notificationNumber: Int,
-      val weeksSinceLastSeason: Int
+      val weeksSinceLastSeason: Int,
   ) : PlantingSeasonNotScheduledCriteria {
     companion object {
       // These should be in descending time order to avoid sending multiple notifications.

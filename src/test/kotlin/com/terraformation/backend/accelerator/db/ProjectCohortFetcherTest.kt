@@ -93,7 +93,8 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
               ApplicationStatus.SourcingTeamReview to CohortPhase.Application,
               ApplicationStatus.Submitted to CohortPhase.Application,
           ),
-          phasesByState)
+          phasesByState,
+      )
     }
 
     @Test

@@ -47,7 +47,8 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
                 mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2"),
                 mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
-            ))
+            )
+        )
     val actual = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, actual)
@@ -64,7 +65,9 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2"),
-                mapOf("id" to "$accessionIdJan8", "accessionNumber" to "JAN8")))
+                mapOf("id" to "$accessionIdJan8", "accessionNumber" to "JAN8"),
+            )
+        )
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
@@ -95,7 +98,9 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "$accessionIdJan1", "accessionNumber" to "JAN1"),
-                mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2")))
+                mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2"),
+            )
+        )
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)

@@ -54,7 +54,13 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {
     spyk(
         ParticipantProjectSpeciesStore(
-            clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao))
+            clock,
+            dslContext,
+            eventPublisher,
+            participantProjectSpeciesDao,
+            projectsDao,
+        )
+    )
   }
 
   private val submissionStore: SubmissionStore by lazy {
@@ -70,7 +76,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
         fileService,
         participantProjectSpeciesStore,
         submissionSnapshotsDao,
-        submissionStore)
+        submissionStore,
+    )
   }
 
   @BeforeEach
@@ -107,7 +114,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = "rationale",
-                  speciesId = speciesId))
+                  speciesId = speciesId,
+              )
+          )
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -120,7 +129,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
-              submissionStatusId = SubmissionStatus.NotSubmitted))
+              submissionStatusId = SubmissionStatus.NotSubmitted,
+          )
+      )
 
       assertTableEquals(
           ParticipantProjectSpeciesRecord(
@@ -132,11 +143,16 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted))
+              submissionStatusId = SubmissionStatus.NotSubmitted,
+          )
+      )
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId, participantProjectSpecies = existingModel))
+              deliverableId = deliverableId,
+              participantProjectSpecies = existingModel,
+          )
+      )
     }
 
     @Test
@@ -151,7 +167,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val submissionId =
           insertSubmission(
-              deliverableId = deliverableId, feedback = "So far so good", projectId = projectId)
+              deliverableId = deliverableId,
+              feedback = "So far so good",
+              projectId = projectId,
+          )
 
       service.create(
           NewParticipantProjectSpeciesModel(
@@ -159,7 +178,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               id = null,
               projectId = projectId,
               rationale = "rationale",
-              speciesId = speciesId))
+              speciesId = speciesId,
+          )
+      )
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -174,8 +195,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          where = SUBMISSIONS.DELIVERABLE_ID.eq(deliverableId))
+              submissionStatusId = SubmissionStatus.NotSubmitted,
+          ),
+          where = SUBMISSIONS.DELIVERABLE_ID.eq(deliverableId),
+      )
     }
 
     @Test
@@ -207,7 +230,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -215,13 +239,19 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)))
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
+          )
+      )
 
       eventPublisher.assertEventsPublished(
           existingModels.toSet().map {
             ParticipantProjectSpeciesAddedEvent(
-                deliverableId = deliverableId, participantProjectSpecies = it)
-          })
+                deliverableId = deliverableId,
+                participantProjectSpecies = it,
+            )
+          }
+      )
 
       // This test is to ensure that we do not over-fetch deliverable submissions for projects
       // that have multiple species added to them. This does not test for correct-ness of the
@@ -247,7 +277,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdMostRecent =
           insertDeliverable(
-              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+              moduleId = moduleIdMostRecent,
+              deliverableTypeId = DeliverableType.Species,
+          )
 
       // The clock is between these two cohort modules
 
@@ -257,7 +289,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           cohortId = cohortId,
           endDate = LocalDate.EPOCH.plusDays(27),
           moduleId = moduleIdFuture,
-          startDate = LocalDate.EPOCH.plusDays(21))
+          startDate = LocalDate.EPOCH.plusDays(21),
+      )
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
       // Between the most recent and future module
@@ -283,7 +316,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
               SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
@@ -291,13 +325,19 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)))
+                  submissionStatusId = SubmissionStatus.NotSubmitted,
+              ),
+          )
+      )
 
       eventPublisher.assertEventsPublished(
           existingModels.toSet().map {
             ParticipantProjectSpeciesAddedEvent(
-                deliverableId = deliverableIdMostRecent, participantProjectSpecies = it)
-          })
+                deliverableId = deliverableIdMostRecent,
+                participantProjectSpecies = it,
+            )
+          }
+      )
 
       // This test is to ensure that we do not over-fetch deliverable submissions for projects
       // that have multiple species added to them. This does not test for correct-ness of the
@@ -323,7 +363,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       assertTableEmpty(SUBMISSIONS)
 
       eventPublisher.assertNoEventsPublished(
-          "No events published for species added to deliverables")
+          "No events published for species added to deliverables"
+      )
 
       // This test is to ensure that we do not over-fetch deliverable submissions for projects
       // that have multiple species added to them. This does not test for correct-ness of the
@@ -351,17 +392,20 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           insertParticipantProjectSpecies(
               projectId = projectId1,
               speciesId = speciesId,
-              submissionStatus = SubmissionStatus.Approved)
+              submissionStatus = SubmissionStatus.Approved,
+          )
       // This one is ignored since it is already "In Review"
       insertParticipantProjectSpecies(
           projectId = projectId2,
           speciesId = speciesId,
-          submissionStatus = SubmissionStatus.InReview)
+          submissionStatus = SubmissionStatus.InReview,
+      )
       val participantProjectSpeciesId3 =
           insertParticipantProjectSpecies(
               projectId = projectId3,
               speciesId = speciesId,
-              submissionStatus = SubmissionStatus.Rejected)
+              submissionStatus = SubmissionStatus.Rejected,
+          )
 
       every { user.canReadAllAcceleratorDetails() } returns false
 
@@ -373,7 +417,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                       id = speciesId,
                       modifiedTime = Instant.EPOCH,
                       organizationId = inserted.organizationId,
-                      scientificName = "Species 1")))
+                      scientificName = "Species 1",
+                  )
+          )
+      )
 
       verify(exactly = 1) {
         participantProjectSpeciesStore.update(participantProjectSpeciesId1, any())
@@ -392,7 +439,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       insertParticipantProjectSpecies(
           projectId = projectId,
           speciesId = speciesId,
-          submissionStatus = SubmissionStatus.Approved)
+          submissionStatus = SubmissionStatus.Approved,
+      )
 
       every { user.canReadAllAcceleratorDetails() } returns true
 
@@ -404,7 +452,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                       id = speciesId,
                       modifiedTime = Instant.EPOCH,
                       organizationId = inserted.organizationId,
-                      scientificName = "Species 1")))
+                      scientificName = "Species 1",
+                  )
+          )
+      )
 
       verify(exactly = 0) { participantProjectSpeciesStore.update(any(), any()) }
     }
@@ -432,18 +483,21 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           projectId = projectId,
           speciesId = speciesId1,
           speciesNativeCategory = SpeciesNativeCategory.NonNative,
-          submissionStatus = SubmissionStatus.Approved)
+          submissionStatus = SubmissionStatus.Approved,
+      )
       insertParticipantProjectSpecies(
           projectId = projectId,
           rationale = "It is a great tree",
           speciesId = speciesId2,
           speciesNativeCategory = SpeciesNativeCategory.Native,
-          submissionStatus = SubmissionStatus.InReview)
+          submissionStatus = SubmissionStatus.InReview,
+      )
       insertParticipantProjectSpecies(
           feedback = "Need to know native status",
           projectId = projectId,
           speciesId = speciesId3,
-          submissionStatus = SubmissionStatus.Rejected)
+          submissionStatus = SubmissionStatus.Rejected,
+      )
 
       // If an old snapshot exists, it will get deleted when the new one is created
       val deletedFileUri = URI("http://deletedsnapshot.file")
@@ -459,7 +513,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               oldStatus = SubmissionStatus.InReview,
               newStatus = SubmissionStatus.Approved,
-              submissionId = submissionId))
+              submissionId = submissionId,
+          )
+      )
 
       val submissionSnapshot = submissionSnapshotsDao.fetchBySubmissionId(submissionId).first()
       assertEquals(submissionId, submissionSnapshot.submissionId, "Submission ID")
@@ -476,7 +532,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val submissionSnapshotOld = submissionSnapshotsDao.fetchById(submissionSnapshotIdOld)
       assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotOld)
       fileStore.assertFileNotExists(
-          deletedFileUri, "Earlier snapshot file should have been deleted")
+          deletedFileUri,
+          "Earlier snapshot file should have been deleted",
+      )
     }
 
     @Test
@@ -497,7 +555,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           projectId = projectId,
           speciesId = speciesId,
           speciesNativeCategory = SpeciesNativeCategory.NonNative,
-          submissionStatus = SubmissionStatus.Approved)
+          submissionStatus = SubmissionStatus.Approved,
+      )
 
       service.on(
           DeliverableStatusUpdatedEvent(
@@ -505,7 +564,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               oldStatus = SubmissionStatus.NotSubmitted,
               newStatus = SubmissionStatus.InReview,
-              submissionId = submissionId))
+              submissionId = submissionId,
+          )
+      )
 
       assertTableEmpty(SUBMISSION_SNAPSHOTS)
 
@@ -532,7 +593,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               oldStatus = SubmissionStatus.InReview,
               newStatus = SubmissionStatus.Approved,
-              submissionId = submissionId))
+              submissionId = submissionId,
+          )
+      )
 
       assertTableEmpty(SUBMISSION_SNAPSHOTS)
 

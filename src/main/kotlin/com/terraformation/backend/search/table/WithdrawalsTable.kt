@@ -16,7 +16,8 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessions.asSingleValueSublist("accession", WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID)))
+          accessions.asSingleValueSublist("accession", WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
+      )
     }
   }
 
@@ -30,7 +31,8 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
               "",
               WITHDRAWALS.WITHDRAWN_QUANTITY,
               WITHDRAWALS.WITHDRAWN_UNITS_ID,
-              WITHDRAWALS.WITHDRAWN_GRAMS),
+              WITHDRAWALS.WITHDRAWN_GRAMS,
+          ),
       )
 
   override val inheritsVisibilityFrom: SearchTable

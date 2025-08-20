@@ -37,7 +37,8 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
         speciesDao,
         speciesEcosystemTypesDao,
         speciesGrowthFormsDao,
-        speciesProblemsDao)
+        speciesProblemsDao,
+    )
   }
   private val speciesChecker: SpeciesChecker = mockk()
   private val service: SpeciesService by lazy {
@@ -63,7 +64,8 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   fun `createSpecies checks for problems with species data`() {
     val speciesId =
         service.createSpecies(
-            NewSpeciesModel(organizationId = organizationId, scientificName = "Scientific name"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "Scientific name")
+        )
 
     verify { speciesChecker.checkSpecies(speciesId) }
   }
@@ -102,7 +104,10 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
                     initialScientificName = "Old name",
                     modifiedTime = clock.instant(),
                     organizationId = inserted.organizationId,
-                    scientificName = "New name")))
+                    scientificName = "New name",
+                )
+        )
+    )
   }
 
   @Test

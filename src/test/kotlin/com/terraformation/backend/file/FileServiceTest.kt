@@ -108,7 +108,8 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = uploadedTime,
             modifiedBy = user.userId,
-            modifiedTime = uploadedTime)
+            modifiedTime = uploadedTime,
+        )
 
     assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
     assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
@@ -153,7 +154,8 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
           "category",
           ByteArray(0).inputStream(),
           metadata,
-          { throw UnsupportedMediaTypeException("validation failed") }) {}
+          { throw UnsupportedMediaTypeException("validation failed") },
+      ) {}
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -168,7 +170,8 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
           "category",
           ByteArray(0).inputStream(),
           metadata,
-          { throw UnsupportedMediaTypeException("validation failed") }) {}
+          { throw UnsupportedMediaTypeException("validation failed") },
+      ) {}
     }
 
     assertTrue(Files.exists(photoPath), "File should still exist")
@@ -235,7 +238,10 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     every { random.nextLong() } returns 2L
     val fileIdToDelete =
         fileService.storeFile(
-            "category", photoData.inputStream(), metadata.copy(filename = "2.jpg")) {}
+            "category",
+            photoData.inputStream(),
+            metadata.copy(filename = "2.jpg"),
+        ) {}
 
     val photoUrlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
 

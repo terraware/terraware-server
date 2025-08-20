@@ -35,7 +35,8 @@ internal class SpeciesCsvValidatorTest {
       assertError(
           "Scientific Name,Family,IUCN Red List Category,Rare,Growth Form,Seed Storage Behavior\n",
           MalformedValue,
-          messages.csvBadHeader())
+          messages.csvBadHeader(),
+      )
     }
 
     @Test
@@ -65,7 +66,10 @@ internal class SpeciesCsvValidatorTest {
                       message = message,
                       position = 1,
                       typeId = type,
-                      uploadId = uploadId)))
+                      uploadId = uploadId,
+                  )
+              ),
+      )
     }
   }
 
@@ -107,7 +111,8 @@ internal class SpeciesCsvValidatorTest {
                 "Name-name Name-name-name",
                 "Name–name Name–name–name", // en-dashes are converted to hyphens
                 "Name—name Name—name—name", // em-dashes are converted to hyphens
-            ])
+            ]
+    )
     fun `valid name formats are accepted`(scientificName: String) {
       assertValidationResults(csvWithScientificName(scientificName))
     }
@@ -127,7 +132,8 @@ internal class SpeciesCsvValidatorTest {
                       position = 2,
                       typeId = DuplicateValue,
                       uploadId = uploadId,
-                      value = "Existing a"),
+                      value = "Existing a",
+                  ),
                   UploadProblemsRow(
                       field = "Scientific Name",
                       isError = false,
@@ -135,8 +141,10 @@ internal class SpeciesCsvValidatorTest {
                       position = 4,
                       typeId = DuplicateValue,
                       uploadId = uploadId,
-                      value = "Existing b"),
-              ))
+                      value = "Existing b",
+                  ),
+              ),
+      )
     }
 
     @Test
@@ -154,7 +162,10 @@ internal class SpeciesCsvValidatorTest {
                       position = 2,
                       typeId = DuplicateValue,
                       uploadId = uploadId,
-                      value = "Renamed d (Initial d)")))
+                      value = "Renamed d (Initial d)",
+                  )
+              ),
+      )
     }
 
     @Test
@@ -173,7 +184,10 @@ internal class SpeciesCsvValidatorTest {
                         position = 2,
                         typeId = MalformedValue,
                         uploadId = uploadId,
-                        value = "Bogus")))
+                        value = "Bogus",
+                    )
+                ),
+        )
       }
     }
 
@@ -184,7 +198,7 @@ internal class SpeciesCsvValidatorTest {
         scientificName: String,
         type: UploadProblemType,
         message: String,
-        value: String? = scientificName
+        value: String? = scientificName,
     ) {
       assertValidationResults(
           csvWithScientificName(scientificName),
@@ -197,7 +211,10 @@ internal class SpeciesCsvValidatorTest {
                       position = 2,
                       typeId = type,
                       uploadId = uploadId,
-                      value = value)))
+                      value = value,
+                  )
+              ),
+      )
     }
   }
 
@@ -230,7 +247,7 @@ internal class SpeciesCsvValidatorTest {
         familyName: String,
         type: UploadProblemType,
         message: String,
-        value: String? = familyName
+        value: String? = familyName,
     ) {
       assertValidationResults(
           csvWithFamilyName(familyName),
@@ -243,7 +260,10 @@ internal class SpeciesCsvValidatorTest {
                       position = 2,
                       typeId = type,
                       uploadId = uploadId,
-                      value = value)))
+                      value = value,
+                  )
+              ),
+      )
     }
   }
 
@@ -268,7 +288,9 @@ internal class SpeciesCsvValidatorTest {
                     position = 3,
                     typeId = MalformedValue,
                     uploadId = uploadId,
-                )))
+                ),
+            ),
+    )
   }
 
   @Test
@@ -344,7 +366,8 @@ internal class SpeciesCsvValidatorTest {
                     uploadId = uploadId,
                     value = "Wal-Mart",
                 ),
-            ))
+            ),
+    )
   }
 
   @Test
@@ -386,7 +409,7 @@ internal class SpeciesCsvValidatorTest {
   private fun assertValidationResults(
       csv: String,
       errors: Set<UploadProblemsRow> = emptySet(),
-      warnings: Set<UploadProblemsRow> = emptySet()
+      warnings: Set<UploadProblemsRow> = emptySet(),
   ) {
     val validator =
         SpeciesCsvValidator(uploadId, existingScientificNames, existingRenames, messages)

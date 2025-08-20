@@ -39,7 +39,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionsDao,
             variableTablesDao,
             variableTableColumnsDao,
-            variableTextsDao),
+            variableTextsDao,
+        ),
         eventPublisher,
     )
   }
@@ -83,7 +84,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRow(deliverableId2, variableId1, 1),
               DeliverableVariablesRow(deliverableId2, variableId3, 2),
           ),
-          deliverableVariablesDao.findAll().toSet())
+          deliverableVariablesDao.findAll().toSet(),
+      )
 
       eventPublisher.assertEventPublished { event -> event is DeliverablesUploadedEvent }
     }
@@ -114,7 +116,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRow(deliverableId, columnVariableId1, 1),
               DeliverableVariablesRow(deliverableId, columnVariableId2, 2),
           ),
-          deliverableVariablesDao.findAll().toSet())
+          deliverableVariablesDao.findAll().toSet(),
+      )
     }
 
     @Test
@@ -129,7 +132,9 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
               insertVariable(
                   type = VariableType.Text,
                   stableId = stableId,
-                  replacesVariableId = oldVariableId))
+                  replacesVariableId = oldVariableId,
+              )
+          )
 
       val csv =
           header +
@@ -139,7 +144,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(DeliverableVariablesRow(deliverableId, newVariableId, 0)),
-          deliverableVariablesDao.findAll())
+          deliverableVariablesDao.findAll(),
+      )
     }
 
     @Test
@@ -167,7 +173,8 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRow(deliverableId, variableId3, 0),
               DeliverableVariablesRow(deliverableId, variableId1, 1),
           ),
-          deliverableVariablesDao.findAll().toSet())
+          deliverableVariablesDao.findAll().toSet(),
+      )
     }
 
     @Test

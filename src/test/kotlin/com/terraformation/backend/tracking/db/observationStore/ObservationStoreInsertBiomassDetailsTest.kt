@@ -66,7 +66,9 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                                     BiomassQuadratSpeciesModel(
                                         abundancePercent = 40,
                                         speciesId = herbaceousSpeciesId1,
-                                    ))),
+                                    )
+                                ),
+                        ),
                     ObservationPlotPosition.NorthwestCorner to
                         BiomassQuadratModel(
                             description = "NW description",
@@ -80,7 +82,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                                         abundancePercent = 5,
                                         speciesName = "Other herbaceous species",
                                     ),
-                                )),
+                                ),
+                        ),
                     ObservationPlotPosition.SoutheastCorner to
                         BiomassQuadratModel(
                             description = "SE description",
@@ -89,7 +92,9 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                                     BiomassQuadratSpeciesModel(
                                         abundancePercent = 90,
                                         speciesId = herbaceousSpeciesId1,
-                                    ))),
+                                    )
+                                ),
+                        ),
                     ObservationPlotPosition.SouthwestCorner to
                         BiomassQuadratModel(
                             description = "SW description",
@@ -186,7 +191,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                         treeGrowthForm = TreeGrowthForm.Trunk,
                         treeNumber = 3,
                         trunkNumber = 2,
-                    )),
+                    ),
+                ),
             waterDepthCm = 2,
         )
 
@@ -208,7 +214,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
             tideTime = Instant.ofEpochSecond(123),
             waterDepthCm = 2,
         ),
-        "Biomass details table")
+        "Biomass details table",
+    )
 
     val biomassSpeciesIdsBySpeciesKey =
         observationBiomassSpeciesDao.findAll().associate {
@@ -282,7 +289,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 isThreatened = false,
             ),
         ),
-        "Biomass species table")
+        "Biomass species table",
+    )
 
     assertTableEquals(
         setOf(
@@ -290,24 +298,29 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.NortheastCorner,
-                description = "NE description"),
+                description = "NE description",
+            ),
             ObservationBiomassQuadratDetailsRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.NorthwestCorner,
-                description = "NW description"),
+                description = "NW description",
+            ),
             ObservationBiomassQuadratDetailsRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.SoutheastCorner,
-                description = "SE description"),
+                description = "SE description",
+            ),
             ObservationBiomassQuadratDetailsRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.SouthwestCorner,
-                description = "SW description"),
+                description = "SW description",
+            ),
         ),
-        "Biomass quadrat details table")
+        "Biomass quadrat details table",
+    )
 
     assertTableEquals(
         listOf(
@@ -340,7 +353,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 biomassSpeciesId = biomassHerbaceousSpeciesId1,
             ),
         ),
-        "Biomass quadrat species table")
+        "Biomass quadrat species table",
+    )
 
     assertTableEquals(
         listOf(
@@ -393,7 +407,8 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
                 trunkNumber = 2,
             ),
         ),
-        "Recorded trees table")
+        "Recorded trees table",
+    )
   }
 
   @Test

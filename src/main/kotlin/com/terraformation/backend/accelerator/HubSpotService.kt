@@ -76,7 +76,8 @@ class HubSpotService(
 
   private val projectCountryOptions: Set<String> by lazy {
     sendRequest<GetProjectCountryPropertyResponse>(
-            "/crm/v3/properties/deals/$DEAL_PROPERTY_PROJECT_COUNTRY")
+            "/crm/v3/properties/deals/$DEAL_PROPERTY_PROJECT_COUNTRY"
+        )
         .options
         .map { it.value }
         .toSet()
@@ -94,7 +95,7 @@ class HubSpotService(
       contactName: String?,
       countryCode: String?,
       dealName: String,
-      website: String?
+      website: String?,
   ): URI {
     val countryName = countryCode?.let { countriesDao.fetchOneByCode(it)?.name }
 
@@ -131,7 +132,9 @@ class HubSpotService(
                 countryName = hubSpotCountryName,
                 dealName = dealName,
                 pipeline = getAcceleratorPipelineId(),
-                stage = getApplicationStageId()))
+                stage = getApplicationStageId(),
+            )
+        )
 
     val response: CreateDealResponse = sendRequest("/crm/v3/objects/deals", request)
 
@@ -152,7 +155,8 @@ class HubSpotService(
 
       sendRequest<Any>(
           "/crm/v3/objects/contacts/$existingContactId/associations/deals/$dealId/$ASSOCIATION_TYPE_CONTACT_TO_DEAL",
-          method = HttpMethod.Put)
+          method = HttpMethod.Put,
+      )
 
       existingContactId
     } catch (e: ClientRequestException) {
@@ -181,7 +185,8 @@ class HubSpotService(
 
       sendRequest<Any>(
           "/crm/v3/objects/companies/$existingCompanyId/associations/deals/$dealId/$ASSOCIATION_TYPE_COMPANY_TO_DEAL",
-          method = HttpMethod.Put)
+          method = HttpMethod.Put,
+      )
 
       existingCompanyId
     } else {
@@ -248,7 +253,8 @@ class HubSpotService(
                     append("client_secret", config.hubSpot.clientSecret!!)
                     append("redirect_uri", redirectUri)
                     append("code", code)
-                  })
+                  },
+          )
 
       if (response.status == HttpStatusCode.OK) {
         val payload: TokenResponse = response.body()
@@ -269,7 +275,8 @@ class HubSpotService(
         accessTokenExpiration = clock.instant().plusSeconds(payload.expiresIn)
       } else {
         throw AccessDeniedException(
-            "Unable to request refresh token from HubSpot (HTTP ${response.status.value})")
+            "Unable to request refresh token from HubSpot (HTTP ${response.status.value})"
+        )
       }
     }
   }
@@ -287,7 +294,8 @@ class HubSpotService(
           applicationStageId =
               pipeline.stages.firstOrNull { it.label == APPLICATION_STAGE_LABEL }?.id
                   ?: throw IllegalStateException(
-                      "Pipeline stage not found: $APPLICATION_STAGE_LABEL")
+                      "Pipeline stage not found: $APPLICATION_STAGE_LABEL"
+                  )
           acceleratorPipelineId = pipeline.id
 
           pipeline.id
@@ -332,7 +340,8 @@ class HubSpotService(
                         append("client_secret", config.hubSpot.clientSecret!!)
                         append("redirect_uri", redirectUri)
                         append("refresh_token", refreshToken)
-                      })
+                      },
+              )
 
           if (response.status == HttpStatusCode.OK) {
             val payload: TokenResponse = response.body()
@@ -343,7 +352,8 @@ class HubSpotService(
             payload.accessToken
           } else {
             throw AccessDeniedException(
-                "Unable to request access token from HubSpot (HTTP ${response.status.value})")
+                "Unable to request access token from HubSpot (HTTP ${response.status.value})"
+            )
           }
         }
   }
@@ -429,7 +439,7 @@ class HubSpotService(
 
     data class Type(
         val associationTypeId: Int,
-        val associationCategory: String = ASSOCIATION_CATEGORY
+        val associationCategory: String = ASSOCIATION_CATEGORY,
     )
   }
 
@@ -440,7 +450,7 @@ class HubSpotService(
     constructor(
         email: String,
         name: String?,
-        dealId: String
+        dealId: String,
     ) : this(Properties(email, name), listOf(Association(dealId, ASSOCIATION_TYPE_CONTACT_TO_DEAL)))
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -458,9 +468,11 @@ class HubSpotService(
     constructor(
         name: String,
         website: String,
-        dealId: String
+        dealId: String,
     ) : this(
-        Properties(name, website), listOf(Association(dealId, ASSOCIATION_TYPE_COMPANY_TO_DEAL)))
+        Properties(name, website),
+        listOf(Association(dealId, ASSOCIATION_TYPE_COMPANY_TO_DEAL)),
+    )
 
     data class Properties(
         @JsonProperty(COMPANY_PROPERTY_NAME) val name: String,
@@ -512,7 +524,7 @@ class HubSpotService(
     constructor(
         propertyName: String,
         operator: String,
-        value: String
+        value: String,
     ) : this(listOf(FilterGroup(listOf(Filter(propertyName, operator, value)))))
 
     data class FilterGroup(

@@ -38,7 +38,8 @@ class TerrawareGenerator : KotlinGenerator() {
       import org.jooq.impl.AbstractConverter
 
     """
-            .trimIndent())
+            .trimIndent()
+    )
 
     ENUM_TABLES[schema.name]?.forEach {
       printEnum(out, schema.name, it, schema.database.connection)
@@ -95,7 +96,8 @@ class TerrawareGenerator : KotlinGenerator() {
                   is String -> "\"$id\""
                   else ->
                       throw IllegalArgumentException(
-                          "Don't know what to do with ID type ${id?.javaClass?.name}")
+                          "Don't know what to do with ID type ${id?.javaClass?.name}"
+                      )
                 }
 
             values.add("$capitalizedName($idLiteral, $properties)")
@@ -125,7 +127,8 @@ class TerrawareGenerator : KotlinGenerator() {
           is String -> "String"
           else ->
               throw IllegalArgumentException(
-                  "Don't know what to do with ID type ${id?.javaClass?.name}")
+                  "Don't know what to do with ID type ${id?.javaClass?.name}"
+              )
         }
     val properties =
         (listOf(
@@ -206,13 +209,15 @@ class TerrawareGenerator : KotlinGenerator() {
       }
 
     """
-            .trimIndent())
+            .trimIndent()
+    )
   }
 
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
     if (ENUM_TABLES.any { it.toString() == table.name }) {
       throw IllegalArgumentException(
-          "${table.name} is generated as an enum and must be excluded from the table list")
+          "${table.name} is generated as an enum and must be excluded from the table list"
+      )
     }
 
     super.generateTable(schema, table)

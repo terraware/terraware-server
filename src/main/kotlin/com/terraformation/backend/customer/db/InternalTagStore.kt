@@ -124,7 +124,8 @@ class InternalTagStore(
                   DSL.select(INTERNAL_TAG_ID.asNonNullable())
                       .from(ORGANIZATION_INTERNAL_TAGS)
                       .where(ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                      .orderBy(INTERNAL_TAG_ID))
+                      .orderBy(INTERNAL_TAG_ID)
+              )
               .convertFrom { result -> result.map { it.value1() }.toSet() }
 
       dslContext
@@ -167,7 +168,8 @@ class InternalTagStore(
                 createdBy = currentUser().userId,
                 createdTime = clock.instant(),
             )
-          })
+          }
+      )
 
       if (tagsToDelete.isNotEmpty()) {
         dslContext

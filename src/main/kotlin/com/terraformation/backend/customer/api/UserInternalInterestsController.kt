@@ -57,6 +57,8 @@ data class UpdateUserInternalInterestsRequestPayload(
             Schema(
                 description =
                     "New set of category assignments. Existing assignments that aren't included " +
-                        "here will be removed from the user."))
+                        "here will be removed from the user."
+            )
+    )
     val internalInterests: Set<InternalInterest>,
 )

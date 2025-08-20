@@ -34,7 +34,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         other = Quantities(0, 0, 0, 10),
         current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = 89,
-        expectedLossRate = 18)
+        expectedLossRate = 18,
+    )
   }
 
   @Test
@@ -47,7 +48,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         other = Quantities(0, 8, 0, 7),
         current = Quantities(1, 45, 0, 27),
         expectedGerminationRate = null,
-        expectedLossRate = 14)
+        expectedLossRate = 14,
+    )
   }
 
   @Test
@@ -60,7 +62,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         manualEdits = Quantities(3, 0, 0, 0),
         current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = null,
-        expectedLossRate = 18)
+        expectedLossRate = 18,
+    )
   }
 
   @Test
@@ -73,7 +76,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         manualEdits = Quantities(0, 3, 0, 0),
         current = Quantities(0, 45, 0, 27),
         expectedGerminationRate = null,
-        expectedLossRate = null)
+        expectedLossRate = null,
+    )
   }
 
   @Test
@@ -82,7 +86,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         initial = Quantities(10, 10, 0, 10),
         current = Quantities(10, 10, 0, 10),
         expectedGerminationRate = null,
-        expectedLossRate = 0)
+        expectedLossRate = 0,
+    )
   }
 
   @Test
@@ -91,7 +96,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         initial = Quantities(10, 0, 0, 0),
         current = Quantities(10, 0, 0, 0),
         expectedGerminationRate = null,
-        expectedLossRate = null)
+        expectedLossRate = null,
+    )
   }
 
   @Test
@@ -101,7 +107,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
             initial = Quantities(10, 10, 0, 10),
             current = Quantities(0, 20, 0, 10),
             expectedGerminationRate = 100,
-            expectedLossRate = 0)
+            expectedLossRate = 0,
+        )
 
     addManualEdits(batchId, Quantities(0, 1, 0, 0))
 
@@ -118,7 +125,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         other = Quantities(0, 0, 0, 10),
         current = Quantities(0, 0, 45, 27),
         expectedGerminationRate = 89,
-        expectedLossRate = 18)
+        expectedLossRate = 18,
+    )
   }
 
   @Test
@@ -130,7 +138,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         other = Quantities(0, 3, 0, 10),
         current = Quantities(0, 14, 45, 22),
         expectedGerminationRate = 89,
-        expectedLossRate = 24)
+        expectedLossRate = 24,
+    )
   }
 
   @Test
@@ -159,7 +168,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         other = Quantities(10, 0, 0, 0),
         current = Quantities(0, 1, 0, 0),
         expectedGerminationRate = null,
-        expectedLossRate = 0)
+        expectedLossRate = 0,
+    )
   }
 
   /**
@@ -203,7 +213,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         germinatingChangeNeeded >= 0 &&
             activeGrowthChangeNeeded >= 0 &&
             hardeningOffChangeNeeded >= 0,
-        "Cannot arrive at current numbers given initial and withdrawal quantities")
+        "Cannot arrive at current numbers given initial and withdrawal quantities",
+    )
 
     val batchId = createBatch(initial)
 
@@ -214,14 +225,20 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         batchId,
         NurseryBatchPhase.Germinating,
         NurseryBatchPhase.ActiveGrowth,
-        germinatingChangeNeeded)
+        germinatingChangeNeeded,
+    )
     store.changeStatuses(
         batchId,
         NurseryBatchPhase.ActiveGrowth,
         NurseryBatchPhase.HardeningOff,
-        activeGrowthChangeNeeded)
+        activeGrowthChangeNeeded,
+    )
     store.changeStatuses(
-        batchId, NurseryBatchPhase.HardeningOff, NurseryBatchPhase.Ready, hardeningOffChangeNeeded)
+        batchId,
+        NurseryBatchPhase.HardeningOff,
+        NurseryBatchPhase.Ready,
+        hardeningOffChangeNeeded,
+    )
 
     outPlant?.let { store.withdraw(newWithdrawalModel(batchId, it, WithdrawalPurpose.OutPlant)) }
     transfer?.let { addTransfer(batchId, it) }
@@ -232,9 +249,15 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
 
     assertEquals(current.germinating, result.germinatingQuantity, "Current germinating quantity")
     assertEquals(
-        current.activeGrowth, result.activeGrowthQuantity, "Current active growth quantity")
+        current.activeGrowth,
+        result.activeGrowthQuantity,
+        "Current active growth quantity",
+    )
     assertEquals(
-        current.hardeningOff, result.hardeningOffQuantity, "Current hardening off quantity")
+        current.hardeningOff,
+        result.hardeningOffQuantity,
+        "Current hardening off quantity",
+    )
     assertEquals(current.ready, result.readyQuantity, "Current ready quantity")
     assertEquals(expectedGerminationRate, result.germinationRate, "Germination rate")
     assertEquals(expectedLossRate, result.lossRate, "Loss rate")
@@ -261,7 +284,12 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
   private fun addTransfer(batchId: BatchId, quantities: Quantities): ExistingWithdrawalModel {
     return store.withdraw(
         newWithdrawalModel(
-            batchId, quantities, WithdrawalPurpose.NurseryTransfer, destinationFacilityId))
+            batchId,
+            quantities,
+            WithdrawalPurpose.NurseryTransfer,
+            destinationFacilityId,
+        )
+    )
   }
 
   private fun addManualEdits(batchId: BatchId, quantityDeltas: Quantities) {
@@ -274,7 +302,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
         batch.activeGrowthQuantity + quantityDeltas.activeGrowth,
         batch.hardeningOffQuantity + quantityDeltas.hardeningOff,
         batch.readyQuantity + quantityDeltas.ready,
-        BatchQuantityHistoryType.Observed)
+        BatchQuantityHistoryType.Observed,
+    )
   }
 
   private fun newWithdrawalModel(
@@ -292,7 +321,8 @@ internal class BatchStoreCalculationsTest : BatchStoreTest() {
                     activeGrowthQuantityWithdrawn = quantities.activeGrowth,
                     hardeningOffQuantityWithdrawn = quantities.hardeningOff,
                     readyQuantityWithdrawn = quantities.ready,
-                )),
+                )
+            ),
         destinationFacilityId = destinationFacilityId,
         facilityId = facilityId,
         id = null,

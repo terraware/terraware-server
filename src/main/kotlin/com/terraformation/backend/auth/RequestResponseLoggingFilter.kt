@@ -72,12 +72,14 @@ class RequestResponseLoggingFilter(
         mdcPut("email", user.email)
         request.setAttribute("terrawareEmail", user.email)
 
-        if (log.isDebugEnabled &&
-            request is HttpServletRequest &&
-            response is HttpServletResponse &&
-            request.dispatcherType != DispatcherType.ASYNC &&
-            (requestLogConfig.excludeRegex == null ||
-                !request.requestURI.matches(requestLogConfig.excludeRegex))) {
+        if (
+            log.isDebugEnabled &&
+                request is HttpServletRequest &&
+                response is HttpServletResponse &&
+                request.dispatcherType != DispatcherType.ASYNC &&
+                (requestLogConfig.excludeRegex == null ||
+                    !request.requestURI.matches(requestLogConfig.excludeRegex))
+        ) {
           // Log all requests and responses for some users. For other users, be prepared to log
           // requests if we end up returning an error response, but don't log responses.
           val logRequestAndResponse =
@@ -100,7 +102,8 @@ class RequestResponseLoggingFilter(
               if (logRequestAndResponse || response.status >= 400) {
                 mdcPut(
                     "request",
-                    payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray))
+                    payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray),
+                )
                 mdcPut("method", wrappedRequest.method)
                 mdcPut("queryString", wrappedRequest.queryString)
                 mdcPut("uri", wrappedRequest.requestURI)
@@ -141,7 +144,8 @@ class RequestResponseLoggingFilter(
           bytes,
           0,
           min(bytes.size, maxPayloadSize),
-          parsedContentType.charset() ?: StandardCharsets.UTF_8)
+          parsedContentType.charset() ?: StandardCharsets.UTF_8,
+      )
     } else {
       null
     }

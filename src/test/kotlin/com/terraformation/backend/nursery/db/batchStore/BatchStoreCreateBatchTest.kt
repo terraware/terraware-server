@@ -84,7 +84,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             substrateId = BatchSubstrate.Other,
             substrateNotes = "My substrate",
             treatmentId = SeedTreatment.Chemical,
-            version = 1)
+            version = 1,
+        )
     val expectedModel = ExistingBatchModel(expectedRow, setOf(subLocationId1, subLocationId2), 0)
 
     val expectedQuantityHistory =
@@ -107,11 +108,13 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             BatchSubLocationsRow(
                 batchId = returnedModel.id,
                 subLocationId = subLocationId1,
-                facilityId = facilityId),
+                facilityId = facilityId,
+            ),
             BatchSubLocationsRow(
                 batchId = returnedModel.id,
                 subLocationId = subLocationId2,
-                facilityId = facilityId),
+                facilityId = facilityId,
+            ),
         )
 
     val expectedDetailsHistory =
@@ -125,7 +128,9 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 substrateId = BatchSubstrate.Other,
                 substrateNotes = "My substrate",
                 treatmentId = SeedTreatment.Chemical,
-                version = 1))
+                version = 1,
+            )
+        )
 
     val expectedDetailsHistorySubLocations =
         setOf(
@@ -134,7 +139,10 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
                 subLocationName = "Location 1",
             ),
             BatchDetailsHistorySubLocationsRow(
-                subLocationId = subLocationId2, subLocationName = "Location 2"))
+                subLocationId = subLocationId2,
+                subLocationName = "Location 2",
+            ),
+        )
 
     val writtenBatch = batchesDao.fetchOneById(returnedModel.id)
     val writtenDetailsHistory = batchDetailsHistoryDao.findAll().map { it.copy(id = null) }
@@ -152,7 +160,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     assertEquals(
         expectedDetailsHistorySubLocations,
         writtenDetailsHistorySubLocations,
-        "Inserted details history sub-locations")
+        "Inserted details history sub-locations",
+    )
     assertEquals(expectedQuantityHistory, writtenQuantityHistory, "Inserted quantity history row")
     assertEquals(expectedSubLocations, writtenSubLocations, "Inserted sub-locations")
   }

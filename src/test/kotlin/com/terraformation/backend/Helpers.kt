@@ -49,7 +49,8 @@ fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
     assertEquals(
         prettyPrintingObjectMapper.writeValueAsString(expected),
         prettyPrintingObjectMapper.writeValueAsString(actual),
-        message)
+        message,
+    )
   }
 }
 
@@ -67,7 +68,8 @@ fun assertGeometryEquals(expected: Geometry?, actual: Geometry?, message: String
 fun point(x: Number, y: Number = x, z: Number? = null, srid: Int = SRID.LONG_LAT): Point {
   val geometryFactory = GeometryFactory(PrecisionModel(), srid)
   return geometryFactory.createPoint(
-      Coordinate(x.toDouble(), y.toDouble(), z?.toDouble() ?: Coordinate.NULL_ORDINATE))
+      Coordinate(x.toDouble(), y.toDouble(), z?.toDouble() ?: Coordinate.NULL_ORDINATE)
+  )
 }
 
 /** Creates a rectangular Polygon. */
@@ -79,7 +81,9 @@ fun polygon(left: Number, bottom: Number, right: Number, top: Number): Polygon {
           CoordinateXY(right.toDouble(), bottom.toDouble()),
           CoordinateXY(right.toDouble(), top.toDouble()),
           CoordinateXY(left.toDouble(), top.toDouble()),
-          CoordinateXY(left.toDouble(), bottom.toDouble())))
+          CoordinateXY(left.toDouble(), bottom.toDouble()),
+      )
+  )
 }
 
 /** Creates a square Polygon with its left bottom corner at the origin. */
@@ -186,7 +190,7 @@ fun Number.toBigDecimal(): BigDecimal =
 fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
     entities: List<T>,
     newIdFunc: (Long) -> FAKE_ID,
-    getIdFunc: (T) -> ACTUAL_ID?
+    getIdFunc: (T) -> ACTUAL_ID?,
 ): Map<FAKE_ID, ACTUAL_ID> {
   return entities
       .mapIndexed { index, entity ->
@@ -194,7 +198,8 @@ fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
         val actualId =
             getIdFunc(entity)
                 ?: throw IllegalArgumentException(
-                    "Null ID in ${entity.javaClass.simpleName} at index $index")
+                    "Null ID in ${entity.javaClass.simpleName} at index $index"
+                )
         fakeId to actualId
       }
       .toMap()

@@ -73,7 +73,8 @@ class CohortStore(
             modifiedBy = userId,
             modifiedTime = now,
             name = model.name,
-            phaseId = model.phase)
+            phaseId = model.phase,
+        )
 
     cohortsDao.insert(row)
     val cohortModel = row.toModel()
@@ -137,7 +138,8 @@ class CohortStore(
               DSL.select(PARTICIPANTS.ID)
                   .from(PARTICIPANTS)
                   .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-                  .orderBy(PARTICIPANTS.ID))
+                  .orderBy(PARTICIPANTS.ID)
+          )
           .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] }.toSet() }
 
   private fun fetch(

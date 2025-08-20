@@ -19,7 +19,9 @@ class DeliverablesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           projectDeliverables.asMultiValueSublist(
-              "projectDeliverables", PROJECT_DELIVERABLES.DELIVERABLE_ID.eq(DELIVERABLES.ID)),
+              "projectDeliverables",
+              PROJECT_DELIVERABLES.DELIVERABLE_ID.eq(DELIVERABLES.ID),
+          ),
           modules.asSingleValueSublist("module", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
       )
     }

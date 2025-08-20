@@ -14,12 +14,13 @@ import org.springframework.context.event.EventListener
 @ConditionalOnProperty(
     TerrawareServerConfig.NOTIFICATIONS_CLEANUP_ENABLED_PROPERTY,
     havingValue = "true",
-    matchIfMissing = true)
+    matchIfMissing = true,
+)
 @Named
 class NotificationsCleanupTask(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
-    private val dslContext: DSLContext
+    private val dslContext: DSLContext,
 ) {
   private val log = perClassLogger()
 
@@ -32,7 +33,8 @@ class NotificationsCleanupTask(
                 .deleteFrom(NOTIFICATIONS)
                 .where(
                     NOTIFICATIONS.CREATED_TIME.le(
-                        clock.instant().minus(config.notifications.retentionDays, ChronoUnit.DAYS)),
+                        clock.instant().minus(config.notifications.retentionDays, ChronoUnit.DAYS)
+                    ),
                 )
                 .execute()
         log.info(

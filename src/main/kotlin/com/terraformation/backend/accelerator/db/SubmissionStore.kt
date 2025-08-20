@@ -38,9 +38,11 @@ class SubmissionStore(
   ): SubmissionId {
     requirePermissions { createSubmission(projectId) }
 
-    if (status != SubmissionStatus.NotSubmitted &&
-        status != SubmissionStatus.Completed &&
-        status != SubmissionStatus.InReview) {
+    if (
+        status != SubmissionStatus.NotSubmitted &&
+            status != SubmissionStatus.Completed &&
+            status != SubmissionStatus.InReview
+    ) {
       throw IllegalArgumentException("Cannot create submissions in $status")
     }
 
@@ -90,7 +92,8 @@ class SubmissionStore(
             .leftJoin(SUBMISSIONS)
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
-                PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
+                PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID),
+            )
             .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
             .and(PROJECTS.ID.eq(projectId))
             .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
@@ -120,14 +123,18 @@ class SubmissionStore(
                     DELIVERABLES.MODULE_ID.eq(
                         DSL.select(DELIVERABLES.MODULE_ID)
                             .from(DELIVERABLES)
-                            .where(DELIVERABLES.ID.eq(deliverableId))))
+                            .where(DELIVERABLES.ID.eq(deliverableId))
+                    )
+                )
                 .and(DELIVERABLES.IS_REQUIRED)
                 .andNotExists(
                     DSL.selectOne()
                         .from(SUBMISSIONS)
                         .where(SUBMISSIONS.PROJECT_ID.eq(projectId))
                         .and(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-                        .and(SUBMISSIONS.SUBMISSION_STATUS_ID.eq(SubmissionStatus.Completed))))
+                        .and(SUBMISSIONS.SUBMISSION_STATUS_ID.eq(SubmissionStatus.Completed))
+                )
+        )
 
     return !hasIncompleteDeliverables
   }
@@ -178,7 +185,13 @@ class SubmissionStore(
     if (oldStatus != status) {
       eventPublisher.publishEvent(
           DeliverableStatusUpdatedEvent(
-              deliverableId, projectId, oldStatus, status, submission.id!!))
+              deliverableId,
+              projectId,
+              oldStatus,
+              status,
+              submission.id!!,
+          )
+      )
     }
 
     return submission.id!!

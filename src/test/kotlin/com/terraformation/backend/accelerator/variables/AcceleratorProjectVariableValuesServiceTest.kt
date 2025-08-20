@@ -53,7 +53,8 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionsDao,
             variableTablesDao,
             variableTableColumnsDao,
-            variableTextsDao),
+            variableTextsDao,
+        ),
         VariableValueStore(
             TestClock(),
             dslContext,
@@ -64,7 +65,8 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableSectionValuesDao,
             variableSelectOptionValuesDao,
             variableValuesDao,
-            variableValueTableRowsDao),
+            variableValueTableRowsDao,
+        ),
         SystemUser(usersDao),
     )
   }
@@ -106,7 +108,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
         insertSelectOption(variableIdsByStableId[StableIds.landUseModelType]!!, "Native Forest")
     sustainableTimberOptionId =
         insertSelectOption(
-            variableIdsByStableId[StableIds.landUseModelType]!!, "Sustainable Timber")
+            variableIdsByStableId[StableIds.landUseModelType]!!,
+            "Sustainable Timber",
+        )
     carbonCertificationOptionId =
         insertSelectOption(variableIdsByStableId[StableIds.carbonCertifications]!!, "CCB Standard")
 
@@ -132,43 +136,55 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     fun `returns null or empty values if variables not set`() {
       assertEquals(
           ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId),
-          service.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId),
+      )
     }
 
     @Test
     fun `returns values for non-deleted variables`() {
       // Single-select, country code should populate region
       insertSelectValue(
-          variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
+          variableIdsByStableId[StableIds.country]!!,
+          optionIds = setOf(brazilOptionId),
+      )
 
       // Multi-select (and corresponding map)
       insertSelectValue(
           variableIdsByStableId[StableIds.landUseModelType]!!,
-          optionIds = setOf(agroforestryOptionId, mangrovesOptionId))
+          optionIds = setOf(agroforestryOptionId, mangrovesOptionId),
+      )
       insertValue(
           variableIdsByStableId[
               StableIds.landUseHectaresByLandUseModel[LandUseModelType.Agroforestry]]!!,
-          numberValue = BigDecimal(10001))
+          numberValue = BigDecimal(10001),
+      )
       insertValue(
           variableIdsByStableId[
               StableIds.landUseHectaresByLandUseModel[LandUseModelType.Mangroves]]!!,
-          numberValue = BigDecimal(20002))
+          numberValue = BigDecimal(20002),
+      )
       insertSelectValue(
           variableIdsByStableId[StableIds.carbonCertifications]!!,
-          optionIds = setOf(carbonCertificationOptionId))
+          optionIds = setOf(carbonCertificationOptionId),
+      )
 
       // Number value
       insertValue(
-          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!,
+          numberValue = BigDecimal.ONE,
+      )
 
       // Text value
       insertValue(
-          variableIdsByStableId[StableIds.dealDescription]!!, textValue = "Deal description")
+          variableIdsByStableId[StableIds.dealDescription]!!,
+          textValue = "Deal description",
+      )
 
       // Link value
       insertLinkValue(
           variableIdsByStableId[StableIds.slackLink]!!,
-          url = "https://example.com/AcceleratorProjectVariableValuesService")
+          url = "https://example.com/AcceleratorProjectVariableValuesService",
+      )
 
       // Id value
       val uri = URI("https://test")
@@ -180,15 +196,20 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       // Second value should replace the first
       insertValue(
-          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!,
+          numberValue = BigDecimal.TWO,
+      )
       insertValue(
-          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TEN)
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!,
+          numberValue = BigDecimal.TEN,
+      )
 
       // Deleted values should appear as null
       insertValue(
           variableIdsByStableId[StableIds.whatNeedsToBeTrue]!!,
           textValue = "DELETED",
-          isDeleted = true)
+          isDeleted = true,
+      )
 
       assertEquals(
           ProjectAcceleratorVariableValuesModel(
@@ -201,14 +222,16 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.Agroforestry to BigDecimal(10001),
-                      LandUseModelType.Mangroves to BigDecimal(20002)),
+                      LandUseModelType.Mangroves to BigDecimal(20002),
+                  ),
               maxCarbonAccumulation = BigDecimal.TEN,
               minCarbonAccumulation = BigDecimal.ONE,
               projectHighlightPhotoValueId = imageValueId,
               region = Region.LatinAmericaCaribbean,
               slackLink = URI("https://example.com/AcceleratorProjectVariableValuesService"),
           ),
-          service.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId),
+      )
     }
 
     @Test
@@ -229,11 +252,14 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can write all values`() {
       insertSelectValue(
-          variableIdsByStableId[StableIds.methodologyNumber]!!, optionIds = setOf(methodologyId))
+          variableIdsByStableId[StableIds.methodologyNumber]!!,
+          optionIds = setOf(methodologyId),
+      )
       insertSelectValue(variableIdsByStableId[StableIds.standard]!!, optionIds = setOf(goldId))
       insertSelectValue(
           variableIdsByStableId[StableIds.sdgList]!!,
-          optionIds = setOf(noPovertyOptionId, zeroHungerOptionId))
+          optionIds = setOf(noPovertyOptionId, zeroHungerOptionId),
+      )
 
       val values =
           ProjectAcceleratorVariableValuesModel(
@@ -255,7 +281,8 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.Mangroves to BigDecimal(201),
-                      LandUseModelType.NativeForest to BigDecimal(202)),
+                      LandUseModelType.NativeForest to BigDecimal(202),
+                  ),
               maxCarbonAccumulation = BigDecimal(1500),
               methodologyNumber = "VM0047",
               minCarbonAccumulation = BigDecimal(1000),
@@ -265,7 +292,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               riskTrackerLink = URI("https://risk.tracker"),
               sdgList =
                   setOf(
-                      SustainableDevelopmentGoal.ZeroHunger, SustainableDevelopmentGoal.NoPoverty),
+                      SustainableDevelopmentGoal.ZeroHunger,
+                      SustainableDevelopmentGoal.NoPoverty,
+                  ),
               standard = "Gold Standard",
               totalCarbon = BigDecimal(400),
               totalExpansionPotential = BigDecimal(700),
@@ -287,36 +316,54 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can add, update and remove values`() {
       insertSelectValue(
-          variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
+          variableIdsByStableId[StableIds.country]!!,
+          optionIds = setOf(brazilOptionId),
+      )
       insertSelectValue(
           variableIdsByStableId[StableIds.carbonCertifications]!!,
-          optionIds = setOf(carbonCertificationOptionId))
+          optionIds = setOf(carbonCertificationOptionId),
+      )
 
       insertValue(
-          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!,
+          numberValue = BigDecimal.TWO,
+      )
       insertValue(
-          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TEN)
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!,
+          numberValue = BigDecimal.TEN,
+      )
 
       insertValue(
-          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!,
+          numberValue = BigDecimal.ONE,
+      )
 
       insertLinkValue(
-          variableIdsByStableId[StableIds.clickUpLink]!!, url = "https://click.up/deleteMe")
+          variableIdsByStableId[StableIds.clickUpLink]!!,
+          url = "https://click.up/deleteMe",
+      )
       insertLinkValue(
-          variableIdsByStableId[StableIds.gisReportsLink]!!, url = "https://gis.reports/replaceMe")
+          variableIdsByStableId[StableIds.gisReportsLink]!!,
+          url = "https://gis.reports/replaceMe",
+      )
 
       insertValue(
           variableIdsByStableId[StableIds.agroforestryLandUseModelHectare]!!,
-          numberValue = BigDecimal(100))
+          numberValue = BigDecimal(100),
+      )
       insertValue(
           variableIdsByStableId[StableIds.nativeForestLandUseHectare]!!,
-          numberValue = BigDecimal(200))
+          numberValue = BigDecimal(200),
+      )
 
       insertSelectValue(
           variableIdsByStableId[StableIds.landUseModelType]!!,
-          optionIds = setOf(nativeForestOptionId))
+          optionIds = setOf(nativeForestOptionId),
+      )
       insertSelectValue(
-          variableIdsByStableId[StableIds.sdgList]!!, optionIds = setOf(zeroHungerOptionId))
+          variableIdsByStableId[StableIds.sdgList]!!,
+          optionIds = setOf(zeroHungerOptionId),
+      )
 
       val existing = service.fetchValues(inserted.projectId)
       service.writeValues(
@@ -329,16 +376,20 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.Agroforestry to BigDecimal(101),
-                      LandUseModelType.Mangroves to BigDecimal(300)),
+                      LandUseModelType.Mangroves to BigDecimal(300),
+                  ),
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = null,
               minCarbonAccumulation = BigDecimal(20),
               sdgList =
                   setOf(
-                      SustainableDevelopmentGoal.NoPoverty, SustainableDevelopmentGoal.ZeroHunger),
+                      SustainableDevelopmentGoal.NoPoverty,
+                      SustainableDevelopmentGoal.ZeroHunger,
+                  ),
               slackLink = URI("https://slack.com/new"),
               totalCarbon = BigDecimal(30),
-          ))
+          ),
+      )
 
       assertEquals(
           existing.copy(
@@ -350,26 +401,34 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.Agroforestry to BigDecimal(101),
-                      LandUseModelType.Mangroves to BigDecimal(300)),
+                      LandUseModelType.Mangroves to BigDecimal(300),
+                  ),
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = null,
               minCarbonAccumulation = BigDecimal(20),
               region = null,
               sdgList =
                   setOf(
-                      SustainableDevelopmentGoal.NoPoverty, SustainableDevelopmentGoal.ZeroHunger),
+                      SustainableDevelopmentGoal.NoPoverty,
+                      SustainableDevelopmentGoal.ZeroHunger,
+                  ),
               slackLink = URI("https://slack.com/new"),
               totalCarbon = BigDecimal(30),
           ),
-          service.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId),
+      )
     }
 
     @Test
     fun `unchanged values will not write new records`() {
       insertValue(
-          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!,
+          numberValue = BigDecimal.TWO,
+      )
       insertValue(
-          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!,
+          numberValue = BigDecimal.ONE,
+      )
 
       val existing = variableValuesDao.findAll()
       val model = service.fetchValues(inserted.projectId)
@@ -386,14 +445,16 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         service.writeValues(
             inserted.projectId,
-            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId))
+            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId),
+        )
       }
 
       every { user.canReadProject(any()) } returns false
       assertThrows<ProjectNotFoundException> {
         service.writeValues(
             inserted.projectId,
-            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId))
+            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId),
+        )
       }
     }
   }

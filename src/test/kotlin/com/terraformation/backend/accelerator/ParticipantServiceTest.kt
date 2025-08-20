@@ -33,7 +33,14 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
         ProjectStore(
-            clock, dslContext, eventPublisher, parentStore, projectsDao, projectInternalUsersDao))
+            clock,
+            dslContext,
+            eventPublisher,
+            parentStore,
+            projectsDao,
+            projectInternalUsersDao,
+        ),
+    )
   }
 
   @BeforeEach
@@ -62,7 +69,11 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
       val model =
           service.create(
               ParticipantModel.create(
-                  cohortId = cohortId, name = "part", projectIds = setOf(projectId1, projectId2)))
+                  cohortId = cohortId,
+                  name = "part",
+                  projectIds = setOf(projectId1, projectId2),
+              )
+          )
 
       assertEquals(
           ParticipantsRow(
@@ -74,20 +85,27 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
               name = "part",
           ),
-          participantsDao.fetchOneById(model.id))
+          participantsDao.fetchOneById(model.id),
+      )
 
       assertEquals(
           mapOf(
-              projectId1 to model.id, projectId2 to model.id, projectId3 to existingParticipantId),
+              projectId1 to model.id,
+              projectId2 to model.id,
+              projectId3 to existingParticipantId,
+          ),
           projectsDao.findAll().associate { it.id to it.participantId },
-          "Participant IDs for projects")
+          "Participant IDs for projects",
+      )
 
       eventPublisher.assertExactEventsPublished(
           setOf(
               CohortParticipantAddedEvent(cohortId, model.id),
               ParticipantProjectAddedEvent(user.userId, model.id, projectId1),
               ParticipantProjectAddedEvent(user.userId, model.id, projectId2),
-              ParticipantProjectRemovedEvent(existingParticipantId, projectId1, user.userId)))
+              ParticipantProjectRemovedEvent(existingParticipantId, projectId1, user.userId),
+          )
+      )
     }
   }
 
@@ -107,7 +125,8 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
         it.copy(
             cohortId = cohortId,
             name = "new name",
-            projectIds = setOf(projectIdToAdd, projectIdToKeep))
+            projectIds = setOf(projectIdToAdd, projectIdToKeep),
+        )
       }
 
       assertEquals(
@@ -120,22 +139,27 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
               name = "new name",
           ),
-          participantsDao.fetchOneById(participantId))
+          participantsDao.fetchOneById(participantId),
+      )
 
       assertEquals(
           mapOf(
               projectIdToRemove to null,
               projectIdToAdd to participantId,
-              projectIdToKeep to participantId),
+              projectIdToKeep to participantId,
+          ),
           projectsDao.findAll().associate { it.id to it.participantId },
-          "Participant IDs for projects")
+          "Participant IDs for projects",
+      )
 
       // Shouldn't see events related to projectIdToKeep since it wasn't modified.
       eventPublisher.assertExactEventsPublished(
           setOf(
               CohortParticipantAddedEvent(cohortId, participantId),
               ParticipantProjectAddedEvent(user.userId, participantId, projectIdToAdd),
-              ParticipantProjectRemovedEvent(participantId, projectIdToRemove, user.userId)))
+              ParticipantProjectRemovedEvent(participantId, projectIdToRemove, user.userId),
+          )
+      )
     }
 
     @Test
@@ -150,7 +174,10 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(
-          "old name", participantsDao.fetchOneById(participantId)!!.name, "Participant name")
+          "old name",
+          participantsDao.fetchOneById(participantId)!!.name,
+          "Participant name",
+      )
       assertNull(projectsDao.fetchOneById(projectId)!!.participantId, "Project participant ID")
     }
   }

@@ -64,7 +64,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .get(
-              "/api/v1/document-producer/projects/${inserted.projectId}/images/$imageValueId?maxWidth=320")
+              "/api/v1/document-producer/projects/${inserted.projectId}/images/$imageValueId?maxWidth=320"
+          )
           .andExpect {
             status { isOk() }
             content { bytes(contents) }
@@ -111,12 +112,14 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
-                file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
-                part(MockPart("caption", caption.toByteArray()))
-                part(MockPart("variableId", "$imageVariableId".toByteArray()))
-                part(MockPart("listPosition", "0".toByteArray()))
-              }
+              HttpMethod.POST,
+              "/api/v1/document-producer/projects/${inserted.projectId}/images",
+          ) {
+            file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+            part(MockPart("caption", caption.toByteArray()))
+            part(MockPart("variableId", "$imageVariableId".toByteArray()))
+            part(MockPart("listPosition", "0".toByteArray()))
+          }
           .andExpectJson {
             imageValuesRow = variableImageValuesDao.findAll().single()
 
@@ -134,7 +137,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       assertEquals(
           listOf(filename, "image/jpeg"),
           listOf(filesRow.fileName, filesRow.contentType),
-          "File metadata")
+          "File metadata",
+      )
 
       assertArrayEquals(fileData, fileStore.files.values.single())
     }
@@ -157,13 +161,15 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
-                file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
-                part(MockPart("caption", caption.toByteArray()))
-                part(MockPart("variableId", "$imageVariableId".toByteArray()))
-                part(MockPart("listPosition", "$listPosition".toByteArray()))
-                part(MockPart("rowValueId", "$rowValueId".toByteArray()))
-              }
+              HttpMethod.POST,
+              "/api/v1/document-producer/projects/${inserted.projectId}/images",
+          ) {
+            file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+            part(MockPart("caption", caption.toByteArray()))
+            part(MockPart("variableId", "$imageVariableId".toByteArray()))
+            part(MockPart("listPosition", "$listPosition".toByteArray()))
+            part(MockPart("rowValueId", "$rowValueId".toByteArray()))
+          }
           .andExpectJson {
             valuesRow = variableValuesDao.findAll().maxBy { it.id!!.value }
 
@@ -181,16 +187,23 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       assertEquals(
           listOf(rowValueId),
           tableRowRows.map { it.tableRowValueId },
-          "New image value should be in table row")
+          "New image value should be in table row",
+      )
     }
 
     @Test
     fun `allocates next available list position if not specified`() {
       val imageVariableId = insertVariable(type = VariableType.Image, isList = true)
       insertImageValue(
-          imageVariableId, insertFile(storageUrl = URI("http://dummy1")), listPosition = 0)
+          imageVariableId,
+          insertFile(storageUrl = URI("http://dummy1")),
+          listPosition = 0,
+      )
       insertImageValue(
-          imageVariableId, insertFile(storageUrl = URI("http://dummy2")), listPosition = 1)
+          imageVariableId,
+          insertFile(storageUrl = URI("http://dummy2")),
+          listPosition = 1,
+      )
 
       val caption = "Image caption"
       val fileData = byteArrayOf(1, 2, 3, 4)
@@ -200,11 +213,13 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
-                file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
-                part(MockPart("caption", caption.toByteArray()))
-                part(MockPart("variableId", "$imageVariableId".toByteArray()))
-              }
+              HttpMethod.POST,
+              "/api/v1/document-producer/projects/${inserted.projectId}/images",
+          ) {
+            file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+            part(MockPart("caption", caption.toByteArray()))
+            part(MockPart("variableId", "$imageVariableId".toByteArray()))
+          }
           .andExpectJson {
             valuesRows = variableValuesDao.findAll()
             val newValueId = valuesRows.maxOf { it.id!!.value }
@@ -218,7 +233,10 @@ class ImagesControllerTest : ControllerIntegrationTest() {
           }
 
       assertEquals(
-          setOf(0, 1, 2), valuesRows.map { it.listPosition }.toSet(), "List positions of values")
+          setOf(0, 1, 2),
+          valuesRows.map { it.listPosition }.toSet(),
+          "List positions of values",
+      )
     }
 
     @Test
@@ -227,12 +245,14 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
-                file(MockMultipartFile("file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
-                part(MockPart("caption", "dummy".toByteArray()))
-                part(MockPart("variableId", "$textVariableId".toByteArray()))
-                part(MockPart("listPosition", "0".toByteArray()))
-              }
+              HttpMethod.POST,
+              "/api/v1/document-producer/projects/${inserted.projectId}/images",
+          ) {
+            file(MockMultipartFile("file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
+            part(MockPart("caption", "dummy".toByteArray()))
+            part(MockPart("variableId", "$textVariableId".toByteArray()))
+            part(MockPart("listPosition", "0".toByteArray()))
+          }
           .andExpect { status { isConflict() } }
     }
   }

@@ -21,13 +21,18 @@ class ObservationPlotConditionsTable(private val tables: SearchTables) : SearchT
       listOf(
           monitoringPlots.asSingleValueSublist(
               "monitoringPlot",
-              OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)),
+              OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID),
+          ),
           observationPlots.asSingleValueSublist(
               "observationPlot",
               OBSERVATION_PLOT_CONDITIONS.OBSERVATION_PLOT_ID.eq(
-                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID)),
+                  OBSERVATION_PLOTS.OBSERVATION_PLOT_ID
+              ),
+          ),
           observations.asSingleValueSublist(
-              "observation", OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID)),
+              "observation",
+              OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID),
+          ),
       )
     }
   }
@@ -41,7 +46,8 @@ class ObservationPlotConditionsTable(private val tables: SearchTables) : SearchT
     get() =
         listOf(
             OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID,
-            OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID)
+            OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID,
+        )
 
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.observations

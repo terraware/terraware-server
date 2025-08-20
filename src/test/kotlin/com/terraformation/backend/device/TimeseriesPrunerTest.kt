@@ -58,7 +58,8 @@ class TimeseriesPrunerTest : DatabaseTest(), RunsAsUser {
             TimeseriesValuesRecord(timeseriesId1, daysAgo(10), "10 days old"),
             TimeseriesValuesRecord(timeseriesId2, daysAgo(30), "30 days old"),
             TimeseriesValuesRecord(timeseriesId2, daysAgo(10), "10 days old"),
-        ))
+        )
+    )
   }
 
   @Test

@@ -42,7 +42,8 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
         claimedTime = Instant.EPOCH,
         completedBy = currentUser().userId,
         completedTime = Instant.ofEpochSecond(6000),
-        statusId = ObservationPlotStatus.Completed)
+        statusId = ObservationPlotStatus.Completed,
+    )
 
     insertObservationPlot(
         observationId = observationId,
@@ -51,19 +52,22 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
         claimedTime = Instant.EPOCH,
         completedBy = currentUser().userId,
         completedTime = Instant.ofEpochSecond(12000),
-        statusId = ObservationPlotStatus.Completed)
+        statusId = ObservationPlotStatus.Completed,
+    )
 
     insertObservationPlot(
         observationId = observationId,
         monitoringPlotId = unclaimedPlotId,
-        statusId = ObservationPlotStatus.Unclaimed)
+        statusId = ObservationPlotStatus.Unclaimed,
+    )
 
     insertObservationPlot(
         observationId = observationId,
         monitoringPlotId = claimedPlotId,
         claimedBy = currentUser().userId,
         claimedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Claimed)
+        statusId = ObservationPlotStatus.Claimed,
+    )
 
     val existing = observationsDao.fetchOneById(observationId)!!
 
@@ -89,13 +93,17 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
             ),
         ),
         observationPlotsDao.fetchByObservationId(observationId).toSet(),
-        "Observation plots after abandoning")
+        "Observation plots after abandoning",
+    )
 
     assertEquals(
         existing.copy(
-            completedTime = Instant.ofEpochSecond(12000), stateId = ObservationState.Abandoned),
+            completedTime = Instant.ofEpochSecond(12000),
+            stateId = ObservationState.Abandoned,
+        ),
         observationsDao.fetchOneById(observationId),
-        "Observation after abandoning")
+        "Observation after abandoning",
+    )
   }
 
   @Test
@@ -123,7 +131,8 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
         claimedTime = Instant.EPOCH,
         completedBy = currentUser().userId,
         completedTime = Instant.EPOCH,
-        statusId = ObservationPlotStatus.Completed)
+        statusId = ObservationPlotStatus.Completed,
+    )
 
     assertThrows<ObservationAlreadyEndedException> { store.abandonObservation(observationId) }
   }

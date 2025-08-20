@@ -40,14 +40,20 @@ class PlantingZoneModelTest {
               subzones =
                   listOf(
                       plantingSubzoneModel(
-                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1, 2))),
+                          id = 1,
+                          plots = monitoringPlotModels(permanentIds = listOf(1, 2)),
+                      ),
                       plantingSubzoneModel(
-                          id = 2, plots = monitoringPlotModels(permanentIds = listOf(3, 4))),
-                  ))
+                          id = 2,
+                          plots = monitoringPlotModels(permanentIds = listOf(3, 4)),
+                      ),
+                  ),
+          )
 
       assertEquals(
           setOf(MonitoringPlotId(3), MonitoringPlotId(4)),
-          model.choosePermanentPlots(plantingSubzoneIds(2)))
+          model.choosePermanentPlots(plantingSubzoneIds(2)),
+      )
     }
   }
 
@@ -64,7 +70,11 @@ class PlantingZoneModelTest {
                           plots =
                               monitoringPlotModels(
                                   permanentIds = listOf(10, 11, 12, 13),
-                                  temporaryIds = listOf(14)))))
+                                  temporaryIds = listOf(14),
+                              )
+                      )
+                  ),
+          )
 
       val expected = listOf(MonitoringPlotId(14))
 
@@ -85,7 +95,10 @@ class PlantingZoneModelTest {
               subzones =
                   listOf(
                       plantingSubzoneModel(
-                          plots = listOf(monitoringPlotModel(10, permanentIndex = 2)))))
+                          plots = listOf(monitoringPlotModel(10, permanentIndex = 2))
+                      )
+                  ),
+          )
 
       repeatTest {
         val indexOfSelectedPlot =
@@ -110,7 +123,11 @@ class PlantingZoneModelTest {
                           plots =
                               listOf(
                                   monitoringPlotModel(10),
-                                  monitoringPlotModel(11, isAvailable = false)))))
+                                  monitoringPlotModel(11, isAvailable = false),
+                              )
+                      )
+                  ),
+          )
 
       val unexpected = listOf(MonitoringPlotId(11))
 
@@ -162,13 +179,16 @@ class PlantingZoneModelTest {
                               listOf(
                                   monitoringPlotModel(boundary = subzone1PlotBoundary, id = 10),
                                   monitoringPlotModel(boundary = bothSubzonesPlotBoundary, id = 11),
-                              )),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           boundary = subzone2Boundary,
                           id = 2,
                           plots =
-                              listOf(
-                                  monitoringPlotModel(boundary = subzone2PlotBoundary, id = 20)))))
+                              listOf(monitoringPlotModel(boundary = subzone2PlotBoundary, id = 20)),
+                      ),
+                  ),
+          )
 
       val expected = monitoringPlotIds(10)
 
@@ -194,16 +214,23 @@ class PlantingZoneModelTest {
                           plots =
                               monitoringPlotModels(
                                   permanentIds = listOf(10),
-                                  temporaryIds = listOf(11, 12, 13, 14))),
+                                  temporaryIds = listOf(11, 12, 13, 14),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
                               monitoringPlotModels(
                                   permanentIds = listOf(20),
-                                  temporaryIds = listOf(21, 22, 23, 24))),
+                                  temporaryIds = listOf(21, 22, 23, 24),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 3,
-                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
+                      ),
+                  ),
+          )
 
       val availablePlotIds =
           listOf(
@@ -246,7 +273,9 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(16, permanentIndex = 7),
                                   monitoringPlotModel(17, permanentIndex = 8),
                                   monitoringPlotModel(18),
-                                  monitoringPlotModel(19))),
+                                  monitoringPlotModel(19),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
@@ -256,10 +285,15 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(22, permanentIndex = 11),
                                   monitoringPlotModel(23, permanentIndex = 12),
                                   monitoringPlotModel(24),
-                                  monitoringPlotModel(25))),
+                                  monitoringPlotModel(25),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 3,
-                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
+                      ),
+                  ),
+          )
 
       val availablePlotIds =
           listOf(
@@ -298,7 +332,9 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(12, permanentIndex = 3),
                                   monitoringPlotModel(13, permanentIndex = 4),
                                   monitoringPlotModel(14),
-                                  monitoringPlotModel(15))),
+                                  monitoringPlotModel(15),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 2,
                           plots =
@@ -308,10 +344,15 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(22, permanentIndex = 7),
                                   monitoringPlotModel(23, permanentIndex = 8),
                                   monitoringPlotModel(24),
-                                  monitoringPlotModel(25))),
+                                  monitoringPlotModel(25),
+                              ),
+                      ),
                       plantingSubzoneModel(
                           id = 3,
-                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
+                      ),
+                  ),
+          )
 
       val availablePlotIds =
           listOf(
@@ -342,13 +383,18 @@ class PlantingZoneModelTest {
                   listOf(
                       plantingSubzoneModel(
                           id = 1,
-                          plots = monitoringPlotModels(temporaryIds = listOf(10, 11, 12, 13, 14))),
+                          plots = monitoringPlotModels(temporaryIds = listOf(10, 11, 12, 13, 14)),
+                      ),
                       plantingSubzoneModel(
                           id = 2,
-                          plots = monitoringPlotModels(temporaryIds = listOf(20, 21, 22, 23, 24))),
+                          plots = monitoringPlotModels(temporaryIds = listOf(20, 21, 22, 23, 24)),
+                      ),
                       plantingSubzoneModel(
                           id = 3,
-                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
+                      ),
+                  ),
+          )
 
       val availablePlotIds =
           listOf(
@@ -384,8 +430,9 @@ class PlantingZoneModelTest {
               numTemporaryPlots = 6,
               subzones =
                   listOf(
-                      plantingSubzoneModel(
-                          plots = monitoringPlotModels(permanentIds = listOf(10)))))
+                      plantingSubzoneModel(plots = monitoringPlotModels(permanentIds = listOf(10)))
+                  ),
+          )
 
       assertThrows<PlantingSubzoneFullException> {
         model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
@@ -420,7 +467,8 @@ class PlantingZoneModelTest {
       val zone =
           plantingZoneModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+          )
 
       val expected = Turtle(siteOrigin).makePolygon { square(50) }
 
@@ -455,7 +503,8 @@ class PlantingZoneModelTest {
       val zone =
           plantingZoneModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+          )
 
       val actualCounts =
           (1..numberOfRuns)
@@ -472,7 +521,8 @@ class PlantingZoneModelTest {
           assertEquals(
               expectedCount,
               count,
-              "Approximate count expected for coordinate $coordinate (origin ${siteOrigin.coordinate})")
+              "Approximate count expected for coordinate $coordinate (origin ${siteOrigin.coordinate})",
+          )
         }
       }
     }
@@ -506,7 +556,8 @@ class PlantingZoneModelTest {
       val zone =
           plantingZoneModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
+              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+          )
 
       val square = zone.findUnusedSquare(siteOrigin, 30)
       assertNotNull(square, "Unused square")
@@ -514,7 +565,8 @@ class PlantingZoneModelTest {
       assertThat(square!!.intersection(targetArea).area)
           .describedAs(
               "Area of the part of the square that is inside the only region the square should " +
-                  "fit inside")
+                  "fit inside"
+          )
           .isGreaterThanOrEqualTo(square.area * 0.999)
     }
   }
@@ -537,7 +589,13 @@ class PlantingZoneModelTest {
                           plots =
                               listOf(
                                   monitoringPlotModel(
-                                      boundary = existingPlotPolygon, permanentIndex = 1)))))
+                                      boundary = existingPlotPolygon,
+                                      permanentIndex = 1,
+                                  )
+                              ),
+                      )
+                  ),
+          )
 
       val expected =
           Turtle(siteOrigin).makePolygon {
@@ -551,7 +609,8 @@ class PlantingZoneModelTest {
                 gridOrigin = siteOrigin,
                 sizeMeters = 30,
                 count = 1,
-                excludeAllPermanentPlots = true)
+                excludeAllPermanentPlots = true,
+            )
 
         assertEquals(1, actual.size, "Number of squares found")
 
@@ -623,7 +682,7 @@ class PlantingZoneModelTest {
 
   private fun monitoringPlotModels(
       permanentIds: List<Int> = emptyList(),
-      temporaryIds: List<Int> = emptyList()
+      temporaryIds: List<Int> = emptyList(),
   ): List<MonitoringPlotModel> {
     return permanentIds.map { monitoringPlotModel(id = it, permanentIndex = 1) } +
         temporaryIds.map { monitoringPlotModel(id = it, permanentIndex = null) }

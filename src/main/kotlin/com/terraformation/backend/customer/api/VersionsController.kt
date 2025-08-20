@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController
 class VersionsController(private val appVersionStore: AppVersionStore) {
   @GetMapping
   @Operation(
-      summary = "Gets the minimum and recommended versions for Terraware's client applications.")
+      summary = "Gets the minimum and recommended versions for Terraware's client applications."
+  )
   fun getVersions(): VersionsResponsePayload {
     val entries = appVersionStore.findAll().map { VersionsEntryPayload(it) }
     return VersionsResponsePayload(entries)

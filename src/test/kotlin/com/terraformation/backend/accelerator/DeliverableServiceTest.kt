@@ -35,7 +35,13 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   private val service: DeliverableService by lazy {
     DeliverableService(
         ApplicationStore(
-            clock, countriesDao, CountryDetector(), dslContext, eventPublisher, messages),
+            clock,
+            countriesDao,
+            CountryDetector(),
+            dslContext,
+            eventPublisher,
+            messages,
+        ),
         DeliverableStore(dslContext),
         eventPublisher,
         ModuleStore(dslContext),
@@ -54,7 +60,10 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
     insertApplication()
     insertModule(phase = CohortPhase.PreScreen)
     insertApplicationModule(
-        inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete)
+        inserted.applicationId,
+        inserted.moduleId,
+        ApplicationModuleStatus.Incomplete,
+    )
 
     deliverable1 = insertDeliverable(isRequired = true)
     deliverable2 = insertDeliverable(isRequired = true)
@@ -81,7 +90,8 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
               clock.instant,
               user.userId,
               clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -98,7 +108,8 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
               clock.instant,
               user.userId,
               clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -121,29 +132,45 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
     fun `updates application module status according to deliverable completion status`() {
       assertTableEquals(
           ApplicationModulesRecord(
-              inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
-          "0/2 completed deliverables")
+              inserted.applicationId,
+              inserted.moduleId,
+              ApplicationModuleStatus.Incomplete,
+          ),
+          "0/2 completed deliverables",
+      )
 
       service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
       assertTableEquals(
           ApplicationModulesRecord(
-              inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
-          "1/2 completed deliverables")
+              inserted.applicationId,
+              inserted.moduleId,
+              ApplicationModuleStatus.Incomplete,
+          ),
+          "1/2 completed deliverables",
+      )
 
       service.setDeliverableCompletion(deliverable2, inserted.projectId, true)
 
       assertTableEquals(
           ApplicationModulesRecord(
-              inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Complete),
-          "2/2 completed deliverables")
+              inserted.applicationId,
+              inserted.moduleId,
+              ApplicationModuleStatus.Complete,
+          ),
+          "2/2 completed deliverables",
+      )
 
       service.setDeliverableCompletion(deliverable2, inserted.projectId, false)
 
       assertTableEquals(
           ApplicationModulesRecord(
-              inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
-          "1/2 completed deliverables after un-submitting a deliverable")
+              inserted.applicationId,
+              inserted.moduleId,
+              ApplicationModuleStatus.Incomplete,
+          ),
+          "1/2 completed deliverables after un-submitting a deliverable",
+      )
     }
   }
 
@@ -163,7 +190,8 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
               clock.instant,
               user.userId,
               clock.instant,
-          ))
+          )
+      )
     }
 
     @Test
@@ -180,25 +208,31 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
 
       service.submitDeliverable(deliverableId, inserted.projectId)
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableSubmittedEvent(deliverableId, inserted.projectId))
+          QuestionsDeliverableSubmittedEvent(deliverableId, inserted.projectId)
+      )
     }
 
     @Test
     fun `publishes event for submitting an existing questionnaire deliverable`() {
       val deliverableId = insertDeliverable(deliverableTypeId = DeliverableType.Questions)
       insertSubmission(
-          deliverableId = deliverableId, submissionStatus = SubmissionStatus.NotSubmitted)
+          deliverableId = deliverableId,
+          submissionStatus = SubmissionStatus.NotSubmitted,
+      )
 
       service.submitDeliverable(deliverableId, inserted.projectId)
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableSubmittedEvent(deliverableId, inserted.projectId))
+          QuestionsDeliverableSubmittedEvent(deliverableId, inserted.projectId)
+      )
     }
 
     @Test
     fun `does not publish event for submitting a non-questionnaire deliverable`() {
       val deliverableId = insertDeliverable(deliverableTypeId = DeliverableType.Document)
       insertSubmission(
-          deliverableId = deliverableId, submissionStatus = SubmissionStatus.NotSubmitted)
+          deliverableId = deliverableId,
+          submissionStatus = SubmissionStatus.NotSubmitted,
+      )
 
       service.submitDeliverable(deliverableId, inserted.projectId)
       eventPublisher.assertEventNotPublished<QuestionsDeliverableSubmittedEvent>()

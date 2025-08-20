@@ -20,9 +20,13 @@ class OrganizationInternalTagsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           organizations.asSingleValueSublist(
-              "organization", ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+              "organization",
+              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID),
+          ),
           internalTags.asSingleValueSublist(
-              "internalTag", ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(INTERNAL_TAGS.ID)),
+              "internalTag",
+              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(INTERNAL_TAGS.ID),
+          ),
       )
     }
   }

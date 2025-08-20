@@ -44,7 +44,9 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
     fun `upsert modules`() {
       val existingModuleId =
           insertModule(
-              overview = "Existing Overview", additionalResources = "Existing Additional Resources")
+              overview = "Existing Overview",
+              additionalResources = "Existing Additional Resources",
+          )
 
       val newModuleId1 = getUnusedModuleId()
       val newModuleId2 = getUnusedModuleId()
@@ -113,7 +115,9 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )))
+              ),
+          )
+      )
 
       eventPublisher.assertEventPublished { event -> event is ModulesUploadedEvent }
     }

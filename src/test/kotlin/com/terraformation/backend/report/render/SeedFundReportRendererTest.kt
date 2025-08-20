@@ -26,7 +26,8 @@ class SeedFundReportRendererTest {
           quarter = 4,
           year = 2023,
           organizationId = OrganizationId(1),
-          status = SeedFundReportStatus.Submitted)
+          status = SeedFundReportStatus.Submitted,
+      )
 
   private val csvHeader =
       "Deal ID" +

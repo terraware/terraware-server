@@ -17,7 +17,7 @@ data class DeliveryModel(
 ) {
   constructor(
       record: Record,
-      plantingsMultisetField: Field<List<PlantingModel>>
+      plantingsMultisetField: Field<List<PlantingModel>>,
   ) : this(
       record[DELIVERIES.CREATED_TIME]!!,
       record[DELIVERIES.ID]!!,

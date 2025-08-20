@@ -63,14 +63,17 @@ class SupportController(private val service: SupportService) {
   @Operation(
       summary = "Upload a temporary attachment.",
       description =
-          "Uploads an attachment, which can be assigned to a support request during submission.")
+          "Uploads an attachment, which can be assigned to a support request during submission.",
+  )
   @PostMapping("/attachment", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content =
           [
               Content(
-                  encoding =
-                      [Encoding(name = "file", contentType = SUPPORTED_CONTENT_TYPES_STRING)])])
+                  encoding = [Encoding(name = "file", contentType = SUPPORTED_CONTENT_TYPES_STRING)]
+              )
+          ]
+  )
   fun uploadAttachment(
       @RequestPart("file", required = true) file: MultipartFile,
   ): UploadAttachmentResponsePayload {
@@ -79,7 +82,8 @@ class SupportController(private val service: SupportService) {
         SizedInputStream(
             BufferedInputStream(file.inputStream), // BufferedInputStream supports mark/reset
             file.size,
-            file.contentType?.let { MediaType.parseMediaType(it) })
+            file.contentType?.let { MediaType.parseMediaType(it) },
+        )
     val temporaryAttachments =
         try {
           service.attachTemporaryFile(file.getFilename(), sizedInputStream)

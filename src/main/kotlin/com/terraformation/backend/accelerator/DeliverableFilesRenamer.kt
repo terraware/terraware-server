@@ -41,8 +41,10 @@ class DeliverableFilesRenamer(
     systemUser.run {
       val application = applicationStore.fetchOneById(event.applicationId)
 
-      if (setOf(ApplicationStatus.NotSubmitted, ApplicationStatus.FailedPreScreen)
-          .contains(application.status)) {
+      if (
+          setOf(ApplicationStatus.NotSubmitted, ApplicationStatus.FailedPreScreen)
+              .contains(application.status)
+      ) {
         createOrUpdateGoogleDriveFolder(application.projectId, application.internalName)
       }
     }
@@ -112,7 +114,8 @@ class DeliverableFilesRenamer(
             // Recreate the proper filename by the document model
             val extension =
                 sanitizeForFilename(
-                    existing.originalName?.substringAfterLast('.')?.let { ".$it" } ?: "")
+                    existing.originalName?.substringAfterLast('.')?.let { ".$it" } ?: ""
+                )
 
             val createdDateUtc = LocalDate.ofInstant(existing.createdTime, ZoneOffset.UTC)
             val rawFileName =
@@ -139,7 +142,9 @@ class DeliverableFilesRenamer(
                       .and(
                           DSL.or(
                               SUBMISSION_DOCUMENTS.NAME.like(namePattern),
-                              SUBMISSION_DOCUMENTS.NAME.eq("$baseName$extension")))
+                              SUBMISSION_DOCUMENTS.NAME.eq("$baseName$extension"),
+                          )
+                      )
                       .fetch(SUBMISSION_DOCUMENTS.NAME.asNonNullable())
 
               val suffix =

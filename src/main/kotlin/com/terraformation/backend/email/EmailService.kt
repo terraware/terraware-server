@@ -59,7 +59,7 @@ class EmailService(
   fun sendFacilityNotification(
       facilityId: FacilityId,
       model: EmailTemplateModel,
-      requireOptIn: Boolean = true
+      requireOptIn: Boolean = true,
   ) {
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
@@ -250,10 +250,12 @@ class EmailService(
       val overrideEmailAddress =
           (config.email.overrideAddress
               ?: throw IllegalStateException(
-                  "BUG! Override email address is null; should have been caught at start time"))
+                  "BUG! Override email address is null; should have been caught at start time"
+              ))
 
       log.debug(
-          "Override address $overrideEmailAddress replacing ${message.getAllRecipientsString()}")
+          "Override address $overrideEmailAddress replacing ${message.getAllRecipientsString()}"
+      )
 
       helper.setTo(overrideEmailAddress)
       helper.setCc(emptyArray<InternetAddress>())
@@ -279,7 +281,8 @@ class EmailService(
         val messageId = sender.send(message)
 
         log.info(
-            "Sent email $messageId with subject \"${message.subject}\" ${message.getAllRecipientsString()}")
+            "Sent email $messageId with subject \"${message.subject}\" ${message.getAllRecipientsString()}"
+        )
       } catch (e: Exception) {
         // TODO: Queue the message to be retried later.
 
@@ -287,7 +290,8 @@ class EmailService(
         // if appropriate, but the caller won't have access to the recipient list or subject since
         // both could have been overridden above.
         log.info(
-            "Failed to send email with subject \"${message.subject}\" ${message.getAllRecipientsString()}")
+            "Failed to send email with subject \"${message.subject}\" ${message.getAllRecipientsString()}"
+        )
 
         throw e
       }

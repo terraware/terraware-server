@@ -28,7 +28,8 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
               DSL.selectFrom(TIMESERIES_VALUES)
                   .where(TIMESERIES_VALUES.TIMESERIES_ID.eq(TIMESERIES.ID))
                   .orderBy(TIMESERIES_VALUES.CREATED_TIME.desc())
-                  .limit(1))
+                  .limit(1)
+          )
           .convertFrom { result -> result.firstOrNull()?.let { TimeseriesValueModel.ofRecord(it) } }
 
   fun fetchOneByName(deviceId: DeviceId, name: String): TimeseriesModel? {
@@ -106,7 +107,7 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
       deviceId: DeviceId,
       timeseriesId: TimeseriesId,
       value: String,
-      createdTime: Instant
+      createdTime: Instant,
   ) {
     requirePermissions { updateTimeseries(deviceId) }
 
@@ -144,7 +145,7 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
    */
   fun checkExistingValues(
       timeseriesId: TimeseriesId,
-      timestamps: Collection<Instant>
+      timestamps: Collection<Instant>,
   ): Set<Instant> {
     return with(TIMESERIES_VALUES) {
       dslContext

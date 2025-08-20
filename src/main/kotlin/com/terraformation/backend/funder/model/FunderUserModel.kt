@@ -26,7 +26,8 @@ data class FunderUserModel(
             firstName = record[FIRST_NAME],
             lastName = record[LAST_NAME],
             createdTime = record[CREATED_TIME]!!,
-            accountCreated = record[AUTH_ID.isNotNull])
+            accountCreated = record[AUTH_ID.isNotNull],
+        )
       }
     }
   }

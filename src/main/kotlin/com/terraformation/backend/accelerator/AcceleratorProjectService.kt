@@ -36,10 +36,12 @@ class AcceleratorProjectService(
         DSL.multiset(
                 DSL.select(
                         PROJECT_VOTE_DECISIONS.PHASE_ID.asNonNullable(),
-                        PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID.asNonNullable())
+                        PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID.asNonNullable(),
+                    )
                     .from(PROJECT_VOTE_DECISIONS)
                     .where(PROJECT_VOTE_DECISIONS.PROJECT_ID.eq(PROJECTS.ID))
-                    .and(PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID.isNotNull))
+                    .and(PROJECT_VOTE_DECISIONS.VOTE_OPTION_ID.isNotNull)
+            )
             .convertFrom { result -> result.associate { it.value1() to it.value2() } }
 
     return dslContext

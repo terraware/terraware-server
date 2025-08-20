@@ -26,14 +26,16 @@ internal class SpeciesCheckerTest {
       SpeciesProblemsRow(
           speciesId = speciesId,
           fieldId = SpeciesProblemField.ScientificName,
-          typeId = SpeciesProblemType.NameNotFound)
+          typeId = SpeciesProblemType.NameNotFound,
+      )
   private val skeletonSpecies =
       ExistingSpeciesModel(
           createdTime = Instant.EPOCH,
           id = speciesId,
           modifiedTime = Instant.EPOCH,
           organizationId = organizationId,
-          scientificName = "Skeleton species")
+          scientificName = "Skeleton species",
+      )
 
   @BeforeEach
   fun setUp() {
@@ -88,7 +90,8 @@ internal class SpeciesCheckerTest {
   fun `recheckSpecies checks scientific name again if it changed`() {
     checker.recheckSpecies(
         skeletonSpecies.copy(scientificName = "Correct name"),
-        skeletonSpecies.copy(scientificName = "Bogus name"))
+        skeletonSpecies.copy(scientificName = "Bogus name"),
+    )
 
     verify { gbifStore.checkScientificName("Bogus name") }
     verify { speciesStore.updateProblems(speciesId, listOf(nonexistentProblem)) }

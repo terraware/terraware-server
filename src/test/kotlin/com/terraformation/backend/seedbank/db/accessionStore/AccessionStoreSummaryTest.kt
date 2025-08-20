@@ -55,7 +55,8 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             AccessionState.UsedUp to 2,
         ),
         store.countByState(facilityId),
-        "Counts for single facility")
+        "Counts for single facility",
+    )
 
     assertEquals(
         mapOf(
@@ -67,7 +68,8 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             AccessionState.UsedUp to 3,
         ),
         store.countByState(organizationId),
-        "Counts for organization")
+        "Counts for organization",
+    )
   }
 
   @Test
@@ -128,11 +130,13 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     assertEquals(
         3,
         store.getSummaryStatistics(facilityId).subtotalBySeedCount,
-        "Seeds remaining for single facility")
+        "Seeds remaining for single facility",
+    )
     assertEquals(
         7,
         store.getSummaryStatistics(organizationId).subtotalBySeedCount,
-        "Seeds remaining for organization")
+        "Seeds remaining for organization",
+    )
     assertEquals(
         1,
         store
@@ -140,9 +144,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
                     .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing))
+            )
             .subtotalBySeedCount,
-        "Seeds remaining for subquery")
+        "Seeds remaining for subquery",
+    )
   }
 
   @Test
@@ -233,11 +239,13 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     assertEquals(
         3,
         store.getSummaryStatistics(facilityId).subtotalByWeightEstimate,
-        "Seeds remaining for single facility")
+        "Seeds remaining for single facility",
+    )
     assertEquals(
         7,
         store.getSummaryStatistics(organizationId).subtotalByWeightEstimate,
-        "Seeds remaining for organization")
+        "Seeds remaining for organization",
+    )
     assertEquals(
         1,
         store
@@ -245,9 +253,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
                     .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing))
+            )
             .subtotalByWeightEstimate,
-        "Seeds remaining for subquery")
+        "Seeds remaining for subquery",
+    )
   }
 
   @Test
@@ -318,11 +328,13 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     assertEquals(
         20,
         store.getSummaryStatistics(facilityId).seedsWithdrawn,
-        "Seeds withdrawn for single facility")
+        "Seeds withdrawn for single facility",
+    )
     assertEquals(
         25,
         store.getSummaryStatistics(organizationId).seedsWithdrawn,
-        "Seeds withdrawn for organization")
+        "Seeds withdrawn for organization",
+    )
     assertEquals(
         10,
         store
@@ -330,9 +342,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
                     .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing))
+            )
             .seedsWithdrawn,
-        "Seeds withdrawn for subquery")
+        "Seeds withdrawn for subquery",
+    )
   }
 
   @Test
@@ -408,11 +422,13 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     assertEquals(
         3,
         store.getSummaryStatistics(facilityId).unknownQuantityAccessions,
-        "Accessions of unknown seed quantity for single facility")
+        "Accessions of unknown seed quantity for single facility",
+    )
     assertEquals(
         4,
         store.getSummaryStatistics(organizationId).unknownQuantityAccessions,
-        "Accessions of unknown seed quantity for organization")
+        "Accessions of unknown seed quantity for organization",
+    )
     assertEquals(
         2,
         store
@@ -420,9 +436,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
                     .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+                    .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing))
+            )
             .unknownQuantityAccessions,
-        "Accessions of unknown seed quantity for subquery")
+        "Accessions of unknown seed quantity for subquery",
+    )
   }
 
   @Test
@@ -479,9 +497,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             .getSummaryStatistics(
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
-                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId)))
+                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+            )
             .species,
-        "Species for subquery")
+        "Species for subquery",
+    )
   }
 
   @Test
@@ -540,9 +560,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
             .getSummaryStatistics(
                 DSL.select(ACCESSIONS.ID)
                     .from(ACCESSIONS)
-                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId)))
+                    .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+            )
             .species,
-        "Species for subquery")
+        "Species for subquery",
+    )
   }
 
   @Test
@@ -551,12 +573,17 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
     assertEquals(expected, store.getSummaryStatistics(facilityId), "No accessions in facility")
     assertEquals(
-        expected, store.getSummaryStatistics(organizationId), "No accessions in organization")
+        expected,
+        store.getSummaryStatistics(organizationId),
+        "No accessions in organization",
+    )
     assertEquals(
         expected,
         store.getSummaryStatistics(
-            DSL.select(ACCESSIONS.ID).from(ACCESSIONS).where(DSL.falseCondition())),
-        "No accessions for subquery")
+            DSL.select(ACCESSIONS.ID).from(ACCESSIONS).where(DSL.falseCondition())
+        ),
+        "No accessions for subquery",
+    )
   }
 
   @Test
@@ -565,12 +592,15 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     val otherSubLocationId = insertSubLocation()
 
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId)
+    )
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId)
+    )
     insertAccession(AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId)
+    )
 
     assertEquals(2, store.countActiveInSubLocation(subLocationId))
   }
@@ -583,12 +613,15 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     insertSubLocation(facilityId = facilityId)
 
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId)
+    )
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId)
+    )
     insertAccession(AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
     insertAccession(
-        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId))
+        AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId)
+    )
 
     val otherFacilityId = insertFacility()
     val otherFacilitySubLocationId = insertSubLocation(facilityId = otherFacilityId)
@@ -597,10 +630,13 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
         AccessionsRow(
             facilityId = otherFacilityId,
             stateId = AccessionState.InStorage,
-            subLocationId = otherFacilitySubLocationId))
+            subLocationId = otherFacilitySubLocationId,
+        )
+    )
 
     assertEquals(
         mapOf(subLocationId to 2, otherSubLocationId to 1),
-        store.countActiveBySubLocation(facilityId))
+        store.countActiveBySubLocation(facilityId),
+    )
   }
 }

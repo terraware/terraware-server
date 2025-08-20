@@ -27,7 +27,7 @@ class ProjectService(
       projectId: ProjectId,
       accessionIds: Collection<AccessionId>,
       batchIds: Collection<BatchId>,
-      plantingSiteIds: Collection<PlantingSiteId>
+      plantingSiteIds: Collection<PlantingSiteId>,
   ) {
     dslContext.transaction { _ ->
       accessionStore.assignProject(projectId, accessionIds)
@@ -40,7 +40,7 @@ class ProjectService(
       projectId: ProjectId,
       userId: UserId,
       role: ProjectInternalRole? = null,
-      roleName: String? = null
+      roleName: String? = null,
   ) {
     val user = userStore.fetchOneById(userId)
     if (user.globalRoles.isEmpty()) {

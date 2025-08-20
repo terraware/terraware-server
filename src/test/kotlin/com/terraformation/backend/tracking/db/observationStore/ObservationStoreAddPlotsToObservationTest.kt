@@ -21,7 +21,8 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
 
     assertEquals(
         mapOf(permanentPlotId to true, temporaryPlotId to false),
-        observationPlotsDao.findAll().associate { it.monitoringPlotId to it.isPermanent })
+        observationPlotsDao.findAll().associate { it.monitoringPlotId to it.isPermanent },
+    )
   }
 
   @Test

@@ -18,7 +18,9 @@ class PlantingSeasonsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           plantingSites.asSingleValueSublist(
-              "plantingSite", PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
+              "plantingSite",
+              PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
+          ),
       )
     }
   }

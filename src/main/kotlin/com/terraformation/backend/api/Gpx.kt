@@ -46,7 +46,7 @@ data class GpxWaypoint(val latitude: BigDecimal, val longitude: BigDecimal, val 
   constructor(
       latitude: Double,
       longitude: Double,
-      name: String?
+      name: String?,
   ) : this(
       BigDecimal(latitude),
       BigDecimal(longitude),

@@ -52,7 +52,8 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }
               """
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
 
     @Test
@@ -86,7 +87,8 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
                   "status": "ok"
                 }
               """
-                  .trimIndent())
+                  .trimIndent()
+          )
     }
 
     @Test
@@ -134,7 +136,8 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
               .findAll()
               .map { it.organizationId to it.internalTagId }
               .toSet(),
-          "Organization internal tags after update")
+          "Organization internal tags after update",
+      )
     }
 
     @Test

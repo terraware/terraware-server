@@ -39,7 +39,10 @@ class DeviceStore(private val devicesDao: DevicesDao) {
 
     val newRow =
         devicesRow.copy(
-            id = null, createdBy = currentUser().userId, modifiedBy = currentUser().userId)
+            id = null,
+            createdBy = currentUser().userId,
+            modifiedBy = currentUser().userId,
+        )
     devicesDao.insert(newRow)
 
     return newRow.id ?: throw IllegalStateException("Insert succeeded but no ID returned")
@@ -62,7 +65,8 @@ class DeviceStore(private val devicesDao: DevicesDao) {
     // existing one; they can't attempt to move a device to a different facility.
     if (devicesRow.facilityId != null && devicesRow.facilityId != existing.facilityId) {
       throw IllegalArgumentException(
-          "Devices may not be moved between facilities; create a new device instead.")
+          "Devices may not be moved between facilities; create a new device instead."
+      )
     }
 
     // Devices can't be moved between facilities.
@@ -70,6 +74,8 @@ class DeviceStore(private val devicesDao: DevicesDao) {
         devicesRow.copy(
             createdBy = existing.createdBy,
             facilityId = existing.facilityId,
-            modifiedBy = currentUser().userId))
+            modifiedBy = currentUser().userId,
+        )
+    )
   }
 }

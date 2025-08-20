@@ -36,7 +36,7 @@ class ArbitraryJsonObjectSerializer : JsonSerializer<ArbitraryJsonObject?>() {
   override fun serialize(
       value: ArbitraryJsonObject?,
       gen: JsonGenerator,
-      serializers: SerializerProvider
+      serializers: SerializerProvider,
   ) {
     if (value == null) {
       gen.writeNull()

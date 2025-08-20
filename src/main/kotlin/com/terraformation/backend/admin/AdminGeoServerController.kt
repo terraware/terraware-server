@@ -67,7 +67,9 @@ class AdminGeoServerController(
         redirectAttributes.addFlashAttribute("geoJsonResults", jsonTree)
       } else {
         redirectAttributes.addFlashAttribute(
-            "results", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonTree))
+            "results",
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonTree),
+        )
       }
     } else {
       redirectAttributes.failureMessage = "Query returned no results."

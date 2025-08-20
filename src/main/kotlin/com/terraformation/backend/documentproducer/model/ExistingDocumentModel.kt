@@ -36,7 +36,7 @@ data class ExistingDocumentModel(
   companion object {
     fun of(
         record: Record,
-        lastSavedVersionIdField: Field<DocumentSavedVersionId?>? = null
+        lastSavedVersionIdField: Field<DocumentSavedVersionId?>? = null,
     ): ExistingDocumentModel {
       return ExistingDocumentModel(
           createdBy = record[DOCUMENTS.CREATED_BY]!!,

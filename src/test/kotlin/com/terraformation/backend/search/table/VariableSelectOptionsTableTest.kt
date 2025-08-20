@@ -27,7 +27,10 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(
-        userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
+        userId = inserted.userId,
+        organizationId = inserted.organizationId,
+        role = Role.Admin,
+    )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -64,9 +67,13 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
     insertSelectValue(variableId = oldSingleVariableId, optionIds = setOf(oldOption2))
     insertSelectValue(variableId = newSingleVariableId, optionIds = setOf(newOption1))
     insertSelectValue(
-        variableId = oldMultiVariableId, optionIds = setOf(oldMultiOption1, oldMultiOption2))
+        variableId = oldMultiVariableId,
+        optionIds = setOf(oldMultiOption1, oldMultiOption2),
+    )
     insertSelectValue(
-        variableId = newMultiVariableId, optionIds = setOf(newMultiOption1, newMultiOption2))
+        variableId = newMultiVariableId,
+        optionIds = setOf(newMultiOption1, newMultiOption2),
+    )
 
     val prefix = SearchFieldPrefix(searchTables.projectVariables)
     val fields =
@@ -76,7 +83,8 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                 "isMultiSelect",
                 "values.options.id",
                 "values.options.name",
-                "values.options.position")
+                "values.options.position",
+            )
             .map { prefix.resolve(it) }
 
     val expected =
@@ -94,8 +102,12 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                                         mapOf(
                                             "id" to "$newOption1",
                                             "name" to "New option 1",
-                                            "position" to "2")),
-                            ))),
+                                            "position" to "2",
+                                        )
+                                    ),
+                            )
+                        ),
+                ),
                 mapOf(
                     "variableId" to "$newMultiVariableId",
                     "variableType" to "Select",
@@ -108,14 +120,19 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
                                         mapOf(
                                             "id" to "$newMultiOption1",
                                             "name" to "New multi option 1",
-                                            "position" to "6"),
+                                            "position" to "6",
+                                        ),
                                         mapOf(
                                             "id" to "$newMultiOption2",
                                             "name" to "New multi option 2",
-                                            "position" to "7"),
+                                            "position" to "7",
+                                        ),
                                     ),
-                            ))),
-            ))
+                            )
+                        ),
+                ),
+            )
+        )
 
     val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
 

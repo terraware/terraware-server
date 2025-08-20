@@ -27,7 +27,7 @@ data class ManifestImportResult(
     val newVersion: VariableManifestId?,
     val message: String,
     val results: List<String>,
-    val errors: List<String>
+    val errors: List<String>,
 )
 
 @Named
@@ -93,7 +93,7 @@ class ManifestImporter(
 
     fun importCsv(
         documentTemplateId: DocumentTemplateId,
-        inputBytes: ByteArray
+        inputBytes: ByteArray,
     ): ManifestImportResult {
       try {
         csvVariables = csvVariableNormalizer.normalizeFromCsv(inputBytes)
@@ -126,7 +126,8 @@ class ManifestImporter(
             null,
             "Unexpected failure",
             emptyList(),
-            listOf("Exception thrown while importing: $e") + errors)
+            listOf("Exception thrown while importing: $e") + errors,
+        )
       }
 
       return ManifestImportResult(variableManifestId, "Success", results, errors)
@@ -222,7 +223,9 @@ class ManifestImporter(
               variableTypeId = VariableType.Section,
               parentVariableId = parentVariable?.variableId,
               parentVariableTypeId = if (parentVariable != null) VariableType.Section else null,
-              renderHeading = !csvVariable.isNonNumberedSection))
+              renderHeading = !csvVariable.isNonNumberedSection,
+          )
+      )
     }
 
     private fun importDefaultSectionText(csvVariable: CsvSectionVariable) {
@@ -270,7 +273,8 @@ class ManifestImporter(
                         } else {
                           errors.add(
                               "Variable in default section text does not exist - position: " +
-                                  "${csvVariable.position}, referenced variable stable ID: $variableStableId")
+                                  "${csvVariable.position}, referenced variable stable ID: $variableStableId"
+                          )
                           null
                         }
                       } else {
@@ -298,11 +302,13 @@ class ManifestImporter(
                   sectionVariableId = csvVariable.variableId,
                   sectionVariableTypeId = VariableType.Section,
                   variableManifestId = variableManifestId,
-              ))
+              )
+          )
         } else {
           errors.add(
               "Recommended variable does not exist - position: ${csvVariable.position}, " +
-                  "recommended: $recommended")
+                  "recommended: $recommended"
+          )
         }
       }
     }
@@ -320,7 +326,8 @@ class ManifestImporter(
         // and this seems like a good validation as opposed to going back through
         // another csv type -> variable type `when` statement
         throw IllegalStateException(
-            "Variable Row is missing a type ID - position: ${csvVariable.position}, name: ${csvVariable.name}")
+            "Variable Row is missing a type ID - position: ${csvVariable.position}, name: ${csvVariable.name}"
+        )
       }
 
       val isNewVariable = variablesRow.id == null
@@ -364,7 +371,7 @@ class ManifestImporter(
      */
     private fun hasSameSubsections(
         csvVariable: CsvSectionVariable,
-        section: SectionVariable
+        section: SectionVariable,
     ): Boolean {
       val csvSubsections = csvVariablesByParentPath[csvVariable.variablePath] ?: emptyList()
 
@@ -384,7 +391,7 @@ class ManifestImporter(
      */
     private fun canReuseExistingVariable(
         csvVariable: CsvSectionVariable,
-        variable: Variable
+        variable: Variable,
     ): Boolean {
       return csvVariable.description == variable.description &&
           csvVariable.name == variable.name &&

@@ -50,7 +50,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
         variableSelectOptionsDao,
         variableTablesDao,
         variableTableColumnsDao,
-        variableTextsDao)
+        variableTextsDao,
+    )
   }
 
   private val importer: VariableImporter by lazy {
@@ -73,8 +74,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: ID must be unique across the entire all variables CSV, Field: ID, Value: Duplicate ID, Position: 3"),
-          importResult.errors)
+              "Message: ID must be unique across the entire all variables CSV, Field: ID, Value: Duplicate ID, Position: 3"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -88,9 +91,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Top Level Variable Name must be unique, Field: Name, Value: Duplicate Name, Position: 3"),
+              "Message: Top Level Variable Name must be unique, Field: Name, Value: Duplicate Name, Position: 3"
+          ),
           importResult.errors,
-          "Non-Unique Input Names")
+          "Non-Unique Input Names",
+      )
     }
 
     @Test
@@ -114,17 +119,22 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               isRequired = false,
               name = "Project Proponent Table",
               stableId = StableId("1"),
-              variableTypeId = VariableType.Table)
+              variableTypeId = VariableType.Table,
+          )
 
       val actualTableRow = variableTablesDao.fetchOneByVariableId(actualTableVariable.id!!)
       val expectedTableRow =
           VariableTablesRow(
               variableId = actualTableVariable.id!!,
               variableTypeId = VariableType.Table,
-              tableStyleId = VariableTableStyle.Horizontal)
+              tableStyleId = VariableTableStyle.Horizontal,
+          )
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
       assertEquals(
-          expectedTableVariable, actualTableVariable, "Variable DB row for table is correct")
+          expectedTableVariable,
+          actualTableVariable,
+          "Variable DB row for table is correct",
+      )
       assertEquals(expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
 
       val tableColumnVariableRow1 = getVariableByName("Organization Name")
@@ -138,20 +148,25 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 1,
-                  isHeader = false),
+                  isHeader = false,
+              ),
               VariableTableColumnsRecord(
                   variableId = tableColumnVariableRow2.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 2,
-                  isHeader = false),
+                  isHeader = false,
+              ),
               VariableTableColumnsRecord(
                   variableId = tableColumnVariableRow3.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 3,
-                  isHeader = false)),
-          "Variable Table Column DB rows are correct")
+                  isHeader = false,
+              ),
+          ),
+          "Variable Table Column DB rows are correct",
+      )
     }
 
     @Test
@@ -178,27 +193,32 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 1,
-                  isHeader = true),
+                  isHeader = true,
+              ),
               VariableTableColumnsRow(
                   variableId = tableColumnVariableRow2.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 2,
-                  isHeader = false))
+                  isHeader = false,
+              ),
+          )
 
       val actualNumberRow = variableNumbersDao.fetchOneByVariableId(tableColumnVariableRow2.id!!)
       val expectedNumberRow =
           VariableNumbersRow(
               variableId = tableColumnVariableRow2.id!!,
               variableTypeId = VariableType.Number,
-              decimalPlaces = 1)
+              decimalPlaces = 1,
+          )
 
       val actualSelectRow = variableSelectsDao.fetchOneByVariableId(tableColumnVariableRow1.id!!)
       val expectedSelectRow =
           VariableSelectsRow(
               variableId = tableColumnVariableRow1.id!!,
               variableTypeId = VariableType.Select,
-              isMultiple = false)
+              isMultiple = false,
+          )
 
       val actualSelectOptionRows =
           variableSelectOptionsDao.fetchByVariableId(tableColumnVariableRow1.id!!)
@@ -208,24 +228,29 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableId = tableColumnVariableRow1.id!!,
                   variableTypeId = VariableType.Select,
                   name = "Validation/verification",
-                  position = 1),
+                  position = 1,
+              ),
               VariableSelectOptionsRow(
                   variableId = tableColumnVariableRow1.id!!,
                   variableTypeId = VariableType.Select,
                   name = "Some other audit type",
-                  position = 2))
+                  position = 2,
+              ),
+          )
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
       assertEquals(
           expectedTableColumnRows,
           actualTableColumnRows,
-          "Variable Table Column DB rows are correct")
+          "Variable Table Column DB rows are correct",
+      )
       assertEquals(expectedNumberRow, actualNumberRow, "Variable Number row is correct")
       assertEquals(expectedSelectRow, actualSelectRow, "Variable Select row is correct")
       assertEquals(
           expectedSelectOptionRows,
           actualSelectOptionRows.map { it.copy(id = null) },
-          "Variable Select Option rows are correct")
+          "Variable Select Option rows are correct",
+      )
     }
 
     @Test
@@ -255,36 +280,44 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           VariableTextsRow(
               variableId = actualVariableO.id!!,
               variableTypeId = VariableType.Text,
-              variableTextTypeId = VariableTextType.SingleLine),
+              variableTextTypeId = VariableTextType.SingleLine,
+          ),
           actualVariableTextO,
-          "single line text variable saved correctly")
+          "single line text variable saved correctly",
+      )
 
       assertTrue(actualVariableOAL.isList!!, "single input with list is a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariableOAL.id!!,
               variableTypeId = VariableType.Text,
-              variableTextTypeId = VariableTextType.SingleLine),
+              variableTextTypeId = VariableTextType.SingleLine,
+          ),
           actualVariableTextOAL,
-          "single line text variable saved correctly")
+          "single line text variable saved correctly",
+      )
 
       assertFalse(actualVariablePS.isList!!, "multi input without list is not a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariablePS.id!!,
               variableTypeId = VariableType.Text,
-              variableTextTypeId = VariableTextType.MultiLine),
+              variableTextTypeId = VariableTextType.MultiLine,
+          ),
           actualVariableTextPS,
-          "multi line text variable saved correctly")
+          "multi line text variable saved correctly",
+      )
 
       assertTrue(actualVariablePSAL.isList!!, "multi input with list is a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariablePSAL.id!!,
               variableTypeId = VariableType.Text,
-              variableTextTypeId = VariableTextType.MultiLine),
+              variableTextTypeId = VariableTextType.MultiLine,
+          ),
           actualVariableTextPSAL,
-          "multi line text variable saved correctly")
+          "multi line text variable saved correctly",
+      )
     }
 
     @Test
@@ -326,24 +359,34 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       assertFalse(variableEAGER.isList!!, "single select is not a list")
       assertNotNull(variableSelectEAGER, "single select variable select was created")
       assertFalse(
-          variableSelectEAGER?.isMultiple!!, "single select variable select is not multiple")
+          variableSelectEAGER?.isMultiple!!,
+          "single select variable select is not multiple",
+      )
       assertEquals(
-          variableSelectOptionsEAGER.size, 4, "single select variable select options were created")
+          variableSelectOptionsEAGER.size,
+          4,
+          "single select variable select options were created",
+      )
 
       assertEquals(
           VariableSelectOptionsRow(
               name = "medium",
               position = 3,
               variableId = variableEAGER.id,
-              variableTypeId = variableEAGER.variableTypeId),
+              variableTypeId = variableEAGER.variableTypeId,
+          ),
           variableSelectOption3EAGER?.copy(id = null),
-          "single select option")
+          "single select option",
+      )
 
       assertFalse(variableMUMS.isList!!, "multi select is not a list")
       assertNotNull(variableSelectMUMS, "multi select variable select was created")
       assertTrue(variableSelectMUMS?.isMultiple!!, "multi select variable select is multiple")
       assertEquals(
-          variableSelectOptionsMUMS.size, 5, "multi select variable select options were created")
+          variableSelectOptionsMUMS.size,
+          5,
+          "multi select variable select options were created",
+      )
 
       assertEquals(
           VariableSelectOptionsRow(
@@ -351,9 +394,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               position = 4,
               renderedText = "This one has super special rendered text!",
               variableId = variableMUMS.id,
-              variableTypeId = variableMUMS.variableTypeId),
+              variableTypeId = variableMUMS.variableTypeId,
+          ),
           variableSelectOption4MUMS?.copy(id = null),
-          "multi select option with rendered text")
+          "multi select option with rendered text",
+      )
     }
 
     @Test
@@ -374,9 +419,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   "\n- small amount" +
                   "\n- medium amount" +
                   "\n- medium amount" +
-                  "\n- large amount, Position: 2"),
+                  "\n- large amount, Position: 2"
+          ),
           importResult.errors,
-          "duplicate option error")
+          "duplicate option error",
+      )
     }
 
     @Test
@@ -387,8 +434,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Name may not contain line breaks, Field: Name, Value: Number\nName, Position: 2"),
-          importResult.errors)
+              "Message: Name may not contain line breaks, Field: Name, Value: Number\nName, Position: 2"
+          ),
+          importResult.errors,
+      )
     }
 
     @Test
@@ -399,7 +448,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
-          importResult.errors)
+          importResult.errors,
+      )
     }
 
     @Test
@@ -435,16 +485,19 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           VariableImportResult(emptyList(), mapOf(originalVariableId to updatedVariableId)),
-          updateResult)
+          updateResult,
+      )
 
       assertEquals(
           setOf("Option 1", "Option 2", "Option 3"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[0].id!!).map { it.name }.toSet(),
-          "Initial options")
+          "Initial options",
+      )
       assertEquals(
           setOf("Option 1", "Option 2"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[1].id!!).map { it.name }.toSet(),
-          "Updated options")
+          "Updated options",
+      )
     }
 
     @Test
@@ -468,7 +521,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           VariableImportResult(emptyList(), mapOf(initialVariableId to updatedVariableId)),
-          updateResult)
+          updateResult,
+      )
 
       assertEquals(
           setOf(
@@ -495,7 +549,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           variablesDao.findAll().toSet(),
-          "New version of the variable should be present")
+          "New version of the variable should be present",
+      )
     }
 
     @Test
@@ -517,12 +572,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           VariableImportResult(emptyList(), mapOf(initialVariableId to newVariableId)),
-          updateResult)
+          updateResult,
+      )
 
       assertEquals(
           initialVariableId,
           updatedVariables.first { it.id == newVariableId }.replacesVariableId,
-          "New variable should be marked as replacement of existing one")
+          "New variable should be marked as replacement of existing one",
+      )
 
       assertEquals(
           setOf(
@@ -544,9 +601,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   replacesVariableId = initialVariableId,
                   stableId = StableId("1"),
                   variableTypeId = VariableType.Number,
-              )),
+              ),
+          ),
           variablesDao.findAll().toSet(),
-          "Both versions of the variable are present")
+          "Both versions of the variable are present",
+      )
     }
 
     @Test
@@ -579,8 +638,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   initialVariables[0].id!! to updatedVariables[3].id!!,
                   initialVariables[1].id!! to updatedVariables[4].id!!,
                   initialVariables[2].id!! to updatedVariables[5].id!!,
-              )),
-          updateResult)
+              ),
+          ),
+          updateResult,
+      )
 
       assertEquals(
           setOf(
@@ -643,7 +704,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           variablesDao.findAll().toSet(),
-          "New variables are created for columns and table")
+          "New variables are created for columns and table",
+      )
     }
 
     @Test
@@ -677,8 +739,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   initialVariables[0].id!! to newTableVariableId,
                   initialVariables[1].id!! to updatedVariables[4].id!!,
                   initialVariables[2].id!! to updatedVariables[5].id!!,
-              )),
-          updateResult)
+              ),
+          ),
+          updateResult,
+      )
 
       assertEquals(
           setOf(updatedVariables[4].id, updatedVariables[5].id),
@@ -686,7 +750,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               .fetchByTableVariableId(newTableVariableId)
               .map { it.variableId }
               .toSet(),
-          "New columns should be children of new table")
+          "New columns should be children of new table",
+      )
     }
 
     @Test
@@ -716,8 +781,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               mapOf(
                   initialVariables[0].id!! to newTableVariableId,
                   initialVariables[1].id!! to updatedVariables[3].id!!,
-              )),
-          updateResult)
+              ),
+          ),
+          updateResult,
+      )
 
       assertEquals(
           setOf(updatedVariables[3].id, updatedVariables[4].id),
@@ -725,7 +792,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               .fetchByTableVariableId(newTableVariableId)
               .map { it.variableId }
               .toSet(),
-          "New columns should be children of new table")
+          "New columns should be children of new table",
+      )
     }
 
     @Test
@@ -809,7 +877,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          "New variables are created with deliverable related fields")
+          "New variables are created with deliverable related fields",
+      )
     }
 
     @Test
@@ -874,7 +943,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          "New variable is created")
+          "New variable is created",
+      )
 
       assertTableEquals(
           listOf(
@@ -882,7 +952,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRecord(deliverableId2, variables[1].id, 0),
               DeliverableVariablesRecord(deliverableId1, variables[2].id, 1),
           ),
-          "Deliverable variables are updated as expected")
+          "Deliverable variables are updated as expected",
+      )
     }
 
     @Test
@@ -902,8 +973,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Supplied Dependency Variable Stable ID does not exist, Field: Dependency Variable Stable ID, Value: $nonexistentDependencyVariableStableId, Position: 3"),
-          result.errors)
+              "Message: Supplied Dependency Variable Stable ID does not exist, Field: Dependency Variable Stable ID, Value: $nonexistentDependencyVariableStableId, Position: 3"
+          ),
+          result.errors,
+      )
     }
 
     @Test
@@ -923,8 +996,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(
-              "Message: Supplied Dependency Variable Stable ID is the same as this variable's Stable ID, Field: Dependency Variable Stable ID, Value: $stableId, Position: 3"),
-          result.errors)
+              "Message: Supplied Dependency Variable Stable ID is the same as this variable's Stable ID, Field: Dependency Variable Stable ID, Value: $stableId, Position: 3"
+          ),
+          result.errors,
+      )
     }
 
     @Test
@@ -948,8 +1023,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result1 = importer.import(sizedInputStream(csvMissingDependencyVariableStableId))
       assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Variable Stable ID, Value: null, Position: 3"),
-          result1.errors)
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Variable Stable ID, Value: null, Position: 3"
+          ),
+          result1.errors,
+      )
 
       val csvMissingDependencyCondition =
           header +
@@ -961,8 +1038,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result2 = importer.import(sizedInputStream(csvMissingDependencyCondition))
       assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Condition, Value: null, Position: 3"),
-          result2.errors)
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Condition, Value: null, Position: 3"
+          ),
+          result2.errors,
+      )
 
       val csvMissingDependencyValue =
           header +
@@ -974,8 +1053,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result3 = importer.import(sizedInputStream(csvMissingDependencyValue))
       assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Value, Value: null, Position: 3"),
-          result3.errors)
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Value, Value: null, Position: 3"
+          ),
+          result3.errors,
+      )
     }
 
     private fun sizedInputStream(content: ByteArray) =

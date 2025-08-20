@@ -41,7 +41,7 @@ class VoteStore(
 
   fun fetchAllVoteDecisions(
       projectId: ProjectId,
-      phase: CohortPhase? = null
+      phase: CohortPhase? = null,
   ): List<VoteDecisionModel> {
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTE_DECISIONS) {
@@ -71,7 +71,8 @@ class VoteStore(
         listOfNotNull(
             if (userId != null) PROJECT_VOTES.USER_ID.eq(userId) else null,
             PROJECT_VOTES.PHASE_ID.eq(phase),
-            PROJECT_VOTES.PROJECT_ID.eq(projectId))
+            PROJECT_VOTES.PROJECT_ID.eq(projectId),
+        )
     val rowsDeleted = dslContext.deleteFrom(PROJECT_VOTES).where(conditions).execute()
 
     if (rowsDeleted == 0) {
@@ -142,7 +143,8 @@ class VoteStore(
                 CREATED_BY,
                 CREATED_TIME,
                 MODIFIED_BY,
-                MODIFIED_TIME)
+                MODIFIED_TIME,
+            )
             .select(
                 DSL.select(
                         DEFAULT_VOTERS.USER_ID,
@@ -151,8 +153,10 @@ class VoteStore(
                         DSL.value(currentUserId),
                         DSL.value(now),
                         DSL.value(currentUserId),
-                        DSL.value(now))
-                    .from(DEFAULT_VOTERS))
+                        DSL.value(now),
+                    )
+                    .from(DEFAULT_VOTERS)
+            )
             .onConflict()
             .doNothing()
             .execute()
@@ -165,7 +169,7 @@ class VoteStore(
   private fun updateProjectVoteDecisions(
       projectId: ProjectId,
       phase: CohortPhase,
-      now: Instant = clock.instant()
+      now: Instant = clock.instant(),
   ) {
     val votes =
         dslContext

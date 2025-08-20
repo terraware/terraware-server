@@ -27,7 +27,11 @@ class GeometryFileParserTest {
                           Coordinate(-155.63200453, 19.16360697),
                           Coordinate(-155.63297767, 19.16570482),
                           Coordinate(-155.63433804, 19.16382232),
-                          Coordinate(-155.63200453, 19.16360697)))))
+                          Coordinate(-155.63200453, 19.16360697),
+                      )
+                  )
+              )
+          )
           .norm()
 
   @Test

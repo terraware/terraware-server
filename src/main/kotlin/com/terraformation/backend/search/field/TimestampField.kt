@@ -28,7 +28,8 @@ class TimestampField(
           fieldNode.values.map { if (it != null) Instant.parse(it) else null }
         } catch (e: DateTimeParseException) {
           throw IllegalArgumentException(
-              "Timestamps must be in RFC 3339 format (example: 2021-05-28T18:45:30Z)")
+              "Timestamps must be in RFC 3339 format (example: 2021-05-28T18:45:30Z)"
+          )
         }
     val nonNullInstants = instantValues.filterNotNull()
 
@@ -38,7 +39,8 @@ class TimestampField(
               listOfNotNull(
                   if (nonNullInstants.isNotEmpty()) databaseField.`in`(nonNullInstants) else null,
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null,
-              ))
+              )
+          )
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for timestamps")

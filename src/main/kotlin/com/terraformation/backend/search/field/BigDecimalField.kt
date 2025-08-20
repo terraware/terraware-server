@@ -16,7 +16,12 @@ class BigDecimalField(
     exportable: Boolean = true,
 ) :
     NumericSearchField<BigDecimal>(
-        fieldName, databaseField, table, localize = localize, exportable = exportable) {
+        fieldName,
+        databaseField,
+        table,
+        localize = localize,
+        exportable = exportable,
+    ) {
   override fun fromString(value: String) = numberFormat.parseObject(value) as BigDecimal
 
   override fun makeNumberFormat(): NumberFormat {

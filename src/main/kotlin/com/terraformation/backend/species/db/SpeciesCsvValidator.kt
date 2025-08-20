@@ -67,13 +67,15 @@ class SpeciesCsvValidator(
             UploadProblemType.DuplicateValue,
             field,
             value,
-            messages.speciesCsvScientificNameExists())
+            messages.speciesCsvScientificNameExists(),
+        )
       } else if (value in existingRenames) {
         addWarning(
             UploadProblemType.DuplicateValue,
             field,
             "${existingRenames[value]} ($value)",
-            messages.speciesCsvScientificNameExists())
+            messages.speciesCsvScientificNameExists(),
+        )
       }
     }
   }
@@ -85,7 +87,8 @@ class SpeciesCsvValidator(
             UploadProblemType.MalformedValue,
             field,
             value,
-            messages.speciesCsvFamilyMultipleWords())
+            messages.speciesCsvFamilyMultipleWords(),
+        )
       } else {
         val invalidChar = Regex("[^A-Za-z]").find(value)?.value
         if (invalidChar != null) {
@@ -101,13 +104,16 @@ class SpeciesCsvValidator(
   }
 
   private fun validateConservationCategory(value: String?, field: String) {
-    if (!value.isNullOrBlank() &&
-        ConservationCategory.forId(value.trim().uppercase(Locale.ENGLISH)) == null) {
+    if (
+        !value.isNullOrBlank() &&
+            ConservationCategory.forId(value.trim().uppercase(Locale.ENGLISH)) == null
+    ) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvConservationCategoryInvalid())
+          messages.speciesCsvConservationCategoryInvalid(),
+      )
     }
   }
 
@@ -118,10 +124,16 @@ class SpeciesCsvValidator(
   }
 
   private fun validateGrowthForm(value: String?, field: String) {
-    if (!value.isNullOrBlank() &&
-        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validGrowthForms }) {
+    if (
+        !value.isNullOrBlank() &&
+            value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validGrowthForms }
+    ) {
       addError(
-          UploadProblemType.UnrecognizedValue, field, value, messages.speciesCsvGrowthFormInvalid())
+          UploadProblemType.UnrecognizedValue,
+          field,
+          value,
+          messages.speciesCsvGrowthFormInvalid(),
+      )
     }
   }
 
@@ -131,40 +143,50 @@ class SpeciesCsvValidator(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvSeedStorageBehaviorInvalid())
+          messages.speciesCsvSeedStorageBehaviorInvalid(),
+      )
     }
   }
 
   private fun validateEcosystemTypes(value: String?, field: String) {
-    if (!value.isNullOrBlank() &&
-        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validEcosystemTypes }) {
+    if (
+        !value.isNullOrBlank() &&
+            value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validEcosystemTypes }
+    ) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvEcosystemTypesInvalid())
+          messages.speciesCsvEcosystemTypesInvalid(),
+      )
     }
   }
 
   private fun validateSuccessionalGroup(value: String?, field: String) {
-    if (!value.isNullOrBlank() &&
-        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validSuccessionalGroups }) {
+    if (
+        !value.isNullOrBlank() &&
+            value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validSuccessionalGroups }
+    ) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvSuccessionalGroupInvalid())
+          messages.speciesCsvSuccessionalGroupInvalid(),
+      )
     }
   }
 
   private fun validatePlantMaterialSourcingMethod(value: String?, field: String) {
-    if (!value.isNullOrBlank() &&
-        value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validPlantMaterialSourcingMethods }) {
+    if (
+        !value.isNullOrBlank() &&
+            value.split(MULTIPLE_VALUE_DELIMITER).any { it !in validPlantMaterialSourcingMethods }
+    ) {
       addError(
           UploadProblemType.UnrecognizedValue,
           field,
           value,
-          messages.speciesCsvPlantMaterialSourcingMethodInvalid())
+          messages.speciesCsvPlantMaterialSourcingMethodInvalid(),
+      )
     }
   }
 }

@@ -35,7 +35,7 @@ class AutomationsController(
   @Operation(summary = "Gets a list of automations for a device or facility.")
   fun listAutomations(
       @RequestParam deviceId: DeviceId?,
-      @RequestParam facilityId: FacilityId?
+      @RequestParam facilityId: FacilityId?,
   ): ListAutomationsResponsePayload {
     val automations =
         if (facilityId != null && deviceId == null) {
@@ -84,7 +84,7 @@ class AutomationsController(
   @PutMapping("/{automationId}")
   fun updateAutomation(
       @PathVariable("automationId") automationId: AutomationId,
-      @RequestBody payload: UpdateAutomationRequestPayload
+      @RequestBody payload: UpdateAutomationRequestPayload,
   ): SimpleSuccessResponsePayload {
     val existing = automationStore.fetchOneById(automationId)
     automationStore.update(payload.toModel(existing))
@@ -104,7 +104,7 @@ class AutomationsController(
   @PostMapping("/{automationId}/trigger")
   fun postAutomationTrigger(
       @PathVariable automationId: AutomationId,
-      @RequestBody payload: AutomationTriggerRequestPayload
+      @RequestBody payload: AutomationTriggerRequestPayload,
   ): SimpleSuccessResponsePayload {
     automationService.trigger(automationId, payload.timeseriesValue, payload.message)
     return SimpleSuccessResponsePayload()
@@ -115,11 +115,13 @@ data class AutomationTriggerRequestPayload(
     @Schema(
         description =
             "For automations that are triggered by changes to timeseries values, the value that " +
-                "triggered the automation.")
+                "triggered the automation."
+    )
     val timeseriesValue: Double?,
     @Schema(
         description =
-            "Default message to publish if the automation type isn't yet supported by the server.")
+            "Default message to publish if the automation type isn't yet supported by the server."
+    )
     val message: String?,
 )
 
@@ -155,7 +157,8 @@ data class AutomationPayload(
       model.verbosity,
       model.lowerThreshold,
       model.upperThreshold,
-      model.settings)
+      model.settings,
+  )
 }
 
 data class CreateAutomationRequestPayload(

@@ -80,7 +80,8 @@ class AccessionImporter(
         fileName,
         UploadType.AccessionCSV,
         parentStore.getOrganizationId(facilityId),
-        facilityId)
+        facilityId,
+    )
   }
 
   override fun getValidator(uploadsRow: UploadsRow): AccessionCsvValidator {
@@ -96,14 +97,15 @@ class AccessionImporter(
                   .where(ACCESSIONS.FACILITY_ID.eq(uploadsRow.facilityId))
                   .and(ACCESSIONS.NUMBER.`in`(numbers))
                   .fetch(ACCESSIONS.NUMBER.asNonNullable())
-            })
+            },
+        )
     return validator
   }
 
   override fun doImportCsv(
       uploadsRow: UploadsRow,
       csvReader: CSVReader,
-      overwriteExisting: Boolean
+      overwriteExisting: Boolean,
   ) {
     val organizationId = uploadsRow.organizationId!!
     val facilityId = uploadsRow.facilityId!!
@@ -130,7 +132,7 @@ class AccessionImporter(
       organizationId: OrganizationId,
       facilityId: FacilityId,
       clock: Clock,
-      overwriteExisting: Boolean
+      overwriteExisting: Boolean,
   ) {
     val values = rawValues.map { it.trim().ifEmpty { null } }
 
@@ -138,8 +140,10 @@ class AccessionImporter(
     // columns have values; we don't want to try to create accessions for them if the user downloads
     // the template, edits some of the rows, and leaves the other example rows in place.
     val columnsWithValues = values.count { it != null }
-    if (columnsWithValues == 0 ||
-        (values[5] != null && values[14] != null && columnsWithValues == 2)) {
+    if (
+        columnsWithValues == 0 ||
+            (values[5] != null && values[14] != null && columnsWithValues == 2)
+    ) {
       return
     }
 
@@ -187,8 +191,10 @@ class AccessionImporter(
             NewSpeciesModel(
                 commonName = commonName,
                 organizationId = organizationId,
-                scientificName = scientificName),
-            overwriteExisting = false)
+                scientificName = scientificName,
+            ),
+            overwriteExisting = false,
+        )
 
     if (existing != null) {
       accessionStore.update(
@@ -208,7 +214,8 @@ class AccessionImporter(
               remaining = SeedQuantityModel.of(quantity, units),
               speciesId = speciesId,
               state = status,
-          ))
+          )
+      )
     } else {
       accessionStore.create(
           AccessionModel(
@@ -231,7 +238,8 @@ class AccessionImporter(
               source = DataSource.FileImport,
               speciesId = speciesId,
               state = status,
-          ))
+          )
+      )
     }
   }
 

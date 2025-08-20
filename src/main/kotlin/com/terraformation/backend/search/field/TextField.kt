@@ -37,7 +37,8 @@ class TextField(
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().contains(it) }))
+                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().contains(it) })
+          )
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
@@ -47,11 +48,13 @@ class TextField(
                 } else {
                   databaseField.isNull
                 }
-              })
+              }
+          )
       SearchFilterType.PhraseMatch ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(phaseMatchCondition(nonNullValues)))
+                  .plus(phaseMatchCondition(nonNullValues))
+          )
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
     }

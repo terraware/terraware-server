@@ -49,7 +49,8 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
         facilitiesDao,
         Messages(),
         organizationsDao,
-        subLocationsDao)
+        subLocationsDao,
+    )
   }
 
   private val scanner: NotificationScanner by lazy {
@@ -84,7 +85,8 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     facilitiesDao.update(
         facilitiesDao
             .fetchOneById(facilityId)!!
-            .copy(nextNotificationTime = Instant.EPOCH + increment))
+            .copy(nextNotificationTime = Instant.EPOCH + increment)
+    )
 
     scanner.sendNotifications()
     assertTableEmpty(NOTIFICATIONS, "Should not have inserted notification before clock advanced")
@@ -144,14 +146,16 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     facilitiesDao.update(
         facilitiesDao
             .fetchOneById(facilityId)!!
-            .copy(lastNotificationDate = null, timeZone = earlierTimeZone))
+            .copy(lastNotificationDate = null, timeZone = earlierTimeZone)
+    )
 
     scanner.sendNotifications()
 
     assertEquals(
         LocalDate.now(clock).minusDays(1),
         facilitiesDao.fetchOneById(facilityId)?.lastNotificationDate,
-        "Should have set last notification date based on facility time zone")
+        "Should have set last notification date based on facility time zone",
+    )
     assertEquals(emptySet<FacilityId>(), notifiedFacilities, "Should not have sent notifications")
   }
 
@@ -167,12 +171,16 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     // but is today in the facility's time zone.
     val earlierTimeZone = ZoneId.of("America/New_York")
     insertFacility(
-        lastNotificationDate = LocalDate.now(clock).minusDays(1), timeZone = earlierTimeZone)
+        lastNotificationDate = LocalDate.now(clock).minusDays(1),
+        timeZone = earlierTimeZone,
+    )
 
     val laterTimeZone = ZoneId.of("Europe/Athens")
     val laterFacilityId =
         insertFacility(
-            lastNotificationDate = LocalDate.now(clock).minusDays(1), timeZone = laterTimeZone)
+            lastNotificationDate = LocalDate.now(clock).minusDays(1),
+            timeZone = laterTimeZone,
+        )
 
     scanner.sendNotifications()
 

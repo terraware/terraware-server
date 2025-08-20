@@ -34,28 +34,48 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
       listOf(
           batches.asMultiValueSublist("batches", ORGANIZATIONS.ID.eq(BATCHES.ORGANIZATION_ID)),
           countries.asSingleValueSublist(
-              "country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE), isRequired = false),
+              "country",
+              ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE),
+              isRequired = false,
+          ),
           countrySubdivisions.asSingleValueSublist(
               "countrySubdivision",
               ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE),
-              isRequired = false),
+              isRequired = false,
+          ),
           draftPlantingSites.asMultiValueSublist(
-              "draftPlantingSites", ORGANIZATIONS.ID.eq(DRAFT_PLANTING_SITES.ORGANIZATION_ID)),
+              "draftPlantingSites",
+              ORGANIZATIONS.ID.eq(DRAFT_PLANTING_SITES.ORGANIZATION_ID),
+          ),
           facilities.asMultiValueSublist(
-              "facilities", ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID)),
+              "facilities",
+              ORGANIZATIONS.ID.eq(FACILITIES.ORGANIZATION_ID),
+          ),
           organizationInternalTags.asMultiValueSublist(
-              "internalTags", ORGANIZATIONS.ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)),
+              "internalTags",
+              ORGANIZATIONS.ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID),
+          ),
           inventories.asMultiValueSublist(
-              "inventories", ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID)),
+              "inventories",
+              ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID),
+          ),
           organizationUsers.asMultiValueSublist(
-              "members", ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
+              "members",
+              ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID),
+          ),
           nurseryWithdrawals.asMultiValueSublist(
-              "nurseryWithdrawals", ORGANIZATIONS.ID.eq(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID)),
+              "nurseryWithdrawals",
+              ORGANIZATIONS.ID.eq(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID),
+          ),
           plantingSites.asMultiValueSublist(
-              "plantingSites", ORGANIZATIONS.ID.eq(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID)),
+              "plantingSites",
+              ORGANIZATIONS.ID.eq(PLANTING_SITE_SUMMARIES.ORGANIZATION_ID),
+          ),
           projects.asMultiValueSublist("projects", ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID)),
           reports.asMultiValueSublist(
-              "reports", ORGANIZATIONS.ID.eq(SEED_FUND_REPORTS.ORGANIZATION_ID)),
+              "reports",
+              ORGANIZATIONS.ID.eq(SEED_FUND_REPORTS.ORGANIZATION_ID),
+          ),
           species.asMultiValueSublist("species", ORGANIZATIONS.ID.eq(SPECIES.ORGANIZATION_ID)),
       )
     }
@@ -78,13 +98,17 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               DSL.selectOne()
                   .from(ORGANIZATION_INTERNAL_TAGS)
                   .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
+                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+          )
         } else {
           null
         }
 
     return DSL.or(
         listOfNotNull(
-            ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys), acceleratorCondition))
+            ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys),
+            acceleratorCondition,
+        )
+    )
   }
 }

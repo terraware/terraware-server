@@ -21,14 +21,18 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
             .copy(
                 remainingGrams = otherWeight.grams,
                 remainingQuantity = otherWeight.quantity,
-                remainingUnitsId = otherWeight.units))
+                remainingUnitsId = otherWeight.units,
+            )
+    )
     accessionsDao.update(
         accessionsDao
             .fetchOneById(accessionId2)!!
             .copy(
                 remainingGrams = BigDecimal(1000),
                 remainingQuantity = BigDecimal(1),
-                remainingUnitsId = SeedQuantityUnits.Kilograms))
+                remainingUnitsId = SeedQuantityUnits.Kilograms,
+            )
+    )
   }
 
   @Test
@@ -40,7 +44,8 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
         FieldNode(
             remainingGramsField,
             listOf("900000 Milligrams", "650,000.000001 Pounds"),
-            SearchFilterType.Range)
+            SearchFilterType.Range,
+        )
 
     val expected =
         SearchResults(listOf(mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG")))
@@ -87,7 +92,8 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
             remainingKilogramsField,
             remainingMilligramsField,
             remainingOuncesField,
-            remainingPoundsField)
+            remainingPoundsField,
+        )
     val searchNode = FieldNode(remainingKilogramsField, listOf("1"))
 
     val expected =
@@ -99,7 +105,10 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
                     "remainingKilograms" to "1",
                     "remainingMilligrams" to "1,000,000",
                     "remainingOunces" to "35.274",
-                    "remainingPounds" to "2.20462")))
+                    "remainingPounds" to "2.20462",
+                )
+            )
+        )
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -130,7 +139,9 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
               SearchResults(
                   listOf(
                       mapOf("accessionNumber" to "ABCDEFG", "id" to "$accessionId2"),
-                      mapOf("accessionNumber" to "XYZ", "id" to "$accessionId1")))
+                      mapOf("accessionNumber" to "XYZ", "id" to "$accessionId1"),
+                  )
+              )
 
           val result = searchAccessions(facilityId, emptyList(), searchNode)
 

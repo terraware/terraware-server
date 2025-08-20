@@ -26,7 +26,8 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         ParentStore(dslContext),
-        recordedPlantsDao)
+        recordedPlantsDao,
+    )
   }
   protected val helper: ObservationTestHelper by lazy {
     ObservationTestHelper(this, store, user.userId)

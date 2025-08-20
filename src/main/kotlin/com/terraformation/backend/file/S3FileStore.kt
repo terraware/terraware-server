@@ -54,7 +54,8 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
     mapExceptions(url) {
       val response = s3Client.deleteObject(request)
       log.info(
-          "Response: delete marker = ${response.deleteMarker()}, version = ${response.versionId()}")
+          "Response: delete marker = ${response.deleteMarker()}, version = ${response.versionId()}"
+      )
     }
   }
 
@@ -167,7 +168,7 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
    */
   private fun readChunks(
       inputStream: InputStream,
-      chunkSize: Int = 5 * 1024 * 1024
+      chunkSize: Int = 5 * 1024 * 1024,
   ): Sequence<ByteArray> = sequence {
     while (true) {
       val chunk = inputStream.readNBytes(chunkSize)

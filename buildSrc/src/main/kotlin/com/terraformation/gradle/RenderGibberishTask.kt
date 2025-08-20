@@ -44,7 +44,8 @@ constructor(
               objectFactory
                   .fileTree()
                   .from(resourcesSourceDir.resolve("i18n"))
-                  .include("**/*_en.properties"))
+                  .include("**/*_en.properties")
+          )
 
   @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
 
