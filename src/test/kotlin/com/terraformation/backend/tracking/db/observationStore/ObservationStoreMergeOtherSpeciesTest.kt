@@ -229,7 +229,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
-    assertTableEquals(expectedPlotsBeforeMerge.map { it.toSubZone() }, "Before merge")
+    assertTableEquals(expectedPlotsBeforeMerge.map { it.toSubzone() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toZone() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toSite() }, "Before merge")
 
@@ -256,7 +256,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
-    assertTableEquals(expectedPlotsAfterMerge.map { it.toSubZone() }, "After merge")
+    assertTableEquals(expectedPlotsAfterMerge.map { it.toSubzone() }, "After merge")
     assertTableEquals(expectedPlotsAfterMerge.map { it.toZone() }, "After merge")
     assertTableEquals(expectedPlotsAfterMerge.map { it.toSite() }, "After merge")
   }
@@ -692,7 +692,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     }
   }
 
-  private fun ObservedPlotSpeciesTotalsRecord.toSubZone(
+  private fun ObservedPlotSpeciesTotalsRecord.toSubzone(
       plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId
   ) =
       ObservedSubzoneSpeciesTotalsRecord(
