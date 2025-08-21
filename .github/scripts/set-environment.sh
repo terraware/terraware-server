@@ -33,9 +33,5 @@ merged_pr_number=$(git log -1 --pretty=%s | sed -En 's/.*\(#([0-9]+)\)$/\1/p')
     if [[ "$IS_CD" == true ]]; then
         echo "DOCKER_TAGS=${docker_image}:$commit_sha,${docker_image}:${TIER}"
         echo "TIER=$TIER"
-
-        # Define secret names based on the tier
-        echo "SSH_KEY_SECRET_NAME=${TIER}_SSH_KEY"
-        echo "SSH_USER_SECRET_NAME=${TIER}_SSH_USER"
     fi
 ) >> "$GITHUB_ENV"
