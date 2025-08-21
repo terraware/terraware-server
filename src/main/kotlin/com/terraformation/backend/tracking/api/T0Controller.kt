@@ -33,7 +33,7 @@ class T0Controller(private val t0PlotStore: T0PlotStore) {
   @PostMapping("/{monitoringPlotId}/species")
   fun assignT0PlotSpeciesDensity(
       @PathVariable monitoringPlotId: MonitoringPlotId,
-      @RequestBody payload: AssignPlotT0SpeciesPayload,
+      @RequestBody payload: AssignT0PlotSpeciesPayload,
   ): SimpleSuccessResponsePayload {
     t0PlotStore.assignT0PlotSpeciesDensity(monitoringPlotId, payload.speciesId, payload.density)
 
@@ -41,4 +41,4 @@ class T0Controller(private val t0PlotStore: T0PlotStore) {
   }
 }
 
-data class AssignPlotT0SpeciesPayload(val speciesId: SpeciesId, val density: BigDecimal)
+data class AssignT0PlotSpeciesPayload(val speciesId: SpeciesId, val density: BigDecimal)

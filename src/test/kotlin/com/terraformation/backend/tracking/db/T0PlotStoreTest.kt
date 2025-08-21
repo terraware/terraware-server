@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -16,6 +17,8 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.records.T0PlotRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
+import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
 import java.math.BigDecimal
 import kotlin.lazy
 import org.junit.jupiter.api.BeforeEach
@@ -26,9 +29,9 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
-  //  override val user: TerrawareUser = mockUser()
 
-  private val store: T0PlotStore by lazy { T0PlotStore(dslContext) }
+  private val eventPublisher = TestEventPublisher()
+  private val store: T0PlotStore by lazy { T0PlotStore(dslContext, eventPublisher) }
 
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
@@ -80,6 +83,13 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Should have inserted new record",
       )
+
+      eventPublisher.assertEventPublished(
+          T0ObservationAssignedEvent(
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+          )
+      )
     }
 
     @Test
@@ -97,6 +107,19 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               )
           ),
           "Should have updated existing record",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0ObservationAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+              ),
+              T0ObservationAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = secondObservationId,
+              ),
+          )
       )
     }
   }
@@ -135,6 +158,14 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Should have inserted species and density",
       )
+
+      eventPublisher.assertEventPublished(
+          T0SpeciesDensityAssignedEvent(
+              monitoringPlotId = monitoringPlotId,
+              speciesId = speciesId1,
+              density = density,
+          )
+      )
     }
 
     @Test
@@ -154,6 +185,21 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               )
           ),
           "Should have updated density on conflict",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0SpeciesDensityAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  density = initialDensity,
+              ),
+              T0SpeciesDensityAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  density = updatedDensity,
+              ),
+          )
       )
     }
 
@@ -179,6 +225,21 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           "Should have inserted two rows",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0SpeciesDensityAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  density = density1,
+              ),
+              T0SpeciesDensityAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId2,
+                  density = density2,
+              ),
+          )
       )
     }
 
