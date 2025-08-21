@@ -56,6 +56,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     plantingSubzoneId = insertPlantingSubzone()
     monitoringPlotId = insertMonitoringPlot()
     observationId = insertObservation()
+    speciesId1 = insertSpecies()
+    speciesId2 = insertSpecies()
   }
 
   @Nested
@@ -122,16 +124,45 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       )
     }
+
+    @Test
+    fun `allows observation to be set for plot after species density`() {
+      store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal("101.00"))
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertTableEquals(
+          listOf(
+              T0PlotRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  estimatedPlantingDensity = BigDecimal("101.00"),
+              ),
+              T0PlotRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+              ),
+          ),
+          "Should allow both species density and observation to be set for plot.",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0SpeciesDensityAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  density = BigDecimal("101.00"),
+              ),
+              T0ObservationAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+              ),
+          )
+      )
+    }
   }
 
   @Nested
   inner class AssignT0PlotSpeciesDensity {
-    @BeforeEach
-    fun setUp() {
-      speciesId1 = insertSpecies()
-      speciesId2 = insertSpecies()
-    }
-
     @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
@@ -247,6 +278,14 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception for zero density values`() {
       assertThrows<IllegalArgumentException> {
         store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.ZERO)
+      }
+    }
+
+    @Test
+    fun `does not allow species density to be set after observation is assigned to plot`() {
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      assertThrows<IllegalStateException> {
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal("200.00"))
       }
     }
   }

@@ -51,6 +51,12 @@ class T0PlotStore(
       throw IllegalArgumentException("Density must be above zero")
     }
 
+    if (plotHasObservationT0(monitoringPlotId)) {
+      throw IllegalStateException(
+          "Cannot assign species density to plot $monitoringPlotId which already has observation assigned"
+      )
+    }
+
     with(T0_PLOT) {
       dslContext
           .insertInto(this)
@@ -70,4 +76,12 @@ class T0PlotStore(
       )
     }
   }
+
+  private fun plotHasObservationT0(monitoringPlotId: MonitoringPlotId) =
+      with(T0_PLOT) {
+        dslContext.fetchExists(
+            this,
+            MONITORING_PLOT_ID.eq(monitoringPlotId).and(OBSERVATION_ID.isNotNull),
+        )
+      }
 }
