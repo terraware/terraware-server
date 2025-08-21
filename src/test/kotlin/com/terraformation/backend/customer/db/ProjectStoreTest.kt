@@ -332,6 +332,14 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws exception if neither role or roleName are specified`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      assertThrows<DataIntegrityViolationException> {
+        store.addInternalUser(projectId, user.userId, null, null)
+      }
+    }
+
+    @Test
     fun `adds internal user with role`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       insertUser() // other user doesn't get added
