@@ -1187,6 +1187,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
             canUpdateSubmissionStatus(deliverableId, projectId)
           }
 
+  @Test
+  fun updateT0() = allow { updateT0(monitoringPlotId) } ifUser { canUpdateT0(monitoringPlotId) }
+
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 
   @Test

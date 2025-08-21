@@ -636,6 +636,7 @@ internal class PermissionTest : DatabaseTest() {
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
         updateMonitoringPlot = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -917,6 +918,7 @@ internal class PermissionTest : DatabaseTest() {
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
         updateMonitoringPlot = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -1107,6 +1109,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -1570,6 +1573,7 @@ internal class PermissionTest : DatabaseTest() {
         *monitoringPlotIds.toTypedArray(),
         readMonitoringPlot = true,
         updateMonitoringPlot = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -3840,6 +3844,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg monitoringPlotIds: MonitoringPlotId,
         readMonitoringPlot: Boolean = false,
         updateMonitoringPlot: Boolean = false,
+        updateT0: Boolean = false,
     ) {
       monitoringPlotIds.forEach { monitoringPlotId ->
         val idInDatabase = getDatabaseId(monitoringPlotId)
@@ -3853,6 +3858,11 @@ internal class PermissionTest : DatabaseTest() {
             updateMonitoringPlot,
             user.canUpdateMonitoringPlot(idInDatabase),
             "Can update monitoring plot $monitoringPlotId",
+        )
+        assertEquals(
+            updateT0,
+            user.canUpdateT0(idInDatabase),
+            "Can update T0 for monitoring plot $monitoringPlotId",
         )
 
         uncheckedMonitoringPlots.remove(monitoringPlotId)
