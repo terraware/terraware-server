@@ -1443,6 +1443,15 @@ class ObservationStore(
           .execute()
     }
 
+    with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+      dslContext
+          .deleteFrom(OBSERVED_SUBZONE_SPECIES_TOTALS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_NAME.eq(otherSpeciesName))
+          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+          .execute()
+    }
+
     with(OBSERVED_ZONE_SPECIES_TOTALS) {
       dslContext
           .deleteFrom(OBSERVED_ZONE_SPECIES_TOTALS)

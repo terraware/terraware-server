@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -17,11 +18,13 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedSubzoneSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedZoneSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
@@ -226,6 +229,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
+    assertTableEquals(expectedPlotsBeforeMerge.map { it.toSubZone() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toZone() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toSite() }, "Before merge")
 
@@ -252,6 +256,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
+    assertTableEquals(expectedPlotsAfterMerge.map { it.toSubZone() }, "After merge")
     assertTableEquals(expectedPlotsAfterMerge.map { it.toZone() }, "After merge")
     assertTableEquals(expectedPlotsAfterMerge.map { it.toSite() }, "After merge")
   }
@@ -326,6 +331,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
+    assertTableEmpty(OBSERVED_SUBZONE_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
 
@@ -341,6 +347,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
+    assertTableEmpty(OBSERVED_SUBZONE_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
   }
@@ -684,6 +691,23 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
       store.mergeOtherSpecies(observationId, "Other", speciesId)
     }
   }
+
+  private fun ObservedPlotSpeciesTotalsRecord.toSubZone(
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId
+  ) =
+      ObservedSubzoneSpeciesTotalsRecord(
+          observationId = observationId,
+          plantingSubzoneId = plantingSubzoneId,
+          speciesId = speciesId,
+          speciesName = speciesName,
+          certaintyId = certaintyId,
+          totalLive = totalLive,
+          totalDead = totalDead,
+          totalExisting = totalExisting,
+          mortalityRate = mortalityRate,
+          cumulativeDead = cumulativeDead,
+          permanentLive = permanentLive,
+      )
 
   private fun ObservedPlotSpeciesTotalsRecord.toZone(
       plantingZoneId: PlantingZoneId = inserted.plantingZoneId
