@@ -18,7 +18,6 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import java.math.BigDecimal
 import kotlin.lazy
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -46,24 +45,20 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setUp() {
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Manager)
-    projectId = insertProject()
     val gridOrigin = point(1)
     val siteBoundary = multiPolygon(200)
-    plantingSiteId =
-        insertPlantingSite(projectId = projectId, boundary = siteBoundary, gridOrigin = gridOrigin)
+    plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     plantingSiteHistoryId = insertPlantingSiteHistory()
     plantingZoneId = insertPlantingZone()
     plantingSubzoneId = insertPlantingSubzone()
     monitoringPlotId = insertMonitoringPlot()
     observationId = insertObservation()
-    speciesId1 = insertSpecies()
-    speciesId2 = insertSpecies()
   }
 
   @Nested
   inner class AssignT0PlotObservation {
     @Test
-    fun `throws AccessDeniedException when user lacks permission`() {
+    fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
@@ -108,8 +103,14 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class AssignT0PlotSpeciesDensity {
+    @BeforeEach
+    fun setUp() {
+      speciesId1 = insertSpecies()
+      speciesId2 = insertSpecies()
+    }
+
     @Test
-    fun `throws AccessDeniedException when user lacks permission`() {
+    fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
@@ -182,7 +183,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `handles zero density values`() {
+    fun `throws exception for zero density values`() {
       assertThrows<IllegalArgumentException> {
         store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.ZERO)
       }
