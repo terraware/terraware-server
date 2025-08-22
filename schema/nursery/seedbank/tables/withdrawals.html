@@ -543,8 +543,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_destination_check</td>
-                                    <td>(destination !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>withdrawals_notes_check</td>
+                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_viability_testing_has_test_id</td>
+                                    <td>(((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id &#61; 7) AND (viability_test_id IS NOT NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_test_id_requires_purpose</td>
+                                    <td>(((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id &#61; 7)))</td>
                                 </tr>
                                 <tr>
                                     <td>estimated_weight_must_have_units</td>
@@ -555,16 +563,8 @@
                                     <td>(staff_responsible !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>withdrawals_test_id_requires_purpose</td>
-                                    <td>(((viability_test_id IS NULL) AND ((purpose_id IS NULL) OR (purpose_id &lt;&gt; 7))) OR ((viability_test_id IS NOT NULL) AND (purpose_id IS NOT NULL) AND (purpose_id &#61; 7)))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_viability_testing_has_test_id</td>
-                                    <td>(((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id &#61; 7) AND (viability_test_id IS NOT NULL)))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_notes_check</td>
-                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>withdrawals_destination_check</td>
+                                    <td>(destination !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
