@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Monitoring Plot Tools</h2>
+
+<h3>Calculate Plot Boundaries</h3>
+
+<p>
+    Calculate the boundaries of a monitoring plot whose southwest corner is at the requested
+    coordinates or at the southwest corner of the requested monitoring plot. The boundary will
+    be snapped to the planting site's 30m plot grid. If the requested coordinates aren't
+    precisely on the grid, the boundary will be at the closest grid point to the north and east.
+</p>
+
+<form method="POST" action="/admin/calculatePlotBoundary">
+    <label>
+        Existing monitoring plot ID
+        <input type="text" name="monitoringPlotId" required />
+    </label>
+    <input type="submit" value="Calculate"/>
+</form>
+
+<p/>
+
+<form method="POST" action="/admin/calculatePlotBoundary">
+    <label>
+        Grid origin (GeoJSON or WKT)
+        <input type="text" name="gridOrigin" required />
+    </label>
+    <label>
+        Target coordinates (GeoJSON or WKT)
+        <input type="text" name="coordinates" required />
+    </label>
+    <input type="submit" value="Calculate"/>
+</form>
+
+</body>
+</html>

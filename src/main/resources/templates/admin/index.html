@@ -179,6 +179,14 @@
     </th:block>
 </details>
 
+<details id="tracking" class="section" th:if="${canManageTracking}">
+    <summary>Plant Tracking</summary>
+
+    <p>
+        <a href="/admin/monitoringPlots">Monitoring Plot Tools</a>
+    </p>
+</details>
+
 <details id="deviceManager" class="section" th:if="${canCreateDeviceManager}">
     <summary>Device Manager</summary>
 
