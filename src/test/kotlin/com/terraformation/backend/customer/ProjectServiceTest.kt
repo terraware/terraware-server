@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
@@ -290,26 +291,68 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class AddInternalUserRole {
+  inner class UpdateInternalUsers {
     @Test
     fun `throws exception if user has no globalRoles`() {
       assertThrows<IllegalStateException> {
-        service.addInternalUserRole(projectId, user.userId, ProjectInternalRole.RegionalExpert)
+        service.updateInternalUsers(
+            projectId,
+            listOf(ProjectInternalUserModel(user.userId, ProjectInternalRole.RegionalExpert)),
+        )
       }
     }
 
     @Test
     fun `happy path`() {
       every { user.canUpdateProjectInternalUsers(any()) } returns true
-      val userId = insertUser()
-      insertUserGlobalRole(userId = userId, role = GlobalRole.ReadOnly)
-      service.addInternalUserRole(projectId, userId, ProjectInternalRole.GISLead)
+      val userToAdd = insertUser()
+      insertUserGlobalRole(userId = userToAdd, role = GlobalRole.ReadOnly)
+      val userToRemove = insertUser()
+      insertUserGlobalRole(userId = userToRemove, role = GlobalRole.AcceleratorAdmin)
+      insertProjectInternalUser(
+          projectId = projectId,
+          userId = userToRemove,
+          role = ProjectInternalRole.ClimateImpactLead,
+      )
+      val userToKeep = insertUser()
+      insertUserGlobalRole(userId = userToKeep, role = GlobalRole.TFExpert)
+      insertProjectInternalUser(
+          userId = userToKeep,
+          role = ProjectInternalRole.ProjectFinanceLead,
+      )
+      val userToChange = insertUser()
+      insertUserGlobalRole(userId = userToChange, role = GlobalRole.SuperAdmin)
+      insertProjectInternalUser(
+          userId = userToChange,
+          roleName = "Some Role",
+      )
+
+      service.updateInternalUsers(
+          projectId,
+          listOf(
+              ProjectInternalUserModel(userToAdd, roleName = "A new role"),
+              ProjectInternalUserModel(userToKeep, ProjectInternalRole.ProjectFinanceLead),
+              ProjectInternalUserModel(userToChange, ProjectInternalRole.LegalLead),
+          ),
+      )
 
       assertTableEquals(
-          ProjectInternalUsersRecord(
-              projectId = projectId,
-              userId = userId,
-              projectInternalRoleId = ProjectInternalRole.GISLead,
+          listOf(
+              ProjectInternalUsersRecord(
+                  projectId = projectId,
+                  userId = userToAdd,
+                  roleName = "A new role",
+              ),
+              ProjectInternalUsersRecord(
+                  projectId = projectId,
+                  userId = userToKeep,
+                  projectInternalRoleId = ProjectInternalRole.ProjectFinanceLead,
+              ),
+              ProjectInternalUsersRecord(
+                  projectId = projectId,
+                  userId = userToChange,
+                  projectInternalRoleId = ProjectInternalRole.LegalLead,
+              ),
           )
       )
     }
