@@ -152,14 +152,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observed_plot_coordinates.observation_id references observations.id via observed_plot_coordinates_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observed_plot_coordinates_observation_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_plot_coordinates.observation_id references observations.id via observed_plot_coordinates_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observed_plot_coordinates_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
