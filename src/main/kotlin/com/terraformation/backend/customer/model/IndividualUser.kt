@@ -722,6 +722,9 @@ data class IndividualUser(
   override fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId) =
       isTFExpertOrHigher()
 
+  override fun canUpdateT0(monitoringPlotId: MonitoringPlotId) =
+      isManagerOrHigher(parentStore.getOrganizationId(monitoringPlotId))
+
   override fun canUpdateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
 

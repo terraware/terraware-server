@@ -1902,6 +1902,17 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateT0(monitoringPlotId: MonitoringPlotId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateT0(monitoringPlotId)) {
+        readMonitoringPlot(monitoringPlotId)
+        throw AccessDeniedException(
+            "No permission to update T0 for monitoring plot $monitoringPlotId"
+        )
+      }
+    }
+  }
+
   fun updateTimeseries(deviceId: DeviceId) {
     user.recordPermissionChecks {
       if (!user.canUpdateTimeseries(deviceId)) {
