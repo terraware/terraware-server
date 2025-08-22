@@ -128,8 +128,7 @@ class ProjectStore(
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
         dslContext
-            .insertInto(this)
-            .columns(PROJECT_ID, USER_ID, PROJECT_INTERNAL_ROLE_ID, ROLE_NAME)
+            .insertInto(this, PROJECT_ID, USER_ID, PROJECT_INTERNAL_ROLE_ID, ROLE_NAME)
             .apply { users.forEach { values(projectId, it.userId, it.role, it.roleName) } }
             .onConflict(PROJECT_ID, USER_ID)
             .doUpdate()
