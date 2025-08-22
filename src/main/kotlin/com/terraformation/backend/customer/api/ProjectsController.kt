@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
+import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -149,26 +150,11 @@ class ProjectsController(
 
   @Operation(summary = "Assign a user with global roles with an internal role for a project.")
   @PutMapping("/{id}/internalUsers")
-  fun assignInternalUser(
+  fun updateInternalUser(
       @PathVariable id: ProjectId,
-      @RequestBody payload: AssignProjectInternalUserRequestPayload,
+      @RequestBody payload: UpdateProjectInternalUserRequestPayload,
   ): SimpleSuccessResponsePayload {
-    projectService.addInternalUserRole(id, payload.userId, payload.role, payload.roleName)
-
-    return SimpleSuccessResponsePayload()
-  }
-
-  @Operation(
-      summary = "Remove a user with global roles as an internal user for a project.",
-      description =
-          "Does not remove Terraformation Contact even if assigned role caused them to be added.",
-  )
-  @DeleteMapping("/{id}/internalUsers/{userId}")
-  fun removeInternalUser(
-      @PathVariable id: ProjectId,
-      @PathVariable userId: UserId,
-  ): SimpleSuccessResponsePayload {
-    projectStore.removeInternalUser(id, userId)
+    projectService.updateInternalUsers(id, payload.internalUsers.map { it.toModel() })
 
     return SimpleSuccessResponsePayload()
   }
@@ -212,11 +198,15 @@ data class AssignProjectRequestPayload(
     val plantingSiteIds: List<PlantingSiteId>?,
 )
 
-data class AssignProjectInternalUserRequestPayload(
+data class InternalUserPayload(
     val userId: UserId,
     val role: ProjectInternalRole? = null,
     val roleName: String? = null,
-)
+) {
+  fun toModel() = ProjectInternalUserModel(userId = userId, role = role, roleName = roleName)
+}
+
+data class UpdateProjectInternalUserRequestPayload(val internalUsers: List<InternalUserPayload>)
 
 data class CreateProjectRequestPayload(
     val description: String?,

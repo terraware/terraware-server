@@ -2,9 +2,8 @@ package com.terraformation.backend.customer
 
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ProjectInternalRole
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -36,17 +35,36 @@ class ProjectService(
     }
   }
 
-  fun addInternalUserRole(
-      projectId: ProjectId,
-      userId: UserId,
-      role: ProjectInternalRole? = null,
-      roleName: String? = null,
-  ) {
-    val user = userStore.fetchOneById(userId)
-    if (user.globalRoles.isEmpty()) {
-      throw IllegalStateException("User has no global roles.")
+  fun updateInternalUsers(projectId: ProjectId, internalUsers: List<ProjectInternalUserModel>) {
+    val users = userStore.fetchManyById(internalUsers.map { it.userId })
+    users.forEach { user ->
+      if (user.globalRoles.isEmpty()) {
+        throw IllegalStateException("User ${user.userId} has no global roles.")
+      }
     }
+    val existingInternalUsers = projectStore.fetchInternalUsers(projectId)
+    val existingUsersMap = existingInternalUsers.associateBy { it.userId }
+    val desiredUsersMap = internalUsers.associateBy { it.userId }
 
-    projectStore.addInternalUser(projectId, userId, role, roleName)
+    val usersToRemove =
+        existingInternalUsers
+            .filter { existingUser ->
+              val finalUser = desiredUsersMap[existingUser.userId]
+              finalUser == null ||
+                  finalUser.role != existingUser.projectInternalRoleId ||
+                  finalUser.roleName != existingUser.roleName
+            }
+            .mapNotNull { it.userId }
+
+    val usersToAdd =
+        internalUsers.filter { finalUser ->
+          val existingUser = existingUsersMap[finalUser.userId]
+          existingUser == null ||
+              existingUser.projectInternalRoleId != finalUser.role ||
+              existingUser.roleName != finalUser.roleName
+        }
+
+    projectStore.removeInternalUsers(projectId, usersToRemove)
+    projectStore.addInternalUsers(projectId, usersToAdd)
   }
 }

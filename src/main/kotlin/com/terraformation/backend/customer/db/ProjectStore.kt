@@ -9,14 +9,15 @@ import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
+import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -27,6 +28,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECT_IN
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
@@ -117,12 +119,7 @@ class ProjectStore(
     }
   }
 
-  fun addInternalUser(
-      projectId: ProjectId,
-      userId: UserId,
-      role: ProjectInternalRole? = null,
-      roleName: String? = null,
-  ) {
+  fun addInternalUsers(projectId: ProjectId, users: Collection<ProjectInternalUserModel>) {
     requirePermissions { updateProjectInternalUsers(projectId) }
 
     val organizationId =
@@ -131,39 +128,45 @@ class ProjectStore(
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
         dslContext
-            .insertInto(this)
-            .set(PROJECT_ID, projectId)
-            .set(USER_ID, userId)
-            .set(PROJECT_INTERNAL_ROLE_ID, role)
-            .set(ROLE_NAME, roleName)
+            .insertInto(this, PROJECT_ID, USER_ID, PROJECT_INTERNAL_ROLE_ID, ROLE_NAME)
+            .apply { users.forEach { values(projectId, it.userId, it.role, it.roleName) } }
             .onConflict(PROJECT_ID, USER_ID)
             .doUpdate()
-            .set(PROJECT_INTERNAL_ROLE_ID, role)
-            .set(ROLE_NAME, roleName)
+            .set(PROJECT_INTERNAL_ROLE_ID, DSL.excluded(PROJECT_INTERNAL_ROLE_ID))
+            .set(ROLE_NAME, DSL.excluded(ROLE_NAME))
             .execute()
 
-        eventPublisher.publishEvent(
-            ProjectInternalUserAddedEvent(projectId, organizationId, userId, role, roleName)
-        )
+        users.forEach { user ->
+          eventPublisher.publishEvent(
+              ProjectInternalUserAddedEvent(
+                  projectId,
+                  organizationId,
+                  user.userId,
+                  user.role,
+                  user.roleName,
+              )
+          )
+        }
       }
     }
   }
 
-  fun removeInternalUser(projectId: ProjectId, userId: UserId) {
+  fun removeInternalUsers(projectId: ProjectId, userIds: Collection<UserId>) {
     requirePermissions { updateProjectInternalUsers(projectId) }
 
     val organizationId =
         parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
-        val rowsDeleted =
+        val userIdsDeleted =
             dslContext
                 .deleteFrom(this)
                 .where(PROJECT_ID.eq(projectId))
-                .and(USER_ID.eq(userId))
-                .execute()
+                .and(USER_ID.`in`(userIds))
+                .returning(USER_ID)
+                .fetch(USER_ID.asNonNullable())
 
-        if (rowsDeleted > 0) {
+        userIdsDeleted.forEach { userId ->
           eventPublisher.publishEvent(
               ProjectInternalUserRemovedEvent(projectId, organizationId, userId)
           )
