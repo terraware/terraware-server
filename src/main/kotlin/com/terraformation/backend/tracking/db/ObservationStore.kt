@@ -61,6 +61,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.T0_PLOT
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -2068,6 +2069,7 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
         )
+        updatePlotSurvivalRate(observationId, monitoringPlotId)
       }
 
       if (!isAdHoc) {
@@ -2305,6 +2307,69 @@ class ObservationStore(
             }
           }
         }
+      }
+    }
+  }
+
+  private fun updatePlotSurvivalRate(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
+    if (dslContext.fetchExists(T0_PLOT, T0_PLOT.MONITORING_PLOT_ID.eq(monitoringPlotId))) {
+      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        val totalsTable2 = OBSERVED_PLOT_SPECIES_TOTALS.`as`("totals2")
+        val survivalRateDenominator =
+            DSL.nullif(
+                DSL.field(
+                    DSL.select(
+                            DSL.case_()
+                                .`when`(
+                                    T0_PLOT.OBSERVATION_ID.isNotNull,
+                                    totalsTable2.TOTAL_LIVE.plus(totalsTable2.TOTAL_DEAD)
+                                        .cast(SQLDataType.NUMERIC),
+                                )
+                                .else_(T0_PLOT.ESTIMATED_PLANTING_DENSITY.times(0.09))
+                        )
+                        .from(T0_PLOT)
+                        .leftJoin(totalsTable2)
+                        .on(
+                            totalsTable2.MONITORING_PLOT_ID.eq(T0_PLOT.MONITORING_PLOT_ID)
+                                .and(
+                                    DSL.case_()
+                                        .`when`(
+                                            T0_PLOT.OBSERVATION_ID.isNotNull,
+                                            totalsTable2.OBSERVATION_ID.eq(T0_PLOT.OBSERVATION_ID),
+                                        )
+                                        .else_(DSL.falseCondition())
+                                )
+                        )
+                        .where(T0_PLOT.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                        .and(
+                            DSL.or(
+                                listOf(
+                                    T0_PLOT.OBSERVATION_ID.isNotNull
+                                        .and(totalsTable2.SPECIES_ID.isNotNull)
+                                        .and(totalsTable2.SPECIES_ID.eq(this.SPECIES_ID)),
+                                    T0_PLOT.OBSERVATION_ID.isNull.and(
+                                        T0_PLOT.SPECIES_ID.eq(this.SPECIES_ID)
+                                    ),
+                                )
+                            )
+                        )
+                ),
+                DSL.inline(0).cast(SQLDataType.NUMERIC),
+            )
+
+        dslContext
+            .update(this)
+            .set(
+                SURVIVAL_RATE,
+                TOTAL_LIVE.times(100).div(survivalRateDenominator),
+            )
+            .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_ID.isNotNull)
+            .execute()
       }
     }
   }
