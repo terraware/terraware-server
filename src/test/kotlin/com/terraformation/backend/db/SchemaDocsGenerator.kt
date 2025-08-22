@@ -407,6 +407,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),
                   "recorded_trees" to setOf(ALL, TRACKING),
+                  "t0_plot" to setOf(ALL, TRACKING),
                   "tree_growth_forms" to setOf(ALL, TRACKING),
               ),
       )
