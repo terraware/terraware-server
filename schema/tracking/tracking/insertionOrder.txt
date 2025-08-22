@@ -30,6 +30,7 @@ planting_subzone_populations
 planting_zone_populations
 monitoring_plot_overlaps
 observation_requested_subzones
+t0_plot
 observation_plot_conditions
 observed_plot_species_totals
 observed_site_species_totals

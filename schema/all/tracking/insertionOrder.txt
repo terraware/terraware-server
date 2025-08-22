@@ -31,6 +31,7 @@ planting_site_populations
 planting_subzone_populations
 planting_zone_populations
 observation_plot_conditions
+t0_plot
 observed_plot_species_totals
 observed_site_species_totals
 observed_subzone_species_totals
