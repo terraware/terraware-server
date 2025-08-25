@@ -1,9 +1,9 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.default_schema.tables.ProjectInternalUsers.Companion.PROJECT_INTERNAL_USERS
-import com.terraformation.backend.db.default_schema.tables.Projects.Companion.PROJECTS
-import com.terraformation.backend.db.default_schema.tables.Users.Companion.USERS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
