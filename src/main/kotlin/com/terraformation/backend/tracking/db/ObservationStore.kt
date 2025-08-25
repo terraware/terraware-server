@@ -2316,60 +2316,79 @@ class ObservationStore(
       monitoringPlotId: MonitoringPlotId,
   ) {
     with(OBSERVED_PLOT_SPECIES_TOTALS) {
-      val totalsTable2 = OBSERVED_PLOT_SPECIES_TOTALS.`as`("totals2")
-      val survivalRateDenominator =
-          DSL.nullif(
-              DSL.field(
-                  DSL.select(
-                          DSL.case_()
-                              .`when`(
-                                  T0_PLOT.OBSERVATION_ID.isNotNull,
-                                  totalsTable2.TOTAL_LIVE.plus(totalsTable2.TOTAL_DEAD)
-                                      .cast(SQLDataType.NUMERIC),
-                              )
-                              .else_(T0_PLOT.ESTIMATED_PLANTING_DENSITY.times(0.09))
-                      )
-                      .from(T0_PLOT)
-                      .leftJoin(totalsTable2)
-                      .on(
-                          totalsTable2.MONITORING_PLOT_ID.eq(T0_PLOT.MONITORING_PLOT_ID)
-                              .and(
-                                  DSL.case_()
-                                      .`when`(
-                                          T0_PLOT.OBSERVATION_ID.isNotNull,
-                                          totalsTable2.OBSERVATION_ID.eq(T0_PLOT.OBSERVATION_ID),
-                                      )
-                                      .else_(DSL.falseCondition())
-                              )
-                      )
-                      .where(T0_PLOT.MONITORING_PLOT_ID.eq(monitoringPlotId))
-                      .and(
-                          DSL.or(
-                              listOf(
-                                  T0_PLOT.OBSERVATION_ID.isNotNull
-                                      .and(totalsTable2.SPECIES_ID.isNotNull)
-                                      .and(totalsTable2.SPECIES_ID.eq(this.SPECIES_ID)),
-                                  T0_PLOT.OBSERVATION_ID.isNull.and(
-                                      T0_PLOT.SPECIES_ID.eq(this.SPECIES_ID)
-                                  ),
-                              )
-                          )
-                      )
-              ),
-              DSL.inline(0).cast(SQLDataType.NUMERIC),
+      val survivalRateDensityDenominator =
+          DSL.field(
+              DSL.select(T0_PLOT.ESTIMATED_PLANTING_DENSITY.times(0.09).cast(SQLDataType.NUMERIC))
+                  .from(T0_PLOT)
+                  .where(T0_PLOT.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(T0_PLOT.SPECIES_ID.isNotNull)
+                  .and(T0_PLOT.SPECIES_ID.eq(this.SPECIES_ID))
           )
 
-      dslContext
-          .update(this)
-          .set(
-              SURVIVAL_RATE,
-              TOTAL_LIVE.times(100).div(survivalRateDenominator),
+      val totalsTable2 = OBSERVED_PLOT_SPECIES_TOTALS.`as`("totals2")
+      val survivalRateObservationDenominator =
+          DSL.field(
+              DSL.select(
+                      totalsTable2.TOTAL_LIVE.plus(totalsTable2.TOTAL_DEAD)
+                          .cast(SQLDataType.NUMERIC)
+                  )
+                  .from(T0_PLOT)
+                  .leftJoin(totalsTable2)
+                  .on(
+                      totalsTable2.MONITORING_PLOT_ID.eq(T0_PLOT.MONITORING_PLOT_ID)
+                          .and(totalsTable2.OBSERVATION_ID.eq(T0_PLOT.OBSERVATION_ID))
+                  )
+                  .where(T0_PLOT.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(T0_PLOT.OBSERVATION_ID.isNotNull)
+                  .and(totalsTable2.SPECIES_ID.isNotNull)
+                  .and(totalsTable2.SPECIES_ID.eq(this.SPECIES_ID))
           )
-          .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
-          .and(OBSERVATION_ID.eq(observationId))
-          .and(SPECIES_ID.isNotNull)
-          .execute()
+
+      for (denominator in
+          listOf(
+              survivalRateDensityDenominator,
+              survivalRateObservationDenominator,
+          )) {
+        dslContext
+            .update(this)
+            .set(SURVIVAL_RATE, DSL.coalesce(TOTAL_LIVE.times(100).div(denominator), SURVIVAL_RATE))
+            .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_ID.isNotNull)
+            .execute()
+      }
     }
+  }
+
+  private fun updateSubzoneSurvivalRate(
+      observationId: ObservationId,
+      plantingSubzoneId: PlantingSubzoneId,
+  ) {
+    //    val survivalRateDenominator =
+    //        DSL.nullif(
+    //            DSL.field(
+    //                DSL.select(DSL.inline(0))
+    //                    .from(T0_PLOT)
+    //                    .where(
+    //                        T0_PLOT.MONITORING_PLOT_ID.`in`(
+    //                            DSL.select(MONITORING_PLOTS.ID)
+    //                                .from(MONITORING_PLOTS)
+    //
+    // .where(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+    //                        )
+    //                    )
+    //            ),
+    //            DSL.inline(0).cast(SQLDataType.NUMERIC),
+    //        )
+    //    with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+    //      dslContext
+    //          .update(this)
+    //          .set(SURVIVAL_RATE, TOTAL_LIVE.times(100))
+    //          .where(PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+    //          .and(OBSERVATION_ID.eq(observationId))
+    //          .and(SPECIES_ID.`in`(emptyList()))
+    //          .execute()
+    //    }
   }
 
   private fun validateAdHocPlotInPlantingSite(
