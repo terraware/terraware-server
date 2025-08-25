@@ -4,7 +4,6 @@ import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 import org.springframework.context.i18n.LocaleContextHolder
 
 object Locales {
@@ -31,14 +30,6 @@ fun <T> Locale.use(func: () -> T): T {
   }
 }
 
-private val bigDecimalParsers = ConcurrentHashMap<Locale, DecimalFormat>()
-
-fun getBigDecimalParser(locale: Locale): DecimalFormat {
-  return bigDecimalParsers.getOrPut(locale) {
-    (NumberFormat.getNumberInstance(locale) as DecimalFormat).apply { isParseBigDecimal = true }
-  }
-}
-
 private val whitespace = Regex("\\s")
 
 /**
@@ -52,5 +43,7 @@ private val whitespace = Regex("\\s")
  * whitespace characters from the string before parsing it.
  */
 fun String.toBigDecimal(locale: Locale): BigDecimal {
-  return getBigDecimalParser(locale).parse(this.replace(whitespace, "")) as BigDecimal
+  val parser = NumberFormat.getNumberInstance(locale) as DecimalFormat
+  parser.isParseBigDecimal = true
+  return parser.parse(this.replace(whitespace, "")) as BigDecimal
 }
