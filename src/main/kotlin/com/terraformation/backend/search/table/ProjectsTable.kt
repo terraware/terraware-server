@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -70,6 +71,10 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           projectDeliverables.asMultiValueSublist(
               "projectDeliverables",
               PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID),
+          ),
+          projectInternalUsers.asMultiValueSublist(
+              "internalUsers",
+              PROJECTS.ID.eq(PROJECT_INTERNAL_USERS.PROJECT_ID),
           ),
           projectLandUseModelTypes.asMultiValueSublist(
               "landUseModelTypes",

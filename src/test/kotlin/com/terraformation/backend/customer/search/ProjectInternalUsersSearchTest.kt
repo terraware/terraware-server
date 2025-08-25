@@ -1,0 +1,124 @@
+package com.terraformation.backend.customer.search
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
+import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.mockUser
+import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.table.SearchTables
+import io.mockk.every
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
+  private lateinit var organizationId: OrganizationId
+  private val clock = TestClock()
+  private val searchService: SearchService by lazy { SearchService(dslContext) }
+  private val searchTables = SearchTables(clock)
+
+  @BeforeEach
+  fun setUp() {
+    organizationId = insertOrganization()
+    insertOrganizationUser(
+        userId = inserted.userId,
+    )
+
+    every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
+  }
+
+  @Test
+  fun `returns internal users`() {
+    val projectId = insertProject()
+    val projectLead = insertUser()
+    insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
+    val other = insertUser()
+    insertProjectInternalUser(roleName = "Other")
+    // other org internal users are excluded
+    insertOrganization()
+    insertProject()
+    insertUser()
+    insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
+
+    val prefix = SearchFieldPrefix(searchTables.projectInternalUsers)
+    val fields = listOf("user_id", "role", "roleName", "project_id").map { prefix.resolve(it) }
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "project_id" to "$projectId",
+                    "role" to "Project Lead",
+                    "user_id" to "$projectLead",
+                ),
+                mapOf(
+                    "project_id" to "$projectId",
+                    "roleName" to "Other",
+                    "user_id" to "$other",
+                ),
+            )
+        )
+
+    val actual =
+        searchService.search(
+            prefix,
+            fields,
+            mapOf(prefix to NoConditionNode()),
+        )
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `allows accelerator readers to see internal users of other organizations`() {
+    every { user.canReadAllAcceleratorDetails() } returns true
+    val projectId = insertProject()
+    val projectLead = insertUser()
+    insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
+    val otherOrg = insertOrganization()
+    val otherProject = insertProject()
+    insertUser()
+    insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
+    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+
+    val prefix = SearchFieldPrefix(searchTables.projectInternalUsers)
+    val fields =
+        listOf("user_id", "project_organization_id", "role", "roleName", "project_id").map {
+          prefix.resolve(it)
+        }
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "project_id" to "$projectId",
+                    "role" to "Project Lead",
+                    "user_id" to "$projectLead",
+                    "project_organization_id" to "$organizationId",
+                ),
+                mapOf(
+                    "role" to "Restoration Lead",
+                    "project_id" to "$otherProject",
+                    "project_organization_id" to "$otherOrg",
+                    // can't see the user details because user and project are not in org
+                ),
+            )
+        )
+
+    val actual =
+        searchService.search(
+            prefix,
+            fields,
+            mapOf(prefix to NoConditionNode()),
+        )
+
+    assertJsonEquals(expected, actual)
+  }
+}
