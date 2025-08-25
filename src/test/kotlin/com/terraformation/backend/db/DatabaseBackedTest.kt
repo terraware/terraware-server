@@ -419,6 +419,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
+import com.terraformation.backend.db.tracking.tables.daos.T0PlotDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
@@ -449,8 +450,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.pojos.T0PlotRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
@@ -698,6 +701,7 @@ abstract class DatabaseBackedTest {
   protected val submissionsDao: SubmissionsDao by lazyDao()
   protected val submissionDocumentsDao: SubmissionDocumentsDao by lazyDao()
   protected val submissionSnapshotsDao: SubmissionSnapshotsDao by lazyDao()
+  protected val t0PlotDao: T0PlotDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
   protected val timeZonesDao: TimeZonesDao by lazyDao()
@@ -3145,6 +3149,54 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
+  fun insertObservedPlotSpeciesTotals(
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
+      speciesId: SpeciesId? =
+          if (certainty == RecordedSpeciesCertainty.Known) {
+            inserted.speciesId
+          } else {
+            null
+          },
+      speciesName: String? =
+          if (certainty == RecordedSpeciesCertainty.Other) {
+            "Other species"
+          } else {
+            null
+          },
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      cumulativeDead: Int = 0,
+      permanentLive: Int = 0,
+      mortalityRate: Int =
+          if (cumulativeDead + permanentLive == 0) {
+            0
+          } else {
+            (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
+          },
+      survivalRate: Int? = null,
+  ) {
+    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(CERTAINTY_ID, certainty)
+          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_NAME, speciesName)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(CUMULATIVE_DEAD, cumulativeDead)
+          .set(PERMANENT_LIVE, permanentLive)
+          .set(MORTALITY_RATE, mortalityRate)
+          .set(SURVIVAL_RATE, survivalRate)
+          .execute()
+    }
+  }
+
   fun insertObservedSiteSpeciesTotals(
       row: ObservedSiteSpeciesTotalsRow = ObservedSiteSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
@@ -3176,6 +3228,7 @@ abstract class DatabaseBackedTest {
               } else {
                 (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
               },
+      survivalRate: Int? = null,
   ) {
     with(OBSERVED_SITE_SPECIES_TOTALS) {
       dslContext
@@ -3191,6 +3244,7 @@ abstract class DatabaseBackedTest {
           .set(CUMULATIVE_DEAD, cumulativeDead)
           .set(PERMANENT_LIVE, permanentLive)
           .set(MORTALITY_RATE, mortalityRate)
+          .set(SURVIVAL_RATE, survivalRate)
           .execute()
     }
   }
@@ -4550,6 +4604,24 @@ abstract class DatabaseBackedTest {
     fundingEntityUsersDao.insert(
         FundingEntityUsersRow(fundingEntityId = fundingEntityId, userId = userId)
     )
+  }
+
+  protected fun insertT0Plot(
+      row: T0PlotRow = T0PlotRow(),
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId? = row.observationId,
+      speciesId: SpeciesId? = row.speciesId,
+      estimatedPlantingDensity: BigDecimal? = row.estimatedPlantingDensity,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            speciesId = speciesId,
+            estimatedPlantingDensity = estimatedPlantingDensity,
+        )
+
+    t0PlotDao.insert(rowWithDefaults)
   }
 
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
