@@ -14,12 +14,12 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.tables.records.T0PlotRecord
+import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
+import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
-import java.math.BigDecimal
 import kotlin.lazy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -73,17 +73,34 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `inserts new T0 plot record`() {
+    fun `stores observation and all species densities`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0ObservationRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               )
           ),
-          "Should have inserted new record",
+          "Should connect plot to observation",
+      )
+      assertTableEquals(
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  plotDensity = 3,
+              ),
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId2,
+                  plotDensity = 7,
+              ),
+          ),
+          "Should insert species densities",
       )
 
       eventPublisher.assertEventPublished(
@@ -96,19 +113,31 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `updates existing T0 plot record when monitoring plot already exists`() {
+      insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
       val secondObservationId = insertObservation(plantingSiteId = plantingSiteId)
+      insertObservedPlotSpeciesTotals(totalLive = 2, totalDead = 2)
 
       store.assignT0PlotObservation(monitoringPlotId, observationId)
       store.assignT0PlotObservation(monitoringPlotId, secondObservationId)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0ObservationRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = secondObservationId,
               )
           ),
-          "Should have updated existing record",
+          "Should have updated existing observation",
+      )
+      assertTableEquals(
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId2,
+                  plotDensity = 4,
+              ),
+          ),
+          "Should use final species density",
       )
 
       eventPublisher.assertEventsPublished(
@@ -126,37 +155,58 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `allows observation to be set for plot after species density`() {
-      store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal("101.00"))
+    fun `observation overrides previous density`() {
+      insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
+      insertPlotT0Density(plotDensity = 1)
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  estimatedPlantingDensity = BigDecimal("101.00"),
+                  speciesId = speciesId2,
+                  plotDensity = 2,
               ),
-              T0PlotRecord(
+          ),
+          "Should use observation for density",
+      )
+
+      assertTableEquals(
+          listOf(
+              PlotT0ObservationRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               ),
           ),
-          "Should allow both species density and observation to be set for plot.",
+          "Should have connected plot to observation",
       )
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0SpeciesDensityAssignedEvent(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  density = BigDecimal("101.00"),
-              ),
               T0ObservationAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               ),
           )
+      )
+    }
+
+    @Test
+    fun `removes species densities not in observation`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = 10)
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = 20)
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertTableEquals(
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  plotDensity = 2,
+              )
+          ),
+          "Should have deleted density for species not in observation",
       )
     }
   }
@@ -169,50 +219,50 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal("100.00"))
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 10)
       }
     }
 
     @Test
     fun `inserts new T0 plot record with species and density`() {
-      val density = BigDecimal("125.75")
+      val density = 12
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, density)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  estimatedPlantingDensity = density,
+                  plotDensity = density,
               )
           ),
-          "Should have inserted species and density",
+          "Should have inserted density",
       )
 
       eventPublisher.assertEventPublished(
           T0SpeciesDensityAssignedEvent(
               monitoringPlotId = monitoringPlotId,
               speciesId = speciesId1,
-              density = density,
+              plotDensity = density,
           )
       )
     }
 
     @Test
     fun `updates existing T0 plot record when monitoring plot and species already exist`() {
-      val initialDensity = BigDecimal("100.00")
-      val updatedDensity = BigDecimal("150.25")
+      val initialDensity = 10
+      val updatedDensity = 15
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, initialDensity)
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, updatedDensity)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  estimatedPlantingDensity = updatedDensity,
+                  plotDensity = updatedDensity,
               )
           ),
           "Should have updated density on conflict",
@@ -223,12 +273,12 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               T0SpeciesDensityAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  density = initialDensity,
+                  plotDensity = initialDensity,
               ),
               T0SpeciesDensityAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  density = updatedDensity,
+                  plotDensity = updatedDensity,
               ),
           )
       )
@@ -236,26 +286,26 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `allows multiple species for same monitoring plot`() {
-      val density1 = BigDecimal("100.00")
-      val density2 = BigDecimal("200.00")
+      val density1 = 10
+      val density2 = 20
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, density1)
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId2, density2)
 
       assertTableEquals(
           listOf(
-              T0PlotRecord(
+              PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  estimatedPlantingDensity = density1,
+                  plotDensity = density1,
               ),
-              T0PlotRecord(
+              PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId2,
-                  estimatedPlantingDensity = density2,
+                  plotDensity = density2,
               ),
           ),
-          "Should have inserted two rows",
+          "Should have inserted two densities for monitoring plot",
       )
 
       eventPublisher.assertEventsPublished(
@@ -263,12 +313,12 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               T0SpeciesDensityAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  density = density1,
+                  plotDensity = density1,
               ),
               T0SpeciesDensityAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId2,
-                  density = density2,
+                  plotDensity = density2,
               ),
           )
       )
@@ -277,15 +327,22 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for zero density values`() {
       assertThrows<IllegalArgumentException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.ZERO)
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 0)
+      }
+    }
+
+    @Test
+    fun `throws exception for negative density values`() {
+      assertThrows<IllegalArgumentException> {
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, -1)
       }
     }
 
     @Test
     fun `does not allow species density to be set after observation is assigned to plot`() {
-      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      insertPlotT0Observation()
       assertThrows<IllegalStateException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal("200.00"))
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 200)
       }
     }
   }

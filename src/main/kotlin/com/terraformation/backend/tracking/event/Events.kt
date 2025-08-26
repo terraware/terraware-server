@@ -10,7 +10,6 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import java.math.BigDecimal
 import java.time.LocalDate
 
 /** Published when an organization requests that a monitoring plot be replaced in an observation. */
@@ -118,7 +117,7 @@ data class PlantingSiteMapEditedEvent(
 )
 
 data class T0SpeciesDensityAssignedEvent(
-    val density: BigDecimal,
+    val plotDensity: Int,
     val monitoringPlotId: MonitoringPlotId,
     val speciesId: SpeciesId,
 )

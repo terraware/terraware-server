@@ -447,13 +447,18 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensityRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
@@ -3145,6 +3150,54 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
+  fun insertObservedPlotSpeciesTotals(
+      observationId: ObservationId = inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
+      speciesId: SpeciesId? =
+          if (certainty == RecordedSpeciesCertainty.Known) {
+            inserted.speciesId
+          } else {
+            null
+          },
+      speciesName: String? =
+          if (certainty == RecordedSpeciesCertainty.Other) {
+            "Other species"
+          } else {
+            null
+          },
+      totalLive: Int = 0,
+      totalDead: Int = 0,
+      totalExisting: Int = 0,
+      cumulativeDead: Int = 0,
+      permanentLive: Int = 0,
+      mortalityRate: Int =
+          if (cumulativeDead + permanentLive == 0) {
+            0
+          } else {
+            (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
+          },
+      survivalRate: Int? = null,
+  ) {
+    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(CERTAINTY_ID, certainty)
+          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_NAME, speciesName)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(CUMULATIVE_DEAD, cumulativeDead)
+          .set(PERMANENT_LIVE, permanentLive)
+          .set(MORTALITY_RATE, mortalityRate)
+          .set(SURVIVAL_RATE, survivalRate)
+          .execute()
+    }
+  }
+
   fun insertObservedSiteSpeciesTotals(
       row: ObservedSiteSpeciesTotalsRow = ObservedSiteSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
@@ -3197,6 +3250,36 @@ abstract class DatabaseBackedTest {
 
   private val nextTreeNumber = mutableMapOf<ObservationId, Int>()
   private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
+
+  fun insertPlotT0Density(
+      row: PlotT0DensityRow = PlotT0DensityRow(),
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      plotDensity: Int = row.plotDensity ?: 10,
+  ) {
+    with(PLOT_T0_DENSITY) {
+      dslContext
+          .insertInto(this)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(SPECIES_ID, speciesId)
+          .set(PLOT_DENSITY, plotDensity)
+          .execute()
+    }
+  }
+
+  fun insertPlotT0Observation(
+      row: PlotT0ObservationRow = PlotT0ObservationRow(),
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+  ) {
+    with(PLOT_T0_OBSERVATION) {
+      dslContext
+          .insertInto(this)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(OBSERVATION_ID, observationId)
+          .execute()
+    }
+  }
 
   fun insertRecordedTree(
       row: RecordedTreesRow = RecordedTreesRow(),
