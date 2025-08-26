@@ -34,6 +34,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -49,6 +50,7 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
@@ -578,6 +580,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       monitoringPlotSpeciesMultiset,
                       coordinatesMultiset,
                       photosMultiset,
+                      recordedPlantsMultiset,
                   )
                   .from(OBSERVATION_PLOTS)
                   .join(MONITORING_PLOTS)
@@ -640,6 +643,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
                   photos = record[photosMultiset],
                   plantingDensity = plantingDensity,
+                  plants = record[recordedPlantsMultiset],
                   sizeMeters = sizeMeters,
                   species = species,
                   status = status,
@@ -972,6 +976,34 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .orderBy(SPECIES_ID, SPECIES_NAME)
         )
       }
+
+  private val recordedPlantsGpsField = RECORDED_PLANTS.GPS_COORDINATES.forMultiset()
+
+  private val recordedPlantsMultiset =
+      DSL.multiset(
+              DSL.select(
+                      RECORDED_PLANTS.CERTAINTY_ID,
+                      RECORDED_PLANTS.SPECIES_ID,
+                      RECORDED_PLANTS.SPECIES_NAME,
+                      RECORDED_PLANTS.STATUS_ID,
+                      recordedPlantsGpsField,
+                  )
+                  .from(RECORDED_PLANTS)
+                  .where(RECORDED_PLANTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                  .and(RECORDED_PLANTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(RECORDED_PLANTS.ID)
+          )
+          .convertFrom { results ->
+            results.map { record ->
+              RecordedPlantModel(
+                  certainty = record[RECORDED_PLANTS.CERTAINTY_ID.asNonNullable()],
+                  gpsCoordinates = record[recordedPlantsGpsField.asNonNullable()] as Point,
+                  speciesId = record[RECORDED_PLANTS.SPECIES_ID],
+                  speciesName = record[RECORDED_PLANTS.SPECIES_NAME],
+                  status = record[RECORDED_PLANTS.STATUS_ID.asNonNullable()],
+              )
+            }
+          }
 
   private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
     return dslContext

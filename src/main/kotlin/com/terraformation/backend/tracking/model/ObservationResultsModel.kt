@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import java.math.BigDecimal
 import java.time.Instant
@@ -106,6 +107,7 @@ data class ObservationMonitoringPlotResultsModel(
      * still alive.
      */
     val plantingDensity: Int,
+    val plants: List<RecordedPlantModel>,
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationPlotStatus,
@@ -426,6 +428,14 @@ data class ObservationRollupResultsModel(
     }
   }
 }
+
+data class RecordedPlantModel(
+    val certainty: RecordedSpeciesCertainty,
+    val gpsCoordinates: Point,
+    val speciesId: SpeciesId?,
+    val speciesName: String?,
+    val status: RecordedPlantStatus,
+)
 
 /**
  * Calculates the mortality rate across all non-preexisting plants of all species in permanent
