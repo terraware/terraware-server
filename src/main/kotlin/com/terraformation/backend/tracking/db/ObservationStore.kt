@@ -59,6 +59,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
@@ -2068,6 +2069,7 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
         )
+        updatePlotSurvivalRate(observationId, monitoringPlotId)
       }
 
       if (!isAdHoc) {
@@ -2306,6 +2308,28 @@ class ObservationStore(
           }
         }
       }
+    }
+  }
+
+  private fun updatePlotSurvivalRate(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
+    with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      val denominator =
+          DSL.field(
+              DSL.select(PLOT_T0_DENSITY.PLOT_DENSITY)
+                  .from(PLOT_T0_DENSITY)
+                  .where(PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                  .and(PLOT_T0_DENSITY.SPECIES_ID.eq(this.SPECIES_ID))
+          )
+      dslContext
+          .update(this)
+          .set(SURVIVAL_RATE, TOTAL_LIVE.times(100).div(denominator))
+          .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .and(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_ID.isNotNull)
+          .execute()
     }
   }
 
