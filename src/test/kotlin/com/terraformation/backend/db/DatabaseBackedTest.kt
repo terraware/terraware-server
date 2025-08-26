@@ -448,7 +448,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulatio
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensityRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
@@ -458,7 +458,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATION
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
@@ -3268,11 +3268,11 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlotT0Observation(
-      row: PlotT0ObservationRow = PlotT0ObservationRow(),
+      row: PlotT0ObservationsRow = PlotT0ObservationsRow(),
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
   ) {
-    with(PLOT_T0_OBSERVATION) {
+    with(PLOT_T0_OBSERVATIONS) {
       dslContext
           .insertInto(this)
           .set(MONITORING_PLOT_ID, monitoringPlotId)

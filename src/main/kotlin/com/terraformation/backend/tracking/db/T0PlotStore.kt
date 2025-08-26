@@ -6,7 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATION
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
 import jakarta.inject.Named
@@ -22,7 +22,7 @@ class T0PlotStore(
   fun assignT0PlotObservation(monitoringPlotId: MonitoringPlotId, observationId: ObservationId) {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    with(PLOT_T0_OBSERVATION) {
+    with(PLOT_T0_OBSERVATIONS) {
       dslContext
           .insertInto(this)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
@@ -103,7 +103,7 @@ class T0PlotStore(
   }
 
   private fun plotHasObservationT0(monitoringPlotId: MonitoringPlotId) =
-      with(PLOT_T0_OBSERVATION) {
+      with(PLOT_T0_OBSERVATIONS) {
         dslContext.fetchExists(
             this,
             MONITORING_PLOT_ID.eq(monitoringPlotId),

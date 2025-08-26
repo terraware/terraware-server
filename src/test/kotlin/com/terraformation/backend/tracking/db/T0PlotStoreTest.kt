@@ -15,7 +15,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
-import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationRecord
+import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
@@ -80,7 +80,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0ObservationRecord(
+              PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               )
@@ -122,7 +122,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0ObservationRecord(
+              PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = secondObservationId,
               )
@@ -173,7 +173,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0ObservationRecord(
+              PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               ),

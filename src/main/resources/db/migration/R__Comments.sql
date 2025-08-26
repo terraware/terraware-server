@@ -534,7 +534,7 @@ COMMENT ON COLUMN tracking.plantings.planting_subzone_id IS 'Which plot this pla
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.plot_t0_density IS 'Density for a plot per species, in plants per plot.';
-COMMENT ON TABLE tracking.plot_t0_observation IS 'Which observation to use to determine t0 plot density.';
+COMMENT ON TABLE tracking.plot_t0_observations IS 'Which observation to use to determine t0 plot density.';
 
 COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses of a plant recorded during observation of a monitoring plot.';
 
