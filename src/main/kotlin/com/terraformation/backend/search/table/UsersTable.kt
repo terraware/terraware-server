@@ -24,7 +24,7 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
               USERS.ID.eq(ORGANIZATION_USERS.USER_ID),
           ),
           projectInternalUsers.asMultiValueSublist(
-              "internalUsers",
+              "projectInternalMemberships",
               USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID),
           ),
       )
