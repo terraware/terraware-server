@@ -1,3 +1,4 @@
+d7b52d27658 SW-7295 Add Project Internal Users to Search API (#3330)
 191d43ad56f Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.2 (#3325)
 86265028d7e Stop sharing NumberFormat instances between threads (#3329)
 57851ef11f5 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.38.0 (#3328)
