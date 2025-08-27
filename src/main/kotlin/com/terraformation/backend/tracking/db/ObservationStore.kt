@@ -215,6 +215,7 @@ class ObservationStore(
             OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS,
             OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.FULL_NAME,
             OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID,
+            OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.plotsPlantingZoneIdFkey.NAME,
             OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER,
             OBSERVATION_PLOTS.monitoringPlots.SIZE_METERS,
             claimedByNameField,
@@ -235,6 +236,10 @@ class ObservationStore(
               plantingSubzoneId = record[OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID]!!,
               plantingSubzoneName =
                   record[OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.FULL_NAME]!!,
+              plantingZoneName =
+                  record[
+                      OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.plotsPlantingZoneIdFkey
+                          .NAME]!!,
               plotNumber = record[OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER]!!,
               sizeMeters = record[OBSERVATION_PLOTS.monitoringPlots.SIZE_METERS]!!,
           )
