@@ -34,17 +34,17 @@ data class AssignedPlotDetails(
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
-            "${messages.monitoringPlotSouthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            "${messages.monitoringPlotSoutheastCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
-            "${messages.monitoringPlotSouthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            "${messages.monitoringPlotNortheastCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
-            "${messages.monitoringPlotSouthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            "${messages.monitoringPlotNorthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
         ),
     )
   }
