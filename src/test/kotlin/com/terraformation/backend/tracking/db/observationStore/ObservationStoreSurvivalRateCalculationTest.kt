@@ -1,20 +1,28 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.point
 import java.math.BigDecimal
 import java.time.Instant
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.containsKey
+import kotlin.math.round
+import org.jooq.TableField
+import org.jooq.impl.SQLDataType
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -24,10 +32,6 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
   private lateinit var subzoneId: PlantingSubzoneId
   private lateinit var zoneId: PlantingZoneId
   private val observedTime = Instant.ofEpochSecond(1)
-  private lateinit var baseSpeciesTotals: ObservedPlotSpeciesTotalsRow
-  private lateinit var baseSubzoneTotals: ObservedSubzoneSpeciesTotalsRow
-  private lateinit var baseZoneTotals: ObservedZoneSpeciesTotalsRow
-  private lateinit var baseSiteTotals: ObservedSiteSpeciesTotalsRow
 
   @BeforeEach
   fun insertDetailedSiteAndObservation() {
@@ -36,54 +40,6 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
-    baseSpeciesTotals =
-        ObservedPlotSpeciesTotalsRow(
-            observationId = observationId,
-            monitoringPlotId = plotId,
-            certaintyId = RecordedSpeciesCertainty.Known,
-            totalLive = 0,
-            totalDead = 0,
-            totalExisting = 0,
-            mortalityRate = 0,
-            cumulativeDead = 0,
-            permanentLive = 0,
-        )
-    baseSubzoneTotals =
-        ObservedSubzoneSpeciesTotalsRow(
-            observationId = observationId,
-            plantingSubzoneId = inserted.plantingSubzoneId,
-            certaintyId = RecordedSpeciesCertainty.Known,
-            totalLive = 0,
-            totalDead = 0,
-            totalExisting = 0,
-            mortalityRate = 0,
-            cumulativeDead = 0,
-            permanentLive = 0,
-        )
-    baseZoneTotals =
-        ObservedZoneSpeciesTotalsRow(
-            observationId = observationId,
-            plantingZoneId = inserted.plantingZoneId,
-            certaintyId = RecordedSpeciesCertainty.Known,
-            totalLive = 0,
-            totalDead = 0,
-            totalExisting = 0,
-            mortalityRate = 0,
-            cumulativeDead = 0,
-            permanentLive = 0,
-        )
-    baseSiteTotals =
-        ObservedSiteSpeciesTotalsRow(
-            observationId = observationId,
-            plantingSiteId = inserted.plantingSiteId,
-            certaintyId = RecordedSpeciesCertainty.Known,
-            totalLive = 0,
-            totalDead = 0,
-            totalExisting = 0,
-            mortalityRate = 0,
-            cumulativeDead = 0,
-            permanentLive = 0,
-        )
   }
 
   @Test
@@ -111,7 +67,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         )
     store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
 
-    helper.assertSurvivalRates(
+    assertSurvivalRates(
         listOf(
             mapOf(plotId to mapOf(speciesId to null)),
             mapOf(subzoneId to mapOf(speciesId to null)),
@@ -143,7 +99,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         )
     store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
 
-    helper.assertSurvivalRates(
+    assertSurvivalRates(
         listOf(
             mapOf(plotId to mapOf(speciesId1 to (100.0 * 1 / 11))),
             mapOf(subzoneId to mapOf(speciesId1 to (100.0 * 1 / 11))),
@@ -175,19 +131,11 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
 
     val plot1Plants =
         createPlantsRows(
-            mapOf(
-                speciesId1 to 9,
-                speciesId2 to 18,
-                speciesId3 to 27,
-            ),
+            mapOf(speciesId1 to 9, speciesId2 to 18, speciesId3 to 27),
             RecordedPlantStatus.Live,
         ) +
             createPlantsRows(
-                mapOf(
-                    speciesId1 to 1,
-                    speciesId2 to 1,
-                    speciesId3 to 2,
-                ),
+                mapOf(speciesId1 to 1, speciesId2 to 1, speciesId3 to 2),
                 RecordedPlantStatus.Dead,
             ) +
             listOf(
@@ -221,7 +169,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
             speciesId3 to (100.0 * 27 / 31),
         )
 
-    helper.assertSurvivalRates(
+    assertSurvivalRates(
         listOf(
             plot1SurvivalRates,
             mapOf(subzoneId to survivalRates1),
@@ -265,7 +213,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
             speciesId2 to (100.0 * (17 + 18) / (23 + 19)),
             speciesId3 to (100.0 * (27 + 25) / 31),
         )
-    helper.assertSurvivalRates(
+    assertSurvivalRates(
         listOf(
             plot1SurvivalRates + plot2SurvivalRates,
             mapOf(subzoneId to survivalRates1And2),
@@ -292,5 +240,71 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         )
       }
     }
+  }
+
+  private fun assertSurvivalRates(
+      expected: List<Map<Any, Map<SpeciesId, Double?>>>,
+      message: String,
+  ) {
+    val idFields =
+        listOf(
+            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+            OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
+            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
+        )
+
+    val levelNames = listOf("Plot", "Subzone", "Zone", "Site")
+
+    expected.forEachIndexed { index, expectedByIdMap ->
+      val actualByIdMap = fetchSurvivalRatesPerSpecies(idFields[index])
+
+      val allIdsMatch =
+          actualByIdMap.all { (id, actualSpeciesMap) ->
+            val expectedSpeciesMap = expectedByIdMap[id] ?: return@all false
+
+            actualSpeciesMap.all { (speciesId, actualRate) ->
+              val expectedRate = expectedSpeciesMap[speciesId]
+              when {
+                expectedRate == null -> actualRate == null
+                actualRate == null -> false
+                else -> round(expectedRate).toInt() == actualRate
+              }
+            } &&
+                expectedSpeciesMap.all { (speciesId, _) -> actualSpeciesMap.containsKey(speciesId) }
+          } && expectedByIdMap.all { (id, _) -> actualByIdMap.containsKey(id) }
+
+      if (!allIdsMatch) {
+        val expectedString =
+            expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value?.let { value -> round(value).toInt() }}" }}}"
+            }
+        val actualString =
+            actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value}" }}}"
+            }
+        assertEquals(expectedString, actualString, "${levelNames[index]}: $message")
+      }
+    }
+  }
+
+  private fun <ID> fetchSurvivalRatesPerSpecies(
+      idField: TableField<*, ID>
+  ): Map<ID, Map<SpeciesId, Int?>> {
+    val table = idField.table!!
+    val speciesIdField =
+        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+
+    return dslContext
+        .select(idField, speciesIdField, survivalRateField)
+        .from(table)
+        .where(speciesIdField.isNotNull)
+        .fetch()
+        .filter { it[idField] != null }
+        .groupBy { it[idField]!! }
+        .mapValues { (_, records) ->
+          records.associate { record -> record[speciesIdField]!! to record[survivalRateField] }
+        }
   }
 }
