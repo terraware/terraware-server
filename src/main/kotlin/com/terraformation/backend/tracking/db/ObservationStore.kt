@@ -2105,6 +2105,7 @@ class ObservationStore(
             plantCountsBySpecies,
             cumulativeDeadFromCurrentObservation,
         )
+        updateSiteSurvivalRate(observationId, plantingSiteId)
       }
     }
   }
@@ -2379,6 +2380,29 @@ class ObservationStore(
           .update(this)
           .set(SURVIVAL_RATE, TOTAL_LIVE.times(100).div(denominator))
           .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+          .and(OBSERVATION_ID.eq(observationId))
+          .and(SPECIES_ID.isNotNull)
+          .execute()
+    }
+  }
+
+  private fun updateSiteSurvivalRate(
+      observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+  ) {
+    with(OBSERVED_SITE_SPECIES_TOTALS) {
+      val denominator =
+          DSL.field(
+              DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY))
+                  .from(PLOT_T0_DENSITY)
+                  .where(PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .and(PLOT_T0_DENSITY.SPECIES_ID.eq(this.SPECIES_ID))
+          )
+
+      dslContext
+          .update(this)
+          .set(SURVIVAL_RATE, TOTAL_LIVE.times(100).div(denominator))
+          .where(PLANTING_SITE_ID.eq(plantingSiteId))
           .and(OBSERVATION_ID.eq(observationId))
           .and(SPECIES_ID.isNotNull)
           .execute()
