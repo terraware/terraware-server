@@ -1,0 +1,12 @@
+Here's a list of translations to use for specific terminology. Use these translations consistently.
+It is okay to change these terms to different parts of speech if needed to maintain grammatical
+correctness, but don't choose totally different words.
+
+accession: accession
+check in: enregistrer
+family: famille
+outplant (n): plant transplanté
+outplant (v): transplanter
+scientific name: nom scientifique
+seed: semence
+seed bank: banque de semences

@@ -1,0 +1,74 @@
+[
+  {
+    "instructions": "src/main/resources/i18n/instructions.txt",
+    "source": {
+      "file": "src/main/resources/i18n/Countries_en.properties"
+    },
+    "targets": [
+      {
+        "language": "French",
+        "file": "src/main/resources/i18n/Countries_fr.properties",
+        "instructions": "src/main/resources/i18n/instructions-fr.txt"
+      },
+      {
+        "language": "Spanish",
+        "file": "src/main/resources/i18n/Countries_es.properties",
+        "instructions": "src/main/resources/i18n/instructions-es.txt"
+      }
+    ]
+  },
+  {
+    "instructions": "src/main/resources/i18n/instructions.txt",
+    "source": {
+      "file": "src/main/resources/i18n/CountrySubdivisions_en.properties"
+    },
+    "targets": [
+      {
+        "language": "French",
+        "file": "src/main/resources/i18n/CountrySubdivisions_fr.properties",
+        "instructions": "src/main/resources/i18n/instructions-fr.txt"
+      },
+      {
+        "language": "Spanish",
+        "file": "src/main/resources/i18n/CountrySubdivisions_es.properties",
+        "instructions": "src/main/resources/i18n/instructions-es.txt"
+      }
+    ]
+  },
+  {
+    "instructions": "src/main/resources/i18n/instructions.txt",
+    "source": {
+      "file": "src/main/resources/i18n/Enums_en.properties"
+    },
+    "targets": [
+      {
+        "language": "French",
+        "file": "src/main/resources/i18n/Enums_fr.properties",
+        "instructions": "src/main/resources/i18n/instructions-fr.txt"
+      },
+      {
+        "language": "Spanish",
+        "file": "src/main/resources/i18n/Enums_es.properties",
+        "instructions": "src/main/resources/i18n/instructions-es.txt"
+      }
+    ]
+  },
+  {
+    "instructions": "src/main/resources/i18n/instructions.txt",
+    "source": {
+      "file": "src/main/resources/i18n/Messages_en.properties"
+    },
+    "targets": [
+      {
+        "language": "French",
+        "file": "src/main/resources/i18n/Messages_fr.properties",
+        "instructions": "src/main/resources/i18n/instructions-fr.txt"
+      },
+      {
+        "language": "Spanish",
+        "file": "src/main/resources/i18n/Messages_es.properties",
+        "instructions": "src/main/resources/i18n/instructions-es.txt"
+      }
+    ]
+  }
+]

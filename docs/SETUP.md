@@ -226,3 +226,26 @@ This must be done by a super-admin; see above for more information on that.
 5. Watch the server logs to monitor the progress of the import. It will take several minutes to finish.
 
 Once it's done, the species lookup endpoints under `/api/v1/species/lookup` should start returning real results.
+
+# Translating to other languages
+
+Human-readable strings can be found in `.properties` files in `src/main/resources/i18n`.
+
+Use [llm-autotranslate](https://www.npmjs.com/package/llm-autotranslate) to generate translations into the other supported languages.
+
+Get an OpenAI API key from your OpenAI account administrator or create one using [the OpenAI platform console](https://platform.openai.com/api-keys). It should have write permission on the Responses API.
+
+Put the key in your `.env` file under the name `OPENAI_API_KEY`. You can also set it as an environment variable if you prefer.
+
+To translate newly-added or edited strings, you have two choices. You can do it as a one-off operation:
+
+```shell
+yarn translate
+```
+
+Or you can run autotranslate in "watch mode," which will watch for changes to the English properties files and automatically request translations and update the other files as needed. You can leave it running in the background.
+
+```shell
+yarn translate:start &
+```
+
