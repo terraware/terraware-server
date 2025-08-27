@@ -76,7 +76,7 @@ class T0PlotStore(
     requirePermissions { updateT0(monitoringPlotId) }
 
     if (plotDensity <= BigDecimal.ZERO) {
-      throw IllegalArgumentException("Density must be above zero")
+      throw IllegalArgumentException("Plot density must be positive")
     }
 
     if (plotHasObservationT0(monitoringPlotId)) {
