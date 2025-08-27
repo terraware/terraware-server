@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import java.math.BigDecimal
@@ -432,6 +433,7 @@ data class ObservationRollupResultsModel(
 data class RecordedPlantModel(
     val certainty: RecordedSpeciesCertainty,
     val gpsCoordinates: Point,
+    val id: RecordedPlantId,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val status: RecordedPlantStatus,

@@ -555,6 +555,36 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )
       }
 
+  private val recordedPlantsGpsField = RECORDED_PLANTS.GPS_COORDINATES.forMultiset()
+
+  private val recordedPlantsMultiset =
+      DSL.multiset(
+              DSL.select(
+                      RECORDED_PLANTS.ID,
+                      RECORDED_PLANTS.CERTAINTY_ID,
+                      RECORDED_PLANTS.SPECIES_ID,
+                      RECORDED_PLANTS.SPECIES_NAME,
+                      RECORDED_PLANTS.STATUS_ID,
+                      recordedPlantsGpsField,
+                  )
+                  .from(RECORDED_PLANTS)
+                  .where(RECORDED_PLANTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                  .and(RECORDED_PLANTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(RECORDED_PLANTS.ID)
+          )
+          .convertFrom { results ->
+            results.map { record ->
+              RecordedPlantModel(
+                  certainty = record[RECORDED_PLANTS.CERTAINTY_ID.asNonNullable()],
+                  gpsCoordinates = record[recordedPlantsGpsField.asNonNullable()] as Point,
+                  id = record[RECORDED_PLANTS.ID.asNonNullable()],
+                  speciesId = record[RECORDED_PLANTS.SPECIES_ID],
+                  speciesName = record[RECORDED_PLANTS.SPECIES_NAME],
+                  status = record[RECORDED_PLANTS.STATUS_ID.asNonNullable()],
+              )
+            }
+          }
+
   private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
   /** monitoring plots for an observation */
@@ -976,34 +1006,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .orderBy(SPECIES_ID, SPECIES_NAME)
         )
       }
-
-  private val recordedPlantsGpsField = RECORDED_PLANTS.GPS_COORDINATES.forMultiset()
-
-  private val recordedPlantsMultiset =
-      DSL.multiset(
-              DSL.select(
-                      RECORDED_PLANTS.CERTAINTY_ID,
-                      RECORDED_PLANTS.SPECIES_ID,
-                      RECORDED_PLANTS.SPECIES_NAME,
-                      RECORDED_PLANTS.STATUS_ID,
-                      recordedPlantsGpsField,
-                  )
-                  .from(RECORDED_PLANTS)
-                  .where(RECORDED_PLANTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(RECORDED_PLANTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(RECORDED_PLANTS.ID)
-          )
-          .convertFrom { results ->
-            results.map { record ->
-              RecordedPlantModel(
-                  certainty = record[RECORDED_PLANTS.CERTAINTY_ID.asNonNullable()],
-                  gpsCoordinates = record[recordedPlantsGpsField.asNonNullable()] as Point,
-                  speciesId = record[RECORDED_PLANTS.SPECIES_ID],
-                  speciesName = record[RECORDED_PLANTS.SPECIES_NAME],
-                  status = record[RECORDED_PLANTS.STATUS_ID.asNonNullable()],
-              )
-            }
-          }
 
   private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
     return dslContext
