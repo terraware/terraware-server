@@ -227,6 +227,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                 speciesId = speciesId1,
                 totalLive = 1,
                 permanentLive = 1,
+                survivalRate = 100 * 1 / 11,
             ),
             baseZoneTotals.copy(
                 certaintyId = RecordedSpeciesCertainty.Unknown,
@@ -390,6 +391,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 10,
                     cumulativeDead = 1,
                     permanentLive = 9,
+                    survivalRate = 100 * 9 / (15 + 9),
                 ),
                 baseZoneTotals.copy(
                     speciesId = speciesId2,
@@ -398,6 +400,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 5,
                     cumulativeDead = 1,
                     permanentLive = 18,
+                    survivalRate = 100 * 18 / (19 + 23),
                 ),
                 baseZoneTotals.copy(
                     speciesId = speciesId3,
@@ -406,6 +409,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 7,
                     cumulativeDead = 2,
                     permanentLive = 27,
+                    survivalRate = 100 * 27 / 31,
                 ),
                 baseZoneTotals.copy(
                     certaintyId = RecordedSpeciesCertainty.Unknown,
@@ -564,6 +568,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 5,
                     cumulativeDead = 1,
                     permanentLive = 9 + 10,
+                    survivalRate = 100 * (9 + 10) / (10 + 5 + 9),
                 ),
                 baseZoneTotals.copy(
                     speciesId = speciesId2,
@@ -572,6 +577,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 5,
                     cumulativeDead = 2,
                     permanentLive = 18 + 17,
+                    survivalRate = 100 * (17 + 18) / (23 + 19),
                 ),
                 baseZoneTotals.copy(
                     speciesId = speciesId3,
@@ -580,6 +586,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     mortalityRate = 5,
                     cumulativeDead = 3,
                     permanentLive = 27 + 25,
+                    survivalRate = 100 * (27 + 25) / 31,
                 ),
                 baseZoneTotals.copy(
                     certaintyId = RecordedSpeciesCertainty.Unknown,
