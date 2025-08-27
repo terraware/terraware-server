@@ -19,7 +19,7 @@ import java.time.Instant
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.containsKey
-import kotlin.math.round
+import kotlin.math.roundToInt
 import org.jooq.TableField
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -268,7 +268,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
               when {
                 expectedRate == null -> actualRate == null
                 actualRate == null -> false
-                else -> round(expectedRate).toInt() == actualRate
+                else -> expectedRate.roundToInt() == actualRate
               }
             } &&
                 expectedSpeciesMap.all { (speciesId, _) -> actualSpeciesMap.containsKey(speciesId) }
@@ -277,13 +277,13 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
       if (!allIdsMatch) {
         val expectedString =
             expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value?.let { value -> round(value).toInt() }}" }}}"
+              "${levelNames[index]} $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> value.roundToInt() }}" }}}"
             }
         val actualString =
             actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value}" }}}"
+              "${levelNames[index]} $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
             }
-        assertEquals(expectedString, actualString, "${levelNames[index]}: $message")
+        assertEquals(expectedString, actualString, "$message - ${levelNames[index]}")
       }
     }
   }
