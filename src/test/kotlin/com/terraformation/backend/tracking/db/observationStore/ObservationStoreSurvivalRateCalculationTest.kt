@@ -250,12 +250,13 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
           emptySet(),
           "Notes1",
           observedTime,
-          createLivePlantsRows(
+          createPlantsRows(
               mapOf(
                   species1 to species1Count,
                   species2 to species2Count,
                   species3 to species3Count,
               ),
+              RecordedPlantStatus.Live,
           ),
       )
     }
@@ -374,9 +375,6 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
       }
     }
   }
-
-  private fun createLivePlantsRows(counts: Map<SpeciesId, Int>) =
-      createPlantsRows(counts, RecordedPlantStatus.Live)
 
   private fun assertSurvivalRates(
       expected: List<Map<Any, Map<SpeciesId, Number?>>>,
