@@ -20,6 +20,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
+import java.math.BigDecimal
 import kotlin.lazy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -92,12 +93,12 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  plotDensity = 3,
+                  plotDensity = BigDecimal.valueOf(3),
               ),
               PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId2,
-                  plotDensity = 7,
+                  plotDensity = BigDecimal.valueOf(7),
               ),
           ),
           "Should insert species densities",
@@ -134,7 +135,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId2,
-                  plotDensity = 4,
+                  plotDensity = BigDecimal.valueOf(4),
               ),
           ),
           "Should use final species density",
@@ -157,7 +158,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `observation overrides previous density`() {
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
-      insertPlotT0Density(plotDensity = 1)
+      insertPlotT0Density(plotDensity = BigDecimal.ONE)
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
@@ -165,7 +166,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId2,
-                  plotDensity = 2,
+                  plotDensity = BigDecimal.TWO,
               ),
           ),
           "Should use observation for density",
@@ -194,8 +195,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `removes species densities not in observation`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
-      insertPlotT0Density(speciesId = speciesId1, plotDensity = 10)
-      insertPlotT0Density(speciesId = speciesId2, plotDensity = 20)
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.TEN)
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(20))
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
@@ -203,7 +204,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0DensityRecord(
                   monitoringPlotId = monitoringPlotId,
                   speciesId = speciesId1,
-                  plotDensity = 2,
+                  plotDensity = BigDecimal.TWO,
               )
           ),
           "Should have deleted density for species not in observation",
@@ -219,13 +220,13 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 10)
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.TEN)
       }
     }
 
     @Test
     fun `inserts new T0 plot record with species and density`() {
-      val density = 12
+      val density = BigDecimal.valueOf(12)
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, density)
 
@@ -251,8 +252,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `updates existing T0 plot record when monitoring plot and species already exist`() {
-      val initialDensity = 10
-      val updatedDensity = 15
+      val initialDensity = BigDecimal.TEN
+      val updatedDensity = BigDecimal.valueOf(15)
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, initialDensity)
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, updatedDensity)
@@ -286,8 +287,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `allows multiple species for same monitoring plot`() {
-      val density1 = 10
-      val density2 = 20
+      val density1 = BigDecimal.TEN
+      val density2 = BigDecimal.valueOf(20)
 
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, density1)
       store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId2, density2)
@@ -327,14 +328,14 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for zero density values`() {
       assertThrows<IllegalArgumentException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 0)
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.ZERO)
       }
     }
 
     @Test
     fun `throws exception for negative density values`() {
       assertThrows<IllegalArgumentException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, -1)
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.valueOf(-1))
       }
     }
 
@@ -342,7 +343,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `does not allow species density to be set after observation is assigned to plot`() {
       insertPlotT0Observation()
       assertThrows<IllegalStateException> {
-        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, 200)
+        store.assignT0PlotSpeciesDensity(monitoringPlotId, speciesId1, BigDecimal.valueOf(200))
       }
     }
   }

@@ -10,8 +10,10 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVAT
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
 import jakarta.inject.Named
+import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -43,8 +45,9 @@ class T0PlotStore(
                       OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
                       OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
                       OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.plus(
-                          OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD
-                      ),
+                              OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD
+                          )
+                          .cast(SQLDataType.NUMERIC),
                   )
                   .from(OBSERVED_PLOT_SPECIES_TOTALS)
                   .where(
@@ -68,11 +71,11 @@ class T0PlotStore(
   fun assignT0PlotSpeciesDensity(
       monitoringPlotId: MonitoringPlotId,
       speciesId: SpeciesId,
-      plotDensity: Int,
+      plotDensity: BigDecimal,
   ) {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    if (plotDensity <= 0) {
+    if (plotDensity <= BigDecimal.ZERO) {
       throw IllegalArgumentException("Density must be above zero")
     }
 

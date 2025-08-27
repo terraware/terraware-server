@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.tracking.db.T0PlotStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -43,5 +44,5 @@ class T0Controller(private val t0PlotStore: T0PlotStore) {
 
 data class AssignT0PlotSpeciesPayload(
     val speciesId: SpeciesId,
-    @Schema(description = "Plants per plot") val plotDensity: Int,
+    @Schema(description = "Plants per plot") val plotDensity: BigDecimal,
 )

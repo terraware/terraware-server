@@ -3255,7 +3255,7 @@ abstract class DatabaseBackedTest {
       row: PlotT0DensityRow = PlotT0DensityRow(),
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      plotDensity: Int = row.plotDensity ?: 10,
+      plotDensity: BigDecimal = row.plotDensity ?: BigDecimal.valueOf(10),
   ) {
     with(PLOT_T0_DENSITY) {
       dslContext

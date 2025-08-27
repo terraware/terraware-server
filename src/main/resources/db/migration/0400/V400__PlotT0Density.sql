@@ -4,7 +4,7 @@ CREATE TABLE tracking.plot_t0_density
 (
     monitoring_plot_id BIGINT  NOT NULL REFERENCES tracking.monitoring_plots ON DELETE CASCADE,
     species_id         BIGINT  NOT NULL REFERENCES species ON DELETE CASCADE,
-    plot_density       INTEGER NOT NULL,
+    plot_density       NUMERIC NOT NULL,
     PRIMARY KEY (monitoring_plot_id, species_id)
 );
 
