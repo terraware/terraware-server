@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.db.observationStore
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
@@ -13,13 +15,14 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.point
 import java.math.BigDecimal
 import java.time.Instant
-import kotlin.math.round
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
   private lateinit var observationId: ObservationId
   private lateinit var plotId: MonitoringPlotId
+  private lateinit var subzoneId: PlantingSubzoneId
+  private lateinit var zoneId: PlantingZoneId
   private val observedTime = Instant.ofEpochSecond(1)
   private lateinit var baseSpeciesTotals: ObservedPlotSpeciesTotalsRow
   private lateinit var baseSubzoneTotals: ObservedSubzoneSpeciesTotalsRow
@@ -28,9 +31,8 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun insertDetailedSiteAndObservation() {
-
-    insertPlantingZone()
-    insertPlantingSubzone()
+    zoneId = insertPlantingZone()
+    subzoneId = insertPlantingSubzone()
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
@@ -109,73 +111,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         )
     store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
 
-    helper.assertTotals(
-        setOf(
-            baseSpeciesTotals.copy(
-                speciesId = speciesId,
-                totalLive = 1,
-                permanentLive = 1,
-            ),
-            baseSpeciesTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSpeciesTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
-            baseSubzoneTotals.copy(
-                speciesId = speciesId,
-                totalLive = 1,
-                permanentLive = 1,
-            ),
-            baseSubzoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSubzoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
-            baseZoneTotals.copy(
-                speciesId = speciesId,
-                totalLive = 1,
-                permanentLive = 1,
-            ),
-            baseZoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseZoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
-            baseSiteTotals.copy(
-                speciesId = speciesId,
-                totalLive = 1,
-                permanentLive = 1,
-            ),
-            baseSiteTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSiteTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
-        )
+    helper.assertSurvivalRates(
+        listOf(
+            mapOf(plotId to mapOf(speciesId to null)),
+            mapOf(subzoneId to mapOf(speciesId to null)),
+            mapOf(zoneId to mapOf(speciesId to null)),
+            mapOf(plantingSiteId to mapOf(speciesId to null)),
+        ),
+        "All survival rates should be null",
     )
   }
 
@@ -200,57 +143,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         )
     store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
 
-    helper.assertTotals(
-        setOf(
-            baseSpeciesTotals.copy(
-                speciesId = speciesId1,
-                totalLive = 1,
-                permanentLive = 1,
-                survivalRate = round(100.0 * 1 / 11).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSubzoneTotals.copy(
-                speciesId = speciesId1,
-                totalLive = 1,
-                permanentLive = 1,
-                survivalRate = round(100.0 * 1 / 11).toInt(),
-            ),
-            baseSubzoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseZoneTotals.copy(
-                speciesId = speciesId1,
-                totalLive = 1,
-                permanentLive = 1,
-                survivalRate = round(100.0 * 1 / 11).toInt(),
-            ),
-            baseZoneTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSiteTotals.copy(
-                speciesId = speciesId1,
-                totalLive = 1,
-                permanentLive = 1,
-                survivalRate = round(100.0 * 1 / 11).toInt(),
-            ),
-            baseSiteTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-        )
+    helper.assertSurvivalRates(
+        listOf(
+            mapOf(plotId to mapOf(speciesId1 to (100.0 * 1 / 11))),
+            mapOf(subzoneId to mapOf(speciesId1 to (100.0 * 1 / 11))),
+            mapOf(zoneId to mapOf(speciesId1 to (100.0 * 1 / 11))),
+            mapOf(plantingSiteId to mapOf(speciesId1 to (100.0 * 1 / 11))),
+        ),
+        "Plot survival rates",
     )
   }
 
@@ -305,166 +205,30 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
             )
     store.completePlot(observationId, plotId, emptySet(), "Notes1", observedTime, plot1Plants)
 
-    val plot1Totals =
-        setOf(
-            baseSpeciesTotals.copy(
-                speciesId = speciesId1,
-                totalLive = 9,
-                totalDead = 1,
-                mortalityRate = 10,
-                cumulativeDead = 1,
-                permanentLive = 9,
-                survivalRate = round(100.0 * 9 / 15).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                speciesId = speciesId2,
-                totalLive = 18,
-                totalDead = 1,
-                mortalityRate = 5,
-                cumulativeDead = 1,
-                permanentLive = 18,
-                survivalRate = round(100.0 * 18 / 23).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                speciesId = speciesId3,
-                totalLive = 27,
-                totalDead = 2,
-                mortalityRate = 7,
-                cumulativeDead = 2,
-                permanentLive = 27,
-                survivalRate = round(100.0 * 27 / 31).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Unknown,
-                totalDead = 1,
-                mortalityRate = 100,
-                cumulativeDead = 1,
-            ),
-            baseSpeciesTotals.copy(
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
+    val plot1SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
+        mapOf(
+            plotId to
+                mapOf(
+                    speciesId1 to (100.0 * 9 / 15),
+                    speciesId2 to (100.0 * 18 / 23),
+                    speciesId3 to (100.0 * 27 / 31),
+                )
+        )
+    val survivalRates1 =
+        mapOf(
+            speciesId1 to (100.0 * 9 / (15 + 9)),
+            speciesId2 to (100.0 * 18 / (23 + 19)),
+            speciesId3 to (100.0 * 27 / 31),
         )
 
-    helper.assertTotals(
-        plot1Totals +
-            setOf(
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9,
-                    totalDead = 1,
-                    mortalityRate = 10,
-                    cumulativeDead = 1,
-                    permanentLive = 9,
-                    survivalRate = round(100.0 * 9 / (15 + 9)).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18,
-                    totalDead = 1,
-                    mortalityRate = 5,
-                    cumulativeDead = 1,
-                    permanentLive = 18,
-                    survivalRate = round(100.0 * 18 / (19 + 23)).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27,
-                    totalDead = 2,
-                    mortalityRate = 7,
-                    cumulativeDead = 2,
-                    permanentLive = 27,
-                    survivalRate = round(100.0 * 27 / 31).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseSubzoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 1,
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9,
-                    totalDead = 1,
-                    mortalityRate = 10,
-                    cumulativeDead = 1,
-                    permanentLive = 9,
-                    survivalRate = round(100.0 * 9 / (15 + 9)).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18,
-                    totalDead = 1,
-                    mortalityRate = 5,
-                    cumulativeDead = 1,
-                    permanentLive = 18,
-                    survivalRate = round(100.0 * 18 / (19 + 23)).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27,
-                    totalDead = 2,
-                    mortalityRate = 7,
-                    cumulativeDead = 2,
-                    permanentLive = 27,
-                    survivalRate = round(100.0 * 27 / 31).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseZoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 1,
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9,
-                    totalDead = 1,
-                    mortalityRate = 10,
-                    cumulativeDead = 1,
-                    permanentLive = 9,
-                    survivalRate = round(100.0 * 9 / (15 + 9)).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18,
-                    totalDead = 1,
-                    mortalityRate = 5,
-                    cumulativeDead = 1,
-                    permanentLive = 18,
-                    survivalRate = round(100.0 * 18 / (19 + 23)).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27,
-                    totalDead = 2,
-                    mortalityRate = 7,
-                    cumulativeDead = 2,
-                    permanentLive = 27,
-                    survivalRate = round(100.0 * 27 / 31).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseSiteTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 1,
-                ),
-            )
+    helper.assertSurvivalRates(
+        listOf(
+            plot1SurvivalRates,
+            mapOf(subzoneId to survivalRates1),
+            mapOf(zoneId to survivalRates1),
+            mapOf(plantingSiteId to survivalRates1),
+        ),
+        "Plot 1 survival rates",
     )
 
     val plot2Plants =
@@ -486,165 +250,29 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
             )
     store.completePlot(observationId, plot2, emptySet(), "Notes2", observedTime, plot2Plants)
 
-    val plot2Totals =
-        setOf(
-            baseSpeciesTotals.copy(
-                monitoringPlotId = plot2,
-                speciesId = speciesId1,
-                totalLive = 10,
-                totalDead = 0,
-                mortalityRate = 0,
-                cumulativeDead = 0,
-                permanentLive = 10,
-                survivalRate = round(100.0 * 10 / 9).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                monitoringPlotId = plot2,
-                speciesId = speciesId2,
-                totalLive = 17,
-                totalDead = 1,
-                mortalityRate = 6,
-                cumulativeDead = 1,
-                permanentLive = 17,
-                survivalRate = round(100.0 * 17 / 19).toInt(),
-            ),
-            baseSpeciesTotals.copy(
-                monitoringPlotId = plot2,
-                speciesId = speciesId3,
-                totalLive = 25,
-                totalDead = 1,
-                mortalityRate = 4,
-                cumulativeDead = 1,
-                permanentLive = 25,
-                // no survival rate because no t0 data
-            ),
-            baseSpeciesTotals.copy(
-                monitoringPlotId = plot2,
-                certaintyId = RecordedSpeciesCertainty.Other,
-                speciesName = "Who knows",
-                totalExisting = 1,
-            ),
+    val plot2SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
+        mapOf(
+            plot2 to
+                mapOf(
+                    speciesId1 to (100.0 * 10 / 9),
+                    speciesId2 to (100.0 * 17 / 19),
+                    speciesId3 to null,
+                )
         )
-
-    helper.assertTotals(
-        plot1Totals +
-            plot2Totals +
-            setOf(
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9 + 10,
-                    totalDead = 1,
-                    mortalityRate = 100 * 1 / 19,
-                    cumulativeDead = 1,
-                    permanentLive = 9 + 10,
-                    survivalRate = round(100.0 * (9 + 10) / (10 + 5 + 9)).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18 + 17,
-                    totalDead = 2,
-                    mortalityRate = 5,
-                    cumulativeDead = 2,
-                    permanentLive = 18 + 17,
-                    survivalRate = round(100.0 * (17 + 18) / (23 + 19)).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27 + 25,
-                    totalDead = 3,
-                    mortalityRate = 5,
-                    cumulativeDead = 3,
-                    permanentLive = 27 + 25,
-                    survivalRate = round(100.0 * (27 + 25) / 31).toInt(),
-                ),
-                baseSubzoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseSubzoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 2,
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9 + 10,
-                    totalDead = 1,
-                    mortalityRate = 5,
-                    cumulativeDead = 1,
-                    permanentLive = 9 + 10,
-                    survivalRate = round(100.0 * (9 + 10) / (10 + 5 + 9)).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18 + 17,
-                    totalDead = 2,
-                    mortalityRate = 5,
-                    cumulativeDead = 2,
-                    permanentLive = 18 + 17,
-                    survivalRate = round(100.0 * (17 + 18) / (23 + 19)).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27 + 25,
-                    totalDead = 3,
-                    mortalityRate = 5,
-                    cumulativeDead = 3,
-                    permanentLive = 27 + 25,
-                    survivalRate = round(100.0 * (27 + 25) / 31).toInt(),
-                ),
-                baseZoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseZoneTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 2,
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId1,
-                    totalLive = 9 + 10,
-                    totalDead = 1,
-                    mortalityRate = 5,
-                    cumulativeDead = 1,
-                    permanentLive = 9 + 10,
-                    survivalRate = round(100.0 * (9 + 10) / (10 + 5 + 9)).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId2,
-                    totalLive = 18 + 17,
-                    totalDead = 2,
-                    mortalityRate = 5,
-                    cumulativeDead = 2,
-                    permanentLive = 18 + 17,
-                    survivalRate = round(100.0 * (17 + 18) / (23 + 19)).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    speciesId = speciesId3,
-                    totalLive = 27 + 25,
-                    totalDead = 3,
-                    mortalityRate = 5,
-                    cumulativeDead = 3,
-                    permanentLive = 27 + 25,
-                    survivalRate = round(100.0 * (27 + 25) / 31).toInt(),
-                ),
-                baseSiteTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Unknown,
-                    totalDead = 1,
-                    mortalityRate = 100,
-                    cumulativeDead = 1,
-                ),
-                baseSiteTotals.copy(
-                    certaintyId = RecordedSpeciesCertainty.Other,
-                    speciesName = "Who knows",
-                    totalExisting = 2,
-                ),
-            )
+    val survivalRates1And2 =
+        mapOf(
+            speciesId1 to (100.0 * (9 + 10) / (15 + 9)),
+            speciesId2 to (100.0 * (17 + 18) / (23 + 19)),
+            speciesId3 to (100.0 * (27 + 25) / 31),
+        )
+    helper.assertSurvivalRates(
+        listOf(
+            plot1SurvivalRates + plot2SurvivalRates,
+            mapOf(subzoneId to survivalRates1And2),
+            mapOf(zoneId to survivalRates1And2),
+            mapOf(plantingSiteId to survivalRates1And2),
+        ),
+        "Plots 1 and 2 survival rates",
     )
   }
 

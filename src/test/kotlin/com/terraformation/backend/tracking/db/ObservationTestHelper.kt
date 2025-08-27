@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -22,6 +23,10 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SP
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.ZoneId
+import kotlin.Int
+import kotlin.math.round
+import org.jooq.TableField
+import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class ObservationTestHelper(
@@ -48,7 +53,7 @@ class ObservationTestHelper(
   }
 
   /**
-   * Returns all the plant totals (plot, zone, site) in the database, suitable for use in
+   * Returns all the plant totals (plot, subzone, zone, site) in the database, suitable for use in
    * [assertTotals].
    */
   fun fetchAllTotals(): Set<Any> {
@@ -65,6 +70,70 @@ class ObservationTestHelper(
                 .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
                 .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
         .toSet()
+  }
+
+  fun assertSurvivalRates(
+      expected: List<Map<Any, Map<SpeciesId, Double?>>>,
+      message: String,
+  ) {
+    val idFields =
+        listOf(
+            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+            OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
+            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
+        )
+
+    val levelNames = listOf("Plot", "Subzone", "Zone", "Site")
+
+    expected.forEachIndexed { index, expectedByIdMap ->
+      val actualByIdMap = fetchSurvivalRatesPerSpecies(idFields[index])
+
+      val allIdsMatch =
+          actualByIdMap.all { (id, actualSpeciesMap) ->
+            val expectedSpeciesMap = expectedByIdMap[id] ?: return@all false
+
+            actualSpeciesMap.all { (speciesId, actualRate) ->
+              val expectedRate = expectedSpeciesMap[speciesId]
+              when {
+                expectedRate == null -> actualRate == null
+                actualRate == null -> false
+                else -> round(expectedRate).toInt() == actualRate
+              }
+            } &&
+                expectedSpeciesMap.all { (speciesId, _) -> actualSpeciesMap.containsKey(speciesId) }
+          } && expectedByIdMap.all { (id, _) -> actualByIdMap.containsKey(id) }
+
+      if (!allIdsMatch) {
+        val expectedString =
+            expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value?.let { value -> round(value).toInt() }}" }}}"
+            }
+        val actualString =
+            actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+              "$id: {${speciesMap.entries.joinToString(", ") { "${it.key}->${it.value}" }}}"
+            }
+        assertEquals(expectedString, actualString, "${levelNames[index]}: $message")
+      }
+    }
+  }
+
+  fun <ID> fetchSurvivalRatesPerSpecies(idField: TableField<*, ID>): Map<ID, Map<SpeciesId, Int?>> {
+    val table = idField.table!!
+    val speciesIdField =
+        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+
+    return dslContext
+        .select(idField, speciesIdField, survivalRateField)
+        .from(table)
+        .where(speciesIdField.isNotNull)
+        .fetch()
+        .filter { it[idField] != null }
+        .groupBy { it[idField]!! }
+        .mapValues { (_, records) ->
+          records.associate { record -> record[speciesIdField]!! to record[survivalRateField] }
+        }
   }
 
   /**
