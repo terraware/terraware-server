@@ -12,5 +12,6 @@ CREATE TABLE tracking.plot_t0_observations
 (
     monitoring_plot_id BIGINT NOT NULL REFERENCES tracking.monitoring_plots ON DELETE CASCADE,
     observation_id     BIGINT NOT NULL REFERENCES tracking.observations ON DELETE CASCADE,
-    PRIMARY KEY (monitoring_plot_id)
+    PRIMARY KEY (monitoring_plot_id),
+    FOREIGN KEY (observation_id, monitoring_plot_id) REFERENCES tracking.observation_plots ON DELETE CASCADE
 );

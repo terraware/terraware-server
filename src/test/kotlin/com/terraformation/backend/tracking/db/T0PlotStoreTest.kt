@@ -57,6 +57,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     plantingSubzoneId = insertPlantingSubzone()
     monitoringPlotId = insertMonitoringPlot()
     observationId = insertObservation()
+    insertObservationPlot()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
   }
@@ -116,6 +117,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing T0 plot record when monitoring plot already exists`() {
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
       val secondObservationId = insertObservation(plantingSiteId = plantingSiteId)
+      insertObservationPlot()
       insertObservedPlotSpeciesTotals(totalLive = 2, totalDead = 2)
 
       store.assignT0PlotObservation(monitoringPlotId, observationId)
