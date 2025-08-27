@@ -22,7 +22,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SP
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.ZoneId
-import kotlin.Int
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class ObservationTestHelper(

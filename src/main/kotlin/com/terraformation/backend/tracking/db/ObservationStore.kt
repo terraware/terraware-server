@@ -2209,6 +2209,7 @@ class ObservationStore(
             } else {
               null
             }
+
         val survivalRateDenominator =
             DSL.field(
                 DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY))
@@ -2216,7 +2217,6 @@ class ObservationStore(
                     .where(survivalRateDensityCondition)
                     .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
             )
-
         val survivalRate =
             if (isPermanent && speciesKey.id != null) {
               DSL.`val`(totalLive).mul(100).div(survivalRateDenominator)
