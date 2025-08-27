@@ -34,15 +34,15 @@
 <text text-anchor="start" x="307" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_history_id</text>
 <polygon fill="none" stroke="black" points="287,-212 287,-230 467,-230 467,-212 287,-212"/>
 <text text-anchor="start" x="290" y="-218.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="287,-194 287,-212 370,-212 370,-194 287,-194"/>
-<polygon fill="none" stroke="black" points="287,-194 287,-212 370,-212 370,-194 287,-194"/>
+<polygon fill="#ffffff" stroke="transparent" points="287,-194 287,-212 367,-212 367,-194 287,-194"/>
+<polygon fill="none" stroke="black" points="287,-194 287,-212 367,-212 367,-194 287,-194"/>
 <text text-anchor="start" x="290" y="-200.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="370,-194 370,-212 414,-212 414,-194 370,-194"/>
-<polygon fill="none" stroke="black" points="370,-194 370,-212 414,-212 414,-194 370,-194"/>
-<text text-anchor="start" x="404" y="-200.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="414,-194 414,-212 467,-212 467,-194 414,-194"/>
-<polygon fill="none" stroke="black" points="414,-194 414,-212 467,-212 467,-194 414,-194"/>
-<text text-anchor="start" x="448" y="-200.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="367,-194 367,-212 409,-212 409,-194 367,-194"/>
+<polygon fill="none" stroke="black" points="367,-194 367,-212 409,-212 409,-194 367,-194"/>
+<text text-anchor="start" x="399" y="-200.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="409,-194 409,-212 467,-212 467,-194 409,-194"/>
+<polygon fill="none" stroke="black" points="409,-194 409,-212 467,-212 467,-194 409,-194"/>
+<text text-anchor="start" x="442" y="-200.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>
@@ -82,7 +82,7 @@
 <text text-anchor="start" x="131" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 <polygon fill="#ffffff" stroke="transparent" points="141,-37 141,-55 190,-55 190,-37 141,-37"/>
 <polygon fill="none" stroke="black" points="141,-37 141,-55 190,-55 190,-37 141,-37"/>
-<text text-anchor="start" x="165" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">15 &gt;</text>
+<text text-anchor="start" x="165" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">16 &gt;</text>
 </a>
 </g>
 </g>

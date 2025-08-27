@@ -1,3 +1,4 @@
+8be1d8fed66 SW-7278 Store t0 plot density for species in plot (#3331)
 d7b52d27658 SW-7295 Add Project Internal Users to Search API (#3330)
 191d43ad56f Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.2 (#3325)
 86265028d7e Stop sharing NumberFormat instances between threads (#3329)

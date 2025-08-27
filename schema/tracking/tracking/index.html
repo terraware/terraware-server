@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.tracking</h4>
-                                <p>Generated on Tue Aug 26 15:45 GMT 2025</p>
+                                <p>Generated on Wed Aug 27 20:44 GMT 2025</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">46</span>
+                                    <span class="info-box-number">47</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">93</span>
+                                    <span class="info-box-number">95</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -206,6 +206,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>If an observation should only cover a specific set of subzones, the subzone IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/plot_t0_observations.html">plot_t0_observations</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Which observation to use to determine t0 plot density.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_plot_statuses.html">observation_plot_statuses</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -279,7 +288,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_plots.html">observation_plots</a></td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">-1</td>
@@ -288,7 +297,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/monitoring_plots.html">monitoring_plots</a></td>
-                                        <td class="detail" align="right">15</td>
+                                        <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">-1</td>
@@ -330,6 +339,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/plot_t0_density.html">plot_t0_density</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Density for a plot per species, in plants per plot.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_seasons.html">planting_seasons</a></td>
@@ -413,15 +431,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about individual plants observed in monitoring plots.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observations.html">observations</a></td>
-                                        <td class="detail" align="right">16</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">11</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">5</td>
@@ -429,6 +438,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observations.html">observations</a></td>
+                                        <td class="detail" align="right">16</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">11</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_plant_statuses.html">recorded_plant_statuses</a></td>
@@ -510,15 +528,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Aggregated per-planting-subzone, per-species totals of plants recorded during observations.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/t0_plot.html">t0_plot</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>For a given plot, which observation to use as T0 data, or the estimated density for a specific species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/deliveries.html">deliveries</a></td>

@@ -146,6 +146,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="plot_t0_observations.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via plot_t0_observations_observation_id_monitoring_plot_id_fkey"><a href='plot_t0_observations.html'>plot_t0_observations</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">plot_t0_observations_observation_id_monitoring_plot_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="recorded_plants.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via recorded_plants_observation_id_monitoring_plot_id_fkey"><a href='recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">recorded_plants_observation_id_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -186,6 +191,11 @@
                                                 <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observed_plot_coordinates.html'>observed_plot_coordinates</a><span class='relatedKey'>.monitoring_plot_id</span></td>
                                                 <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="plot_t0_observations.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via plot_t0_observations_observation_id_monitoring_plot_id_fkey"><a href='plot_t0_observations.html'>plot_t0_observations</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">plot_t0_observations_observation_id_monitoring_plot_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="recorded_plants.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via recorded_plants_observation_id_monitoring_plot_id_fkey"><a href='recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.monitoring_plot_id</span></td>

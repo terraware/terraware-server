@@ -46,15 +46,15 @@
 <text text-anchor="start" x="352" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_history_id</text>
 <polygon fill="none" stroke="black" points="332,-55 332,-73 512,-73 512,-55 332,-55"/>
 <text text-anchor="start" x="335" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="332,-37 332,-55 415,-55 415,-37 332,-37"/>
-<polygon fill="none" stroke="black" points="332,-37 332,-55 415,-55 415,-37 332,-37"/>
+<polygon fill="#ffffff" stroke="transparent" points="332,-37 332,-55 412,-55 412,-37 332,-37"/>
+<polygon fill="none" stroke="black" points="332,-37 332,-55 412,-55 412,-37 332,-37"/>
 <text text-anchor="start" x="335" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 8</text>
-<polygon fill="#ffffff" stroke="transparent" points="415,-37 415,-55 459,-55 459,-37 415,-37"/>
-<polygon fill="none" stroke="black" points="415,-37 415,-55 459,-55 459,-37 415,-37"/>
-<text text-anchor="start" x="449" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="459,-37 459,-55 512,-55 512,-37 459,-37"/>
-<polygon fill="none" stroke="black" points="459,-37 459,-55 512,-55 512,-37 459,-37"/>
-<text text-anchor="start" x="493" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="412,-37 412,-55 454,-55 454,-37 412,-37"/>
+<polygon fill="none" stroke="black" points="412,-37 412,-55 454,-55 454,-37 412,-37"/>
+<text text-anchor="start" x="444" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="454,-37 454,-55 512,-55 512,-37 454,-37"/>
+<polygon fill="none" stroke="black" points="454,-37 454,-55 512,-55 512,-37 454,-37"/>
+<text text-anchor="start" x="487" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

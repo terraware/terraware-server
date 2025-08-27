@@ -196,6 +196,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="plot_t0_observations.observation_id references observations.id via plot_t0_observations_observation_id_fkey"><a href='plot_t0_observations.html'>plot_t0_observations</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">plot_t0_observations_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="recorded_plants.observation_id references observations.id via recorded_plants_observation_id_fkey"><a href='recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">recorded_plants_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -203,11 +208,6 @@
                                             <tr>
                                                 <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='recorded_trees.html'>recorded_trees</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">recorded_trees_observation_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="t0_plot.observation_id references observations.id via t0_plot_observation_id_fkey"><a href='t0_plot.html'>t0_plot</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">t0_plot_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>

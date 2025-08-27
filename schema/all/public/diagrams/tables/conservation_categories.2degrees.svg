@@ -817,65 +817,65 @@
 <polygon fill="black" stroke="black" points="737.5,-64.27 745.62,-67.6 741.5,-64.13 745.5,-64 745.5,-64 745.5,-64 741.5,-64.13 745.38,-60.4 737.5,-64.27 737.5,-64.27"/>
 <ellipse fill="none" stroke="black" cx="734.31" cy="-64.38" rx="3.2" ry="3.2"/>
 </g>
-<!-- tracking.recorded_plants -->
+<!-- tracking.plot_t0_density -->
 <g id="node24" class="node">
+<title>tracking.plot_t0_density</title>
+<g id="a_node24"><a xlink:href="../../../tracking/tables/plot_t0_density.html" xlink:title="tracking.plot_t0_density" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="729,-274 729,-332 916,-332 916,-274 729,-274"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="729.5,-310 729.5,-332 916.5,-332 916.5,-310 729.5,-310"/>
+<polygon fill="none" stroke="black" points="729.5,-310 729.5,-332 916.5,-332 916.5,-310 729.5,-310"/>
+<text text-anchor="start" x="734.5" y="-319.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plot_t0_density</text>
+<text text-anchor="start" x="877.5" y="-318.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="729.5,-292 729.5,-310 916.5,-310 916.5,-292 729.5,-292"/>
+<text text-anchor="start" x="732.5" y="-298.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="729.5,-274 729.5,-292 807.5,-292 807.5,-274 729.5,-274"/>
+<polygon fill="none" stroke="black" points="729.5,-274 729.5,-292 807.5,-292 807.5,-274 729.5,-274"/>
+<text text-anchor="start" x="732.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="807.5,-274 807.5,-292 875.5,-292 875.5,-274 807.5,-274"/>
+<polygon fill="none" stroke="black" points="807.5,-274 807.5,-292 875.5,-292 875.5,-274 807.5,-274"/>
+<text text-anchor="start" x="838.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="875.5,-274 875.5,-292 916.5,-292 916.5,-274 875.5,-274"/>
+<polygon fill="none" stroke="black" points="875.5,-274 875.5,-292 916.5,-292 916.5,-274 875.5,-274"/>
+<text text-anchor="start" x="906.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- tracking.plot_t0_density&#45;&gt;species -->
+<g id="edge35" class="edge">
+<title>tracking.plot_t0_density:w&#45;&gt;species:e</title>
+<path fill="none" stroke="black" d="M714.13,-302.04C691.49,-305.67 680.93,-318.94 667,-343 638.46,-392.29 683.95,-854 627,-854"/>
+<polygon fill="black" stroke="black" points="720.52,-301.58 728.76,-304.59 724.51,-301.29 728.5,-301 728.5,-301 728.5,-301 724.51,-301.29 728.24,-297.41 720.52,-301.58 720.52,-301.58"/>
+<ellipse fill="none" stroke="black" cx="717.33" cy="-301.81" rx="3.2" ry="3.2"/>
+</g>
+<!-- tracking.recorded_plants -->
+<g id="node25" class="node">
 <title>tracking.recorded_plants</title>
-<g id="a_node24"><a xlink:href="../../../tracking/tables/recorded_plants.html" xlink:title="tracking.recorded_plants" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="726,-274 726,-332 919,-332 919,-274 726,-274"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="726.5,-310 726.5,-332 919.5,-332 919.5,-310 726.5,-310"/>
-<polygon fill="none" stroke="black" points="726.5,-310 726.5,-332 919.5,-332 919.5,-310 726.5,-310"/>
-<text text-anchor="start" x="731.5" y="-319.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.recorded_plants</text>
-<text text-anchor="start" x="880.5" y="-318.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="726.5,-292 726.5,-310 919.5,-310 919.5,-292 726.5,-292"/>
-<text text-anchor="start" x="729.5" y="-298.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="726.5,-274 726.5,-292 807.5,-292 807.5,-274 726.5,-274"/>
-<polygon fill="none" stroke="black" points="726.5,-274 726.5,-292 807.5,-292 807.5,-274 726.5,-274"/>
-<text text-anchor="start" x="729.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="807.5,-274 807.5,-292 876.5,-292 876.5,-274 807.5,-274"/>
-<polygon fill="none" stroke="black" points="807.5,-274 807.5,-292 876.5,-292 876.5,-274 807.5,-274"/>
-<text text-anchor="start" x="839.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="876.5,-274 876.5,-292 919.5,-292 919.5,-274 876.5,-274"/>
-<polygon fill="none" stroke="black" points="876.5,-274 876.5,-292 919.5,-292 919.5,-274 876.5,-274"/>
-<text text-anchor="start" x="909.5" y="-280.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node25"><a xlink:href="../../../tracking/tables/recorded_plants.html" xlink:title="tracking.recorded_plants" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="726,-195 726,-253 919,-253 919,-195 726,-195"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="726.5,-231 726.5,-253 919.5,-253 919.5,-231 726.5,-231"/>
+<polygon fill="none" stroke="black" points="726.5,-231 726.5,-253 919.5,-253 919.5,-231 726.5,-231"/>
+<text text-anchor="start" x="731.5" y="-240.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.recorded_plants</text>
+<text text-anchor="start" x="880.5" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="726.5,-213 726.5,-231 919.5,-231 919.5,-213 726.5,-213"/>
+<text text-anchor="start" x="729.5" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="726.5,-195 726.5,-213 807.5,-213 807.5,-195 726.5,-195"/>
+<polygon fill="none" stroke="black" points="726.5,-195 726.5,-213 807.5,-213 807.5,-195 726.5,-195"/>
+<text text-anchor="start" x="729.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="807.5,-195 807.5,-213 876.5,-213 876.5,-195 807.5,-195"/>
+<polygon fill="none" stroke="black" points="807.5,-195 807.5,-213 876.5,-213 876.5,-195 807.5,-195"/>
+<text text-anchor="start" x="839.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="876.5,-195 876.5,-213 919.5,-213 919.5,-195 876.5,-195"/>
+<polygon fill="none" stroke="black" points="876.5,-195 876.5,-213 919.5,-213 919.5,-195 876.5,-195"/>
+<text text-anchor="start" x="909.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- tracking.recorded_plants&#45;&gt;species -->
-<g id="edge35" class="edge">
-<title>tracking.recorded_plants:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M711.04,-302.19C689.73,-306.13 680.07,-319.8 667,-343 639.04,-392.62 683.95,-854 627,-854"/>
-<polygon fill="black" stroke="black" points="717.53,-301.66 725.8,-304.59 721.51,-301.33 725.5,-301 725.5,-301 725.5,-301 721.51,-301.33 725.2,-297.41 717.53,-301.66 717.53,-301.66"/>
-<ellipse fill="none" stroke="black" cx="714.34" cy="-301.92" rx="3.2" ry="3.2"/>
-</g>
-<!-- tracking.t0_plot -->
-<g id="node25" class="node">
-<title>tracking.t0_plot</title>
-<g id="a_node25"><a xlink:href="../../../tracking/tables/t0_plot.html" xlink:title="tracking.t0_plot" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="753.5,-195 753.5,-253 891.5,-253 891.5,-195 753.5,-195"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="753.5,-231 753.5,-253 891.5,-253 891.5,-231 753.5,-231"/>
-<polygon fill="none" stroke="black" points="753.5,-231 753.5,-253 891.5,-253 891.5,-231 753.5,-231"/>
-<text text-anchor="start" x="758.5" y="-240.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.t0_plot</text>
-<text text-anchor="start" x="852.5" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="753.5,-213 753.5,-231 891.5,-231 891.5,-213 753.5,-213"/>
-<text text-anchor="start" x="756.5" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="753.5,-195 753.5,-213 806.5,-213 806.5,-195 753.5,-195"/>
-<polygon fill="none" stroke="black" points="753.5,-195 753.5,-213 806.5,-213 806.5,-195 753.5,-195"/>
-<text text-anchor="start" x="756.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="806.5,-195 806.5,-213 862.5,-213 862.5,-195 806.5,-195"/>
-<polygon fill="none" stroke="black" points="806.5,-195 806.5,-213 862.5,-213 862.5,-195 806.5,-195"/>
-<text text-anchor="start" x="825.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="862.5,-195 862.5,-213 891.5,-213 891.5,-195 862.5,-195"/>
-<polygon fill="none" stroke="black" points="862.5,-195 862.5,-213 891.5,-213 891.5,-195 862.5,-195"/>
-<text text-anchor="start" x="881.5" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- tracking.t0_plot&#45;&gt;species -->
 <g id="edge36" class="edge">
-<title>tracking.t0_plot:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M738.07,-222.34C705.36,-224.07 687.73,-233.1 667,-264 630.39,-318.56 692.71,-854 627,-854"/>
-<polygon fill="black" stroke="black" points="744.5,-222.19 752.58,-225.6 748.5,-222.09 752.5,-222 752.5,-222 752.5,-222 748.5,-222.09 752.42,-218.4 744.5,-222.19 744.5,-222.19"/>
-<ellipse fill="none" stroke="black" cx="741.3" cy="-222.26" rx="3.2" ry="3.2"/>
+<title>tracking.recorded_plants:w&#45;&gt;species:e</title>
+<path fill="none" stroke="black" d="M711.03,-223.19C689.69,-227.11 679.95,-240.73 667,-264 635.04,-321.41 692.71,-854 627,-854"/>
+<polygon fill="black" stroke="black" points="717.53,-222.65 725.79,-225.59 721.51,-222.33 725.5,-222 725.5,-222 725.5,-222 721.51,-222.33 725.21,-218.41 717.53,-222.65 717.53,-222.65"/>
+<ellipse fill="none" stroke="black" cx="714.34" cy="-222.92" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>
