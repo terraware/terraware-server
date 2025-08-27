@@ -8,10 +8,13 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
+    "llm-autotranslate": "^0.2.1",
     "mjml": "4.15.3",
     "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
-    "mjml": "node scripts/mjml-with-plugins.js"
+    "mjml": "node scripts/mjml-with-plugins.js",
+    "translate": "autotranslate",
+    "translate:start": "autotranslate --watch"
   }
 }

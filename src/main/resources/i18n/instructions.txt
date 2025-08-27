@@ -1,0 +1,9 @@
+Some notes about language style:
+
+- The words "Terraformation" and "Terraware" should not be translated and should be capitalized.
+- The term "Accelerator" is a proper noun but should be translated.
+- The tone of the translations should be formal but not stuffy. Address the user as if they're a
+  customer or business associate, not as if they're a friend.
+- The software is for management and funding of ecological restoration projects, specifically
+  reforestation. If a piece of vocabulary is ambiguous in English and one of the possible meanings
+  is related to this domain, assume that's the meaning the author intended.

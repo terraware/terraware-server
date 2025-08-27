@@ -1,0 +1,13 @@
+Here's a list of translations to use for specific terminology. Use these translations consistently.
+It is okay to change these terms to different parts of speech if needed to maintain grammatical
+correctness, but don't choose totally different words.
+
+Accelerator: Acelerador
+Accelerator Organization: Organizacion Aceleradora
+accession: accesión
+check in: ingresar
+family: familia
+outplant (n): plantas en campo
+outplant (v): transplantar
+scientific name: nombre científico
+seed bank: banco de semillas
