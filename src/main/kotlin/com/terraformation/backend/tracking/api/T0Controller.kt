@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.tracking.db.T0PlotStore
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -29,16 +30,19 @@ class T0Controller(private val t0PlotStore: T0PlotStore) {
     return SimpleSuccessResponsePayload()
   }
 
-  @Operation(summary = "Assigns a species and estimated density as T0 for a monitoring plot.")
+  @Operation(summary = "Assigns a species and plot density as T0 for a monitoring plot.")
   @PostMapping("/{monitoringPlotId}/species")
   fun assignT0PlotSpeciesDensity(
       @PathVariable monitoringPlotId: MonitoringPlotId,
       @RequestBody payload: AssignT0PlotSpeciesPayload,
   ): SimpleSuccessResponsePayload {
-    t0PlotStore.assignT0PlotSpeciesDensity(monitoringPlotId, payload.speciesId, payload.density)
+    t0PlotStore.assignT0PlotSpeciesDensity(monitoringPlotId, payload.speciesId, payload.plotDensity)
 
     return SimpleSuccessResponsePayload()
   }
 }
 
-data class AssignT0PlotSpeciesPayload(val speciesId: SpeciesId, val density: BigDecimal)
+data class AssignT0PlotSpeciesPayload(
+    val speciesId: SpeciesId,
+    @Schema(description = "Plants per plot") val plotDensity: BigDecimal,
+)

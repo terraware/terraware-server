@@ -403,11 +403,12 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "planting_subzone_populations" to setOf(ALL, TRACKING),
                   "planting_subzones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
+                  "plot_t0_density" to setOf(ALL, TRACKING),
+                  "plot_t0_observations" to setOf(ALL, TRACKING),
                   "recorded_plant_statuses" to setOf(ALL, TRACKING),
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),
                   "recorded_trees" to setOf(ALL, TRACKING),
-                  "t0_plot" to setOf(ALL, TRACKING),
                   "tree_growth_forms" to setOf(ALL, TRACKING),
               ),
       )

@@ -118,7 +118,7 @@ data class PlantingSiteMapEditedEvent(
 )
 
 data class T0SpeciesDensityAssignedEvent(
-    val density: BigDecimal,
+    val plotDensity: BigDecimal,
     val monitoringPlotId: MonitoringPlotId,
     val speciesId: SpeciesId,
 )
