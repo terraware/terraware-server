@@ -23,28 +23,50 @@ data class AssignedPlotDetails(
     val sizeMeters: Int,
 ) {
   fun gpxWaypoints(messages: Messages): List<GpxWaypoint> {
-    val plotType = if (model.isPermanent) "Permanent" else "Temporary"
+    val plotType =
+        if (model.isPermanent) messages.monitoringPlotTypePermanent()
+        else messages.monitoringPlotTypeTemporary()
 
     return listOf(
         GpxWaypoint(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
-            "${messages.monitoringPlotSouthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            messages.monitoringPlotSouthwestCorner(
+                plotNumber,
+                plotType,
+                plantingZoneName,
+                plantingSubzoneName,
+            ),
         ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
-            "${messages.monitoringPlotSoutheastCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            messages.monitoringPlotSoutheastCorner(
+                plotNumber,
+                plotType,
+                plantingZoneName,
+                plantingSubzoneName,
+            ),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
-            "${messages.monitoringPlotNortheastCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            messages.monitoringPlotNortheastCorner(
+                plotNumber,
+                plotType,
+                plantingZoneName,
+                plantingSubzoneName,
+            ),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
-            "${messages.monitoringPlotNorthwestCorner(plotNumber)} - Plot type: $plotType - Planting zone name: $plantingZoneName - Planting subzone name: $plantingSubzoneName",
+            messages.monitoringPlotNorthwestCorner(
+                plotNumber,
+                plotType,
+                plantingZoneName,
+                plantingSubzoneName,
+            ),
         ),
     )
   }
