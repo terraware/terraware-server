@@ -20,8 +20,10 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
+import com.terraformation.backend.tracking.model.PlotT0DataModel
 import java.math.BigDecimal
 import kotlin.lazy
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -60,6 +62,54 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertObservationPlot()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
+  }
+
+  @Nested
+  inner class FetchT0SiteData {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> { store.fetchT0SiteData(plantingSiteId) }
+    }
+
+    @Test
+    fun `returns expected data`() {
+      insertPlotT0Observation()
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(3))
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(7))
+      val plot2 = insertMonitoringPlot()
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(11))
+      // data from monitoringPlot in other site not returned
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(20))
+
+      val expected =
+          listOf(
+              PlotT0DataModel(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  plotDensity = BigDecimal.valueOf(3),
+                  observationId = observationId,
+              ),
+              PlotT0DataModel(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId2,
+                  plotDensity = BigDecimal.valueOf(7),
+                  observationId = observationId,
+              ),
+              PlotT0DataModel(
+                  monitoringPlotId = plot2,
+                  speciesId = speciesId1,
+                  plotDensity = BigDecimal.valueOf(11),
+              ),
+          )
+
+      assertEquals(expected, store.fetchT0SiteData(plantingSiteId))
+    }
   }
 
   @Nested

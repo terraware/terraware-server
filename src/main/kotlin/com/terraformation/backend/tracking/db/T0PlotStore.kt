@@ -4,11 +4,13 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
+import com.terraformation.backend.tracking.model.PlotT0DataModel
 import jakarta.inject.Named
 import java.math.BigDecimal
 import org.jooq.DSLContext
@@ -21,6 +23,20 @@ class T0PlotStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
+  fun fetchT0SiteData(plantingSiteId: PlantingSiteId): List<PlotT0DataModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return with(PLOT_T0_DENSITY) {
+      dslContext
+          .select(MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY, PLOT_T0_OBSERVATIONS.OBSERVATION_ID)
+          .from(this)
+          .leftJoin(PLOT_T0_OBSERVATIONS)
+          .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
+          .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
+          .fetchInto(PlotT0DataModel::class.java)
+    }
+  }
+
   fun assignT0PlotObservation(monitoringPlotId: MonitoringPlotId, observationId: ObservationId) {
     requirePermissions { updateT0(monitoringPlotId) }
 
