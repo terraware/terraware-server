@@ -59,6 +59,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
@@ -2067,6 +2068,8 @@ class ObservationStore(
             monitoringPlotId,
             isPermanent,
             plantCountsBySpecies,
+            false,
+            PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId),
         )
       }
 
@@ -2079,6 +2082,7 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
+              PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(plantingSubzoneId),
           )
         }
 
@@ -2090,6 +2094,7 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
+              PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId),
           )
         }
 
@@ -2100,6 +2105,7 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
             cumulativeDeadFromCurrentObservation,
+            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId),
         )
       }
     }
@@ -2122,6 +2128,7 @@ class ObservationStore(
       isPermanent: Boolean,
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
       cumulativeDeadFromCurrentObservation: Boolean = false,
+      survivalRateDensityCondition: Condition,
   ) {
     val table = scopeIdField.table!!
     val observationIdField =
@@ -2143,6 +2150,7 @@ class ObservationStore(
     val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
     val cumulativeDeadField = table.field("cumulative_dead", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
 
     val observationIdCondition =
         if (cumulativeDeadFromCurrentObservation) {
@@ -2202,35 +2210,35 @@ class ObservationStore(
               null
             }
 
+        val survivalRateDenominator =
+            DSL.field(
+                DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY))
+                    .from(PLOT_T0_DENSITY)
+                    .where(survivalRateDensityCondition)
+                    .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
+            )
+        val survivalRate =
+            if (isPermanent && speciesKey.id != null) {
+              DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+            } else {
+              DSL.castNull(SQLDataType.INTEGER)
+            }
+
         val rowsInserted =
             dslContext
-                .insertInto(
-                    table,
-                    observationIdField,
-                    scopeIdField,
-                    certaintyField,
-                    speciesIdField,
-                    speciesNameField,
-                    totalLiveField,
-                    totalDeadField,
-                    totalExistingField,
-                    cumulativeDeadField,
-                    permanentLiveField,
-                    mortalityRateField,
-                )
-                .values(
-                    observationId,
-                    scopeId,
-                    speciesKey.certainty,
-                    speciesKey.id,
-                    speciesKey.name,
-                    totalLive,
-                    totalDead,
-                    totalExisting,
-                    cumulativeDead,
-                    permanentLive,
-                    mortalityRate,
-                )
+                .insertInto(table)
+                .set(observationIdField, observationId)
+                .set(scopeIdField, scopeId)
+                .set(certaintyField, speciesKey.certainty)
+                .set(speciesIdField, speciesKey.id)
+                .set(speciesNameField, speciesKey.name)
+                .set(totalLiveField, totalLive)
+                .set(totalDeadField, totalDead)
+                .set(totalExistingField, totalExisting)
+                .set(cumulativeDeadField, cumulativeDead)
+                .set(permanentLiveField, permanentLive)
+                .set(mortalityRateField, mortalityRate)
+                .set(survivalRateField, survivalRate)
                 .onConflictDoNothing()
                 .execute()
 
@@ -2283,6 +2291,13 @@ class ObservationStore(
                 .execute()
           }
 
+          val survivalRate =
+              if (isPermanent && speciesKey.id != null) {
+                totalLiveField.plus(totalLive).mul(100).div(survivalRateDenominator)
+              } else {
+                DSL.castNull(SQLDataType.INTEGER)
+              }
+
           val rowsUpdated =
               dslContext
                   .update(table)
@@ -2290,6 +2305,7 @@ class ObservationStore(
                   .set(totalDeadField, totalDeadField.plus(totalDead))
                   .set(totalExistingField, totalExistingField.plus(totalExisting))
                   .set(permanentLiveField, permanentLiveField.plus(permanentLive))
+                  .set(survivalRateField, survivalRate)
                   .where(observationIdField.eq(observationId))
                   .and(scopeIdAndSpeciesCondition)
                   .execute()

@@ -48,7 +48,7 @@ class ObservationTestHelper(
   }
 
   /**
-   * Returns all the plant totals (plot, zone, site) in the database, suitable for use in
+   * Returns all the plant totals (plot, subzone, zone, site) in the database, suitable for use in
    * [assertTotals].
    */
   fun fetchAllTotals(): Set<Any> {
