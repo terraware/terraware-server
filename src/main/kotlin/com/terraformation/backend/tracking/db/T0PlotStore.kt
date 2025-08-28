@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVAT
 import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
 import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import jakarta.inject.Named
 import java.math.BigDecimal
 import org.jooq.DSLContext
@@ -33,7 +34,20 @@ class T0PlotStore(
           .leftJoin(PLOT_T0_OBSERVATIONS)
           .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
           .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
-          .fetchInto(PlotT0DataModel::class.java)
+          .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
+          .map { (monitoringPlotId, records) ->
+            PlotT0DataModel(
+                monitoringPlotId = monitoringPlotId,
+                observationId = records.first()[PLOT_T0_OBSERVATIONS.OBSERVATION_ID],
+                densityData =
+                    records.map { record ->
+                      SpeciesDensityModel(
+                          speciesId = record[SPECIES_ID]!!,
+                          plotDensity = record[PLOT_DENSITY]!!,
+                      )
+                    },
+            )
+          }
     }
   }
 
@@ -84,16 +98,11 @@ class T0PlotStore(
     }
   }
 
-  fun assignT0PlotSpeciesDensity(
+  fun assignT0PlotSpeciesDensities(
       monitoringPlotId: MonitoringPlotId,
-      speciesId: SpeciesId,
-      plotDensity: BigDecimal,
+      densities: List<SpeciesDensityModel>,
   ) {
     requirePermissions { updateT0(monitoringPlotId) }
-
-    if (plotDensity <= BigDecimal.ZERO) {
-      throw IllegalArgumentException("Plot density must be positive")
-    }
 
     if (plotHasObservationT0(monitoringPlotId)) {
       throw IllegalStateException(
@@ -101,23 +110,29 @@ class T0PlotStore(
       )
     }
 
-    with(PLOT_T0_DENSITY) {
-      dslContext
-          .insertInto(this)
-          .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(SPECIES_ID, speciesId)
-          .set(PLOT_DENSITY, plotDensity)
-          .onDuplicateKeyUpdate()
-          .set(PLOT_DENSITY, plotDensity)
-          .execute()
+    dslContext.transaction { _ ->
+      with(PLOT_T0_DENSITY) {
+        var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
 
-      eventPublisher.publishEvent(
-          T0SpeciesDensityAssignedEvent(
-              monitoringPlotId = monitoringPlotId,
-              speciesId = speciesId,
-              plotDensity = plotDensity,
-          )
-      )
+        densities.forEach {
+          if (it.plotDensity < BigDecimal.ZERO) {
+            throw IllegalArgumentException("Plot density must not be negative")
+          }
+          insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
+        }
+
+        insertQuery.onDuplicateKeyUpdate().set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY)).execute()
+      }
+
+      densities.forEach {
+        eventPublisher.publishEvent(
+            T0SpeciesDensityAssignedEvent(
+                monitoringPlotId = monitoringPlotId,
+                speciesId = it.speciesId,
+                plotDensity = it.plotDensity,
+            )
+        )
+      }
     }
   }
 

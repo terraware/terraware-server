@@ -1,0 +1,20 @@
+package com.terraformation.backend.tracking
+
+import com.terraformation.backend.tracking.db.T0PlotStore
+import com.terraformation.backend.tracking.model.PlotT0DataModel
+import jakarta.inject.Named
+
+@Named
+class T0PlotService(
+    private val t0PlotStore: T0PlotStore,
+) {
+  fun assignT0PlotsData(plotsList: List<PlotT0DataModel>) {
+    plotsList.forEach {
+      if (it.observationId == null) {
+        t0PlotStore.assignT0PlotSpeciesDensities(it.monitoringPlotId, it.densityData)
+      } else {
+        t0PlotStore.assignT0PlotObservation(it.monitoringPlotId, it.observationId)
+      }
+    }
+  }
+}
