@@ -533,6 +533,9 @@ COMMENT ON COLUMN tracking.plantings.planting_type_id IS 'Whether this is the pl
 COMMENT ON COLUMN tracking.plantings.planting_subzone_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
+COMMENT ON TABLE tracking.plot_t0_density IS 'Density for a plot per species, in plants per plot.';
+COMMENT ON TABLE tracking.plot_t0_observations IS 'Which observation to use to determine t0 plot density.';
+
 COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses of a plant recorded during observation of a monitoring plot.';
 
 COMMENT ON TABLE tracking.recorded_plants IS 'Information about individual plants observed in monitoring plots.';
@@ -544,8 +547,6 @@ COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental n
 COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number starting at 1 for accounting trunks at a biomass observation. Defaults to 1 for Trees/Shrubs.';
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
-
-COMMENT ON TABLE tracking.t0_plot IS 'For a given plot, which observation to use as T0 data, or the estimated density for a specific species.';
 
 COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
 

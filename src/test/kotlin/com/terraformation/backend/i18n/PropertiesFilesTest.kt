@@ -27,7 +27,36 @@ class PropertiesFilesTest {
     )
   }
 
+  @MethodSource("getMessageBundles")
+  @ParameterizedTest
+  fun `all strings have translations in supported languages`(bundleName: String) {
+    val englishBundle = ResourceBundle.getBundle(bundleName, Locale.ENGLISH)
+    val missingTranslations =
+        supportedLocales
+            .flatMap { locale ->
+              val localizedBundle = ResourceBundle.getBundle(bundleName, locale)
+              englishBundle.keys
+                  .asSequence()
+                  .filterNot { localizedBundle.containsKey(it) }
+                  .map { locale to it }
+            }
+            .groupBy { it.first }
+            .mapValues { entry -> entry.value.map { it.second } }
+
+    assertEquals(
+        emptyMap<Locale, List<String>>(),
+        missingTranslations,
+        "Strings are missing translations; try running \"yarn translate\"",
+    )
+  }
+
   companion object {
+    private val supportedLocales =
+        listOf(
+            Locales.FRENCH,
+            Locales.SPANISH,
+        )
+
     @JvmStatic
     fun getMessageBundles() =
         listOf(
