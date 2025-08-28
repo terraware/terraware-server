@@ -207,61 +207,28 @@ class Messages {
 
   fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
 
-  fun monitoringPlotNortheastCorner(
-      plotNumber: Long,
-      plotType: String,
-      plantingZoneName: String,
-      plantingSubzoneName: String,
-  ) =
-      getMessage(
-          "monitoringPlotNortheastCorner",
-          plotNumber,
-          plotType,
-          plantingZoneName,
-          plantingSubzoneName,
-      )
+  fun monitoringPlotNortheastCorner(plotNumber: Long) =
+      getMessage("monitoringPlotNortheastCorner", plotNumber)
 
-  fun monitoringPlotNorthwestCorner(
-      plotNumber: Long,
-      plotType: String,
-      plantingZoneName: String,
-      plantingSubzoneName: String,
-  ) =
-      getMessage(
-          "monitoringPlotNorthwestCorner",
-          plotNumber,
-          plotType,
-          plantingZoneName,
-          plantingSubzoneName,
-      )
+  fun monitoringPlotNorthwestCorner(plotNumber: Long) =
+      getMessage("monitoringPlotNorthwestCorner", plotNumber)
 
-  fun monitoringPlotSoutheastCorner(
-      plotNumber: Long,
-      plotType: String,
-      plantingZoneName: String,
-      plantingSubzoneName: String,
-  ) =
-      getMessage(
-          "monitoringPlotSoutheastCorner",
-          plotNumber,
-          plotType,
-          plantingZoneName,
-          plantingSubzoneName,
-      )
+  fun monitoringPlotSoutheastCorner(plotNumber: Long) =
+      getMessage("monitoringPlotSoutheastCorner", plotNumber)
 
   fun monitoringPlotSouthwestCorner(
       plotNumber: Long,
-      plotType: String,
-      plantingZoneName: String,
-      plantingSubzoneName: String,
   ) =
       getMessage(
           "monitoringPlotSouthwestCorner",
           plotNumber,
-          plotType,
-          plantingZoneName,
-          plantingSubzoneName,
       )
+
+  fun monitoringPlotDescription(
+      plotType: String,
+      plantingZoneName: String,
+      plantingSubzoneName: String,
+  ) = getMessage("monitoringPlotDescription", plotType, plantingZoneName, plantingSubzoneName)
 
   fun monitoringPlotTypePermanent() = getMessage("monitoringPlotTypePermanent")
 

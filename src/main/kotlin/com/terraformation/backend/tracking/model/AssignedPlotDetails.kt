@@ -31,42 +31,26 @@ data class AssignedPlotDetails(
         GpxWaypoint(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
-            messages.monitoringPlotSouthwestCorner(
-                plotNumber,
-                plotType,
-                plantingZoneName,
-                plantingSubzoneName,
-            ),
+            messages.monitoringPlotSouthwestCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
-            messages.monitoringPlotSoutheastCorner(
-                plotNumber,
-                plotType,
-                plantingZoneName,
-                plantingSubzoneName,
-            ),
+            messages.monitoringPlotSoutheastCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
-            messages.monitoringPlotNortheastCorner(
-                plotNumber,
-                plotType,
-                plantingZoneName,
-                plantingSubzoneName,
-            ),
+            messages.monitoringPlotNortheastCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
-            messages.monitoringPlotNorthwestCorner(
-                plotNumber,
-                plotType,
-                plantingZoneName,
-                plantingSubzoneName,
-            ),
+            messages.monitoringPlotNorthwestCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
     )
   }

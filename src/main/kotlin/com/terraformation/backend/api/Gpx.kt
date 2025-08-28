@@ -42,16 +42,18 @@ fun gpxResponse(
 
 // TODO: Add track, or routes data types if applicable
 // https://www.topografix.com/GPX/1/1/gpx.xsd (wptType)
-data class GpxWaypoint(val latitude: BigDecimal, val longitude: BigDecimal, val name: String?) {
+data class GpxWaypoint(
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val name: String?,
+    val description: String?,
+) {
   constructor(
       latitude: Double,
       longitude: Double,
       name: String?,
-  ) : this(
-      BigDecimal(latitude),
-      BigDecimal(longitude),
-      name,
-  )
+      description: String?,
+  ) : this(BigDecimal(latitude), BigDecimal(longitude), name, description)
 }
 
 class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) {
@@ -72,6 +74,12 @@ class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) 
     writer.writeStartElement("name")
     writer.writeCharacters(waypoint.name)
     writer.writeEndElement()
+
+    if (waypoint.description != null) {
+      writer.writeStartElement("desc")
+      writer.writeCharacters(waypoint.description)
+      writer.writeEndElement()
+    }
 
     writer.writeEndElement()
   }
