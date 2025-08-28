@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.event
 
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -10,7 +9,6 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import java.math.BigDecimal
 import java.time.LocalDate
 
 /** Published when an organization requests that a monitoring plot be replaced in an observation. */
@@ -117,13 +115,7 @@ data class PlantingSiteMapEditedEvent(
     val monitoringPlotReplacements: ReplacementResult,
 )
 
-data class T0SpeciesDensityAssignedEvent(
-    val plotDensity: BigDecimal,
+data class T0PlotDataAssignedEvent(
     val monitoringPlotId: MonitoringPlotId,
-    val speciesId: SpeciesId,
-)
-
-data class T0ObservationAssignedEvent(
-    val monitoringPlotId: MonitoringPlotId,
-    val observationId: ObservationId,
+    val observationId: ObservationId? = null,
 )

@@ -13,8 +13,7 @@ import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
-import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import java.math.BigDecimal
@@ -155,7 +154,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       eventPublisher.assertEventPublished(
-          T0ObservationAssignedEvent(
+          T0PlotDataAssignedEvent(
               monitoringPlotId = monitoringPlotId,
               observationId = observationId,
           )
@@ -194,11 +193,11 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0ObservationAssignedEvent(
+              T0PlotDataAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               ),
-              T0ObservationAssignedEvent(
+              T0PlotDataAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   observationId = secondObservationId,
               ),
@@ -235,7 +234,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0ObservationAssignedEvent(
+              T0PlotDataAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
               ),
@@ -299,11 +298,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       eventPublisher.assertEventPublished(
-          T0SpeciesDensityAssignedEvent(
-              monitoringPlotId = monitoringPlotId,
-              speciesId = speciesId1,
-              plotDensity = density,
-          )
+          T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId)
       )
     }
 
@@ -334,15 +329,48 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0SpeciesDensityAssignedEvent(
+              T0PlotDataAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = initialDensity,
               ),
-              T0SpeciesDensityAssignedEvent(
+              T0PlotDataAssignedEvent(
                   monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = updatedDensity,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `deletes existing densities in the plot`() {
+      val density1 = BigDecimal.TEN
+      val density2 = BigDecimal.valueOf(15)
+
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, density1)),
+      )
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId2, density2)),
+      )
+
+      assertTableEquals(
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId2,
+                  plotDensity = density2,
+              )
+          ),
+          "Should have deleted existing density in plot",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0PlotDataAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
+              ),
+              T0PlotDataAssignedEvent(
+                  monitoringPlotId = monitoringPlotId,
               ),
           )
       )
@@ -378,18 +406,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       eventPublisher.assertEventsPublished(
-          listOf(
-              T0SpeciesDensityAssignedEvent(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = density1,
-              ),
-              T0SpeciesDensityAssignedEvent(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = density2,
-              ),
-          )
+          listOf(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
       )
     }
 

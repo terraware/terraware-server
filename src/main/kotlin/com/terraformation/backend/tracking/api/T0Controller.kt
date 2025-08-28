@@ -35,7 +35,11 @@ class T0Controller(
     return SiteT0DataPayload(plantingSiteId, plotData.map { PlotT0DataPayload(it) })
   }
 
-  @Operation
+  @Operation(
+      summary = "Assign T0 Data for a planting site",
+      description =
+          "Deletes existing densities in the same plot if they don't appear in the payload.",
+  )
   @PostMapping("/site")
   fun assignT0SiteData(
       @RequestBody payload: SiteT0DataPayload,

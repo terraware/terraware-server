@@ -8,8 +8,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
-import com.terraformation.backend.tracking.event.T0ObservationAssignedEvent
-import com.terraformation.backend.tracking.event.T0SpeciesDensityAssignedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import jakarta.inject.Named
@@ -90,7 +89,7 @@ class T0PlotStore(
           .execute()
 
       eventPublisher.publishEvent(
-          T0ObservationAssignedEvent(
+          T0PlotDataAssignedEvent(
               monitoringPlotId = monitoringPlotId,
               observationId = observationId,
           )
@@ -112,6 +111,9 @@ class T0PlotStore(
 
     dslContext.transaction { _ ->
       with(PLOT_T0_DENSITY) {
+        // ensure no leftover densities for species that are not in this request
+        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
+
         var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
 
         densities.forEach {
@@ -121,18 +123,10 @@ class T0PlotStore(
           insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
         }
 
-        insertQuery.onDuplicateKeyUpdate().set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY)).execute()
+        insertQuery.execute()
       }
 
-      densities.forEach {
-        eventPublisher.publishEvent(
-            T0SpeciesDensityAssignedEvent(
-                monitoringPlotId = monitoringPlotId,
-                speciesId = it.speciesId,
-                plotDensity = it.plotDensity,
-            )
-        )
-      }
+      eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
     }
   }
 

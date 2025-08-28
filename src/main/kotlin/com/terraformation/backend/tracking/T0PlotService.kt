@@ -9,11 +9,11 @@ class T0PlotService(
     private val t0PlotStore: T0PlotStore,
 ) {
   fun assignT0PlotsData(plotsList: List<PlotT0DataModel>) {
-    plotsList.forEach {
-      if (it.observationId == null) {
-        t0PlotStore.assignT0PlotSpeciesDensities(it.monitoringPlotId, it.densityData)
+    plotsList.forEach { model ->
+      if (model.observationId == null) {
+        t0PlotStore.assignT0PlotSpeciesDensities(model.monitoringPlotId, model.densityData)
       } else {
-        t0PlotStore.assignT0PlotObservation(it.monitoringPlotId, it.observationId)
+        t0PlotStore.assignT0PlotObservation(model.monitoringPlotId, model.observationId)
       }
     }
   }
