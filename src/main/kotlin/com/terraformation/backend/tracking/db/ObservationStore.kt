@@ -2219,9 +2219,9 @@ class ObservationStore(
             )
         val survivalRate =
             if (isPermanent && speciesKey.id != null) {
-              DSL.`val`(totalLive).mul(100).div(survivalRateDenominator)
+              DSL.value(totalLive).mul(100).div(survivalRateDenominator)
             } else {
-              DSL.inline(null, SQLDataType.INTEGER)
+              DSL.castNull(SQLDataType.INTEGER)
             }
 
         val rowsInserted =
@@ -2295,7 +2295,7 @@ class ObservationStore(
               if (isPermanent && speciesKey.id != null) {
                 totalLiveField.plus(totalLive).mul(100).div(survivalRateDenominator)
               } else {
-                DSL.inline(null, SQLDataType.INTEGER)
+                DSL.castNull(SQLDataType.INTEGER)
               }
 
           val rowsUpdated =

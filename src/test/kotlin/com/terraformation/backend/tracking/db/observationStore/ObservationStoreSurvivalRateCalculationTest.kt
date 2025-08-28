@@ -382,16 +382,16 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
   ) {
     val idFields =
         listOf(
-            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
-            OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
-            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
-            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
+            "Plot" to OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+            "Subzone" to OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
+            "Zone" to OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            "Site" to OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
         )
 
-    val levelNames = listOf("Plot", "Subzone", "Zone", "Site")
-
     expected.forEachIndexed { index, expectedByIdMap ->
-      val actualByIdMap = fetchSurvivalRatesPerSpecies(idFields[index])
+      val level = idFields[index].first
+      val idField = idFields[index].second
+      val actualByIdMap = fetchSurvivalRatesPerSpecies(idField)
 
       val allIdsMatch =
           actualByIdMap.all { (id, actualSpeciesMap) ->
@@ -412,13 +412,13 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
       if (!allIdsMatch) {
         val expectedString =
             expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "${levelNames[index]} $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
+              "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
             }
         val actualString =
             actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "${levelNames[index]} $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
+              "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
             }
-        assertEquals(expectedString, actualString, "$message - ${levelNames[index]}")
+        assertEquals(expectedString, actualString, "$message - $level")
       }
     }
   }
