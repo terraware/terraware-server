@@ -43,10 +43,12 @@ import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.util.calculateAreaHectares
 import io.mockk.every
 import java.io.InputStreamReader
@@ -127,6 +129,31 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           ),
           results.map { it.observationId },
           "Observation IDs",
+      )
+    }
+
+    @Test
+    fun `respects depth`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      insertObservation(completedTime = Instant.ofEpochSecond(1))
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val plantResults =
+          resultsStore.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Plant)
+      val plotResults =
+          resultsStore.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Plot)
+
+      assertEquals(
+          emptyList<RecordedPlantModel>(),
+          plantResults[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].plants,
+          "Plant depth",
+      )
+
+      assertNull(
+          plotResults[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].plants,
+          "Plot depth",
       )
     }
 
@@ -1139,7 +1166,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun runScenario(prefix: String, numObservations: Int, sizeMeters: Int) {
       importFromCsvFiles(prefix, numObservations, sizeMeters)
       val allResults =
-          resultsStore.fetchByPlantingSiteId(plantingSiteId).sortedBy { it.observationId }
+          resultsStore
+              .fetchByPlantingSiteId(plantingSiteId, ObservationResultsDepth.Plant)
+              .sortedBy { it.observationId }
       assertResults(prefix, allResults)
     }
 
@@ -1297,7 +1326,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       val rowKeys =
           plots.flatMap { plot ->
-            plot.plants.map { listOf(plot.monitoringPlotNumber.toString(), it.id.toString()) }
+            plot.plants?.map { listOf(plot.monitoringPlotNumber.toString(), it.id.toString()) }
+                ?: emptyList()
           }
 
       val actual =

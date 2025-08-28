@@ -108,7 +108,7 @@ data class ObservationMonitoringPlotResultsModel(
      * still alive.
      */
     val plantingDensity: Int,
-    val plants: List<RecordedPlantModel>,
+    val plants: List<RecordedPlantModel>?,
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationPlotStatus,
