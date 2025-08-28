@@ -74,14 +74,14 @@
 <text text-anchor="start" x="73" y="-1944.69" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="12,-1918.49 12,-1936.49 112,-1936.49 112,-1918.49 12,-1918.49"/>
 <text text-anchor="start" x="15" y="-1924.69" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-1900.49 12,-1918.49 55,-1918.49 55,-1900.49 12,-1900.49"/>
-<polygon fill="none" stroke="black" points="12,-1900.49 12,-1918.49 55,-1918.49 55,-1900.49 12,-1900.49"/>
+<polygon fill="#ffffff" stroke="transparent" points="12,-1900.49 12,-1918.49 36,-1918.49 36,-1900.49 12,-1900.49"/>
+<polygon fill="none" stroke="black" points="12,-1900.49 12,-1918.49 36,-1918.49 36,-1900.49 12,-1900.49"/>
 <text text-anchor="start" x="15" y="-1906.69" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="55,-1900.49 55,-1918.49 79,-1918.49 79,-1900.49 55,-1900.49"/>
-<polygon fill="none" stroke="black" points="55,-1900.49 55,-1918.49 79,-1918.49 79,-1900.49 55,-1900.49"/>
-<text text-anchor="start" x="69" y="-1906.69" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="79,-1900.49 79,-1918.49 112,-1918.49 112,-1900.49 79,-1900.49"/>
-<polygon fill="none" stroke="black" points="79,-1900.49 79,-1918.49 112,-1918.49 112,-1900.49 79,-1900.49"/>
+<polygon fill="#ffffff" stroke="transparent" points="36,-1900.49 36,-1918.49 89,-1918.49 89,-1900.49 36,-1900.49"/>
+<polygon fill="none" stroke="black" points="36,-1900.49 36,-1918.49 89,-1918.49 89,-1900.49 36,-1900.49"/>
+<text text-anchor="start" x="40" y="-1906.69" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="89,-1900.49 89,-1918.49 112,-1918.49 112,-1900.49 89,-1900.49"/>
+<polygon fill="none" stroke="black" points="89,-1900.49 89,-1918.49 112,-1918.49 112,-1900.49 89,-1900.49"/>
 <text text-anchor="start" x="93" y="-1906.69" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
