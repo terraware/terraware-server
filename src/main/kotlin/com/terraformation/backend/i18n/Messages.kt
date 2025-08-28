@@ -216,8 +216,23 @@ class Messages {
   fun monitoringPlotSoutheastCorner(plotNumber: Long) =
       getMessage("monitoringPlotSoutheastCorner", plotNumber)
 
-  fun monitoringPlotSouthwestCorner(plotNumber: Long) =
-      getMessage("monitoringPlotSouthwestCorner", plotNumber)
+  fun monitoringPlotSouthwestCorner(
+      plotNumber: Long,
+  ) =
+      getMessage(
+          "monitoringPlotSouthwestCorner",
+          plotNumber,
+      )
+
+  fun monitoringPlotDescription(
+      plotType: String,
+      plantingZoneName: String,
+      plantingSubzoneName: String,
+  ) = getMessage("monitoringPlotDescription", plotType, plantingZoneName, plantingSubzoneName)
+
+  fun monitoringPlotTypePermanent() = getMessage("monitoringPlotTypePermanent")
+
+  fun monitoringPlotTypeTemporary() = getMessage("monitoringPlotTypeTemporary")
 
   fun speciesCsvColumnName(position: Int) = getMessage("speciesCsvColumnName.$position")
 

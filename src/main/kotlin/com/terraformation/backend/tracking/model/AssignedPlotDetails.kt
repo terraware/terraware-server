@@ -18,30 +18,39 @@ data class AssignedPlotDetails(
     val isFirstObservation: Boolean,
     val plantingSubzoneId: PlantingSubzoneId,
     val plantingSubzoneName: String,
+    val plantingZoneName: String,
     val plotNumber: Long,
     val sizeMeters: Int,
 ) {
   fun gpxWaypoints(messages: Messages): List<GpxWaypoint> {
+    val plotType =
+        if (model.isPermanent) messages.monitoringPlotTypePermanent()
+        else messages.monitoringPlotTypeTemporary()
+
     return listOf(
         GpxWaypoint(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
             messages.monitoringPlotSouthwestCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
             messages.monitoringPlotSoutheastCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
             messages.monitoringPlotNortheastCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
             messages.monitoringPlotNorthwestCorner(plotNumber),
+            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
         ),
     )
   }
