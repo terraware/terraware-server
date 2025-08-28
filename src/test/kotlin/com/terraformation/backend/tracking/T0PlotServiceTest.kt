@@ -25,7 +25,7 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val eventPublisher = TestEventPublisher()
   private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(dslContext, eventPublisher) }
-  private val service: T0PlotService by lazy { T0PlotService(t0PlotStore) }
+  private val service: T0PlotService by lazy { T0PlotService(dslContext, t0PlotStore) }
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
   private lateinit var monitoringPlotId2: MonitoringPlotId

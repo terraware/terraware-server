@@ -109,25 +109,23 @@ class T0PlotStore(
       )
     }
 
-    dslContext.transaction { _ ->
-      with(PLOT_T0_DENSITY) {
-        // ensure no leftover densities for species that are not in this request
-        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
+    with(PLOT_T0_DENSITY) {
+      // ensure no leftover densities for species that are not in this request
+      dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
 
-        var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
+      var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
 
-        densities.forEach {
-          if (it.plotDensity < BigDecimal.ZERO) {
-            throw IllegalArgumentException("Plot density must not be negative")
-          }
-          insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
+      densities.forEach {
+        if (it.plotDensity < BigDecimal.ZERO) {
+          throw IllegalArgumentException("Plot density must not be negative")
         }
-
-        insertQuery.execute()
+        insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
       }
 
-      eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
+      insertQuery.execute()
     }
+
+    eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
   }
 
   private fun plotHasObservationT0(monitoringPlotId: MonitoringPlotId) =
