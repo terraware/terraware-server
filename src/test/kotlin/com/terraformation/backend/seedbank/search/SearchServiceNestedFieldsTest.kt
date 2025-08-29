@@ -905,7 +905,14 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     // refers to a child, not a parent. Include it explicitly.
     val usersFieldNames = tables.users.getAllFieldNames("members.user.")
 
-    val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
+    // exclude monitoringPlots.observationPlots because it causes ambiguous column references in the
+    // generated sql, and observationPlots are already queried as a multiValueSublist from the
+    // ObservationsTable.
+    val fields =
+        (organizationFieldNames + usersFieldNames)
+            .filter { !it.contains("monitoringPlots.observationPlots") }
+            .sorted()
+            .map { prefix.resolve(it) }
 
     // We're querying a mix of nested fields and the old-style fields that put nested values
     // at the top level and return a separate top-level query result for each combination of rows

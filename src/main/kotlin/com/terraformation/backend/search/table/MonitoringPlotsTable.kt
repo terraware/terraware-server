@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.search.SearchTable
@@ -29,6 +30,10 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
               "plantingSubzone",
               MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
           ),
+          observationPlots.asMultiValueSublist(
+              "observationPlots",
+              MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
+          ),
       )
     }
   }
@@ -50,6 +55,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("northeastLongitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LONGITUDE),
           coordinateField("northwestLatitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LATITUDE),
           coordinateField("northwestLongitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LONGITUDE),
+          integerField("permanentIndex", MONITORING_PLOTS.PERMANENT_INDEX),
           longField("plotNumber", MONITORING_PLOTS.PLOT_NUMBER),
           integerField("sizeMeters", MONITORING_PLOTS.SIZE_METERS),
           coordinateField("southeastLatitude", MONITORING_PLOTS.BOUNDARY, SOUTHEAST, LATITUDE),
