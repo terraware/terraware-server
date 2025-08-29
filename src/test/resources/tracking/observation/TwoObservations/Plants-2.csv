@@ -1,27 +1,27 @@
-Plot,Certainty,Species,Status
-1133,Known,Known 3,Live
-1133,Unknown,,Live
-1133,Other,Other A,Live
-1133,Known,Known 3,Dead
-121,Known,Known 2,Live
-121,Known,Known 1,Live
-121,Known,Known 1,Live
-121,Known,Known 2,Live
-121,Known,Known 2,Dead
-121,Other,Other A,Live
-121,Other,Other B,Live
-122,Known,Known 3,Live
-122,Known,Known 1,Live
-123,Known,Known 4,Dead
-124,Other,Other D,Live
-1215,Known,Known 4,Existing
-1215,Known,Known 1,Live
-211,Known,Known 5,Live
-211,Known,Known 5,Live
-212,Known,Known 3,Live
-213,Known,Known 3,Live
-213,Known,Known 5,Dead
-214,Known,Known 3,Live
-214,Known,Known 5,Dead
-2170,Known,Known 5,Live
-2170,Other,Other B,Live
+Plot,Certainty,Species,Status,x,y
+1133,Known,Known 3,Live,1.3,1.4
+1133,Unknown,,Live,2.3,2.4
+1133,Other,Other A,Live,3.3,3.4
+1133,Known,Known 3,Dead,4.3,4.4
+121,Known,Known 2,Live,5.3,5.4
+121,Known,Known 1,Live,6.3,6.4
+121,Known,Known 1,Live,7.3,7.4
+121,Known,Known 2,Live,8.3,8.4
+121,Known,Known 2,Dead,9.3,9.4
+121,Other,Other A,Live,10.3,10.4
+121,Other,Other B,Live,11.3,11.4
+122,Known,Known 3,Live,12.3,12.4
+122,Known,Known 1,Live,13.3,13.4
+123,Known,Known 4,Dead,14.3,14.4
+124,Other,Other D,Live,15.3,15.4
+1215,Known,Known 4,Existing,16.3,16.4
+1215,Known,Known 1,Live,17.3,17.4
+211,Known,Known 5,Live,18.3,18.4
+211,Known,Known 5,Live,19.3,19.4
+212,Known,Known 3,Live,20.3,20.4
+213,Known,Known 3,Live,21.3,21.4
+213,Known,Known 5,Dead,22.3,22.4
+214,Known,Known 3,Live,23.3,23.4
+214,Known,Known 5,Dead,24.3,24.4
+2170,Known,Known 5,Live,25.3,25.4
+2170,Other,Other B,Live,26.3,26.4
