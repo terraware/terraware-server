@@ -55,6 +55,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("northeastLongitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LONGITUDE),
           coordinateField("northwestLatitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LATITUDE),
           coordinateField("northwestLongitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LONGITUDE),
+          integerField("permanentIndex", MONITORING_PLOTS.PERMANENT_INDEX),
           longField("plotNumber", MONITORING_PLOTS.PLOT_NUMBER),
           integerField("sizeMeters", MONITORING_PLOTS.SIZE_METERS),
           coordinateField("southeastLatitude", MONITORING_PLOTS.BOUNDARY, SOUTHEAST, LATITUDE),
