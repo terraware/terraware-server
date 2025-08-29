@@ -1,2 +1,3 @@
+43fadddfaea SW-7306 Fetch Data grouped by monitoring plots, assign multiple monitoring plots at once (#3338)
 70644a1ba6f SW-7275 Observations: Export Locations GPX file - include plot type information (#3334)
 1a11d716069 Upgrade to ktfmt 0.58 (#3337)
