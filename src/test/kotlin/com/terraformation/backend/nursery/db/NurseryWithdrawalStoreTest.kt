@@ -57,7 +57,7 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = species1, 100)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = species2, 200)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species1, 300)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species2, 400)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species2, 395)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species3, 500)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone3, speciesId = species3, 600)
 
@@ -84,7 +84,7 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   species =
                       createSpeciesDensityList(
                           species1 to BigDecimal.valueOf(30),
-                          species2 to BigDecimal.valueOf(40),
+                          species2 to BigDecimal.valueOf(40), // this confirms correct rounding
                           species3 to BigDecimal.valueOf(50),
                       ),
               ),

@@ -9,8 +9,9 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.nursery.model.NurserySpeciesModel
 import com.terraformation.backend.nursery.model.PlotSpeciesModel
 import jakarta.inject.Named
-import java.math.BigDecimal
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 @Named
 class NurseryWithdrawalStore(
@@ -20,13 +21,17 @@ class NurseryWithdrawalStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     with(MONITORING_PLOTS) {
+      val densityField =
+          DSL.round(
+              PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) /
+                  PLANTING_SUBZONES.AREA_HA
+          )
+
       return dslContext
           .select(
               ID,
               PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
-              (PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS / PLANTING_SUBZONES.AREA_HA).`as`(
-                  "density_per_hectare"
-              ),
+              densityField,
           )
           .from(this)
           .join(PLANTING_SUBZONE_POPULATIONS)
@@ -39,10 +44,10 @@ class NurseryWithdrawalStore(
             PlotSpeciesModel(
                 monitoringPlotId = plotId,
                 species =
-                    records.map {
+                    records.map { record ->
                       NurserySpeciesModel(
-                          speciesId = it[PLANTING_SUBZONE_POPULATIONS.SPECIES_ID]!!,
-                          density = it.get("density_per_hectare", BigDecimal::class.java)!!,
+                          speciesId = record[PLANTING_SUBZONE_POPULATIONS.SPECIES_ID]!!,
+                          density = record[densityField]!!,
                       )
                     },
             )
