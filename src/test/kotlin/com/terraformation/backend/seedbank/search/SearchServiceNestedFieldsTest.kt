@@ -905,6 +905,9 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     // refers to a child, not a parent. Include it explicitly.
     val usersFieldNames = tables.users.getAllFieldNames("members.user.")
 
+    // exclude monitoringPlots.observationPlots because it causes ambiguous column references in the
+    // generated sql, and observationPlots are already queried as a multiValueSublist from the
+    // ObservationsTable.
     val fields =
         (organizationFieldNames + usersFieldNames)
             .filter { !it.contains("monitoringPlots.observationPlots") }
