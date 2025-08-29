@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.search.SearchTable
@@ -28,6 +29,10 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone",
               MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+          ),
+          observationPlots.asMultiValueSublist(
+              "observationPlots",
+              MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
           ),
       )
     }
