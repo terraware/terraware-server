@@ -575,10 +575,10 @@ juice@^10.0.0:
     slick "^1.12.2"
     web-resource-inliner "^6.0.1"
 
-llm-autotranslate@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/llm-autotranslate/-/llm-autotranslate-0.2.1.tgz#70f0cacf5aec69d66343f4cc32ffba39f743991c"
-  integrity sha512-en7TZEaO8SxP3zkkB9qfM2L5VI3eBqQWh+EwCYL9H9qtBK1Bj8o8SUxYQdHyKgKaRyieqne6cfLP9qWHL+ljyw==
+llm-autotranslate@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/llm-autotranslate/-/llm-autotranslate-1.0.1.tgz#0751f5c6426e31037a33ce37b9409b1b9009e9cb"
+  integrity sha512-a6hCEuY+K+onl9q1OSPxqyUjocuMQgemBviqzShdMpWgWoXMryd2JKur9bz6n0O24jFZg42Mcyq9BDpqh+NhUg==
   dependencies:
     chokidar "^4.0.3"
     commander "^11.1.0"
