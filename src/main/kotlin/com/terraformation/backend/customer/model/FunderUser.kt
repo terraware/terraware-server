@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -24,6 +26,7 @@ data class FunderUser(
     override val cookiesConsentedTime: Instant? = null,
     override val locale: Locale? = null,
     override val timeZone: ZoneId? = null,
+    private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
   private val _fundingEntityId = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
@@ -50,9 +53,16 @@ data class FunderUser(
   override fun canDeleteFunder(userId: UserId) =
       permissionStore.fetchFundingEntity(userId) == fundingEntityId
 
+  override fun canListActivities(projectId: ProjectId) = projectId in projectIds
+
   override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
+
+  override fun canReadActivity(activityId: ActivityId): Boolean {
+    val projectId = parentStore.getProjectId(activityId) ?: return false
+    return canReadProject(projectId)
+  }
 
   override fun canReadCurrentDisclaimer(): Boolean = true
 

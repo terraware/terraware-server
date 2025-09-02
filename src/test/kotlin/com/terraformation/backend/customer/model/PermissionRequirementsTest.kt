@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -123,6 +125,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   private val accessionId: AccessionId by
       readableId(AccessionNotFoundException::class) { canReadAccession(it) }
+  private val activityId: ActivityId by
+      readableId(ActivityNotFoundException::class) { canReadActivity(it) }
   private val applicationId: ApplicationId by
       readableId(ApplicationNotFoundException::class) { canReadApplication(it) }
   private val automationId: AutomationId by
@@ -354,6 +358,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createAccession(facilityId) } ifUser { canCreateAccession(facilityId) }
 
   @Test
+  fun createActivity() = allow { createActivity(projectId) } ifUser { canCreateActivity(projectId) }
+
+  @Test
   fun createApiKey() =
       allow { createApiKey(organizationId) } ifUser { canCreateApiKey(organizationId) }
 
@@ -464,6 +471,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteAccession(accessionId) } ifUser { canDeleteAccession(accessionId) }
 
   @Test
+  fun deleteActivity() =
+      allow { deleteActivity(activityId) } ifUser { canDeleteActivity(activityId) }
+
+  @Test
   fun deleteAutomation() =
       allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
 
@@ -547,6 +558,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { importGlobalSpeciesData() } ifUser { canImportGlobalSpeciesData() }
 
   @Test
+  fun listActivities() = allow { listActivities(projectId) } ifUser { canListActivities(projectId) }
+
+  @Test
   fun listAutomations() =
       allow { listAutomations(facilityId) } ifUser { canListAutomations(facilityId) }
 
@@ -584,6 +598,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canListSeedFundReports(organizationId)
           }
+
+  @Test
+  fun manageActivity() =
+      allow { manageActivity(activityId) } ifUser { canManageActivity(activityId) }
 
   @Test
   fun manageDefaultProjectLeads() =
@@ -640,6 +658,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun publishReports() = allow { publishReports() } ifUser { canPublishReports() }
 
   @Test fun readAccession() = testRead { readAccession(accessionId) }
+
+  @Test fun readActivity() = testRead { readActivity(activityId) }
 
   @Test
   fun readAllAcceleratorDetails() =
@@ -984,6 +1004,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateAccessionProject(accessionId)
           }
+
+  @Test
+  fun updateActivity() =
+      allow { updateActivity(activityId) } ifUser { canUpdateActivity(activityId) }
 
   @Test
   fun updateApplicationBoundary() =

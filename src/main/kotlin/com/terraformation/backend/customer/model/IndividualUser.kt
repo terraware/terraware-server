@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -152,6 +153,9 @@ data class IndividualUser(
 
   override fun canCreateAccession(facilityId: FacilityId) = isMember(facilityId)
 
+  override fun canCreateActivity(projectId: ProjectId) =
+      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canCreateApiKey(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
   override fun canCreateApplication(projectId: ProjectId) =
@@ -222,6 +226,9 @@ data class IndividualUser(
   override fun canDeleteAccession(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
+  override fun canDeleteActivity(activityId: ActivityId) =
+      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
+
   override fun canDeleteAutomation(automationId: AutomationId) =
       isAdminOrHigher(parentStore.getFacilityId(automationId))
 
@@ -278,6 +285,9 @@ data class IndividualUser(
 
   override fun canImportGlobalSpeciesData() = isSuperAdmin()
 
+  override fun canListActivities(projectId: ProjectId) =
+      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canListAutomations(facilityId: FacilityId) = isMember(facilityId)
 
   override fun canListFacilities(organizationId: OrganizationId) =
@@ -300,6 +310,8 @@ data class IndividualUser(
 
   override fun canListSeedFundReports(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
+
+  override fun canManageActivity(activityId: ActivityId) = isAcceleratorAdmin()
 
   override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
 
@@ -339,6 +351,10 @@ data class IndividualUser(
   override fun canReadAccession(accessionId: AccessionId) =
       canReadAcceleratorProject(parentStore.getProjectId(accessionId)) ||
           isMember(parentStore.getFacilityId(accessionId))
+
+  override fun canReadActivity(activityId: ActivityId): Boolean {
+    return isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(activityId))
+  }
 
   override fun canReadAllAcceleratorDetails() = isReadOnlyOrHigher()
 
@@ -583,6 +599,9 @@ data class IndividualUser(
 
   override fun canUpdateAccessionProject(accessionId: AccessionId) =
       isMember(parentStore.getFacilityId(accessionId))
+
+  override fun canUpdateActivity(activityId: ActivityId) =
+      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
 
   override fun canUpdateApplicationBoundary(applicationId: ApplicationId) =
       isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))

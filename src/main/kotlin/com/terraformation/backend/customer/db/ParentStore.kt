@@ -4,6 +4,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
@@ -132,6 +134,10 @@ class ParentStore(private val dslContext: DSLContext) {
     return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities.ORGANIZATION_ID)
   }
 
+  fun getOrganizationId(activityId: ActivityId): OrganizationId? {
+    return fetchFieldById(activityId, ACTIVITIES.ID, ACTIVITIES.projects.ORGANIZATION_ID)
+  }
+
   fun getOrganizationId(applicationId: ApplicationId): OrganizationId? =
       fetchFieldById(applicationId, APPLICATIONS.ID, APPLICATIONS.projects.ORGANIZATION_ID)
 
@@ -224,6 +230,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getProjectId(accessionId: AccessionId): ProjectId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.PROJECT_ID)
+
+  fun getProjectId(activityId: ActivityId): ProjectId? =
+      fetchFieldById(activityId, ACTIVITIES.ID, ACTIVITIES.PROJECT_ID)
 
   fun getProjectId(batchId: BatchId): ProjectId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.PROJECT_ID)

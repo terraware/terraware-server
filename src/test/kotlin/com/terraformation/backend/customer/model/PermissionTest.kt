@@ -5,7 +5,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -16,6 +18,7 @@ import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
@@ -160,6 +163,7 @@ internal class PermissionTest : DatabaseTest() {
   private val documentIds = projectIds.map { DocumentId(it.value) }
   private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
   private val reportIds = listOf(1000, 1001, 3000, 4000).map { ReportId(it.toLong()) }
+  private val activityIds = projectIds.map { ActivityId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -500,6 +504,16 @@ internal class PermissionTest : DatabaseTest() {
           ),
       )
     }
+
+    activityIds.forEach { activityId ->
+      putDatabaseId(
+          activityId,
+          insertActivity(
+              createdBy = userId,
+              projectId = getDatabaseId(ProjectId(activityId.value)),
+          ),
+      )
+    }
   }
 
   @Test
@@ -691,10 +705,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -719,6 +735,13 @@ internal class PermissionTest : DatabaseTest() {
         *reportIds.forOrg1(),
         readReport = true,
         updateReport = true,
+    )
+
+    permissions.expect(
+        *activityIds.forOrg1(),
+        deleteActivity = true,
+        readActivity = true,
+        updateActivity = true,
     )
 
     permissions.expect(
@@ -963,10 +986,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -994,6 +1019,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *activityIds.forOrg1(),
+        deleteActivity = true,
+        readActivity = true,
+        updateActivity = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
         readCohort = true,
         readParticipant = true,
@@ -1003,7 +1035,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `managers can add users to projects and access all data in their organizations`() {
+  fun `managers can access all data in their organizations`() {
     givenRole(org1Id, Role.Manager)
 
     val permissions = PermissionsTracker()
@@ -1155,6 +1187,7 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         createParticipantProjectSpecies = true,
+        listActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -1169,6 +1202,11 @@ internal class PermissionTest : DatabaseTest() {
         *reportIds.forOrg1(),
         readReport = true,
         updateReport = true,
+    )
+
+    permissions.expect(
+        *activityIds.forOrg1(),
+        readActivity = true,
     )
 
     permissions.expect(
@@ -1629,10 +1667,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.toTypedArray(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1690,6 +1730,14 @@ internal class PermissionTest : DatabaseTest() {
         updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
         readFundingEntity = true,
+    )
+
+    permissions.expect(
+        *activityIds.toTypedArray(),
+        deleteActivity = true,
+        manageActivity = true,
+        readActivity = true,
+        updateActivity = true,
     )
 
     permissions.expect(
@@ -1784,10 +1832,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1830,8 +1880,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         ProjectId(4000),
+        createActivity = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1930,6 +1982,14 @@ internal class PermissionTest : DatabaseTest() {
         updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
         readFundingEntity = true,
+    )
+
+    permissions.expect(
+        *activityIds.toTypedArray(),
+        deleteActivity = true,
+        readActivity = true,
+        manageActivity = true,
+        updateActivity = true,
     )
 
     permissions.expect(
@@ -2050,10 +2110,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2103,8 +2165,10 @@ internal class PermissionTest : DatabaseTest() {
     // Can access this project because it has an application.
     permissions.expect(
         ProjectId(3000),
+        createActivity = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2202,6 +2266,14 @@ internal class PermissionTest : DatabaseTest() {
         updateFundingEntityUsers = true,
         listFundingEntityUsers = true,
         readFundingEntity = true,
+    )
+
+    permissions.expect(
+        *activityIds.toTypedArray(),
+        deleteActivity = true,
+        manageActivity = true,
+        readActivity = true,
+        updateActivity = true,
     )
 
     permissions.expect(
@@ -2325,10 +2397,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createActivity = true,
         createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2355,6 +2429,13 @@ internal class PermissionTest : DatabaseTest() {
         readFundingEntity = true,
     )
 
+    permissions.expect(
+        *activityIds.forOrg1(),
+        deleteActivity = true,
+        readActivity = true,
+        updateActivity = true,
+    )
+
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         OrganizationId(4),
@@ -2371,6 +2452,7 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(4000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2457,6 +2539,12 @@ internal class PermissionTest : DatabaseTest() {
         *otherUserIds.values.toTypedArray(),
         readUser = true,
         readUserInternalInterests = true,
+    )
+
+    permissions.expect(
+        ActivityId(3),
+        ActivityId(4),
+        readActivity = true,
     )
 
     permissions.expect(
@@ -2599,6 +2687,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2612,6 +2701,7 @@ internal class PermissionTest : DatabaseTest() {
     )
     permissions.expect(
         ProjectId(3000),
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2627,6 +2717,7 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         ProjectId(4000),
+        listActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2658,6 +2749,11 @@ internal class PermissionTest : DatabaseTest() {
         *fundingEntityIds.toTypedArray(),
         listFundingEntityUsers = true,
         readFundingEntity = true,
+    )
+
+    permissions.expect(
+        *activityIds.toTypedArray(),
+        readActivity = true,
     )
 
     permissions.expect(
@@ -2882,9 +2978,15 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        listActivities = true,
         readProjectFunderDetails = true,
         readPublishedReports = true,
         readProject = true,
+    )
+
+    permissions.expect(
+        *activityIds.forOrg1(),
+        readActivity = true,
     )
 
     permissions.expect(
@@ -3001,6 +3103,7 @@ internal class PermissionTest : DatabaseTest() {
 
     givenRole(org1Id, Role.Owner)
 
+    dslContext.deleteFrom(ACTIVITIES).execute()
     dslContext.deleteFrom(SEED_FUND_REPORTS).execute()
     dslContext.deleteFrom(WITHDRAWALS).execute()
     dslContext.deleteFrom(BATCHES).execute()
@@ -3029,6 +3132,7 @@ internal class PermissionTest : DatabaseTest() {
 
   inner class PermissionsTracker {
     private val uncheckedAccessions = accessionIds.toMutableSet()
+    private val uncheckedActivities = activityIds.toMutableSet()
     private val uncheckedApplications = applicationIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
@@ -4010,10 +4114,12 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg projectIds: ProjectId,
+        createActivity: Boolean = false,
         createApplication: Boolean = false,
         createParticipantProjectSpecies: Boolean = false,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
+        listActivities: Boolean = false,
         readDefaultVoters: Boolean = false,
         readInternalVariableWorkflowDetails: Boolean = false,
         readProject: Boolean = false,
@@ -4039,6 +4145,11 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(projectId)
 
         assertEquals(
+            createActivity,
+            user.canCreateActivity(idInDatabase),
+            "Can create activity in project $projectId",
+        )
+        assertEquals(
             createApplication,
             user.canCreateApplication(idInDatabase),
             "Can create application in project $projectId",
@@ -4057,6 +4168,11 @@ internal class PermissionTest : DatabaseTest() {
             deleteProject,
             user.canDeleteProject(idInDatabase),
             "Can delete project $projectId",
+        )
+        assertEquals(
+            listActivities,
+            user.canListActivities(idInDatabase),
+            "Can list activities for project $projectId",
         )
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
@@ -4414,8 +4530,46 @@ internal class PermissionTest : DatabaseTest() {
           }
     }
 
+    fun expect(
+        vararg activityIds: ActivityId,
+        deleteActivity: Boolean = false,
+        manageActivity: Boolean = false,
+        readActivity: Boolean = false,
+        updateActivity: Boolean = false,
+    ) {
+      activityIds
+          .filter { it in uncheckedActivities }
+          .forEach { entityId ->
+            val idInDatabase = getDatabaseId(entityId)
+
+            assertEquals(
+                deleteActivity,
+                user.canDeleteActivity(idInDatabase),
+                "Can delete activity $entityId",
+            )
+            assertEquals(
+                manageActivity,
+                user.canManageActivity(idInDatabase),
+                "Can manage activity $entityId",
+            )
+            assertEquals(
+                readActivity,
+                user.canReadActivity(idInDatabase),
+                "Can read activity $entityId",
+            )
+            assertEquals(
+                updateActivity,
+                user.canUpdateActivity(idInDatabase),
+                "Can update activity $entityId",
+            )
+
+            uncheckedActivities.remove(entityId)
+          }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
+      expect(*uncheckedActivities.toTypedArray())
       expect(*uncheckedApplications.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedBatches.toTypedArray())

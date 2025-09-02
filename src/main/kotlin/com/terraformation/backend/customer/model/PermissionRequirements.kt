@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
@@ -25,6 +26,7 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -190,6 +192,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateAccession(facilityId)) {
         readFacility(facilityId)
         throw AccessDeniedException("No permission to create accessions in facility $facilityId")
+      }
+    }
+  }
+
+  fun createActivity(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canCreateActivity(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to create activity in project $projectId")
       }
     }
   }
@@ -457,6 +468,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteActivity(activityId: ActivityId) {
+    user.recordPermissionChecks {
+      if (!user.canDeleteActivity(activityId)) {
+        readActivity(activityId)
+        throw AccessDeniedException("No permission to delete activity $activityId")
+      }
+    }
+  }
+
   fun deleteAutomation(automationId: AutomationId) {
     user.recordPermissionChecks {
       if (!user.canDeleteAutomation(automationId)) {
@@ -648,6 +668,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun listActivities(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canListActivities(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to list activities in project $projectId")
+      }
+    }
+  }
+
   fun listAutomations(facilityId: FacilityId) {
     user.recordPermissionChecks {
       if (!user.canListAutomations(facilityId)) {
@@ -693,6 +722,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
         throw AccessDeniedException(
             "No permission to list seed fund reports in organization $organizationId"
         )
+      }
+    }
+  }
+
+  fun manageActivity(activityId: ActivityId) {
+    user.recordPermissionChecks {
+      if (!user.canManageActivity(activityId)) {
+        readActivity(activityId)
+        throw AccessDeniedException("No permission to publish activity $activityId")
       }
     }
   }
@@ -823,6 +861,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadAccession(accessionId)) {
         throw AccessionNotFoundException(accessionId)
+      }
+    }
+  }
+
+  fun readActivity(activityId: ActivityId) {
+    user.recordPermissionChecks {
+      if (!user.canReadActivity(activityId)) {
+        throw ActivityNotFoundException(activityId)
       }
     }
   }
@@ -1476,6 +1522,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateAccession(accessionId)) {
         readAccession(accessionId)
         throw AccessDeniedException("No permission to update accession $accessionId")
+      }
+    }
+  }
+
+  fun updateActivity(activityId: ActivityId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateActivity(activityId)) {
+        readActivity(activityId)
+        throw AccessDeniedException("No permission to update activity $activityId")
       }
     }
   }
