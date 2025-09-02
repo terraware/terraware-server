@@ -1,3 +1,5 @@
+c676084bb9d SW-7306 Add observationPlots to monitoringPlots search table (#3340)
+6e73870638e SW-7306 Fetch withdrawal densities per species per plots (#3339)
 a8ac84da3bd SW-7275 follow-up Include type field in GPX file (#3344)
 81b39c28edd Update dependency llm-autotranslate to v1 (#3343)
 02e51ff9d0c Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.3 (#3342)
