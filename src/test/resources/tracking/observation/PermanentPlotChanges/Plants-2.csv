@@ -1,5 +1,5 @@
-Plot,Certainty,Species,Status
-111,Known,Known 1,Live
-112,Known,Known 2,Live
-113,Known,Known 2,Dead
-113,Known,Known 2,Live
+Plot,Certainty,Species,Status,x,y
+111,Known,Known 1,Live,1.3,1.4
+112,Known,Known 2,Live,2.3,2.4
+113,Known,Known 2,Dead,3.3,3.4
+113,Known,Known 2,Live,4.3,4.4

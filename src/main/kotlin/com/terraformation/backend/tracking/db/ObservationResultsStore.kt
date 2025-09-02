@@ -34,6 +34,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -45,10 +46,12 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
+import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
@@ -61,6 +64,7 @@ import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.Record
 import org.jooq.Record9
 import org.jooq.Select
 import org.jooq.impl.DSL
@@ -75,14 +79,18 @@ import org.locationtech.jts.geom.Polygon
  */
 @Named
 class ObservationResultsStore(private val dslContext: DSLContext) {
-  fun fetchOneById(observationId: ObservationId): ObservationResultsModel {
+  fun fetchOneById(
+      observationId: ObservationId,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
+  ): ObservationResultsModel {
     requirePermissions { readObservation(observationId) }
 
-    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), 1).first()
+    return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1).first()
   }
 
   fun fetchByPlantingSiteId(
       plantingSiteId: PlantingSiteId,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int? = null,
       maxCompletionTime: Instant? = null,
       isAdHoc: Boolean = false,
@@ -95,12 +103,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
             maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) },
         ),
+        depth,
         limit,
     )
   }
 
   fun fetchByOrganizationId(
       organizationId: OrganizationId,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int? = null,
       isAdHoc: Boolean = false,
   ): List<ObservationResultsModel> {
@@ -111,6 +121,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
             OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
         ),
+        depth,
         limit,
     )
   }
@@ -553,108 +564,152 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )
       }
 
-  private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
+  private val recordedPlantsGpsField = RECORDED_PLANTS.GPS_COORDINATES.forMultiset()
 
-  /** monitoring plots for an observation */
-  private fun monitoringPlotMultiset(condition: Condition) =
+  private val recordedPlantsMultiset =
       DSL.multiset(
               DSL.select(
-                      USERS.FIRST_NAME,
-                      USERS.LAST_NAME,
-                      OBSERVATION_PLOTS.CLAIMED_BY,
-                      OBSERVATION_PLOTS.COMPLETED_TIME,
-                      OBSERVATION_PLOTS.IS_PERMANENT,
-                      OBSERVATION_PLOTS.NOTES,
-                      OBSERVATION_PLOTS.STATUS_ID,
-                      monitoringPlotsBoundaryField,
-                      MONITORING_PLOTS.ELEVATION_METERS,
-                      MONITORING_PLOTS.ID,
-                      MONITORING_PLOTS.IS_AD_HOC,
-                      MONITORING_PLOTS.PLOT_NUMBER,
-                      MONITORING_PLOTS.SIZE_METERS,
-                      monitoringPlotConditionsMultiset,
-                      monitoringPlotOverlappedByMultiset,
-                      monitoringPlotOverlapsMultiset,
-                      monitoringPlotSpeciesMultiset,
-                      coordinatesMultiset,
-                      photosMultiset,
+                      RECORDED_PLANTS.ID,
+                      RECORDED_PLANTS.CERTAINTY_ID,
+                      RECORDED_PLANTS.SPECIES_ID,
+                      RECORDED_PLANTS.SPECIES_NAME,
+                      RECORDED_PLANTS.STATUS_ID,
+                      recordedPlantsGpsField,
                   )
-                  .from(OBSERVATION_PLOTS)
-                  .join(MONITORING_PLOTS)
-                  .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .join(MONITORING_PLOT_HISTORIES)
-                  .on(
-                      OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                          MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
-                      )
-                  )
-                  .leftJoin(USERS)
-                  .on(OBSERVATION_PLOTS.CLAIMED_BY.eq(USERS.ID))
-                  .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(
-                      MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID
-                      )
-                  )
-                  .and(condition)
+                  .from(RECORDED_PLANTS)
+                  .where(RECORDED_PLANTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                  .and(RECORDED_PLANTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(RECORDED_PLANTS.ID)
           )
           .convertFrom { results ->
             results.map { record ->
-              val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
-              val completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME]
-              val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
-              val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
-              val species = record[monitoringPlotSpeciesMultiset]
-              val totalLive = species.sumOf { it.totalLive }
-              val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
-              val totalLiveSpeciesExceptUnknown =
-                  species.count {
-                    it.certainty != RecordedSpeciesCertainty.Unknown &&
-                        (it.totalLive + it.totalExisting) > 0
-                  }
-
-              val mortalityRate = if (isPermanent) species.calculateMortalityRate() else null
-
-              val areaSquareMeters = sizeMeters * sizeMeters
-              val plantingDensity =
-                  (totalLive * SQUARE_METERS_PER_HECTARE / areaSquareMeters).roundToInt()
-
-              val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
-
-              ObservationMonitoringPlotResultsModel(
-                  boundary = record[monitoringPlotsBoundaryField] as Polygon,
-                  claimedByName =
-                      TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
-                  claimedByUserId = claimedBy,
-                  completedTime = completedTime,
-                  conditions = record[monitoringPlotConditionsMultiset],
-                  coordinates = record[coordinatesMultiset],
-                  elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
-                  isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC.asNonNullable()],
-                  isPermanent = isPermanent,
-                  monitoringPlotId = record[MONITORING_PLOTS.ID]!!,
-                  monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
-                  mortalityRate = mortalityRate,
-                  notes = record[OBSERVATION_PLOTS.NOTES],
-                  overlappedByPlotIds = record[monitoringPlotOverlappedByMultiset],
-                  overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
-                  photos = record[photosMultiset],
-                  plantingDensity = plantingDensity,
-                  sizeMeters = sizeMeters,
-                  species = species,
-                  status = status,
-                  totalPlants = totalPlants,
-                  totalSpecies = totalLiveSpeciesExceptUnknown,
+              RecordedPlantModel(
+                  certainty = record[RECORDED_PLANTS.CERTAINTY_ID.asNonNullable()],
+                  gpsCoordinates = record[recordedPlantsGpsField.asNonNullable()] as Point,
+                  id = record[RECORDED_PLANTS.ID.asNonNullable()],
+                  speciesId = record[RECORDED_PLANTS.SPECIES_ID],
+                  speciesName = record[RECORDED_PLANTS.SPECIES_NAME],
+                  status = record[RECORDED_PLANTS.STATUS_ID.asNonNullable()],
               )
             }
           }
 
-  private val adHocMonitoringPlotMultiset =
-      monitoringPlotMultiset(MONITORING_PLOTS.IS_AD_HOC.isTrue())
+  private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
-  private val plantingSubzoneMonitoringPlotMultiset =
-      monitoringPlotMultiset(
-          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(PLANTING_SUBZONE_HISTORIES.ID)
+  /** monitoring plots for an observation */
+  private fun monitoringPlotsMultiset(
+      condition: Condition,
+      depth: ObservationResultsDepth,
+  ): Field<List<ObservationMonitoringPlotResultsModel>> {
+    val recordedPlantsField =
+        if (depth == ObservationResultsDepth.Plant) {
+          recordedPlantsMultiset
+        } else {
+          null
+        }
+
+    return DSL.multiset(
+            DSL.select(
+                    USERS.FIRST_NAME,
+                    USERS.LAST_NAME,
+                    OBSERVATION_PLOTS.CLAIMED_BY,
+                    OBSERVATION_PLOTS.COMPLETED_TIME,
+                    OBSERVATION_PLOTS.IS_PERMANENT,
+                    OBSERVATION_PLOTS.NOTES,
+                    OBSERVATION_PLOTS.STATUS_ID,
+                    monitoringPlotsBoundaryField,
+                    MONITORING_PLOTS.ELEVATION_METERS,
+                    MONITORING_PLOTS.ID,
+                    MONITORING_PLOTS.IS_AD_HOC,
+                    MONITORING_PLOTS.PLOT_NUMBER,
+                    MONITORING_PLOTS.SIZE_METERS,
+                    monitoringPlotConditionsMultiset,
+                    monitoringPlotOverlappedByMultiset,
+                    monitoringPlotOverlapsMultiset,
+                    monitoringPlotSpeciesMultiset,
+                    coordinatesMultiset,
+                    photosMultiset,
+                    recordedPlantsField,
+                )
+                .from(OBSERVATION_PLOTS)
+                .join(MONITORING_PLOTS)
+                .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                .join(MONITORING_PLOT_HISTORIES)
+                .on(
+                    OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                        MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                    )
+                )
+                .leftJoin(USERS)
+                .on(OBSERVATION_PLOTS.CLAIMED_BY.eq(USERS.ID))
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .and(
+                    MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                        OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                    )
+                )
+                .and(condition)
+        )
+        .convertFrom { results ->
+          results.map { record: Record ->
+            val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
+            val completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME]
+            val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
+            val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
+            val species = record[monitoringPlotSpeciesMultiset]
+            val totalLive = species.sumOf { it.totalLive }
+            val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
+            val totalLiveSpeciesExceptUnknown =
+                species.count {
+                  it.certainty != RecordedSpeciesCertainty.Unknown &&
+                      (it.totalLive + it.totalExisting) > 0
+                }
+
+            val mortalityRate = if (isPermanent) species.calculateMortalityRate() else null
+
+            val areaSquareMeters = sizeMeters * sizeMeters
+            val plantingDensity =
+                (totalLive * SQUARE_METERS_PER_HECTARE / areaSquareMeters).roundToInt()
+
+            val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
+
+            ObservationMonitoringPlotResultsModel(
+                boundary = record[monitoringPlotsBoundaryField] as Polygon,
+                claimedByName =
+                    TerrawareUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+                claimedByUserId = claimedBy,
+                completedTime = completedTime,
+                conditions = record[monitoringPlotConditionsMultiset],
+                coordinates = record[coordinatesMultiset],
+                elevationMeters = record[MONITORING_PLOTS.ELEVATION_METERS],
+                isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC.asNonNullable()],
+                isPermanent = isPermanent,
+                monitoringPlotId = record[MONITORING_PLOTS.ID]!!,
+                monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
+                mortalityRate = mortalityRate,
+                notes = record[OBSERVATION_PLOTS.NOTES],
+                overlappedByPlotIds = record[monitoringPlotOverlappedByMultiset],
+                overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
+                photos = record[photosMultiset],
+                plantingDensity = plantingDensity,
+                plants = recordedPlantsField?.let { record[it] },
+                sizeMeters = sizeMeters,
+                species = species,
+                status = status,
+                totalPlants = totalPlants,
+                totalSpecies = totalLiveSpeciesExceptUnknown,
+            )
+          }
+        }
+  }
+
+  private fun adHocMonitoringPlotsMultiset(depth: ObservationResultsDepth) =
+      monitoringPlotsMultiset(MONITORING_PLOTS.IS_AD_HOC.isTrue(), depth)
+
+  private fun plantingSubzoneMonitoringPlotsMultiset(depth: ObservationResultsDepth) =
+      monitoringPlotsMultiset(
+          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(PLANTING_SUBZONE_HISTORIES.ID),
+          depth,
       )
 
   private val plantingSubzoneSpeciesMultiset =
@@ -678,120 +733,123 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )
       }
 
-  private val plantingSubzoneMultiset =
-      DSL.multiset(
-              DSL.select(
-                      PLANTING_SUBZONE_HISTORIES.AREA_HA,
-                      PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
-                      PLANTING_SUBZONE_HISTORIES.NAME,
-                      PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
-                      plantingSubzoneMonitoringPlotMultiset,
-                      plantingSubzoneSpeciesMultiset,
-                  )
-                  .from(PLANTING_SUBZONE_HISTORIES)
-                  .leftJoin(PLANTING_SUBZONES)
-                  .on(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                  .where(
-                      PLANTING_SUBZONE_HISTORIES.ID.`in`(
-                          DSL.select(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID)
-                              .from(MONITORING_PLOT_HISTORIES)
-                              .join(OBSERVATION_PLOTS)
-                              .on(
-                                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(
-                                      OBSERVATION_PLOTS.MONITORING_PLOT_ID
-                                  )
-                              )
-                              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                              .and(
-                                  PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(
-                                      PLANTING_ZONE_HISTORIES.ID
-                                  )
-                              )
-                              .and(
-                                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID
-                                  )
-                              )
-                      )
-                  )
-          )
-          .convertFrom { results ->
-            results.map { record ->
-              val monitoringPlots = record[plantingSubzoneMonitoringPlotMultiset]
+  private fun plantingSubzonesMultiset(
+      depth: ObservationResultsDepth
+  ): Field<List<ObservationPlantingSubzoneResultsModel>> {
+    val plotsField = plantingSubzoneMonitoringPlotsMultiset(depth)
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_SUBZONE_HISTORIES.AREA_HA,
+                    PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
+                    PLANTING_SUBZONE_HISTORIES.NAME,
+                    PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
+                    plotsField,
+                    plantingSubzoneSpeciesMultiset,
+                )
+                .from(PLANTING_SUBZONE_HISTORIES)
+                .leftJoin(PLANTING_SUBZONES)
+                .on(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                .where(
+                    PLANTING_SUBZONE_HISTORIES.ID.`in`(
+                        DSL.select(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID)
+                            .from(MONITORING_PLOT_HISTORIES)
+                            .join(OBSERVATION_PLOTS)
+                            .on(
+                                MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(
+                                    OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                                )
+                            )
+                            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                            .and(
+                                PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(
+                                    PLANTING_ZONE_HISTORIES.ID
+                                )
+                            )
+                            .and(
+                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                    OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                )
+                            )
+                    )
+                )
+        )
+        .convertFrom { results ->
+          results.map { record: Record ->
+            val monitoringPlots = record[plotsField]
 
-              val areaHa = record[PLANTING_SUBZONE_HISTORIES.AREA_HA]!!
+            val areaHa = record[PLANTING_SUBZONE_HISTORIES.AREA_HA]!!
 
-              val species = record[plantingSubzoneSpeciesMultiset]
-              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
-              val totalLiveSpeciesExceptUnknown =
-                  species.count {
-                    it.certainty != RecordedSpeciesCertainty.Unknown &&
-                        (it.totalLive + it.totalExisting) > 0
-                  }
+            val species = record[plantingSubzoneSpeciesMultiset]
+            val totalPlants = species.sumOf { it.totalLive + it.totalDead }
+            val totalLiveSpeciesExceptUnknown =
+                species.count {
+                  it.certainty != RecordedSpeciesCertainty.Unknown &&
+                      (it.totalLive + it.totalExisting) > 0
+                }
 
-              val isCompleted =
-                  monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
-              val completedTime =
-                  if (isCompleted) {
-                    monitoringPlots.maxOf { it.completedTime!! }
-                  } else {
-                    null
-                  }
+            val isCompleted =
+                monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
+            val completedTime =
+                if (isCompleted) {
+                  monitoringPlots.maxOf { it.completedTime!! }
+                } else {
+                  null
+                }
 
-              val mortalityRate = species.calculateMortalityRate()
-              val mortalityRateStdDev =
-                  monitoringPlots
-                      .mapNotNull { plot ->
-                        plot.mortalityRate?.let { mortalityRate ->
-                          val permanentPlants =
-                              plot.species.sumOf { species ->
-                                species.permanentLive + species.cumulativeDead
-                              }
-                          mortalityRate to permanentPlants
-                        }
+            val mortalityRate = species.calculateMortalityRate()
+            val mortalityRateStdDev =
+                monitoringPlots
+                    .mapNotNull { plot ->
+                      plot.mortalityRate?.let { mortalityRate ->
+                        val permanentPlants =
+                            plot.species.sumOf { species ->
+                              species.permanentLive + species.cumulativeDead
+                            }
+                        mortalityRate to permanentPlants
                       }
-                      .calculateWeightedStandardDeviation()
+                    }
+                    .calculateWeightedStandardDeviation()
 
-              val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
-              val completedPlotsPlantingDensities =
-                  monitoringPlots
-                      .filter { it.status == ObservationPlotStatus.Completed }
-                      .map { it.plantingDensity }
-              val plantingDensity =
-                  if (completedPlotsPlantingDensities.isNotEmpty()) {
-                    completedPlotsPlantingDensities.average()
-                  } else {
-                    0.0
-                  }
-              val plantingDensityStdDev =
-                  completedPlotsPlantingDensities.calculateStandardDeviation()
+            val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
+            val completedPlotsPlantingDensities =
+                monitoringPlots
+                    .filter { it.status == ObservationPlotStatus.Completed }
+                    .map { it.plantingDensity }
+            val plantingDensity =
+                if (completedPlotsPlantingDensities.isNotEmpty()) {
+                  completedPlotsPlantingDensities.average()
+                } else {
+                  0.0
+                }
+            val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
-              val estimatedPlants =
-                  if (plantingCompleted) {
-                    areaHa.toDouble() * plantingDensity
-                  } else {
-                    null
-                  }
+            val estimatedPlants =
+                if (plantingCompleted) {
+                  areaHa.toDouble() * plantingDensity
+                } else {
+                  null
+                }
 
-              ObservationPlantingSubzoneResultsModel(
-                  areaHa = areaHa,
-                  completedTime = completedTime,
-                  estimatedPlants = estimatedPlants?.roundToInt(),
-                  monitoringPlots = monitoringPlots,
-                  mortalityRate = mortalityRate,
-                  mortalityRateStdDev = mortalityRateStdDev,
-                  name = record[PLANTING_SUBZONE_HISTORIES.NAME.asNonNullable()],
-                  plantingCompleted = plantingCompleted,
-                  plantingDensity = plantingDensity.roundToInt(),
-                  plantingDensityStdDev = plantingDensityStdDev,
-                  plantingSubzoneId =
-                      record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.asNonNullable()],
-                  species = species,
-                  totalPlants = totalPlants,
-                  totalSpecies = totalLiveSpeciesExceptUnknown,
-              )
-            }
+            ObservationPlantingSubzoneResultsModel(
+                areaHa = areaHa,
+                completedTime = completedTime,
+                estimatedPlants = estimatedPlants?.roundToInt(),
+                monitoringPlots = monitoringPlots,
+                mortalityRate = mortalityRate,
+                mortalityRateStdDev = mortalityRateStdDev,
+                name = record[PLANTING_SUBZONE_HISTORIES.NAME.asNonNullable()],
+                plantingCompleted = plantingCompleted,
+                plantingDensity = plantingDensity.roundToInt(),
+                plantingDensityStdDev = plantingDensityStdDev,
+                plantingSubzoneId =
+                    record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.asNonNullable()],
+                species = species,
+                totalPlants = totalPlants,
+                totalSpecies = totalLiveSpeciesExceptUnknown,
+            )
           }
+        }
+  }
 
   private val plantingZoneSpeciesMultiset =
       with(OBSERVED_ZONE_SPECIES_TOTALS) {
@@ -831,127 +889,128 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           )
       )
 
-  private val plantingZoneMultiset =
-      DSL.multiset(
-              DSL.select(
-                      PLANTING_ZONE_HISTORIES.AREA_HA,
-                      PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
-                      PLANTING_ZONE_HISTORIES.NAME,
-                      plantingSubzoneMultiset,
-                      plantingZoneSpeciesMultiset,
-                      zonePlantingCompletedField,
-                  )
-                  .from(PLANTING_ZONE_HISTORIES)
-                  .where(
-                      PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                          OBSERVATIONS.PLANTING_SITE_HISTORY_ID
-                      )
-                  )
-                  .and(
-                      PLANTING_ZONE_HISTORIES.ID.`in`(
-                          DSL.select(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID)
-                              .from(OBSERVATION_PLOTS)
-                              .join(MONITORING_PLOT_HISTORIES)
-                              .on(
-                                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                      MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
-                                  )
-                              )
-                              .join(PLANTING_SUBZONE_HISTORIES)
-                              .on(
-                                  MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(
-                                      PLANTING_SUBZONE_HISTORIES.ID
-                                  )
-                              )
-                              .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                              .and(
-                                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                      OBSERVATIONS.PLANTING_SITE_HISTORY_ID
-                                  )
-                              )
-                      )
-                  )
-          )
-          .convertFrom { results ->
-            results.map { record ->
-              val areaHa = record[PLANTING_ZONE_HISTORIES.AREA_HA]!!
-              val species = record[plantingZoneSpeciesMultiset]
-              val subzones = record[plantingSubzoneMultiset]
-              val identifiedSpecies =
-                  species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
-              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
-              val totalLiveSpeciesExceptUnknown =
-                  identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
+  private fun plantingZoneMultiset(
+      depth: ObservationResultsDepth
+  ): Field<List<ObservationPlantingZoneResultsModel>> {
+    val plantingSubzonesField = plantingSubzonesMultiset(depth)
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_ZONE_HISTORIES.AREA_HA,
+                    PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
+                    PLANTING_ZONE_HISTORIES.NAME,
+                    plantingSubzonesField,
+                    plantingZoneSpeciesMultiset,
+                    zonePlantingCompletedField,
+                )
+                .from(PLANTING_ZONE_HISTORIES)
+                .where(
+                    PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                        OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                    )
+                )
+                .and(
+                    PLANTING_ZONE_HISTORIES.ID.`in`(
+                        DSL.select(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID)
+                            .from(OBSERVATION_PLOTS)
+                            .join(MONITORING_PLOT_HISTORIES)
+                            .on(
+                                OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
+                                    MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
+                                )
+                            )
+                            .join(PLANTING_SUBZONE_HISTORIES)
+                            .on(
+                                MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(
+                                    PLANTING_SUBZONE_HISTORIES.ID
+                                )
+                            )
+                            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                            .and(
+                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                    OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                                )
+                            )
+                    )
+                )
+        )
+        .convertFrom { results ->
+          results.map { record: Record ->
+            val areaHa = record[PLANTING_ZONE_HISTORIES.AREA_HA]!!
+            val species = record[plantingZoneSpeciesMultiset]
+            val subzones = record[plantingSubzonesField]
+            val identifiedSpecies =
+                species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+            val totalPlants = species.sumOf { it.totalLive + it.totalDead }
+            val totalLiveSpeciesExceptUnknown =
+                identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
 
-              val isCompleted =
-                  subzones.isNotEmpty() &&
-                      subzones.all { subzone ->
-                        subzone.monitoringPlots.all { it.completedTime != null }
-                      }
-              val completedTime =
-                  if (isCompleted) {
-                    subzones.maxOf { subzone ->
-                      subzone.monitoringPlots.maxOf { it.completedTime!! }
+            val isCompleted =
+                subzones.isNotEmpty() &&
+                    subzones.all { subzone ->
+                      subzone.monitoringPlots.all { it.completedTime != null }
                     }
-                  } else {
-                    null
-                  }
+            val completedTime =
+                if (isCompleted) {
+                  subzones.maxOf { subzone -> subzone.monitoringPlots.maxOf { it.completedTime!! } }
+                } else {
+                  null
+                }
 
-              val monitoringPlots = subzones.flatMap { it.monitoringPlots }
+            val monitoringPlots = subzones.flatMap { it.monitoringPlots }
 
-              val mortalityRate = species.calculateMortalityRate()
-              val mortalityRateStdDev =
-                  monitoringPlots
-                      .mapNotNull { plot ->
-                        plot.mortalityRate?.let { mortalityRate ->
-                          val permanentPlants =
-                              plot.species.sumOf { species ->
-                                species.permanentLive + species.cumulativeDead
-                              }
-                          mortalityRate to permanentPlants
-                        }
+            val mortalityRate = species.calculateMortalityRate()
+            val mortalityRateStdDev =
+                monitoringPlots
+                    .mapNotNull { plot ->
+                      plot.mortalityRate?.let { mortalityRate ->
+                        val permanentPlants =
+                            plot.species.sumOf { species ->
+                              species.permanentLive + species.cumulativeDead
+                            }
+                        mortalityRate to permanentPlants
                       }
-                      .calculateWeightedStandardDeviation()
+                    }
+                    .calculateWeightedStandardDeviation()
 
-              val plantingCompleted = record[zonePlantingCompletedField]
-              val completedPlotsPlantingDensities =
-                  monitoringPlots
-                      .filter { it.status == ObservationPlotStatus.Completed }
-                      .map { it.plantingDensity }
-              val plantingDensity =
-                  if (completedPlotsPlantingDensities.isNotEmpty()) {
-                    completedPlotsPlantingDensities.average()
-                  } else {
-                    0.0
-                  }
-              val plantingDensityStdDev =
-                  completedPlotsPlantingDensities.calculateStandardDeviation()
+            val plantingCompleted = record[zonePlantingCompletedField]
+            val completedPlotsPlantingDensities =
+                monitoringPlots
+                    .filter { it.status == ObservationPlotStatus.Completed }
+                    .map { it.plantingDensity }
+            val plantingDensity =
+                if (completedPlotsPlantingDensities.isNotEmpty()) {
+                  completedPlotsPlantingDensities.average()
+                } else {
+                  0.0
+                }
+            val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
-              val estimatedPlants =
-                  if (plantingCompleted) {
-                    areaHa.toDouble() * plantingDensity
-                  } else {
-                    null
-                  }
+            val estimatedPlants =
+                if (plantingCompleted) {
+                  areaHa.toDouble() * plantingDensity
+                } else {
+                  null
+                }
 
-              ObservationPlantingZoneResultsModel(
-                  areaHa = areaHa,
-                  completedTime = completedTime,
-                  estimatedPlants = estimatedPlants?.roundToInt(),
-                  mortalityRate = mortalityRate,
-                  mortalityRateStdDev = mortalityRateStdDev,
-                  name = record[PLANTING_ZONE_HISTORIES.NAME.asNonNullable()],
-                  plantingCompleted = plantingCompleted,
-                  plantingDensity = plantingDensity.roundToInt(),
-                  plantingDensityStdDev = plantingDensityStdDev,
-                  plantingSubzones = subzones,
-                  plantingZoneId = record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID.asNonNullable()],
-                  species = identifiedSpecies,
-                  totalSpecies = totalLiveSpeciesExceptUnknown,
-                  totalPlants = totalPlants,
-              )
-            }
+            ObservationPlantingZoneResultsModel(
+                areaHa = areaHa,
+                completedTime = completedTime,
+                estimatedPlants = estimatedPlants?.roundToInt(),
+                mortalityRate = mortalityRate,
+                mortalityRateStdDev = mortalityRateStdDev,
+                name = record[PLANTING_ZONE_HISTORIES.NAME.asNonNullable()],
+                plantingCompleted = plantingCompleted,
+                plantingDensity = plantingDensity.roundToInt(),
+                plantingDensityStdDev = plantingDensityStdDev,
+                plantingSubzones = subzones,
+                plantingZoneId = record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID.asNonNullable()],
+                species = identifiedSpecies,
+                totalSpecies = totalLiveSpeciesExceptUnknown,
+                totalPlants = totalPlants,
+            )
           }
+        }
+  }
 
   private val plantingSiteSpeciesMultiset =
       with(OBSERVED_SITE_SPECIES_TOTALS) {
@@ -973,10 +1032,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )
       }
 
-  private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
+  private fun fetchByCondition(
+      condition: Condition,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
+      limit: Int?,
+  ): List<ObservationResultsModel> {
+    val adHocPlotsField = adHocMonitoringPlotsMultiset(depth)
+    val plantingZonesField = plantingZoneMultiset(depth)
+
     return dslContext
         .select(
-            adHocMonitoringPlotMultiset,
+            adHocPlotsField,
             biomassDetailsMultiset,
             OBSERVATIONS.COMPLETED_TIME,
             OBSERVATIONS.ID,
@@ -988,7 +1054,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             PLANTING_SITE_HISTORIES.AREA_HA,
             PLANTING_SITE_HISTORIES.ID,
             plantingSiteSpeciesMultiset,
-            plantingZoneMultiset,
+            plantingZonesField,
         )
         .from(OBSERVATIONS)
         .leftJoin(PLANTING_SITE_HISTORIES)
@@ -1000,7 +1066,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           // Area can be null for an observation that has not started.
           val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
 
-          val zones = record[plantingZoneMultiset]
+          val zones = record[plantingZonesField]
           val species = record[plantingSiteSpeciesMultiset]
           val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
           val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
@@ -1045,7 +1111,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .calculateWeightedStandardDeviation()
 
           ObservationResultsModel(
-              adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),
+              adHocPlot = record[adHocPlotsField].firstOrNull(),
               areaHa = areaHa,
               biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],

@@ -54,11 +54,13 @@ import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResul
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
+import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
@@ -162,6 +164,8 @@ class ObservationsController(
   fun listObservationResults(
       @RequestParam organizationId: OrganizationId?,
       @RequestParam plantingSiteId: PlantingSiteId?,
+      @Parameter(description = "Whether to include plants in the results. Default to false")
+      includePlants: Boolean? = null,
       @Parameter(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
@@ -170,12 +174,18 @@ class ObservationsController(
       )
       limit: Int? = null,
   ): ListObservationResultsResponsePayload {
+    val depth =
+        if (includePlants == true) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
+        }
     val results =
         when {
           plantingSiteId != null ->
-              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, limit)
+              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, depth, limit)
           organizationId != null ->
-              observationResultsStore.fetchByOrganizationId(organizationId, limit)
+              observationResultsStore.fetchByOrganizationId(organizationId, depth, limit)
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
@@ -269,9 +279,17 @@ class ObservationsController(
       description = "Some information is only available once all plots have been completed.",
   )
   fun getObservationResults(
-      @PathVariable observationId: ObservationId
+      @PathVariable observationId: ObservationId,
+      @Parameter(description = "Whether to include plants in the results. Default to false")
+      includePlants: Boolean? = null,
   ): GetObservationResultsResponsePayload {
-    val results = observationResultsStore.fetchOneById(observationId)
+    val depth =
+        if (includePlants == true) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
+        }
+    val results = observationResultsStore.fetchOneById(observationId, depth)
 
     return GetObservationResultsResponsePayload(ObservationResultsPayload(results))
   }
@@ -514,6 +532,8 @@ class ObservationsController(
   fun listAdHocObservationResults(
       @RequestParam organizationId: OrganizationId?,
       @RequestParam plantingSiteId: PlantingSiteId?,
+      @Parameter(description = "Whether to include plants in the results. Default to false")
+      includePlants: Boolean? = null,
       @Parameter(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
@@ -522,12 +542,28 @@ class ObservationsController(
       )
       limit: Int? = null,
   ): ListAdHocObservationResultsResponsePayload {
+    val depth =
+        if (includePlants == true) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
+        }
     val results =
         when {
           plantingSiteId != null ->
-              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, limit, isAdHoc = true)
+              observationResultsStore.fetchByPlantingSiteId(
+                  plantingSiteId,
+                  depth,
+                  limit,
+                  isAdHoc = true,
+              )
           organizationId != null ->
-              observationResultsStore.fetchByOrganizationId(organizationId, limit, isAdHoc = true)
+              observationResultsStore.fetchByOrganizationId(
+                  organizationId,
+                  depth,
+                  limit,
+                  isAdHoc = true,
+              )
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
@@ -707,6 +743,16 @@ data class RecordedPlantPayload(
     val speciesName: String?,
     val status: RecordedPlantStatus,
 ) {
+  constructor(
+      model: RecordedPlantModel
+  ) : this(
+      certainty = model.certainty,
+      gpsCoordinates = model.gpsCoordinates,
+      speciesId = model.speciesId,
+      speciesName = model.speciesName,
+      status = model.status,
+  )
+
   fun toRow(): RecordedPlantsRow {
     return RecordedPlantsRow(
         certaintyId = certainty,
@@ -840,6 +886,7 @@ data class ObservationMonitoringPlotResultsPayload(
     val photos: List<ObservationMonitoringPlotPhotoPayload>,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
+    val plants: List<RecordedPlantPayload>?,
     @Schema(description = "Length of each edge of the monitoring plot in meters.")
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsPayload>,
@@ -881,6 +928,7 @@ data class ObservationMonitoringPlotResultsPayload(
       overlapsWithPlotIds = model.overlapsWithPlotIds,
       photos = model.photos.map { ObservationMonitoringPlotPhotoPayload(it) },
       plantingDensity = model.plantingDensity,
+      plants = model.plants?.map { RecordedPlantPayload(it) },
       sizeMeters = model.sizeMeters,
       species =
           model.species
