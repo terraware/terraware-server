@@ -104,20 +104,20 @@
 <text text-anchor="start" x="171.5" y="-377.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="58.5,-347 58.5,-369 210.5,-369 210.5,-347 58.5,-347"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="63.5" y="-364"/>
-<text text-anchor="start" x="84.5" y="-355.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="79.5" y="-355.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="58.5,-325 58.5,-347 210.5,-347 210.5,-325 58.5,-325"/>
 <polygon fill="none" stroke="black" points="58.5,-325 58.5,-347 210.5,-347 210.5,-325 58.5,-325"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="63.5" y="-342"/>
-<text text-anchor="start" x="84.5" y="-333.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="79.5" y="-333.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="58.5,-303 58.5,-325 210.5,-325 210.5,-303 58.5,-303"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="63.5" y="-320"/>
-<text text-anchor="start" x="84.5" y="-311.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_frequency_id</text>
+<text text-anchor="start" x="79.5" y="-311.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_frequency_id</text>
 <polygon fill="none" stroke="black" points="58.5,-281 58.5,-303 210.5,-303 210.5,-281 58.5,-281"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="63.5" y="-298"/>
-<text text-anchor="start" x="84.5" y="-289.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_quarter_id</text>
+<text text-anchor="start" x="79.5" y="-289.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_quarter_id</text>
 <polygon fill="none" stroke="black" points="58.5,-259 58.5,-281 210.5,-281 210.5,-259 58.5,-259"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="63.5" y="-276"/>
-<text text-anchor="start" x="84.5" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">published_by</text>
+<text text-anchor="start" x="79.5" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">published_by</text>
 <polygon fill="none" stroke="black" points="58.5,-241 58.5,-259 210.5,-259 210.5,-241 58.5,-241"/>
 <text text-anchor="start" x="61.5" y="-247.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="58.5,-223 58.5,-241 127.5,-241 127.5,-223 58.5,-223"/>

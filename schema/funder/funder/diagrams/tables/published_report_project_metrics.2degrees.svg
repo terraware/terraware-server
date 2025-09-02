@@ -44,10 +44,10 @@
 <text text-anchor="start" x="121" y="-377.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="8,-347 8,-369 160,-369 160,-347 8,-347"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-364"/>
-<text text-anchor="start" x="34" y="-355.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="29" y="-355.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="8,-325 8,-347 160,-347 160,-325 8,-325"/>
 <polygon fill="none" stroke="black" points="8,-325 8,-347 160,-347 160,-325 8,-325"/>
-<text text-anchor="start" x="34" y="-333.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="29" y="-333.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="8,-307 8,-325 160,-325 160,-307 8,-307"/>
 <text text-anchor="start" x="11" y="-313.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="8,-289 8,-307 73,-307 73,-289 8,-289"/>
