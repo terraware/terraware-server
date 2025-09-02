@@ -20,7 +20,9 @@ CREATE TABLE accelerator.activities (
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     verified_by BIGINT REFERENCES users,
-    verified_time TIMESTAMP WITH TIME ZONE
+    verified_time TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT verified_by_requires_time CHECK ((verified_by IS NULL) = (verified_time IS NULL))
 );
 
 CREATE INDEX ON accelerator.activities (project_id);
