@@ -47,13 +47,15 @@ data class GpxWaypoint(
     val longitude: BigDecimal,
     val name: String?,
     val description: String?,
+    val type: String?,
 ) {
   constructor(
       latitude: Double,
       longitude: Double,
       name: String?,
       description: String?,
-  ) : this(BigDecimal(latitude), BigDecimal(longitude), name, description)
+      type: String?,
+  ) : this(BigDecimal(latitude), BigDecimal(longitude), name, description, type)
 }
 
 class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) {
@@ -78,6 +80,12 @@ class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) 
     if (waypoint.description != null) {
       writer.writeStartElement("desc")
       writer.writeCharacters(waypoint.description)
+      writer.writeEndElement()
+    }
+
+    if (waypoint.type != null) {
+      writer.writeStartElement("type")
+      writer.writeCharacters(waypoint.type)
       writer.writeEndElement()
     }
 
