@@ -1,3 +1,4 @@
+a8ac84da3bd SW-7275 follow-up Include type field in GPX file (#3344)
 81b39c28edd Update dependency llm-autotranslate to v1 (#3343)
 02e51ff9d0c Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.3 (#3342)
 d7ddf58fe8b Update dependency com.google.apis:google-api-services-drive to v3-rev20250819-2.0.0 (#3341)
