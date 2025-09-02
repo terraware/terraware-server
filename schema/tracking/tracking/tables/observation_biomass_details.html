@@ -145,14 +145,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_biomass_details.observation_id references observations.id via observation_biomass_details_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_biomass_details_observation_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observation_biomass_details.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_biomass_details_observation_id_monitoring_plot_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_biomass_details_observation_id_monitoring_plot_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_biomass_details.observation_id references observations.id via observation_biomass_details_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_biomass_details_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -471,8 +471,8 @@
                                     <td>(((herbaceous_cover_percent)::numeric &gt;&#61; (0)::numeric) AND ((herbaceous_cover_percent)::numeric &lt;&#61; (100)::numeric))</td>
                                 </tr>
                                 <tr>
-                                    <td>observation_biomass_details_salinity_ppt_check</td>
-                                    <td>(salinity_ppt &gt;&#61; (0)::numeric)</td>
+                                    <td>observation_biomass_details_ph_check</td>
+                                    <td>((ph &gt;&#61; (0)::numeric) AND (ph &lt;&#61; (14)::numeric))</td>
                                 </tr>
                                 <tr>
                                     <td>observation_biomass_details_small_trees_count_low_check</td>
@@ -483,8 +483,8 @@
                                     <td>((water_depth_cm)::numeric &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>observation_biomass_details_ph_check</td>
-                                    <td>((ph &gt;&#61; (0)::numeric) AND (ph &lt;&#61; (14)::numeric))</td>
+                                    <td>observation_biomass_details_salinity_ppt_check</td>
+                                    <td>(salinity_ppt &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 <tr>
                                     <td>observation_biomass_details_check</td>

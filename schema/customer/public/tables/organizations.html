@@ -519,6 +519,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>organizations_country_code_check</td>
+                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>other_type_details_only_for_other</td>
                                     <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
                                 </tr>
@@ -527,16 +535,8 @@
                                     <td>(country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>other_type_details_null_or_not_empty</td>
