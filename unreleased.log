@@ -1,3 +1,4 @@
+afd71be419f SW-7133 Added recorded plants multiset to monitoring plot observation results (#3332)
 c676084bb9d SW-7306 Add observationPlots to monitoringPlots search table (#3340)
 6e73870638e SW-7306 Fetch withdrawal densities per species per plots (#3339)
 a8ac84da3bd SW-7275 follow-up Include type field in GPX file (#3344)
