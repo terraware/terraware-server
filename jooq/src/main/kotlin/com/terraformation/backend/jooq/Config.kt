@@ -20,6 +20,8 @@ val ENUM_TABLES =
     mapOf(
         "accelerator" to
             listOf(
+                EnumTable("activity_types"),
+                EnumTable("activity_media_types", isLocalizable = false),
                 EnumTable("application_module_statuses"),
                 EnumTable("application_statuses"),
                 EnumTable("cohort_phases", listOf(".*\\.phase_id")),
@@ -275,6 +277,7 @@ val ID_WRAPPERS =
     mapOf(
         "accelerator" to
             listOf(
+                IdWrapper("ActivityId", listOf("activities\\.id", ".*\\.activity_id")),
                 IdWrapper("ApplicationHistoryId", listOf("application_histories\\.id")),
                 IdWrapper("ApplicationId", listOf("applications\\.id", ".*\\.application_id")),
                 IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),

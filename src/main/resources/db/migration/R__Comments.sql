@@ -554,6 +554,14 @@ COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings
 
 COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, by any of the definitions. The 3 definitions at the time of creation were: having an application, having a participant, or the project''s org having an internal tag of "Accelerator".';
 
+COMMENT ON TABLE accelerator.activities IS 'User-supplied descriptions of project activities.';
+
+COMMENT ON TABLE accelerator.activity_media_files IS 'Information about activity-related media such as photos and videos.';
+
+COMMENT ON TABLE accelerator.activity_media_types IS '(Enum) Types of media that can be associated with entries in the activity log.';
+
+COMMENT ON TABLE accelerator.activity_types IS '(Enum) Types of entries in the activity log.';
+
 COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';
 
 COMMENT ON TABLE accelerator.application_module_statuses IS '(Enum) Possible statuses of individual modules in an application.';

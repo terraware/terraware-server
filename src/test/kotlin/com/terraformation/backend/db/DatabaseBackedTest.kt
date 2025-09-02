@@ -12,6 +12,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
@@ -49,6 +51,8 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.keys.COHORTS_PKEY
+import com.terraformation.backend.db.accelerator.tables.daos.ActivitiesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ActivityMediaFilesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
@@ -84,6 +88,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocuments
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserInternalInterestsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.ActivitiesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
@@ -582,6 +587,8 @@ abstract class DatabaseBackedTest {
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
   protected val accessionQuantityHistoryDao: AccessionQuantityHistoryDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
+  protected val activitiesDao: ActivitiesDao by lazyDao()
+  protected val activityMediaFilesDao: ActivityMediaFilesDao by lazyDao()
   protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
   protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
   protected val applicationsDao: ApplicationsDao by lazyDao()
@@ -3673,6 +3680,39 @@ abstract class DatabaseBackedTest {
     publishedReportSystemMetricsDao.insert(rowWithDefaults)
   }
 
+  protected fun insertActivity(
+      activityDate: LocalDate = LocalDate.EPOCH,
+      activityType: ActivityType = ActivityType.Planting,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      description: String = "Activity",
+      isHighlight: Boolean = false,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+      projectId: ProjectId = inserted.projectId,
+      verifiedBy: UserId? = null,
+      verifiedTime: Instant? = if (verifiedBy != null) Instant.EPOCH else null,
+  ): ActivityId {
+    val row =
+        ActivitiesRow(
+            activityDate = activityDate,
+            activityTypeId = activityType,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            description = description,
+            isHighlight = isHighlight,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            projectId = projectId,
+            verifiedBy = verifiedBy,
+            verifiedTime = verifiedTime,
+        )
+
+    activitiesDao.insert(row)
+
+    return row.id!!.also { inserted.activityIds.add(it) }
+  }
+
   private var nextInternalTagNumber = 1
 
   protected fun insertInternalTag(
@@ -4838,6 +4878,7 @@ abstract class DatabaseBackedTest {
   @Suppress("unused")
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
+    val activityIds = mutableListOf<ActivityId>()
     val applicationHistoryIds = mutableListOf<ApplicationHistoryId>()
     val applicationIds = mutableListOf<ApplicationId>()
     val automationIds = mutableListOf<AutomationId>()
@@ -4900,6 +4941,9 @@ abstract class DatabaseBackedTest {
 
     val accessionId
       get() = accessionIds.last()
+
+    val activityId
+      get() = activityIds.last()
 
     val applicationHistoryId
       get() = applicationHistoryIds.last()

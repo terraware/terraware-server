@@ -18,6 +18,21 @@ VALUES (5, 'Awaiting Check-In', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 
+INSERT INTO accelerator.activity_media_types (id, name)
+VALUES (1, 'Photo'),
+       (2, 'Video')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.activity_types (id, name)
+VALUES (1, 'Seed Collection'),
+       (2, 'Nursery'),
+       (3, 'Planting'),
+       (4, 'Monitoring'),
+       (5, 'Site Visit'),
+       (6, 'Stakeholder Engagement'),
+       (7, 'Drone Flight')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.application_module_statuses (id, name)
 VALUES (1, 'Incomplete'),
        (2, 'Complete')
