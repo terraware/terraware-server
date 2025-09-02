@@ -8,7 +8,7 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
-    "llm-autotranslate": "^0.2.1",
+    "llm-autotranslate": "^1.0.0",
     "mjml": "4.15.3",
     "mjml-bullet-list": "^1.2.2"
   },
