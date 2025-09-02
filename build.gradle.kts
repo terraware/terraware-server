@@ -103,7 +103,7 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.8.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.38.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20250723-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20250819-2.0.0")
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
@@ -140,7 +140,7 @@ dependencies {
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
-  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.6.2")
+  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.6.3")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
