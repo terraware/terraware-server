@@ -15,8 +15,10 @@ import java.time.LocalDate
 /** A report that has been published to funders. */
 data class PublishedReportModel(
     val achievements: List<String>,
+    val additionalComments: String?,
     val challenges: List<ReportChallengeModel>,
     val endDate: LocalDate,
+    val financialSummaries: String?,
     val frequency: ReportFrequency,
     val highlights: String?,
     val projectId: ProjectId,

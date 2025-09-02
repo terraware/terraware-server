@@ -233,6 +233,8 @@ class ReportStore(
       challenges: List<ReportChallengeModel>? = null,
       feedback: String? = null,
       internalComment: String? = null,
+      financialSummaries: String? = null,
+      additionalComments: String? = null,
   ) {
     requirePermissions { reviewReports() }
 
@@ -265,6 +267,8 @@ class ReportStore(
                 .set(HIGHLIGHTS, highlights)
                 .set(FEEDBACK, feedback)
                 .set(INTERNAL_COMMENT, internalComment)
+                .set(FINANCIAL_SUMMARIES, financialSummaries)
+                .set(ADDITIONAL_COMMENTS, additionalComments)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .where(ID.eq(reportId))
@@ -340,6 +344,8 @@ class ReportStore(
       highlights: String?,
       achievements: List<String>,
       challenges: List<ReportChallengeModel>,
+      financialSummaries: String? = null,
+      additionalComments: String? = null,
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
       systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
@@ -370,6 +376,8 @@ class ReportStore(
       dslContext
           .update(REPORTS)
           .set(REPORTS.HIGHLIGHTS, highlights)
+          .set(REPORTS.FINANCIAL_SUMMARIES, financialSummaries)
+          .set(REPORTS.ADDITIONAL_COMMENTS, additionalComments)
           .set(REPORTS.MODIFIED_BY, currentUser().userId)
           .set(REPORTS.MODIFIED_TIME, clock.instant())
           .where(REPORTS.ID.eq(reportId))
@@ -485,6 +493,8 @@ class ReportStore(
             .set(START_DATE, report.startDate)
             .set(END_DATE, report.endDate)
             .set(HIGHLIGHTS, report.highlights)
+            .set(FINANCIAL_SUMMARIES, report.financialSummaries)
+            .set(ADDITIONAL_COMMENTS, report.additionalComments)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
             .onConflict()
@@ -495,6 +505,8 @@ class ReportStore(
             .set(START_DATE, report.startDate)
             .set(END_DATE, report.endDate)
             .set(HIGHLIGHTS, report.highlights)
+            .set(FINANCIAL_SUMMARIES, report.financialSummaries)
+            .set(ADDITIONAL_COMMENTS, report.additionalComments)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
             .execute()

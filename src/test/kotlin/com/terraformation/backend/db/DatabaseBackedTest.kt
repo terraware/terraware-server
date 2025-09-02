@@ -3364,6 +3364,8 @@ abstract class DatabaseBackedTest {
       highlights: String? = row.highlights,
       internalComment: String? = row.internalComment,
       feedback: String? = row.feedback,
+      additionalComments: String? = row.additionalComments,
+      financialSummaries: String? = row.financialSummaries,
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
@@ -3397,6 +3399,8 @@ abstract class DatabaseBackedTest {
             submittedBy = submittedBy,
             submittedTime = submittedTime,
             upcomingNotificationSentTime = upcomingNotificationSentTime,
+            additionalComments = additionalComments,
+            financialSummaries = financialSummaries,
         )
 
     reportsDao.insert(rowWithDefaults)
@@ -3543,6 +3547,8 @@ abstract class DatabaseBackedTest {
       quarter: ReportQuarter? = ReportQuarter.Q1,
       publishedBy: UserId = currentUser().userId,
       publishedTime: Instant = Instant.EPOCH,
+      additionalComments: String? = null,
+      financialSummaries: String? = null,
       highlights: String? = null,
   ) {
     with(PUBLISHED_REPORTS) {
@@ -3554,6 +3560,8 @@ abstract class DatabaseBackedTest {
           .set(REPORT_QUARTER_ID, quarter)
           .set(START_DATE, startDate)
           .set(END_DATE, endDate)
+          .set(ADDITIONAL_COMMENTS, additionalComments)
+          .set(FINANCIAL_SUMMARIES, financialSummaries)
           .set(HIGHLIGHTS, highlights)
           .set(PUBLISHED_BY, publishedBy)
           .set(PUBLISHED_TIME, publishedTime)

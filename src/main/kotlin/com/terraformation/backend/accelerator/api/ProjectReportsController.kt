@@ -35,6 +35,7 @@ import jakarta.validation.Valid
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.String
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -110,6 +111,8 @@ class ProjectReportsController(
         highlights = payload.highlights,
         achievements = payload.achievements,
         challenges = payload.challenges.map { it.toModel() },
+        financialSummaries = payload.financialSummaries,
+        additionalComments = payload.additionalComments,
         standardMetricEntries = standardMetricUpdates,
         systemMetricEntries = systemMetricUpdates,
         projectMetricEntries = projectMetricUpdates,
@@ -149,6 +152,8 @@ class ProjectReportsController(
         highlights = payload.review.highlights,
         achievements = payload.review.achievements,
         challenges = payload.review.challenges.map { it.toModel() },
+        financialSummaries = payload.review.financialSummaries,
+        additionalComments = payload.review.additionalComments,
         feedback = payload.review.feedback,
         internalComment = payload.review.internalComment,
     )
@@ -348,69 +353,73 @@ data class ExistingAcceleratorReportConfigPayload(
 }
 
 data class UpdateAcceleratorReportConfigPayload(
-    val reportingStartDate: LocalDate,
-    val reportingEndDate: LocalDate,
     val logframeUrl: URI?,
+    val reportingEndDate: LocalDate,
+    val reportingStartDate: LocalDate,
 )
 
 data class NewAcceleratorReportConfigPayload(
-    val reportingStartDate: LocalDate,
-    val reportingEndDate: LocalDate,
     val logframeUrl: URI?,
+    val reportingEndDate: LocalDate,
+    val reportingStartDate: LocalDate,
 ) {
   fun toModel(projectId: ProjectId, frequency: ReportFrequency): NewProjectReportConfigModel =
       NewProjectReportConfigModel(
-          id = null,
-          projectId = projectId,
           frequency = frequency,
-          reportingStartDate = reportingStartDate,
-          reportingEndDate = reportingEndDate,
+          id = null,
           logframeUrl = logframeUrl,
+          projectId = projectId,
+          reportingEndDate = reportingEndDate,
+          reportingStartDate = reportingStartDate,
       )
 }
 
 data class AcceleratorReportPayload(
-    val id: ReportId,
-    val projectId: ProjectId,
-    val frequency: ReportFrequency,
-    val quarter: ReportQuarter?,
-    val status: ReportStatus,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val highlights: String?,
     val achievements: List<String>,
+    val additionalComments: String?,
     val challenges: List<ReportChallengePayload>,
-    val internalComment: String?,
+    val endDate: LocalDate,
     val feedback: String?,
+    val financialSummaries: String?,
+    val frequency: ReportFrequency,
+    val highlights: String?,
+    val id: ReportId,
+    val internalComment: String?,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
+    val projectId: ProjectId,
+    val projectMetrics: List<ReportProjectMetricPayload>,
+    val quarter: ReportQuarter?,
+    val standardMetrics: List<ReportStandardMetricPayload>,
+    val startDate: LocalDate,
+    val status: ReportStatus,
     val submittedBy: UserId?,
     val submittedTime: Instant?,
-    val projectMetrics: List<ReportProjectMetricPayload>,
-    val standardMetrics: List<ReportStandardMetricPayload>,
     val systemMetrics: List<ReportSystemMetricPayload>,
 ) {
   constructor(
       model: ReportModel
   ) : this(
-      id = model.id,
-      projectId = model.projectId,
-      frequency = model.frequency,
-      quarter = model.quarter,
-      status = model.status,
-      startDate = model.startDate,
-      endDate = model.endDate,
-      highlights = model.highlights,
       achievements = model.achievements,
+      additionalComments = model.additionalComments,
       challenges = model.challenges.map { ReportChallengePayload(it) },
-      internalComment = model.internalComment,
+      endDate = model.endDate,
       feedback = model.feedback,
+      financialSummaries = model.financialSummaries,
+      frequency = model.frequency,
+      highlights = model.highlights,
+      id = model.id,
+      internalComment = model.internalComment,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
+      projectId = model.projectId,
+      projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
+      quarter = model.quarter,
+      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
+      startDate = model.startDate,
+      status = model.status,
       submittedBy = model.submittedBy,
       submittedTime = model.submittedTime,
-      projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
-      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
       systemMetrics = model.systemMetrics.map { ReportSystemMetricPayload(it) },
   )
 }
@@ -429,163 +438,164 @@ data class ReportReviewPayload(
     val status: ReportStatus,
     val highlights: String?,
     val achievements: List<String>,
+    val financialSummaries: String?,
+    val additionalComments: String?,
     val challenges: List<ReportChallengePayload>,
     val feedback: String?,
     val internalComment: String?,
 )
 
 data class ReportStandardMetricPayload(
-    val id: StandardMetricId,
-    val name: String,
-    val description: String?,
     val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
+    val description: String?,
+    val id: StandardMetricId,
     val isPublishable: Boolean,
-    val target: Int?,
-    val value: Int?,
-    val status: ReportMetricStatus?,
-    val underperformanceJustification: String?,
+    val name: String,
     val progressNotes: String?,
+    val reference: String,
+    val status: ReportMetricStatus?,
+    val target: Int?,
+    val type: MetricType,
+    val underperformanceJustification: String?,
+    val value: Int?,
 ) {
   constructor(
       model: ReportStandardMetricModel
   ) : this(
-      id = model.metric.id,
-      name = model.metric.name,
-      description = model.metric.description,
       component = model.metric.component,
-      type = model.metric.type,
-      reference = model.metric.reference,
+      description = model.metric.description,
+      id = model.metric.id,
       isPublishable = model.metric.isPublishable,
-      target = model.entry.target,
-      value = model.entry.value,
-      status = model.entry.status,
-      underperformanceJustification = model.entry.underperformanceJustification,
+      name = model.metric.name,
       progressNotes = model.entry.progressNotes,
+      reference = model.metric.reference,
+      status = model.entry.status,
+      target = model.entry.target,
+      type = model.metric.type,
+      underperformanceJustification = model.entry.underperformanceJustification,
+      value = model.entry.value,
   )
 }
 
 data class ReportStandardMetricEntriesPayload(
     val id: StandardMetricId,
-    val target: Int?,
-    val value: Int?,
-    val status: ReportMetricStatus?,
-    val underperformanceJustification: String?,
     val progressNotes: String?,
+    val status: ReportMetricStatus?,
+    val target: Int?,
+    val underperformanceJustification: String?,
+    val value: Int?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
-          target = target,
-          value = value,
-          underperformanceJustification = underperformanceJustification,
           progressNotes = progressNotes,
           status = status,
+          target = target,
+          underperformanceJustification = underperformanceJustification,
+          value = value,
       )
 }
 
 data class ReportSystemMetricPayload(
-    val metric: SystemMetric,
-    val description: String?,
     val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
+    val description: String?,
     val isPublishable: Boolean,
-    val target: Int?,
-    val systemValue: Int,
-    val systemTime: Instant?,
+    val metric: SystemMetric,
     val overrideValue: Int?,
-    val status: ReportMetricStatus?,
-    val underperformanceJustification: String?,
     val progressNotes: String?,
+    val reference: String,
+    val status: ReportMetricStatus?,
+    val systemTime: Instant?,
+    val systemValue: Int,
+    val target: Int?,
+    val type: MetricType,
+    val underperformanceJustification: String?,
 ) {
   constructor(
       model: ReportSystemMetricModel
   ) : this(
-      metric = model.metric,
-      description = model.metric.description,
       component = model.metric.componentId,
-      type = model.metric.typeId,
-      reference = model.metric.reference,
+      description = model.metric.description,
       isPublishable = model.metric.isPublishable,
-      target = model.entry.target,
-      systemValue = model.entry.systemValue,
-      systemTime = model.entry.systemTime,
+      metric = model.metric,
       overrideValue = model.entry.overrideValue,
-      status = model.entry.status,
-      underperformanceJustification = model.entry.underperformanceJustification,
       progressNotes = model.entry.progressNotes,
+      reference = model.metric.reference,
+      status = model.entry.status,
+      systemTime = model.entry.systemTime,
+      systemValue = model.entry.systemValue,
+      target = model.entry.target,
+      type = model.metric.typeId,
+      underperformanceJustification = model.entry.underperformanceJustification,
   )
 }
 
 data class ReportSystemMetricEntriesPayload(
     val metric: SystemMetric,
-    val target: Int?,
-    @Schema(description = "If set to null, system metric entry will use Terraware data value.")
     val overrideValue: Int?,
-    val status: ReportMetricStatus?,
-    val underperformanceJustification: String?,
     val progressNotes: String?,
+    val status: ReportMetricStatus?,
+    val target: Int?,
+    val underperformanceJustification: String?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
-          target = target,
-          value = overrideValue,
-          underperformanceJustification = underperformanceJustification,
           progressNotes = progressNotes,
           status = status,
+          target = target,
+          underperformanceJustification = underperformanceJustification,
+          value = overrideValue,
       )
 }
 
 data class ReportProjectMetricPayload(
-    val id: ProjectMetricId,
-    val name: String,
-    val description: String?,
     val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
+    val description: String?,
+    val id: ProjectMetricId,
     val isPublishable: Boolean,
-    val target: Int?,
-    val value: Int?,
-    val status: ReportMetricStatus?,
-    val underperformanceJustification: String?,
+    val name: String,
     val progressNotes: String?,
+    val reference: String,
+    val status: ReportMetricStatus?,
+    val target: Int?,
+    val type: MetricType,
+    val underperformanceJustification: String?,
     val unit: String?,
+    val value: Int?,
 ) {
   constructor(
       model: ReportProjectMetricModel
   ) : this(
-      id = model.metric.id,
-      name = model.metric.name,
-      description = model.metric.description,
       component = model.metric.component,
-      type = model.metric.type,
-      reference = model.metric.reference,
+      description = model.metric.description,
+      id = model.metric.id,
       isPublishable = model.metric.isPublishable,
-      target = model.entry.target,
-      value = model.entry.value,
-      status = model.entry.status,
-      underperformanceJustification = model.entry.underperformanceJustification,
+      name = model.metric.name,
       progressNotes = model.entry.progressNotes,
+      reference = model.metric.reference,
+      status = model.entry.status,
+      target = model.entry.target,
+      type = model.metric.type,
+      underperformanceJustification = model.entry.underperformanceJustification,
       unit = model.metric.unit,
+      value = model.entry.value,
   )
 }
 
 data class ReportProjectMetricEntriesPayload(
     val id: ProjectMetricId,
-    val target: Int?,
-    val value: Int?,
-    val underperformanceJustification: String?,
     val progressNotes: String?,
     val status: ReportMetricStatus?,
+    val target: Int?,
+    val underperformanceJustification: String?,
+    val value: Int?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
-          target = target,
-          value = value,
-          underperformanceJustification = underperformanceJustification,
           progressNotes = progressNotes,
           status = status,
+          target = target,
+          underperformanceJustification = underperformanceJustification,
+          value = value,
       )
 }
 
@@ -606,18 +616,20 @@ data class ReviewAcceleratorReportRequestPayload(
 )
 
 data class ReviewAcceleratorReportMetricsRequestPayload(
+    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
-    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
 data class UpdateAcceleratorReportValuesRequestPayload(
-    val highlights: String?,
     val achievements: List<String>,
+    val additionalComments: String?,
     val challenges: List<ReportChallengePayload>,
+    val financialSummaries: String?,
+    val highlights: String?,
+    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
-    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
 data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorReportPayload>) :
