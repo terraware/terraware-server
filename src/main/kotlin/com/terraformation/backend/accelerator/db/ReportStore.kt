@@ -233,6 +233,8 @@ class ReportStore(
       challenges: List<ReportChallengeModel>? = null,
       feedback: String? = null,
       internalComment: String? = null,
+      financialSummaries: String? = null,
+      additionalComments: String? = null,
   ) {
     requirePermissions { reviewReports() }
 
@@ -261,12 +263,14 @@ class ReportStore(
           with(REPORTS) {
             dslContext
                 .update(this)
-                .set(STATUS_ID, status)
-                .set(HIGHLIGHTS, highlights)
+                .set(ADDITIONAL_COMMENTS, additionalComments)
                 .set(FEEDBACK, feedback)
+                .set(FINANCIAL_SUMMARIES, financialSummaries)
+                .set(HIGHLIGHTS, highlights)
                 .set(INTERNAL_COMMENT, internalComment)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
+                .set(STATUS_ID, status)
                 .where(ID.eq(reportId))
                 .execute()
           }
@@ -340,6 +344,8 @@ class ReportStore(
       highlights: String?,
       achievements: List<String>,
       challenges: List<ReportChallengeModel>,
+      financialSummaries: String? = null,
+      additionalComments: String? = null,
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
       systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
@@ -369,6 +375,8 @@ class ReportStore(
 
       dslContext
           .update(REPORTS)
+          .set(REPORTS.ADDITIONAL_COMMENTS, additionalComments)
+          .set(REPORTS.FINANCIAL_SUMMARIES, financialSummaries)
           .set(REPORTS.HIGHLIGHTS, highlights)
           .set(REPORTS.MODIFIED_BY, currentUser().userId)
           .set(REPORTS.MODIFIED_TIME, clock.instant())
@@ -478,25 +486,30 @@ class ReportStore(
       with(PUBLISHED_REPORTS) {
         dslContext
             .insertInto(this)
-            .set(REPORT_ID, report.id)
-            .set(PROJECT_ID, report.projectId)
-            .set(REPORT_FREQUENCY_ID, report.frequency)
-            .set(REPORT_QUARTER_ID, report.quarter)
-            .set(START_DATE, report.startDate)
+            .set(ADDITIONAL_COMMENTS, report.additionalComments)
             .set(END_DATE, report.endDate)
+            .set(FINANCIAL_SUMMARIES, report.financialSummaries)
             .set(HIGHLIGHTS, report.highlights)
+            .set(PROJECT_ID, report.projectId)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
+            .set(REPORT_FREQUENCY_ID, report.frequency)
+            .set(REPORT_ID, report.id)
+            .set(REPORT_QUARTER_ID, report.quarter)
+            .set(START_DATE, report.startDate)
             .onConflict()
             .doUpdate()
-            .set(PROJECT_ID, report.projectId)
-            .set(REPORT_FREQUENCY_ID, report.frequency)
-            .set(REPORT_QUARTER_ID, report.quarter)
-            .set(START_DATE, report.startDate)
+            .set(ADDITIONAL_COMMENTS, report.additionalComments)
             .set(END_DATE, report.endDate)
+            .set(FINANCIAL_SUMMARIES, report.financialSummaries)
             .set(HIGHLIGHTS, report.highlights)
+            .set(PROJECT_ID, report.projectId)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
+            .set(REPORT_FREQUENCY_ID, report.frequency)
+            .set(REPORT_ID, report.id)
+            .set(REPORT_QUARTER_ID, report.quarter)
+            .set(START_DATE, report.startDate)
             .execute()
       }
 

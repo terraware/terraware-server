@@ -113,6 +113,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               highlights = "highlights",
               internalComment = "internal comment",
               feedback = "feedback",
+              additionalComments = "additional comments",
+              financialSummaries = "financial summaries",
               createdBy = systemUser.userId,
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
@@ -157,6 +159,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ),
               internalComment = "internal comment",
               feedback = "feedback",
+              additionalComments = "additional comments",
+              financialSummaries = "financial summaries",
               createdBy = systemUser.userId,
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
@@ -1101,6 +1105,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             highlights = "highlights",
             feedback = "feedback",
             internalComment = "internal comment",
+            additionalComments = "additional comments",
+            financialSummaries = "financial summaries",
         )
       }
 
@@ -1114,6 +1120,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             highlights = "highlights",
             feedback = "feedback",
             internalComment = "internal comment",
+            additionalComments = "additional comments",
+            financialSummaries = "financial summaries",
         )
       }
     }
@@ -1170,6 +1178,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               highlights = "existing highlights",
               feedback = "existing feedback",
               internalComment = "existing internal comment",
+              additionalComments = "existing additional comments",
+              financialSummaries = "existing financial summaries",
               modifiedBy = otherUserId,
               modifiedTime = Instant.ofEpochSecond(3000),
           )
@@ -1219,6 +1229,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           feedback = "new feedback",
           internalComment = "new internal comment",
+          additionalComments = "new additional comments",
+          financialSummaries = "new financial summaries",
       )
 
       val updatedReport =
@@ -1227,6 +1239,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               highlights = "new highlights",
               feedback = "new feedback",
               internalComment = "new internal comment",
+              additionalComments = "new additional comments",
+              financialSummaries = "new financial summaries",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           )
@@ -1618,9 +1632,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `updates highlights, merges new achievements and challenges rows`() {
+    fun `updates highlights, additional comments and financial summaries, merges new achievements and challenges rows`() {
       insertProjectReportConfig()
-      val reportId = insertReport(highlights = "Existing Highlights")
+      val reportId =
+          insertReport(
+              highlights = "Existing Highlights",
+              additionalComments = "Existing Additional Comments",
+              financialSummaries = "Existing Financial Summaries",
+          )
       val existingReportRow = reportsDao.fetchOneById(reportId)!!
 
       insertReportAchievement(position = 0, achievement = "Existing Achievement A")
@@ -1663,6 +1682,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       mitigationPlan = "New Plan Y",
                   ),
               ),
+          additionalComments = "New Additional Comments",
+          financialSummaries = "New Financial Summaries",
       )
 
       assertTableEquals(
@@ -1709,6 +1730,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ReportsRecord(
               existingReportRow.copy(
                   highlights = "New Highlights",
+                  additionalComments = "New Additional Comments",
+                  financialSummaries = "New Financial Summaries",
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
               )
@@ -1720,7 +1743,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `sets null and deletes achievements and challenges rows for empty params`() {
       insertProjectReportConfig()
-      val reportId = insertReport(highlights = "Existing Highlights")
+      val reportId =
+          insertReport(
+              highlights = "Existing Highlights",
+              additionalComments = "Existing Additional Comments",
+              financialSummaries = "Existing Financial Summaries",
+          )
       val existingReportRow = reportsDao.fetchOneById(reportId)!!
 
       insertReportAchievement(position = 0, achievement = "Existing Achievement A")
@@ -1743,6 +1771,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateReport(
           reportId = reportId,
           highlights = null,
+          additionalComments = null,
+          financialSummaries = null,
           achievements = emptyList(),
           challenges = emptyList(),
       )
@@ -1754,6 +1784,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ReportsRecord(
               existingReportRow.copy(
                   highlights = null,
+                  additionalComments = null,
+                  financialSummaries = null,
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
               )
@@ -3976,6 +4008,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `overwrites existing rows for subsequent publishes`() {
       insertPublishedReport(
           highlights = "Existing highlights",
+          additionalComments = "Existing additional comments",
+          financialSummaries = "Existing financial summaries",
       )
 
       insertPublishedReportAchievement(position = 0, achievement = "Existing Achievement A")
@@ -4085,6 +4119,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               highlights = "Highlights",
               internalComment = "Internal Comment",
               feedback = "Feedback",
+              additionalComments = "Additional comments",
+              financialSummaries = "Financial summaries",
               createdBy = systemUser.userId,
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
@@ -4231,6 +4267,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.MARCH, 31),
               highlights = "Highlights",
+              additionalComments = "Additional comments",
+              financialSummaries = "Financial summaries",
               publishedBy = publishedBy,
               publishedTime = publishedTime,
           ),

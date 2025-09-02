@@ -100,6 +100,8 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           endDate = LocalDate.of(2025, 3, 31),
           quarter = ReportQuarter.Q1,
           highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
       )
       insertPublishedReportAchievement(achievement = "achievement 2", position = 2)
       insertPublishedReportAchievement(achievement = "achievement 1", position = 1)
@@ -178,8 +180,10 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               PublishedReportModel(
                   achievements = emptyList(),
+                  additionalComments = null,
                   challenges = emptyList(),
                   endDate = LocalDate.of(2025, 6, 30),
+                  financialSummaries = null,
                   frequency = ReportFrequency.Quarterly,
                   highlights = null,
                   projectId = projectId,
@@ -195,12 +199,14 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PublishedReportModel(
                   achievements = listOf("achievement 1", "achievement 2"),
+                  additionalComments = "additional comments",
                   challenges =
                       listOf(
                           ReportChallengeModel("challenge 1", "mitigation 1"),
                           ReportChallengeModel("challenge 2", "mitigation 2"),
                       ),
                   endDate = LocalDate.of(2025, 3, 31),
+                  financialSummaries = "financial summaries",
                   frequency = ReportFrequency.Quarterly,
                   highlights = "highlights",
                   projectId = projectId,

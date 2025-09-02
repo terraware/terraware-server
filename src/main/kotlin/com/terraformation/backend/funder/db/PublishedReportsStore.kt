@@ -56,8 +56,10 @@ class PublishedReportsStore(
         .fetch { record ->
           PublishedReportModel(
               achievements = record[achievementsMultiset],
+              additionalComments = record[PUBLISHED_REPORTS.ADDITIONAL_COMMENTS],
               challenges = record[challengesMultiset],
               endDate = record[PUBLISHED_REPORTS.END_DATE]!!,
+              financialSummaries = record[PUBLISHED_REPORTS.FINANCIAL_SUMMARIES],
               frequency = record[PUBLISHED_REPORTS.REPORT_FREQUENCY_ID]!!,
               highlights = record[PUBLISHED_REPORTS.HIGHLIGHTS],
               projectId = record[PUBLISHED_REPORTS.PROJECT_ID]!!,

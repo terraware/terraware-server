@@ -78,8 +78,10 @@ data class PublishedReportMetricPayload(
 
 data class PublishedReportPayload(
     val achievements: List<String>,
+    val additionalComments: String?,
     val challenges: List<ReportChallengePayload>,
     val endDate: LocalDate,
+    val financialSummaries: String?,
     val frequency: ReportFrequency,
     val highlights: String?,
     val projectId: ProjectId,
@@ -97,8 +99,10 @@ data class PublishedReportPayload(
       model: PublishedReportModel
   ) : this(
       achievements = model.achievements,
+      additionalComments = model.additionalComments,
       challenges = model.challenges.map { ReportChallengePayload(it.challenge, it.mitigationPlan) },
       endDate = model.endDate,
+      financialSummaries = model.financialSummaries,
       frequency = model.frequency,
       highlights = model.highlights,
       projectId = model.projectId,
