@@ -40,7 +40,10 @@ CREATE TABLE accelerator.activity_media_files (
     caption TEXT,
     geolocation GEOMETRY(POINT),
 
-    PRIMARY KEY (file_id)
+    PRIMARY KEY (file_id),
+
+    -- Media type 1 = Photo
+    CONSTRAINT cover_photo_only CHECK (is_cover_photo = FALSE OR activity_media_type_id = 1)
 );
 
 -- Only allow one cover photo per activity.
