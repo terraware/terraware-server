@@ -838,6 +838,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
+              val survivalRate = species.calculateSurvivalRate()
 
             val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
             val completedPlotsPlantingDensities =
@@ -873,12 +874,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 plantingSubzoneId =
                     record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.asNonNullable()],
                 species = species,
-                totalPlants = totalPlants,
-                totalSpecies = totalLiveSpeciesExceptUnknown,
-            )
-          }
-        }
-  }
+                survivalRate = survivalRate,
+                  totalPlants = totalPlants,
+                  totalSpecies = totalLiveSpeciesExceptUnknown,
+              )
+            }
+          }}
 
   private val plantingZoneSpeciesMultiset =
       with(OBSERVED_ZONE_SPECIES_TOTALS) {
@@ -1010,6 +1011,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
+              val survivalRate = species.calculateSurvivalRate()
 
             val plantingCompleted = record[zonePlantingCompletedField]
             val completedPlotsPlantingDensities =
@@ -1044,12 +1046,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 plantingSubzones = subzones,
                 plantingZoneId = record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID.asNonNullable()],
                 species = identifiedSpecies,
-                totalSpecies = totalLiveSpeciesExceptUnknown,
-                totalPlants = totalPlants,
-            )
-          }
-        }
-  }
+                survivalRate = survivalRate,
+                  totalSpecies = totalLiveSpeciesExceptUnknown,
+                  totalPlants = totalPlants,
+              )
+            }
+          }}
 
   private val plantingSiteSpeciesMultiset =
       with(OBSERVED_SITE_SPECIES_TOTALS) {
@@ -1159,6 +1161,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     }
                   }
                   .calculateWeightedStandardDeviation()
+          val survivalRate = species.calculateSurvivalRate()
 
           ObservationResultsModel(
               adHocPlot = record[adHocPlotsField].firstOrNull(),
@@ -1180,6 +1183,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               species = knownSpecies,
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
+              survivalRate = survivalRate,
               totalPlants = totalPlants,
               totalSpecies = totalSpecies,
           )

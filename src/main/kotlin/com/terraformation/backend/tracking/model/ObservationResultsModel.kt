@@ -495,7 +495,7 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
 fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
   val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
   val numKnownLive =
-      this.filter { it.certainty == RecordedSpeciesCertainty.Known }.sumOf { it.totalLive }
+      this.filter { it.certainty == RecordedSpeciesCertainty.Known }.sumOf { it.permanentLive }
 
   return if (sumDensity > BigDecimal.ZERO) {
     ((numKnownLive * 100.0).toBigDecimal() / sumDensity).setScale(0, RoundingMode.HALF_UP).toInt()
