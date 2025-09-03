@@ -1,8 +1,8 @@
-Observation ->,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3
-Species ->,A,A,B,B,C,C,Other,Other,A,A,B,B,C,C,Other,Other,A,A,B,B,C,C,Other,Other
-Subzone,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate,Total Plants,Mortality Rate
-Alpha-1,68,30%,93,6%,93,12%,25,50%,68,30%,93,6%,93,12%,25,50%,310,17%,204,26%,318,16%,22,55%
-Beta-1,125,9%,86,14%,85,16%,23,36%,125,9%,86,14%,85,16%,23,36%,342,16%,298,15%,286,10%,21,60%
-Beta-2,103,11%,65,15%,62,17%,28,46%,103,11%,65,15%,62,17%,28,46%,103,11%,65,15%,62,17%,28,46%
-Charlie-1,,,,,,,,,196,23%,120,31%,155,6%,7,61%,196,23%,120,31%,155,6%,7,61%
-Charlie-2,,,,,,,,,366,11%,284,11%,303,14%,29,49%,366,11%,284,11%,303,14%,29,49%
+Observation ->,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3
+Species ->,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other
+Subzone,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate
+Alpha-1,68,30%,,93,6%,,93,12%,,25,50%,,68,30%,,93,6%,,93,12%,,25,50%,,310,17%,,204,26%,,318,16%,,22,55%,
+Beta-1,125,9%,,86,14%,,85,16%,,23,36%,,125,9%,,86,14%,,85,16%,,23,36%,,342,16%,,298,15%,,286,10%,,21,60%,
+Beta-2,103,11%,,65,15%,,62,17%,,28,46%,,103,11%,,65,15%,,62,17%,,28,46%,,103,11%,,65,15%,,62,17%,,28,46%,
+Charlie-1,,,,,,,,,,,,,196,23%,,120,31%,,155,6%,,7,61%,,196,23%,,120,31%,,155,6%,,7,61%,
+Charlie-2,,,,,,,,,,,,,366,11%,,284,11%,,303,14%,,29,49%,,366,11%,,284,11%,,303,14%,,29,49%,

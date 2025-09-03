@@ -1,4 +1,4 @@
-Observation ->,1,1,1,1,1,2,2,2,2,2
-Zone,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants
-Alpha,14,20,6,42%,,16,24,7,44%,36000
-Beta,12,17,2,22%,16500,9,15,3,44%,15400
+Observation ->,1,1,1,1,1,1,2,2,2,2,2,2
+Zone,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Survival Rate,Est Plants
+Alpha,14,20,6,42%,,,16,24,7,44%,,36000
+Beta,12,17,2,22%,,16500,9,15,3,44%,,15400

@@ -2300,7 +2300,7 @@ class ObservationStore(
               if (isPermanent && speciesKey.id != null) {
                 totalLiveField.plus(totalLive).mul(100).div(survivalRateDenominator)
               } else {
-                DSL.castNull(SQLDataType.INTEGER)
+                survivalRateField
               }
 
           val rowsUpdated =

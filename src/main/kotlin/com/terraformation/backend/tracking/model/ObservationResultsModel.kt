@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.math.roundToInt
@@ -51,6 +52,8 @@ data class ObservationSpeciesResultsModel(
      * the previous observation.
      */
     val cumulativeDead: Int,
+    /** Plant Density for this species at the t0 point. */
+    val t0Density: BigDecimal? = null,
     /**
      * Percentage of plants in permanent monitoring plots that are dead. If there are no permanent
      * monitoring plots (or if this is a plot-level result for a temporary monitoring plot) this
@@ -68,6 +71,13 @@ data class ObservationSpeciesResultsModel(
     val speciesId: SpeciesId?,
     /** User-supplied species name if certainty is Other. */
     val speciesName: String?,
+    /**
+     * Percentage of plants in permanent monitoring plots that are still alive since the t0 point.
+     * If there are no permanent monitoring plots (or if this is a plot-level result for a temporary
+     * monitoring plot) this will be null. Existing plants are not included in the survival rate
+     * because the intent is to track the health of plants that were introduced to the site.
+     */
+    val survivalRate: Int? = null,
     val totalDead: Int,
     val totalExisting: Int,
     val totalLive: Int,
@@ -112,6 +122,12 @@ data class ObservationMonitoringPlotResultsModel(
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationPlotStatus,
+    /**
+     * If this is a permanent monitoring plot in this observation, percentage of plants of all
+     * species that have survived since the t0 point. Existing plants are not counted because the
+     * intent is to track the health of plants that were introduced to the site.
+     */
+    val survivalRate: Int? = null,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.
@@ -164,6 +180,18 @@ interface BaseMonitoringResult {
 
   /** List of species result used for this rollup */
   val species: List<ObservationSpeciesResultsModel>
+
+  /**
+   * Percentage of plants of all species that were alive in the region's permanent monitoring plots
+   * since the t0 point. Only live plants from the current observation are counted towards this
+   * percentage. Existing plants are not counted because the intent is to track the health of plants
+   * that were introduced to the site.
+   */
+  val survivalRate: Int?
+
+  /** Standard deviation of survival rates of plots */
+  val survivalRateStdDev: Int?
+
   /**
    * Total number of plants recorded. Includes all plants, regardless of live/dead status or
    * species.
@@ -190,6 +218,8 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingDensityStdDev: Int?,
     val plantingSubzoneId: PlantingSubzoneId?,
     override val species: List<ObservationSpeciesResultsModel>,
+    override val survivalRate: Int? = null,
+    override val survivalRateStdDev: Int? = null,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
@@ -207,6 +237,8 @@ data class ObservationPlantingZoneResultsModel(
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId?,
     override val species: List<ObservationSpeciesResultsModel>,
+    override val survivalRate: Int? = null,
+    override val survivalRateStdDev: Int? = null,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
@@ -229,6 +261,8 @@ data class ObservationResultsModel(
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     override val species: List<ObservationSpeciesResultsModel>,
+    override val survivalRate: Int? = null,
+    override val survivalRateStdDev: Int? = null,
     val startDate: LocalDate,
     val state: ObservationState,
     override val totalPlants: Int,
@@ -251,6 +285,8 @@ data class ObservationPlantingZoneRollupResultsModel(
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
     override val species: List<ObservationSpeciesResultsModel>,
+    override val survivalRate: Int? = null,
+    override val survivalRateStdDev: Int? = null,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult {
@@ -349,6 +385,8 @@ data class ObservationRollupResultsModel(
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
     /** List of species result used for this rollup */
     override val species: List<ObservationSpeciesResultsModel>,
+    override val survivalRate: Int? = null,
+    override val survivalRateStdDev: Int? = null,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult {
@@ -454,6 +492,18 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
   }
 }
 
+fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
+  val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
+  val numKnownLive =
+      this.filter { it.certainty == RecordedSpeciesCertainty.Known }.sumOf { it.totalLive }
+
+  return if (sumDensity > BigDecimal.ZERO) {
+    ((numKnownLive * 100.0).toBigDecimal() / sumDensity).setScale(0, RoundingMode.HALF_UP).toInt()
+  } else {
+    null
+  }
+}
+
 /**
  * Combining observation species results by summing up numbers for results with matching (certainty,
  * speciesId, speciesName) triple. This is used to build per species data starting from permanent
@@ -477,16 +527,16 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
               0
             }
         ObservationSpeciesResultsModel(
-            key.first,
-            cumulativeDead,
-            mortalityRate,
-            permanentLive,
-            key.second,
-            key.third,
-            groupedSpecies.sumOf { it.totalDead },
-            groupedSpecies.sumOf { it.totalExisting },
-            groupedSpecies.sumOf { it.totalLive },
-            groupedSpecies.sumOf { it.totalPlants },
+            certainty = key.first,
+            cumulativeDead = cumulativeDead,
+            mortalityRate = mortalityRate,
+            permanentLive = permanentLive,
+            speciesId = key.second,
+            speciesName = key.third,
+            totalDead = groupedSpecies.sumOf { it.totalDead },
+            totalExisting = groupedSpecies.sumOf { it.totalExisting },
+            totalLive = groupedSpecies.sumOf { it.totalLive },
+            totalPlants = groupedSpecies.sumOf { it.totalPlants },
         )
       }
 }

@@ -36,6 +36,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQU
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -74,6 +75,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
   private val allSpeciesNames = mutableSetOf<String>()
   private val permanentPlotNumbers = mutableSetOf<String>()
+  private val permanentPlotIds = mutableSetOf<MonitoringPlotId>()
   private val speciesIds = mutableMapOf<String, SpeciesId>()
 
   private val speciesNames: Map<SpeciesId, String> by lazy {
@@ -425,6 +427,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(inserted.observationId, observationResults.observationId, "Observation ID")
       assertFalse(observationResults.isAdHoc, "Observation Is Ad Hoc")
       assertNull(observationResults.mortalityRate, "Observation mortality rate with no plants")
+      assertNull(observationResults.survivalRate, "Observation survival rate with no plants")
 
       val plotResults =
           observationResults.plantingZones.first().plantingSubzones.first().monitoringPlots.first()
@@ -1163,7 +1166,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       )
     }
 
-    private fun runScenario(prefix: String, numObservations: Int, sizeMeters: Int) {
+    private fun runScenario(
+        prefix: String,
+        numObservations: Int,
+        sizeMeters: Int,
+    ) {
       importFromCsvFiles(prefix, numObservations, sizeMeters)
       val allResults =
           resultsStore
@@ -1264,6 +1271,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     results.estimatedPlants.toStringOrBlank(),
                     results.totalSpecies.toStringOrBlank(),
                     results.mortalityRate.toStringOrBlank("%"),
+                    results.survivalRate.toStringOrBlank("%"),
                 )
               },
           )
@@ -1285,6 +1293,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     zone.plantingDensity.toStringOrBlank(),
                     zone.totalSpecies.toStringOrBlank(),
                     zone.mortalityRate.toStringOrBlank("%"),
+                    zone.survivalRate.toStringOrBlank("%"),
                     zone.estimatedPlants.toStringOrBlank(),
                 )
               },
@@ -1310,6 +1319,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     subzone?.plantingDensity.toStringOrBlank(),
                     subzone?.totalSpecies.toStringOrBlank(),
                     subzone?.mortalityRate.toStringOrBlank("%"),
+                    subzone?.survivalRate.toStringOrBlank("%"),
                     subzone?.estimatedPlants.toStringOrBlank(),
                 )
               },
@@ -1383,6 +1393,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     plot?.totalPlants.toStringOrBlank(),
                     plot?.totalSpecies.toStringOrBlank(),
                     plot?.mortalityRate.toStringOrBlank("%"),
+                    plot?.survivalRate.toStringOrBlank("%"),
                     // Live and existing plants columns are in spreadsheet but not included in
                     // calculated results; it will be removed by the filter
                     // function below.
@@ -1393,8 +1404,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
         row.filterIndexed { index, _ ->
-          val positionInColumnGroup = (index - 1) % 6
-          positionInColumnGroup != 3 && positionInColumnGroup != 4
+          val positionInColumnGroup = (index - 1) % 7
+          positionInColumnGroup != 4 && positionInColumnGroup != 5
         }
       }
     }
@@ -1412,6 +1423,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     results.totalSpecies.toStringOrBlank(),
                     results.mortalityRate.toStringOrBlank("%"),
                     results.mortalityRateStdDev.toStringOrBlank("%"),
+                    results.survivalRate.toStringOrBlank("%"),
+                    results.survivalRateStdDev.toStringOrBlank("%"),
                 )
               },
           )
@@ -1436,6 +1449,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     zone?.totalSpecies.toStringOrBlank(),
                     zone?.mortalityRate.toStringOrBlank("%"),
                     zone?.mortalityRateStdDev.toStringOrBlank("%"),
+                    zone?.survivalRate.toStringOrBlank("%"),
+                    zone?.survivalRateStdDev.toStringOrBlank("%"),
                     zone?.estimatedPlants.toStringOrBlank(),
                 )
               },
@@ -1466,6 +1481,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     subzone?.totalSpecies.toStringOrBlank(),
                     subzone?.mortalityRate.toStringOrBlank("%"),
                     subzone?.mortalityRateStdDev.toStringOrBlank("%"),
+                    subzone?.survivalRate.toStringOrBlank("%"),
+                    subzone?.survivalRateStdDev.toStringOrBlank("%"),
                     subzone?.estimatedPlants.toStringOrBlank(),
                 )
               },
@@ -1491,22 +1508,23 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                           plot.totalPlants.toStringOrBlank(),
                           plot.totalSpecies.toStringOrBlank(),
                           plot.mortalityRate.toStringOrBlank("%"),
+                          plot.survivalRate.toStringOrBlank("%"),
                           // Live and existing plants columns are in spreadsheet but not included in
                           // calculated
                           // results; it will be removed by the filter function below.
                           plot.plantingDensity.toStringOrBlank(),
                       )
-                    } ?: listOf("", "", "", "")
+                    } ?: listOf("", "", "", "", "")
               },
           )
 
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
         row.filterIndexed { index, _ ->
-          val positionInColumnGroup = (index - 1) % 8
-          positionInColumnGroup != 3 &&
-              positionInColumnGroup != 4 &&
+          val positionInColumnGroup = (index - 1) % 9
+          positionInColumnGroup != 4 &&
               positionInColumnGroup != 5 &&
-              positionInColumnGroup != 6
+              positionInColumnGroup != 6 &&
+              positionInColumnGroup != 7
         }
       }
     }
@@ -1529,8 +1547,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           species.totalPlants.toStringOrBlank(),
                           species.mortalityRate.toStringOrBlank("%"),
+                          species.survivalRate.toStringOrBlank("%"),
                       )
-                    } ?: listOf("", "")
+                    } ?: listOf("", "", "")
               },
           )
 
@@ -1561,8 +1580,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           species.totalPlants.toStringOrBlank(),
                           species.mortalityRate.toStringOrBlank("%"),
+                          species.survivalRate.toStringOrBlank("%"),
                       )
-                    } ?: listOf("", "")
+                    } ?: listOf("", "", "")
               },
           )
 
@@ -1592,8 +1612,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           species.totalPlants.toStringOrBlank(),
                           species.mortalityRate.toStringOrBlank("%"),
+                          species.survivalRate.toStringOrBlank("%"),
                       )
-                    } ?: listOf("", "")
+                    } ?: listOf("", "", "")
               },
           )
 
@@ -1625,8 +1646,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           it.totalPlants.toStringOrBlank(),
                           it.mortalityRate.toStringOrBlank("%"),
+                          it.survivalRate.toStringOrBlank("%"),
                       )
-                    } ?: listOf("", "")
+                    } ?: listOf("", "", "")
               },
           )
 
@@ -1663,7 +1685,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 results.plantingZones
                     .firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
                     ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                    ?: List(numSpecies * 2 + 2) { "" }
+                    ?: List(numSpecies * 3 + 3) { "" }
               },
           )
 
@@ -1686,7 +1708,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     .flatMap { zone -> zone.plantingSubzones }
                     .firstOrNull { subzone -> subzone.plantingSubzoneId == subzoneIds[subzoneName] }
                     ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                    ?: List(numSpecies * 2 + 2) { "" }
+                    ?: List(numSpecies * 3 + 3) { "" }
               },
           )
 
@@ -1710,7 +1732,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                     .flatMap { subzone -> subzone.monitoringPlots }
                     .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                     ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                    ?: List(numSpecies * 2 + 2) { "" }
+                    ?: List(numSpecies * 3 + 3) { "" }
               },
           )
 
@@ -1733,10 +1755,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             it.totalPlants.toStringOrBlank(),
                             it.mortalityRate.toStringOrBlank("%"),
+                            it.survivalRate.toStringOrBlank("%"),
                         )
-                      } ?: listOf("", "")
+                      } ?: listOf("", "", "")
                 } else {
-                  listOf("", "")
+                  listOf("", "", "")
                 }
               }
               .flatten()
@@ -1748,8 +1771,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     it.totalPlants.toStringOrBlank(),
                     it.mortalityRate.toStringOrBlank("%"),
+                    it.survivalRate.toStringOrBlank("%"),
                 )
-              } ?: listOf("", "")
+              } ?: listOf("", "", "")
 
       return knownSpecies + otherSpecies
     }
@@ -1841,6 +1865,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
         if (cols[2] == "Permanent") {
           permanentPlotNumbers.add(plotNumber)
+          permanentPlotIds.add(plotId)
         }
 
         plotNumber to plotId
@@ -1928,6 +1953,25 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         plantsRows
             .groupBy { it.monitoringPlotId!! }
             .forEach { (plotId, plants) ->
+              if (observationNum == 0 && plotId in permanentPlotIds) {
+                insertPlotT0Observation(monitoringPlotId = plotId)
+                plants
+                    .filter {
+                      it.certaintyId == RecordedSpeciesCertainty.Known &&
+                          it.speciesId != null &&
+                          it.statusId != RecordedPlantStatus.Existing
+                    }
+                    .groupingBy { it.speciesId }
+                    .eachCount()
+                    .forEach { (speciesId, count) ->
+                      insertPlotT0Density(
+                          speciesId = speciesId!!,
+                          monitoringPlotId = plotId,
+                          plotDensity = count.toBigDecimal(),
+                      )
+                    }
+              }
+
               observationStore.completePlot(
                   observationId,
                   plotId,
