@@ -2152,6 +2152,25 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       plantsRows
           .groupBy { it.monitoringPlotId!! }
           .forEach { (plotId, plants) ->
+            if (observationNum == 0 && plotId in permanentPlotIds) {
+              insertPlotT0Observation(monitoringPlotId = plotId)
+              plants
+                  .filter {
+                    it.certaintyId == RecordedSpeciesCertainty.Known &&
+                        it.speciesId != null &&
+                        it.statusId != RecordedPlantStatus.Existing
+                  }
+                  .groupingBy { it.speciesId }
+                  .eachCount()
+                  .forEach { (speciesId, count) ->
+                    insertPlotT0Density(
+                        speciesId = speciesId!!,
+                        monitoringPlotId = plotId,
+                        plotDensity = count.toBigDecimal(),
+                    )
+                  }
+            }
+
             observationStore.completePlot(
                 observationId,
                 plotId,

@@ -1,6 +1,6 @@
 Observation ->,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3
 Species ->,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other
 Zone,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate
-Alpha,68,30%,,93,6%,,93,12%,,25,50%,,68,30%,,93,6%,,93,12%,,25,50%,,310,17%,,204,26%,,318,16%,,22,55%,
+Alpha,68,30%,70%,93,6%,94%,93,12%,88%,25,50%,,68,30%,70%,93,6%,94%,93,12%,88%,25,50%,,310,17%,790%,204,26%,148%,318,16%,345%,22,55%,
 Beta,228,10%,,151,14%,,147,16%,,51,42%,,228,10%,,151,14%,,147,16%,,51,42%,,445,15%,,363,15%,,348,11%,,49,53%,
 Charlie,,,,,,,,,,,,,562,15%,,404,16%,,458,12%,,36,52%,,562,15%,,404,16%,,458,12%,,36,52%,

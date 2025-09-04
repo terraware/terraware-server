@@ -344,7 +344,7 @@ data class ObservationPlantingZoneRollupResultsModel(
                       plot.species.sumOf { species ->
                         species.permanentLive + species.cumulativeDead
                       }
-                  mortalityRate to permanentPlants
+                  mortalityRate to permanentPlants.toDouble()
                 }
               }
               .calculateWeightedStandardDeviation()
@@ -444,7 +444,7 @@ data class ObservationRollupResultsModel(
                       plot.species.sumOf { species ->
                         species.permanentLive + species.cumulativeDead
                       }
-                  mortalityRate to permanentPlants
+                  mortalityRate to permanentPlants.toDouble()
                 }
               }
               .calculateWeightedStandardDeviation()
@@ -494,8 +494,7 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
 
 fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
   val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
-  val numKnownLive =
-      this.filter { it.certainty == RecordedSpeciesCertainty.Known }.sumOf { it.permanentLive }
+  val numKnownLive = this.sumOf { it.permanentLive }
 
   return if (sumDensity > BigDecimal.ZERO) {
     ((numKnownLive * 100.0).toBigDecimal() / sumDensity).setScale(0, RoundingMode.HALF_UP).toInt()
@@ -560,7 +559,7 @@ fun Collection<Int>.calculateStandardDeviation(): Int? {
  * Calculate standard deviation from a collection of pairs of (data, weight). Weight must be the
  * number of samples, so we can correctly apply the (n-1) Bessel's correction.
  */
-fun Collection<Pair<Int, Int>>.calculateWeightedStandardDeviation(): Int? {
+fun Collection<Pair<Int, Double>>.calculateWeightedStandardDeviation(): Int? {
   if (this.size == 1) {
     // If there's only one sample, then by definition there's no variance.
     return 0
@@ -572,7 +571,7 @@ fun Collection<Pair<Int, Int>>.calculateWeightedStandardDeviation(): Int? {
     return null
   }
 
-  val weightedMean = this.sumOf { it.first * it.second }.toDouble() / totalWeights.toDouble()
+  val weightedMean = this.sumOf { it.first * it.second } / totalWeights
 
   val weightedSumSquaredDifferences =
       this.sumOf { (it.first - weightedMean) * (it.first - weightedMean) * it.second }

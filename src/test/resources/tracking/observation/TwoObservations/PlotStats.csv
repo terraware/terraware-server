@@ -1,7 +1,7 @@
 Observation ->,1,1,1,1,1,1,1,2,2,2,2,2,2,2
 Plot,# Plants,# Species,Mortality Rate,Survival Rate,Live Plants,Existing Plants,Planting Density,# Plants,# Species,Mortality Rate,Survival Rate,Live Plants,Existing Plants,Planting Density
 1133,,,,,,,,4,2,,,3,0,33
-121,9,4,25%,75%,7,1,67,7,4,33%,100%,6,0,67
+121,9,4,25%,150%,7,1,67,7,4,33%,150%,6,0,67
 122,2,2,0%,100%,2,1,11,2,2,0%,200%,2,0,22
 123,1,1,,,1,1,0,1,0,100%,,0,0,0
 124,3,0,100%,,0,0,0,1,1,75%,,1,0,11

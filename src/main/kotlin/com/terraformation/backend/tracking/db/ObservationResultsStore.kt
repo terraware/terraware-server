@@ -834,11 +834,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             plot.species.sumOf { species ->
                               species.permanentLive + species.cumulativeDead
                             }
-                        mortalityRate to permanentPlants
+                        mortalityRate to permanentPlants.toDouble()
                       }
                     }
                     .calculateWeightedStandardDeviation()
               val survivalRate = species.calculateSurvivalRate()
+              val survivalRateStdDev =
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.survivalRate?.let { survivalRate ->
+                          val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                          survivalRate to sumDensity.toDouble()
+                        }
+                      }
+                      .calculateWeightedStandardDeviation()
 
             val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
             val completedPlotsPlantingDensities =
@@ -875,6 +884,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.asNonNullable()],
                 species = species,
                 survivalRate = survivalRate,
+                  survivalRateStdDev = survivalRateStdDev,
                   totalPlants = totalPlants,
                   totalSpecies = totalLiveSpeciesExceptUnknown,
               )
@@ -1007,11 +1017,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             plot.species.sumOf { species ->
                               species.permanentLive + species.cumulativeDead
                             }
-                        mortalityRate to permanentPlants
+                        mortalityRate to permanentPlants.toDouble()
                       }
                     }
                     .calculateWeightedStandardDeviation()
               val survivalRate = species.calculateSurvivalRate()
+              val survivalRateStdDev =
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.survivalRate?.let { survivalRate ->
+                          val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                          survivalRate to sumDensity.toDouble()
+                        }
+                      }
+                      .calculateWeightedStandardDeviation()
 
             val plantingCompleted = record[zonePlantingCompletedField]
             val completedPlotsPlantingDensities =
@@ -1047,6 +1066,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 plantingZoneId = record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID.asNonNullable()],
                 species = identifiedSpecies,
                 survivalRate = survivalRate,
+                  survivalRateStdDev = survivalRateStdDev,
                   totalSpecies = totalLiveSpeciesExceptUnknown,
                   totalPlants = totalPlants,
               )
@@ -1157,11 +1177,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           plot.species.sumOf { species ->
                             species.permanentLive + species.cumulativeDead
                           }
-                      mortalityRate to permanentPlants
+                      mortalityRate to permanentPlants.toDouble()
                     }
                   }
                   .calculateWeightedStandardDeviation()
           val survivalRate = species.calculateSurvivalRate()
+          val survivalRateStdDev =
+              monitoringPlots
+                  .mapNotNull { plot ->
+                    plot.survivalRate?.let { survivalRate ->
+                      val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                      survivalRate to sumDensity.toDouble()
+                    }
+                  }
+                  .calculateWeightedStandardDeviation()
 
           ObservationResultsModel(
               adHocPlot = record[adHocPlotsField].firstOrNull(),
@@ -1184,6 +1213,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
               survivalRate = survivalRate,
+              survivalRateStdDev = survivalRateStdDev,
               totalPlants = totalPlants,
               totalSpecies = totalSpecies,
           )
