@@ -1,4 +1,4 @@
-1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3
-A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other
+Observation ->1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3
+Species ->A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other
 Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate
-296,13%,,244,11%,,240,14%,,76,45%,,858,15%,,648,14%,,698,13%,,112,47%,,1317,16%,,971,18%,,1124,13%,,107,53%,
+296,13%,88%,244,11%,89%,240,14%,86%,76,45%,,858,15%,271%,648,14%,217%,698,13%,255%,112,47%,,1317,16%,447%,971,18%,331%,1124,13%,447%,107,53%,

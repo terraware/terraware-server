@@ -730,7 +730,7 @@ class AdminPlantingSitesController(
     requirePermissions { manageObservation(observationId) }
 
     try {
-      observationStore.recalculateMortalityRates(observationId, plantingSiteId)
+      observationStore.recalculateSurvivalMortalityRates(observationId, plantingSiteId)
       redirectAttributes.successMessage =
           "Recalculated mortality rates for observation $observationId."
     } catch (e: Exception) {

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.point
 import java.math.BigDecimal
 import java.time.Instant
@@ -355,6 +356,118 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
             ),
         ),
         "Site level survival rates",
+    )
+  }
+
+  @Test
+  fun `survival rate is updated when t0 density changes`() {
+    val species1 = insertSpecies()
+    val species2 = insertSpecies()
+    var permIndex = 0
+
+    fun insertPlotWithDensities(
+        subzoneId: PlantingSubzoneId,
+        species1Density: Double,
+        species2Density: Double,
+    ): MonitoringPlotId {
+      val plotId = insertMonitoringPlot(plantingSubzoneId = subzoneId, permanentIndex = permIndex++)
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+      insertPlotT0Density(speciesId = species1, plotDensity = BigDecimal.valueOf(species1Density))
+      insertPlotT0Density(speciesId = species2, plotDensity = BigDecimal.valueOf(species2Density))
+      return plotId
+    }
+    fun completePlot(
+        plotId: MonitoringPlotId,
+        species1Count: Int,
+        species2Count: Int,
+    ) {
+      store.completePlot(
+          observationId,
+          plotId,
+          emptySet(),
+          "Notes1",
+          observedTime,
+          createPlantsRows(
+              mapOf(
+                  species1 to species1Count,
+                  species2 to species2Count,
+              ),
+              RecordedPlantStatus.Live,
+          ),
+      )
+    }
+
+    val zone1 = insertPlantingZone()
+    val subzone1 = insertPlantingSubzone()
+    insertObservationRequestedSubzone()
+    val subzone2 = insertPlantingSubzone()
+    insertObservationRequestedSubzone()
+    val zone2 = insertPlantingZone()
+    val subzone3 = insertPlantingSubzone()
+    insertObservationRequestedSubzone()
+
+    val plot1 = insertPlotWithDensities(subzone1, 10.0, 20.0)
+    val plot2 = insertPlotWithDensities(subzone1, 30.0, 40.0)
+    val plot3 = insertPlotWithDensities(subzone2, 50.0, 60.0)
+    val plot4 = insertPlotWithDensities(subzone3, 70.0, 80.0)
+
+    completePlot(plot1, 9, 20)
+    completePlot(plot2, 30, 39)
+    completePlot(plot3, 55, 55)
+    completePlot(plot4, 61, 78)
+
+    assertSurvivalRates(
+        listOf(
+            mapOf(
+                plot1 to mapOf(species1 to 90, species2 to 100),
+                plot2 to mapOf(species1 to 100, species2 to 98),
+                plot3 to mapOf(species1 to 110, species2 to 92),
+                plot4 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(
+                subzone1 to mapOf(species1 to 98, species2 to 98),
+                subzone2 to mapOf(species1 to 110, species2 to 92),
+                subzone3 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(
+                zone1 to mapOf(species1 to 104, species2 to 95),
+                zone2 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(plantingSiteId to mapOf(species1 to 97, species2 to 96)),
+        ),
+        "Before modifying density",
+    )
+
+    with(PLOT_T0_DENSITY) {
+      dslContext
+          .update(this)
+          .set(PLOT_DENSITY, BigDecimal.valueOf(20.0))
+          .where(MONITORING_PLOT_ID.eq(plot1))
+          .and(SPECIES_ID.eq(species1))
+          .execute()
+    }
+    store.recalculateSurvivalRates(plot1)
+
+    assertSurvivalRates(
+        listOf(
+            mapOf(
+                plot1 to mapOf(species1 to 45, species2 to 100),
+                plot2 to mapOf(species1 to 100, species2 to 98),
+                plot3 to mapOf(species1 to 110, species2 to 92),
+                plot4 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(
+                subzone1 to mapOf(species1 to 78, species2 to 98),
+                subzone2 to mapOf(species1 to 110, species2 to 92),
+                subzone3 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(
+                zone1 to mapOf(species1 to 94, species2 to 95),
+                zone2 to mapOf(species1 to 87, species2 to 98),
+            ),
+            mapOf(plantingSiteId to mapOf(species1 to 91, species2 to 96)),
+        ),
+        "After modifying density",
     )
   }
 

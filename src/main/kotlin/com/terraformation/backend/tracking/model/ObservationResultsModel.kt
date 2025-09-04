@@ -542,6 +542,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
         val permanentLive = groupedSpecies.sumOf { it.permanentLive }
         val cumulativeDead = groupedSpecies.sumOf { it.cumulativeDead }
         val numNonExistingPlants = permanentLive + cumulativeDead
+        val t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO }
 
         val mortalityRate =
             if (numNonExistingPlants > 0) {
@@ -549,6 +550,16 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
             } else {
               0
             }
+
+        val survivalRate =
+            if (t0Density > BigDecimal.ZERO) {
+              ((permanentLive * 100.0).toBigDecimal() / t0Density)
+                  .setScale(0, RoundingMode.HALF_UP)
+                  .toInt()
+            } else {
+              null
+            }
+
         ObservationSpeciesResultsModel(
             certainty = key.first,
             cumulativeDead = cumulativeDead,
@@ -556,7 +567,8 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
             permanentLive = permanentLive,
             speciesId = key.second,
             speciesName = key.third,
-            t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO },
+            survivalRate = survivalRate,
+            t0Density = t0Density,
             totalDead = groupedSpecies.sumOf { it.totalDead },
             totalExisting = groupedSpecies.sumOf { it.totalExisting },
             totalLive = groupedSpecies.sumOf { it.totalLive },
