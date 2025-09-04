@@ -26,6 +26,7 @@
          <index name="activities_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
+         <checkConstraint constraint="((verified_by IS NULL) = (verified_time IS NULL))" name="verified_by_requires_time"/>
       </table>
       <table name="activity_media_files" remarks="Information about activity-related media such as photos and videos." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
