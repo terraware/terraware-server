@@ -77,7 +77,7 @@ data class ObservationSpeciesResultsModel(
      */
     val survivalRate: Int? = null,
     /** Plant Density for this species at the t0 point. */
-    val t0Density: BigDecimal? = null,
+    val t0Density: BigDecimal?,
     val totalDead: Int,
     val totalExisting: Int,
     val totalLive: Int,
@@ -127,7 +127,7 @@ data class ObservationMonitoringPlotResultsModel(
      * species that have survived since the t0 point. Existing plants are not counted because the
      * intent is to track the health of plants that were introduced to the site.
      */
-    val survivalRate: Int? = null,
+    val survivalRate: Int?,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.
@@ -218,8 +218,8 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingDensityStdDev: Int?,
     val plantingSubzoneId: PlantingSubzoneId?,
     override val species: List<ObservationSpeciesResultsModel>,
-    override val survivalRate: Int? = null,
-    override val survivalRateStdDev: Int? = null,
+    override val survivalRate: Int?,
+    override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
@@ -237,8 +237,8 @@ data class ObservationPlantingZoneResultsModel(
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId?,
     override val species: List<ObservationSpeciesResultsModel>,
-    override val survivalRate: Int? = null,
-    override val survivalRateStdDev: Int? = null,
+    override val survivalRate: Int?,
+    override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
@@ -261,8 +261,8 @@ data class ObservationResultsModel(
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     override val species: List<ObservationSpeciesResultsModel>,
-    override val survivalRate: Int? = null,
-    override val survivalRateStdDev: Int? = null,
+    override val survivalRate: Int?,
+    override val survivalRateStdDev: Int?,
     val startDate: LocalDate,
     val state: ObservationState,
     override val totalPlants: Int,
@@ -285,8 +285,8 @@ data class ObservationPlantingZoneRollupResultsModel(
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
     override val species: List<ObservationSpeciesResultsModel>,
-    override val survivalRate: Int? = null,
-    override val survivalRateStdDev: Int? = null,
+    override val survivalRate: Int?,
+    override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult {
@@ -397,8 +397,8 @@ data class ObservationRollupResultsModel(
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
     /** List of species result used for this rollup */
     override val species: List<ObservationSpeciesResultsModel>,
-    override val survivalRate: Int? = null,
-    override val survivalRateStdDev: Int? = null,
+    override val survivalRate: Int?,
+    override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult {

@@ -819,6 +819,13 @@ data class ObservationSpeciesResultsPayload(
                 "Known or Unknown."
     )
     val speciesName: String?,
+    @Schema(
+        description =
+            "Percentage of plants in permanent monitoring plots that have survived since the t0 " +
+                "point. If there are no permanent monitoring plots (or if this is a plot-level " +
+                "result for a temporary monitoring plot) this will be null."
+    )
+    val survivalRate: Int?,
     @Schema(description = "Number of dead plants observed in this observation.") //
     val totalDead: Int,
     @Schema(description = "Number of existing plants observed in this observation.")
@@ -840,6 +847,7 @@ data class ObservationSpeciesResultsPayload(
       permanentLive = model.permanentLive,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
+      survivalRate = model.survivalRate,
       totalDead = model.totalDead,
       totalExisting = model.totalExisting,
       totalLive = model.totalLive,
@@ -893,6 +901,12 @@ data class ObservationMonitoringPlotResultsPayload(
     val status: ObservationPlotStatus,
     @Schema(
         description =
+            "If this is a permanent monitoring plot in this observation, percentage of plants that " +
+                "have survived since t0 data."
+    )
+    val survivalRate: Int?,
+    @Schema(
+        description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
                 "status or species."
     )
@@ -935,6 +949,7 @@ data class ObservationMonitoringPlotResultsPayload(
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       status = model.status,
+      survivalRate = model.survivalRate,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
       unknownSpecies =
@@ -975,6 +990,8 @@ data class ObservationPlantingSubzoneResultsPayload(
     )
     val plantingSubzoneId: PlantingSubzoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
     @Schema(
         description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
@@ -1006,6 +1023,8 @@ data class ObservationPlantingSubzoneResultsPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
@@ -1043,6 +1062,13 @@ data class ObservationPlantingZoneResultsPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
+            "Percentage of plants of all species in this zone's permanent monitoring plots that " +
+                "have survived since the t0 point."
+    )
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    @Schema(
+        description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
                 "status or species."
     )
@@ -1073,6 +1099,8 @@ data class ObservationPlantingZoneResultsPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
@@ -1112,6 +1140,8 @@ data class ObservationResultsPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
     val totalPlants: Int,
     val totalSpecies: Int,
     val type: ObservationType,
@@ -1139,6 +1169,8 @@ data class ObservationResultsPayload(
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
       type = model.observationType,
@@ -1183,6 +1215,13 @@ data class PlantingZoneObservationSummaryPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
+            "Percentage of plants of all species in this zone's permanent monitoring plots that " +
+                "have survived since the t0 point."
+    )
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    @Schema(
+        description =
             "Total number of plants recorded from the latest observations of each subzone. Includes all plants, regardless of live/dead status or species."
     )
     val totalPlants: Int,
@@ -1212,6 +1251,8 @@ data class PlantingZoneObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
@@ -1251,6 +1292,13 @@ data class PlantingSiteObservationSummaryPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
+            "Percentage of plants of all species in this site's permanent monitoring plots that " +
+                "have survived since the t0 point."
+    )
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    @Schema(
+        description =
             "Total number of plants recorded from the latest observations of each subzone within each zone. Includes all plants, regardless of live/dead status or species."
     )
     val totalPlants: Int,
@@ -1277,6 +1325,8 @@ data class PlantingSiteObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
