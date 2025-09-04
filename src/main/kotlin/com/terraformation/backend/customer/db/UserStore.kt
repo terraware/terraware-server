@@ -808,6 +808,7 @@ class UserStore(
         usersRow.cookiesConsentedTime,
         usersRow.locale,
         usersRow.timeZone,
+        parentStore,
         permissionStore,
     )
   }

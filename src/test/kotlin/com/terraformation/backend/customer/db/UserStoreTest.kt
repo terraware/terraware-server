@@ -1064,6 +1064,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               funderUser.userId,
               null,
               email.lowercase(),
+              parentStore = parentStore,
               permissionStore = permissionStore,
           ),
           funderUser,

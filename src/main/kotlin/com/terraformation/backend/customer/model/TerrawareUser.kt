@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -233,6 +234,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canCreateAccession(facilityId: FacilityId): Boolean = defaultPermission
 
+  fun canCreateActivity(projectId: ProjectId): Boolean = defaultPermission
+
   fun canCreateApiKey(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canCreateApplication(projectId: ProjectId): Boolean = defaultPermission
@@ -291,6 +294,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canDeleteAccession(accessionId: AccessionId): Boolean = defaultPermission
 
+  fun canDeleteActivity(activityId: ActivityId): Boolean = defaultPermission
+
   fun canDeleteAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canDeleteBatch(batchId: BatchId): Boolean = defaultPermission
@@ -338,6 +343,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canImportGlobalSpeciesData(): Boolean = defaultPermission
 
+  fun canListActivities(projectId: ProjectId): Boolean = defaultPermission
+
   fun canListAutomations(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canListFacilities(organizationId: OrganizationId): Boolean = defaultPermission
@@ -349,6 +356,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canListSeedFundReports(organizationId: OrganizationId): Boolean = defaultPermission
+
+  fun canManageActivity(activityId: ActivityId): Boolean = defaultPermission
 
   fun canManageDefaultProjectLeads(): Boolean = defaultPermission
 
@@ -383,6 +392,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canPublishReports(): Boolean = defaultPermission
 
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission
+
+  fun canReadActivity(activityId: ActivityId): Boolean = defaultPermission
 
   fun canReadAllAcceleratorDetails(): Boolean = defaultPermission
 
@@ -545,6 +556,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateAccession(accessionId: AccessionId): Boolean = defaultPermission
 
   fun canUpdateAccessionProject(accessionId: AccessionId): Boolean = defaultPermission
+
+  fun canUpdateActivity(activityId: ActivityId): Boolean = defaultPermission
 
   fun canUpdateApplicationBoundary(applicationId: ApplicationId): Boolean = defaultPermission
 
