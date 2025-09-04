@@ -131,6 +131,10 @@ class SchemaDocsGenerator : DatabaseTest() {
       mapOf(
           "accelerator" to
               mapOf(
+                  "activities" to setOf(ALL, ACCELERATOR),
+                  "activity_media_files" to setOf(ALL, ACCELERATOR),
+                  "activity_media_types" to setOf(ALL, ACCELERATOR),
+                  "activity_types" to setOf(ALL, ACCELERATOR),
                   "application_histories" to setOf(ALL, ACCELERATOR),
                   "application_module_statuses" to setOf(ALL, ACCELERATOR),
                   "application_modules" to setOf(ALL, ACCELERATOR),
