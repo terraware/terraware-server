@@ -453,6 +453,14 @@ class ParentStore(private val dslContext: DSLContext) {
               PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId),
           ) || dslContext.fetchExists(PROJECTS, PROJECTS.participants.COHORT_ID.isNotNull))
 
+  fun isProjectInCohort(projectId: ProjectId?): Boolean =
+      projectId != null &&
+          dslContext.fetchExists(
+              PROJECTS,
+              PROJECTS.ID.eq(projectId),
+              PROJECTS.participants.COHORT_ID.isNotNull,
+          )
+
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
    * had the given ID.
