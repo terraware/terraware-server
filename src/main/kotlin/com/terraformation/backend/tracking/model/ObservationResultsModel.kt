@@ -52,8 +52,6 @@ data class ObservationSpeciesResultsModel(
      * the previous observation.
      */
     val cumulativeDead: Int,
-    /** Plant Density for this species at the t0 point. */
-    val t0Density: BigDecimal? = null,
     /**
      * Percentage of plants in permanent monitoring plots that are dead. If there are no permanent
      * monitoring plots (or if this is a plot-level result for a temporary monitoring plot) this
@@ -78,6 +76,8 @@ data class ObservationSpeciesResultsModel(
      * because the intent is to track the health of plants that were introduced to the site.
      */
     val survivalRate: Int? = null,
+    /** Plant Density for this species at the t0 point. */
+    val t0Density: BigDecimal? = null,
     val totalDead: Int,
     val totalExisting: Int,
     val totalLive: Int,
@@ -348,6 +348,16 @@ data class ObservationPlantingZoneRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
+      val survivalRate = species.calculateSurvivalRate()
+      val survivalRateStdDev =
+          completedMonitoringPlots
+              .mapNotNull { plot ->
+                plot.survivalRate?.let { survivalRate ->
+                  val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                  survivalRate to sumDensity.toDouble()
+                }
+              }
+              .calculateWeightedStandardDeviation()
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
@@ -362,6 +372,8 @@ data class ObservationPlantingZoneRollupResultsModel(
           plantingSubzones = nonNullSubzoneResults,
           plantingZoneId = plantingZoneId,
           species = species,
+          survivalRate = survivalRate,
+          survivalRateStdDev = survivalRateStdDev,
           totalPlants = species.sumOf { it.totalLive + it.totalDead },
           totalSpecies = totalLiveSpeciesExceptUnknown,
       )
@@ -448,6 +460,16 @@ data class ObservationRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
+      val survivalRate = species.calculateSurvivalRate()
+      val survivalRateStdDev =
+          monitoringPlots
+              .mapNotNull { plot ->
+                plot.survivalRate?.let { survivalRate ->
+                  val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                  survivalRate to sumDensity.toDouble()
+                }
+              }
+              .calculateWeightedStandardDeviation()
 
       return ObservationRollupResultsModel(
           earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
@@ -461,6 +483,8 @@ data class ObservationRollupResultsModel(
           plantingSiteId = plantingSiteId,
           plantingZones = nonNullZoneResults,
           species = species,
+          survivalRate = survivalRate,
+          survivalRateStdDev = survivalRateStdDev,
           totalPlants = species.sumOf { it.totalLive + it.totalDead },
           totalSpecies = totalLiveSpeciesExceptUnknown,
       )
@@ -532,6 +556,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
             permanentLive = permanentLive,
             speciesId = key.second,
             speciesName = key.third,
+            t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO },
             totalDead = groupedSpecies.sumOf { it.totalDead },
             totalExisting = groupedSpecies.sumOf { it.totalExisting },
             totalLive = groupedSpecies.sumOf { it.totalLive },
