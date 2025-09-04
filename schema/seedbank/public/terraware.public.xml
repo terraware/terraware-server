@@ -54,6 +54,7 @@
       </table>
       <table name="files" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="file_id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activity_media_files"/>
             <child column="file_id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submission_snapshots"/>
             <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
@@ -70,9 +71,6 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="file_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="width" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="height" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="photos_pkey" unique="true">
             <column ascending="true" name="id"/>

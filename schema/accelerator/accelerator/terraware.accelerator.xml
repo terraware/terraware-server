@@ -1,5 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?><database name="terraware" schema="accelerator" type="PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)">
    <tables>
+      <table name="activities" remarks="User-supplied descriptions of project activities." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="activity_id" foreignKey="activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activity_media_files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="activities_activity_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activity_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="activity_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_highlight" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="verified_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="verified_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="activities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="activities_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="activity_media_files" remarks="Information about activity-related media such as photos and videos." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_media_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="activity_media_files_activity_media_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activity_media_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_cover_photo" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="captured_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="geolocation" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="activity_media_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="activity_media_files_activity_id_idx" unique="false">
+            <column ascending="true" name="activity_id"/>
+         </index>
+         <index name="one_cover_per_activity" unique="true">
+            <column ascending="true" name="activity_id"/>
+         </index>
+         <checkConstraint constraint="((is_cover_photo = false) OR (activity_media_type_id = 1))" name="cover_photo_only"/>
+      </table>
+      <table name="activity_media_types" remarks="(Enum) Types of media that can be associated with entries in the activity log." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="activity_media_type_id" foreignKey="activity_media_files_activity_media_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activity_media_files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="activity_media_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="activity_media_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="activity_types" remarks="(Enum) Types of entries in the activity log." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="activity_type_id" foreignKey="activities_activity_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="activity_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="activity_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="application_histories" remarks="Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="application_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -248,8 +325,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>

@@ -10,6 +10,8 @@ pipelines
 report_quarters
 submission_statuses
 vote_options
+activity_media_types
+activity_types
 application_module_statuses
 document_stores
 event_statuses
@@ -29,6 +31,7 @@ deliverables
 applications
 submissions
 deal_stages
+activities
 events
 deliverable_variables
 project_overall_scores
@@ -36,6 +39,7 @@ report_achievements
 report_challenges
 submission_snapshots
 user_internal_interests
+activity_media_files
 application_histories
 cohort_modules
 deliverable_cohort_due_dates

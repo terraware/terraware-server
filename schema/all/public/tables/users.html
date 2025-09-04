@@ -131,6 +131,21 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="activities.created_by references users.id via activities_created_by_fkey"><a href='../../accelerator/tables/activities.html'>activities</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">activities_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="activities.modified_by references users.id via activities_modified_by_fkey"><a href='../../accelerator/tables/activities.html'>activities</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">activities_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="activities.verified_by references users.id via activities_verified_by_fkey"><a href='../../accelerator/tables/activities.html'>activities</a><span class='relatedKey'>.verified_by</span></td>
+                                                <td class="constraint detail">activities_verified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="application_histories.modified_by references users.id via application_histories_modified_by_fkey"><a href='../../accelerator/tables/application_histories.html'>application_histories</a><span class='relatedKey'>.modified_by</span></td>
                                                 <td class="constraint detail">application_histories_modified_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1075,16 +1090,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>users_last_name_check</td>
+                                    <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>users_auth_id_check</td>
                                     <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_first_name_check</td>
                                     <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>users_last_name_check</td>
-                                    <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

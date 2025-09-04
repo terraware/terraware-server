@@ -17,6 +17,7 @@ deliverable_project_due_dates
 deliverable_cohort_due_dates
 cohort_modules
 application_histories
+activity_media_files
 user_internal_interests
 submission_snapshots
 report_challenges
@@ -24,6 +25,7 @@ report_achievements
 project_overall_scores
 deliverable_variables
 events
+activities
 deal_stages
 submissions
 applications
@@ -43,6 +45,8 @@ event_types
 event_statuses
 document_stores
 application_module_statuses
+activity_types
+activity_media_types
 vote_options
 submission_statuses
 report_quarters

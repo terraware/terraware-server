@@ -13,6 +13,7 @@ project_overall_scores
 project_accelerator_details
 application_modules
 application_histories
+activity_media_files
 submission_snapshots
 event_projects
 deliverable_variables
@@ -24,6 +25,7 @@ report_achievements
 default_voters
 default_project_leads
 events
+activities
 deal_stages
 submissions
 applications
@@ -43,6 +45,8 @@ event_types
 event_statuses
 document_stores
 application_module_statuses
+activity_types
+activity_media_types
 vote_options
 submission_statuses
 report_quarters

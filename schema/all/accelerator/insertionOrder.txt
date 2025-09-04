@@ -10,6 +10,8 @@ pipelines
 report_quarters
 submission_statuses
 vote_options
+activity_media_types
+activity_types
 application_module_statuses
 document_stores
 event_statuses
@@ -29,6 +31,7 @@ deliverables
 applications
 submissions
 deal_stages
+activities
 events
 default_project_leads
 default_voters
@@ -40,6 +43,7 @@ deliverable_project_due_dates
 deliverable_variables
 event_projects
 submission_snapshots
+activity_media_files
 application_histories
 application_modules
 project_accelerator_details
