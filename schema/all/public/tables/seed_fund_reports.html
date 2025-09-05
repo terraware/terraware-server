@@ -482,8 +482,8 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>locked_by_and_time_both_set</td>
-                                    <td>(((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL)))</td>
+                                    <td>status_reflects_locked</td>
+                                    <td>(((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id &#61; 3)))</td>
                                 </tr>
                                 <tr>
                                     <td>quarter_in_range</td>
@@ -494,8 +494,8 @@
                                     <td>((locked_time IS NULL) OR (submitted_time IS NULL))</td>
                                 </tr>
                                 <tr>
-                                    <td>status_reflects_locked</td>
-                                    <td>(((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id &#61; 3)))</td>
+                                    <td>locked_by_and_time_both_set</td>
+                                    <td>(((locked_by IS NULL) AND (locked_time IS NULL)) OR ((locked_by IS NOT NULL) AND (locked_time IS NOT NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>submitted_by_and_time_both_set</td>
