@@ -29,10 +29,12 @@ class T0Controller(
 ) {
   @Operation(summary = "Get all saved T0 Data for a planting site")
   @GetMapping("/site/{plantingSiteId}")
-  fun getT0SiteData(@PathVariable plantingSiteId: PlantingSiteId): SiteT0DataPayload {
+  fun getT0SiteData(@PathVariable plantingSiteId: PlantingSiteId): GetSiteT0DataResponsePayload {
     val plotData = t0PlotStore.fetchT0SiteData(plantingSiteId)
 
-    return SiteT0DataPayload(plantingSiteId, plotData.map { PlotT0DataPayload(it) })
+    return GetSiteT0DataResponsePayload(
+        data = SiteT0DataPayload(plantingSiteId, plotData.map { PlotT0DataPayload(it) })
+    )
   }
 
   @Operation(
@@ -89,4 +91,6 @@ data class PlotT0DataPayload(
 data class SiteT0DataPayload(
     val plantingSiteId: PlantingSiteId,
     val plots: List<PlotT0DataPayload> = emptyList(),
-) : SuccessResponsePayload
+)
+
+data class GetSiteT0DataResponsePayload(val data: SiteT0DataPayload) : SuccessResponsePayload
