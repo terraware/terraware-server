@@ -1405,7 +1405,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
         row.filterIndexed { index, _ ->
           val positionInColumnGroup = (index - 1) % 7
-          positionInColumnGroup != 4 && positionInColumnGroup != 5
+          positionInColumnGroup !in 4..5
         }
       }
     }
@@ -1521,11 +1521,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
         row.filterIndexed { index, _ ->
           val positionInColumnGroup = (index - 1) % 10
-          positionInColumnGroup != 4 &&
-              positionInColumnGroup != 5 &&
-              positionInColumnGroup != 6 &&
-              positionInColumnGroup != 7 &&
-              positionInColumnGroup != 8
+          positionInColumnGroup !in 4..8
         }
       }
     }
