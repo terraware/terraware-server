@@ -1,4 +1,4 @@
-Observation ->,,1,1,2,2,3,3
-Plot,Species,# Live Plants,Mortality Rate,# Live Plants,Mortality Rate,# Live Plants,Mortality Rate
-111,Known 1,2,33%,,,3,25%
-112,Known 1,,,1,67%,,
+Observation ->,,1,1,1,2,2,2,3,3,3
+Plot,Species,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate
+111,Known 1,2,33%,67%,,,,3,25%,100%
+112,Known 1,,,,1,67%,,,,

@@ -1,3 +1,3 @@
-1,1,1,1,2,2,2,2
-Planting Density,Estimated # Plants,# Species,Mortality Rate,Planting Density,Estimated # Plants,# Species,Mortality Rate
-18,,7,33%,20,51400,8,44%
+1,1,1,1,1,2,2,2,2,2
+Planting Density,Estimated # Plants,# Species,Mortality Rate,Survival Rate,Planting Density,Estimated # Plants,# Species,Mortality Rate,Survival Rate
+18,,7,33%,108%,20,51400,8,44%,108%
