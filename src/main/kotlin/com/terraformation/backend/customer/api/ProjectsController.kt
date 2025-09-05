@@ -228,23 +228,27 @@ data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessRespo
 data class ListProjectsResponsePayload(val projects: List<ProjectPayload>) : SuccessResponsePayload
 
 data class ProjectInternalUserResponsePayload(
-    val userId: UserId,
+    val createdTime: Instant,
     val email: String,
     val firstName: String?,
     val lastName: String?,
+    val modifiedTime: Instant,
     val role: ProjectInternalRole? = null,
     val roleName: String? = null,
+    val userId: UserId,
 ) {
   constructor(
       user: TerrawareUser,
       projectInternalUser: ProjectInternalUsersRow,
   ) : this(
-      userId = user.userId,
+      createdTime = projectInternalUser.createdTime!!,
       email = user.email,
       firstName = user.firstName,
       lastName = user.lastName,
+      modifiedTime = projectInternalUser.modifiedTime!!,
       role = projectInternalUser.projectInternalRoleId,
       roleName = projectInternalUser.roleName,
+      userId = user.userId,
   )
 }
 
