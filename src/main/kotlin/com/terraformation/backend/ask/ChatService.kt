@@ -192,9 +192,9 @@ class ChatService(
     val projectName =
         if (
             projectAcceleratorDetails.dealName != null &&
-                projectAcceleratorDetails.dealName.length > 3
+                projectAcceleratorDetails.dealName.length > 4
         ) {
-          projectAcceleratorDetails.dealName.substring(3)
+          projectAcceleratorDetails.dealName.substring(4)
         } else {
           project.name
         }
