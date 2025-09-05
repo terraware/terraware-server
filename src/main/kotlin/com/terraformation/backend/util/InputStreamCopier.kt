@@ -253,7 +253,6 @@ class InputStreamCopier(
         while (
             totalBytesRead.get() <= position &&
                 !sourceExhausted.get() &&
-                anyCopiesActive() &&
                 sourceException.get() == null
         ) {
           try {
@@ -294,9 +293,7 @@ class InputStreamCopier(
       )
     }
 
-    // Calculate buffer offset - this is where the potential bug might be
-    val actualStartOffset = (bufferStartPosition % bufferSize).toInt()
-    val bufferOffset = ((actualStartOffset + relativePosition.toInt()) % bufferSize)
+    val bufferOffset = ((bufferStartPosition + relativePosition) % bufferSize).toInt()
     val bytesToEnd = bufferSize - bufferOffset
 
     if (length <= bytesToEnd) {
