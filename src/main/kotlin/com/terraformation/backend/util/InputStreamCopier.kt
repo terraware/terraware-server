@@ -142,12 +142,7 @@ class InputStreamCopier(
     // Wait for all copies to finish
     lock.withLock {
       while (anyCopiesActive()) {
-        try {
-          dataAvailable.await()
-        } catch (e: InterruptedException) {
-          Thread.currentThread().interrupt()
-          break
-        }
+        dataAvailable.await()
       }
     }
   }
@@ -221,12 +216,7 @@ class InputStreamCopier(
     while (anyCopiesActive() && validBytes + bytesNeeded > bufferSize) {
       reclaimBufferSpace()
       if (validBytes + bytesNeeded > bufferSize) {
-        try {
-          dataAvailable.await()
-        } catch (e: InterruptedException) {
-          Thread.currentThread().interrupt()
-          return
-        }
+        dataAvailable.await()
       }
     }
   }
@@ -255,12 +245,7 @@ class InputStreamCopier(
                 !sourceExhausted.get() &&
                 sourceException.get() == null
         ) {
-          try {
-            dataAvailable.await()
-          } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            return false
-          }
+          dataAvailable.await()
         }
 
         sourceException.get()?.let { throw it }
