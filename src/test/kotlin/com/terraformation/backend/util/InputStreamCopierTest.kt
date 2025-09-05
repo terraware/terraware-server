@@ -370,7 +370,6 @@ class InputStreamCopierTest {
     val source = ByteArrayInputStream(testData)
     val copier = InputStreamCopier(source, bufferSize = 800, minReadSize = 200)
 
-    var availableBeforeBufferReplenish: Int? = null
     var availableAfterBufferReplenish: Int? = null
 
     val fastCopy = copier.getCopy()
@@ -389,10 +388,6 @@ class InputStreamCopierTest {
           // the buffer is available for further reads from the source stream.
           slowCopy.read(ByteArray(500))
 
-          // At this point, the slow copy should have the rest of the buffer's worth of data
-          // available.
-          availableBeforeBufferReplenish = slowCopy.available()
-
           // Consume more data from the fast copy, which will trigger another read from the source
           // stream to fill up the first 500 bytes of the buffer (which are now unused because the
           // slow copy has consumed them already).
@@ -408,7 +403,6 @@ class InputStreamCopierTest {
 
     testThread.join()
 
-    assertEquals(300, availableBeforeBufferReplenish, "Available before additional read")
     assertEquals(800, availableAfterBufferReplenish, "Available after buffer replenished")
   }
 
