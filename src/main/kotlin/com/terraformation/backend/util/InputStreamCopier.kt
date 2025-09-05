@@ -59,7 +59,10 @@ class InputStreamCopier(
   private val sourceExhausted = AtomicBoolean(false)
   private val sourceException = AtomicReference<Exception?>(null)
 
-  /** If true, this */
+  /**
+   * If true, this InputStreamCopier has been closed. No more copies can be produced and any
+   * existing copies will throw [IOException] next time a caller attempts to read from them.
+   */
   @Volatile private var copierClosed = false
 
   /** If true, the [transfer] function has been called; no more calls to [getCopy] are allowed. */
