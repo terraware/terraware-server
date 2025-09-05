@@ -4,7 +4,7 @@ Code should be written in idiomatic Kotlin and should generally follow the guide
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 23 JVM. We use the Amazon Corretto JVM and will generally target the most recent Corretto release.
+Currently, the build targets the Java 24 JVM. We use the Amazon Corretto JVM and will generally target the most recent Corretto release.
 
 ## Formatting
 
@@ -19,6 +19,8 @@ There isn't currently a way to make IntelliJ's real-time formatting adhere stric
 To prevent yourself from accidentally pushing a PR that fails the formatting check, you can add a git pre-push hook. There's an example in this directory: [pre-push](pre-push).
 
 ### Wildcard imports
+
+We import individual classes and symbols rather than using wildcard imports.
 
 By default, IntelliJ uses wildcard imports for the `java.util` and `javax` packages, and overriding that default in `.editorconfig` doesn't work reliably. You'll want to remove those packages manually from the Kotlin code style preferences ("Auto-Import" tab) in IntelliJ's settings.
 
@@ -40,7 +42,16 @@ Commit messages (and PR titles) should use either present-tense imperative or pa
 
 ### Package hierarchy
 
-We generally lay out packages by functional area and then by component type. That is, the package for code related to reading and writing user data in the database will be com.terraformation.xyz.user.db rather than com.terraformation.xyz.db.user.
+We generally lay out packages by functional area and then by component type. That is, the package for code related to reading and writing user data in the database will be `com.terraformation.backend.user.db` rather than `com.terraformation.backend.db.user`.
+
+In general, you'll see the following subpackages under a functional-area parent package such as `com.terraformation.backend.device`:
+
+- `api` for controllers and payload classes
+- `db` for store classes (see below)
+- `event` for application event classes
+- `model` for model classes
+
+There can be other subpackages as needed. Service classes (see below) live in the functional-area package.
 
 ### Files with multiple classes/functions
 
@@ -64,7 +75,7 @@ jOOQ generates a few classes to represent table data. The one you’ll use most 
 
 We use these classes a lot, both to interact with jOOQ DAOs (see below) and to pass data around internally. You should feel free to use them! However, they do have some downsides:
 
-All the fields are nullable, even if the corresponding database columns aren’t. (This is being addressed in a future jOOQ version but it’s true for now.) So you will end up having to account for nulls, often using !! or ?. constructs, even when you know the value can never actually be null. This can get annoying.
+All the fields are nullable, even if the corresponding database columns aren’t. So you will end up having to account for nulls, often using !! or ?. constructs, even when you know the value can never actually be null. This can get annoying.
 
 They are representations of individual tables. Sometimes a business object spans multiple tables, and the Row classes have no way to represent it.
 
@@ -111,7 +122,7 @@ typealias NewOrganizationModel = OrganizationModel<Nothing?>
 typealias ExistingOrganizationModel = OrganizationModel<OrganizationId>
 ```
 
-In this approach, there is always an id field, but it must always be set to null if you’re using the NewOrganizationModel typealias, and can never be null if you’re using ExistingOrganizationModel. Functions that don’t care which variety of model they’re using can accept OrganizationModel<*> parameters.
+In this approach, there is always an id field, but it must always be set to null if you’re using the NewOrganizationModel typealias, and can never be null if you’re using ExistingOrganizationModel. Functions that don’t care which variety of model they’re using can accept `OrganizationModel<*>` parameters.
 
 ### DAOs and stores
 
@@ -169,11 +180,15 @@ In some cases, we also have “service” classes as a layer above the store cla
 
 We use this pattern rather than having stores talk directly to each other because it reduces the likelihood of circular dependencies and tight coupling where store A calls methods in store B and store B calls methods in store A.
 
+Event listeners also typically live in service classes rather than store classes, even if they do nothing but call a method on a store class.
+
 ## Dependency injection
 
 If you need to call methods in other classes and the other classes can be instantiated once and then reused, use dependency injection rather than explicitly instantiating them. This makes it easier to replace the dependencies with stubs when testing, and also makes the interaction between service classes more explicit in the code.
 
-In general, strongly prefer constructor injection, that is, declaring your dependencies as constructor arguments. You should almost never need to use the `@Autowired` or `@Inject` annotations on a field.
+Whenever possible, use constructor injection, that is, declaring your dependencies as constructor arguments. You should almost never need to use the `@Autowired` or `@Inject` annotations on a field.
+
+Prefer JSR-299 (CDI) annotations such as `@Named` and `@Inject` over Spring-specific annotations like `@Service` and `@Autowired`. But not all Spring annotations have JSR-299 equivalents, so use the Spring ones as needed.
 
 ## Testability and tests
 
@@ -191,6 +206,12 @@ Keep data-access classes focused on data access. Don't be afraid to use SQL to d
 
 ## Payload classes
 
+We define separate classes for API payloads rather than directly exposing our model classes to clients. This lets us evolve the API independently of the internal representation. In many cases the two are identical; that's okay.
+
+The exception is enums; it's fine to expose those directly in payload classes rather than duplicating them.
+
 Use data classes to represent API request and response payloads whenever possible, rather than using generic `Map` objects. This will allow the build process to generate more useful API documentation.
+
+We use annotations to produce an OpenAPI (Swagger) schema for client-side code generation and to document the API. Make sure to include `@Schema` annotations to describe your payloads and their fields, especially any constraints that aren't obvious from the data types, e.g., if a payload has two fields only one of which is allowed to be non-null, that should be documented. But don't write docs that just restate what's already in the field's name.
 
 Generally, these payload classes should live in the same file as the controller classes that implement the API endpoints. If a particular payload class is used by 3 or more controllers, though, it should be moved to a separate file (which may contain multiple such payload classes if they are related to each other).
