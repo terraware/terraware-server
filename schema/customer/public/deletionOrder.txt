@@ -1,6 +1,6 @@
 app_versions
-organization_users
 project_internal_users
+organization_users
 organization_internal_tags
 notifications
 user_preferences

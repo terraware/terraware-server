@@ -67,10 +67,10 @@ user_global_roles
 user_preferences
 notifications
 organization_internal_tags
-project_internal_users
 species_problems
 automations
 organization_users
+project_internal_users
 app_versions
 rate_limited_events
 test_clock

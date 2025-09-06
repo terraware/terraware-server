@@ -516,6 +516,16 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="project_internal_users.created_by references users.id via project_internal_users_created_by_fkey"><a href='project_internal_users.html'>project_internal_users</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">project_internal_users_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="project_internal_users.modified_by references users.id via project_internal_users_modified_by_fkey"><a href='project_internal_users.html'>project_internal_users</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">project_internal_users_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="project_internal_users.user_id references users.id via project_internal_users_user_id_fkey"><a href='project_internal_users.html'>project_internal_users</a><span class='relatedKey'>.user_id</span></td>
                                                 <td class="constraint detail">project_internal_users_user_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1090,16 +1100,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>users_first_name_check</td>
-                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>users_auth_id_check</td>
+                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>users_auth_id_check</td>
-                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>users_first_name_check</td>
+                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

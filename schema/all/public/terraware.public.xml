@@ -710,6 +710,14 @@
             <parent column="id" foreignKey="project_internal_users_project_user_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_roles"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="role_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_internal_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <primaryKey column="user_id" sequenceNumberInPK="2"/>
          <index name="project_internal_users_pkey" unique="true">
@@ -1550,6 +1558,8 @@
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="created_by" foreignKey="project_internal_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
+            <child column="modified_by" foreignKey="project_internal_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
             <child column="user_id" foreignKey="project_internal_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_internal_users"/>
             <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>

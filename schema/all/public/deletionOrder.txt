@@ -2,10 +2,10 @@ vector_store
 test_clock
 rate_limited_events
 app_versions
+project_internal_users
 organization_users
 automations
 species_problems
-project_internal_users
 organization_internal_tags
 notifications
 user_preferences
