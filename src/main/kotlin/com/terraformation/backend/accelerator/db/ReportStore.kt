@@ -1547,5 +1547,7 @@ class ReportStore(
                   .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
                   .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID)
           )
-          .convertFrom { results -> results.map { ReportSystemMetricModel.of(it, systemValueField) } }
+          .convertFrom { results ->
+            results.map { ReportSystemMetricModel.of(it, systemValueField) }
+          }
 }
