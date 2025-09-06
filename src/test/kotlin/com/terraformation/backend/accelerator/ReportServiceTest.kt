@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.file.FileService
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +19,17 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val reportStore = mockk<ReportStore>()
-  private val service: ReportService by lazy { ReportService(reportStore, SystemUser(usersDao)) }
+  private val fileService = mockk<FileService>()
+  private val service: ReportService by lazy {
+    ReportService(
+        dslContext,
+        fileService,
+        reportPhotosDao,
+        reportStore,
+        publishedReportPhotosDao,
+        SystemUser(usersDao),
+    )
+  }
 
   @BeforeEach
   fun setup() {
