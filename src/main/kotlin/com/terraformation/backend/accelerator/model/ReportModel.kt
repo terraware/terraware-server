@@ -8,10 +8,11 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
-import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
@@ -33,6 +34,20 @@ data class ReportChallengeModel(
   }
 }
 
+data class ReportPhotoModel(
+    val caption: String?,
+    val fileId: FileId,
+) {
+  companion object {
+    fun of(record: Record): ReportPhotoModel {
+      return ReportPhotoModel(
+          caption = record[REPORT_PHOTOS.CAPTION],
+          fileId = record[REPORT_PHOTOS.FILE_ID]!!,
+      )
+    }
+  }
+}
+
 data class ReportModel(
     val achievements: List<String> = emptyList(),
     val additionalComments: String? = null,
@@ -49,6 +64,7 @@ data class ReportModel(
     val internalComment: String? = null,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
+    val photos: List<ReportPhotoModel> = emptyList(),
     val projectDealName: String? = null,
     val projectId: ProjectId,
     val projectMetrics: List<ReportProjectMetricModel> = emptyList(),
@@ -114,27 +130,6 @@ data class ReportModel(
     }
   }
 
-  fun toRow(): ReportsRow {
-    return ReportsRow(
-        id = id,
-        configId = configId,
-        projectId = projectId,
-        reportFrequencyId = frequency,
-        reportQuarterId = quarter,
-        statusId = status,
-        startDate = startDate,
-        endDate = endDate,
-        internalComment = internalComment,
-        feedback = feedback,
-        createdBy = createdBy,
-        createdTime = createdTime,
-        modifiedBy = modifiedBy,
-        modifiedTime = modifiedTime,
-        submittedBy = submittedBy,
-        submittedTime = submittedTime,
-    )
-  }
-
   companion object {
     val submittedStatuses =
         setOf(
@@ -145,6 +140,7 @@ data class ReportModel(
 
     fun of(
         record: Record,
+        photosField: Field<List<ReportPhotoModel>>?,
         projectMetricsField: Field<List<ReportProjectMetricModel>>?,
         standardMetricsField: Field<List<ReportStandardMetricModel>>?,
         systemMetricsField: Field<List<ReportSystemMetricModel>>?,
@@ -180,6 +176,7 @@ data class ReportModel(
             modifiedTime = record[MODIFIED_TIME]!!,
             submittedBy = record[SUBMITTED_BY],
             submittedTime = record[SUBMITTED_TIME],
+            photos = photosField?.let { record[it] } ?: emptyList(),
             projectMetrics = projectMetricsField?.let { record[it] } ?: emptyList(),
             standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList(),
             systemMetrics = systemMetricsField?.let { record[it] } ?: emptyList(),

@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
@@ -27,6 +28,7 @@ import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
@@ -386,6 +388,7 @@ data class AcceleratorReportPayload(
     val internalComment: String?,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
+    val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
     val projectMetrics: List<ReportProjectMetricPayload>,
     val quarter: ReportQuarter?,
@@ -411,6 +414,7 @@ data class AcceleratorReportPayload(
       internalComment = model.internalComment,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
+      photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
       projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
       quarter = model.quarter,
@@ -544,6 +548,18 @@ data class ReportSystemMetricEntriesPayload(
           underperformanceJustification = underperformanceJustification,
           value = overrideValue,
       )
+}
+
+data class ReportPhotoPayload(
+    val caption: String?,
+    val fileId: FileId,
+) {
+  constructor(
+      model: ReportPhotoModel
+  ) : this(
+      caption = model.caption,
+      fileId = model.fileId,
+  )
 }
 
 data class ReportProjectMetricPayload(

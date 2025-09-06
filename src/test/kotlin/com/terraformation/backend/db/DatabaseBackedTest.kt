@@ -79,6 +79,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecision
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportAchievementsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportChallengesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportSystemMetricsDao
@@ -306,6 +307,7 @@ import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCe
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectSdgDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportProjectMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportStandardMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportSystemMetricsDao
@@ -686,11 +688,13 @@ abstract class DatabaseBackedTest {
   protected val publishedProjectSdgDao: PublishedProjectSdgDao by lazyDao()
   protected val publishedReportStandardMetricsDao: PublishedReportStandardMetricsDao by lazyDao()
   protected val publishedReportSystemMetricsDao: PublishedReportSystemMetricsDao by lazyDao()
+  protected val publishedReportPhotosDao: PublishedReportPhotosDao by lazyDao()
   protected val publishedReportProjectMetricsDao: PublishedReportProjectMetricsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
   protected val reportAchievementsDao: ReportAchievementsDao by lazyDao()
   protected val reportChallengesDao: ReportChallengesDao by lazyDao()
+  protected val reportPhotosDao: ReportPhotosDao by lazyDao()
   protected val reportProjectMetricsDao: ReportProjectMetricsDao by lazyDao()
   protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
   protected val reportSystemMetricsDao: ReportSystemMetricsDao by lazyDao()
