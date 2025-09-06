@@ -127,13 +127,39 @@ class ProjectStore(
 
     dslContext.transaction { _ ->
       with(PROJECT_INTERNAL_USERS) {
+        val currentUserId = currentUser().userId
+        val now = clock.instant()
         dslContext
-            .insertInto(this, PROJECT_ID, USER_ID, PROJECT_INTERNAL_ROLE_ID, ROLE_NAME)
-            .apply { users.forEach { values(projectId, it.userId, it.role, it.roleName) } }
+            .insertInto(
+                this,
+                PROJECT_ID,
+                USER_ID,
+                PROJECT_INTERNAL_ROLE_ID,
+                ROLE_NAME,
+                CREATED_BY,
+                CREATED_TIME,
+                MODIFIED_BY,
+                MODIFIED_TIME,
+            )
+            .apply {
+              users.forEach {
+                values(
+                    projectId,
+                    it.userId,
+                    it.role,
+                    it.roleName,
+                    currentUserId,
+                    now,
+                    currentUserId,
+                    now,
+                )
+              }
+            }
             .onConflict(PROJECT_ID, USER_ID)
             .doUpdate()
             .set(PROJECT_INTERNAL_ROLE_ID, DSL.excluded(PROJECT_INTERNAL_ROLE_ID))
             .set(ROLE_NAME, DSL.excluded(ROLE_NAME))
+            .set(MODIFIED_BY, DSL.excluded(MODIFIED_BY))
             .execute()
 
         users.forEach { user ->

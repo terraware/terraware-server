@@ -928,13 +928,21 @@ abstract class DatabaseBackedTest {
       userId: UserId = row.userId ?: inserted.userId,
       role: ProjectInternalRole? = row.projectInternalRoleId,
       roleName: String? = row.roleName,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = currentUser().userId,
+      modifiedTime: Instant = Instant.EPOCH,
   ): ProjectInternalUsersRow {
     val rowWithDefaults =
         ProjectInternalUsersRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
             projectId = projectId,
-            userId = userId,
             projectInternalRoleId = role,
             roleName = roleName,
+            userId = userId,
         )
 
     projectInternalUsersDao.insert(rowWithDefaults)

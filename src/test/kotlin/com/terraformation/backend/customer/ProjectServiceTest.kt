@@ -342,16 +342,28 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   userId = userToAdd,
                   roleName = "A new role",
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
               ),
               ProjectInternalUsersRecord(
                   projectId = projectId,
                   userId = userToKeep,
                   projectInternalRoleId = ProjectInternalRole.ProjectFinanceLead,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
               ),
               ProjectInternalUsersRecord(
                   projectId = projectId,
                   userId = userToChange,
                   projectInternalRoleId = ProjectInternalRole.LegalLead,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
               ),
           )
       )

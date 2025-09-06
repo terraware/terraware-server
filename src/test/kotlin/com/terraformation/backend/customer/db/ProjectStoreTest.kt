@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
@@ -359,7 +360,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          listOf(ProjectInternalUsersRow(projectId, user.userId, ProjectInternalRole.ProjectLead)),
+          listOf(createProjectInternalRow(role = ProjectInternalRole.ProjectLead)),
           store.fetchInternalUsers(projectId),
           "Should have added user to internal users",
       )
@@ -391,8 +392,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              ProjectInternalUsersRow(projectId, user.userId, roleName = "TheBestRole"),
-              ProjectInternalUsersRow(projectId, userId2, roleName = "AnotherRole"),
+              createProjectInternalRow(roleName = "TheBestRole"),
+              createProjectInternalRow(userId = userId2, roleName = "AnotherRole"),
           ),
           store.fetchInternalUsers(projectId),
           "Should have added user to internal users",
@@ -429,13 +430,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(ProjectInternalUserModel(user.userId, ProjectInternalRole.Consultant)),
       )
 
-      assertTableEquals(
-          ProjectInternalUsersRecord(
-              projectId = projectId,
-              userId = user.userId,
-              projectInternalRoleId = ProjectInternalRole.Consultant,
-          )
-      )
+      assertTableEquals(createProjectInternalRecord(role = ProjectInternalRole.Consultant))
 
       // roleName instead of role
       store.addInternalUsers(
@@ -443,14 +438,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(ProjectInternalUserModel(user.userId, roleName = "A Different Role")),
       )
 
-      assertTableEquals(
-          ProjectInternalUsersRecord(
-              projectId = projectId,
-              userId = user.userId,
-              projectInternalRoleId = null,
-              roleName = "A Different Role",
-          )
-      )
+      assertTableEquals(createProjectInternalRecord(role = null, roleName = "A Different Role"))
       eventPublisher.assertExactEventsPublished(
           listOf(
               ProjectInternalUserAddedEvent(
@@ -580,8 +568,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              ProjectInternalUsersRow(projectId, user.userId, ProjectInternalRole.ProjectLead),
-              ProjectInternalUsersRow(projectId, userId2, roleName = "Rock Star"),
+              createProjectInternalRow(role = ProjectInternalRole.ProjectLead),
+              createProjectInternalRow(userId = userId2, roleName = "Rock Star"),
           ),
           store.fetchInternalUsers(projectId),
           "Should have 2 internal users",
@@ -660,4 +648,35 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
     }
   }
+
+  private fun createProjectInternalRow(
+      role: ProjectInternalRole? = null,
+      roleName: String? = null,
+      userId: UserId = user.userId,
+  ) =
+      ProjectInternalUsersRow(
+          projectId = projectId,
+          projectInternalRoleId = role,
+          roleName = roleName,
+          userId = userId,
+          createdBy = user.userId,
+          createdTime = clock.instant,
+          modifiedBy = user.userId,
+          modifiedTime = clock.instant,
+      )
+
+  private fun createProjectInternalRecord(
+      role: ProjectInternalRole? = null,
+      roleName: String? = null,
+  ) =
+      ProjectInternalUsersRecord(
+          projectId = projectId,
+          projectInternalRoleId = role,
+          roleName = roleName,
+          userId = user.userId,
+          createdBy = user.userId,
+          createdTime = clock.instant,
+          modifiedBy = user.userId,
+          modifiedTime = clock.instant,
+      )
 }
