@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -71,6 +72,9 @@ data class FunderUser(
   override fun canReadProject(projectId: ProjectId) = projectId in projectIds
 
   override fun canReadProjectFunderDetails(projectId: ProjectId) = projectId in projectIds
+
+  override fun canReadPublishedReport(reportId: ReportId) =
+      parentStore.getProjectId(reportId) in projectIds
 
   override fun canReadPublishedReports(projectId: ProjectId) = projectId in projectIds
 

@@ -1721,6 +1721,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *reportIds.toTypedArray(),
+        readPublishedReport = true,
         readReport = true,
         updateReport = true,
     )
@@ -1906,14 +1907,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.forOrg1(),
+        *reportIds.toTypedArray(),
+        readPublishedReport = true,
         readReport = true,
         updateReport = true,
-    )
-
-    permissions.expect(
-        *reportIds.toTypedArray(),
-        readReport = true,
     )
 
     permissions.expect(
@@ -2217,14 +2214,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.forOrg1(),
+        *reportIds.toTypedArray(),
+        readPublishedReport = true,
         readReport = true,
         updateReport = true,
-    )
-
-    permissions.expect(
-        *reportIds.toTypedArray(),
-        readReport = true,
     )
 
     // Can read all submissions even those outside of this org
@@ -2525,14 +2518,10 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.forOrg1(),
+        *reportIds.toTypedArray(),
+        readPublishedReport = true,
         readReport = true,
         updateReport = true,
-    )
-
-    permissions.expect(
-        *reportIds.toTypedArray(),
-        readReport = true,
     )
 
     permissions.expect(
@@ -2732,6 +2721,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *reportIds.toTypedArray(),
+        readPublishedReport = true,
         readReport = true,
     )
 
@@ -2993,6 +2983,11 @@ internal class PermissionTest : DatabaseTest() {
         userId,
         deleteFunder = true,
         readUser = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readPublishedReport = true,
     )
 
     val otherFunderSameEntity = insertUser(type = UserType.Funder)
@@ -4480,6 +4475,7 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg reportIds: ReportId,
+        readPublishedReport: Boolean = false,
         readReport: Boolean = false,
         updateReport: Boolean = false,
     ) {
@@ -4488,6 +4484,11 @@ internal class PermissionTest : DatabaseTest() {
           .forEach { reportId ->
             val idInDatabase = getDatabaseId(reportId)
 
+            assertEquals(
+                readPublishedReport,
+                user.canReadPublishedReport(idInDatabase),
+                "Can read published report $reportId",
+            )
             assertEquals(readReport, user.canReadReport(idInDatabase), "Can read report $reportId")
             assertEquals(
                 updateReport,

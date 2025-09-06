@@ -495,6 +495,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadPublishedProjects(): Boolean = defaultPermission
 
+  fun canReadPublishedReport(reportId: ReportId): Boolean = defaultPermission
+
   fun canReadPublishedReports(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadReport(reportId: ReportId): Boolean = defaultPermission

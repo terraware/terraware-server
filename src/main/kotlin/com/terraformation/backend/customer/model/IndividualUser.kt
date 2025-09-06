@@ -512,6 +512,8 @@ data class IndividualUser(
 
   override fun canReadPublishedProjects() = isReadOnlyOrHigher()
 
+  override fun canReadPublishedReport(reportId: ReportId) = isReadOnlyOrHigher()
+
   override fun canReadPublishedReports(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadReport(reportId: ReportId) =
@@ -727,7 +729,7 @@ data class IndividualUser(
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 
   override fun canUpdateReport(reportId: ReportId): Boolean =
-      isManagerOrHigher(parentStore.getOrganizationId(reportId))
+      isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canUpdateSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
