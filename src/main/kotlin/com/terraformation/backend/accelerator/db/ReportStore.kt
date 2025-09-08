@@ -1247,8 +1247,8 @@ class ReportStore(
                   .where(REPORT_ACHIEVEMENTS.REPORT_ID.eq(REPORTS.ID))
                   .orderBy(REPORT_ACHIEVEMENTS.POSITION)
           )
-          .convertFrom { result ->
-            result.map { it[REPORT_ACHIEVEMENTS.ACHIEVEMENT.asNonNullable()] }
+          .convertFrom { results ->
+            results.map { it[REPORT_ACHIEVEMENTS.ACHIEVEMENT.asNonNullable()] }
           }
 
   private val challengesMultiset: Field<List<ReportChallengeModel>> =
@@ -1258,7 +1258,7 @@ class ReportStore(
                   .where(REPORT_CHALLENGES.REPORT_ID.eq(REPORTS.ID))
                   .orderBy(REPORT_CHALLENGES.POSITION)
           )
-          .convertFrom { result -> result.map { ReportChallengeModel.of(it) } }
+          .convertFrom { results -> results.map { ReportChallengeModel.of(it) } }
 
   private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
       DSL.multiset(
@@ -1272,7 +1272,7 @@ class ReportStore(
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
                   .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
           )
-          .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
+          .convertFrom { results -> results.map { ReportStandardMetricModel.of(it) } }
 
   private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
       DSL.multiset(
@@ -1287,7 +1287,7 @@ class ReportStore(
                   .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
           )
-          .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
+          .convertFrom { results -> results.map { ReportProjectMetricModel.of(it) } }
 
   private fun timestampToLocalDateField(
       timestampField: Field<Instant?>,
@@ -1547,5 +1547,7 @@ class ReportStore(
                   .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
                   .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID)
           )
-          .convertFrom { result -> result.map { ReportSystemMetricModel.of(it, systemValueField) } }
+          .convertFrom { results ->
+            results.map { ReportSystemMetricModel.of(it, systemValueField) }
+          }
 }
