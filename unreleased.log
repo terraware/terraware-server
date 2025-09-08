@@ -1,3 +1,5 @@
+f5d81091702 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.39.0 (#3361)
+d86efb75b88 Implement InputStreamCopier to double-process streams (#3351)
 96ad3d92ba8 Update database dependencies to v11.12.0 (#3360)
 31bb2124b14 Update GitHub Actions (#3359)
 43c67daf235 Update dependency com.google.apis:google-api-services-drive to v3-rev20250829-2.0.0 (#3358)
