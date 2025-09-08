@@ -315,6 +315,10 @@ class ParentStore(private val dslContext: DSLContext) {
           ),
       ) ?: ZoneOffset.UTC
 
+  fun getEffectiveTimeZone(activityId: ActivityId): ZoneId =
+      fetchFieldById(activityId, ACTIVITIES.ID, ACTIVITIES.projects.organizations.TIME_ZONE)
+          ?: ZoneOffset.UTC
+
   fun getEffectiveTimeZone(batchId: BatchId): ZoneId =
       fetchFieldById(
           batchId,
