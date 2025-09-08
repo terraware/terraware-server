@@ -72,11 +72,10 @@ data class PlotT0DataPayload(
     val densityData: List<SpeciesDensityPayload>,
 ) {
   constructor(
-      model: PlotT0DataModel,
-      observationId: ObservationId? = null,
+      model: PlotT0DataModel
   ) : this(
       monitoringPlotId = model.monitoringPlotId,
-      observationId = observationId,
+      observationId = model.observationId,
       densityData = model.densityData.map { SpeciesDensityPayload(it) },
   )
 

@@ -82,6 +82,7 @@ class T0PlotStore(
                   .where(
                       OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId)
                           .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                          .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
                   )
           )
           .onDuplicateKeyUpdate()

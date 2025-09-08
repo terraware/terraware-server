@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
@@ -126,6 +127,17 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores observation and all species densities`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Other,
+          speciesName = "Something else",
+          totalLive = 3,
+          totalDead = 4,
+      )
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Unknown,
+          totalLive = 3,
+          totalDead = 4,
+      )
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
