@@ -43,7 +43,7 @@ jobs:
       run: ./.github/scripts/set-environment.sh
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v5
       with:
         role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
         aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
