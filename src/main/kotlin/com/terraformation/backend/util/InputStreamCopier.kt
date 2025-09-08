@@ -251,7 +251,9 @@ class InputStreamCopier(
           dataAvailable.await()
         }
 
-        sourceException.get()?.let { throw it }
+        sourceException.get()?.let {
+          throw IOException("Unable to read from source input stream", it)
+        }
         return totalBytesRead.get() > position || sourceExhausted.get()
       }
 

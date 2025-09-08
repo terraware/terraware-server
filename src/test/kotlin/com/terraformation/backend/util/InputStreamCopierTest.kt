@@ -3,6 +3,7 @@ package com.terraformation.backend.util
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.net.SocketTimeoutException
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -161,7 +162,7 @@ class InputStreamCopierTest {
     val failingStream =
         object : InputStream() {
           override fun read(): Int {
-            throw IOException("Test exception")
+            throw SocketTimeoutException("Test exception")
           }
         }
 
@@ -201,8 +202,9 @@ class InputStreamCopierTest {
 
     assertEquals(2, exceptions.size, "Both copies should receive the exception")
     exceptions.forEach { exception ->
-      assertInstanceOf<IOException>(exception)
-      assertEquals("Test exception", exception.message)
+      assertInstanceOf<IOException>(exception, "Top-level exception")
+      assertInstanceOf<SocketTimeoutException>(exception.cause, "Nested exception")
+      assertEquals("Test exception", exception.cause?.message)
     }
   }
 
