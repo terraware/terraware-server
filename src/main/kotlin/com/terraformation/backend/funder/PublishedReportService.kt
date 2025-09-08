@@ -10,7 +10,7 @@ import com.terraformation.backend.file.SizedInputStream
 import jakarta.inject.Named
 
 @Named
-class FunderReportService(
+class PublishedReportService(
     private val fileService: FileService,
     private val publishedReportPhotosDao: PublishedReportPhotosDao,
 ) {

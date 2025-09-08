@@ -1,32 +1,46 @@
 package com.terraformation.backend.funder.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.FunderEndpoint
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.funder.PublishedReportService
 import com.terraformation.backend.funder.db.PublishedReportsStore
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import java.time.Instant
 import java.time.LocalDate
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
 @FunderEndpoint
 @RequestMapping("/api/v1/funder/reports")
 @RestController
 class FunderReportsController(
+    private val publishedReportService: PublishedReportService,
     private val publishedReportsStore: PublishedReportsStore,
 ) {
   @ApiResponse200
@@ -38,6 +52,28 @@ class FunderReportsController(
   ): ListPublishedReportsResponsePayload {
     val reports = publishedReportsStore.fetchPublishedReports(projectId)
     return ListPublishedReportsResponsePayload(reports.map { PublishedReportPayload(it) })
+  }
+
+  @ApiResponse200Photo
+  @ApiResponse404("The report does not exist, or does not have a photo with the requested ID.")
+  @GetMapping(
+      "/{reportId}/photos/{fileId}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
+  @Operation(
+      summary = "Retrieves a specific photo from a published report",
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
+  @ResponseBody
+  fun getPublishedReportPhoto(
+      @PathVariable reportId: ReportId,
+      @PathVariable fileId: FileId,
+      @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
+      @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
+  ): ResponseEntity<InputStreamResource> {
+    return publishedReportService
+        .readPhoto(reportId, fileId, maxWidth, maxHeight)
+        .toResponseEntity()
   }
 }
 

@@ -99,6 +99,17 @@ class ReportService(
     return fileId
   }
 
+  fun updateReportPhotoCaption(
+      caption: String?,
+      reportId: ReportId,
+      fileId: FileId,
+  ) {
+    requirePermissions { updateReport(reportId) }
+    val reportPhotosRow = fetchReportPhotosRow(reportId, fileId)
+
+    reportPhotosDao.update(reportPhotosRow.copy(caption = caption))
+  }
+
   private fun deletePublishedReportPhoto(reportId: ReportId, fileId: FileId) {
     val reportPhotosRow = fetchReportPhotosRow(reportId, fileId)
     val publishedReportsRow =
