@@ -116,6 +116,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisio
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportAchievementsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportChallengesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportPhotosRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportSystemMetricsRow
@@ -318,6 +319,7 @@ import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonC
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectSdgRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportProjectMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportStandardMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportSystemMetricsRow
@@ -3469,6 +3471,24 @@ abstract class DatabaseBackedTest {
     nextReportChallengePosition[reportId] = position + 1
   }
 
+  protected fun insertReportPhoto(
+      row: ReportPhotosRow = ReportPhotosRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      caption: String? = row.caption,
+      deleted: Boolean = row.deleted ?: false,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            fileId = fileId,
+            caption = caption,
+            deleted = deleted,
+        )
+
+    reportPhotosDao.insert(rowWithDefaults)
+  }
+
   protected fun insertReportProjectMetric(
       row: ReportProjectMetricsRow = ReportProjectMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
@@ -3618,6 +3638,22 @@ abstract class DatabaseBackedTest {
           .set(MITIGATION_PLAN, mitigationPlan)
           .execute()
     }
+  }
+
+  protected fun insertPublishedReportPhoto(
+      row: PublishedReportPhotosRow = PublishedReportPhotosRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      caption: String? = row.caption,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            fileId = fileId,
+            caption = caption,
+        )
+
+    publishedReportPhotosDao.insert(rowWithDefaults)
   }
 
   protected fun insertPublishedReportProjectMetric(

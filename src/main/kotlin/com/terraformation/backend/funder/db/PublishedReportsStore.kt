@@ -9,7 +9,6 @@ import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
-import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
@@ -195,7 +194,7 @@ class PublishedReportsStore(
                       PUBLISHED_REPORT_PHOTOS.FILE_ID,
                   )
                   .from(PUBLISHED_REPORT_PHOTOS)
-                  .where(PUBLISHED_REPORT_PHOTOS.REPORT_ID.eq(REPORTS.ID))
+                  .where(PUBLISHED_REPORT_PHOTOS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
                   .orderBy(PUBLISHED_REPORT_PHOTOS.FILE_ID)
           )
           .convertFrom { results -> results.map { ReportPhotoModel.ofPublished(it) } }

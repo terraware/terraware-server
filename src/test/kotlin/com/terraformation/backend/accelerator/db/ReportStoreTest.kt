@@ -12,6 +12,7 @@ import com.terraformation.backend.accelerator.model.ProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
@@ -139,6 +140,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           mitigationPlan = "Plan A",
       )
 
+      val fileId1 = insertFile(storageUrl = "https://file1")
+      insertReportPhoto(caption = "photo caption 1")
+
+      val fileId2 = insertFile(storageUrl = "https://file2")
+      insertReportPhoto(caption = "photo caption 2")
+
+      insertFile(storageUrl = "https://file3")
+      insertReportPhoto(caption = "deleted", deleted = true)
+
       val reportModel =
           ReportModel(
               id = reportId,
@@ -161,6 +171,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               feedback = "feedback",
               additionalComments = "additional comments",
               financialSummaries = "financial summaries",
+              photos =
+                  listOf(
+                      ReportPhotoModel(fileId = fileId1, caption = "photo caption 1"),
+                      ReportPhotoModel(fileId = fileId2, caption = "photo caption 2"),
+                  ),
               createdBy = systemUser.userId,
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
