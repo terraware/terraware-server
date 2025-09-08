@@ -1613,10 +1613,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class UpdateReport {
     @Test
-    fun `throws exception for non-organization users`() {
+    fun `throws exception for non-organization users and non-internal users`() {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
       deleteOrganizationUser()
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
       assertThrows<AccessDeniedException> {
         store.updateReport(
             reportId = reportId,
@@ -2849,10 +2851,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class SubmitReport {
     @Test
-    fun `throws exception for non-organization users`() {
+    fun `throws exception for non-organization users and non-internal users`() {
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
       deleteOrganizationUser()
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
       assertThrows<AccessDeniedException> { store.submitReport(reportId) }
     }
 

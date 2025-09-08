@@ -1277,6 +1277,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readPublishedReport(reportId: ReportId) {
+    user.recordPermissionChecks {
+      if (!user.canReadPublishedReport(reportId)) {
+        throw ReportNotFoundException(reportId)
+      }
+    }
+  }
+
   fun readPublishedReports(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadPublishedReports(projectId)) {
