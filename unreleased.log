@@ -1,3 +1,5 @@
+f61315fb3b4 SW-7346 Activity media file upload endpoint (#3365)
+93a92fa80c5 Updated reports permissions (#3364)
 d5ab9600de0 SW-7258 Added report photos tables and added model classes (#3363)
 79f86a830fe Fix t0 payload, fix observation assign endpoint (#3366)
 383ff8202c3 Renamed result to results (#3362)
