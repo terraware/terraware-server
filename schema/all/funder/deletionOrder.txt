@@ -1,4 +1,5 @@
 published_project_details
+published_report_photos
 published_report_system_metrics
 published_report_standard_metrics
 published_report_project_metrics

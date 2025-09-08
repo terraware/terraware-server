@@ -42,6 +42,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accelerator.project_votes":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"user_id":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_photos":"elipses":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.report_project_metrics":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.report_standard_metrics":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.report_system_metrics":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -80,6 +81,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.published_project_details":"published_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_sdg":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_report_photos":"elipses":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"published_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batch_details_history":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -489,6 +491,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.project_votes"
   ];
+  "accelerator.report_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="156" HEIGHT="16"><B>accelerator.report_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/report_photos.html"
+    target="_top"
+    tooltip="accelerator.report_photos"
+  ];
   "accelerator.report_project_metrics" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -741,6 +754,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_project_sdg"
   ];
+  "funder.published_report_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>funder.published_report_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_report_photos.html"
+    target="_top"
+    tooltip="funder.published_report_photos"
+  ];
   "funder.published_reports" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -980,7 +1004,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="25" HEIGHT="16"><B>files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/files.html"
     target="_top"

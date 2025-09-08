@@ -36,6 +36,7 @@ project_report_configs
 participants
 cohorts
 project_metrics
+report_photos
 deliverable_categories
 system_metrics
 standard_metrics

@@ -21,6 +21,7 @@ score_categories
 standard_metrics
 system_metrics
 deliverable_categories
+report_photos
 project_metrics
 cohorts
 participants

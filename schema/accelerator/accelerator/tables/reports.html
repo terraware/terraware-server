@@ -141,6 +141,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="report_photos.report_id references reports.id via report_photos_report_id_fkey"><a href='report_photos.html'>report_photos</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_photos_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_project_metrics.report_id references reports.id via report_project_metrics_report_id_fkey"><a href='report_project_metrics.html'>report_project_metrics</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">report_project_metrics_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>

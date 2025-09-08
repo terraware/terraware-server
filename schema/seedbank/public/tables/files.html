@@ -136,6 +136,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="report_photos.file_id references files.id via report_photos_file_id_fkey"><a href='../../accelerator/tables/report_photos.html'>report_photos</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">report_photos_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="submission_snapshots.file_id references files.id via submission_snapshots_file_id_fkey"><a href='../../accelerator/tables/submission_snapshots.html'>submission_snapshots</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">submission_snapshots_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -144,6 +149,11 @@
                                                 <td title="variable_image_values.file_id references files.id via variable_image_values_file_id_fkey"><a href='../../docprod/tables/variable_image_values.html'>variable_image_values</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">variable_image_values_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="published_report_photos.file_id references files.id via published_report_photos_file_id_fkey"><a href='../../funder/tables/published_report_photos.html'>published_report_photos</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">published_report_photos_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="batch_photos.file_id references files.id via batch_photos_file_id_fkey"><a href='../../nursery/tables/batch_photos.html'>batch_photos</a><span class='relatedKey'>.file_id</span></td>
@@ -385,12 +395,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>content_type_cannot_be_empty_string</td>
-                                    <td>(length(content_type) &gt; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>file_name_cannot_be_empty_string</td>
                                     <td>(length(file_name) &gt; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>content_type_cannot_be_empty_string</td>
+                                    <td>(length(content_type) &gt; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>

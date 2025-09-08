@@ -4,6 +4,7 @@ digraph "oneDegreeRelationshipsDiagram" {
   "project_report_configs":"report_frequency_id":w -> "report_frequencies":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_achievements":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_challenges":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_photos":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_standard_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_system_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -68,6 +69,19 @@ digraph "oneDegreeRelationshipsDiagram" {
     URL="../../tables/report_frequencies.html"
     target="_top"
     tooltip="report_frequencies"
+  ];
+  "report_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="84" HEIGHT="16"><B>report_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="84" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="report_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="84" HEIGHT="16">report_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/report_photos.html"
+    target="_top"
+    tooltip="report_photos"
   ];
   "report_project_metrics" [
    label=<
@@ -159,7 +173,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="upcoming_notification_sent_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">upcoming_notification_sent_time</TD></TR></TABLE></TD><TD PORT="upcoming_notification_sent_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
       <TR><TD PORT="financial_summaries" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">financial_summaries</TD></TR></TABLE></TD><TD PORT="financial_summaries.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="additional_comments" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">additional_comments</TD></TR></TABLE></TD><TD PORT="additional_comments.type" ALIGN="LEFT">text[2147483647]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/reports.html"
     target="_top"

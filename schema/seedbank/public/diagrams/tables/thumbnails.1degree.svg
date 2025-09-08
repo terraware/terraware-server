@@ -87,15 +87,15 @@
 <text text-anchor="start" x="28.5" y="-175.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_url</text>
 <polygon fill="none" stroke="black" points="8.5,-149 8.5,-167 115.5,-167 115.5,-149 8.5,-149"/>
 <text text-anchor="start" x="11.5" y="-155.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8.5,-131 8.5,-149 50.5,-149 50.5,-131 8.5,-131"/>
-<polygon fill="none" stroke="black" points="8.5,-131 8.5,-149 50.5,-149 50.5,-131 8.5,-131"/>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-131 8.5,-149 47.5,-149 47.5,-131 8.5,-131"/>
+<polygon fill="none" stroke="black" points="8.5,-131 8.5,-149 47.5,-149 47.5,-131 8.5,-131"/>
 <text text-anchor="start" x="11.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="50.5,-131 50.5,-149 78.5,-149 78.5,-131 50.5,-131"/>
-<polygon fill="none" stroke="black" points="50.5,-131 50.5,-149 78.5,-149 78.5,-131 50.5,-131"/>
-<text text-anchor="start" x="68.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="78.5,-131 78.5,-149 115.5,-149 115.5,-131 78.5,-131"/>
-<polygon fill="none" stroke="black" points="78.5,-131 78.5,-149 115.5,-149 115.5,-131 78.5,-131"/>
-<text text-anchor="start" x="96.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="47.5,-131 47.5,-149 73.5,-149 73.5,-131 47.5,-131"/>
+<polygon fill="none" stroke="black" points="47.5,-131 47.5,-149 73.5,-149 73.5,-131 47.5,-131"/>
+<text text-anchor="start" x="63.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="73.5,-131 73.5,-149 115.5,-149 115.5,-131 73.5,-131"/>
+<polygon fill="none" stroke="black" points="73.5,-131 73.5,-149 115.5,-149 115.5,-131 73.5,-131"/>
+<text text-anchor="start" x="90.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

@@ -24,8 +24,9 @@ standard_metrics
 system_metrics
 deliverable_categories
 participants
-project_metrics
 project_report_configs
+report_photos
+project_metrics
 reports
 deliverables
 applications

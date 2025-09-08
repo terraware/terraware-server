@@ -1,3 +1,4 @@
+d5ab9600de0 SW-7258 Added report photos tables and added model classes (#3363)
 79f86a830fe Fix t0 payload, fix observation assign endpoint (#3366)
 383ff8202c3 Renamed result to results (#3362)
 f5d81091702 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.39.0 (#3361)

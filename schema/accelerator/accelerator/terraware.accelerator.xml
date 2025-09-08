@@ -326,8 +326,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -905,6 +905,28 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="report_photos" remarks="Photos for the accelerator project report." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="file_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_photos"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="report_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_photos"/>
+            <parent column="id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="deleted" nullable="false" remarks="Flag for photos to be deleted in the next publishing." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="report_photos_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="report_photos_report_id_file_id_key" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="report_photos_report_id_idx" unique="false">
+            <column ascending="true" name="report_id"/>
+         </index>
+      </table>
       <table name="report_project_metrics" remarks="Report entries of targets and values for project metrics." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_project_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
@@ -1025,6 +1047,7 @@
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="report_id" foreignKey="report_achievements_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_achievements"/>
             <child column="report_id" foreignKey="report_challenges_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_challenges"/>
+            <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_photos"/>
             <child column="report_id" foreignKey="report_project_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_metrics"/>
             <child column="report_id" foreignKey="report_standard_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_metrics"/>
             <child column="report_id" foreignKey="report_system_metrics_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_system_metrics"/>

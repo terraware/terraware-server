@@ -5,6 +5,7 @@ published_project_carbon_certs
 published_report_system_metrics
 published_report_standard_metrics
 published_report_project_metrics
+published_report_photos
 published_report_challenges
 published_report_achievements
 funding_entity_users

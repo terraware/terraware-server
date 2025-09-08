@@ -31,8 +31,9 @@ submissions
 applications
 deliverables
 reports
-project_report_configs
 project_metrics
+report_photos
+project_report_configs
 participants
 deliverable_categories
 system_metrics
