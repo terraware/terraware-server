@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.PublishedReportPhotos.Companion.PUBLISHED_REPORT_PHOTOS
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
@@ -43,6 +44,13 @@ data class ReportPhotoModel(
       return ReportPhotoModel(
           caption = record[REPORT_PHOTOS.CAPTION],
           fileId = record[REPORT_PHOTOS.FILE_ID]!!,
+      )
+    }
+
+    fun ofPublished(record: Record): ReportPhotoModel {
+      return ReportPhotoModel(
+          caption = record[PUBLISHED_REPORT_PHOTOS.CAPTION],
+          fileId = record[PUBLISHED_REPORT_PHOTOS.FILE_ID]!!,
       )
     }
   }

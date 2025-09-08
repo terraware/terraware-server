@@ -1,6 +1,7 @@
 package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
@@ -21,6 +22,7 @@ data class PublishedReportModel(
     val financialSummaries: String?,
     val frequency: ReportFrequency,
     val highlights: String?,
+    val photos: List<ReportPhotoModel>,
     val projectId: ProjectId,
     val projectMetrics: List<PublishedReportMetricModel<ProjectMetricId>>,
     val projectName: String,
