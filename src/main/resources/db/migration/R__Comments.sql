@@ -661,6 +661,9 @@ COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accele
 
 COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accelerator project report metrics.';
 
+COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
+COMMENT ON COLUMN accelerator.report_photos.deleted IS 'Flag for photos to be deleted in the next publishing.';
+
 COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
@@ -782,6 +785,8 @@ COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
 
 COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigation plans of published reports.';
+
+COMMENT ON TABLE funder.published_report_photos IS 'Photos for the published accelerator project report.';
 
 COMMENT ON TABLE funder.published_report_project_metrics IS 'Project-specific metrics of published reports.';
 

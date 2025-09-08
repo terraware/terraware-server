@@ -1,6 +1,7 @@
 package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.MetricComponentConverter
 import com.terraformation.backend.db.accelerator.MetricTypeConverter
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
@@ -42,6 +44,7 @@ class PublishedReportsStore(
             PROJECTS.NAME,
             achievementsMultiset,
             challengesMultiset,
+            photosMultiset,
             projectMetricsMultiset,
             standardMetricsMultiset,
             systemMetricsMultiset,
@@ -62,6 +65,7 @@ class PublishedReportsStore(
               financialSummaries = record[PUBLISHED_REPORTS.FINANCIAL_SUMMARIES],
               frequency = record[PUBLISHED_REPORTS.REPORT_FREQUENCY_ID]!!,
               highlights = record[PUBLISHED_REPORTS.HIGHLIGHTS],
+              photos = record[photosMultiset],
               projectId = record[PUBLISHED_REPORTS.PROJECT_ID]!!,
               projectMetrics = record[projectMetricsMultiset],
               projectName =
@@ -182,6 +186,18 @@ class PublishedReportsStore(
           }
         }
   }
+
+  private val photosMultiset: Field<List<ReportPhotoModel>> =
+      DSL.multiset(
+              DSL.select(
+                      PUBLISHED_REPORT_PHOTOS.CAPTION,
+                      PUBLISHED_REPORT_PHOTOS.FILE_ID,
+                  )
+                  .from(PUBLISHED_REPORT_PHOTOS)
+                  .where(PUBLISHED_REPORT_PHOTOS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
+                  .orderBy(PUBLISHED_REPORT_PHOTOS.FILE_ID)
+          )
+          .convertFrom { results -> results.map { ReportPhotoModel.ofPublished(it) } }
 
   private val projectMetricsMultiset =
       publishedMetricsMultiset(

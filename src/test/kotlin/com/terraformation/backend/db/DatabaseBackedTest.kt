@@ -79,6 +79,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecision
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportAchievementsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportChallengesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportSystemMetricsDao
@@ -115,6 +116,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisio
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportAchievementsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportChallengesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportPhotosRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportSystemMetricsRow
@@ -306,6 +308,7 @@ import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCe
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectSdgDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportProjectMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportStandardMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportSystemMetricsDao
@@ -316,6 +319,7 @@ import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonC
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectSdgRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportProjectMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportStandardMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportSystemMetricsRow
@@ -686,11 +690,13 @@ abstract class DatabaseBackedTest {
   protected val publishedProjectSdgDao: PublishedProjectSdgDao by lazyDao()
   protected val publishedReportStandardMetricsDao: PublishedReportStandardMetricsDao by lazyDao()
   protected val publishedReportSystemMetricsDao: PublishedReportSystemMetricsDao by lazyDao()
+  protected val publishedReportPhotosDao: PublishedReportPhotosDao by lazyDao()
   protected val publishedReportProjectMetricsDao: PublishedReportProjectMetricsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
   protected val reportAchievementsDao: ReportAchievementsDao by lazyDao()
   protected val reportChallengesDao: ReportChallengesDao by lazyDao()
+  protected val reportPhotosDao: ReportPhotosDao by lazyDao()
   protected val reportProjectMetricsDao: ReportProjectMetricsDao by lazyDao()
   protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
   protected val reportSystemMetricsDao: ReportSystemMetricsDao by lazyDao()
@@ -3465,6 +3471,24 @@ abstract class DatabaseBackedTest {
     nextReportChallengePosition[reportId] = position + 1
   }
 
+  protected fun insertReportPhoto(
+      row: ReportPhotosRow = ReportPhotosRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      caption: String? = row.caption,
+      deleted: Boolean = row.deleted ?: false,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            fileId = fileId,
+            caption = caption,
+            deleted = deleted,
+        )
+
+    reportPhotosDao.insert(rowWithDefaults)
+  }
+
   protected fun insertReportProjectMetric(
       row: ReportProjectMetricsRow = ReportProjectMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
@@ -3614,6 +3638,22 @@ abstract class DatabaseBackedTest {
           .set(MITIGATION_PLAN, mitigationPlan)
           .execute()
     }
+  }
+
+  protected fun insertPublishedReportPhoto(
+      row: PublishedReportPhotosRow = PublishedReportPhotosRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      caption: String? = row.caption,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            fileId = fileId,
+            caption = caption,
+        )
+
+    publishedReportPhotosDao.insert(rowWithDefaults)
   }
 
   protected fun insertPublishedReportProjectMetric(

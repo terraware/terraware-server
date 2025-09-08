@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
@@ -35,6 +36,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPOR
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
@@ -828,11 +830,12 @@ class ReportStore(
         .select(
             REPORTS.asterisk(),
             PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+            achievementsMultiset,
+            challengesMultiset,
+            photosMultiset,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
-            achievementsMultiset,
-            challengesMultiset,
         )
         .from(REPORTS)
         .leftJoin(PROJECT_ACCELERATOR_DETAILS)
@@ -842,11 +845,12 @@ class ReportStore(
         .fetch {
           ReportModel.of(
               record = it,
+              achievementsField = achievementsMultiset,
+              challengesField = challengesMultiset,
+              photosField = photosMultiset,
               projectMetricsField = projectMetricsField,
               standardMetricsField = standardMetricsField,
               systemMetricsField = systemMetricsField,
-              achievementsField = achievementsMultiset,
-              challengesField = challengesMultiset,
           )
         }
         .filter { currentUser().canReadReport(it.id) }
@@ -1273,6 +1277,19 @@ class ReportStore(
                   .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
           )
           .convertFrom { results -> results.map { ReportStandardMetricModel.of(it) } }
+
+  private val photosMultiset: Field<List<ReportPhotoModel>> =
+      DSL.multiset(
+              DSL.select(
+                      REPORT_PHOTOS.CAPTION,
+                      REPORT_PHOTOS.FILE_ID,
+                  )
+                  .from(REPORT_PHOTOS)
+                  .where(REPORT_PHOTOS.REPORT_ID.eq(REPORTS.ID))
+                  .and(REPORT_PHOTOS.DELETED.isFalse)
+                  .orderBy(REPORT_PHOTOS.FILE_ID)
+          )
+          .convertFrom { results -> results.map { ReportPhotoModel.of(it) } }
 
   private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
       DSL.multiset(

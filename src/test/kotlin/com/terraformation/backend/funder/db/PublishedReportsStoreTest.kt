@@ -2,6 +2,7 @@ package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
+import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -116,6 +117,14 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           position = 1,
       )
 
+      val fileId1 = insertFile(storageUrl = "https://file1")
+      insertReportPhoto(caption = "photo caption 1")
+      insertPublishedReportPhoto(caption = "photo caption 1")
+
+      val fileId2 = insertFile(storageUrl = "https://file2")
+      insertReportPhoto(caption = "photo caption 2")
+      insertPublishedReportPhoto(caption = "photo caption 2")
+
       insertPublishedReportStandardMetric(
           reportId = reportId1,
           metricId = standardMetricId1,
@@ -186,6 +195,7 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   financialSummaries = null,
                   frequency = ReportFrequency.Quarterly,
                   highlights = null,
+                  photos = emptyList(),
                   projectId = projectId,
                   projectMetrics = emptyList(),
                   projectName = dealName,
@@ -209,6 +219,11 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   financialSummaries = "financial summaries",
                   frequency = ReportFrequency.Quarterly,
                   highlights = "highlights",
+                  photos =
+                      listOf(
+                          ReportPhotoModel(fileId = fileId1, caption = "photo caption 1"),
+                          ReportPhotoModel(fileId = fileId2, caption = "photo caption 2"),
+                      ),
                   projectId = projectId,
                   projectMetrics =
                       listOf(
