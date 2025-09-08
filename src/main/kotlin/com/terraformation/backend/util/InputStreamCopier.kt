@@ -95,6 +95,10 @@ class InputStreamCopier(
   private val lock = ReentrantLock()
   private val dataAvailable: Condition = lock.newCondition()
 
+  init {
+    require(bufferSize > minReadSize) { "Buffer must be larger than minimum read size" }
+  }
+
   /**
    * Returns a stream that has a copy of the data from [source]. You can create copies at any time
    * before calling [transfer]. Copies can start reading immediately - they will block until data
@@ -138,8 +142,10 @@ class InputStreamCopier(
       sourceException.set(e)
       throw e
     } finally {
-      sourceExhausted.set(true)
-      lock.withLock { dataAvailable.signalAll() }
+      lock.withLock {
+        sourceExhausted.set(true)
+        dataAvailable.signalAll()
+      }
     }
 
     // Wait for all copies to finish
@@ -176,6 +182,10 @@ class InputStreamCopier(
         // Calculate where to read in the circular buffer
         val bufferOffset = ((bufferStartPosition + validBytes) % bufferSize).toInt()
         val availableSpace = bufferSize - validBytes
+
+        if (availableSpace <= 0) {
+          throw IllegalStateException("BUG! Finished waiting for buffer space but none available")
+        }
 
         // Read directly into circular buffer, handling wraparound
         val bytesRead =

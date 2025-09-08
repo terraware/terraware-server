@@ -16,7 +16,6 @@ import org.junit.jupiter.api.assertInstanceOf
 import org.junit.jupiter.api.assertThrows
 
 class InputStreamCopierTest {
-
   @Test
   fun `single copy reads entire stream correctly`() {
     val testData = "Hello, World!".toByteArray()
@@ -435,6 +434,18 @@ class InputStreamCopierTest {
 
     copierClosedLatch.countDown()
     copyThread.join()
+  }
+
+  @Test
+  fun `throws exception if minimum read size is not less than buffer size`() {
+    val dummyStream = ByteArrayInputStream(ByteArray(1))
+
+    assertThrows<IllegalArgumentException>("bufferSize == minReadSize") {
+      InputStreamCopier(dummyStream, 100, 100)
+    }
+    assertThrows<IllegalArgumentException>("bufferSize < minReadSize") {
+      InputStreamCopier(dummyStream, 100, 101)
+    }
   }
 
   private fun generateTestData(size: Int): ByteArray {
