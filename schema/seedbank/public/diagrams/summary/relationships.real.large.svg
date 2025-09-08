@@ -302,10 +302,36 @@
 <polygon fill="black" stroke="black" points="260.76,-3870.96 267.58,-3876.48 264.63,-3871.98 268.5,-3873 268.5,-3873 268.5,-3873 264.63,-3871.98 269.42,-3869.52 260.76,-3870.96 260.76,-3870.96"/>
 <ellipse fill="none" stroke="black" cx="257.67" cy="-3870.15" rx="3.2" ry="3.2"/>
 </g>
-<!-- species -->
+<!-- seed_storage_behaviors -->
 <g id="node6" class="node">
+<title>seed_storage_behaviors</title>
+<g id="a_node6"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="8,-1432 8,-1516 193,-1516 193,-1432 8,-1432"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-1494 8.5,-1516 193.5,-1516 193.5,-1494 8.5,-1494"/>
+<polygon fill="none" stroke="black" points="8.5,-1494 8.5,-1516 193.5,-1516 193.5,-1494 8.5,-1494"/>
+<text text-anchor="start" x="13.5" y="-1503.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_storage_behaviors</text>
+<text text-anchor="start" x="154.5" y="-1502.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8.5,-1472 8.5,-1494 193.5,-1494 193.5,-1472 8.5,-1472"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-1489"/>
+<text text-anchor="start" x="40.5" y="-1480.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="8.5,-1450 8.5,-1472 193.5,-1472 193.5,-1450 8.5,-1450"/>
+<text text-anchor="start" x="40.5" y="-1458.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-1432 8.5,-1450 89.5,-1450 89.5,-1432 8.5,-1432"/>
+<polygon fill="none" stroke="black" points="8.5,-1432 8.5,-1450 89.5,-1450 89.5,-1432 8.5,-1432"/>
+<text text-anchor="start" x="11.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="89.5,-1432 89.5,-1450 136.5,-1450 136.5,-1432 89.5,-1432"/>
+<polygon fill="none" stroke="black" points="89.5,-1432 89.5,-1450 136.5,-1450 136.5,-1432 89.5,-1432"/>
+<text text-anchor="start" x="126.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="136.5,-1432 136.5,-1450 193.5,-1450 193.5,-1432 136.5,-1432"/>
+<polygon fill="none" stroke="black" points="136.5,-1432 136.5,-1450 193.5,-1450 193.5,-1432 136.5,-1432"/>
+<text text-anchor="start" x="174.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- species -->
+<g id="node7" class="node">
 <title>species</title>
-<g id="a_node6"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="259.5,-1036 259.5,-1648 439.5,-1648 439.5,-1036 259.5,-1036"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="259.5,-1626 259.5,-1648 439.5,-1648 439.5,-1626 259.5,-1626"/>
 <polygon fill="none" stroke="black" points="259.5,-1626 259.5,-1648 439.5,-1648 439.5,-1626 259.5,-1626"/>
@@ -387,32 +413,6 @@
 <path fill="none" stroke="black" d="M247.05,-1602.06C166.61,-1741.24 286.87,-3438 188.5,-3438"/>
 <polygon fill="black" stroke="black" points="252.22,-1597.96 260.73,-1595.82 255.36,-1595.48 258.5,-1593 258.5,-1593 258.5,-1593 255.36,-1595.48 256.27,-1590.18 252.22,-1597.96 252.22,-1597.96"/>
 <ellipse fill="none" stroke="black" cx="249.71" cy="-1599.95" rx="3.2" ry="3.2"/>
-</g>
-<!-- seed_storage_behaviors -->
-<g id="node7" class="node">
-<title>seed_storage_behaviors</title>
-<g id="a_node7"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-1432 8,-1516 193,-1516 193,-1432 8,-1432"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-1494 8.5,-1516 193.5,-1516 193.5,-1494 8.5,-1494"/>
-<polygon fill="none" stroke="black" points="8.5,-1494 8.5,-1516 193.5,-1516 193.5,-1494 8.5,-1494"/>
-<text text-anchor="start" x="13.5" y="-1503.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_storage_behaviors</text>
-<text text-anchor="start" x="154.5" y="-1502.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8.5,-1472 8.5,-1494 193.5,-1494 193.5,-1472 8.5,-1472"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-1489"/>
-<text text-anchor="start" x="40.5" y="-1480.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="8.5,-1450 8.5,-1472 193.5,-1472 193.5,-1450 8.5,-1450"/>
-<text text-anchor="start" x="40.5" y="-1458.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="8.5,-1432 8.5,-1450 89.5,-1450 89.5,-1432 8.5,-1432"/>
-<polygon fill="none" stroke="black" points="8.5,-1432 8.5,-1450 89.5,-1450 89.5,-1432 8.5,-1432"/>
-<text text-anchor="start" x="11.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="89.5,-1432 89.5,-1450 136.5,-1450 136.5,-1432 89.5,-1432"/>
-<polygon fill="none" stroke="black" points="89.5,-1432 89.5,-1450 136.5,-1450 136.5,-1432 89.5,-1432"/>
-<text text-anchor="start" x="126.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="136.5,-1432 136.5,-1450 193.5,-1450 193.5,-1432 136.5,-1432"/>
-<polygon fill="none" stroke="black" points="136.5,-1432 136.5,-1450 193.5,-1450 193.5,-1432 136.5,-1432"/>
-<text text-anchor="start" x="174.5" y="-1438.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
 </g>
 <!-- species&#45;&gt;seed_storage_behaviors -->
 <g id="edge21" class="edge">
