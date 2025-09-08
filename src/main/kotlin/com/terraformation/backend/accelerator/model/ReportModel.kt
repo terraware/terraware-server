@@ -15,7 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.funder.tables.PublishedReportPhotos.Companion.PUBLISHED_REPORT_PHOTOS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
