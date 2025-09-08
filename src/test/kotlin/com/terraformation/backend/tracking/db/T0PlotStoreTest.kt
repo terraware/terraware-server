@@ -130,13 +130,13 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(
           certainty = RecordedSpeciesCertainty.Other,
           speciesName = "Something else",
-          totalLive = 3,
-          totalDead = 4,
+          totalLive = 5,
+          totalDead = 6,
       )
       insertObservedPlotSpeciesTotals(
           certainty = RecordedSpeciesCertainty.Unknown,
-          totalLive = 3,
-          totalDead = 4,
+          totalLive = 7,
+          totalDead = 8,
       )
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
