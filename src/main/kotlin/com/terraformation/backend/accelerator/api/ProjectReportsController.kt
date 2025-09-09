@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.ReportService
 import com.terraformation.backend.accelerator.db.ReportMetricStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
@@ -13,10 +14,18 @@ import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
+import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectMetricId
@@ -31,12 +40,19 @@ import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.model.FileMetadata
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,13 +60,17 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/projects/{projectId}/reports")
 @RestController
 class ProjectReportsController(
     private val metricStore: ReportMetricStore,
+    private val reportService: ReportService,
     private val reportStore: ReportStore,
 ) {
   @ApiResponse200
@@ -209,9 +229,86 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
   ): SimpleSuccessResponsePayload {
-    reportStore.publishReport(reportId)
+    reportService.publishReport(reportId)
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Deletes a report photo")
+  @DeleteMapping("/{reportId}/photos/{fileId}")
+  @RequestBodyPhotoFile
+  fun deleteAcceleratorReportPhoto(
+      @PathVariable reportId: ReportId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    reportService.deleteReportPhoto(
+        reportId = reportId,
+        fileId = fileId,
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200Photo
+  @ApiResponse404("The report does not exist, or does not have a photo with the requested ID.")
+  @GetMapping(
+      "/{reportId}/photos/{fileId}",
+      produces = [MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE],
+  )
+  @Operation(
+      summary = "Retrieves a specific photo from a report",
+      description = PHOTO_OPERATION_DESCRIPTION,
+  )
+  @ResponseBody
+  fun getAcceleratorReportPhoto(
+      @PathVariable reportId: ReportId,
+      @PathVariable fileId: FileId,
+      @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
+      @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
+  ): ResponseEntity<InputStreamResource> {
+    return reportService.readReportPhoto(reportId, fileId, maxWidth, maxHeight).toResponseEntity()
+  }
+
+  @Operation(summary = "Updates a report photo caption")
+  @PutMapping("/{reportId}/photos/{fileId}")
+  @RequestBodyPhotoFile
+  fun updateAcceleratorReportPhoto(
+      @PathVariable reportId: ReportId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: UpdateAcceleratorReportPhotoRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportService.updateReportPhotoCaption(
+        caption = payload.caption,
+        reportId = reportId,
+        fileId = fileId,
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(summary = "Uploads a photo to a report.")
+  @PostMapping(
+      "/{reportId}/photos",
+      consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+  )
+  @RequestBodyPhotoFile
+  fun uploadAcceleratorReportPhoto(
+      @PathVariable reportId: ReportId,
+      @RequestPart("file") file: MultipartFile,
+      @RequestPart("payload") payload: UploadAcceleratorReportPhotoRequestPayload,
+  ): UploadAcceleratorReportPhotoResponsePayload {
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename("photo")
+
+    val fileId =
+        reportService.storeReportPhoto(
+            caption = payload.caption,
+            data = file.inputStream,
+            metadata = FileMetadata.of(contentType, filename, file.size),
+            reportId = reportId,
+        )
+
+    return UploadAcceleratorReportPhotoResponsePayload(fileId)
   }
 
   @ApiResponse200
@@ -665,3 +762,9 @@ data class CreateProjectMetricRequestPayload(@field:Valid val metric: NewMetricP
 data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingProjectMetricPayload)
 
 data class UpdateMetricTargetsRequestPayload(val metric: UpdateMetricTargetsPayload)
+
+data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
+
+data class UploadAcceleratorReportPhotoRequestPayload(val caption: String?)
+
+data class UploadAcceleratorReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
