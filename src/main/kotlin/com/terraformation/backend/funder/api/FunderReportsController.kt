@@ -19,7 +19,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.funder.PublishedReportService
-import com.terraformation.backend.funder.db.PublishedReportsStore
+import com.terraformation.backend.funder.db.PublishedReportStore
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class FunderReportsController(
     private val publishedReportService: PublishedReportService,
-    private val publishedReportsStore: PublishedReportsStore,
+    private val publishedReportStore: PublishedReportStore,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -50,7 +50,7 @@ class FunderReportsController(
   fun listPublishedReports(
       @PathVariable projectId: ProjectId,
   ): ListPublishedReportsResponsePayload {
-    val reports = publishedReportsStore.fetchPublishedReports(projectId)
+    val reports = publishedReportStore.fetchPublishedReports(projectId)
     return ListPublishedReportsResponsePayload(reports.map { PublishedReportPayload(it) })
   }
 

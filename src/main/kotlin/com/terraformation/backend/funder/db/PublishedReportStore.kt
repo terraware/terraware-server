@@ -31,7 +31,7 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
 @Named
-class PublishedReportsStore(
+class PublishedReportStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchPublishedReports(projectId: ProjectId): List<PublishedReportModel> {

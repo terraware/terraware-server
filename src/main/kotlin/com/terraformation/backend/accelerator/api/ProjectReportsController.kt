@@ -270,7 +270,7 @@ class ProjectReportsController(
   }
 
   @Operation(summary = "Updates a report photo caption")
-  @PostMapping("/{reportId}/photos/{fileId}")
+  @PutMapping("/{reportId}/photos/{fileId}")
   @RequestBodyPhotoFile
   fun updateAcceleratorReportPhoto(
       @PathVariable reportId: ReportId,

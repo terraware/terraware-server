@@ -47,6 +47,7 @@ class PublishedReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     organizationId = insertOrganization(timeZone = ZoneOffset.UTC)
     projectId = insertProject()
+    insertFundingEntityProject()
     insertProjectReportConfig()
     reportId = insertReport()
     insertPublishedReport()
@@ -62,7 +63,7 @@ class PublishedReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportPhoto()
       insertPublishedReportPhoto()
 
-      assertThrows<ReportNotFoundException>("No permission") { service.readPhoto(reportId, fileId) }
+      assertThrows<ReportNotFoundException>("No roles") { service.readPhoto(reportId, fileId) }
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
       assertDoesNotThrow("Read Only") { service.readPhoto(reportId, fileId) }

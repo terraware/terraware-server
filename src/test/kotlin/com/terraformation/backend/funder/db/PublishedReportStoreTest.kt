@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
   override val defaultUserType: UserType
     get() = UserType.Funder
 
-  private val store: PublishedReportsStore by lazy { PublishedReportsStore(dslContext) }
+  private val store: PublishedReportStore by lazy { PublishedReportStore(dslContext) }
 
   private lateinit var projectId: ProjectId
 
