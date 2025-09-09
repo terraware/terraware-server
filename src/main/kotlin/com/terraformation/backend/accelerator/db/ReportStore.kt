@@ -66,6 +66,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -1413,6 +1414,26 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
+  private val observationsInReportPeriodCondition =
+      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(
+          DSL.select(OBSERVATIONS.ID)
+              .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
+              .from(OBSERVATIONS)
+              .where(
+                  timestampToLocalDateField(
+                          OBSERVATIONS.COMPLETED_TIME,
+                          plantingSiteTimeZoneField(OBSERVATIONS.PLANTING_SITE_ID),
+                      )
+                      .le(REPORTS.END_DATE)
+              )
+              .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+              .orderBy(
+                  OBSERVATIONS.PLANTING_SITE_ID,
+                  OBSERVATIONS.COMPLETED_TIME.desc(),
+              )
+      )
+
   private val mortalityRateDenominatorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
 
@@ -1431,26 +1452,58 @@ class ReportStore(
                       )
                   )
                   .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(
-                          DSL.select(OBSERVATIONS.ID)
-                              .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
-                              .from(OBSERVATIONS)
-                              .where(
-                                  timestampToLocalDateField(
-                                          OBSERVATIONS.COMPLETED_TIME,
-                                          plantingSiteTimeZoneField(OBSERVATIONS.PLANTING_SITE_ID),
-                                      )
-                                      .le(REPORTS.END_DATE)
-                              )
-                              .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                              .orderBy(
-                                  OBSERVATIONS.PLANTING_SITE_ID,
-                                  OBSERVATIONS.COMPLETED_TIME.desc(),
-                              )
+                  .where(observationsInReportPeriodCondition)
+                  .and(
+                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
+                          RecordedSpeciesCertainty.Unknown
                       )
                   )
+          )
+          .convertFrom { it.toInt() }
+
+  private val survivalRateDenominatorField =
+      with(PLOT_T0_DENSITY) {
+        DSL.sum(
+            DSL.field(
+                DSL.select(DSL.sum(PLOT_DENSITY))
+                    .from(this)
+                    .where(
+                        PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.`in`(
+                            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                        )
+                    )
+                    .and(
+                        timestampToLocalDateField(
+                                PLOT_T0_DENSITY.monitoringPlots.plantingSubzones
+                                    .PLANTING_COMPLETED_TIME,
+                                plantingSiteTimeZoneField(
+                                    PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID
+                                ),
+                            )
+                            .le(REPORTS.END_DATE)
+                    )
+                    .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+            )
+        )
+      }
+
+  private val survivalRateNumeratorField = DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
+
+  // Fetch the latest observations per planting site from the reporting period and calculate the
+  // survival rate
+  private val survivalRateField =
+      DSL.field(
+              DSL.select(
+                      DSL.if_(
+                          survivalRateDenominatorField.notEqual(BigDecimal.ZERO),
+                          DSL.round(
+                              (survivalRateNumeratorField * 100.0) / survivalRateDenominatorField
+                          ),
+                          BigDecimal.ZERO,
+                      )
+                  )
+                  .from(OBSERVED_SITE_SPECIES_TOTALS)
+                  .where(observationsInReportPeriodCondition)
                   .and(
                       OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
                           RecordedSpeciesCertainty.Unknown
@@ -1562,6 +1615,7 @@ class ReportStore(
       DSL.coalesce(
           DSL.case_()
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)

@@ -70,6 +70,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -92,6 +93,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
+
+  private val sitesLiveSum = 6 + 11 + 6 + 7
+  private val site1T0Density = 10 + 11 + 20 + 21 + 30 + 31 // 40, 41, 50, 51 excluded
+  private val site2T0Density = 15 // 16 not observed
 
   @BeforeEach
   fun setup() {
@@ -430,6 +435,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 0,
                       ),
               ),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SurvivalRate,
+                  entry = ReportSystemMetricEntryModel(systemValue = 0),
+              ),
           )
 
       val reportModel =
@@ -513,6 +522,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 40,
+                      ),
+              ),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SurvivalRate,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue =
+                              (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density))
+                                  .roundToInt()
                       ),
               ),
           ),
@@ -1063,6 +1081,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
                       ),
+              ),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SurvivalRate,
+                  entry = ReportSystemMetricEntryModel(systemValue = 0),
               ),
           )
 
@@ -2970,6 +2992,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  target = 0,
+                  systemMetricId = SystemMetric.SurvivalRate,
+                  systemValue =
+                      (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
           ),
           "Report system metrics",
       )
@@ -4291,6 +4323,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 0,
           systemValue = 50,
       )
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SurvivalRate,
+          status = ReportMetricStatus.Unlikely,
+          target = 0,
+          systemValue = 50,
+      )
     }
 
     // Helper function to validate the report from setupReport() is in the published reports tables
@@ -4425,6 +4464,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.MortalityRate,
+                  statusId = ReportMetricStatus.Unlikely,
+                  target = 0,
+                  value = 50,
+              ),
+              PublishedReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SurvivalRate,
                   statusId = ReportMetricStatus.Unlikely,
                   target = 0,
                   value = 50,
@@ -4755,21 +4801,36 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             areaHa = BigDecimal(10),
             plantingCompletedTime = plantingCompletedDate1.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    insertMonitoringPlot(permanentIndex = 1)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(10))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(11))
+    insertMonitoringPlot(permanentIndex = 2)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(20))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(21))
     insertPlantingSubzone(
         areaHa = BigDecimal(20),
         plantingCompletedTime = pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
+    insertMonitoringPlot(permanentIndex = 3)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(30))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(31))
     // Not counted, not completed
     insertPlantingSubzone(
         areaHa = BigDecimal(1000),
         plantingCompletedTime = null,
     )
+    insertMonitoringPlot(permanentIndex = 4)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(40))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(41))
     // Not counted, after reporting period
     insertPlantingSubzone(
         areaHa = BigDecimal(3000),
         plantingCompletedTime =
             futurePlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
+    insertMonitoringPlot(permanentIndex = 5)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(50))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(51))
 
     val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId2 = insertPlantingSiteHistory()
@@ -4778,6 +4839,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         areaHa = BigDecimal(30),
         plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
+    insertMonitoringPlot(permanentIndex = 1)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(15))
+    // not included because otherSpeciesId not observed in site 2
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(16))
 
     val otherPlantingSiteId =
         insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
@@ -4789,6 +4854,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             areaHa = BigDecimal(5000),
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    insertMonitoringPlot(permanentIndex = 1)
+    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(5))
+    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(6))
 
     val deliveryId =
         insertDelivery(
