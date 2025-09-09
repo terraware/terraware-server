@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.auth.currentUser
@@ -7,11 +8,15 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.tables.Activities.Companion.ACTIVITIES
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.forMultiset
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class ActivityStore(
@@ -52,6 +57,7 @@ class ActivityStore(
         description = model.description,
         id = activityId,
         isHighlight = false,
+        media = emptyList(),
         modifiedBy = userId,
         modifiedTime = now,
         projectId = model.projectId,
@@ -107,40 +113,61 @@ class ActivityStore(
     }
   }
 
-  fun fetchOneById(activityId: ActivityId): ExistingActivityModel {
+  fun fetchOneById(activityId: ActivityId, includeMedia: Boolean = false): ExistingActivityModel {
     requirePermissions { readActivity(activityId) }
 
-    return fetchByCondition(ACTIVITIES.ID.eq(activityId)).firstOrNull()
+    return fetchByCondition(ACTIVITIES.ID.eq(activityId), includeMedia).firstOrNull()
         ?: throw ActivityNotFoundException(activityId)
   }
 
-  fun fetchByProjectId(projectId: ProjectId): List<ExistingActivityModel> {
+  fun fetchByProjectId(
+      projectId: ProjectId,
+      includeMedia: Boolean = false,
+  ): List<ExistingActivityModel> {
     requirePermissions { listActivities(projectId) }
 
-    return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId))
+    return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId), includeMedia)
   }
 
-  private fun fetchByCondition(condition: Condition): List<ExistingActivityModel> {
-    return with(ACTIVITIES) {
-      dslContext
-          .select(
-              ACTIVITY_DATE,
-              ACTIVITY_TYPE_ID,
-              CREATED_BY,
-              CREATED_TIME,
-              DESCRIPTION,
-              ID,
-              IS_HIGHLIGHT,
-              MODIFIED_BY,
-              MODIFIED_TIME,
-              PROJECT_ID,
-              VERIFIED_BY,
-              VERIFIED_TIME,
+  private val geolocationField = ACTIVITY_MEDIA_FILES.GEOLOCATION.forMultiset()
+
+  private val mediaMultiset =
+      DSL.multiset(
+              DSL.select(
+                      ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID,
+                      ACTIVITY_MEDIA_FILES.CAPTION,
+                      ACTIVITY_MEDIA_FILES.CAPTURED_DATE,
+                      ACTIVITY_MEDIA_FILES.FILE_ID,
+                      ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO,
+                      FILES.CREATED_BY,
+                      FILES.CREATED_TIME,
+                      geolocationField,
+                  )
+                  .from(ACTIVITY_MEDIA_FILES)
+                  .join(FILES)
+                  .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
+                  .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(ACTIVITIES.ID))
+                  .orderBy(ACTIVITY_MEDIA_FILES.FILE_ID)
           )
-          .from(ACTIVITIES)
-          .where(condition)
-          .orderBy(ID)
-          .fetch { record -> ExistingActivityModel.of(record) }
+          .convertFrom { result -> result.map { ActivityMediaModel.of(it, geolocationField) } }
+
+  private fun fetchByCondition(
+      condition: Condition,
+      includeMedia: Boolean,
+  ): List<ExistingActivityModel> {
+    return with(ACTIVITIES) {
+      if (includeMedia) {
+        dslContext
+            .select(asterisk(), mediaMultiset)
+            .from(ACTIVITIES)
+            .where(condition)
+            .orderBy(ID)
+            .fetch { ExistingActivityModel.of(it, mediaMultiset) }
+      } else {
+        dslContext.select(asterisk()).from(ACTIVITIES).where(condition).orderBy(ID).fetch {
+          ExistingActivityModel.of(it, null)
+        }
+      }
     }
   }
 }

@@ -13,6 +13,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -90,6 +91,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshots
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserInternalInterestsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivitiesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
@@ -3761,6 +3763,29 @@ abstract class DatabaseBackedTest {
     activitiesDao.insert(row)
 
     return row.id!!.also { inserted.activityIds.add(it) }
+  }
+
+  protected fun insertActivityMediaFile(
+      activityId: ActivityId = inserted.activityId,
+      caption: String? = null,
+      capturedDate: LocalDate = LocalDate.EPOCH,
+      fileId: FileId = inserted.fileId,
+      geolocation: Point? = null,
+      isCoverPhoto: Boolean = false,
+      type: ActivityMediaType = ActivityMediaType.Photo,
+  ) {
+    val row =
+        ActivityMediaFilesRow(
+            activityId = activityId,
+            activityMediaTypeId = type,
+            caption = caption,
+            capturedDate = capturedDate,
+            fileId = fileId,
+            geolocation = geolocation,
+            isCoverPhoto = isCoverPhoto,
+        )
+
+    activityMediaFilesDao.insert(row)
   }
 
   private var nextInternalTagNumber = 1
