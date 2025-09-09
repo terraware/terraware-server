@@ -1,3 +1,4 @@
+255ce33ec8e SW-7258 CRUD endpoints for report photos (#3367)
 c88bc809b75 Generate unique storage URLs in insertFile (#3369)
 24bec0af735 Fix race in InputStreamCopierTest (#3368)
 8d0ec8f6435 SW-7332 Add survival rate to recalculate method (#3353)
