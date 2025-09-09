@@ -8,7 +8,9 @@ import com.drew.metadata.Metadata
 import com.drew.metadata.exif.ExifIFD0Directory
 import com.drew.metadata.exif.ExifSubIFDDirectory
 import com.drew.metadata.exif.GpsDirectory
+import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.SRID
@@ -27,11 +29,13 @@ import java.io.InputStream
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
+import org.springframework.context.event.EventListener
 
 @Named
 class ActivityMediaService(
@@ -123,6 +127,49 @@ class ActivityMediaService(
     checkFileExists(activityId, fileId)
 
     return fileService.readFile(fileId, maxWidth, maxHeight)
+  }
+
+  fun deleteMedia(activityId: ActivityId, fileId: FileId) {
+    requirePermissions { updateActivity(activityId) }
+
+    checkFileExists(activityId, fileId)
+
+    fileService.deleteFile(fileId) {
+      dslContext
+          .deleteFrom(ACTIVITY_MEDIA_FILES)
+          .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId))
+          .and(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+          .execute()
+    }
+  }
+
+  @EventListener
+  fun on(event: ActivityDeletionStartedEvent) {
+    deleteByCondition(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(event.activityId))
+  }
+
+  @EventListener
+  fun on(event: OrganizationDeletionStartedEvent) {
+    deleteByCondition(
+        ACTIVITY_MEDIA_FILES.activities.projects.ORGANIZATION_ID.eq(event.organizationId)
+    )
+  }
+
+  private fun deleteByCondition(condition: Condition) {
+    dslContext
+        .select(ACTIVITY_MEDIA_FILES.FILE_ID)
+        .from(ACTIVITY_MEDIA_FILES)
+        .where(condition)
+        .fetch(ACTIVITY_MEDIA_FILES.FILE_ID)
+        .filterNotNull()
+        .forEach { fileId ->
+          fileService.deleteFile(fileId) {
+            dslContext
+                .deleteFrom(ACTIVITY_MEDIA_FILES)
+                .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+                .execute()
+          }
+        }
   }
 
   private fun checkFileExists(activityId: ActivityId, fileId: FileId) {
