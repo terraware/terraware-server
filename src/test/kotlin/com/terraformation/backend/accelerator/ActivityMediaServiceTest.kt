@@ -1,12 +1,14 @@
-package com.terraformation.backend.accelerator.db
+package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
@@ -15,12 +17,15 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDate
+import kotlin.random.Random
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -151,6 +156,51 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       } else {
         assertNull(row.geolocation, "Geolocation")
       }
+    }
+  }
+
+  @Nested
+  inner class ReadMedia {
+    @Test
+    fun `returns media data for correct activity`() {
+      val testContent = Random.nextBytes(100)
+      val fileId = storeMediaBytes(testContent)
+
+      val inputStream = service.readMedia(activityId, fileId)
+      assertArrayEquals(testContent, inputStream.readAllBytes(), "File content")
+    }
+
+    @Test
+    fun `returns thumbnail data when dimensions specified`() {
+      val testContent = Random.nextBytes(50)
+      val thumbnailContent = Random.nextBytes(25)
+      val fileId = storeMediaBytes(testContent)
+      val maxWidth = 100
+      val maxHeight = 100
+
+      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+          SizedInputStream(thumbnailContent.inputStream(), 25L)
+
+      val inputStream = service.readMedia(activityId, fileId, maxWidth, maxHeight)
+      assertArrayEquals(thumbnailContent, inputStream.readAllBytes(), "Thumbnail content")
+    }
+
+    @Test
+    fun `throws exception if file not associated with activity`() {
+      val otherProjectId = insertProject()
+      val otherActivityId = insertActivity(projectId = otherProjectId)
+      val fileId = storeMedia("pixel.png", pngMetadata)
+
+      assertThrows<FileNotFoundException> { service.readMedia(otherActivityId, fileId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to read project`() {
+      val fileId = storeMedia("pixel.png", pngMetadata)
+
+      deleteOrganizationUser()
+
+      assertThrows<ActivityNotFoundException> { service.readMedia(activityId, fileId) }
     }
   }
 

@@ -1,4 +1,4 @@
-package com.terraformation.backend.accelerator.db
+package com.terraformation.backend.accelerator
 
 import com.drew.imaging.FileTypeDetector
 import com.drew.imaging.ImageMetadataReader
@@ -10,12 +10,14 @@ import com.drew.metadata.exif.ExifSubIFDDirectory
 import com.drew.metadata.exif.GpsDirectory
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.InputStreamCopier
@@ -108,6 +110,31 @@ class ActivityMediaService(
     log.info("Stored file $fileId for activity $activityId")
 
     return fileId
+  }
+
+  fun readMedia(
+      activityId: ActivityId,
+      fileId: FileId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+  ): SizedInputStream {
+    requirePermissions { readActivity(activityId) }
+
+    checkFileExists(activityId, fileId)
+
+    return fileService.readFile(fileId, maxWidth, maxHeight)
+  }
+
+  private fun checkFileExists(activityId: ActivityId, fileId: FileId) {
+    val fileExists =
+        dslContext.fetchExists(
+            ACTIVITY_MEDIA_FILES,
+            ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId),
+            ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId),
+        )
+    if (!fileExists) {
+      throw FileNotFoundException(fileId)
+    }
   }
 
   /** Extracts the captured date, if any, from EXIF metadata. */
