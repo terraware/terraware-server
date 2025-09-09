@@ -152,13 +152,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_fkey</td>
+                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
+                                                <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -179,13 +179,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
+                                                <td title="recorded_trees.monitoring_plot_id references monitoring_plots.id via recorded_trees_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">recorded_trees_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recorded_trees.monitoring_plot_id references monitoring_plots.id via recorded_trees_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">recorded_trees_monitoring_plot_id_fkey</td>
+                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -460,8 +460,8 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>growth_form_specific_data</td>
-                                    <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
+                                    <td>recorded_trees_trunk_number_check</td>
+                                    <td>(trunk_number &gt;&#61; 1)</td>
                                 </tr>
                                 <tr>
                                     <td>recorded_trees_diameter_at_breast_height_cm_check</td>
@@ -472,12 +472,12 @@
                                     <td>(point_of_measurement_m &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>recorded_trees_height_m_check</td>
-                                    <td>(height_m &gt;&#61; (0)::numeric)</td>
+                                    <td>growth_form_specific_data</td>
+                                    <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
                                 </tr>
                                 <tr>
-                                    <td>recorded_trees_trunk_number_check</td>
-                                    <td>(trunk_number &gt;&#61; 1)</td>
+                                    <td>recorded_trees_height_m_check</td>
+                                    <td>(height_m &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 <tr>
                                     <td>recorded_trees_tree_number_check</td>
