@@ -501,7 +501,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       // If an old snapshot exists, it will get deleted when the new one is created
       val deletedFileUri = URI("http://deletedsnapshot.file")
-      val fileIdOld = insertFile(storageUrl = deletedFileUri)
+      val fileIdOld = insertFile()
       val submissionSnapshotIdOld =
           insertSubmissionSnapshot(fileId = fileIdOld, submissionId = submissionId)
 

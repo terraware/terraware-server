@@ -3981,8 +3981,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     private val projectMetricNullValueId by lazy { insertProjectMetric() }
     private val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
 
-    private val fileId1 by lazy { insertFile(storageUrl = "http://photos/1") }
-    private val fileId2 by lazy { insertFile(storageUrl = "http://photos/2") }
+    private val fileId1 by lazy { insertFile() }
+    private val fileId2 by lazy { insertFile() }
 
     @Test
     fun `throws exception for non-accelerator admin user`() {
@@ -4176,7 +4176,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportPhoto(reportId = reportId, fileId = fileId2, caption = "File Caption 2")
       insertReportPhoto(
           reportId = reportId,
-          fileId = insertFile(storageUrl = "http://photo/deleted"),
+          fileId = insertFile(),
           caption = "Deleted File",
           deleted = true,
       )

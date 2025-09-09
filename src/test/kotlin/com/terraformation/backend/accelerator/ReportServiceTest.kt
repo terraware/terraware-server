@@ -57,7 +57,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val content = byteArrayOf(1, 2, 3, 4)
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 1L)
   private val inputStream: SizedInputStream = SizedInputStream(ByteArrayInputStream(content), 1L)
-  private var nextPhotoNumber = 1
 
   @BeforeEach
   fun setup() {
@@ -78,7 +77,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     every { fileService.storeFile(any(), any(), any(), any(), any()) } answers
         {
           val func = arg<((fileId: FileId) -> Unit)?>(4)
-          val fileId = insertFile(storageUrl = "http://photo/${nextPhotoNumber++}")
+          val fileId = insertFile()
           func?.let { it(fileId) }
           fileId
         }
@@ -100,11 +99,11 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class PublishReport {
     @Test
     fun `publishes report and deletes photos marked as deleted`() {
-      val existingFileId = insertFile(storageUrl = "https://photo/1")
+      val existingFileId = insertFile()
       insertReportPhoto()
       insertPublishedReportPhoto()
 
-      insertFile(storageUrl = "https://photo/2")
+      insertFile()
       insertReportPhoto(deleted = true)
       insertPublishedReportPhoto()
 
@@ -128,7 +127,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class DeleteReportPhoto {
     @Test
     fun `throws exception if no permission to update report`() {
-      val fileId = insertFile(storageUrl = "http://photo/1")
+      val fileId = insertFile()
       insertReportPhoto()
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
@@ -140,7 +139,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
       assertDoesNotThrow("TF Expert") { service.deleteReportPhoto(reportId, fileId) }
 
-      val anotherFileId = insertFile(storageUrl = "http://photo/2")
+      val anotherFileId = insertFile()
       insertReportPhoto()
 
       deleteUserGlobalRole(role = GlobalRole.TFExpert)
@@ -152,10 +151,10 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `deletes photo if not published`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      val existingFileId = insertFile(storageUrl = "https://photo2")
+      val existingFileId = insertFile()
       insertReportPhoto()
 
-      val deletedFileId = insertFile(storageUrl = "https://photo1")
+      val deletedFileId = insertFile()
       insertReportPhoto()
 
       service.deleteReportPhoto(reportId, deletedFileId)
@@ -170,10 +169,10 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `sets photo to deleted if already published`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      val existingFileId = insertFile(storageUrl = "https://photo2")
+      val existingFileId = insertFile()
       insertReportPhoto()
 
-      val deletedFileId = insertFile(storageUrl = "https://photo1")
+      val deletedFileId = insertFile()
       insertReportPhoto()
       insertPublishedReportPhoto()
 
@@ -261,7 +260,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `stores file and adds a report photo row`() {
       insertOrganizationUser(role = Role.Manager)
-      val existingFileId = insertFile(storageUrl = "https://photo/existing")
+      val existingFileId = insertFile()
       insertReportPhoto()
       val fileId =
           service.storeReportPhoto(
