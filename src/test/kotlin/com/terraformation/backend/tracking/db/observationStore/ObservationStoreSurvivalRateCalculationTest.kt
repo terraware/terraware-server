@@ -14,7 +14,9 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.ObservationScenarioTest
 import java.math.BigDecimal
 import java.time.Instant
 import kotlin.collections.component1
@@ -27,7 +29,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
+class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
+  override val user = mockUser()
+
   private lateinit var observationId: ObservationId
   private lateinit var plotId: MonitoringPlotId
   private lateinit var subzoneId: PlantingSubzoneId
@@ -35,7 +39,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
   private val observedTime = Instant.ofEpochSecond(1)
 
   @BeforeEach
-  fun insertDetailedSiteAndObservation() {
+  fun setUp() {
     zoneId = insertPlantingZone()
     subzoneId = insertPlantingSubzone()
     plotId = insertMonitoringPlot()
@@ -66,7 +70,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                 statusId = RecordedPlantStatus.Existing,
             ),
         )
-    store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        recordedPlants,
+    )
 
     assertSurvivalRates(
         listOf(
@@ -98,7 +109,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                 statusId = RecordedPlantStatus.Dead,
             ),
         )
-    store.completePlot(observationId, plotId, emptySet(), "Notes", observedTime, recordedPlants)
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        recordedPlants,
+    )
 
     assertSurvivalRates(
         listOf(
@@ -148,7 +166,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     statusId = RecordedPlantStatus.Existing,
                 ),
             )
-    store.completePlot(observationId, plotId, emptySet(), "Notes1", observedTime, plot1Plants)
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes1",
+        observedTime,
+        plot1Plants,
+    )
 
     val plot1SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
         mapOf(
@@ -193,7 +218,14 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
                     statusId = RecordedPlantStatus.Existing,
                 )
             )
-    store.completePlot(observationId, plot2, emptySet(), "Notes2", observedTime, plot2Plants)
+    observationStore.completePlot(
+        observationId,
+        plot2,
+        emptySet(),
+        "Notes2",
+        observedTime,
+        plot2Plants,
+    )
 
     val plot2SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
         mapOf(
@@ -245,7 +277,7 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
         species2Count: Int,
         species3Count: Int,
     ) {
-      store.completePlot(
+      observationStore.completePlot(
           observationId,
           plotId,
           emptySet(),
@@ -361,82 +393,10 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
 
   @Test
   fun `survival rate is updated when t0 density changes`() {
-    val species1 = insertSpecies()
-    val species2 = insertSpecies()
-    var permIndex = 0
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateT0DensityChange", numSpecies = 2)
 
-    fun insertPlotWithDensities(
-        subzoneId: PlantingSubzoneId,
-        species1Density: Double,
-        species2Density: Double,
-    ): MonitoringPlotId {
-      val plotId = insertMonitoringPlot(plantingSubzoneId = subzoneId, permanentIndex = permIndex++)
-      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-      insertPlotT0Density(speciesId = species1, plotDensity = BigDecimal.valueOf(species1Density))
-      insertPlotT0Density(speciesId = species2, plotDensity = BigDecimal.valueOf(species2Density))
-      return plotId
-    }
-    fun completePlot(
-        plotId: MonitoringPlotId,
-        species1Count: Int,
-        species2Count: Int,
-    ) {
-      store.completePlot(
-          observationId,
-          plotId,
-          emptySet(),
-          "Notes1",
-          observedTime,
-          createPlantsRows(
-              mapOf(
-                  species1 to species1Count,
-                  species2 to species2Count,
-              ),
-              RecordedPlantStatus.Live,
-          ),
-      )
-    }
-
-    val zone1 = insertPlantingZone()
-    val subzone1 = insertPlantingSubzone()
-    insertObservationRequestedSubzone()
-    val subzone2 = insertPlantingSubzone()
-    insertObservationRequestedSubzone()
-    val zone2 = insertPlantingZone()
-    val subzone3 = insertPlantingSubzone()
-    insertObservationRequestedSubzone()
-
-    val plot1 = insertPlotWithDensities(subzone1, 10.0, 20.0)
-    val plot2 = insertPlotWithDensities(subzone1, 30.0, 40.0)
-    val plot3 = insertPlotWithDensities(subzone2, 50.0, 60.0)
-    val plot4 = insertPlotWithDensities(subzone3, 70.0, 80.0)
-
-    completePlot(plot1, 9, 20)
-    completePlot(plot2, 30, 39)
-    completePlot(plot3, 55, 55)
-    completePlot(plot4, 61, 78)
-
-    assertSurvivalRates(
-        listOf(
-            mapOf(
-                plot1 to mapOf(species1 to 90, species2 to 100),
-                plot2 to mapOf(species1 to 100, species2 to 98),
-                plot3 to mapOf(species1 to 110, species2 to 92),
-                plot4 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(
-                subzone1 to mapOf(species1 to 98, species2 to 98),
-                subzone2 to mapOf(species1 to 110, species2 to 92),
-                subzone3 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(
-                zone1 to mapOf(species1 to 104, species2 to 95),
-                zone2 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(plantingSiteId to mapOf(species1 to 97, species2 to 96)),
-        ),
-        "Before modifying density",
-    )
+    val species1 = speciesIds["Species 0"]!!
+    val plot1 = plotIds["111"]!!
 
     with(PLOT_T0_DENSITY) {
       dslContext
@@ -446,32 +406,114 @@ class ObservationStoreSurvivalRateCalculationTest : BaseObservationStoreTest() {
           .and(SPECIES_ID.eq(species1))
           .execute()
     }
-    store.recalculateSurvivalRates(plot1)
+    observationStore.recalculateSurvivalRates(plot1)
 
-    assertSurvivalRates(
-        listOf(
-            mapOf(
-                plot1 to mapOf(species1 to 45, species2 to 100),
-                plot2 to mapOf(species1 to 100, species2 to 98),
-                plot3 to mapOf(species1 to 110, species2 to 92),
-                plot4 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(
-                subzone1 to mapOf(species1 to 78, species2 to 98),
-                subzone2 to mapOf(species1 to 110, species2 to 92),
-                subzone3 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(
-                zone1 to mapOf(species1 to 94, species2 to 95),
-                zone2 to mapOf(species1 to 87, species2 to 98),
-            ),
-            mapOf(plantingSiteId to mapOf(species1 to 91, species2 to 96)),
-        ),
-        "After modifying density",
-    )
+    val ratesAfterUpdate =
+        loadExpectedSurvivalRates(
+            "/tracking/observation/SurvivalRateT0DensityChange/AfterUpdate",
+            2,
+        )
+    assertSurvivalRates(ratesAfterUpdate, "Rates After Update")
   }
 
   private var lastCoord: Int = 1
+
+  private fun runSurvivalRateScenario(prefix: String, numSpecies: Int) {
+    importSiteFromCsvFile(prefix, 30)
+    observationId = insertObservation()
+    importT0DensitiesCsv(prefix, numSpecies)
+    importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
+
+    val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
+    assertSurvivalRates(expectedRates, "CSV-based survival rates")
+  }
+
+  private fun loadExpectedSurvivalRates(
+      prefix: String,
+      numSpecies: Int,
+  ): List<Map<Any, Map<SpeciesId, Number?>>> {
+    val speciesIds = (0 until numSpecies).map { "Species $it" to this.speciesIds["Species $it"]!! }
+
+    val plotRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    mapCsv("$prefix/PlotRates.csv", 1) { cols ->
+      val plotName = cols[0]
+      val plotId = plotIds[plotName]!!
+      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+
+      for ((index, speciesPair) in speciesIds.withIndex()) {
+        val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
+        val rate = rateStr?.removeSuffix("%")?.toDoubleOrNull()
+        if (rate != null) {
+          ratesMap[speciesPair.second] = rate
+        }
+      }
+      plotRates[plotId] = ratesMap
+    }
+
+    val subzoneRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    mapCsv("$prefix/SubzoneRates.csv", 1) { cols ->
+      val subzoneName = cols[0]
+      val subzoneId = subzoneIds[subzoneName]!!
+      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+
+      for ((index, speciesPair) in speciesIds.withIndex()) {
+        val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
+        val rate = rateStr?.removeSuffix("%")?.toDoubleOrNull()
+        if (rate != null) {
+          ratesMap[speciesPair.second] = rate
+        }
+      }
+      subzoneRates[subzoneId] = ratesMap
+    }
+
+    val zoneRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    mapCsv("$prefix/ZoneRates.csv", 1) { cols ->
+      val zoneName = cols[0]
+      val zoneId = zoneIds[zoneName]!!
+      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+
+      for ((index, speciesPair) in speciesIds.withIndex()) {
+        val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
+        val rate = rateStr?.removeSuffix("%")?.toDoubleOrNull()
+        if (rate != null) {
+          ratesMap[speciesPair.second] = rate
+        }
+      }
+      zoneRates[zoneId] = ratesMap
+    }
+
+    val siteRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    mapCsv("$prefix/SiteRates.csv", 1) { cols ->
+      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+
+      for ((index, speciesPair) in speciesIds.withIndex()) {
+        val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
+        val rate = rateStr?.removeSuffix("%")?.toDoubleOrNull()
+        if (rate != null) {
+          ratesMap[speciesPair.second] = rate
+        }
+      }
+      siteRates[plantingSiteId] = ratesMap
+    }
+
+    return listOf(plotRates, subzoneRates, zoneRates, siteRates)
+  }
+
+  private fun importT0DensitiesCsv(prefix: String, numSpecies: Int) {
+    mapCsv("$prefix/T0Densities.csv", 1) { cols ->
+      val plotName = cols[0]
+      val plotId = plotIds[plotName]!!
+
+      for (speciesIndex in 0 until numSpecies) {
+        val density = BigDecimal(cols[speciesIndex + 1])
+        val speciesId =
+            speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
+              insertSpecies(scientificName = "Species $speciesIndex")
+            }
+        insertPlotT0Density(speciesId = speciesId, monitoringPlotId = plotId, plotDensity = density)
+      }
+    }
+  }
 
   private fun createPlantsRows(
       counts: Map<SpeciesId, Int>,
