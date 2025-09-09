@@ -117,11 +117,11 @@ class PublishedReportsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           position = 1,
       )
 
-      val fileId1 = insertFile(storageUrl = "https://file1")
+      val fileId1 = insertFile()
       insertReportPhoto(caption = "photo caption 1")
       insertPublishedReportPhoto(caption = "photo caption 1")
 
-      val fileId2 = insertFile(storageUrl = "https://file2")
+      val fileId2 = insertFile()
       insertReportPhoto(caption = "photo caption 2")
       insertPublishedReportPhoto(caption = "photo caption 2")
 

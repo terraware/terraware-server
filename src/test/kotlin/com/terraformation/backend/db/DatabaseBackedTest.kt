@@ -1732,6 +1732,8 @@ abstract class DatabaseBackedTest {
     return insertedId.also { inserted.subLocationIds.add(it) }
   }
 
+  private var nextStorageUrlNumber = 1
+
   fun insertFile(
       row: FilesRow = FilesRow(),
       fileName: String = row.fileName ?: "fileName",
@@ -1741,7 +1743,7 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      storageUrl: Any = row.storageUrl ?: "http://dummy",
+      storageUrl: Any = row.storageUrl ?: "http://dummy/${nextStorageUrlNumber++}",
   ): FileId {
     val rowWithDefaults =
         row.copy(

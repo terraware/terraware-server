@@ -140,13 +140,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           mitigationPlan = "Plan A",
       )
 
-      val fileId1 = insertFile(storageUrl = "https://file1")
+      val fileId1 = insertFile()
       insertReportPhoto(caption = "photo caption 1")
 
-      val fileId2 = insertFile(storageUrl = "https://file2")
+      val fileId2 = insertFile()
       insertReportPhoto(caption = "photo caption 2")
 
-      insertFile(storageUrl = "https://file3")
+      insertFile()
       insertReportPhoto(caption = "deleted", deleted = true)
 
       val reportModel =
