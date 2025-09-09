@@ -4,12 +4,14 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.SocketTimeoutException
+import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
@@ -315,6 +317,7 @@ class InputStreamCopierTest {
 
   @Test
   fun `transfer waits for all copies to finish or close`() {
+    val checkingTransferLatch = CountDownLatch(1)
     val testData = generateTestData(1000)
     val source = ByteArrayInputStream(testData)
     val copier = InputStreamCopier(source)
@@ -323,30 +326,31 @@ class InputStreamCopierTest {
     val copy2 = copier.getCopy()
     val copy3 = copier.getCopy()
 
-    var closingReaderCompleted = false
-    var slowReaderCompleted = false
-
     val fastReader = thread { copy1.readAllBytes() }
+    val closingReader = thread { copy3.close() }
 
     val slowReader = thread {
-      Thread.sleep(100) // Small delay to ensure transfer() waits
+      // Wait to make sure we've checked that the transfer thread is still running. Timeout here is
+      // just to prevent this thread from waiting forever if the parent thread exits.
+      checkingTransferLatch.await(30, TimeUnit.SECONDS)
       copy2.readAllBytes()
-      slowReaderCompleted = true
     }
 
-    val closingReader = thread {
-      copy3.close()
-      closingReaderCompleted = true
-    }
+    val transferThread = thread { copier.transfer() }
 
-    copier.transfer()
-
-    assertTrue(closingReaderCompleted, "Should have waited for closing reader to complete")
-    assertTrue(slowReaderCompleted, "Should have waited for slow reader to complete")
-
-    closingReader.join()
     fastReader.join()
+    closingReader.join()
+
+    try {
+      // Make sure the transfer thread doesn't exit while the slow reader is still running.
+      // A longer timeout reduces the chance of false negatives but makes the test slower.
+      assertFalse(transferThread.join(Duration.ofMillis(50)), "Transfer done before slow reader")
+    } finally {
+      checkingTransferLatch.countDown()
+    }
+
     slowReader.join()
+    assertTrue(transferThread.join(Duration.ofSeconds(30)), "Transfer thread finished")
   }
 
   @Test
