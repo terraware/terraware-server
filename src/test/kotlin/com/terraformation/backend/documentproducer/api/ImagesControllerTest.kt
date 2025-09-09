@@ -7,7 +7,8 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import com.terraformation.backend.file.InMemoryFileStore
 import java.net.URI
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -194,16 +195,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
     @Test
     fun `allocates next available list position if not specified`() {
       val imageVariableId = insertVariable(type = VariableType.Image, isList = true)
-      insertImageValue(
-          imageVariableId,
-          insertFile(storageUrl = URI("http://dummy1")),
-          listPosition = 0,
-      )
-      insertImageValue(
-          imageVariableId,
-          insertFile(storageUrl = URI("http://dummy2")),
-          listPosition = 1,
-      )
+      insertImageValue(imageVariableId, insertFile(), listPosition = 0)
+      insertImageValue(imageVariableId, insertFile(), listPosition = 1)
 
       val caption = "Image caption"
       val fileData = byteArrayOf(1, 2, 3, 4)
