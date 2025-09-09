@@ -1800,14 +1800,7 @@ class ObservationStore(
   }
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
-    if (
-        with(MONITORING_PLOTS) {
-          dslContext.fetchExists(
-              this,
-              ID.eq(monitoringPlotId).and(PERMANENT_INDEX.isNull),
-          )
-        }
-    ) {
+    if (!isMonitoringPlotPermanent(monitoringPlotId)) {
       throw IllegalStateException(
           "Cannot recalculate survival rates for non permanent plot $monitoringPlotId"
       )
@@ -1892,6 +1885,15 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     recalculateSurvivalRates(event.monitoringPlotId)
+  }
+
+  private fun isMonitoringPlotPermanent(monitoringPlotId: MonitoringPlotId): Boolean {
+    return with(MONITORING_PLOTS) {
+      dslContext.fetchExists(
+          this,
+          ID.eq(monitoringPlotId).and(PERMANENT_INDEX.isNotNull),
+      )
+    }
   }
 
   private fun deleteObservation(observationId: ObservationId) {
