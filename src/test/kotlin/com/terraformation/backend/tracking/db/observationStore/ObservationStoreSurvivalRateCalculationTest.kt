@@ -255,140 +255,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate is calculated for a site using all data`() {
-    val species1 = insertSpecies()
-    val species2 = insertSpecies()
-    val species3 = insertSpecies()
-    fun insertPlotWithDensities(
-        subzoneId: PlantingSubzoneId,
-        species1Density: Double,
-        species2Density: Double,
-        species3Density: Double,
-    ): MonitoringPlotId {
-      val plotId = insertMonitoringPlot(plantingSubzoneId = subzoneId)
-      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-      insertPlotT0Density(speciesId = species1, plotDensity = BigDecimal.valueOf(species1Density))
-      insertPlotT0Density(speciesId = species2, plotDensity = BigDecimal.valueOf(species2Density))
-      insertPlotT0Density(speciesId = species3, plotDensity = BigDecimal.valueOf(species3Density))
-      return plotId
-    }
-    fun completePlot(
-        plotId: MonitoringPlotId,
-        species1Count: Int,
-        species2Count: Int,
-        species3Count: Int,
-    ) {
-      observationStore.completePlot(
-          observationId,
-          plotId,
-          emptySet(),
-          "Notes1",
-          observedTime,
-          createPlantsRows(
-              mapOf(
-                  species1 to species1Count,
-                  species2 to species2Count,
-                  species3 to species3Count,
-              ),
-              RecordedPlantStatus.Live,
-          ),
-      )
-    }
-    val zone1 = insertPlantingZone()
-    val subzone1 = insertPlantingSubzone()
-    val subzone2 = insertPlantingSubzone()
-    val zone2 = insertPlantingZone()
-    val subzone3 = insertPlantingSubzone()
-    val subzone4 = insertPlantingSubzone()
-    val zone3 = insertPlantingZone()
-    val subzone5 = insertPlantingSubzone()
-    val subzone6 = insertPlantingSubzone()
-
-    val plot1 = insertPlotWithDensities(subzone1, 17.0, 26.0, 5.0)
-    val plot2 = insertPlotWithDensities(subzone1, 11.52, 44.37, 42.21)
-    val plot3 = insertPlotWithDensities(subzone1, 10.35, 40.41, 21.87)
-    val plot4 = insertPlotWithDensities(subzone2, 12.33, 41.85, 9.45)
-    val plot5 = insertPlotWithDensities(subzone2, 17.55, 23.4, 29.88)
-    val plot6 = insertPlotWithDensities(subzone3, 1.0, 3.0, 11.0)
-    val plot7 = insertPlotWithDensities(subzone3, 11.0, 24.0, 17.0)
-    val plot8 = insertPlotWithDensities(subzone3, 28.98, 20.79, 41.31)
-    val plot9 = insertPlotWithDensities(subzone4, 16.83, 12.06, 23.94)
-    val plot10 = insertPlotWithDensities(subzone4, 28.0, 2.0, 28.0)
-    val plot11 = insertPlotWithDensities(subzone4, 41.85, 28.53, 16.92)
-    val plot12 = insertPlotWithDensities(subzone4, 16.0, 23.0, 31.0)
-    val plot13 = insertPlotWithDensities(subzone5, 22.0, 10.0, 31.0)
-    val plot14 = insertPlotWithDensities(subzone5, 26.0, 3.0, 1.0)
-    val plot15 = insertPlotWithDensities(subzone5, 15.66, 10.35, 18.81)
-    val plot16 = insertPlotWithDensities(subzone6, 12.06, 33.12, 17.91)
-    val plot17 = insertPlotWithDensities(subzone6, 13.23, 35.37, 21.42)
-    val plot18 = insertPlotWithDensities(subzone6, 24.0, 20.0, 15.0)
-    val plot19 = insertPlotWithDensities(subzone6, 18.0, 15.0, 6.0)
-    val plot20 = insertPlotWithDensities(subzone6, 21.0, 20.0, 12.0)
-
-    completePlot(plot1, 42, 8, 14)
-    completePlot(plot2, 24, 15, 41)
-    completePlot(plot3, 7, 45, 36)
-    completePlot(plot4, 31, 2, 40)
-    completePlot(plot5, 52, 41, 53)
-    completePlot(plot6, 33, 22, 40)
-    completePlot(plot7, 38, 7, 43)
-    completePlot(plot8, 39, 14, 33)
-    completePlot(plot9, 35, 48, 2)
-    completePlot(plot10, 31, 5, 2)
-    completePlot(plot11, 53, 24, 41)
-    completePlot(plot12, 47, 27, 12)
-    completePlot(plot13, 30, 25, 58)
-    completePlot(plot14, 17, 18, 4)
-    completePlot(plot15, 33, 36, 22)
-    completePlot(plot16, 45, 30, 0)
-    completePlot(plot17, 13, 49, 26)
-    completePlot(plot18, 44, 40, 10)
-    completePlot(plot19, 13, 39, 28)
-    completePlot(plot20, 46, 39, 35)
-
-    assertSurvivalRates(
-        listOf(
-            mapOf(
-                plot1 to mapOf(species1 to 247, species2 to 31, species3 to 280),
-                plot2 to mapOf(species1 to 208, species2 to 34, species3 to 97),
-                plot3 to mapOf(species1 to 68, species2 to 111, species3 to 165),
-                plot4 to mapOf(species1 to 251, species2 to 5, species3 to 423),
-                plot5 to mapOf(species1 to 296, species2 to 175, species3 to 177),
-                plot6 to mapOf(species1 to 3300, species2 to 733, species3 to 364),
-                plot7 to mapOf(species1 to 345, species2 to 29, species3 to 253),
-                plot8 to mapOf(species1 to 135, species2 to 67, species3 to 80),
-                plot9 to mapOf(species1 to 208, species2 to 398, species3 to 8),
-                plot10 to mapOf(species1 to 111, species2 to 250, species3 to 7),
-                plot11 to mapOf(species1 to 127, species2 to 84, species3 to 242),
-                plot12 to mapOf(species1 to 294, species2 to 117, species3 to 39),
-                plot13 to mapOf(species1 to 136, species2 to 250, species3 to 187),
-                plot14 to mapOf(species1 to 65, species2 to 600, species3 to 400),
-                plot15 to mapOf(species1 to 211, species2 to 348, species3 to 117),
-                // species 3 is missing because count is 0 in observation so it has no totals row
-                plot16 to mapOf(species1 to 373, species2 to 91),
-                plot17 to mapOf(species1 to 98, species2 to 139, species3 to 121),
-                plot18 to mapOf(species1 to 183, species2 to 200, species3 to 67),
-                plot19 to mapOf(species1 to 72, species2 to 260, species3 to 467),
-                plot20 to mapOf(species1 to 219, species2 to 195, species3 to 292),
-            ),
-            mapOf(
-                subzone1 to mapOf(species1 to 188, species2 to 61, species3 to 132),
-                subzone2 to mapOf(species1 to 278, species2 to 66, species3 to 236),
-                subzone3 to mapOf(species1 to 268, species2 to 90, species3 to 167),
-                subzone4 to mapOf(species1 to 162, species2 to 159, species3 to 57),
-                subzone5 to mapOf(species1 to 126, species2 to 338, species3 to 165),
-                subzone6 to mapOf(species1 to 182, species2 to 160, species3 to 137),
-            ),
-            mapOf(
-                zone1 to mapOf(species1 to 227, species2 to 63, species3 to 170),
-                zone2 to mapOf(species1 to 192, species2 to 130, species3 to 102),
-                zone3 to mapOf(species1 to 159, species2 to 188, species3 to 149),
-            ),
-            mapOf(
-                plantingSiteId to mapOf(species1 to 185, species2 to 122, species3 to 135),
-            ),
-        ),
-        "Site level survival rates",
-    )
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteData", numSpecies = 3)
   }
 
   @Test
@@ -425,7 +292,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
-    assertSurvivalRates(expectedRates, "CSV-based survival rates")
+    assertSurvivalRates(expectedRates, "$prefix - Survival Rate")
   }
 
   private fun loadExpectedSurvivalRates(
