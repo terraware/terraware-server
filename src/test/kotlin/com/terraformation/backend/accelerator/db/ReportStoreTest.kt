@@ -48,6 +48,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportSystemMetricsRecord
@@ -3980,6 +3981,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     private val projectMetricNullValueId by lazy { insertProjectMetric() }
     private val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
 
+    private val fileId1 by lazy { insertFile(storageUrl = "http://photos/1") }
+    private val fileId2 by lazy { insertFile(storageUrl = "http://photos/2") }
+
     @Test
     fun `throws exception for non-accelerator admin user`() {
       assertDoesNotThrow(message = "accelerator admin") { store.publishReport(reportId) }
@@ -4118,6 +4122,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           underperformanceJustification = "Existing underperformance justification",
       )
 
+      insertPublishedReportPhoto(
+          fileId = fileId1,
+          caption = "Old caption",
+      )
+
       clock.instant = Instant.ofEpochSecond(10000)
       store.publishReport(reportId)
       assertPublishedReport(user.userId, clock.instant)
@@ -4161,6 +4170,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           position = 1,
           challenge = "Challenge B",
           mitigationPlan = "Plan B",
+      )
+
+      insertReportPhoto(reportId = reportId, fileId = fileId1, caption = "File Caption 1")
+      insertReportPhoto(reportId = reportId, fileId = fileId2, caption = "File Caption 2")
+      insertReportPhoto(
+          reportId = reportId,
+          fileId = insertFile(storageUrl = "http://photo/deleted"),
+          caption = "Deleted File",
+          deleted = true,
       )
 
       insertReportStandardMetric(
@@ -4420,6 +4438,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           "Published report system metrics table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedReportPhotosRecord(
+                  reportId = reportId,
+                  fileId = fileId1,
+                  caption = "File Caption 1",
+              ),
+              PublishedReportPhotosRecord(
+                  reportId = reportId,
+                  fileId = fileId2,
+                  caption = "File Caption 2",
+              ),
+          ),
+          "Published report photos table",
       )
     }
   }

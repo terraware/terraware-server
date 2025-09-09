@@ -49,6 +49,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
@@ -517,6 +518,7 @@ class ReportStore(
 
       mergeReportAchievements(PUBLISHED_REPORT_ACHIEVEMENTS, report.id, report.achievements)
       mergeReportChallenges(PUBLISHED_REPORT_CHALLENGES, report.id, report.challenges)
+      publishReportPhotos(report.id, report.photos)
 
       val publishableSystemMetrics =
           report.systemMetrics
@@ -1105,6 +1107,27 @@ class ReportStore(
           .where(reportIdField.eq(reportId))
           .and(metricIdField.notIn(entries.keys))
           .execute()
+    }
+  }
+
+  private fun publishReportPhotos(
+      reportId: ReportId,
+      photos: List<ReportPhotoModel>,
+  ) {
+    if (photos.isNotEmpty()) {
+      var insertQuery =
+          dslContext.insertInto(
+              PUBLISHED_REPORT_PHOTOS,
+              PUBLISHED_REPORT_PHOTOS.REPORT_ID,
+              PUBLISHED_REPORT_PHOTOS.FILE_ID,
+              PUBLISHED_REPORT_PHOTOS.CAPTION,
+          )
+
+      photos.forEach { photo ->
+        insertQuery = insertQuery.values(reportId, photo.fileId, photo.caption)
+      }
+
+      insertQuery.onConflict().doUpdate().setAllToExcluded().execute()
     }
   }
 

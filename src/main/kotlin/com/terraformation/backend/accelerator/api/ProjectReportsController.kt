@@ -52,6 +52,7 @@ import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -233,6 +234,21 @@ class ProjectReportsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Deletes a report photo")
+  @DeleteMapping("/{reportId}/photos/{fileId}")
+  @RequestBodyPhotoFile
+  fun deleteAcceleratorReportPhoto(
+      @PathVariable reportId: ReportId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    reportService.deleteReportPhoto(
+        reportId = reportId,
+        fileId = fileId,
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
+
   @ApiResponse200Photo
   @ApiResponse404("The report does not exist, or does not have a photo with the requested ID.")
   @GetMapping(
@@ -250,14 +266,11 @@ class ProjectReportsController(
       @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
       @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    return reportService.readPhoto(reportId, fileId, maxWidth, maxHeight).toResponseEntity()
+    return reportService.readReportPhoto(reportId, fileId, maxWidth, maxHeight).toResponseEntity()
   }
 
   @Operation(summary = "Updates a report photo caption")
-  @PostMapping(
-      "/{reportId}/photos/{fileId}",
-      consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-  )
+  @PostMapping("/{reportId}/photos/{fileId}")
   @RequestBodyPhotoFile
   fun updateAcceleratorReportPhoto(
       @PathVariable reportId: ReportId,

@@ -57,8 +57,6 @@ class ReportService(
   }
 
   fun publishReport(reportId: ReportId) {
-    requirePermissions { publishReports() }
-
     dslContext.transaction { _ ->
       reportStore.publishReport(reportId)
       val deletedPhotos = reportPhotosDao.fetchByReportId(reportId).filter { it.deleted == true }
@@ -66,7 +64,7 @@ class ReportService(
     }
   }
 
-  fun readPhoto(
+  fun readReportPhoto(
       reportId: ReportId,
       fileId: FileId,
       maxWidth: Int? = null,
@@ -92,6 +90,7 @@ class ReportService(
                   fileId = fileId,
                   reportId = reportId,
                   caption = caption,
+                  deleted = false,
               )
           )
         }
@@ -107,6 +106,10 @@ class ReportService(
     requirePermissions { updateReport(reportId) }
     val reportPhotosRow = fetchReportPhotosRow(reportId, fileId)
 
+    if (reportPhotosRow.deleted == true) {
+      throw IllegalStateException("Report ${reportId} photo ${fileId} is deleted.")
+    }
+
     reportPhotosDao.update(reportPhotosRow.copy(caption = caption))
   }
 
@@ -120,8 +123,8 @@ class ReportService(
     }
 
     fileService.deleteFile(fileId) {
-      reportPhotosDao.delete(reportPhotosRow)
       publishedReportPhotosDao.delete(publishedReportsRow)
+      reportPhotosDao.delete(reportPhotosRow)
     }
   }
 
