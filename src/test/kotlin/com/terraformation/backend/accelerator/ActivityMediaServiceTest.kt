@@ -3,9 +3,12 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
+import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
@@ -15,13 +18,16 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFiles
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.point
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import java.time.LocalDate
 import kotlin.random.Random
@@ -53,7 +59,12 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
   private val service: ActivityMediaService by lazy {
-    ActivityMediaService(clock, dslContext, fileService, ParentStore(dslContext))
+    ActivityMediaService(
+        clock,
+        dslContext,
+        fileService,
+        ParentStore(dslContext),
+    )
   }
 
   private val jpegMetadata = NewFileMetadata("image/jpeg", "test.jpg", null, 1000L, null)
@@ -70,6 +81,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     insertOrganizationUser(role = Role.Admin)
 
+    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { config.keepInvalidUploads } returns false
   }
 
@@ -202,6 +214,85 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ActivityNotFoundException> { service.readMedia(activityId, fileId) }
     }
+  }
+
+  @Nested
+  inner class DeleteMedia {
+    @Test
+    fun `deletes media file and removes from storage`() {
+      val fileId = storeMedia("pixel.png", pngMetadata)
+      val storageUrl = filesDao.fetchOneById(fileId)!!.storageUrl!!
+
+      service.deleteMedia(activityId, fileId)
+
+      assertTableEmpty(FILES)
+      assertEquals(emptyList<ActivityMediaFilesRow>(), activityMediaFilesDao.findAll())
+      fileStore.assertFileWasDeleted(storageUrl)
+    }
+
+    @Test
+    fun `throws exception if file not associated with activity`() {
+      val otherProjectId = insertProject()
+      val otherActivityId = insertActivity(projectId = otherProjectId)
+      val fileId = storeMedia("pixel.png", pngMetadata)
+
+      assertThrows<FileNotFoundException> { service.deleteMedia(otherActivityId, fileId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to update project`() {
+      val fileId = storeMedia("pixel.png", pngMetadata)
+
+      deleteOrganizationUser()
+
+      assertThrows<ActivityNotFoundException> { service.deleteMedia(activityId, fileId) }
+    }
+  }
+
+  @Test
+  fun `handler for ActivityDeletionStartedEvent deletes media for activity`() {
+    storeMedia("pixel.png", pngMetadata)
+    storeMedia("pixel.png", pngMetadata)
+
+    val activity2Id = insertActivity()
+    val activity2FileId = storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
+
+    service.on(ActivityDeletionStartedEvent(activityId))
+
+    assertEquals(listOf(activity2FileId), filesDao.findAll().map { it.id }, "Remaining file IDs")
+    assertEquals(
+        listOf(activity2Id),
+        activityMediaFilesDao.findAll().map { it.activityId },
+        "Activity IDs of remaining media",
+    )
+
+    assertIsEventListener<ActivityDeletionStartedEvent>(service)
+  }
+
+  @Test
+  fun `handler for OrganizationDeletionStartedEvent deletes media for all activities in organization`() {
+    val project2Id = insertProject(organizationId)
+    val activity2Id = insertActivity(projectId = project2Id)
+
+    val otherOrgId = insertOrganization()
+    insertOrganizationUser(role = Role.Admin)
+    val otherProjectId = insertProject(otherOrgId)
+    val otherActivityId = insertActivity(projectId = otherProjectId)
+
+    storeMedia("pixel.png", pngMetadata)
+    storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
+    val otherOrgFileId = storeMedia("photoWithGps.jpg", jpegMetadata, otherActivityId)
+
+    service.on(OrganizationDeletionStartedEvent(organizationId))
+
+    assertEquals(listOf(otherOrgFileId), filesDao.findAll().map { it.id }, "Remaining file IDs")
+    assertEquals(
+        listOf(otherActivityId),
+        activityMediaFilesDao.findAll().map { it.activityId },
+        "Activity IDs of remaining media",
+    )
+
+    assertIsEventListener<OrganizationDeletionStartedEvent>(service)
   }
 
   private fun storeMedia(

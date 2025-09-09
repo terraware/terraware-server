@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.ActivityMediaService
+import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
@@ -49,6 +50,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class ActivitiesController(
     private val activityMediaService: ActivityMediaService,
+    private val activityMediaStore: ActivityMediaStore,
     private val activityStore: ActivityStore,
 ) {
   @Operation(summary = "Lists all of a project's activities.")
@@ -144,6 +146,29 @@ class ActivitiesController(
         .readMedia(activityId, fileId, maxWidth, maxHeight)
         .toResponseEntity()
   }
+
+  @Operation(summary = "Updates information about a media file for an activity.")
+  @PutMapping("/{activityId}/media/{fileId}")
+  fun updateActivityMedia(
+      @PathVariable activityId: ActivityId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: UpdateActivityMediaRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    activityMediaStore.updateMedia(activityId, fileId, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @DeleteMapping("/{activityId}/media/{fileId}")
+  @Operation(summary = "Deletes a media file from an activity.")
+  fun deleteActivityMedia(
+      @PathVariable activityId: ActivityId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    activityMediaService.deleteMedia(activityId, fileId)
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ActivityMediaFilePayload(
@@ -199,6 +224,15 @@ data class CreateActivityRequestPayload(
         description = description,
         projectId = projectId,
     )
+  }
+}
+
+data class UpdateActivityMediaRequestPayload(
+    val caption: String?,
+    val isCoverPhoto: Boolean,
+) {
+  fun applyTo(model: ActivityMediaModel): ActivityMediaModel {
+    return model.copy(caption = caption, isCoverPhoto = isCoverPhoto)
   }
 }
 

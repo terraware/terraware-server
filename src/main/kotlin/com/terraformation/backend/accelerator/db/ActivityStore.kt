@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
@@ -17,11 +18,13 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ActivityStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
 ) {
   fun create(model: NewActivityModel): ExistingActivityModel {
@@ -67,12 +70,15 @@ class ActivityStore(
   fun delete(activityId: ActivityId) {
     requirePermissions { deleteActivity(activityId) }
 
+    // Check that the activity exists.
+    fetchOneById(activityId, false)
+
     // TODO: Don't let end users delete published activities once publication is implemented
 
-    val rowsDeleted =
-        dslContext.deleteFrom(ACTIVITIES).where(ACTIVITIES.ID.eq(activityId)).execute()
-    if (rowsDeleted == 0) {
-      throw ActivityNotFoundException(activityId)
+    dslContext.transaction { _ ->
+      eventPublisher.publishEvent(ActivityDeletionStartedEvent(activityId))
+
+      dslContext.deleteFrom(ACTIVITIES).where(ACTIVITIES.ID.eq(activityId)).execute()
     }
   }
 
