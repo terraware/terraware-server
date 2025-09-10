@@ -1,6 +1,7 @@
 package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.accelerator.model.CarbonCertification
+import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -21,6 +22,7 @@ data class FunderProjectDetailsModel(
     val dealName: String? = null,
     val landUseModelTypes: Set<LandUseModelType> = emptySet(),
     val landUseModelHectares: Map<LandUseModelType, BigDecimal> = emptyMap(),
+    val metricProgress: List<MetricProgressModel> = emptyList(),
     val methodologyNumber: String? = null,
     val minProjectArea: BigDecimal? = null,
     val numNativeSpecies: Int? = null,
@@ -49,6 +51,7 @@ data class FunderProjectDetailsModel(
           landUseModelTypes = details.landUseModelTypes,
           landUseModelHectares = details.landUseModelHectares,
           methodologyNumber = details.methodologyNumber,
+          metricProgress = details.metricProgress,
           minProjectArea = details.minProjectArea,
           numNativeSpecies = details.numNativeSpecies,
           perHectareBudget = details.perHectareBudget,
@@ -69,6 +72,7 @@ data class FunderProjectDetailsModel(
         carbonCertifications: Set<CarbonCertification> = emptySet(),
         sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
         landUsages: Map<LandUseModelType, BigDecimal?> = emptyMap(),
+        metricProgress: List<MetricProgressModel> = emptyList(),
     ): FunderProjectDetailsModel {
       return FunderProjectDetailsModel(
           accumulationRate = record.accumulationRate,
@@ -81,6 +85,7 @@ data class FunderProjectDetailsModel(
           landUseModelTypes = landUsages.keys.toSet(),
           landUseModelHectares = landUsages.filterValues { it != null }.mapValues { it.value!! },
           methodologyNumber = record.methodologyNumber,
+          metricProgress = metricProgress,
           minProjectArea = record.minProjectArea,
           numNativeSpecies = record.numNativeSpecies,
           perHectareBudget = record.perHectareEstimatedBudget,

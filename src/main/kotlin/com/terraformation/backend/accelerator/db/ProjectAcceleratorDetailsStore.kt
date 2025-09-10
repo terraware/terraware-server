@@ -1,11 +1,14 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
+import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
+import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -13,11 +16,15 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -60,6 +67,7 @@ class ProjectAcceleratorDetailsStore(
             COHORTS.PHASE_ID,
             PARTICIPANTS.ID,
             PARTICIPANTS.NAME,
+            projectProgressMultiset,
         )
         .from(PROJECTS)
         .leftJoin(PROJECT_ACCELERATOR_DETAILS)
@@ -70,7 +78,13 @@ class ProjectAcceleratorDetailsStore(
         .on(COHORTS.ID.eq(PARTICIPANTS.COHORT_ID))
         .where(condition)
         .filter { filterFn(it[PROJECTS.ID]!!) }
-        .map { ProjectAcceleratorDetailsModel.of(it, projectVariableValues(it[PROJECTS.ID]!!)) }
+        .map {
+          ProjectAcceleratorDetailsModel.of(
+              it,
+              projectProgressMultiset,
+              projectVariableValues(it[PROJECTS.ID]!!),
+          )
+        }
   }
 
   fun update(
@@ -187,4 +201,39 @@ class ProjectAcceleratorDetailsStore(
   ): ProjectAcceleratorDetailsModel? {
     return fetch(PROJECTS.ID.eq(projectId)) { variableValues }.firstOrNull()
   }
+
+  private val projectProgressMultiset: Field<List<MetricProgressModel>>
+    get() {
+      val progressField =
+          DSL.if_(
+              PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.eq(SystemMetric.SpeciesPlanted),
+              DSL.max(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE),
+              DSL.sum(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE).cast(Int::class.java),
+          )
+      return DSL.multiset(
+              DSL.select(
+                      PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
+                      progressField,
+                  )
+                  .from(PUBLISHED_REPORT_SYSTEM_METRICS)
+                  .join(PUBLISHED_REPORTS)
+                  .on(PUBLISHED_REPORT_SYSTEM_METRICS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
+                  .where(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
+                  .and(
+                      PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.`in`(
+                          TRACKED_ACCUMULATED_METRICS
+                      )
+                  )
+                  .groupBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+                  .orderBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+          )
+          .convertFrom { results ->
+            results.map { record ->
+              MetricProgressModel(
+                  metric = record[PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID]!!,
+                  progress = record[progressField] ?: 0,
+              )
+            }
+          }
+    }
 }

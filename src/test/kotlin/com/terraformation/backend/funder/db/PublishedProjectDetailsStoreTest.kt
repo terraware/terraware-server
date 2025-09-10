@@ -4,10 +4,12 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.CarbonCertification
+import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
@@ -157,6 +159,21 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           landUseModelHectares = landUsages,
       )
 
+      insertProjectReportConfig()
+      insertReport()
+      insertPublishedReport()
+      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 100)
+      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 10)
+      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 1000)
+      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 1)
+
+      insertReport()
+      insertPublishedReport()
+      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 200)
+      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 20)
+      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 2000)
+      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 2)
+
       val expected =
           FunderProjectDetailsModel(
               projectId = projectId,
@@ -166,6 +183,14 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               dealDescription = "description",
               dealName = "name",
               methodologyNumber = "methodology",
+              metricProgress =
+                  listOf(
+                      MetricProgressModel(metric = SystemMetric.TreesPlanted, 30),
+                      // Species Planted utilitze max instead of sum
+                      MetricProgressModel(metric = SystemMetric.SpeciesPlanted, 2),
+                      MetricProgressModel(metric = SystemMetric.HectaresPlanted, 300),
+                      // Seeds Collected and other metric progress is not tracked
+                  ),
               minProjectArea = BigDecimal(3),
               numNativeSpecies = 4,
               perHectareBudget = BigDecimal(5),
