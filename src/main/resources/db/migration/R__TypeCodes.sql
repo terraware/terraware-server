@@ -517,7 +517,7 @@ VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2,
        (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true),
        (5, 'Mortality Rate', 'Mortality rate of plantings.', 3, 2, '2', true),
        (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true),
-       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2.1', true)
+       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', true)
 ON CONFLICT (id) DO UPDATE
 SET name = excluded.name,
     description = excluded.description,
