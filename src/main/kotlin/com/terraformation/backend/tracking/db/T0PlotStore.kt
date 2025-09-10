@@ -33,6 +33,7 @@ class T0PlotStore(
           .leftJoin(PLOT_T0_OBSERVATIONS)
           .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
           .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
+          .orderBy(monitoringPlots.PLOT_NUMBER)
           .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
           .map { (monitoringPlotId, records) ->
             PlotT0DataModel(
