@@ -1,3 +1,4 @@
+82d19836f3f SW-7261 Added accumulated metric progress to accelerator and funder project details (#3374)
 b134a4df28b Add Survival Rate comments to DB columns (#3373)
 b7d1566d59f SW-7346 Add activity media update/delete APIs (#3372)
 26ccb944487 SW-7346 Support listing and reading activity media (#3371)
