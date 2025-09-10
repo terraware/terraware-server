@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
+import org.jooq.Field
 import org.jooq.Record
 
 data class ProjectAcceleratorDetailsModel(
@@ -48,6 +49,7 @@ data class ProjectAcceleratorDetailsModel(
     val landUseModelHectares: Map<LandUseModelType, BigDecimal> = emptyMap(),
     val maxCarbonAccumulation: BigDecimal? = null,
     val methodologyNumber: String? = null,
+    val metricProgress: List<MetricProgressModel> = emptyList(),
     val minCarbonAccumulation: BigDecimal? = null,
     val minProjectArea: BigDecimal? = null,
     val numCommunities: Int? = null,
@@ -78,6 +80,7 @@ data class ProjectAcceleratorDetailsModel(
     /** Combining variables and table values. Unused columns will be deprecated going forward. */
     fun of(
         record: Record,
+        metricProgressField: Field<List<MetricProgressModel>>,
         variableValues: ProjectAcceleratorVariableValuesModel,
     ): ProjectAcceleratorDetailsModel {
       return with(PROJECT_ACCELERATOR_DETAILS) {
@@ -108,6 +111,7 @@ data class ProjectAcceleratorDetailsModel(
             landUseModelHectares = variableValues.landUseModelHectares,
             maxCarbonAccumulation = variableValues.maxCarbonAccumulation,
             methodologyNumber = variableValues.methodologyNumber,
+            metricProgress = record[metricProgressField],
             minCarbonAccumulation = variableValues.minCarbonAccumulation,
             minProjectArea = variableValues.minProjectArea,
             numCommunities = record[NUM_COMMUNITIES],

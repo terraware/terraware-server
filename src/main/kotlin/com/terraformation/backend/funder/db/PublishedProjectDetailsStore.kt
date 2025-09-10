@@ -1,7 +1,9 @@
 package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.accelerator.model.CarbonCertification
+import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
+import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -10,6 +12,8 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_DETAILS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_LAND_USE
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_SDG
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import com.terraformation.backend.funder.event.FunderProjectProfilePublishedEvent
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import com.terraformation.backend.funder.model.PublishedProjectNameModel
@@ -17,6 +21,7 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -69,9 +74,30 @@ class PublishedProjectDetailsStore(
               )
         }
 
+    val metricProgress =
+        with(PUBLISHED_REPORT_SYSTEM_METRICS) {
+          val progressSumField = DSL.sum(VALUE).cast(Int::class.java)
+          dslContext
+              .select(SYSTEM_METRIC_ID, progressSumField)
+              .from(PUBLISHED_REPORT_SYSTEM_METRICS)
+              .join(PUBLISHED_REPORTS)
+              .on(PUBLISHED_REPORT_SYSTEM_METRICS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
+              .where(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
+              .and(
+                  PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.`in`(TRACKED_ACCUMULATED_METRICS)
+              )
+              .groupBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+              .fetch { record ->
+                MetricProgressModel(
+                    metric = record[PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID]!!,
+                    progress = record[progressSumField],
+                )
+              }
+        }
+
     return with(PUBLISHED_PROJECT_DETAILS) {
       dslContext.selectFrom(this).where(PROJECT_ID.eq(projectId)).fetchOne()?.let {
-        FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap)
+        FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap, metricProgress)
       }
     }
   }
