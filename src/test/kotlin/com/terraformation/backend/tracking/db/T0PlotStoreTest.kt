@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
@@ -423,6 +424,36 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `deletes plot t0 observation if exists, replaces with new species data`() {
+      insertPlotT0Observation()
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(2))
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(4))
+
+      val density1 = BigDecimal.TEN
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, density1)),
+      )
+
+      assertTableEmpty(PLOT_T0_OBSERVATIONS)
+
+      assertTableEquals(
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId1,
+                  plotDensity = density1,
+              ),
+          ),
+          "Should have updated density",
+      )
+
+      eventPublisher.assertEventsPublished(
+          listOf(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
+      )
+    }
+
+    @Test
     fun `allows for zero density values`() {
       store.assignT0PlotSpeciesDensities(
           monitoringPlotId,
@@ -445,17 +476,6 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.assignT0PlotSpeciesDensities(
             monitoringPlotId,
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(-1))),
-        )
-      }
-    }
-
-    @Test
-    fun `does not allow species density to be set after observation is assigned to plot`() {
-      insertPlotT0Observation()
-      assertThrows<IllegalStateException> {
-        store.assignT0PlotSpeciesDensities(
-            monitoringPlotId,
-            listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(200))),
         )
       }
     }
