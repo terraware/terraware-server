@@ -80,7 +80,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(20))
 
       val expected =
-          listOf(
+          setOf(
               PlotT0DataModel(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
@@ -108,7 +108,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      assertEquals(expected, store.fetchT0SiteData(plantingSiteId))
+      assertEquals(expected, store.fetchT0SiteData(plantingSiteId).toSet())
     }
   }
 
