@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.ReportPhotoPayload
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
@@ -120,6 +121,7 @@ data class PublishedReportPayload(
     val financialSummaries: String?,
     val frequency: ReportFrequency,
     val highlights: String?,
+    val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
     val projectMetrics: List<PublishedReportMetricPayload>,
     val projectName: String,
@@ -141,6 +143,7 @@ data class PublishedReportPayload(
       financialSummaries = model.financialSummaries,
       frequency = model.frequency,
       highlights = model.highlights,
+      photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
       projectMetrics = model.projectMetrics.map { PublishedReportMetricPayload(it) },
       projectName = model.projectName,
