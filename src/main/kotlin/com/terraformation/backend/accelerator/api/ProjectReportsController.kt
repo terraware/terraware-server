@@ -294,15 +294,15 @@ class ProjectReportsController(
   @RequestBodyPhotoFile
   fun uploadAcceleratorReportPhoto(
       @PathVariable reportId: ReportId,
-      @RequestPart("file") file: MultipartFile,
-      @RequestPart("payload") payload: UploadAcceleratorReportPhotoRequestPayload,
+      @RequestPart file: MultipartFile,
+      @RequestPart(required = false) caption: String?,
   ): UploadAcceleratorReportPhotoResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename("photo")
 
     val fileId =
         reportService.storeReportPhoto(
-            caption = payload.caption,
+            caption = caption,
             data = file.inputStream,
             metadata = FileMetadata.of(contentType, filename, file.size),
             reportId = reportId,
@@ -764,7 +764,5 @@ data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingPr
 data class UpdateMetricTargetsRequestPayload(val metric: UpdateMetricTargetsPayload)
 
 data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
-
-data class UploadAcceleratorReportPhotoRequestPayload(val caption: String?)
 
 data class UploadAcceleratorReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
