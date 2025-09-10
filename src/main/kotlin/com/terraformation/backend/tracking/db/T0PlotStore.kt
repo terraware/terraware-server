@@ -53,48 +53,52 @@ class T0PlotStore(
   fun assignT0PlotObservation(monitoringPlotId: MonitoringPlotId, observationId: ObservationId) {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    with(PLOT_T0_OBSERVATIONS) {
-      dslContext
-          .insertInto(this)
-          .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(OBSERVATION_ID, observationId)
-          .onDuplicateKeyUpdate()
-          .set(OBSERVATION_ID, observationId)
-          .execute()
-    }
+    dslContext.transaction { _ ->
+      with(PLOT_T0_OBSERVATIONS) {
+        dslContext
+            .insertInto(this)
+            .set(MONITORING_PLOT_ID, monitoringPlotId)
+            .set(OBSERVATION_ID, observationId)
+            .onDuplicateKeyUpdate()
+            .set(OBSERVATION_ID, observationId)
+            .execute()
+      }
 
-    with(PLOT_T0_DENSITY) {
-      // ensure no leftover densities for species that are not in this observation
-      dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
+      with(PLOT_T0_DENSITY) {
+        // ensure no leftover densities for species that are not in this observation
+        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
 
-      dslContext
-          .insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
-          .select(
-              DSL.select(
-                      OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
-                      OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                      OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.plus(
-                              OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD
-                          )
-                          .cast(SQLDataType.NUMERIC),
-                  )
-                  .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId)
-                          .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-                          .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
-                  )
-          )
-          .onDuplicateKeyUpdate()
-          .set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY))
-          .execute()
+        dslContext
+            .insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
+            .select(
+                DSL.select(
+                        OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.plus(
+                                OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD
+                            )
+                            .cast(SQLDataType.NUMERIC),
+                    )
+                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                    .where(
+                        OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId)
+                            .and(
+                                OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId)
+                            )
+                            .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
+                    )
+            )
+            .onDuplicateKeyUpdate()
+            .set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY))
+            .execute()
 
-      eventPublisher.publishEvent(
-          T0PlotDataAssignedEvent(
-              monitoringPlotId = monitoringPlotId,
-              observationId = observationId,
-          )
-      )
+        eventPublisher.publishEvent(
+            T0PlotDataAssignedEvent(
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+            )
+        )
+      }
     }
   }
 
@@ -104,29 +108,32 @@ class T0PlotStore(
   ) {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    with(PLOT_T0_OBSERVATIONS) {
-      // delete t0 observations associated with this plot so that retrieval doesn't return incorrect
-      // data
-      dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
-    }
-
-    with(PLOT_T0_DENSITY) {
-      // ensure no leftover densities for species that are not in this request
-      dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
-
-      var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
-
-      densities.forEach {
-        if (it.plotDensity < BigDecimal.ZERO) {
-          throw IllegalArgumentException("Plot density must not be negative")
-        }
-        insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
+    dslContext.transaction { _ ->
+      with(PLOT_T0_OBSERVATIONS) {
+        // delete t0 observations associated with this plot so that retrieval doesn't return
+        // incorrect
+        // data
+        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
       }
 
-      insertQuery.execute()
-    }
+      with(PLOT_T0_DENSITY) {
+        // ensure no leftover densities for species that are not in this request
+        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
 
-    eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
+        var insertQuery = dslContext.insertInto(this, MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY)
+
+        densities.forEach {
+          if (it.plotDensity < BigDecimal.ZERO) {
+            throw IllegalArgumentException("Plot density must not be negative")
+          }
+          insertQuery = insertQuery.values(monitoringPlotId, it.speciesId, it.plotDensity)
+        }
+
+        insertQuery.execute()
+      }
+
+      eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
+    }
   }
 
   private fun plotHasObservationT0(monitoringPlotId: MonitoringPlotId) =
