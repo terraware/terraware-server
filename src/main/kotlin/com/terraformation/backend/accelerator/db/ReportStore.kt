@@ -62,6 +62,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -1414,25 +1415,23 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
-  private val observationsInReportPeriodCondition =
-      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(
-          DSL.select(OBSERVATIONS.ID)
-              .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
-              .from(OBSERVATIONS)
-              .where(
-                  timestampToLocalDateField(
-                          OBSERVATIONS.COMPLETED_TIME,
-                          plantingSiteTimeZoneField(OBSERVATIONS.PLANTING_SITE_ID),
-                      )
-                      .le(REPORTS.END_DATE)
-              )
-              .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-              .orderBy(
-                  OBSERVATIONS.PLANTING_SITE_ID,
-                  OBSERVATIONS.COMPLETED_TIME.desc(),
-              )
-      )
+  private val observationsInReportPeriod =
+      DSL.select(OBSERVATIONS.ID)
+          .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
+          .from(OBSERVATIONS)
+          .where(
+              timestampToLocalDateField(
+                      OBSERVATIONS.COMPLETED_TIME,
+                      plantingSiteTimeZoneField(OBSERVATIONS.PLANTING_SITE_ID),
+                  )
+                  .le(REPORTS.END_DATE)
+          )
+          .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+          .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+          .orderBy(
+              OBSERVATIONS.PLANTING_SITE_ID,
+              OBSERVATIONS.COMPLETED_TIME.desc(),
+          )
 
   private val mortalityRateDenominatorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
@@ -1452,7 +1451,9 @@ class ReportStore(
                       )
                   )
                   .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(observationsInReportPeriodCondition)
+                  .where(
+                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
+                  )
                   .and(
                       OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
                           RecordedSpeciesCertainty.Unknown
@@ -1460,6 +1461,11 @@ class ReportStore(
                   )
           )
           .convertFrom { it.toInt() }
+
+  private val plotsWithObservations =
+      DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
 
   private val survivalRateDenominatorField =
       with(PLOT_T0_DENSITY) {
@@ -1472,16 +1478,7 @@ class ReportStore(
                             OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
                         )
                     )
-                    .and(
-                        timestampToLocalDateField(
-                                PLOT_T0_DENSITY.monitoringPlots.plantingSubzones
-                                    .PLANTING_COMPLETED_TIME,
-                                plantingSiteTimeZoneField(
-                                    PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID
-                                ),
-                            )
-                            .le(REPORTS.END_DATE)
-                    )
+                    .and(MONITORING_PLOT_ID.`in`(plotsWithObservations))
                     .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
             )
         )
@@ -1503,7 +1500,9 @@ class ReportStore(
                       )
                   )
                   .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(observationsInReportPeriodCondition)
+                  .where(
+                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
+                  )
                   .and(
                       OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
                           RecordedSpeciesCertainty.Unknown

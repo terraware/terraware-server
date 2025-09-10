@@ -95,7 +95,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var projectId: ProjectId
 
   private val sitesLiveSum = 6 + 11 + 6 + 7
-  private val site1T0Density = 10 + 11 + 20 + 21 + 30 + 31 // 40, 41, 50, 51 excluded
+  private val site1T0Density = 10 + 11 + 20 + 21 + 30 + 31 + 40 + 41 + 50 + 51
   private val site2T0Density = 15 // 16 not observed
 
   @BeforeEach
@@ -4801,34 +4801,34 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             areaHa = BigDecimal(10),
             plantingCompletedTime = plantingCompletedDate1.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    insertMonitoringPlot(permanentIndex = 1)
+    val subzone1plot1 = insertMonitoringPlot(permanentIndex = 1)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(10))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(11))
-    insertMonitoringPlot(permanentIndex = 2)
+    val subzone1plot2 = insertMonitoringPlot(permanentIndex = 2)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(20))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(21))
     insertPlantingSubzone(
         areaHa = BigDecimal(20),
         plantingCompletedTime = pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
-    insertMonitoringPlot(permanentIndex = 3)
+    val subzone2plot1 = insertMonitoringPlot(permanentIndex = 3)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(30))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(31))
-    // Not counted, not completed
+    // Not counted towards hectares planted, not completed
     insertPlantingSubzone(
         areaHa = BigDecimal(1000),
         plantingCompletedTime = null,
     )
-    insertMonitoringPlot(permanentIndex = 4)
+    val incompleteSubzonePlot1 = insertMonitoringPlot(permanentIndex = 4)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(40))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(41))
-    // Not counted, after reporting period
+    // Not counted towards hectares planted, after reporting period
     insertPlantingSubzone(
         areaHa = BigDecimal(3000),
         plantingCompletedTime =
             futurePlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
-    insertMonitoringPlot(permanentIndex = 5)
+    val futureSubzonePlot1 = insertMonitoringPlot(permanentIndex = 5)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(50))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(51))
 
@@ -4839,7 +4839,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         areaHa = BigDecimal(30),
         plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
-    insertMonitoringPlot(permanentIndex = 1)
+    val subzone3plot1 = insertMonitoringPlot(permanentIndex = 1)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(15))
     // not included because otherSpeciesId not observed in site 2
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(16))
@@ -4848,15 +4848,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
     val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
     insertPlantingZone()
-    // Not counted, outside of project site
+    // Not counted towards hectares planted, outside of project site
     val otherPlantingSubzoneId =
         insertPlantingSubzone(
             areaHa = BigDecimal(5000),
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    insertMonitoringPlot(permanentIndex = 1)
+    val excludedPlot = insertMonitoringPlot(permanentIndex = 1)
     insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(5))
     insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(6))
+
+    val allPlots =
+        listOf(
+            subzone1plot1,
+            subzone1plot2,
+            subzone2plot1,
+            incompleteSubzonePlot1,
+            futureSubzonePlot1,
+            subzone3plot1,
+            excludedPlot,
+        )
 
     val deliveryId =
         insertDelivery(
@@ -4921,7 +4932,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         numPlants = 9,
     )
 
-    // Not the latest observation, so the number does not count towards mortality rate
+    // Not the latest observation, so the number does not count towards mortality/survival rates
     val observationDate = getRandomDate(reportStartDate, reportEndDate.minusDays(1))
     val site1OldObservationId =
         insertObservation(
@@ -4930,6 +4941,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4962,6 +4974,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = observationDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4986,7 +4999,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         permanentLive = 6,
         cumulativeDead = 7,
     )
-    // Unknown plants are not counted towards mortality rate
+    // Unknown plants are not counted towards mortality/survival rates
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4995,7 +5008,50 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         cumulativeDead = 1000,
     )
 
-    // Latest observation before the reporting period counts towards mortality rate
+    // future observations are not counted towards mortality/survival rates
+    val futureObservationDate = reportEndDate.plusDays(1)
+    val site1FutureObservationId =
+        insertObservation(
+            plantingSiteId = plantingSiteId1,
+            plantingSiteHistoryId = plantingSiteHistoryId1,
+            state = ObservationState.Completed,
+            completedTime = futureObservationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+        )
+    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    insertObservedSiteSpeciesTotals(
+        observationId = site1FutureObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = speciesId,
+        permanentLive = 7,
+        cumulativeDead = 2,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1FutureObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = otherSpeciesId,
+        permanentLive = 12,
+        cumulativeDead = 4,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1FutureObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Other,
+        speciesName = "Other",
+        permanentLive = 7,
+        cumulativeDead = 8,
+    )
+    // Unknown plants are not counted towards mortality/survival rate
+    insertObservedSiteSpeciesTotals(
+        observationId = site1FutureObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Unknown,
+        permanentLive = 1,
+        cumulativeDead = 100,
+    )
+
+    // Latest observation before the reporting period counts towards mortality/survival rate
     val site2ObservationId =
         insertObservation(
             plantingSiteId = plantingSiteId2,
@@ -5003,6 +5059,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = reportStartDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
     insertObservedSiteSpeciesTotals(
         observationId = site2ObservationId,
         plantingSiteId = plantingSiteId2,
@@ -5023,6 +5080,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     .atStartOfDay()
                     .toInstant(ZoneOffset.UTC),
         )
+    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
     insertObservedSiteSpeciesTotals(
         observationId = otherSiteObservationId,
         plantingSiteId = plantingSiteId1,
