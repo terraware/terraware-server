@@ -106,8 +106,8 @@
             <parent column="id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="variable_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
             <parent column="id" foreignKey="variable_image_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="variable_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="variable_type_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
@@ -145,8 +145,8 @@
             <parent column="id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="variable_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
             <parent column="id" foreignKey="variable_link_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="variable_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="variable_type_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
@@ -204,8 +204,8 @@
             <parent column="id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_numbers_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_numbers_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="min_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="max_value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
@@ -245,8 +245,8 @@
             <parent column="id" foreignKey="variable_section_default_values_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_section_default_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_section_default_valu_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_default_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="variable_section_default_values_variable_manifest_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_manifests"/>
@@ -257,8 +257,8 @@
             <parent column="id" foreignKey="variable_section_default_values_used_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="used_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_section_default_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_section_default_valu_used_variable_id_used_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_default_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="usage_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="variable_section_default_values_usage_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_usage_types"/>
@@ -316,8 +316,8 @@
             <parent column="id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="variable_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
             <parent column="id" foreignKey="variable_section_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="variable_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="variable_type_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
@@ -331,8 +331,8 @@
             <parent column="id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="used_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_section_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="display_style_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="variable_section_values_display_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_injection_display_styles"/>
@@ -357,15 +357,15 @@
             <parent column="id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_sections_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_sections_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="parent_variable_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="parent_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_sections_parent_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_sections_parent_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="render_heading" nullable="false" remarks="If false, the title is not included in the rendered document. False in cases where we want a single section to have multiple content blocks; in that case, we add them as child sections with this flag set to false." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="variable_id" sequenceNumberInPK="1"/>
@@ -380,9 +380,9 @@
             <parent column="id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_select_option_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_selects"/>
             <parent column="variable_id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_options"/>
             <parent column="variable_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
-            <parent column="variable_id" foreignKey="variable_select_option_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_selects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="variable_type_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
@@ -405,12 +405,12 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="variable_id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
-            <parent column="variable_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
             <parent column="id" foreignKey="variable_select_options_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="variable_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_select_options_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
+            <parent column="id" foreignKey="variable_select_options_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -433,8 +433,8 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="variable_type_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_select_options"/>
-            <parent column="id" foreignKey="variable_selects_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_selects_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_selects_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="is_multiple" nullable="false" remarks="If true, allow multiple options to be selected. The list of selected options is considered a single value; do not set `variables.is_list` to true unless you want a list of multiple-select variables." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="variable_id" sequenceNumberInPK="1"/>
@@ -491,8 +491,8 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="table_variable_type_id" foreignKey="variable_table_columns_table_variable_id_table_variable_ty_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_table_columns"/>
-            <parent column="id" foreignKey="variable_tables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_tables_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_tables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="table_style_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="variable_tables_table_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_table_styles"/>
@@ -525,8 +525,8 @@
             <parent column="id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="variable_texts_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_texts_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_text_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="variable_texts_variable_text_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_text_types"/>
@@ -628,8 +628,8 @@
             <child column="variable_type_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
             <child column="variable_type_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
             <child column="variable_type_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
-            <parent column="id" foreignKey="variable_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
             <parent column="variable_type_id" foreignKey="variable_values_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">

@@ -1,3 +1,4 @@
+d956501e7e0 Do not use payload in report photo upload (#3378)
 fe0e5461d42 Added report photos to published report payload (#3377)
 4ccf50bd129 SW-7365 Remove t0 observation if changing to manual species data (#3376)
 82d19836f3f SW-7261 Added accumulated metric progress to accelerator and funder project details (#3374)
