@@ -104,10 +104,10 @@ class T0PlotStore(
   ) {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    if (plotHasObservationT0(monitoringPlotId)) {
-      throw IllegalStateException(
-          "Cannot assign species density to plot $monitoringPlotId which already has observation assigned"
-      )
+    with(PLOT_T0_OBSERVATIONS) {
+      // delete t0 observations associated with this plot so that retrieval doesn't return incorrect
+      // data
+      dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
     }
 
     with(PLOT_T0_DENSITY) {
