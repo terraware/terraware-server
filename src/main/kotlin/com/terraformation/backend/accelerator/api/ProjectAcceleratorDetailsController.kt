@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.model.CarbonCertification
+import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.Pipeline
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
@@ -105,6 +107,7 @@ data class ProjectAcceleratorDetailsPayload(
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>?,
     val maxCarbonAccumulation: BigDecimal?,
     val methodologyNumber: String?,
+    val metricProgress: List<MetricProgressPayload>,
     val minCarbonAccumulation: BigDecimal?,
     val minProjectArea: BigDecimal?,
     val numCommunities: Int?,
@@ -160,6 +163,7 @@ data class ProjectAcceleratorDetailsPayload(
       landUseModelHectares = model.landUseModelHectares,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
       methodologyNumber = model.methodologyNumber,
+      metricProgress = model.metricProgress.map { MetricProgressPayload(it) },
       minCarbonAccumulation = model.minCarbonAccumulation,
       minProjectArea = model.minProjectArea,
       numCommunities = model.numCommunities,
@@ -185,6 +189,18 @@ data class ProjectAcceleratorDetailsPayload(
       totalVCU = model.totalVCU,
       verraLink = model.verraLink,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
+  )
+}
+
+data class MetricProgressPayload(
+    val metric: SystemMetric,
+    val progress: Int,
+) {
+  constructor(
+      model: MetricProgressModel
+  ) : this(
+      metric = model.metric,
+      progress = model.progress,
   )
 }
 

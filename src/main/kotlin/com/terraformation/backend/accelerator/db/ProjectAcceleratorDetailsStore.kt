@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -203,11 +204,16 @@ class ProjectAcceleratorDetailsStore(
 
   private val projectProgressMultiset: Field<List<MetricProgressModel>>
     get() {
-      val progressSumField = DSL.sum(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE).cast(Int::class.java)
+      val progressField =
+          DSL.if_(
+              PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.eq(SystemMetric.SpeciesPlanted),
+              DSL.max(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE),
+              DSL.sum(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE).cast(Int::class.java),
+          )
       return DSL.multiset(
               DSL.select(
                       PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
-                      progressSumField,
+                      progressField,
                   )
                   .from(PUBLISHED_REPORT_SYSTEM_METRICS)
                   .join(PUBLISHED_REPORTS)
@@ -219,12 +225,13 @@ class ProjectAcceleratorDetailsStore(
                       )
                   )
                   .groupBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+                  .orderBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
           )
           .convertFrom { results ->
             results.map { record ->
               MetricProgressModel(
                   metric = record[PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID]!!,
-                  progress = record[progressSumField],
+                  progress = record[progressField] ?: 0,
               )
             }
           }

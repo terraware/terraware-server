@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -76,9 +77,14 @@ class PublishedProjectDetailsStore(
 
     val metricProgress =
         with(PUBLISHED_REPORT_SYSTEM_METRICS) {
-          val progressSumField = DSL.sum(VALUE).cast(Int::class.java)
+          val progressField =
+              DSL.if_(
+                  PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.eq(SystemMetric.SpeciesPlanted),
+                  DSL.max(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE),
+                  DSL.sum(PUBLISHED_REPORT_SYSTEM_METRICS.VALUE).cast(Int::class.java),
+              )
           dslContext
-              .select(SYSTEM_METRIC_ID, progressSumField)
+              .select(SYSTEM_METRIC_ID, progressField)
               .from(PUBLISHED_REPORT_SYSTEM_METRICS)
               .join(PUBLISHED_REPORTS)
               .on(PUBLISHED_REPORT_SYSTEM_METRICS.REPORT_ID.eq(PUBLISHED_REPORTS.REPORT_ID))
@@ -87,10 +93,11 @@ class PublishedProjectDetailsStore(
                   PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID.`in`(TRACKED_ACCUMULATED_METRICS)
               )
               .groupBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+              .orderBy(PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
               .fetch { record ->
                 MetricProgressModel(
                     metric = record[PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID]!!,
-                    progress = record[progressSumField],
+                    progress = record[progressField] ?: 0,
                 )
               }
         }

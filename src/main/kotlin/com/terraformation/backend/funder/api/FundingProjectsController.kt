@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.MetricProgressPayload
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ApiResponse200
@@ -107,6 +108,7 @@ data class FunderProjectDetailsPayload(
     val landUseModelTypes: Set<LandUseModelType>,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val methodologyNumber: String?,
+    val metricProgress: List<MetricProgressPayload>,
     val minProjectArea: BigDecimal?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
@@ -134,6 +136,7 @@ data class FunderProjectDetailsPayload(
       landUseModelTypes = model.landUseModelTypes,
       landUseModelHectares = model.landUseModelHectares,
       methodologyNumber = model.methodologyNumber,
+      metricProgress = model.metricProgress.map { MetricProgressPayload(it) },
       minProjectArea = model.minProjectArea,
       numNativeSpecies = model.numNativeSpecies,
       perHectareBudget = model.perHectareBudget,
