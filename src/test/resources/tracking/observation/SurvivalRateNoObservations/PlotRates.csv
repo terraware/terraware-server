@@ -1,4 +1,4 @@
-Plot Number,Plot Survival Rate,Species A Survival Rate,Species B Survival Rate
-111,30%,90%,100%
-211,50%,110%,92%
-311,41%,87%,98%
+Plot Number,Plot Survival Rate,Species 0 Survival Rate,Species 1 Survival Rate
+111,97%,90%,100%
+211,100%,110%,92%
+311,93%,87%,98%

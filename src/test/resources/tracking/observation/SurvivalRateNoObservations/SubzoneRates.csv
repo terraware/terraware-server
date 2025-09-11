@@ -1,4 +1,4 @@
-Subzone Name,Plot Survival Rate,Species A Survival Rate,Species B Survival Rate
-Subzone1,30%,90%,100%
-Subzone2,50%,110%,92%
-Subzone3,41%,87%,98%
+Subzone Name,Subzone Survival Rate,Species 0 Survival Rate,Species 1 Survival Rate
+Subzone1,97%,90%,100%
+Subzone2,100%,110%,92%
+Subzone3,93%,87%,98%
