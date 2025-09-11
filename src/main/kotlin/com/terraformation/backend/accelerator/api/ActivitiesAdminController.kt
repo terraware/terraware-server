@@ -1,13 +1,16 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.ActivityStore
+import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.ws.rs.QueryParam
 import java.time.Instant
 import java.time.LocalDate
+import org.locationtech.jts.geom.Point
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -67,6 +71,30 @@ class ActivitiesAdminController(
   }
 }
 
+data class AdminActivityMediaFilePayload(
+    val caption: String?,
+    val capturedDate: LocalDate,
+    val createdBy: UserId,
+    val createdTime: Instant,
+    val fileId: FileId,
+    val geolocation: Point?,
+    val isCoverPhoto: Boolean,
+    val type: ActivityMediaType,
+) {
+  constructor(
+      model: ActivityMediaModel
+  ) : this(
+      caption = model.caption,
+      capturedDate = model.capturedDate,
+      createdBy = model.createdBy,
+      createdTime = model.createdTime,
+      fileId = model.fileId,
+      geolocation = model.geolocation,
+      isCoverPhoto = model.isCoverPhoto,
+      type = model.type,
+  )
+}
+
 data class AdminActivityPayload(
     val createdBy: UserId,
     val createdTime: Instant,
@@ -75,6 +103,7 @@ data class AdminActivityPayload(
     val id: ActivityId,
     val isHighlight: Boolean,
     val isVerified: Boolean,
+    val media: List<AdminActivityMediaFilePayload>,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val type: ActivityType,
@@ -91,6 +120,7 @@ data class AdminActivityPayload(
       id = model.id,
       isHighlight = model.isHighlight,
       isVerified = model.verifiedBy != null,
+      media = model.media.map { AdminActivityMediaFilePayload(it) },
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
       type = model.activityType,
