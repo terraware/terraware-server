@@ -752,6 +752,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                     PLANTING_SUBZONE_ID
                                 )
                             )
+                            .and(
+                                PLOT_T0_DENSITY.MONITORING_PLOT_ID.`in`(
+                                    DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                                        .from(OBSERVATION_PLOTS)
+                                )
+                            )
                             .and(PLOT_T0_DENSITY.SPECIES_ID.eq(SPECIES_ID))
                     ),
                 )
@@ -912,6 +918,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             .where(
                                 PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID
                                     .eq(PLANTING_ZONE_ID)
+                            )
+                            .and(
+                                PLOT_T0_DENSITY.MONITORING_PLOT_ID.`in`(
+                                    DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                                        .from(OBSERVATION_PLOTS)
+                                )
                             )
                             .and(PLOT_T0_DENSITY.SPECIES_ID.eq(SPECIES_ID))
                     ),
@@ -1095,6 +1107,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             .where(
                                 PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(
                                     PLANTING_SITE_ID
+                                )
+                            )
+                            .and(
+                                PLOT_T0_DENSITY.MONITORING_PLOT_ID.`in`(
+                                    DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                                        .from(OBSERVATION_PLOTS)
                                 )
                             )
                             .and(PLOT_T0_DENSITY.SPECIES_ID.eq(SPECIES_ID))

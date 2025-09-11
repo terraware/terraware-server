@@ -1107,5 +1107,16 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           plantingSiteId,
       )
     }
+
+    @Test
+    fun `plots without observations don't count towards survival rate denominator sums`() {
+      runSummaryScenario(
+          "/tracking/observation/SurvivalRateNoObservations",
+          numObservations = 1,
+          numSpecies = 2,
+          sizeMeters = 30,
+          plantingSiteId,
+      )
+    }
   }
 }

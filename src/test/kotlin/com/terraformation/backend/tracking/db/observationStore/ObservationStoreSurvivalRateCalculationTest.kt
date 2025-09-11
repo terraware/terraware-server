@@ -259,6 +259,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate calculation excludes t0 densities for plots that have no observations`() {
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateNoObservations", numSpecies = 1)
+  }
+
+  @Test
   fun `survival rate is updated when t0 density changes`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateT0DensityChange", numSpecies = 2)
 
@@ -288,7 +293,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private fun runSurvivalRateScenario(prefix: String, numSpecies: Int) {
     importSiteFromCsvFile(prefix, 30)
     observationId = insertObservation()
-    importT0DensitiesCsv(prefix, numSpecies)
+    importT0DensitiesCsv(prefix)
     importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
@@ -364,22 +369,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
 
     return listOf(plotRates, subzoneRates, zoneRates, siteRates)
-  }
-
-  private fun importT0DensitiesCsv(prefix: String, numSpecies: Int) {
-    mapCsv("$prefix/T0Densities.csv", 1) { cols ->
-      val plotName = cols[0]
-      val plotId = plotIds[plotName]!!
-
-      for (speciesIndex in 0 until numSpecies) {
-        val density = BigDecimal(cols[speciesIndex + 1])
-        val speciesId =
-            speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
-              insertSpecies(scientificName = "Species $speciesIndex")
-            }
-        insertPlotT0Density(speciesId = speciesId, monitoringPlotId = plotId, plotDensity = density)
-      }
-    }
   }
 
   private fun createPlantsRows(

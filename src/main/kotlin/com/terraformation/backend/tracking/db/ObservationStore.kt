@@ -2348,7 +2348,14 @@ class ObservationStore(
 
   private fun getSurvivalRateDenominator(condition: Condition): Field<BigDecimal> =
       DSL.field(
-          DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY)).from(PLOT_T0_DENSITY).where(condition)
+          DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY))
+              .from(PLOT_T0_DENSITY)
+              .where(condition)
+              .and(
+                  PLOT_T0_DENSITY.MONITORING_PLOT_ID.`in`(
+                      DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID).from(OBSERVATION_PLOTS)
+                  )
+              ),
       )
 
   private fun validateAdHocPlotInPlantingSite(
