@@ -85,6 +85,9 @@ class SecurityConfig(
         // Allow unauthenticated users (such as load balancers) to access health checks.
         authorize("/actuator/health", permitAll)
 
+        // Allow unauthenticated users to fetch files using temporary access tokens.
+        authorize("/api/v1/files/tokens/**", permitAll)
+
         authorize("/api/**", fullyAuthenticated)
         authorize("/admin/**", fullyAuthenticated)
       }

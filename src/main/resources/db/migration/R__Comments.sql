@@ -89,6 +89,8 @@ COMMENT ON TABLE facility_connection_states IS '(Enum) Progress of the configura
 
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 
+COMMENT ON TABLE file_access_tokens IS 'Temporary tokens for unauthenticated access to files from the file store.';
+
 COMMENT ON TABLE files IS 'Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`.';
 
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';

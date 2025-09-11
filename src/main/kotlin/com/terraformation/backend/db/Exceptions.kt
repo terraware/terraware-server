@@ -225,6 +225,9 @@ class TimeseriesNotFoundException(
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }
 
+class TokenNotFoundException(val token: String) :
+    EntityNotFoundException("Token $token not found or expired")
+
 class UploadNotAwaitingActionException(val uploadId: UploadId) :
     MismatchedStateException("Upload $uploadId is not awaiting user action")
 

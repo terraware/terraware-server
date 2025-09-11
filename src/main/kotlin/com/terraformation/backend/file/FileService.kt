@@ -2,11 +2,14 @@ package com.terraformation.backend.file
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -16,7 +19,10 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
+import java.time.Duration
+import java.util.UUID
 import org.jooq.DSLContext
+import org.springframework.context.event.EventListener
 
 /**
  * Manages storage of files including metadata. In this implementation, files are stored on the
@@ -136,6 +142,50 @@ class FileService(
     }
   }
 
+  fun createToken(fileId: FileId, expiration: Duration): String {
+    ensureFileExists(fileId)
+
+    val now = clock.instant()
+    val expires = now + expiration
+    val token = UUID.randomUUID().toString()
+
+    with(FILE_ACCESS_TOKENS) {
+      dslContext
+          .insertInto(FILE_ACCESS_TOKENS)
+          .set(CREATED_BY, currentUser().userId)
+          .set(CREATED_TIME, now)
+          .set(EXPIRES_TIME, expires)
+          .set(FILE_ID, fileId)
+          .set(TOKEN, token)
+          .execute()
+    }
+
+    return token
+  }
+
+  fun readFileForToken(token: String): SizedInputStream {
+    val fileId =
+        dslContext.fetchValue(
+            FILE_ACCESS_TOKENS.FILE_ID,
+            FILE_ACCESS_TOKENS.TOKEN.eq(token)
+                .and(FILE_ACCESS_TOKENS.EXPIRES_TIME.gt(clock.instant())),
+        ) ?: throw TokenNotFoundException(token)
+
+    return readFile(fileId)
+  }
+
+  @EventListener
+  fun on(event: DailyTaskTimeArrivedEvent) {
+    try {
+      dslContext
+          .deleteFrom(FILE_ACCESS_TOKENS)
+          .where(FILE_ACCESS_TOKENS.EXPIRES_TIME.le(clock.instant()))
+          .execute()
+    } catch (e: Exception) {
+      log.error("Unable to prune file access tokens", e)
+    }
+  }
+
   /**
    * Returns the storage URL of an existing file.
    *
@@ -147,6 +197,12 @@ class FileService(
         .from(FILES)
         .where(FILES.ID.eq(fileId))
         .fetchOne(FILES.STORAGE_URL) ?: throw FileNotFoundException(fileId)
+  }
+
+  private fun ensureFileExists(fileId: FileId) {
+    if (!dslContext.fetchExists(FILES, FILES.ID.eq(fileId))) {
+      throw FileNotFoundException(fileId)
+    }
   }
 
   /** Deletes a file and swallows the NoSuchFileException if it doesn't exist. */
