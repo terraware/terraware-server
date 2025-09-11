@@ -3,6 +3,7 @@
 <head th:replace="~{/admin/header :: head}">
     <style th:fragment="additionalStyle">
         form { padding-bottom: 1em; }
+        mux-player { max-width: 640px; }
     </style>
 </head>
 <body>
@@ -12,6 +13,11 @@
 <a href="/admin/">Home</a>
 
 <h2>File Access Tokens</h2>
+
+<th:block th:if="${muxPlaybackId != null}">
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" defer></script>
+    <mux-player th:playback-id="${muxPlaybackId}" th:playback-token="${muxPlaybackToken}"></mux-player>
+</th:block>
 
 <h3>Create New Token</h3>
 
@@ -25,6 +31,26 @@
         <input type="text" name="expiration"/>
     </label>
     <button type="submit">Create Token</button>
+</form>
+
+<h3>Send Existing Video File to Mux</h3>
+
+<form method="POST" action="/admin/sendVideoToMux">
+    <label>
+        File ID
+        <input type="text" name="fileId"/>
+    </label>
+    <button type="submit">Send</button>
+</form>
+
+<h3>Upload Video File and Send to Mux</h3>
+
+<form method="POST" action="/admin/uploadMuxVideo" enctype="multipart/form-data">
+    <label>
+        Video file
+        <input type="file" name="file"/>
+    </label>
+    <button type="submit">Upload</button>
 </form>
 
 </body>
