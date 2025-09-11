@@ -359,7 +359,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SiteStatsSummary.csv", actual)
   }
 
   protected fun assertZoneSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
@@ -386,7 +386,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/ZoneStatsSummary.csv", actual)
   }
 
   protected fun assertSubzoneSummary(
@@ -418,7 +418,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SubzoneStatsSummary.csv", actual)
   }
 
   protected fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
@@ -448,7 +448,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+    assertResultsMatchCsv("$prefix/PlotStatsSummary.csv", actual) { row ->
       row.filterIndexed { index, _ ->
         val positionInColumnGroup = (index - 1) % 10
         positionInColumnGroup !in 4..8
@@ -594,7 +594,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             { _, results -> makeCsvColumnsFromSpeciesSummary(numSpecies, results.species) },
         )
 
-    assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/SiteStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertZoneSpeciesSummary(
@@ -616,7 +616,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/ZoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertSubzoneSpeciesSummary(
@@ -639,7 +639,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertPlotSpeciesSummary(
@@ -663,7 +663,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/PlotStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun makeCsvColumnsFromSpeciesSummary(
