@@ -842,9 +842,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.deleteUserById(inserted.userId)
 
-      assertEquals(
-          emptyList<UserGlobalRolesRow>(),
-          userGlobalRolesDao.findAll().filter { it.userId == deletedUserId },
+      assertTableEquals(
+          UserGlobalRolesRecord(userId = existingUserId, globalRoleId = GlobalRole.AcceleratorAdmin)
       )
     }
 
