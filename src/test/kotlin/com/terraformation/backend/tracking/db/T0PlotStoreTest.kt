@@ -49,7 +49,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPlantingSiteHistory()
     insertPlantingZone()
     insertPlantingSubzone()
-    monitoringPlotId = insertMonitoringPlot()
+    monitoringPlotId = insertMonitoringPlot(plotNumber = 2)
     observationId = insertObservation()
     insertObservationPlot()
     speciesId1 = insertSpecies()
@@ -70,17 +70,27 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Observation()
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(3))
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(7))
-      val plot2 = insertMonitoringPlot()
+      val plot2 = insertMonitoringPlot(plotNumber = 1)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(11))
       // data from monitoringPlot in other site not returned
       insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
-      insertMonitoringPlot()
+      insertMonitoringPlot(plotNumber = 3)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(20))
 
       val expected =
           listOf(
+              PlotT0DataModel(
+                  monitoringPlotId = plot2,
+                  densityData =
+                      listOf(
+                          SpeciesDensityModel(
+                              speciesId = speciesId1,
+                              plotDensity = BigDecimal.valueOf(11),
+                          )
+                      ),
+              ),
               PlotT0DataModel(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
@@ -94,16 +104,6 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               speciesId = speciesId2,
                               plotDensity = BigDecimal.valueOf(7),
                           ),
-                      ),
-              ),
-              PlotT0DataModel(
-                  monitoringPlotId = plot2,
-                  densityData =
-                      listOf(
-                          SpeciesDensityModel(
-                              speciesId = speciesId1,
-                              plotDensity = BigDecimal.valueOf(11),
-                          )
                       ),
               ),
           )

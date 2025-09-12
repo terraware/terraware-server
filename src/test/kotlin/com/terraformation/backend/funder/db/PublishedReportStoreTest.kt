@@ -171,6 +171,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           underperformanceJustification = "Some plants had died.",
           status = ReportMetricStatus.Unlikely,
       )
+      insertPublishedReportSystemMetric(
+          reportId = reportId1,
+          metric = SystemMetric.SurvivalRate,
+          target = 6,
+          value = 6,
+          underperformanceJustification = null,
+          status = ReportMetricStatus.Achieved,
+      )
 
       val reportId2 =
           insertReport(
@@ -308,7 +316,21 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               underperformanceJustification = "Some plants had died.",
                               value = 5,
                               unit = null,
-                          )
+                          ),
+                          PublishedReportMetricModel(
+                              component = SystemMetric.SurvivalRate.componentId,
+                              description = SystemMetric.SurvivalRate.description,
+                              metricId = SystemMetric.SurvivalRate,
+                              name = SystemMetric.SurvivalRate.jsonValue,
+                              reference = SystemMetric.SurvivalRate.reference,
+                              status = ReportMetricStatus.Achieved,
+                              target = 6,
+                              type = SystemMetric.SurvivalRate.typeId,
+                              progressNotes = null,
+                              underperformanceJustification = null,
+                              value = 6,
+                              unit = null,
+                          ),
                       ),
               ),
           ),

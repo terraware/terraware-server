@@ -37,6 +37,7 @@ import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
+import kotlin.math.roundToInt
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -106,6 +107,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
   fun `updates observed species totals`() {
     val gpsCoordinates = point(1)
     val speciesId = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10))
 
     val observationId1 = insertObservation()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
@@ -186,6 +188,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 mortalityRate = 0,
                 cumulativeDead = 0,
                 permanentLive = 1,
+                survivalRate = (1 * 100.0 / 10).roundToInt(),
             ),
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId1,
@@ -212,6 +215,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 mortalityRate = 0,
                 cumulativeDead = 0,
                 permanentLive = 1,
+                survivalRate = (1 * 100.0 / 10).roundToInt(),
             ),
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId2,
@@ -243,6 +247,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
               cumulativeDead = 1
               permanentLive = 2
               mortalityRate = 33
+              survivalRate = (2 * 100.0 / 10).roundToInt()
             },
             // expectedPlotsBeforeMerge[1] should be deleted
             expectedPlotsBeforeMerge[2].apply {
@@ -707,6 +712,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           mortalityRate = mortalityRate,
           cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
+          survivalRate = survivalRate,
       )
 
   private fun ObservedPlotSpeciesTotalsRecord.toZone(
@@ -724,6 +730,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           mortalityRate = mortalityRate,
           cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
+          survivalRate = survivalRate,
       )
 
   private fun ObservedPlotSpeciesTotalsRecord.toSite(
@@ -741,6 +748,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           mortalityRate = mortalityRate,
           cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
+          survivalRate = survivalRate,
       )
 
   private fun quadratSpeciesRecord(
