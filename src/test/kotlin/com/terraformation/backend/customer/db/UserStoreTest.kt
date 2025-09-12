@@ -832,6 +832,23 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `deletes user global roles`() {
+      val existingUserId = insertUser()
+      insertUserGlobalRole(userId = existingUserId, role = GlobalRole.AcceleratorAdmin)
+
+      val deletedUserId = insertUser(authId = authId)
+      insertUserGlobalRole(userId = deletedUserId, role = GlobalRole.TFExpert)
+      insertUserGlobalRole(userId = deletedUserId, role = GlobalRole.AcceleratorAdmin)
+
+      userStore.deleteUserById(inserted.userId)
+
+      assertEquals(
+          emptyList<UserGlobalRolesRow>(),
+          userGlobalRolesDao.findAll().filter { it.userId == deletedUserId },
+      )
+    }
+
+    @Test
     fun `throws exception if no permission to delete users`() {
       every { user.canDeleteUsers() } returns false
 
