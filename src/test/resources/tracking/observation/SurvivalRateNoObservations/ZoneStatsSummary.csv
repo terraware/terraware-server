@@ -1,0 +1,4 @@
+Observation ->,1,1,1,1,1,1,1,1,1
+Zone,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev,Est Plants
+Zone1,139,772,636,2,0%,0%,99%,1%,
+Zone2,139,1544,,2,0%,0%,93%,0%,

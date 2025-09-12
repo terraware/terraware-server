@@ -1,18 +1,14 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -21,10 +17,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.containsKey
 import kotlin.math.roundToInt
-import org.jooq.TableField
-import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -118,12 +111,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         recordedPlants,
     )
 
+    val allSurvivalRate = (100.0 * 1 / 11)
     assertSurvivalRates(
         listOf(
-            mapOf(plotId to mapOf(speciesId1 to (100.0 * 1 / 11))),
-            mapOf(subzoneId to mapOf(speciesId1 to (100.0 * 1 / 11))),
-            mapOf(zoneId to mapOf(speciesId1 to (100.0 * 1 / 11))),
-            mapOf(plantingSiteId to mapOf(speciesId1 to (100.0 * 1 / 11))),
+            mapOf(plotId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
+            mapOf(subzoneId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
+            mapOf(zoneId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
+            mapOf(plantingSiteId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
         ),
         "Plot survival rates",
     )
@@ -175,20 +169,22 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot1Plants,
     )
 
-    val plot1SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
+    val plot1SurvivalRates: Map<Any, Map<SpeciesId?, Double?>> =
         mapOf(
             plotId to
                 mapOf(
                     speciesId1 to (100.0 * 9 / 15),
                     speciesId2 to (100.0 * 18 / 23),
                     speciesId3 to (100.0 * 27 / 31),
+                    null to 100.0 * (9 + 18 + 27) / (15 + 23 + 31),
                 )
         )
-    val survivalRates1 =
+    val survivalRates1: Map<SpeciesId?, Double?> =
         mapOf(
-            speciesId1 to (100.0 * 9 / (15 + 9)),
-            speciesId2 to (100.0 * 18 / (23 + 19)),
-            speciesId3 to (100.0 * 27 / 31),
+            speciesId1 to 100.0 * 9 / 15,
+            speciesId2 to 100.0 * 18 / 23,
+            speciesId3 to 100.0 * 27 / 31,
+            null to 100.0 * (9 + 18 + 27) / (15 + 23 + 31),
         )
 
     assertSurvivalRates(
@@ -227,20 +223,22 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot2Plants,
     )
 
-    val plot2SurvivalRates: Map<Any, Map<SpeciesId, Double?>> =
+    val plot2SurvivalRates: Map<Any, Map<SpeciesId?, Double?>> =
         mapOf(
             plot2 to
                 mapOf(
                     speciesId1 to (100.0 * 10 / 9),
                     speciesId2 to (100.0 * 17 / 19),
                     speciesId3 to null,
+                    null to 100.0 * (10 + 17 + 25) / (9 + 19),
                 )
         )
-    val survivalRates1And2 =
+    val survivalRates1And2: Map<SpeciesId?, Double?> =
         mapOf(
             speciesId1 to (100.0 * (9 + 10) / (15 + 9)),
             speciesId2 to (100.0 * (17 + 18) / (23 + 19)),
             speciesId3 to (100.0 * (27 + 25) / 31),
+            null to 100.0 * (9 + 10 + 17 + 18 + 27 + 25) / (15 + 9 + 23 + 19 + 31),
         )
     assertSurvivalRates(
         listOf(
@@ -256,6 +254,16 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate is calculated for a site using all data`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteData", numSpecies = 3)
+  }
+
+  @Test
+  fun `survival rate calculation excludes t0 densities for plots that have no observations`() {
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateNoObservations", numSpecies = 2)
+  }
+
+  @Test
+  fun `survival rate calculation includes t0 densities for species that have no recorded plants`() {
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateNoRecorded", numSpecies = 2)
   }
 
   @Test
@@ -288,7 +296,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private fun runSurvivalRateScenario(prefix: String, numSpecies: Int) {
     importSiteFromCsvFile(prefix, 30)
     observationId = insertObservation()
-    importT0DensitiesCsv(prefix, numSpecies)
+    importT0DensitiesCsv(prefix)
     importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
@@ -298,14 +306,14 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private fun loadExpectedSurvivalRates(
       prefix: String,
       numSpecies: Int,
-  ): List<Map<Any, Map<SpeciesId, Number?>>> {
+  ): List<Map<Any, Map<SpeciesId?, Number?>>> {
     val speciesIds = (0 until numSpecies).map { "Species $it" to this.speciesIds["Species $it"]!! }
 
-    val plotRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    val plotRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/PlotRates.csv", 1) { cols ->
       val plotName = cols[0]
       val plotId = plotIds[plotName]!!
-      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+      val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
         val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
@@ -314,14 +322,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
+      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
       plotRates[plotId] = ratesMap
     }
 
-    val subzoneRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    val subzoneRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/SubzoneRates.csv", 1) { cols ->
       val subzoneName = cols[0]
       val subzoneId = subzoneIds[subzoneName]!!
-      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+      val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
         val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
@@ -330,14 +339,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
+      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
       subzoneRates[subzoneId] = ratesMap
     }
 
-    val zoneRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    val zoneRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/ZoneRates.csv", 1) { cols ->
       val zoneName = cols[0]
       val zoneId = zoneIds[zoneName]!!
-      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+      val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
         val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
@@ -346,12 +356,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
+      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
       zoneRates[zoneId] = ratesMap
     }
 
-    val siteRates = mutableMapOf<Any, Map<SpeciesId, Number?>>()
+    val siteRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/SiteRates.csv", 1) { cols ->
-      val ratesMap = mutableMapOf<SpeciesId, Number?>()
+      val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
         val rateStr = cols[index + 2].takeIf { it.isNotEmpty() }
@@ -360,26 +371,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
+      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
       siteRates[plantingSiteId] = ratesMap
     }
 
     return listOf(plotRates, subzoneRates, zoneRates, siteRates)
-  }
-
-  private fun importT0DensitiesCsv(prefix: String, numSpecies: Int) {
-    mapCsv("$prefix/T0Densities.csv", 1) { cols ->
-      val plotName = cols[0]
-      val plotId = plotIds[plotName]!!
-
-      for (speciesIndex in 0 until numSpecies) {
-        val density = BigDecimal(cols[speciesIndex + 1])
-        val speciesId =
-            speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
-              insertSpecies(scientificName = "Species $speciesIndex")
-            }
-        insertPlotT0Density(speciesId = speciesId, monitoringPlotId = plotId, plotDensity = density)
-      }
-    }
   }
 
   private fun createPlantsRows(
@@ -398,22 +394,23 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
   }
 
+  /**
+   * Asserts that the survival rates for each level of the planting site match the expected.
+   *
+   * The expected survival rates are specified as a list of maps, one for each level of the site, in
+   * the order of Plot, Subzone, Zone, Site. Within the maps, a null SpeciesId represents the total
+   * survival rate for that area, e.g. the Plot Survival Rate, across all species in that plot.
+   */
   private fun assertSurvivalRates(
-      expected: List<Map<Any, Map<SpeciesId, Number?>>>,
+      expected: List<Map<Any, Map<SpeciesId?, Number?>>>,
       message: String,
   ) {
-    val idFields =
-        listOf(
-            "Plot" to OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
-            "Subzone" to OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
-            "Zone" to OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
-            "Site" to OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
-        )
+    val idFields = listOf("Plot", "Subzone", "Zone", "Site")
+    val actualList = fetchSurvivalRates(plantingSiteId)
 
     expected.forEachIndexed { index, expectedByIdMap ->
-      val level = idFields[index].first
-      val idField = idFields[index].second
-      val actualByIdMap = fetchSurvivalRatesPerSpecies(idField)
+      val level = idFields[index]
+      val actualByIdMap = actualList[index]
 
       val allIdsMatch =
           actualByIdMap.all { (id, actualSpeciesMap) ->
@@ -445,23 +442,56 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
   }
 
-  private fun <ID> fetchSurvivalRatesPerSpecies(
-      idField: TableField<*, ID>
-  ): Map<ID, Map<SpeciesId, Int?>> {
-    val table = idField.table!!
-    val speciesIdField =
-        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
-    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+  private fun fetchSurvivalRates(
+      plantingSiteId: PlantingSiteId
+  ): List<Map<Any, Map<SpeciesId?, Int?>>> {
+    val siteResults = resultsStore.fetchByPlantingSiteId(plantingSiteId, limit = 1)[0]
 
-    return dslContext
-        .select(idField, speciesIdField, survivalRateField)
-        .from(table)
-        .where(speciesIdField.isNotNull)
-        .fetch()
-        .filter { it[idField] != null }
-        .groupBy { it[idField]!! }
-        .mapValues { (_, records) ->
-          records.associate { record -> record[speciesIdField]!! to record[survivalRateField] }
+    val siteMap = mutableMapOf<SpeciesId?, Int?>()
+    val allZonesMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
+    val allSubzonesMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
+    val allPlotsMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
+    siteResults.species
+        .filter { it.certainty == RecordedSpeciesCertainty.Known }
+        .forEach { species -> siteMap[species.speciesId] = species.survivalRate }
+    siteResults.survivalRate?.let { siteMap[null] = it }
+
+    siteResults.plantingZones.forEach { zone ->
+      val zoneMap = mutableMapOf<SpeciesId?, Int?>()
+      zone.species
+          .filter { it.certainty == RecordedSpeciesCertainty.Known }
+          .forEach { species -> zoneMap[species.speciesId] = species.survivalRate }
+      zone.survivalRate?.let { zoneMap[null] = it }
+
+      zone.plantingSubzones.forEach { subzone ->
+        val subzoneMap = mutableMapOf<SpeciesId?, Int?>()
+        subzone.species
+            .filter { it.certainty == RecordedSpeciesCertainty.Known }
+            .forEach { species -> subzoneMap[species.speciesId] = species.survivalRate }
+        subzone.survivalRate?.let { subzoneMap[null] = it }
+
+        subzone.monitoringPlots.forEach { plot ->
+          val plotMap = mutableMapOf<SpeciesId?, Int?>()
+          plot.species
+              .filter { it.certainty == RecordedSpeciesCertainty.Known }
+              .forEach { species -> plotMap[species.speciesId] = species.survivalRate }
+          plot.survivalRate?.let { plotMap[null] = it }
+
+          if (plotMap.isNotEmpty()) {
+            allPlotsMap[plot.monitoringPlotId] = plotMap
+          }
         }
+
+        if (subzoneMap.isNotEmpty()) {
+          allSubzonesMap[subzone.plantingSubzoneId!!] = subzoneMap
+        }
+      }
+
+      if (zoneMap.isNotEmpty()) {
+        allZonesMap[zone.plantingZoneId!!] = zoneMap
+      }
+    }
+
+    return listOf(allPlotsMap, allSubzonesMap, allZonesMap, mapOf(plantingSiteId to siteMap))
   }
 }

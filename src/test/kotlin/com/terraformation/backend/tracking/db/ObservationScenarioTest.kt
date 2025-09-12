@@ -119,10 +119,12 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         "No observations made yet.",
     )
 
+    val hasT0DensitiesSpecified = importT0DensitiesCsv(prefix)
+
     val observationTimes =
         List(numObservations) {
           val time = Instant.ofEpochSecond(it.toLong())
-          importObservationsCsv(prefix, numSpecies, it, time)
+          importObservationsCsv(prefix, numSpecies, it, time, !hasT0DensitiesSpecified)
           time
         }
 
@@ -135,24 +137,26 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         "Partial summaries via limit should contain the latest observations.",
     )
 
-    assertEquals(
-        summaries.drop(1),
-        resultsStore.fetchSummariesForPlantingSite(
-            plantingSiteId,
-            maxCompletionTime = observationTimes[1],
-        ),
-        "Partial summaries via completion time should omit the more recent observations.",
-    )
+    if (observationTimes.size > 1) {
+      assertEquals(
+          summaries.drop(1),
+          resultsStore.fetchSummariesForPlantingSite(
+              plantingSiteId,
+              maxCompletionTime = observationTimes[1],
+          ),
+          "Partial summaries via completion time should omit the more recent observations.",
+      )
 
-    assertEquals(
-        listOf(summaries[1]),
-        resultsStore.fetchSummariesForPlantingSite(
-            plantingSiteId,
-            maxCompletionTime = observationTimes[1],
-            limit = 1,
-        ),
-        "Partial summaries via limit and completion time.",
-    )
+      assertEquals(
+          listOf(summaries[1]),
+          resultsStore.fetchSummariesForPlantingSite(
+              plantingSiteId,
+              maxCompletionTime = observationTimes[1],
+              limit = 1,
+          ),
+          "Partial summaries via limit and completion time.",
+      )
+    }
   }
 
   protected fun assertSummary(
@@ -355,7 +359,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SiteStatsSummary.csv", actual)
   }
 
   protected fun assertZoneSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
@@ -382,7 +386,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/ZoneStatsSummary.csv", actual)
   }
 
   protected fun assertSubzoneSummary(
@@ -414,7 +418,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SubzoneStatsSummary.csv", actual)
   }
 
   protected fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
@@ -444,7 +448,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+    assertResultsMatchCsv("$prefix/PlotStatsSummary.csv", actual) { row ->
       row.filterIndexed { index, _ ->
         val positionInColumnGroup = (index - 1) % 10
         positionInColumnGroup !in 4..8
@@ -590,7 +594,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             { _, results -> makeCsvColumnsFromSpeciesSummary(numSpecies, results.species) },
         )
 
-    assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/SiteStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertZoneSpeciesSummary(
@@ -612,7 +616,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/ZoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertSubzoneSpeciesSummary(
@@ -635,7 +639,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertPlotSpeciesSummary(
@@ -659,7 +663,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/PlotStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun makeCsvColumnsFromSpeciesSummary(
@@ -703,7 +707,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
   protected fun importFromCsvFiles(prefix: String, numObservations: Int, sizeMeters: Int) {
     importSiteFromCsvFile(prefix, sizeMeters)
-    importPlantsCsv(prefix, numObservations)
+    val hasT0DensitiesSpecified = importT0DensitiesCsv(prefix)
+    importPlantsCsv(prefix, numObservations, !hasT0DensitiesSpecified)
   }
 
   protected fun importSiteFromCsvFile(prefix: String, sizeMeters: Int) {
@@ -796,7 +801,37 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  protected fun importPlantsCsv(prefix: String, numObservations: Int) {
+  fun importT0DensitiesCsv(prefix: String): Boolean {
+    val filePath = "$prefix/T0Densities.csv"
+    if (javaClass.getResource(filePath) == null) {
+      return false
+    }
+    mapCsv(filePath, 1) { cols ->
+      val plotName = cols[0]
+      val plotId = plotIds[plotName]!!
+
+      var speciesIndex = 0
+      while (true) {
+        if (cols.size <= speciesIndex + 1) {
+          break
+        }
+        val density = BigDecimal(cols[speciesIndex + 1])
+        val speciesId =
+            speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
+              insertSpecies(scientificName = "Species $speciesIndex")
+            }
+        insertPlotT0Density(speciesId = speciesId, monitoringPlotId = plotId, plotDensity = density)
+        speciesIndex++
+      }
+    }
+    return true
+  }
+
+  protected fun importPlantsCsv(
+      prefix: String,
+      numObservations: Int,
+      includeT0Data: Boolean = true,
+  ) {
     repeat(numObservations) { observationNum ->
       clock.instant = Instant.ofEpochSecond(observationNum.toLong())
 
@@ -875,7 +910,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       plantsRows
           .groupBy { it.monitoringPlotId!! }
           .forEach { (plotId, plants) ->
-            if (observationNum == 0 && plotId in permanentPlotIds) {
+            if (observationNum == 0 && plotId in permanentPlotIds && includeT0Data) {
               insertPlotT0Observation(monitoringPlotId = plotId)
               plants
                   .filter {

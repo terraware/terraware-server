@@ -154,6 +154,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     val zone1SubzoneId1 = inserted.plantingSubzoneId
     val zone1PlotId2 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
+    // excluded densities because not permanent
     insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(4))
     insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(5))
     insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(6))
@@ -169,6 +170,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // the plots are completed.
     insertMonitoringPlot()
     insertObservationPlot()
+    // excluded densities because not permanent
     insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(10))
     insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(11))
     insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(12))
@@ -261,7 +263,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             mortalityRate = 33,
             cumulativeDead = 1,
             permanentLive = 2,
-            survivalRate = 2 / 1 * 100,
+            survivalRate = 2 * 100 / 1,
         )
     // Parameter names omitted after this to keep the test method size manageable.
     val zone1Plot1Species2Totals =
@@ -349,7 +351,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             33,
             1,
             2,
-            (2 * 100.0 / (1 + 4 + 7 + 10)).roundToInt(),
+            2 * 100 / 1,
         )
     val siteSpecies2Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -436,7 +438,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             33,
             1,
             2,
-            (2 * 100.0 / (1 + 4)).roundToInt(),
+            2 * 100 / 1,
         )
     val zone1Species2Totals =
         ObservedZoneSpeciesTotalsRow(
@@ -523,7 +525,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             33,
             1,
             2,
-            (2 * 100.0 / (1 + 4)).roundToInt(),
+            2 * 100 / 1,
         )
     val zone1Subzone1Species2Totals =
         ObservedSubzoneSpeciesTotalsRow(
@@ -655,6 +657,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
     )
 
+    // no survival rates here because it's not a permanent plot
     val zone1Plot2Species1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
@@ -862,6 +865,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 2,
             mortalityRate = 50,
             cumulativeDead = 2,
+            survivalRate = (2 * 100.0 / (1 + 7)).roundToInt(),
         )
     siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33, permanentLive = 2)
 

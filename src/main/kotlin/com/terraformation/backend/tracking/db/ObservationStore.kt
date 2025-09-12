@@ -259,6 +259,22 @@ class ObservationStore(
               .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(OBSERVATIONS.ID))
       )
 
+  private fun plotHasCompletedPermanentObservations(
+      alternateCompletedCondition: Condition? = null
+  ) =
+      DSL.exists(
+          DSL.selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITY.MONITORING_PLOT_ID))
+              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
+              .and(
+                  DSL.or(
+                      OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
+                      alternateCompletedCondition ?: DSL.falseCondition(),
+                  )
+              )
+      )
+
   /**
    * Returns a list of observations that are starting in 1 month or less and for which we have yet
    * to send out notifications that they're coming up.
@@ -1610,6 +1626,7 @@ class ObservationStore(
                   PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(
                           plantingZoneId
                       )
+                      .and(plotHasCompletedPermanentObservations())
                       .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
               )
           val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
@@ -1658,6 +1675,7 @@ class ObservationStore(
         val survivalRateDenominator =
             getSurvivalRateDenominator(
                 PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
+                    .and(plotHasCompletedPermanentObservations())
                     .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
             )
         val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
@@ -1755,7 +1773,9 @@ class ObservationStore(
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val survivalRateDenominator =
         getSurvivalRateDenominator(
-            survivalRateCondition.and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesIdField))
+            survivalRateCondition
+                .and(plotHasCompletedPermanentObservations())
+                .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesIdField))
         )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
@@ -2085,6 +2105,10 @@ class ObservationStore(
       cumulativeDeadFromCurrentObservation: Boolean = false,
   ) {
     if (plantCountsBySpecies.isNotEmpty()) {
+      val completedOrCurrentObservationPlotsCondition =
+          plotHasCompletedPermanentObservations(
+              if (isPermanent) OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId) else null
+          )
       if (monitoringPlotId != null) {
         updateSpeciesTotalsTable(
             OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
@@ -2093,7 +2117,8 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
             false,
-            PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId),
+            PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId)
+                .and(completedOrCurrentObservationPlotsCondition),
         )
       }
 
@@ -2106,7 +2131,8 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
-              PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(plantingSubzoneId),
+              PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)
+                  .and(completedOrCurrentObservationPlotsCondition),
           )
         }
 
@@ -2118,7 +2144,8 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
-              PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId),
+              PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId)
+                  .and(completedOrCurrentObservationPlotsCondition),
           )
         }
 
@@ -2129,7 +2156,8 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
             cumulativeDeadFromCurrentObservation,
-            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId),
+            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
+                .and(completedOrCurrentObservationPlotsCondition),
         )
       }
     }

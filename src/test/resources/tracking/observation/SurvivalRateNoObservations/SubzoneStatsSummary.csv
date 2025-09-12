@@ -1,0 +1,5 @@
+Observation ->,1,1,1,1,1,1,1,1,1
+Subzone,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev,Est Plants
+Subzone1,29,322,,2,0%,0%,97%,0%,
+Subzone2,110,1222,,2,0%,0%,100%,0%,
+Subzone3,139,1544,,2,0%,0%,93%,0%,
