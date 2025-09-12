@@ -71,7 +71,6 @@ import org.jooq.Record
 import org.jooq.Record11
 import org.jooq.Select
 import org.jooq.impl.DSL
-import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
@@ -1144,11 +1143,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private fun sumT0Field(plotCondition: Condition) =
       with(PLOT_T0_DENSITY) {
         DSL.field(
-            DSL.select(
-                    DSL.case_()
-                        .`when`(DSL.count().gt(0), DSL.sum(PLOT_DENSITY))
-                        .else_(DSL.castNull(SQLDataType.NUMERIC))
-                )
+            DSL.select(DSL.sum(PLOT_DENSITY))
                 .from(PLOT_T0_DENSITY)
                 .where(plotCondition)
                 .and(plotHasCompletedPermanentObservations)
