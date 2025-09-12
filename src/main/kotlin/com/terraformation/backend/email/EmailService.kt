@@ -227,7 +227,12 @@ class EmailService(
     }
 
     recipients.forEach { recipient ->
-      helper.setTo(recipient)
+      try {
+        helper.setTo(recipient)
+      } catch (e: Exception) {
+        log.warn("Failed to set email recipient to $recipient: ${e.message}")
+        return@forEach
+      }
       send(helper)
     }
   }

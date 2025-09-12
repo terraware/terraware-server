@@ -714,6 +714,11 @@ class UserStore(
           .where(USER_PREFERENCES.USER_ID.eq(user.userId))
           .execute()
 
+      dslContext
+          .deleteFrom(USER_GLOBAL_ROLES)
+          .where(USER_GLOBAL_ROLES.USER_ID.eq(user.userId))
+          .execute()
+
       // Handlers in other parts of the system will clean up dangling references to the user. Event
       // handlers run synchronously in the same transaction as the deletion.
       publisher.publishEvent(UserDeletionStartedEvent(user.userId))
