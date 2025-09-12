@@ -53,6 +53,7 @@ thumbnails
 timeseries_values
 chat_memory_messages
 device_managers
+file_access_tokens
 organization_managed_location_types
 project_land_use_model_types
 seed_fund_report_files

@@ -381,6 +381,27 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="file_access_tokens" remarks="Temporary tokens for unauthenticated access to files from the file store." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="token" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="file_access_tokens_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="file_access_tokens_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="expires_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="token" sequenceNumberInPK="1"/>
+         <index name="file_access_tokens_pkey" unique="true">
+            <column ascending="true" name="token"/>
+         </index>
+         <index name="file_access_tokens_expires_time_idx" unique="false">
+            <column ascending="true" name="expires_time"/>
+         </index>
+         <index name="file_access_tokens_file_id_idx" unique="false">
+            <column ascending="true" name="file_id"/>
+         </index>
+      </table>
       <table name="files" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="file_id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activity_media_files"/>
@@ -390,6 +411,7 @@
             <child column="file_id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_photos"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
+            <child column="file_id" foreignKey="file_access_tokens_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="file_access_tokens"/>
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
@@ -1549,6 +1571,7 @@
             <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="created_by" foreignKey="file_access_tokens_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="file_access_tokens"/>
             <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
             <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
             <child column="created_by" foreignKey="internal_tags_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="internal_tags"/>
