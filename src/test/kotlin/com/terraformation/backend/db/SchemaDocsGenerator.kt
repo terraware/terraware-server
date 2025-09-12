@@ -279,6 +279,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
                   "facility_connection_states" to setOf(ALL, CUSTOMER, DEVICE),
                   "facility_types" to setOf(ALL, CUSTOMER),
+                  "file_access_tokens" to setOf(ALL),
                   "files" to setOf(ALL, CUSTOMER, NURSERY, SEEDBANK),
                   "gbif_distributions" to setOf(SPECIES),
                   "gbif_names" to setOf(SPECIES),

@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        form { padding-bottom: 1em; }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>File Access Tokens</h2>
+
+<h3>Create New Token</h3>
+
+<form method="POST" action="/admin/createFileAccessToken">
+    <label>
+        File ID
+        <input type="text" name="fileId"/>
+    </label>
+    <label>
+        Expiration time with unit suffix (e.g., 30s, 15m, 1h)
+        <input type="text" name="expiration"/>
+    </label>
+    <button type="submit">Create Token</button>
+</form>
+
+</body>
+</html>

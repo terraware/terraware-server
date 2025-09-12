@@ -2,12 +2,18 @@ package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
+import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
+import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
@@ -24,6 +30,8 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
@@ -36,6 +44,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
@@ -258,5 +267,81 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     assertEquals(expectedPhotos, filesDao.findAll(), "Photos")
+  }
+
+  @Nested
+  inner class CreateToken {
+    @Test
+    fun `inserts expected values`() {
+      clock.instant = Instant.ofEpochSecond(100000)
+      val expiration = Duration.ofSeconds(321)
+
+      val fileId = insertFile()
+
+      val token = fileService.createToken(fileId, expiration)
+
+      assertTableEquals(
+          FileAccessTokensRecord(
+              createdBy = currentUser().userId,
+              createdTime = clock.instant,
+              expiresTime = clock.instant + expiration,
+              fileId = fileId,
+              token = token,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if file does not exist`() {
+      assertThrows<FileNotFoundException> {
+        fileService.createToken(FileId(-1), Duration.ofMinutes(1))
+      }
+    }
+  }
+
+  @Nested
+  inner class ReadFileForToken {
+    @Test
+    fun `returns contents for valid token`() {
+      val fileData = Random.nextBytes(10)
+
+      val fileId = fileService.storeFile("category", fileData.inputStream(), metadata) {}
+      val token = fileService.createToken(fileId, Duration.ofMinutes(1))
+
+      val contentsFromToken = fileService.readFileForToken(token).use { it.readAllBytes() }
+
+      assertArrayEquals(fileData, contentsFromToken)
+    }
+
+    @Test
+    fun `throws exception if token has expired`() {
+      val fileId = insertFile()
+      val token = fileService.createToken(fileId, Duration.ofMinutes(30))
+
+      clock.instant += Duration.ofMinutes(30)
+
+      assertThrows<TokenNotFoundException> { fileService.readFileForToken(token) }
+    }
+  }
+
+  @Test
+  fun `handler for DailyTaskTimeArrivedEvent prunes expired tokens`() {
+    val fileId = insertFile()
+    fileService.createToken(fileId, Duration.ofMinutes(10))
+    fileService.createToken(fileId, Duration.ofMinutes(20))
+    val token3 = fileService.createToken(fileId, Duration.ofMinutes(30))
+    val token4 = fileService.createToken(fileId, Duration.ofMinutes(40))
+
+    clock.instant += Duration.ofMinutes(20)
+
+    fileService.on(DailyTaskTimeArrivedEvent())
+
+    assertEquals(
+        setOf(token3, token4),
+        dslContext.fetch(FILE_ACCESS_TOKENS).map { it.token }.toSet(),
+        "Remaining tokens",
+    )
+
+    assertIsEventListener<DailyTaskTimeArrivedEvent>(fileService)
   }
 }
