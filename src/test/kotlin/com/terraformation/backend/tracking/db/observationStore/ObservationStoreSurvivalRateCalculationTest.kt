@@ -20,7 +20,6 @@ import kotlin.collections.component2
 import kotlin.math.roundToInt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
@@ -182,10 +181,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         )
     val survivalRates1: Map<SpeciesId?, Double?> =
         mapOf(
-            speciesId1 to (100.0 * 9 / (15 + 9)),
-            speciesId2 to (100.0 * 18 / (23 + 19)),
-            speciesId3 to (100.0 * 27 / 31),
-            null to 100.0 * (9 + 18 + 27) / (15 + 9 + 23 + 19 + 31),
+            speciesId1 to 100.0 * 9 / 15,
+            speciesId2 to 100.0 * 18 / 23,
+            speciesId3 to 100.0 * 27 / 31,
+            null to 100.0 * (9 + 18 + 27) / (15 + 23 + 31),
         )
 
     assertSurvivalRates(
@@ -253,7 +252,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
-  @Disabled("Need to fix survival rate for species that have t0 but haven't been observed")
   fun `survival rate is calculated for a site using all data`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteData", numSpecies = 3)
   }
@@ -261,6 +259,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate calculation excludes t0 densities for plots that have no observations`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateNoObservations", numSpecies = 2)
+  }
+
+  @Test
+  fun `survival rate calculation includes t0 densities for species that have no recorded plants`() {
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateNoRecorded", numSpecies = 2)
   }
 
   @Test

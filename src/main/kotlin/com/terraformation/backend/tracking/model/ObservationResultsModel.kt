@@ -518,8 +518,10 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
   }
 }
 
-fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
-  val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
+fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
+    sumT0Density: BigDecimal? = null
+): Int? {
+  val sumDensity = sumT0Density ?: this.mapNotNull { it.t0Density }.sumOf { it }
   val numKnownLive = this.sumOf { it.permanentLive }
 
   return if (sumDensity > BigDecimal.ZERO) {
