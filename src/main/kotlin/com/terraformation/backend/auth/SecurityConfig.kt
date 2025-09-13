@@ -88,6 +88,9 @@ class SecurityConfig(
         // Allow unauthenticated users to fetch files using temporary access tokens.
         authorize("/api/v1/files/tokens/**", permitAll)
 
+        // Allow webhook requests from external services.
+        authorize("/api/v1/webhooks/**", permitAll)
+
         authorize("/api/**", fullyAuthenticated)
         authorize("/admin/**", fullyAuthenticated)
       }

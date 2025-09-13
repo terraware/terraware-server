@@ -10,6 +10,8 @@ terraware:
   email:
     always-send-to-override-address: true
     subject-prefix: "[DEV]"
+  mux:
+    use-test-assets: true
   # Log all request and response bodies in dev environments.
   request-log:
     email-regex: ".*"
