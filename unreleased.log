@@ -1,3 +1,4 @@
+a434ce4c5a1 Added recorded observed plant ID to API payload (#3390)
 6a966f4875d Update ktor monorepo to v3.3.0 (#3389)
 97acb594116 Update Python dependencies (#3388)
 fad189d0d36 Update dependency org.springframework.ai:spring-ai-bom to v1.0.2 (#3387)
