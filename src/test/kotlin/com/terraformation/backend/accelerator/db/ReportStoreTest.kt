@@ -4934,14 +4934,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     // Not the latest observation, so the number does not count towards mortality/survival rates
     val observationDate = getRandomDate(reportStartDate, reportEndDate.minusDays(1))
+    val observationTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC)
     val site1OldObservationId =
         insertObservation(
             plantingSiteId = plantingSiteId1,
             plantingSiteHistoryId = plantingSiteHistoryId1,
             state = ObservationState.Completed,
-            completedTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
+            completedTime = observationTime,
         )
-    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    allPlots.forEach {
+      insertObservationPlot(
+          monitoringPlotId = it,
+          isPermanent = true,
+          completedTime = observationTime,
+      )
+    }
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
         plantingSiteId = plantingSiteId1,
@@ -4974,7 +4981,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = observationDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    allPlots.forEach {
+      insertObservationPlot(
+          monitoringPlotId = it,
+          isPermanent = true,
+          completedTime = observationTime,
+      )
+    }
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
         plantingSiteId = plantingSiteId1,
@@ -5017,7 +5030,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = futureObservationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    allPlots.forEach {
+      insertObservationPlot(
+          monitoringPlotId = it,
+          isPermanent = true,
+          completedTime = observationTime,
+      )
+    }
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
         plantingSiteId = plantingSiteId1,
@@ -5059,7 +5078,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = reportStartDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    allPlots.forEach {
+      insertObservationPlot(
+          monitoringPlotId = it,
+          isPermanent = true,
+          completedTime = observationTime,
+      )
+    }
     insertObservedSiteSpeciesTotals(
         observationId = site2ObservationId,
         plantingSiteId = plantingSiteId2,
@@ -5080,7 +5105,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     .atStartOfDay()
                     .toInstant(ZoneOffset.UTC),
         )
-    allPlots.forEach { insertObservationPlot(monitoringPlotId = it, isPermanent = true) }
+    allPlots.forEach {
+      insertObservationPlot(
+          monitoringPlotId = it,
+          isPermanent = true,
+          completedTime = observationTime,
+      )
+    }
     insertObservedSiteSpeciesTotals(
         observationId = otherSiteObservationId,
         plantingSiteId = plantingSiteId1,

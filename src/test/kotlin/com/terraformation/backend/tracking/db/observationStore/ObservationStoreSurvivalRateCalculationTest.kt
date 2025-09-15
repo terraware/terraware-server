@@ -189,7 +189,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     assertSurvivalRates(
         listOf(
-            plot1SurvivalRates,
+            plot1SurvivalRates + mapOf(plot2 to mapOf(speciesId1 to 0, speciesId2 to 0, null to 0)),
             mapOf(subzoneId to survivalRates1),
             mapOf(zoneId to survivalRates1),
             mapOf(plantingSiteId to survivalRates1),
