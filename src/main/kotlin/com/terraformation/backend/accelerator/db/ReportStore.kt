@@ -1462,10 +1462,15 @@ class ReportStore(
           )
           .convertFrom { it.toInt() }
 
-  private val plotsWithObservations =
-      DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
-          .from(OBSERVATION_PLOTS)
-          .where(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
+  private val plotHasCompletedPermanentObservations =
+      DSL.exists(
+          DSL.selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITY.MONITORING_PLOT_ID))
+              .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
+              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
+              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+      )
 
   private val survivalRateDenominatorField =
       with(PLOT_T0_DENSITY) {
@@ -1478,7 +1483,7 @@ class ReportStore(
                             OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
                         )
                     )
-                    .and(MONITORING_PLOT_ID.`in`(plotsWithObservations))
+                    .and(plotHasCompletedPermanentObservations)
                     .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
             )
         )
