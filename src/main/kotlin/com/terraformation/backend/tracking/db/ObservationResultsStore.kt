@@ -649,8 +649,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         } else {
           null
         }
-    val monitoringPlotSumT0Field =
-        sumT0Field(PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
 
     return DSL.multiset(
             DSL.select(
@@ -671,7 +669,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     monitoringPlotOverlappedByMultiset,
                     monitoringPlotOverlapsMultiset,
                     monitoringPlotSpeciesMultiset,
-                    monitoringPlotSumT0Field,
                     coordinatesMultiset,
                     photosMultiset,
                     recordedPlantsField,
@@ -702,7 +699,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
             val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
             val species = record[monitoringPlotSpeciesMultiset]
-            val sumT0Density = record[monitoringPlotSumT0Field]
             val totalLive = species.sumOf { it.totalLive }
             val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
             val totalLiveSpeciesExceptUnknown =
@@ -712,8 +708,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 }
 
             val mortalityRate = if (isPermanent) species.calculateMortalityRate() else null
-            val survivalRate =
-                if (isPermanent) species.calculateSurvivalRate(sumT0Density) else null
+            val survivalRate = if (isPermanent) species.calculateSurvivalRate() else null
 
             val areaSquareMeters = sizeMeters * sizeMeters
             val plantingDensity =
@@ -829,12 +824,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       depth: ObservationResultsDepth
   ): Field<List<ObservationPlantingSubzoneResultsModel>> {
     val plotsField = plantingSubzoneMonitoringPlotsMultiset(depth)
-    val subzoneSumT0Field =
-        sumT0Field(
-            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(
-                PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID
-            )
-        )
     val plantingSubzoneSpeciesMultisetField = plantingSubzoneSpeciesMultiset()
     return DSL.multiset(
             DSL.select(
@@ -844,7 +833,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                     plotsField,
                     plantingSubzoneSpeciesMultisetField,
-                    subzoneSumT0Field,
                 )
                 .from(PLANTING_SUBZONE_HISTORIES)
                 .leftJoin(PLANTING_SUBZONES)
@@ -880,7 +868,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             val areaHa = record[PLANTING_SUBZONE_HISTORIES.AREA_HA]!!
 
             val species = record[plantingSubzoneSpeciesMultisetField]
-            val sumT0Density = record[subzoneSumT0Field]
             val totalPlants = species.sumOf { it.totalLive + it.totalDead }
             val totalLiveSpeciesExceptUnknown =
                 species.count {
@@ -910,7 +897,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
-            val survivalRate = species.calculateSurvivalRate(sumT0Density)
+            val survivalRate = species.calculateSurvivalRate()
             val survivalRateStdDev =
                 monitoringPlots
                     .mapNotNull { plot ->
@@ -1051,12 +1038,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       depth: ObservationResultsDepth
   ): Field<List<ObservationPlantingZoneResultsModel>> {
     val plantingSubzonesField = plantingSubzonesMultiset(depth)
-    val zoneSumT0Field =
-        sumT0Field(
-            PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(
-                PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID
-            )
-        )
     val plantingZoneSpeciesMultisetField = plantingZoneSpeciesMultiset()
 
     return DSL.multiset(
@@ -1067,7 +1048,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     plantingSubzonesField,
                     plantingZoneSpeciesMultisetField,
                     zonePlantingCompletedField,
-                    zoneSumT0Field,
                 )
                 .from(PLANTING_ZONE_HISTORIES)
                 .where(
@@ -1105,7 +1085,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             val areaHa = record[PLANTING_ZONE_HISTORIES.AREA_HA]!!
             val species = record[plantingZoneSpeciesMultisetField]
             val subzones = record[plantingSubzonesField]
-            val sumT0Density = record[zoneSumT0Field]
             val identifiedSpecies =
                 species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
             val totalPlants = species.sumOf { it.totalLive + it.totalDead }
@@ -1139,7 +1118,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
-            val survivalRate = species.calculateSurvivalRate(sumT0Density)
+            val survivalRate = species.calculateSurvivalRate()
             val survivalRateStdDev =
                 monitoringPlots
                     .mapNotNull { plot ->
@@ -1252,16 +1231,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     }
   }
 
-  private fun sumT0Field(plotCondition: Condition) =
-      with(PLOT_T0_DENSITY) {
-        DSL.field(
-            DSL.select(DSL.sum(PLOT_DENSITY))
-                .from(PLOT_T0_DENSITY)
-                .where(plotCondition)
-                .and(plotHasCompletedPermanentObservations)
-        )
-      }
-
   private fun fetchByCondition(
       condition: Condition,
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
@@ -1269,12 +1238,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   ): List<ObservationResultsModel> {
     val adHocPlotsField = adHocMonitoringPlotsMultiset(depth)
     val plantingZonesField = plantingZoneMultiset(depth)
-    val siteSumT0Field =
-        sumT0Field(
-            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(
-                PLANTING_SITE_HISTORIES.PLANTING_SITE_ID
-            )
-        )
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
     return dslContext
@@ -1292,7 +1255,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             PLANTING_SITE_HISTORIES.ID,
             plantingSiteSpeciesMultisetField,
             plantingZonesField,
-            siteSumT0Field,
         )
         .from(OBSERVATIONS)
         .leftJoin(PLANTING_SITE_HISTORIES)
@@ -1306,7 +1268,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val zones = record[plantingZonesField]
           val species = record[plantingSiteSpeciesMultisetField]
-          val sumT0Density = record[siteSumT0Field]
           val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
           val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
@@ -1348,7 +1309,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     }
                   }
                   .calculateWeightedStandardDeviation()
-          val survivalRate = species.calculateSurvivalRate(sumT0Density)
+          val survivalRate = species.calculateSurvivalRate()
           val survivalRateStdDev =
               monitoringPlots
                   .mapNotNull { plot ->
