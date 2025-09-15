@@ -33,6 +33,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
@@ -731,6 +732,7 @@ data class RecordedPlantPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(description = "GPS coordinates where plant was observed.") //
     val gpsCoordinates: Point,
+    val id: RecordedPlantId,
     @Schema(
         description = "Required if certainty is Known. Ignored if certainty is Other or Unknown."
     )
@@ -748,6 +750,7 @@ data class RecordedPlantPayload(
   ) : this(
       certainty = model.certainty,
       gpsCoordinates = model.gpsCoordinates,
+      id = model.id,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
       status = model.status,
