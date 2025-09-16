@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
+import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -21,6 +22,7 @@ import java.time.LocalDate
 import org.locationtech.jts.geom.Point
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -54,6 +56,16 @@ class ActivitiesAdminController(
   )
   fun adminGetActivity(@PathVariable("id") id: ActivityId): AdminGetActivityResponsePayload {
     val activity = activityStore.fetchOneById(id)
+
+    return AdminGetActivityResponsePayload(AdminActivityPayload(activity))
+  }
+
+  @Operation(summary = "Creates a new activity including accelerator-admin-only details.")
+  @PostMapping
+  fun adminCreateActivity(
+      @RequestBody payload: AdminCreateActivityRequestPayload
+  ): AdminGetActivityResponsePayload {
+    val activity = activityStore.create(payload.toModel())
 
     return AdminGetActivityResponsePayload(AdminActivityPayload(activity))
   }
@@ -127,6 +139,26 @@ data class AdminActivityPayload(
       verifiedBy = model.verifiedBy,
       verifiedTime = model.verifiedTime,
   )
+}
+
+data class AdminCreateActivityRequestPayload(
+    val date: LocalDate,
+    val description: String?,
+    val isHighlight: Boolean,
+    val isVerified: Boolean,
+    val projectId: ProjectId,
+    val type: ActivityType,
+) {
+  fun toModel(): NewActivityModel {
+    return NewActivityModel(
+        activityDate = date,
+        activityType = type,
+        description = description,
+        isHighlight = isHighlight,
+        isVerified = isVerified,
+        projectId = projectId,
+    )
+  }
 }
 
 data class AdminUpdateActivityRequestPayload(
