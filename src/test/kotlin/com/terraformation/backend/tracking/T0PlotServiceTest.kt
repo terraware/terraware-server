@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -23,8 +24,9 @@ import org.junit.jupiter.api.Test
 internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(dslContext, eventPublisher) }
+  private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
   private val service: T0PlotService by lazy { T0PlotService(dslContext, t0PlotStore) }
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
@@ -91,19 +93,39 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(PlotT0ObservationsRecord(monitoringPlotId1, observationId)),
+          listOf(
+              PlotT0ObservationsRecord(
+                  monitoringPlotId1,
+                  observationId,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedTime = clock.instant(),
+              )
+          ),
           "Should have inserted one observation",
       )
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(monitoringPlotId1, speciesId1, BigDecimal.valueOf(2)),
-              PlotT0DensityRecord(monitoringPlotId1, speciesId2, BigDecimal.valueOf(7)),
-              PlotT0DensityRecord(monitoringPlotId1, speciesId3, BigDecimal.valueOf(11)),
-              PlotT0DensityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(10)),
-              PlotT0DensityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(20)),
+              densityRecord(monitoringPlotId1, speciesId1, BigDecimal.valueOf(2)),
+              densityRecord(monitoringPlotId1, speciesId2, BigDecimal.valueOf(7)),
+              densityRecord(monitoringPlotId1, speciesId3, BigDecimal.valueOf(11)),
+              densityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(10)),
+              densityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(20)),
           ),
           "Should have inserted species densities",
       )
     }
   }
+
+  private fun densityRecord(plotId: MonitoringPlotId, speciesId: SpeciesId, density: BigDecimal) =
+      PlotT0DensityRecord(
+          monitoringPlotId = plotId,
+          speciesId = speciesId,
+          plotDensity = density,
+          createdBy = user.userId,
+          modifiedBy = user.userId,
+          createdTime = clock.instant(),
+          modifiedTime = clock.instant(),
+      )
 }

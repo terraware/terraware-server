@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -30,8 +31,9 @@ import org.springframework.security.access.AccessDeniedException
 internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val store: T0PlotStore by lazy { T0PlotStore(dslContext, eventPublisher) }
+  private val store: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
 
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var monitoringPlotId: MonitoringPlotId
@@ -146,22 +148,18 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedTime = clock.instant(),
               )
           ),
           "Should connect plot to observation",
       )
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = BigDecimal.valueOf(3),
-              ),
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = BigDecimal.valueOf(7),
-              ),
+              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(3)),
+              densityRecord(monitoringPlotId, speciesId2, BigDecimal.valueOf(7)),
           ),
           "Should insert species densities",
       )
@@ -189,17 +187,17 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = secondObservationId,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedTime = clock.instant(),
               )
           ),
           "Should have updated existing observation",
       )
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = BigDecimal.valueOf(4),
-              ),
+              densityRecord(monitoringPlotId, speciesId2, BigDecimal.valueOf(4)),
           ),
           "Should use final species density",
       )
@@ -226,11 +224,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = BigDecimal.TWO,
-              ),
+              densityRecord(monitoringPlotId, speciesId2, BigDecimal.TWO),
           ),
           "Should use observation for density",
       )
@@ -240,6 +234,10 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotT0ObservationsRecord(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedTime = clock.instant(),
               ),
           ),
           "Should have connected plot to observation",
@@ -263,13 +261,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertTableEquals(
-          listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = BigDecimal.TWO,
-              )
-          ),
+          listOf(densityRecord(monitoringPlotId, speciesId1, BigDecimal.TWO)),
           "Should have deleted density for species not in observation",
       )
     }
@@ -300,13 +292,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = density,
-              )
-          ),
+          listOf(densityRecord(monitoringPlotId, speciesId1, density)),
           "Should have inserted density",
       )
 
@@ -330,13 +316,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = updatedDensity,
-              )
-          ),
+          listOf(densityRecord(monitoringPlotId, speciesId1, updatedDensity)),
           "Should have updated density on conflict",
       )
 
@@ -367,13 +347,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = density2,
-              )
-          ),
+          listOf(densityRecord(monitoringPlotId, speciesId2, density2)),
           "Should have deleted existing density in plot",
       )
 
@@ -404,16 +378,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = density1,
-              ),
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId2,
-                  plotDensity = density2,
-              ),
+              densityRecord(monitoringPlotId, speciesId1, density1),
+              densityRecord(monitoringPlotId, speciesId2, density2),
           ),
           "Should have inserted two densities for monitoring plot",
       )
@@ -439,11 +405,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = density1,
-              ),
+              densityRecord(monitoringPlotId, speciesId1, density1),
           ),
           "Should have updated density",
       )
@@ -459,15 +421,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           monitoringPlotId,
           listOf(SpeciesDensityModel(speciesId1, BigDecimal.ZERO)),
       )
-      assertTableEquals(
-          listOf(
-              PlotT0DensityRecord(
-                  monitoringPlotId = monitoringPlotId,
-                  speciesId = speciesId1,
-                  plotDensity = BigDecimal.ZERO,
-              )
-          )
-      )
+      assertTableEquals(listOf(densityRecord(monitoringPlotId, speciesId1, BigDecimal.ZERO)))
     }
 
     @Test
@@ -480,4 +434,15 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
     }
   }
+
+  private fun densityRecord(plotId: MonitoringPlotId, speciesId: SpeciesId, density: BigDecimal) =
+      PlotT0DensityRecord(
+          monitoringPlotId = plotId,
+          speciesId = speciesId,
+          plotDensity = density,
+          createdBy = user.userId,
+          modifiedBy = user.userId,
+          createdTime = clock.instant(),
+          modifiedTime = clock.instant(),
+      )
 }

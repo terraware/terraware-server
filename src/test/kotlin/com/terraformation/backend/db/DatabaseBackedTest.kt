@@ -3281,6 +3281,10 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       plotDensity: BigDecimal = row.plotDensity ?: BigDecimal.valueOf(10),
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     with(PLOT_T0_DENSITY) {
       dslContext
@@ -3288,6 +3292,10 @@ abstract class DatabaseBackedTest {
           .set(MONITORING_PLOT_ID, monitoringPlotId)
           .set(SPECIES_ID, speciesId)
           .set(PLOT_DENSITY, plotDensity)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, modifiedBy)
+          .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
   }
@@ -3296,12 +3304,20 @@ abstract class DatabaseBackedTest {
       row: PlotT0ObservationsRow = PlotT0ObservationsRow(),
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     with(PLOT_T0_OBSERVATIONS) {
       dslContext
           .insertInto(this)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
           .set(OBSERVATION_ID, observationId)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, modifiedBy)
+          .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
   }
