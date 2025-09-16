@@ -251,10 +251,13 @@ data class AccessionModel(
           // always measured in seeds), we can't rely on the seeds-to-weight calculation precisely
           // matching the remaining weight quantity because weights have limited precision. Force
           // the remaining quantity to zero in that case.
+          // Also force the remaining quantity to zero if the accession is currently used up and the
+          // new state is also used up
           if (
-              latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
+              (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
                   mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
-                  mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount
+                  (mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount ||
+                      (state == AccessionState.UsedUp && existing.state == AccessionState.UsedUp)))
           ) {
             SeedQuantityModel.of(BigDecimal.ZERO, latestObservedQuantity.units)
           } else {
