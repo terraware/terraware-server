@@ -183,17 +183,7 @@ def generate_biomass_measurements(
     return measurements
 
 
-def generate_biomass_observation_payload(planting_site_id, forest_type, species_ids):
-    """Generate a random biomass observation payload."""
-    # Create timestamp for the observation
-    current_time = int(time.time())
-    observed_time = isoformat(current_time - random.randint(0, 86400))
-
-    # Generate components of the observation
-    master_species_list = generate_unique_species_list(species_ids)
-    quadrats = generate_quadrats(master_species_list)
-    trees = generate_trees(master_species_list)
-
+def generate_conditions():
     # Observable conditions from the enum
     observable_conditions = [
         "AnimalDamage",
@@ -204,6 +194,20 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
         "SeedProduction",
         "UnfavorableWeather",
     ]
+
+    return random.sample(observable_conditions, k=random.randint(1, 3))
+
+
+def generate_biomass_observation_payload(planting_site_id, forest_type, species_ids):
+    """Generate a random biomass observation payload."""
+    # Create timestamp for the observation
+    current_time = int(time.time())
+    observed_time = isoformat(current_time - random.randint(0, 86400))
+
+    # Generate components of the observation
+    master_species_list = generate_unique_species_list(species_ids)
+    quadrats = generate_quadrats(master_species_list)
+    trees = generate_trees(master_species_list)
 
     # Create the payload
     payload = {
@@ -217,15 +221,60 @@ def generate_biomass_observation_payload(planting_site_id, forest_type, species_
             "type": "Point",
             "coordinates": [random.uniform(-180, 180), random.uniform(-90, 90)],
         },
-        "conditions": random.sample(observable_conditions, k=random.randint(1, 3)),
+        "conditions": generate_conditions(),
         "notes": f"Biomass observation on {datetime.now().strftime('%Y-%m-%d')}",
     }
 
     return payload
 
 
+def generate_recorded_plant(species_ids):
+    if random.randint(1, 10) > 1:
+        certainty = "Known"
+        species_id = random.choice(species_ids)
+        species_name = None
+    elif random.randint(1, 2) == 1:
+        certainty = "Other"
+        species_id = None
+        species_name = f"Other {random.randint(1, 5)}"
+    else:
+        certainty = "Unknown"
+        species_id = None
+        species_name = None
+
+    status = "Live" if random.randint(1, 5) > 1 else random.choice(["Dead", "Existing"])
+
+    return {
+        "certainty": certainty,
+        "gpsCoordinates": {"type": "Point", "coordinates": [1, 2]},
+        "speciesId": species_id,
+        "speciesName": species_name,
+        "status": status,
+    }
+
+
+def generate_monitoring_observation_payload(planting_site_id, species_ids):
+    num_plants = random.randint(25, 200)
+    observed_time = isoformat(int(time.time()) - random.randint(0, 86400))
+
+    payload = {
+        "plants": [generate_recorded_plant(species_ids) for i in range(0, num_plants)],
+        "observationType": "Monitoring",
+        "plantingSiteId": planting_site_id,
+        "observedTime": observed_time,
+        "swCorner": {
+            "type": "Point",
+            "coordinates": [random.uniform(-180, 180), random.uniform(-90, 90)],
+        },
+        "conditions": generate_conditions(),
+        "notes": f"Monitoring observation on {datetime.now().strftime('%Y-%m-%d')}",
+    }
+
+    return payload
+
+
 def main():
-    parser = argparse.ArgumentParser("Complete ad-hoc biomass observations")
+    parser = argparse.ArgumentParser("Complete ad-hoc observations")
     parser.add_argument(
         "--organization",
         "-O",
@@ -244,6 +293,13 @@ def main():
         choices=["Mangrove", "Terrestrial"],
         default="Terrestrial",
         help="The type of forest to record data for. Default is Terrestrial.",
+    )
+    parser.add_argument(
+        "--type",
+        "-t",
+        choices=["biomass", "monitoring"],
+        default="biomass",
+        help="The type of ad-hoc observation to create. Default is biomass.",
     )
     add_terraware_args(parser)
     args = parser.parse_args()
@@ -271,14 +327,17 @@ def main():
     if not species_ids:
         raise Exception(f"Organization {organization_id} has no species defined")
 
-    # Generate and complete the biomass observation
-    payload = generate_biomass_observation_payload(
-        planting_site_id, args.forest_type, species_ids
-    )
+    # Generate and complete the observation
+    if args.type == "biomass":
+        payload = generate_biomass_observation_payload(
+            planting_site_id, args.forest_type, species_ids
+        )
+    else:
+        payload = generate_monitoring_observation_payload(planting_site_id, species_ids)
     result = client.complete_ad_hoc_observation(payload)
 
     print(
-        f"Created and completed biomass observation {result['observationId']} with plot {result['plotId']}"
+        f"Created and completed {args.type} observation {result['observationId']} with plot {result['plotId']}"
     )
 
 
