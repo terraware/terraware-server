@@ -79,7 +79,19 @@ class T0PlotStore(
 
       with(PLOT_T0_DENSITY) {
         // ensure no leftover densities for species that are not in this observation
-        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
+        dslContext
+            .deleteFrom(this)
+            .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(
+                SPECIES_ID.notIn(
+                    DSL.select(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID)
+                        .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                        .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                        .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                        .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
+                )
+            )
+            .execute()
 
         dslContext
             .insertInto(
@@ -142,14 +154,17 @@ class T0PlotStore(
     dslContext.transaction { _ ->
       with(PLOT_T0_OBSERVATIONS) {
         // delete t0 observations associated with this plot so that retrieval doesn't return
-        // incorrect
-        // data
+        // incorrect data
         dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
       }
 
       with(PLOT_T0_DENSITY) {
         // ensure no leftover densities for species that are not in this request
-        dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
+        dslContext
+            .deleteFrom(this)
+            .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(SPECIES_ID.notIn(densities.map { it.speciesId }))
+            .execute()
 
         var insertQuery =
             dslContext.insertInto(
@@ -179,7 +194,12 @@ class T0PlotStore(
               )
         }
 
-        insertQuery.execute()
+        insertQuery
+            .onDuplicateKeyUpdate()
+            .set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY))
+            .set(MODIFIED_BY, currentUserId)
+            .set(MODIFIED_TIME, now)
+            .execute()
       }
 
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))

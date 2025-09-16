@@ -256,7 +256,11 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `removes species densities not in observation`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
-      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.TEN)
+      insertPlotT0Density(
+          speciesId = speciesId1,
+          plotDensity = BigDecimal.TEN,
+          modifiedTime = clock.instant().minusSeconds(62),
+      )
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(20))
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 
@@ -306,17 +310,29 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val initialDensity = BigDecimal.TEN
       val updatedDensity = BigDecimal.valueOf(15)
 
+      clock.instant = clock.instant().minusSeconds(41)
       store.assignT0PlotSpeciesDensities(
           monitoringPlotId,
           listOf(SpeciesDensityModel(speciesId1, initialDensity)),
       )
+      clock.instant = clock.instant().plusSeconds(60)
       store.assignT0PlotSpeciesDensities(
           monitoringPlotId,
           listOf(SpeciesDensityModel(speciesId1, updatedDensity)),
       )
 
       assertTableEquals(
-          listOf(densityRecord(monitoringPlotId, speciesId1, updatedDensity)),
+          listOf(
+              PlotT0DensityRecord(
+                  monitoringPlotId,
+                  speciesId1,
+                  updatedDensity,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant().minusSeconds(60),
+                  modifiedTime = clock.instant(),
+              )
+          ),
           "Should have updated density on conflict",
       )
 
@@ -435,7 +451,11 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
   }
 
-  private fun densityRecord(plotId: MonitoringPlotId, speciesId: SpeciesId, density: BigDecimal) =
+  private fun densityRecord(
+      plotId: MonitoringPlotId,
+      speciesId: SpeciesId,
+      density: BigDecimal,
+  ): PlotT0DensityRecord =
       PlotT0DensityRecord(
           monitoringPlotId = plotId,
           speciesId = speciesId,
