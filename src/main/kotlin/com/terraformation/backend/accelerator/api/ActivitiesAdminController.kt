@@ -62,6 +62,7 @@ class ActivitiesAdminController(
 
   @Operation(summary = "Creates a new activity including accelerator-admin-only details.")
   @PostMapping
+  @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun adminCreateActivity(
       @RequestBody payload: AdminCreateActivityRequestPayload
   ): AdminGetActivityResponsePayload {
