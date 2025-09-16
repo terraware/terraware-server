@@ -163,6 +163,24 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
+    fun `updating an accession after it's used up shouldn't break on calculation`() {
+      val accession =
+          accession(
+              estimatedSeedCount = 0,
+              latestObservedQuantity = milligrams(BigDecimal("1874.8")),
+              latestObservedTime = yesterdayInstant,
+              remaining = milligrams(BigDecimal.ZERO),
+              subsetWeight = milligrams(BigDecimal("5.84")),
+              subsetCount = 100,
+              state = AccessionState.UsedUp,
+              withdrawals = listOf(withdrawal(seeds(32103), date = today)),
+          )
+
+      val actual = accession.calculateRemaining(accession)
+      assertEquals(BigDecimal.ZERO, actual?.quantity)
+    }
+
+    @Test
     fun `total withdrawal count is null for weight-based withdrawals without subset info`() {
       val accession = accession(remaining = grams(10)).withCalculatedValues()
       val afterWithdrawal = accession.addWithdrawal(withdrawal(grams(1), id = null))
@@ -431,6 +449,16 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               { copy(state = AccessionState.InStorage) },
               AccessionState.InStorage,
               "Change from Awaiting Check-In to In Storage",
+          )
+          .copy(
+              latestObservedQuantity = milligrams(BigDecimal("1874.8")),
+              subsetWeightQuantity = milligrams(BigDecimal("5.84")),
+              subsetCount = 100,
+          )
+          .addStateTest(
+              { copy() },
+              AccessionState.InStorage,
+              "Accession in mg is no longer used up",
           )
 
       return tests

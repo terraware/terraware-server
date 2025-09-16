@@ -41,6 +41,7 @@ internal abstract class AccessionModelTest {
   protected fun accession(
       viabilityTests: List<ViabilityTestModel> = emptyList(),
       dryingEndDate: LocalDate? = null,
+      estimatedSeedCount: Int? = null,
       latestObservedQuantity: SeedQuantityModel? = null,
       latestObservedTime: Instant? = null,
       remaining: SeedQuantityModel? = null,
@@ -56,6 +57,7 @@ internal abstract class AccessionModelTest {
         clock = clock,
         createdTime = clock.instant(),
         dryingEndDate = dryingEndDate,
+        estimatedSeedCount = estimatedSeedCount,
         latestObservedQuantity = latestObservedQuantity,
         latestObservedTime = latestObservedTime,
         remaining = remaining,
