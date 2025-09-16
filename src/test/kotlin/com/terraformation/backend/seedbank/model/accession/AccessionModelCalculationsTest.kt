@@ -450,6 +450,16 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
               AccessionState.InStorage,
               "Change from Awaiting Check-In to In Storage",
           )
+          .copy(
+              latestObservedQuantity = milligrams(BigDecimal("1874.8")),
+              subsetWeightQuantity = milligrams(BigDecimal("5.84")),
+              subsetCount = 100,
+          )
+          .addStateTest(
+              { copy() },
+              AccessionState.InStorage,
+              "Accession in mg is no longer used up",
+          )
 
       return tests
     }
