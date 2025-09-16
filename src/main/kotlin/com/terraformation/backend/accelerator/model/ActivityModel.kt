@@ -57,4 +57,6 @@ data class NewActivityModel(
     val activityType: ActivityType,
     val activityDate: LocalDate,
     val description: String? = null,
+    val isHighlight: Boolean = false,
+    val isVerified: Boolean = false,
 )

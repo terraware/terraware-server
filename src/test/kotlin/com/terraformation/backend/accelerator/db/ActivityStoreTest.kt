@@ -62,6 +62,40 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   activityDate = LocalDate.of(2024, 1, 15),
                   activityType = ActivityType.SeedCollection,
                   description = "Test activity description",
+                  isHighlight = true,
+                  projectId = projectId,
+              )
+          )
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 1, 15),
+              activityTypeId = ActivityType.SeedCollection,
+              createdBy = currentUser().userId,
+              createdTime = clock.instant(),
+              description = "Test activity description",
+              id = model.id,
+              isHighlight = true,
+              modifiedBy = currentUser().userId,
+              modifiedTime = clock.instant(),
+              projectId = projectId,
+              verifiedBy = null,
+              verifiedTime = null,
+          )
+      )
+    }
+
+    @Test
+    fun `populates verifiedBy and verifiedTime if creating a verified activity`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val model =
+          store.create(
+              NewActivityModel(
+                  activityDate = LocalDate.of(2024, 1, 15),
+                  activityType = ActivityType.SeedCollection,
+                  description = "Test activity description",
+                  isVerified = true,
                   projectId = projectId,
               )
           )
@@ -78,8 +112,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               projectId = projectId,
-              verifiedBy = null,
-              verifiedTime = null,
+              verifiedBy = currentUser().userId,
+              verifiedTime = clock.instant(),
           )
       )
     }

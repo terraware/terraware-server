@@ -36,6 +36,8 @@ class ActivityStore(
 
     val now = clock.instant()
     val userId = currentUser().userId
+    val verifiedBy = if (model.isVerified) userId else null
+    val verifiedTime = if (model.isVerified) now else null
 
     val activityId =
         dslContext
@@ -45,10 +47,12 @@ class ActivityStore(
             .set(ACTIVITIES.CREATED_BY, userId)
             .set(ACTIVITIES.CREATED_TIME, now)
             .set(ACTIVITIES.DESCRIPTION, model.description)
-            .set(ACTIVITIES.IS_HIGHLIGHT, false)
+            .set(ACTIVITIES.IS_HIGHLIGHT, model.isHighlight)
             .set(ACTIVITIES.MODIFIED_BY, userId)
             .set(ACTIVITIES.MODIFIED_TIME, now)
             .set(ACTIVITIES.PROJECT_ID, model.projectId)
+            .set(ACTIVITIES.VERIFIED_BY, verifiedBy)
+            .set(ACTIVITIES.VERIFIED_TIME, verifiedTime)
             .returningResult(ACTIVITIES.ID)
             .fetchOne(ACTIVITIES.ID)!!
 
