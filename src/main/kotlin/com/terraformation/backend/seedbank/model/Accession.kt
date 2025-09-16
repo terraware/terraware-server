@@ -257,8 +257,7 @@ data class AccessionModel(
               (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
                   mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
                   (mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount ||
-                      (state == AccessionState.UsedUp &&
-                          existing.remaining?.quantity == BigDecimal.ZERO)))
+                      (state == AccessionState.UsedUp && remaining?.quantity == BigDecimal.ZERO)))
           ) {
             SeedQuantityModel.of(BigDecimal.ZERO, latestObservedQuantity.units)
           } else {
