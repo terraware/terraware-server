@@ -64,6 +64,7 @@ dependencies {
   val awsSdkVersion: String by project
   val flywayVersion: String by project
   val geoToolsVersion: String by project
+  val jjwtVersion: String by project
   val jooqVersion: String by project
   val jtsVersion: String by project
   val ktorVersion: String by project
@@ -110,6 +111,7 @@ dependencies {
   implementation("commons-codec:commons-codec:1.19.0")
   implementation("commons-validator:commons-validator:1.10.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.0")
+  implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
@@ -119,6 +121,7 @@ dependencies {
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.20")
   implementation("org.apache.tika:tika-core:3.2.2")
+  implementation("org.bouncycastle:bcpkix-jdk18on:1.81")
   implementation("org.commonmark:commonmark:0.26.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -145,6 +148,8 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.1")
+  runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+  runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
   testImplementation("io.mockk:mockk:1.14.5")

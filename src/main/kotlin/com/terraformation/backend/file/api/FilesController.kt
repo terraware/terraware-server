@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/files")
+@RequestMapping("/api/v1/files") // If you change this, update the path in MuxService too.
 @RestController
 class FilesController(
     private val fileService: FileService,
 ) {
+  // If you change this path, update the path in MuxService too.
   @GetMapping("/tokens/{token}", produces = [MediaType.ALL_VALUE])
   @Operation(
       summary = "Gets the contents of the file associated with a file access token.",

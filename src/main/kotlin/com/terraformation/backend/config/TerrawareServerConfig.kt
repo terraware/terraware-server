@@ -108,6 +108,9 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with the Mapbox service. */
     val mapbox: MapboxConfig = MapboxConfig(),
 
+    /** Configures how the server interacts with the Mux (video streaming) service. */
+    val mux: MuxConfig = MuxConfig(),
+
     /** Configures notifications processing. */
     val notifications: NotificationsConfig = NotificationsConfig(),
 
@@ -343,6 +346,39 @@ class TerrawareServerConfig(
        */
       @DefaultValue("30") val retentionDays: Long = 30,
   )
+
+  class MuxConfig(
+      @DefaultValue("false") val enabled: Boolean = false,
+      /**
+       * If set, use this instead of webAppUrl when telling Mux how to fetch assets from us. Primary
+       * use case is for dev environments, where webAppUrl points to localhost and this points to
+       * something like ngrok.
+       */
+      val externalUrl: URI? = null,
+      val signingKeyId: String? = null,
+      val signingKeyPrivate: String? = null,
+      @DefaultValue("3600") val streamExpirationSeconds: Long = 3600,
+      val tokenId: String? = null,
+      val tokenSecret: String? = null,
+      /**
+       * If true, tell Mux to create video assets in test mode. Test videos are limited to 10
+       * seconds, expire after 24 hours, and are watermarked, but don't incur any charges.
+       */
+      val useTestAssets: Boolean = false,
+      val webhookSecret: String? = null,
+  ) {
+    init {
+      if (
+          enabled &&
+              (signingKeyId == null ||
+                  signingKeyPrivate == null ||
+                  tokenId == null ||
+                  tokenSecret == null)
+      ) {
+        throw IllegalArgumentException("Token and signing key are required for Mux")
+      }
+    }
+  }
 
   class SupportConfig(
       /** Support email address to use */
