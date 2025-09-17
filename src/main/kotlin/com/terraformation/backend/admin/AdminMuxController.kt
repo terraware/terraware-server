@@ -70,7 +70,7 @@ class AdminMuxController(
       redirectAttributes.failureMessage = "Failed to create token: ${e.message}"
     }
 
-    return redirectToFileAccessTokens()
+    return redirectToMuxHome()
   }
 
   @PostMapping("/uploadMuxVideo")
@@ -94,7 +94,7 @@ class AdminMuxController(
     } catch (e: Exception) {
       log.error("Error storing file", e)
       redirectAttributes.failureMessage = "Failed to store file: ${e.message}"
-      return redirectToFileAccessTokens()
+      return redirectToMuxHome()
     }
   }
 
@@ -115,10 +115,10 @@ class AdminMuxController(
       redirectAttributes.failureMessage = "Failed to create asset: ${e.message}"
     }
 
-    return redirectToFileAccessTokens(playbackId)
+    return redirectToMuxHome(playbackId)
   }
 
-  private fun redirectToFileAccessTokens(muxPlaybackId: String? = null): String {
+  private fun redirectToMuxHome(muxPlaybackId: String? = null): String {
     val suffix = muxPlaybackId?.let { "?muxPlaybackId=$it" } ?: ""
     return "redirect:/admin/mux$suffix"
   }
