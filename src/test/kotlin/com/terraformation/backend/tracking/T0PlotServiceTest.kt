@@ -13,8 +13,12 @@ import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.MonitoringPlotStore
 import com.terraformation.backend.tracking.db.T0PlotStore
+import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
@@ -26,8 +30,12 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val rateLimitedEventPublisher = TestEventPublisher()
+  private val monitoringPlotStore: MonitoringPlotStore by lazy { MonitoringPlotStore(dslContext) }
   private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
-  private val service: T0PlotService by lazy { T0PlotService(dslContext, t0PlotStore) }
+  private val service: T0PlotService by lazy {
+    T0PlotService(dslContext, monitoringPlotStore, rateLimitedEventPublisher, t0PlotStore)
+  }
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
   private lateinit var monitoringPlotId2: MonitoringPlotId
@@ -114,6 +122,46 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               densityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(20)),
           ),
           "Should have inserted species densities",
+      )
+
+      rateLimitedEventPublisher.assertEventPublished(
+          RateLimitedT0DataAssignedEvent(
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              monitoringPlots =
+                  listOf(
+                      PlotT0DensityChangedModel(
+                          monitoringPlotId1,
+                          setOf(
+                              SpeciesDensityChangedModel(
+                                  speciesId1,
+                                  newPlotDensity = BigDecimal.valueOf(2),
+                              ),
+                              SpeciesDensityChangedModel(
+                                  speciesId2,
+                                  newPlotDensity = BigDecimal.valueOf(7),
+                              ),
+                              SpeciesDensityChangedModel(
+                                  speciesId3,
+                                  newPlotDensity = BigDecimal.valueOf(11),
+                              ),
+                          ),
+                      ),
+                      PlotT0DensityChangedModel(
+                          monitoringPlotId2,
+                          setOf(
+                              SpeciesDensityChangedModel(
+                                  speciesId1,
+                                  newPlotDensity = BigDecimal.valueOf(10),
+                              ),
+                              SpeciesDensityChangedModel(
+                                  speciesId2,
+                                  newPlotDensity = BigDecimal.valueOf(20),
+                              ),
+                          ),
+                      ),
+                  ),
+          )
       )
     }
   }

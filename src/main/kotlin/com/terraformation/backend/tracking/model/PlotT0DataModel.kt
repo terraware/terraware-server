@@ -15,3 +15,21 @@ data class PlotT0DataModel(
     val observationId: ObservationId? = null,
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
+
+data class SpeciesDensityChangedModel(
+    val speciesId: SpeciesId,
+    val speciesScientificName: String? = null,
+    val previousPlotDensity: BigDecimal? = null,
+    val newPlotDensity: BigDecimal? = null,
+) {
+  init {
+    require(previousPlotDensity != null || newPlotDensity != null) {
+      "Either previousPlotDensity or newPlotDensity must be non-null."
+    }
+  }
+}
+
+data class PlotT0DensityChangedModel(
+    val monitoringPlotId: MonitoringPlotId,
+    val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
+)
