@@ -10,5 +10,8 @@ CREATE TABLE mux_assets (
     playback_id TEXT NOT NULL,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
     ready_time TIMESTAMP WITH TIME ZONE,
-    error_message TEXT
+    error_message TEXT,
+
+    UNIQUE (asset_id),
+    UNIQUE (playback_id)
 );
