@@ -28,7 +28,6 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditi
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
-import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
@@ -39,6 +38,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
@@ -101,7 +101,6 @@ class ObservationStore(
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
     private val parentStore: ParentStore,
-    private val recordedPlantsDao: RecordedPlantsDao,
 ) {
   private val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
       with(OBSERVATION_REQUESTED_SUBZONES) {
@@ -875,13 +874,23 @@ class ObservationStore(
           conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) }
       )
 
-      val plantsRows =
-          plants.map { it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId) }
+      val plantsRecords =
+          plants.map { plantsRow ->
+            RecordedPlantsRecord(
+                certaintyId = plantsRow.certaintyId,
+                gpsCoordinates = plantsRow.gpsCoordinates,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                speciesId = plantsRow.speciesId,
+                speciesName = plantsRow.speciesName,
+                statusId = plantsRow.statusId,
+            )
+          }
 
-      recordedPlantsDao.insert(plantsRows)
+      dslContext.batchInsert(plantsRecords).execute()
 
       val plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>> =
-          plantsRows
+          plants
               .groupBy { RecordedSpeciesKey(it.certaintyId!!, it.speciesId, it.speciesName) }
               .mapValues { (_, rowsForSpecies) ->
                 rowsForSpecies
