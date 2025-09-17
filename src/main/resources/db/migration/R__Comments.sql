@@ -119,6 +119,15 @@ COMMENT ON TABLE land_use_model_types IS '(Enum) Types of ways a project''s land
 
 COMMENT ON TABLE managed_location_types IS '(Enum) Type of managed location for business analytics purposes.';
 
+COMMENT ON TABLE mux_asset_statuses IS '(Enum) Possible statuses of Mux assets as they''re processed.';
+
+COMMENT ON TABLE mux_assets IS 'Information about Mux (video streaming) assets associated with files.';
+COMMENT ON COLUMN mux_assets.asset_id IS 'ID of the Mux asset as a whole. Used when updating or deleting assets.';
+COMMENT ON COLUMN mux_assets.created_time IS 'When the file was sent to Mux to create the asset. This can be later than the created time of the original file.';
+COMMENT ON COLUMN mux_assets.error_message IS 'If Mux failed to process the asset, the error it encountered.';
+COMMENT ON COLUMN mux_assets.playback_id IS 'ID of the Mux playback configuration for the asset. This is passed to the video player to stream a video.';
+COMMENT ON COLUMN mux_assets.ready_time IS 'If the asset is ready to play, what time it became ready.';
+
 COMMENT ON COLLATION natural_numeric IS 'Collation that sorts strings that contain numbers in numeric order, e.g., `a2` comes before `a10`.';
 
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';

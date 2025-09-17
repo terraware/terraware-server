@@ -309,6 +309,12 @@ VALUES (1, 'Activity'),
        (4, 'Impact')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO mux_asset_statuses (id, name)
+VALUES (1, 'Preparing'),
+       (2, 'Ready'),
+       (3, 'Errored')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO notification_criticalities (id, name)
 VALUES (1, 'Info'),
        (2, 'Warning'),
