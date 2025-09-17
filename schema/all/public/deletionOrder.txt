@@ -20,6 +20,7 @@ seed_fund_report_photos
 seed_fund_report_files
 project_land_use_model_types
 organization_managed_location_types
+mux_assets
 file_access_tokens
 device_managers
 chat_memory_messages
@@ -62,6 +63,7 @@ project_internal_roles
 plant_material_sourcing_methods
 organization_types
 notification_criticalities
+mux_asset_statuses
 managed_location_types
 growth_forms
 global_roles

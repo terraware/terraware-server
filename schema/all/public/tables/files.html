@@ -171,6 +171,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="mux_assets.file_id references files.id via mux_assets_file_id_fkey"><a href='mux_assets.html'>mux_assets</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">mux_assets_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="seed_fund_report_files.file_id references files.id via report_files_file_id_fkey"><a href='seed_fund_report_files.html'>seed_fund_report_files</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">report_files_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>

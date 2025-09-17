@@ -29,7 +29,9 @@
          <checkConstraint constraint="((verified_by IS NULL) = (verified_time IS NULL))" name="verified_by_requires_time"/>
       </table>
       <table name="activity_media_files" remarks="Information about activity-related media such as photos and videos." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="activity_media_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
          </column>
@@ -908,6 +910,7 @@
       <table name="report_photos" remarks="Photos for the accelerator project report." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="file_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_photos"/>
+            <parent column="id" foreignKey="report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="report_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_photos"/>
@@ -1075,8 +1078,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_frequency_id" nullable="false" remarks="Frequency of the report, that can determine report data. Must match with frequency of the configuration." size="10" type="int4" typeCode="4">
-            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
+            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>
@@ -1162,7 +1165,9 @@
       </table>
       <table name="submission_snapshots" remarks="Snapshot files associated to submissions" schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="submission_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="submission_snapshots_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
          </column>

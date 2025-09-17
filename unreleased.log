@@ -1,3 +1,4 @@
+d1fe586f91c SW-7367 Mux asset metadata table (#3397)
 c2ba71d0862 SW-7385 Add created/modified fields to plot t0 tables (#3395)
 314dc31a555 SW-7345 Add admin-only activity creation endpoint (#3396)
 d9ecf4b4df4 SW-7313 Used up accessions should allow updates (#3394)

@@ -412,6 +412,7 @@
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
             <child column="file_id" foreignKey="file_access_tokens_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="file_access_tokens"/>
+            <child column="file_id" foreignKey="mux_assets_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_assets"/>
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
@@ -521,6 +522,42 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="managed_location_types_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="mux_asset_statuses" remarks="(Enum) Possible statuses of Mux assets as they're processed." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="mux_asset_status_id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_assets"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="mux_asset_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="mux_asset_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="mux_assets" remarks="Information about Mux (video streaming) assets associated with files." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="mux_assets_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="asset_id" nullable="false" remarks="ID of the Mux asset as a whole. Used when updating or deleting assets." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="mux_asset_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_asset_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="playback_id" nullable="false" remarks="ID of the Mux playback configuration for the asset. This is passed to the video player to stream a video." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="When the file was sent to Mux to create the asset. This can be later than the created time of the original file." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="ready_time" nullable="true" remarks="If the asset is ready to play, what time it became ready." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="error_message" nullable="true" remarks="If Mux failed to process the asset, the error it encountered." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="mux_assets_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="mux_assets_asset_id_key" unique="true">
+            <column ascending="true" name="asset_id"/>
+         </index>
+         <index name="mux_assets_playback_id_key" unique="true">
+            <column ascending="true" name="playback_id"/>
          </index>
       </table>
       <table name="notification_criticalities" remarks="(Enum) Criticality information of notifications in the application." schema="public" type="TABLE">

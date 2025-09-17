@@ -79,6 +79,19 @@ digraph "compactRelationshipsDiagram" {
     target="_top"
     tooltip="chat_memory_messages"
   ];
+  "files" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="25" HEIGHT="16"><B>files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="storage_url" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">storage_url</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/files.html"
+    target="_top"
+    tooltip="files"
+  ];
   "accelerator.project_vote_decisions" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -102,6 +115,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../docprod/tables/variable_workflow_history.html"
     target="_top"
     tooltip="docprod.variable_workflow_history"
+  ];
+  "nursery.batch_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="130" HEIGHT="16"><B>nursery.batch_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="80" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../nursery/tables/batch_photos.html"
+    target="_top"
+    tooltip="nursery.batch_photos"
   ];
   "funder.published_reports" [
    label=<
@@ -139,6 +164,18 @@ digraph "compactRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.project_overall_scores"
   ];
+  "accelerator.activity_media_files" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="188" HEIGHT="16"><B>accelerator.activity_media_files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/activity_media_files.html"
+    target="_top"
+    tooltip="accelerator.activity_media_files"
+  ];
   "accelerator.project_votes" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -150,6 +187,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../accelerator/tables/project_votes.html"
     target="_top"
     tooltip="accelerator.project_votes"
+  ];
+  "seedbank.accession_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="165" HEIGHT="16"><B>seedbank.accession_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../seedbank/tables/accession_photos.html"
+    target="_top"
+    tooltip="seedbank.accession_photos"
   ];
   "docprod.variable_owners" [
    label=<
@@ -223,6 +272,30 @@ digraph "compactRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.project_report_configs"
   ];
+  "accelerator.submission_snapshots" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="205" HEIGHT="16"><B>accelerator.submission_snapshots</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="133" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/submission_snapshots.html"
+    target="_top"
+    tooltip="accelerator.submission_snapshots"
+  ];
+  "nursery.withdrawal_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="164" HEIGHT="16"><B>nursery.withdrawal_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../nursery/tables/withdrawal_photos.html"
+    target="_top"
+    tooltip="nursery.withdrawal_photos"
+  ];
   "accelerator.participants" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -233,6 +306,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../accelerator/tables/participants.html"
     target="_top"
     tooltip="accelerator.participants"
+  ];
+  "docprod.variable_image_values" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="186" HEIGHT="16"><B>docprod.variable_image_values</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="133" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../docprod/tables/variable_image_values.html"
+    target="_top"
+    tooltip="docprod.variable_image_values"
   ];
   "funder.published_project_carbon_certs" [
    label=<
@@ -269,6 +354,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../seedbank/tables/accessions.html"
     target="_top"
     tooltip="seedbank.accessions"
+  ];
+  "accelerator.report_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="156" HEIGHT="16"><B>accelerator.report_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="84" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/report_photos.html"
+    target="_top"
+    tooltip="accelerator.report_photos"
   ];
   "nursery.batches" [
    label=<
@@ -317,6 +414,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../accelerator/tables/event_projects.html"
     target="_top"
     tooltip="accelerator.event_projects"
+  ];
+  "funder.published_report_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>funder.published_report_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="148" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_report_photos.html"
+    target="_top"
+    tooltip="funder.published_report_photos"
   ];
   "accelerator.participant_project_species" [
    label=<
@@ -452,7 +561,20 @@ digraph "compactRelationshipsDiagram" {
     target="_top"
     tooltip="nursery.batch_details_history"
   ];
+  "tracking.observation_photos" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="171" HEIGHT="16"><B>tracking.observation_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="file_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="118" HEIGHT="16">file_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../tracking/tables/observation_photos.html"
+    target="_top"
+    tooltip="tracking.observation_photos"
+  ];
   "accelerator.activities":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.activity_media_files":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.applications":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.deliverable_project_due_dates":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.event_projects":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -464,10 +586,13 @@ digraph "compactRelationshipsDiagram" {
   "accelerator.project_scores":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_vote_decisions":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.submission_documents":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.submission_snapshots":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.submissions":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "docprod.documents":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "docprod.variable_image_values":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "docprod.variable_owners":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "docprod.variable_values":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "docprod.variable_workflow_history":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -477,16 +602,21 @@ digraph "compactRelationshipsDiagram" {
   "funder.published_project_land_use":"land_use_model_type_id":w -> "land_use_model_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_sdg":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_report_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batch_details_history":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "nursery.batch_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batches":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "nursery.withdrawal_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "chat_memory_messages":"conversation_id":w -> "chat_memory_conversations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "chat_memory_messages":"message_type_id":w -> "chat_memory_message_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"land_use_model_type_id":w -> "land_use_model_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"participant_id":w -> "accelerator.participants":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "seedbank.accession_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seedbank.accessions":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.draft_planting_sites":"organization_id":w -> "projects":"organization_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.draft_planting_sites":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.observation_photos":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
 }

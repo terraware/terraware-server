@@ -133,6 +133,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "internal_tags":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "internal_tags":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "mux_assets":"elipses":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "notifications":"notification_type_id":w -> "notification_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"user_id":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -1021,7 +1022,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="25" HEIGHT="16"><B>files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">13 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">14 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/files.html"
     target="_top"
@@ -1059,6 +1060,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/internal_tags.html"
     target="_top"
     tooltip="internal_tags"
+  ];
+  "mux_assets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="68" HEIGHT="16"><B>mux_assets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/mux_assets.html"
+    target="_top"
+    tooltip="mux_assets"
   ];
   "notification_types" [
    label=<
