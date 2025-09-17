@@ -157,29 +157,12 @@ class T0PlotStore(
       }
     }
 
-    val changeList: MutableMap<SpeciesId, SpeciesDensityChangedModel> =
-        observationDensities
-            .mapValues { (speciesId, observationDensity) ->
-              SpeciesDensityChangedModel(
-                  speciesId,
-                  previousPlotDensity = existingDensities[speciesId],
-                  newPlotDensity = observationDensity.toBigDecimal(),
-              )
-            }
-            .toMutableMap()
-    existingDensities.keys
-        .filter { it !in changeList }
-        .forEach { speciesId ->
-          changeList[speciesId] =
-              SpeciesDensityChangedModel(
-                  speciesId,
-                  previousPlotDensity = existingDensities[speciesId],
-              )
-        }
+    val newDensities = observationDensities.mapValues { it.value.toBigDecimal() }
+    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
         monitoringPlotId = monitoringPlotId,
-        speciesDensityChanges = changeList.values.toSet(),
+        speciesDensityChanges = speciesDensityChanges,
     )
   }
 
@@ -248,30 +231,12 @@ class T0PlotStore(
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
     }
 
-    val changeList: MutableMap<SpeciesId, SpeciesDensityChangedModel> =
-        densities
-            .associate { newDensityModel ->
-              newDensityModel.speciesId to
-                  SpeciesDensityChangedModel(
-                      newDensityModel.speciesId,
-                      previousPlotDensity = existingDensities[newDensityModel.speciesId],
-                      newPlotDensity = newDensityModel.plotDensity,
-                  )
-            }
-            .toMutableMap()
-    existingDensities.keys
-        .filter { it !in changeList }
-        .forEach { speciesId ->
-          changeList[speciesId] =
-              SpeciesDensityChangedModel(
-                  speciesId,
-                  previousPlotDensity = existingDensities[speciesId],
-              )
-        }
+    val newDensities = densities.associate { it.speciesId to it.plotDensity }
+    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
         monitoringPlotId = monitoringPlotId,
-        speciesDensityChanges = changeList.values.toSet(),
+        speciesDensityChanges = speciesDensityChanges,
     )
   }
 
@@ -285,4 +250,32 @@ class T0PlotStore(
             .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
             .fetchMap(SPECIES_ID.asNonNullable(), PLOT_DENSITY.asNonNullable())
       }
+
+  private fun buildSpeciesDensityChangeList(
+      existingDensities: Map<SpeciesId, BigDecimal>,
+      newDensities: Map<SpeciesId, BigDecimal>,
+  ): Set<SpeciesDensityChangedModel> {
+    val changeList: MutableMap<SpeciesId, SpeciesDensityChangedModel> =
+        newDensities
+            .mapValues { (speciesId, newDensity) ->
+              SpeciesDensityChangedModel(
+                  speciesId,
+                  previousPlotDensity = existingDensities[speciesId],
+                  newPlotDensity = newDensity,
+              )
+            }
+            .toMutableMap()
+
+    existingDensities.keys
+        .filter { it !in changeList }
+        .forEach { speciesId ->
+          changeList[speciesId] =
+              SpeciesDensityChangedModel(
+                  speciesId,
+                  previousPlotDensity = existingDensities[speciesId],
+              )
+        }
+
+    return changeList.values.toSet()
+  }
 }
