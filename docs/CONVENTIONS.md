@@ -4,7 +4,7 @@ Code should be written in idiomatic Kotlin and should generally follow the guide
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 24 JVM. We use the Amazon Corretto JVM and will generally target the most recent Corretto release.
+Currently, the build targets the Java 25 JVM. We use the Amazon Corretto JVM and will generally target the most recent Corretto release.
 
 ## Formatting
 
