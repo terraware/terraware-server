@@ -273,7 +273,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 55,
           value = 45,
-          underperformanceJustification = "Almost at target",
+          projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -320,7 +320,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 55,
                           value = 45,
-                          underperformanceJustification = "Almost at target",
+                          projectsComments = "Almost at target",
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
@@ -920,7 +920,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 55,
           value = 45,
-          underperformanceJustification = "Almost at target",
+          projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -967,7 +967,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 55,
                           value = 45,
-                          underperformanceJustification = "Almost at target",
+                          projectsComments = "Almost at target",
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
@@ -1413,7 +1413,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 55,
           value = 45,
-          underperformanceJustification = "Existing metric 1 notes",
+          projectsComments = "Existing metric 1 notes",
           status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -1424,7 +1424,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId2,
           target = 30,
           value = null,
-          underperformanceJustification = "Existing metric 2 notes",
+          projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -1436,7 +1436,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 1000,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
-          underperformanceJustification = "Existing seeds collected metric notes",
+          projectsComments = "Existing seeds collected metric notes",
           progressNotes = "Existing seeds collected metric internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -1449,7 +1449,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
-          underperformanceJustification = "Existing species planted metric notes",
+          projectsComments = "Existing species planted metric notes",
           progressNotes = "Existing species planted metric internal comment",
           status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
@@ -1468,7 +1468,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 99,
                           value = 88,
-                          underperformanceJustification = "New metric 2 notes",
+                          projectsComments = "New metric 2 notes",
                           progressNotes = "New metric 2 internal comment",
                           status = ReportMetricStatus.OnTrack,
 
@@ -1480,7 +1480,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 50,
                           value = 45,
-                          underperformanceJustification = "New metric 3 notes",
+                          projectsComments = "New metric 3 notes",
                           progressNotes = "New metric 3 internal comment",
                       ),
               ),
@@ -1491,7 +1491,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           target = 5,
                           value = 4,
                           status = null,
-                          underperformanceJustification = "New species planted metric notes",
+                          projectsComments = "New species planted metric notes",
                           progressNotes = "New species planted metric internal comment",
                       ),
                   SystemMetric.TreesPlanted to
@@ -1499,7 +1499,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           target = 250,
                           value = 45,
                           status = ReportMetricStatus.Unlikely,
-                          underperformanceJustification = "New trees planted metric notes",
+                          projectsComments = "New trees planted metric notes",
                           progressNotes = "New trees planted metric internal comment",
                       ),
               ),
@@ -1509,7 +1509,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 100,
                           value = 50,
-                          underperformanceJustification = "Project metric notes",
+                          projectsComments = "Project metric notes",
                           progressNotes = "Project metric internal comment",
                       ),
               ),
@@ -1523,7 +1523,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 55,
                   value = 45,
                   statusId = ReportMetricStatus.OnTrack,
-                  underperformanceJustification = "Existing metric 1 notes",
+                  projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -1533,7 +1533,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 99,
                   value = 88,
                   statusId = ReportMetricStatus.OnTrack,
-                  underperformanceJustification = "New metric 2 notes",
+                  projectsComments = "New metric 2 notes",
                   progressNotes = "New metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -1543,7 +1543,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetricId = standardMetricId3,
                   target = 50,
                   value = 45,
-                  underperformanceJustification = "New metric 3 notes",
+                  projectsComments = "New metric 3 notes",
                   progressNotes = "New metric 3 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -1561,7 +1561,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 1000,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
-                  underperformanceJustification = "Existing seeds collected metric notes",
+                  projectsComments = "Existing seeds collected metric notes",
                   progressNotes = "Existing seeds collected metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
@@ -1574,7 +1574,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(5000),
                   overrideValue = 4,
                   statusId = null,
-                  underperformanceJustification = "New species planted metric notes",
+                  projectsComments = "New species planted metric notes",
                   progressNotes = "New species planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -1585,7 +1585,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 250,
                   overrideValue = 45,
                   statusId = ReportMetricStatus.Unlikely,
-                  underperformanceJustification = "New trees planted metric notes",
+                  projectsComments = "New trees planted metric notes",
                   progressNotes = "New trees planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -1601,7 +1601,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectMetricId = projectMetricId,
                   target = 100,
                   value = 50,
-                  underperformanceJustification = "Project metric notes",
+                  projectsComments = "Project metric notes",
                   progressNotes = "Project metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -1890,7 +1890,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 55,
           value = 45,
-          underperformanceJustification = "Existing metric 1 notes",
+          projectsComments = "Existing metric 1 notes",
           status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -1901,7 +1901,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId2,
           target = 30,
           value = null,
-          underperformanceJustification = "Existing metric 2 notes",
+          projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -1913,7 +1913,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 1000,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
-          underperformanceJustification = "Existing seeds collected metric notes",
+          projectsComments = "Existing seeds collected metric notes",
           progressNotes = "Existing seeds collected metric internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
@@ -1926,7 +1926,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
-          underperformanceJustification = "Existing species planted metric notes",
+          projectsComments = "Existing species planted metric notes",
           progressNotes = "Existing species planted metric internal comment",
           status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
@@ -1951,7 +1951,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 99,
                           value = 88,
-                          underperformanceJustification = "New metric 2 notes",
+                          projectsComments = "New metric 2 notes",
                           status = ReportMetricStatus.OnTrack,
 
                           // These fields are ignored
@@ -1963,7 +1963,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 50,
                           value = null,
-                          underperformanceJustification = "New metric 3 notes",
+                          projectsComments = "New metric 3 notes",
                       ),
               ),
           systemMetricEntries =
@@ -1971,7 +1971,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   SystemMetric.SpeciesPlanted to
                       ReportMetricEntryModel(
                           target = 5,
-                          underperformanceJustification = "New species planted metric notes",
+                          projectsComments = "New species planted metric notes",
                           status = null,
 
                           // These fields are ignored
@@ -1983,7 +1983,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   SystemMetric.TreesPlanted to
                       ReportMetricEntryModel(
                           target = 250,
-                          underperformanceJustification = "New trees planted metric notes",
+                          projectsComments = "New trees planted metric notes",
                           status = ReportMetricStatus.Unlikely,
 
                           // These fields are ignored
@@ -1999,7 +1999,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           target = 100,
                           value = 50,
-                          underperformanceJustification = "Project metric notes",
+                          projectsComments = "Project metric notes",
                       ),
               ),
       )
@@ -2012,7 +2012,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 55,
                   value = 45,
                   statusId = ReportMetricStatus.OnTrack,
-                  underperformanceJustification = "Existing metric 1 notes",
+                  projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -2022,7 +2022,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 99,
                   value = 88,
                   statusId = ReportMetricStatus.OnTrack,
-                  underperformanceJustification = "New metric 2 notes",
+                  projectsComments = "New metric 2 notes",
                   progressNotes = "Existing metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -2031,7 +2031,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardMetricId = standardMetricId3,
                   target = 50,
-                  underperformanceJustification = "New metric 3 notes",
+                  projectsComments = "New metric 3 notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2048,7 +2048,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 1000,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
-                  underperformanceJustification = "Existing seeds collected metric notes",
+                  projectsComments = "Existing seeds collected metric notes",
                   progressNotes = "Existing seeds collected metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
@@ -2061,7 +2061,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(5000),
                   statusId = null,
                   overrideValue = 15,
-                  underperformanceJustification = "New species planted metric notes",
+                  projectsComments = "New species planted metric notes",
                   progressNotes = "Existing species planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -2071,7 +2071,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemMetricId = SystemMetric.TreesPlanted,
                   target = 250,
                   statusId = ReportMetricStatus.Unlikely,
-                  underperformanceJustification = "New trees planted metric notes",
+                  projectsComments = "New trees planted metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2086,7 +2086,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectMetricId = projectMetricId,
                   target = 100,
                   value = 50,
-                  underperformanceJustification = "Project metric notes",
+                  projectsComments = "Project metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               )
@@ -4097,7 +4097,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
-          underperformanceJustification = "Existing underperformance justification",
+          projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportStandardMetric(
@@ -4117,14 +4117,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
-          underperformanceJustification = "Existing underperformance justification",
+          projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportProjectMetric(
           metricId = projectMetricId2,
           target = 100,
           value = 100,
-          underperformanceJustification = "Existing underperformance justification",
+          projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportProjectMetric(
@@ -4144,14 +4144,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
-          underperformanceJustification = "Existing underperformance justification",
+          projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportSystemMetric(
           metric = SystemMetric.TreesPlanted,
           target = 100,
           value = 100,
-          underperformanceJustification = "Existing underperformance justification",
+          projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportPhoto(
@@ -4219,7 +4219,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportMetricStatus.Achieved,
           target = 10,
           value = 10,
-          underperformanceJustification = null,
+          projectsComments = null,
           progressNotes = "Standard Metric 1 Progress notes",
       )
 
@@ -4229,7 +4229,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportMetricStatus.OnTrack,
           target = 20,
           value = 19,
-          underperformanceJustification = "Standard Metric 2 Underperformance",
+          projectsComments = "Standard Metric 2 Underperformance",
       )
 
       insertReportStandardMetric(
@@ -4252,7 +4252,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportMetricStatus.Achieved,
           target = 30,
           value = 30,
-          underperformanceJustification = null,
+          projectsComments = null,
           progressNotes = "Project Metric 1 Progress notes",
       )
 
@@ -4262,7 +4262,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportMetricStatus.Unlikely,
           target = 40,
           value = 39,
-          underperformanceJustification = "Project Metric 2 Underperformance",
+          projectsComments = "Project Metric 2 Underperformance",
       )
 
       insertReportProjectMetric(
@@ -4295,7 +4295,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 50,
           overrideValue = 49,
           systemValue = 39,
-          underperformanceJustification = "Seedlings underperformance justification",
+          projectsComments = "Seedlings underperformance justification",
           progressNotes = "Seedlings progress notes",
       )
 
@@ -4398,7 +4398,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportMetricStatus.Achieved,
                   target = 10,
                   value = 10,
-                  underperformanceJustification = null,
+                  projectsComments = null,
                   progressNotes = "Standard Metric 1 Progress notes",
               ),
               PublishedReportStandardMetricsRecord(
@@ -4407,7 +4407,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportMetricStatus.OnTrack,
                   target = 20,
                   value = 19,
-                  underperformanceJustification = "Standard Metric 2 Underperformance",
+                  projectsComments = "Standard Metric 2 Underperformance",
               ),
           ),
           "Published report standard metrics table",
@@ -4421,7 +4421,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportMetricStatus.Achieved,
                   target = 30,
                   value = 30,
-                  underperformanceJustification = null,
+                  projectsComments = null,
                   progressNotes = "Project Metric 1 Progress notes",
               ),
               PublishedReportProjectMetricsRecord(
@@ -4430,7 +4430,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportMetricStatus.Unlikely,
                   target = 40,
                   value = 39,
-                  underperformanceJustification = "Project Metric 2 Underperformance",
+                  projectsComments = "Project Metric 2 Underperformance",
               ),
           ),
           "Published report project metrics table",
@@ -4444,7 +4444,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   statusId = ReportMetricStatus.OnTrack,
                   target = 50,
                   value = 49,
-                  underperformanceJustification = "Seedlings underperformance justification",
+                  projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
               ),
               PublishedReportSystemMetricsRecord(

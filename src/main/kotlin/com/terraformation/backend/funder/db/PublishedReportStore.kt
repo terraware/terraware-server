@@ -126,8 +126,8 @@ class PublishedReportStore(
             SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
         )!!
     val targetField = publishedMetricTable.field("target", Int::class.java)!!
-    val underperformanceJustificationField =
-        publishedMetricTable.field("underperformance_justification", String::class.java)!!
+    val projectsCommentsField =
+        publishedMetricTable.field("projects_comments", String::class.java)!!
     val valueField = publishedMetricTable.field("value", Int::class.java)!!
 
     val metricTable = metricTableIdField.table!!
@@ -148,6 +148,7 @@ class PublishedReportStore(
 
     return DSL.multiset(
             DSL.select(
+                    projectsCommentsField,
                     progressNotesField,
                     publishedMetricIdField,
                     metricComponentField,
@@ -157,7 +158,6 @@ class PublishedReportStore(
                     metricTypeField,
                     statusField,
                     targetField,
-                    underperformanceJustificationField,
                     valueField,
                     unitField,
                 )
@@ -174,12 +174,12 @@ class PublishedReportStore(
                 description = it[metricDescriptionField],
                 metricId = it[publishedMetricIdField.asNonNullable()],
                 name = it[metricNameField],
+                projectsComments = it[projectsCommentsField],
                 progressNotes = it[progressNotesField],
                 reference = it[metricReferenceField],
                 status = it[statusField],
                 target = it[targetField],
                 type = it[metricTypeField],
-                underperformanceJustification = it[underperformanceJustificationField],
                 value = it[valueField],
                 unit = it[unitField],
             )

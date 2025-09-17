@@ -130,7 +130,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           target = 100,
           value = 120,
-          underperformanceJustification = null,
+          projectsComments = null,
           status = ReportMetricStatus.Achieved,
       )
 
@@ -140,7 +140,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 200,
           value = 180,
           progressNotes = "progress notes 2",
-          underperformanceJustification = "Underperformance justification 2",
+          projectsComments = "Underperformance justification 2",
           status = ReportMetricStatus.Unlikely,
       )
 
@@ -150,7 +150,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
           value = 40,
           progressNotes = "progress notes 1",
-          underperformanceJustification = null,
+          projectsComments = null,
           status = ReportMetricStatus.OnTrack,
       )
 
@@ -159,7 +159,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = projectMetricId2,
           target = null,
           value = null,
-          underperformanceJustification = null,
+          projectsComments = null,
           status = null,
       )
 
@@ -168,7 +168,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metric = SystemMetric.MortalityRate,
           target = 0,
           value = 5,
-          underperformanceJustification = "Some plants had died.",
+          projectsComments = "Some plants had died.",
           status = ReportMetricStatus.Unlikely,
       )
       insertPublishedReportSystemMetric(
@@ -176,7 +176,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metric = SystemMetric.SurvivalRate,
           target = 6,
           value = 6,
-          underperformanceJustification = null,
+          projectsComments = null,
           status = ReportMetricStatus.Achieved,
       )
 
@@ -245,7 +245,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = null,
                               type = MetricType.Output,
                               progressNotes = "progress notes 1",
-                              underperformanceJustification = null,
+                              projectsComments = null,
                               value = 40,
                               unit = "%",
                           ),
@@ -259,7 +259,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = null,
                               type = MetricType.Outcome,
                               progressNotes = null,
-                              underperformanceJustification = null,
+                              projectsComments = null,
                               value = null,
                               unit = "USD",
                           ),
@@ -281,7 +281,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = 200,
                               value = 180,
                               progressNotes = "progress notes 2",
-                              underperformanceJustification = "Underperformance justification 2",
+                              projectsComments = "Underperformance justification 2",
                               status = ReportMetricStatus.Unlikely,
                               unit = null,
                           ),
@@ -295,7 +295,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = 100,
                               type = MetricType.Output,
                               progressNotes = null,
-                              underperformanceJustification = null,
+                              projectsComments = null,
                               value = 120,
                               unit = null,
                           ),
@@ -313,7 +313,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = 0,
                               type = SystemMetric.MortalityRate.typeId,
                               progressNotes = null,
-                              underperformanceJustification = "Some plants had died.",
+                              projectsComments = "Some plants had died.",
                               value = 5,
                               unit = null,
                           ),
@@ -327,7 +327,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               target = 6,
                               type = SystemMetric.SurvivalRate.typeId,
                               progressNotes = null,
-                              underperformanceJustification = null,
+                              projectsComments = null,
                               value = 6,
                               unit = null,
                           ),

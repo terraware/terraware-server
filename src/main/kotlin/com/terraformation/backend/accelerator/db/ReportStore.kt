@@ -530,7 +530,7 @@ class ReportStore(
                     ReportMetricEntryModel(
                         target = entry.target,
                         value = entry.overrideValue ?: entry.systemValue,
-                        underperformanceJustification = entry.underperformanceJustification,
+                        projectsComments = entry.projectsComments,
                         progressNotes = entry.progressNotes,
                         status = entry.status,
                     )
@@ -993,8 +993,7 @@ class ReportStore(
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
     val targetField = table.field("target", Int::class.java)!!
     val valueField = table.field("value", Int::class.java)!!
-    val underperformanceJustificationField =
-        table.field("underperformance_justification", String::class.java)!!
+    val projectsCommentsField = table.field("projects_comments", String::class.java)!!
     val progressNotesField = table.field("progress_notes", String::class.java)
     val statusField =
         table.field(
@@ -1017,7 +1016,7 @@ class ReportStore(
               .set(metricIdField, metricId)
               .set(targetField, entry.target)
               .set(valueField, entry.value)
-              .set(underperformanceJustificationField, entry.underperformanceJustification)
+              .set(projectsCommentsField, entry.projectsComments)
               .set(statusField, entry.status)
               .apply {
                 if (modifiedByField != null) {
@@ -1219,8 +1218,8 @@ class ReportStore(
               .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
               .set(REPORT_SYSTEM_METRICS.TARGET, entry.target)
               .set(
-                  REPORT_SYSTEM_METRICS.UNDERPERFORMANCE_JUSTIFICATION,
-                  entry.underperformanceJustification,
+                  REPORT_SYSTEM_METRICS.PROJECTS_COMMENTS,
+                  entry.projectsComments,
               )
               .set(REPORT_SYSTEM_METRICS.STATUS_ID, entry.status)
               .set(REPORT_SYSTEM_METRICS.MODIFIED_BY, currentUser().userId)
