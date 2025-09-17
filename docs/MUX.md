@@ -93,6 +93,24 @@ terraware:
 
 Or, if you're running terraware-server using a Docker image, you can set all these values in environment variables, e.g., `TERRAWARE_MUX_ENABLED=true`.
 
+## Make sure it all works
+
+You'll need a video file to test with.
+
+Launch terraware-server and terraware-web and log into [the admin UI](http://localhost:3000/admin/) as a super-admin user.
+
+Open the "Test utilities" section.
+
+Go to the "Mux integration" page.
+
+In the "Upload Video File" form, choose your video file and click the "Upload" button.
+
+If things are working properly, you should see some requests from Mux in both the Ngrok request log and the terraware-server log: first a request to fetch the video file (`/api/v1/files/tokens/<token>`) and then a series of webhook requests with status updates.
+
+You should also see a video player in the admin UI. Once the video is done processing, you should be able to play it.
+
+By default, we tell Mux to process videos as "test assets" which limits videos to 10 seconds, puts watermarks on them, and deletes them after 24 hours. The benefit is that Mux doesn't charge for test assets. See below if you want to disable that.
+
 ## Changing the behavior of the integration
 
 There are some config options you can use to change how the Mux integration behaves. As usual, these can be set in either `application-dev.yaml` or environment variables.

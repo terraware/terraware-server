@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        form { padding-bottom: 1em; }
+        mux-player { max-width: 640px; }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Mux Integration</h2>
+
+<th:block th:if="${muxEnabled}">
+
+    <th:block th:if="${muxStream != null}">
+        <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" defer></script>
+        <mux-player
+                th:playback-id="${muxStream.playbackId}"
+                th:playback-token="${muxStream.playbackToken}"
+                th:video-title="|File ${muxStream.fileId}|"
+        ></mux-player>
+    </th:block>
+
+    <h3>Upload Video File and Send to Mux</h3>
+
+    <form method="POST" action="/admin/uploadMuxVideo" enctype="multipart/form-data">
+        <label>
+            Video file
+            <input type="file" name="file"/>
+        </label>
+        <button type="submit">Upload</button>
+    </form>
+
+    <h3>View Video for Existing File</h3>
+
+    The file must have already been sent to Mux.
+
+    <form method="GET" action="/admin/mux">
+        <label>
+            File ID
+            <input type="text" name="fileId" th:value="${muxStream?.fileId}"/>
+        </label>
+        <button type="submit">View</button>
+    </form>
+
+    <h3>Send Existing Video File to Mux</h3>
+
+    <form method="POST" action="/admin/sendVideoToMux">
+        <label>
+            File ID
+            <input type="text" name="fileId"/>
+        </label>
+        <button type="submit">Send</button>
+    </form>
+
+</th:block>
+
+<p th:if="!${muxEnabled}">
+    The Mux integration is disabled.
+</p>
+
+<h3>Create File Access Token</h3>
+
+A file access token allows public access to a Terraware file for a limited time. We give this
+to Mux so it can download the uploaded video files from us.
+
+<form method="POST" action="/admin/createFileAccessToken">
+    <label>
+        File ID
+        <input type="text" name="fileId"/>
+    </label>
+    <label>
+        Expiration time with unit suffix (e.g., 30s, 15m, 1h)
+        <input type="text" name="expiration"/>
+    </label>
+    <button type="submit">Create Token</button>
+</form>
+
+</body>
+</html>
