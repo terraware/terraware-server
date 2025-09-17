@@ -65,7 +65,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         ParentStore(dslContext),
-        recordedPlantsDao,
     )
   }
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
