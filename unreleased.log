@@ -1,3 +1,4 @@
+c2ba71d0862 SW-7385 Add created/modified fields to plot t0 tables (#3395)
 314dc31a555 SW-7345 Add admin-only activity creation endpoint (#3396)
 d9ecf4b4df4 SW-7313 Used up accessions should allow updates (#3394)
 6be7cb0c814 Update dependency org.commonmark:commonmark to v0.26.0 (#3393)

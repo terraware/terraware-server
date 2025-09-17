@@ -175,6 +175,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "tracking.planting_zones":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_zones":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.plantings":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.plot_t0_density":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.plot_t0_density":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.plot_t0_observations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "tracking.plot_t0_observations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.activities" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -903,7 +907,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="32" HEIGHT="16"><B>users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">111 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">115 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"
@@ -1062,5 +1066,27 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../tracking/tables/plantings.html"
     target="_top"
     tooltip="tracking.plantings"
+  ];
+  "tracking.plot_t0_density" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16"><B>tracking.plot_t0_density</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../tracking/tables/plot_t0_density.html"
+    target="_top"
+    tooltip="tracking.plot_t0_density"
+  ];
+  "tracking.plot_t0_observations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16"><B>tracking.plot_t0_observations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../tracking/tables/plot_t0_observations.html"
+    target="_top"
+    tooltip="tracking.plot_t0_observations"
   ];
 }
