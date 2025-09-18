@@ -552,11 +552,11 @@ data class ReportStandardMetricPayload(
     val isPublishable: Boolean,
     val name: String,
     val progressNotes: String?,
+    val projectsComments: String?,
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
     val type: MetricType,
-    val underperformanceJustification: String?,
     val value: Int?,
 ) {
   constructor(
@@ -568,11 +568,11 @@ data class ReportStandardMetricPayload(
       isPublishable = model.metric.isPublishable,
       name = model.metric.name,
       progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
       reference = model.metric.reference,
       status = model.entry.status,
       target = model.entry.target,
       type = model.metric.type,
-      underperformanceJustification = model.entry.underperformanceJustification,
       value = model.entry.value,
   )
 }
@@ -580,17 +580,17 @@ data class ReportStandardMetricPayload(
 data class ReportStandardMetricEntriesPayload(
     val id: StandardMetricId,
     val progressNotes: String?,
+    val projectsComments: String?,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val underperformanceJustification: String?,
     val value: Int?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           progressNotes = progressNotes,
+          projectsComments = projectsComments,
           status = status,
           target = target,
-          underperformanceJustification = underperformanceJustification,
           value = value,
       )
 }
@@ -602,13 +602,13 @@ data class ReportSystemMetricPayload(
     val metric: SystemMetric,
     val overrideValue: Int?,
     val progressNotes: String?,
+    val projectsComments: String?,
     val reference: String,
     val status: ReportMetricStatus?,
     val systemTime: Instant?,
     val systemValue: Int,
     val target: Int?,
     val type: MetricType,
-    val underperformanceJustification: String?,
 ) {
   constructor(
       model: ReportSystemMetricModel
@@ -619,13 +619,13 @@ data class ReportSystemMetricPayload(
       metric = model.metric,
       overrideValue = model.entry.overrideValue,
       progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
       reference = model.metric.reference,
       status = model.entry.status,
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
       type = model.metric.typeId,
-      underperformanceJustification = model.entry.underperformanceJustification,
   )
 }
 
@@ -633,16 +633,16 @@ data class ReportSystemMetricEntriesPayload(
     val metric: SystemMetric,
     val overrideValue: Int?,
     val progressNotes: String?,
+    val projectsComments: String?,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val underperformanceJustification: String?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           progressNotes = progressNotes,
+          projectsComments = projectsComments,
           status = status,
           target = target,
-          underperformanceJustification = underperformanceJustification,
           value = overrideValue,
       )
 }
@@ -666,11 +666,11 @@ data class ReportProjectMetricPayload(
     val isPublishable: Boolean,
     val name: String,
     val progressNotes: String?,
+    val projectsComments: String?,
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
     val type: MetricType,
-    val underperformanceJustification: String?,
     val unit: String?,
     val value: Int?,
 ) {
@@ -683,11 +683,11 @@ data class ReportProjectMetricPayload(
       isPublishable = model.metric.isPublishable,
       name = model.metric.name,
       progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
       reference = model.metric.reference,
       status = model.entry.status,
       target = model.entry.target,
       type = model.metric.type,
-      underperformanceJustification = model.entry.underperformanceJustification,
       unit = model.metric.unit,
       value = model.entry.value,
   )
@@ -696,17 +696,17 @@ data class ReportProjectMetricPayload(
 data class ReportProjectMetricEntriesPayload(
     val id: ProjectMetricId,
     val progressNotes: String?,
+    val projectsComments: String?,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val underperformanceJustification: String?,
     val value: Int?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           progressNotes = progressNotes,
+          projectsComments = projectsComments,
           status = status,
           target = target,
-          underperformanceJustification = underperformanceJustification,
           value = value,
       )
 }

@@ -18,7 +18,7 @@ data class ReportMetricEntryModel(
     val value: Int? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
-    val underperformanceJustification: String? = null,
+    val projectsComments: String? = null,
     val progressNotes: String? = null,
     val status: ReportMetricStatus? = null,
 )
@@ -42,13 +42,13 @@ data class ReportStandardMetricModel(
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
             progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
                   record[PROGRESS_NOTES]
                 } else {
                   null
                 },
+            projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
         )
       }
@@ -75,13 +75,13 @@ data class ReportProjectMetricModel(
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
             progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
                   record[PROGRESS_NOTES]
                 } else {
                   null
                 },
+            projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
         )
       }
@@ -97,8 +97,8 @@ data class ReportSystemMetricEntryModel(
     val overrideValue: Int? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
-    val underperformanceJustification: String? = null,
     val progressNotes: String? = null,
+    val projectsComments: String? = null,
     val status: ReportMetricStatus? = null,
 ) {
   companion object {
@@ -111,13 +111,13 @@ data class ReportSystemMetricEntryModel(
             overrideValue = record[OVERRIDE_VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
-            underperformanceJustification = record[UNDERPERFORMANCE_JUSTIFICATION],
             progressNotes =
                 if (currentUser().canReadReportInternalComments()) {
                   record[PROGRESS_NOTES]
                 } else {
                   null
                 },
+            projectsComments = record[PROJECTS_COMMENTS],
             status = record[STATUS_ID],
         )
       }
