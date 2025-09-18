@@ -18,7 +18,7 @@ data class PlotT0DataModel(
 
 data class SpeciesDensityChangedModel(
     val speciesId: SpeciesId,
-    val speciesScientificName: String? = null,
+    var speciesScientificName: String? = null,
     val previousPlotDensity: BigDecimal? = null,
     val newPlotDensity: BigDecimal? = null,
 ) {
@@ -31,5 +31,6 @@ data class SpeciesDensityChangedModel(
 
 data class PlotT0DensityChangedModel(
     val monitoringPlotId: MonitoringPlotId,
-    val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
+    var monitoringPlotNumber: Long? = null,
+    var speciesDensityChanges: Set<SpeciesDensityChangedModel>,
 )

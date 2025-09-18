@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
@@ -533,6 +534,19 @@ class AcceleratorReportPublished(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "acceleratorReport/published"
+}
+
+class T0PlotDataSet(
+    config: TerrawareServerConfig,
+    val monitoringPlots: List<PlotT0DensityChangedModel>,
+    val organizationName: String,
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "observation/t0Set"
+
+  val manageT0SettingsUrl: String = "$webAppUrl/observations/$plantingSiteId/survival-rate-settings"
 }
 
 class GenericEmail(
