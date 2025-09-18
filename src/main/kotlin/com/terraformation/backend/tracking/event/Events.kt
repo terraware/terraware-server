@@ -171,7 +171,7 @@ data class RateLimitedT0DataAssignedEvent(
         }
 
         plotsMap[newPlot.monitoringPlotId] =
-            newPlot.copy(speciesDensityChanges = combinedChanges.values.toSet())
+            newPlot.copy(speciesDensityChanges = combinedChanges.values.toList())
       }
     }
 

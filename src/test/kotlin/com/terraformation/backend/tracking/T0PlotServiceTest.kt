@@ -173,7 +173,7 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       PlotT0DensityChangedModel(
                           monitoringPlotId1,
                           speciesDensityChanges =
-                              setOf(
+                              listOf(
                                   SpeciesDensityChangedModel(
                                       speciesId1,
                                       newPlotDensity = BigDecimal.valueOf(2),
@@ -191,7 +191,7 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       PlotT0DensityChangedModel(
                           monitoringPlotId2,
                           speciesDensityChanges =
-                              setOf(
+                              listOf(
                                   SpeciesDensityChangedModel(
                                       speciesId1,
                                       newPlotDensity = BigDecimal.valueOf(10),

@@ -32,5 +32,5 @@ data class SpeciesDensityChangedModel(
 data class PlotT0DensityChangedModel(
     val monitoringPlotId: MonitoringPlotId,
     var monitoringPlotNumber: Long? = null,
-    var speciesDensityChanges: Set<SpeciesDensityChangedModel>,
+    var speciesDensityChanges: List<SpeciesDensityChangedModel>,
 )

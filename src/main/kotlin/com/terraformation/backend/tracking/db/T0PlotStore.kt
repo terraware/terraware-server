@@ -254,7 +254,7 @@ class T0PlotStore(
   private fun buildSpeciesDensityChangeList(
       existingDensities: Map<SpeciesId, BigDecimal>,
       newDensities: Map<SpeciesId, BigDecimal>,
-  ): Set<SpeciesDensityChangedModel> {
+  ): List<SpeciesDensityChangedModel> {
     val changeList = mutableMapOf<SpeciesId, SpeciesDensityChangedModel>()
     for ((speciesId, newDensity) in newDensities) {
       val previous = existingDensities[speciesId]
@@ -278,6 +278,6 @@ class T0PlotStore(
               )
         }
 
-    return changeList.values.toSet()
+    return changeList.values.toList()
   }
 }

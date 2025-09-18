@@ -903,6 +903,7 @@ class EmailNotificationService(
         it.speciesDensityChanges.forEach {
           it.speciesScientificName = species[it.speciesId]!!.scientificName
         }
+        it.speciesDensityChanges = it.speciesDensityChanges.sortedBy { it.speciesScientificName }
       }
 
       val model =
@@ -911,7 +912,7 @@ class EmailNotificationService(
               organizationName = organization.name,
               plantingSiteId = plantingSiteId,
               plantingSiteName = plantingSite.name,
-              monitoringPlots = event.monitoringPlots,
+              monitoringPlots = event.monitoringPlots.sortedBy { it.monitoringPlotNumber },
           )
       emailService.sendOrganizationNotification(
           event.organizationId,
