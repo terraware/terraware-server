@@ -68,6 +68,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private val jpegMetadata = NewFileMetadata("image/jpeg", "test.jpg", null, 1000L, null)
+  private val mp4Metadata = NewFileMetadata("video/mp4", "test.mp4", null, 262L, null)
   private val pngMetadata = NewFileMetadata("image/png", "test.png", null, 95L, null)
 
   private lateinit var activityId: ActivityId
@@ -97,6 +98,26 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `stores iPhone video and extracts date and GPS metadata`() {
+      assertMediaFileEquals(
+          storeMedia("videoIphone.mov"),
+          capturedDate = LocalDate.of(2024, 6, 15),
+          geolocation = point(-122.4194, 37.7749),
+          type = ActivityMediaType.Video,
+      )
+    }
+
+    @Test
+    fun `stores Android video and extracts date and GPS metadata`() {
+      assertMediaFileEquals(
+          storeMedia("videoAndroid.mp4"),
+          capturedDate = LocalDate.of(2024, 6, 15),
+          geolocation = point(-122.4194, 37.7749),
+          type = ActivityMediaType.Video,
+      )
+    }
+
+    @Test
     fun `stores photo and extracts date only when no GPS present`() {
       assertMediaFileEquals(
           storeMedia("photoWithDate.jpg"),
@@ -116,11 +137,20 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `stores photo with no metadata using defaults`() {
-
       assertMediaFileEquals(
           storeMedia("pixel.png", pngMetadata),
           capturedDate = LocalDate.EPOCH,
           geolocation = null,
+      )
+    }
+
+    @Test
+    fun `stores video with no metadata using defaults`() {
+      assertMediaFileEquals(
+          storeMedia("videoHeaderOnly.mp4", mp4Metadata),
+          capturedDate = LocalDate.EPOCH,
+          geolocation = null,
+          type = ActivityMediaType.Video,
       )
     }
 
@@ -148,6 +178,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         fileId: FileId,
         capturedDate: LocalDate,
         geolocation: Point? = null,
+        type: ActivityMediaType = ActivityMediaType.Photo,
     ) {
       val row = activityMediaFilesDao.fetchOneByFileId(fileId)
       assertNotNull(row)
@@ -155,7 +186,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           ActivityMediaFilesRow(
               activityId = activityId,
-              activityMediaTypeId = ActivityMediaType.Photo,
+              activityMediaTypeId = type,
               fileId = fileId,
               isCoverPhoto = false,
               capturedDate = capturedDate,
@@ -175,7 +206,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class ReadMedia {
     @Test
     fun `returns media data for correct activity`() {
-      val testContent = Random.nextBytes(100)
+      val testContent = javaClass.getResourceAsStream("/file/pixel.png").use { it.readAllBytes() }
       val fileId = storeMediaBytes(testContent)
 
       val inputStream = service.readMedia(activityId, fileId)
@@ -184,9 +215,8 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns thumbnail data when dimensions specified`() {
-      val testContent = Random.nextBytes(50)
       val thumbnailContent = Random.nextBytes(25)
-      val fileId = storeMediaBytes(testContent)
+      val fileId = storeMedia("pixel.png", pngMetadata)
       val maxWidth = 100
       val maxHeight = 100
 
