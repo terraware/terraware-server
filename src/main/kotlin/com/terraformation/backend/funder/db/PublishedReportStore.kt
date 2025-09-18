@@ -148,8 +148,8 @@ class PublishedReportStore(
 
     return DSL.multiset(
             DSL.select(
-                    projectsCommentsField,
                     progressNotesField,
+                    projectsCommentsField,
                     publishedMetricIdField,
                     metricComponentField,
                     metricDescriptionField,
@@ -174,8 +174,8 @@ class PublishedReportStore(
                 description = it[metricDescriptionField],
                 metricId = it[publishedMetricIdField.asNonNullable()],
                 name = it[metricNameField],
-                projectsComments = it[projectsCommentsField],
                 progressNotes = it[progressNotesField],
+                projectsComments = it[projectsCommentsField],
                 reference = it[metricReferenceField],
                 status = it[statusField],
                 target = it[targetField],

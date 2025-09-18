@@ -530,8 +530,8 @@ class ReportStore(
                     ReportMetricEntryModel(
                         target = entry.target,
                         value = entry.overrideValue ?: entry.systemValue,
-                        projectsComments = entry.projectsComments,
                         progressNotes = entry.progressNotes,
+                        projectsComments = entry.projectsComments,
                         status = entry.status,
                     )
               }
