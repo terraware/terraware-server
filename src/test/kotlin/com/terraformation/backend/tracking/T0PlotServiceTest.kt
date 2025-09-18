@@ -13,7 +13,6 @@ import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.db.MonitoringPlotStore
 import com.terraformation.backend.tracking.db.T0PlotStore
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
@@ -24,6 +23,7 @@ import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -31,10 +31,9 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val rateLimitedEventPublisher = TestEventPublisher()
-  private val monitoringPlotStore: MonitoringPlotStore by lazy { MonitoringPlotStore(dslContext) }
   private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
   private val service: T0PlotService by lazy {
-    T0PlotService(dslContext, monitoringPlotStore, rateLimitedEventPublisher, t0PlotStore)
+    T0PlotService(dslContext, rateLimitedEventPublisher, t0PlotStore)
   }
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
@@ -65,6 +64,47 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class AssignT0PlotsData {
+    @Test
+    fun `throws exception if from multiple orgs`() {
+      insertOrganization()
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val otherSitePlotId = insertMonitoringPlot()
+
+      assertThrows<IllegalArgumentException> {
+        service.assignT0PlotsData(
+            listOf(
+                PlotT0DataModel(monitoringPlotId1, observationId = observationId),
+                PlotT0DataModel(
+                    otherSitePlotId,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+            )
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if from multiple sites`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val otherSitePlotId = insertMonitoringPlot()
+
+      assertThrows<IllegalArgumentException> {
+        service.assignT0PlotsData(
+            listOf(
+                PlotT0DataModel(monitoringPlotId1, observationId = observationId),
+                PlotT0DataModel(
+                    otherSitePlotId,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+            )
+        )
+      }
+    }
+
     @Test
     fun `assigns both observations and species densities in list`() {
       insertObservedPlotSpeciesTotals(
