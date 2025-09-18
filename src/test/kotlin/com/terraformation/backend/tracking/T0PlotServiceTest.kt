@@ -172,33 +172,35 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   listOf(
                       PlotT0DensityChangedModel(
                           monitoringPlotId1,
-                          setOf(
-                              SpeciesDensityChangedModel(
-                                  speciesId1,
-                                  newPlotDensity = BigDecimal.valueOf(2),
+                          speciesDensityChanges =
+                              setOf(
+                                  SpeciesDensityChangedModel(
+                                      speciesId1,
+                                      newPlotDensity = BigDecimal.valueOf(2),
+                                  ),
+                                  SpeciesDensityChangedModel(
+                                      speciesId2,
+                                      newPlotDensity = BigDecimal.valueOf(7),
+                                  ),
+                                  SpeciesDensityChangedModel(
+                                      speciesId3,
+                                      newPlotDensity = BigDecimal.valueOf(11),
+                                  ),
                               ),
-                              SpeciesDensityChangedModel(
-                                  speciesId2,
-                                  newPlotDensity = BigDecimal.valueOf(7),
-                              ),
-                              SpeciesDensityChangedModel(
-                                  speciesId3,
-                                  newPlotDensity = BigDecimal.valueOf(11),
-                              ),
-                          ),
                       ),
                       PlotT0DensityChangedModel(
                           monitoringPlotId2,
-                          setOf(
-                              SpeciesDensityChangedModel(
-                                  speciesId1,
-                                  newPlotDensity = BigDecimal.valueOf(10),
+                          speciesDensityChanges =
+                              setOf(
+                                  SpeciesDensityChangedModel(
+                                      speciesId1,
+                                      newPlotDensity = BigDecimal.valueOf(10),
+                                  ),
+                                  SpeciesDensityChangedModel(
+                                      speciesId2,
+                                      newPlotDensity = BigDecimal.valueOf(20),
+                                  ),
                               ),
-                              SpeciesDensityChangedModel(
-                                  speciesId2,
-                                  newPlotDensity = BigDecimal.valueOf(20),
-                              ),
-                          ),
                       ),
                   ),
           )

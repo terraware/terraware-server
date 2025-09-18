@@ -23,13 +23,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
             ),
         )
@@ -41,13 +42,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(2),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
             ),
         )
@@ -59,23 +61,25 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(2),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
             ),
         ),
@@ -92,13 +96,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
             ),
         )
@@ -110,13 +115,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(2),
-                            previousPlotDensity = BigDecimal.valueOf(3),
-                            newPlotDensity = BigDecimal.valueOf(4),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(2),
+                                previousPlotDensity = BigDecimal.valueOf(3),
+                                newPlotDensity = BigDecimal.valueOf(4),
+                            )
+                        ),
                 ),
             ),
         )
@@ -128,18 +134,19 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(2),
+                                previousPlotDensity = BigDecimal.valueOf(3),
+                                newPlotDensity = BigDecimal.valueOf(4),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(2),
-                            previousPlotDensity = BigDecimal.valueOf(3),
-                            newPlotDensity = BigDecimal.valueOf(4),
-                        ),
-                    ),
                 ),
             ),
         ),
@@ -156,13 +163,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
                 ),
             ),
         )
@@ -174,13 +182,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(3),
-                            newPlotDensity = BigDecimal.valueOf(4),
-                        )
-                    ),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(3),
+                                newPlotDensity = BigDecimal.valueOf(4),
+                            )
+                        ),
                 ),
             ),
         )
@@ -192,13 +201,14 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(4),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(4),
+                            ),
                         ),
-                    ),
                 ),
             ),
         ),
@@ -215,28 +225,30 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(10),
-                            newPlotDensity = BigDecimal.valueOf(20),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(10),
+                                newPlotDensity = BigDecimal.valueOf(20),
+                            ),
                         ),
-                    ),
                 ),
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(2),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(2),
+                                previousPlotDensity = BigDecimal.valueOf(3),
+                                newPlotDensity = BigDecimal.valueOf(4),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(2),
-                            previousPlotDensity = BigDecimal.valueOf(3),
-                            newPlotDensity = BigDecimal.valueOf(4),
-                        ),
-                    ),
                 ),
             ),
         )
@@ -248,33 +260,35 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(2),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(2),
-                            previousPlotDensity = BigDecimal.valueOf(4),
-                            newPlotDensity = BigDecimal.valueOf(5),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(2),
+                                previousPlotDensity = BigDecimal.valueOf(4),
+                                newPlotDensity = BigDecimal.valueOf(5),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(3),
+                                previousPlotDensity = BigDecimal.valueOf(6),
+                                newPlotDensity = BigDecimal.valueOf(7),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(3),
-                            previousPlotDensity = BigDecimal.valueOf(6),
-                            newPlotDensity = BigDecimal.valueOf(7),
-                        ),
-                    ),
                 ),
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(3),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(8),
-                            newPlotDensity = BigDecimal.valueOf(9),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(8),
+                                newPlotDensity = BigDecimal.valueOf(9),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(4),
+                                previousPlotDensity = BigDecimal.valueOf(11),
+                                newPlotDensity = BigDecimal.valueOf(12),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(4),
-                            previousPlotDensity = BigDecimal.valueOf(11),
-                            newPlotDensity = BigDecimal.valueOf(12),
-                        ),
-                    ),
                 ),
             ),
         )
@@ -286,48 +300,51 @@ class RateLimitedT0DataAssignedEventTest {
             listOf(
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(1),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(10),
-                            newPlotDensity = BigDecimal.valueOf(20),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(10),
+                                newPlotDensity = BigDecimal.valueOf(20),
+                            ),
                         ),
-                    ),
                 ),
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(2),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(1),
-                            newPlotDensity = BigDecimal.valueOf(2),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(2),
+                                previousPlotDensity = BigDecimal.valueOf(3),
+                                newPlotDensity = BigDecimal.valueOf(5),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(3),
+                                previousPlotDensity = BigDecimal.valueOf(6),
+                                newPlotDensity = BigDecimal.valueOf(7),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(2),
-                            previousPlotDensity = BigDecimal.valueOf(3),
-                            newPlotDensity = BigDecimal.valueOf(5),
-                        ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(3),
-                            previousPlotDensity = BigDecimal.valueOf(6),
-                            newPlotDensity = BigDecimal.valueOf(7),
-                        ),
-                    ),
                 ),
                 PlotT0DensityChangedModel(
                     MonitoringPlotId(3),
-                    setOf(
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(1),
-                            previousPlotDensity = BigDecimal.valueOf(8),
-                            newPlotDensity = BigDecimal.valueOf(9),
+                    speciesDensityChanges =
+                        setOf(
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(1),
+                                previousPlotDensity = BigDecimal.valueOf(8),
+                                newPlotDensity = BigDecimal.valueOf(9),
+                            ),
+                            SpeciesDensityChangedModel(
+                                speciesId = SpeciesId(4),
+                                previousPlotDensity = BigDecimal.valueOf(11),
+                                newPlotDensity = BigDecimal.valueOf(12),
+                            ),
                         ),
-                        SpeciesDensityChangedModel(
-                            speciesId = SpeciesId(4),
-                            previousPlotDensity = BigDecimal.valueOf(11),
-                            newPlotDensity = BigDecimal.valueOf(12),
-                        ),
-                    ),
                 ),
             ),
         ),

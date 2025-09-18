@@ -195,14 +195,17 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `updates existing T0 plot record when monitoring plot already exists`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
       val secondObservationId = insertObservation(plantingSiteId = plantingSiteId)
       insertObservationPlot()
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
       insertObservedPlotSpeciesTotals(totalLive = 2, totalDead = 2)
 
       store.assignT0PlotObservation(monitoringPlotId, observationId)
       val changedModel = store.assignT0PlotObservation(monitoringPlotId, secondObservationId)
 
+      // speciesId1 should not be in the changed model since density was the same
       assertEquals(
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
@@ -234,6 +237,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
+              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(2)),
               densityRecord(monitoringPlotId, speciesId2, BigDecimal.valueOf(4)),
           ),
           "Should use final species density",
@@ -255,10 +259,13 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `observation overrides previous density`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 5, totalDead = 5)
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(10))
       insertPlotT0Density(plotDensity = BigDecimal.ONE)
       val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
 
+      // speciesId1 should not be in the changed model since density was the same
       assertEquals(
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
@@ -277,6 +284,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
+              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(10)),
               densityRecord(monitoringPlotId, speciesId2, BigDecimal.TWO),
           ),
           "Should use observation for density",
@@ -397,15 +405,22 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = clock.instant().minusSeconds(41)
       store.assignT0PlotSpeciesDensities(
           monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, initialDensity)),
+          listOf(
+              SpeciesDensityModel(speciesId1, initialDensity),
+              SpeciesDensityModel(speciesId2, initialDensity),
+          ),
       )
       clock.instant = clock.instant().plusSeconds(60)
       val changedModel =
           store.assignT0PlotSpeciesDensities(
               monitoringPlotId,
-              listOf(SpeciesDensityModel(speciesId1, updatedDensity)),
+              listOf(
+                  SpeciesDensityModel(speciesId1, updatedDensity),
+                  SpeciesDensityModel(speciesId2, initialDensity),
+              ),
           )
 
+      // speciesId2 should not be in the changed model since density was the same
       assertEquals(
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
@@ -432,7 +447,16 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   createdTime = clock.instant().minusSeconds(60),
                   modifiedTime = clock.instant(),
-              )
+              ),
+              PlotT0DensityRecord(
+                  monitoringPlotId,
+                  speciesId2,
+                  initialDensity,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant().minusSeconds(60),
+                  modifiedTime = clock.instant(),
+              ),
           ),
           "Should have updated density on conflict",
       )

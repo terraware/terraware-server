@@ -255,19 +255,21 @@ class T0PlotStore(
       existingDensities: Map<SpeciesId, BigDecimal>,
       newDensities: Map<SpeciesId, BigDecimal>,
   ): Set<SpeciesDensityChangedModel> {
-    val changeList: MutableMap<SpeciesId, SpeciesDensityChangedModel> =
-        newDensities
-            .mapValues { (speciesId, newDensity) ->
-              SpeciesDensityChangedModel(
-                  speciesId,
-                  previousPlotDensity = existingDensities[speciesId],
-                  newPlotDensity = newDensity,
-              )
-            }
-            .toMutableMap()
+    val changeList = mutableMapOf<SpeciesId, SpeciesDensityChangedModel>()
+    for ((speciesId, newDensity) in newDensities) {
+      val previous = existingDensities[speciesId]
+      if (previous?.compareTo(newDensity) != 0) {
+        changeList[speciesId] =
+            SpeciesDensityChangedModel(
+                speciesId,
+                previousPlotDensity = previous,
+                newPlotDensity = newDensity,
+            )
+      }
+    }
 
     existingDensities.keys
-        .filter { it !in changeList }
+        .filter { it !in newDensities }
         .forEach { speciesId ->
           changeList[speciesId] =
               SpeciesDensityChangedModel(
