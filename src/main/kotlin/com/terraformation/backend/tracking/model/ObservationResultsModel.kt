@@ -350,16 +350,20 @@ data class ObservationPlantingZoneRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
-      val survivalRate = species.calculateSurvivalRate()
+      val survivalRate =
+          if (nonNullSubzoneResults.all { it.survivalRate != null }) species.calculateSurvivalRate()
+          else null
       val survivalRateStdDev =
-          completedMonitoringPlots
-              .mapNotNull { plot ->
-                plot.survivalRate?.let { survivalRate ->
-                  val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                  survivalRate to sumDensity.toDouble()
-                }
-              }
-              .calculateWeightedStandardDeviation()
+          if (survivalRate != null)
+              completedMonitoringPlots
+                  .mapNotNull { plot ->
+                    plot.survivalRate?.let { survivalRate ->
+                      val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                      survivalRate to sumDensity.toDouble()
+                    }
+                  }
+                  .calculateWeightedStandardDeviation()
+          else null
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
@@ -462,16 +466,20 @@ data class ObservationRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
-      val survivalRate = species.calculateSurvivalRate()
+      val survivalRate =
+          if (nonNullZoneResults.all { it.survivalRate != null }) species.calculateSurvivalRate()
+          else null
       val survivalRateStdDev =
-          monitoringPlots
-              .mapNotNull { plot ->
-                plot.survivalRate?.let { survivalRate ->
-                  val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                  survivalRate to sumDensity.toDouble()
-                }
-              }
-              .calculateWeightedStandardDeviation()
+          if (survivalRate != null)
+              monitoringPlots
+                  .mapNotNull { plot ->
+                    plot.survivalRate?.let { survivalRate ->
+                      val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                      survivalRate to sumDensity.toDouble()
+                    }
+                  }
+                  .calculateWeightedStandardDeviation()
+          else null
 
       return ObservationRollupResultsModel(
           earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
