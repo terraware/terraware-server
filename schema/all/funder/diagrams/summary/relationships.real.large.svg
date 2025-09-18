@@ -574,7 +574,7 @@
 <polygon fill="none" stroke="black" points="594.5,-1086 594.5,-1108 837.5,-1108 837.5,-1086 594.5,-1086"/>
 <text text-anchor="start" x="626.5" y="-1094.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="594.5,-1064 594.5,-1086 837.5,-1086 837.5,-1064 594.5,-1064"/>
-<text text-anchor="start" x="626.5" y="-1072.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="626.5" y="-1072.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="594.5,-1042 594.5,-1064 837.5,-1064 837.5,-1042 594.5,-1042"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="599.5" y="-1059"/>
 <text text-anchor="start" x="626.5" y="-1050.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
@@ -733,7 +733,7 @@
 <polygon fill="none" stroke="black" points="593.5,-871 593.5,-893 837.5,-893 837.5,-871 593.5,-871"/>
 <text text-anchor="start" x="625.5" y="-879.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="593.5,-849 593.5,-871 837.5,-871 837.5,-849 593.5,-849"/>
-<text text-anchor="start" x="625.5" y="-857.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="625.5" y="-857.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="593.5,-827 593.5,-849 837.5,-849 837.5,-827 593.5,-827"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="598.5" y="-844"/>
 <text text-anchor="start" x="625.5" y="-835.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
@@ -969,7 +969,7 @@
 <polygon fill="none" stroke="black" points="588.5,-656 588.5,-678 843.5,-678 843.5,-656 588.5,-656"/>
 <text text-anchor="start" x="620.5" y="-664.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="588.5,-634 588.5,-656 843.5,-656 843.5,-634 588.5,-634"/>
-<text text-anchor="start" x="620.5" y="-642.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="620.5" y="-642.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="588.5,-612 588.5,-634 843.5,-634 843.5,-612 588.5,-612"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="593.5" y="-629"/>
 <text text-anchor="start" x="620.5" y="-620.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>

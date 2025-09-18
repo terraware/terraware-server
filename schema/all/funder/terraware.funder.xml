@@ -191,7 +191,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="underperformance_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_project_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>
@@ -212,7 +212,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="underperformance_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_standard_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>
@@ -233,7 +233,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="underperformance_justification" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_report_system_metrics_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_metric_statuses"/>
          </column>

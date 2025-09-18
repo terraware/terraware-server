@@ -38,7 +38,7 @@
 <polygon fill="none" stroke="black" points="443,-123 443,-145 537,-145 537,-123 443,-123"/>
 <text text-anchor="start" x="446" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="211,-101 211,-123 443,-123 443,-101 211,-101"/>
-<text text-anchor="start" x="231" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="231" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="443,-101 443,-123 537,-123 537,-101 443,-101"/>
 <text text-anchor="start" x="446" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
 <polygon fill="none" stroke="black" points="211,-79 211,-101 443,-101 443,-79 211,-79"/>

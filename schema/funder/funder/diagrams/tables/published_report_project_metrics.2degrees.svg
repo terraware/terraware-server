@@ -157,7 +157,7 @@
 <polygon fill="none" stroke="black" points="431,-281 431,-303 525,-303 525,-281 431,-281"/>
 <text text-anchor="start" x="434" y="-289.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="211,-259 211,-281 431,-281 431,-259 211,-259"/>
-<text text-anchor="start" x="231" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="231" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="431,-259 431,-281 525,-281 525,-259 431,-259"/>
 <text text-anchor="start" x="434" y="-267.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
 <polygon fill="none" stroke="black" points="211,-237 211,-259 431,-259 431,-237 211,-237"/>

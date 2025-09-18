@@ -4786,24 +4786,24 @@
 <text text-anchor="start" x="681" y="-6124.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_standard_metrics</text>
 <text text-anchor="start" x="900" y="-6123.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="676,-6093 676,-6115 939,-6115 939,-6093 676,-6093"/>
-<text text-anchor="start" x="722" y="-6101.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="744" y="-6101.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="none" stroke="black" points="676,-6071 676,-6093 939,-6093 939,-6071 676,-6071"/>
-<text text-anchor="start" x="722" y="-6079.2" font-family="Helvetica,sans-Serif" font-size="11.00">standard_metric_id</text>
+<text text-anchor="start" x="744" y="-6079.2" font-family="Helvetica,sans-Serif" font-size="11.00">standard_metric_id</text>
 <polygon fill="none" stroke="black" points="676,-6049 676,-6071 939,-6071 939,-6049 676,-6049"/>
-<text text-anchor="start" x="722" y="-6057.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
+<text text-anchor="start" x="744" y="-6057.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
 <polygon fill="none" stroke="black" points="676,-6027 676,-6049 939,-6049 939,-6027 676,-6027"/>
-<text text-anchor="start" x="722" y="-6035.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
+<text text-anchor="start" x="744" y="-6035.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="676,-6005 676,-6027 939,-6027 939,-6005 676,-6005"/>
-<text text-anchor="start" x="722" y="-6013.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="744" y="-6013.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="676,-5983 676,-6005 939,-6005 939,-5983 676,-5983"/>
-<text text-anchor="start" x="722" y="-5991.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
+<text text-anchor="start" x="744" y="-5991.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
 <polygon fill="none" stroke="black" points="676,-5961 676,-5983 939,-5983 939,-5961 676,-5961"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="681" y="-5978"/>
-<text text-anchor="start" x="722" y="-5969.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="744" y="-5969.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="676,-5939 676,-5961 939,-5961 939,-5939 676,-5939"/>
-<text text-anchor="start" x="722" y="-5947.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="744" y="-5947.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="676,-5917 676,-5939 939,-5939 939,-5917 676,-5917"/>
-<text text-anchor="start" x="722" y="-5925.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<text text-anchor="start" x="744" y="-5925.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="676,-5899 676,-5917 792,-5917 792,-5899 676,-5899"/>
 <polygon fill="none" stroke="black" points="676,-5899 676,-5917 792,-5917 792,-5899 676,-5899"/>
 <text text-anchor="start" x="679" y="-5905.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
@@ -4833,28 +4833,28 @@
 <text text-anchor="start" x="687" y="-5865.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_system_metrics</text>
 <text text-anchor="start" x="894" y="-5864.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="682,-5834 682,-5856 933,-5856 933,-5834 682,-5834"/>
-<text text-anchor="start" x="722" y="-5842.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="749" y="-5842.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="none" stroke="black" points="682,-5812 682,-5834 933,-5834 933,-5812 682,-5812"/>
-<text text-anchor="start" x="722" y="-5820.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_metric_id</text>
+<text text-anchor="start" x="749" y="-5820.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_metric_id</text>
 <polygon fill="none" stroke="black" points="682,-5790 682,-5812 933,-5812 933,-5790 682,-5790"/>
-<text text-anchor="start" x="722" y="-5798.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
+<text text-anchor="start" x="749" y="-5798.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
 <polygon fill="none" stroke="black" points="682,-5768 682,-5790 933,-5790 933,-5768 682,-5768"/>
-<text text-anchor="start" x="722" y="-5776.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_value</text>
+<text text-anchor="start" x="749" y="-5776.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_value</text>
 <polygon fill="none" stroke="black" points="682,-5746 682,-5768 933,-5768 933,-5746 682,-5746"/>
-<text text-anchor="start" x="722" y="-5754.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_time</text>
+<text text-anchor="start" x="749" y="-5754.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_time</text>
 <polygon fill="none" stroke="black" points="682,-5724 682,-5746 933,-5746 933,-5724 682,-5724"/>
-<text text-anchor="start" x="722" y="-5732.2" font-family="Helvetica,sans-Serif" font-size="11.00">override_value</text>
+<text text-anchor="start" x="749" y="-5732.2" font-family="Helvetica,sans-Serif" font-size="11.00">override_value</text>
 <polygon fill="none" stroke="black" points="682,-5702 682,-5724 933,-5724 933,-5702 682,-5702"/>
-<text text-anchor="start" x="722" y="-5710.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="749" y="-5710.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="682,-5680 682,-5702 933,-5702 933,-5680 682,-5680"/>
-<text text-anchor="start" x="722" y="-5688.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
+<text text-anchor="start" x="749" y="-5688.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
 <polygon fill="none" stroke="black" points="682,-5658 682,-5680 933,-5680 933,-5658 682,-5658"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="687" y="-5675"/>
-<text text-anchor="start" x="722" y="-5666.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="749" y="-5666.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="682,-5636 682,-5658 933,-5658 933,-5636 682,-5636"/>
-<text text-anchor="start" x="722" y="-5644.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="749" y="-5644.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="682,-5614 682,-5636 933,-5636 933,-5614 682,-5614"/>
-<text text-anchor="start" x="722" y="-5622.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<text text-anchor="start" x="749" y="-5622.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="682,-5596 682,-5614 792,-5614 792,-5596 682,-5596"/>
 <polygon fill="none" stroke="black" points="682,-5596 682,-5614 792,-5614 792,-5596 682,-5596"/>
 <text text-anchor="start" x="685" y="-5602.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
@@ -7387,24 +7387,24 @@
 <text text-anchor="start" x="687" y="-1398.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_project_metrics</text>
 <text text-anchor="start" x="894" y="-1397.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="682,-1367 682,-1389 933,-1389 933,-1367 682,-1367"/>
-<text text-anchor="start" x="722" y="-1375.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
+<text text-anchor="start" x="749" y="-1375.2" font-family="Helvetica,sans-Serif" font-size="11.00">report_id</text>
 <polygon fill="none" stroke="black" points="682,-1345 682,-1367 933,-1367 933,-1345 682,-1345"/>
-<text text-anchor="start" x="722" y="-1353.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_metric_id</text>
+<text text-anchor="start" x="749" y="-1353.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_metric_id</text>
 <polygon fill="none" stroke="black" points="682,-1323 682,-1345 933,-1345 933,-1323 682,-1323"/>
-<text text-anchor="start" x="722" y="-1331.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
+<text text-anchor="start" x="749" y="-1331.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
 <polygon fill="none" stroke="black" points="682,-1301 682,-1323 933,-1323 933,-1301 682,-1301"/>
-<text text-anchor="start" x="722" y="-1309.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
+<text text-anchor="start" x="749" y="-1309.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="682,-1279 682,-1301 933,-1301 933,-1279 682,-1279"/>
-<text text-anchor="start" x="722" y="-1287.2" font-family="Helvetica,sans-Serif" font-size="11.00">underperformance_justification</text>
+<text text-anchor="start" x="749" y="-1287.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="682,-1257 682,-1279 933,-1279 933,-1257 682,-1257"/>
-<text text-anchor="start" x="722" y="-1265.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
+<text text-anchor="start" x="749" y="-1265.2" font-family="Helvetica,sans-Serif" font-size="11.00">progress_notes</text>
 <polygon fill="none" stroke="black" points="682,-1235 682,-1257 933,-1257 933,-1235 682,-1235"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="687" y="-1252"/>
-<text text-anchor="start" x="722" y="-1243.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="749" y="-1243.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="682,-1213 682,-1235 933,-1235 933,-1213 682,-1213"/>
-<text text-anchor="start" x="722" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="749" y="-1221.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="682,-1191 682,-1213 933,-1213 933,-1191 682,-1191"/>
-<text text-anchor="start" x="722" y="-1199.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<text text-anchor="start" x="749" y="-1199.2" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="682,-1173 682,-1191 792,-1191 792,-1173 682,-1173"/>
 <polygon fill="none" stroke="black" points="682,-1173 682,-1191 792,-1191 792,-1173 682,-1173"/>
 <text text-anchor="start" x="685" y="-1179.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
