@@ -83,6 +83,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -102,6 +104,7 @@ import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
+import com.terraformation.backend.polygon
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
@@ -122,14 +125,19 @@ import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder
-import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
+import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import freemarker.template.Configuration
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -282,6 +290,37 @@ internal class EmailNotificationServiceTest {
   private val accessionNumber = "202201010001"
   private val acceleratorReportId = ReportId(1)
   private val applicationId = ApplicationId(1)
+  private val monitoringPlot =
+      MonitoringPlotModel(
+          id = MonitoringPlotId(1),
+          boundary = polygon(1),
+          isAdHoc = false,
+          isAvailable = false,
+          plotNumber = 11L,
+          sizeMeters = 30,
+          elevationMeters = BigDecimal.ONE,
+      )
+  private val plantingSubzone =
+      PlantingSubzoneModel(
+          id = PlantingSubzoneId(1),
+          areaHa = BigDecimal.ONE,
+          boundary = multiPolygon(1),
+          name = "My Zone",
+          fullName = "My Zone",
+          stableId = StableId("stableSubzone"),
+          monitoringPlots = listOf(monitoringPlot),
+      )
+  private val plantingZone =
+      PlantingZoneModel(
+          id = PlantingZoneId(1),
+          areaHa = BigDecimal.ONE,
+          boundary = multiPolygon(1),
+          boundaryModifiedTime = Instant.EPOCH,
+          name = "My Zone",
+          stableId = StableId("stableZone"),
+          plantingSubzones = listOf(plantingSubzone),
+      )
+
   private val plantingSite =
       ExistingPlantingSiteModel(
           boundary = multiPolygon(1),
@@ -289,7 +328,7 @@ internal class EmailNotificationServiceTest {
           id = PlantingSiteId(1),
           organizationId = organization.id,
           name = "My Site",
-          plantingZones = emptyList(),
+          plantingZones = listOf(plantingZone),
       )
   private val cohort =
       ExistingCohortModel(
@@ -493,13 +532,15 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
     every { parentStore.getOrganizationId(project.id) } returns organization.id
+    every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
     every { participantStore.fetchOneById(participant.id) } returns participant
-    every { plantingSiteStore.fetchSiteById(plantingSite.id, PlantingSiteDepth.Site) } returns
-        plantingSite
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
     every { projectStore.fetchOneById(project.id) } returns project
     every { reportStore.fetchOne(acceleratorReportId) } returns report
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { speciesStore.fetchSpeciesById(species.id) } returns species
+    every { speciesStore.fetchSpeciesByIdCollection(setOf(species.id)) } returns
+        mapOf(species.id to species)
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
@@ -1355,6 +1396,39 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains("New Report Available for ${report.projectDealName}", message = message)
     assertBodyContains("${report.prefix} report is now available in Terraware.", message = message)
     assertRecipientsEqual(setOf(funderEmail))
+  }
+
+  @Test
+  fun `rateLimitedT0DataAssignedEvent should notify org TF contacts`() {
+    service.on(
+        RateLimitedT0DataAssignedEvent(
+            organization.id,
+            plantingSite.id,
+            listOf(
+                PlotT0DensityChangedModel(
+                    monitoringPlot.id,
+                    speciesDensityChanges =
+                        listOf(
+                            SpeciesDensityChangedModel(
+                                species.id,
+                                previousPlotDensity = BigDecimal.valueOf(10.123),
+                                newPlotDensity = BigDecimal.valueOf(20.456),
+                            )
+                        ),
+                )
+            ),
+        )
+    )
+
+    val message = sentMessageWithSubject("t0 planting density settings")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(plantingSite.name, message = message)
+    assertBodyContains(plantingSite.name, message = message)
+    assertBodyContains("Plot ${monitoringPlot.plotNumber}:", message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("10.123", message = message)
+    assertBodyContains("20.456", message = message)
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
