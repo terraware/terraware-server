@@ -18,6 +18,8 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import java.math.BigDecimal
 import kotlin.lazy
@@ -141,7 +143,26 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 7,
           totalDead = 8,
       )
-      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId1,
+                          newPlotDensity = BigDecimal.valueOf(3),
+                      ),
+                      SpeciesDensityChangedModel(
+                          speciesId2,
+                          newPlotDensity = BigDecimal.valueOf(7),
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should contain observation data",
+      )
 
       assertTableEquals(
           listOf(
@@ -180,7 +201,23 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(totalLive = 2, totalDead = 2)
 
       store.assignT0PlotObservation(monitoringPlotId, observationId)
-      store.assignT0PlotObservation(monitoringPlotId, secondObservationId)
+      val changedModel = store.assignT0PlotObservation(monitoringPlotId, secondObservationId)
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId2,
+                          previousPlotDensity = BigDecimal.valueOf(2),
+                          newPlotDensity = BigDecimal.valueOf(4),
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value from observation",
+      )
 
       assertTableEquals(
           listOf(
@@ -220,7 +257,23 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `observation overrides previous density`() {
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
       insertPlotT0Density(plotDensity = BigDecimal.ONE)
-      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId2,
+                          previousPlotDensity = BigDecimal.valueOf(1),
+                          newPlotDensity = BigDecimal.valueOf(2),
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value from db",
+      )
 
       assertTableEquals(
           listOf(
@@ -262,7 +315,27 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = clock.instant().minusSeconds(62),
       )
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(20))
-      store.assignT0PlotObservation(monitoringPlotId, observationId)
+      val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId1,
+                          previousPlotDensity = BigDecimal.TEN,
+                          newPlotDensity = BigDecimal.valueOf(2),
+                      ),
+                      SpeciesDensityChangedModel(
+                          speciesId2,
+                          previousPlotDensity = BigDecimal.valueOf(20),
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value",
+      )
 
       assertTableEquals(
           listOf(densityRecord(monitoringPlotId, speciesId1, BigDecimal.TWO)),
@@ -290,9 +363,20 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts new T0 plot record with species and density`() {
       val density = BigDecimal.valueOf(12)
 
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, density)),
+      val changedModel =
+          store.assignT0PlotSpeciesDensities(
+              monitoringPlotId,
+              listOf(SpeciesDensityModel(speciesId1, density)),
+          )
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
+          ),
+          changedModel,
+          "Changed model should be set with species data",
       )
 
       assertTableEquals(
@@ -316,9 +400,26 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(SpeciesDensityModel(speciesId1, initialDensity)),
       )
       clock.instant = clock.instant().plusSeconds(60)
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, updatedDensity)),
+      val changedModel =
+          store.assignT0PlotSpeciesDensities(
+              monitoringPlotId,
+              listOf(SpeciesDensityModel(speciesId1, updatedDensity)),
+          )
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId1,
+                          previousPlotDensity = initialDensity,
+                          newPlotDensity = updatedDensity,
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value",
       )
 
       assertTableEquals(
@@ -357,9 +458,23 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           monitoringPlotId,
           listOf(SpeciesDensityModel(speciesId1, density1)),
       )
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId2, density2)),
+      val changedModel =
+          store.assignT0PlotSpeciesDensities(
+              monitoringPlotId,
+              listOf(SpeciesDensityModel(speciesId2, density2)),
+          )
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
+                      SpeciesDensityChangedModel(speciesId1, previousPlotDensity = density1),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value",
       )
 
       assertTableEquals(
@@ -384,12 +499,26 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val density1 = BigDecimal.TEN
       val density2 = BigDecimal.valueOf(20)
 
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(
-              SpeciesDensityModel(speciesId1, density1),
-              SpeciesDensityModel(speciesId2, density2),
+      val changedModel =
+          store.assignT0PlotSpeciesDensities(
+              monitoringPlotId,
+              listOf(
+                  SpeciesDensityModel(speciesId1, density1),
+                  SpeciesDensityModel(speciesId2, density2),
+              ),
+          )
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(speciesId1, newPlotDensity = density1),
+                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
+                  ),
           ),
+          changedModel,
+          "Changed model has all species data",
       )
 
       assertTableEquals(
@@ -412,9 +541,31 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(4))
 
       val density1 = BigDecimal.TEN
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, density1)),
+      val changedModel =
+          store.assignT0PlotSpeciesDensities(
+              monitoringPlotId,
+              listOf(SpeciesDensityModel(speciesId1, density1)),
+          )
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId1,
+                          previousPlotDensity = BigDecimal.valueOf(2),
+                          newPlotDensity = density1,
+                      ),
+                      SpeciesDensityChangedModel(
+                          speciesId2,
+                          previousPlotDensity = BigDecimal.valueOf(4),
+                          newPlotDensity = null,
+                      ),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value",
       )
 
       assertTableEmpty(PLOT_T0_OBSERVATIONS)

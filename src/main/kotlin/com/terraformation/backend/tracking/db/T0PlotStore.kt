@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -11,13 +12,15 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
+import kotlin.collections.Map
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -54,11 +57,31 @@ class T0PlotStore(
     }
   }
 
-  fun assignT0PlotObservation(monitoringPlotId: MonitoringPlotId, observationId: ObservationId) {
+  fun assignT0PlotObservation(
+      monitoringPlotId: MonitoringPlotId,
+      observationId: ObservationId,
+  ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
+
+    val existingDensities = fetchExistingDensities(monitoringPlotId)
+    val observationDensities: Map<SpeciesId, Int> =
+        with(OBSERVED_PLOT_SPECIES_TOTALS) {
+          dslContext
+              .select(
+                  SPECIES_ID,
+                  TOTAL_LIVE.plus(TOTAL_DEAD),
+              )
+              .from(this)
+              .where(
+                  OBSERVATION_ID.eq(observationId)
+                      .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                      .and(SPECIES_ID.isNotNull)
+              )
+              .fetchMap(SPECIES_ID.asNonNullable(), TOTAL_LIVE.plus(TOTAL_DEAD).asNonNullable())
+        }
 
     dslContext.transaction { _ ->
       with(PLOT_T0_OBSERVATIONS) {
@@ -93,8 +116,8 @@ class T0PlotStore(
             )
             .execute()
 
-        dslContext
-            .insertInto(
+        var insertQuery =
+            dslContext.insertInto(
                 this,
                 MONITORING_PLOT_ID,
                 SPECIES_ID,
@@ -104,28 +127,21 @@ class T0PlotStore(
                 MODIFIED_BY,
                 MODIFIED_TIME,
             )
-            .select(
-                DSL.select(
-                        OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.plus(
-                                OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD
-                            )
-                            .cast(SQLDataType.NUMERIC),
-                        DSL.inline(currentUserId),
-                        DSL.inline(now),
-                        DSL.inline(currentUserId),
-                        DSL.inline(now),
-                    )
-                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                    .where(
-                        OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId)
-                            .and(
-                                OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId)
-                            )
-                            .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
-                    )
-            )
+
+        observationDensities.forEach { (speciesId, observationDensity) ->
+          insertQuery =
+              insertQuery.values(
+                  monitoringPlotId,
+                  speciesId,
+                  observationDensity.toBigDecimal(),
+                  currentUserId,
+                  now,
+                  currentUserId,
+                  now,
+              )
+        }
+
+        insertQuery
             .onDuplicateKeyUpdate()
             .set(PLOT_DENSITY, DSL.excluded(PLOT_DENSITY))
             .set(MODIFIED_BY, currentUserId)
@@ -140,16 +156,26 @@ class T0PlotStore(
         )
       }
     }
+
+    val newDensities = observationDensities.mapValues { it.value.toBigDecimal() }
+    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+
+    return PlotT0DensityChangedModel(
+        monitoringPlotId = monitoringPlotId,
+        speciesDensityChanges = speciesDensityChanges,
+    )
   }
 
   fun assignT0PlotSpeciesDensities(
       monitoringPlotId: MonitoringPlotId,
       densities: List<SpeciesDensityModel>,
-  ) {
+  ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
+
+    val existingDensities = fetchExistingDensities(monitoringPlotId)
 
     dslContext.transaction { _ ->
       with(PLOT_T0_OBSERVATIONS) {
@@ -204,5 +230,52 @@ class T0PlotStore(
 
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
     }
+
+    val newDensities = densities.associate { it.speciesId to it.plotDensity }
+    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+
+    return PlotT0DensityChangedModel(
+        monitoringPlotId = monitoringPlotId,
+        speciesDensityChanges = speciesDensityChanges,
+    )
+  }
+
+  private fun fetchExistingDensities(
+      monitoringPlotId: MonitoringPlotId
+  ): Map<SpeciesId, BigDecimal> =
+      with(PLOT_T0_DENSITY) {
+        dslContext
+            .select(SPECIES_ID, PLOT_DENSITY)
+            .from(this)
+            .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .fetchMap(SPECIES_ID.asNonNullable(), PLOT_DENSITY.asNonNullable())
+      }
+
+  private fun buildSpeciesDensityChangeList(
+      existingDensities: Map<SpeciesId, BigDecimal>,
+      newDensities: Map<SpeciesId, BigDecimal>,
+  ): Set<SpeciesDensityChangedModel> {
+    val changeList: MutableMap<SpeciesId, SpeciesDensityChangedModel> =
+        newDensities
+            .mapValues { (speciesId, newDensity) ->
+              SpeciesDensityChangedModel(
+                  speciesId,
+                  previousPlotDensity = existingDensities[speciesId],
+                  newPlotDensity = newDensity,
+              )
+            }
+            .toMutableMap()
+
+    existingDensities.keys
+        .filter { it !in changeList }
+        .forEach { speciesId ->
+          changeList[speciesId] =
+              SpeciesDensityChangedModel(
+                  speciesId,
+                  previousPlotDensity = existingDensities[speciesId],
+              )
+        }
+
+    return changeList.values.toSet()
   }
 }
