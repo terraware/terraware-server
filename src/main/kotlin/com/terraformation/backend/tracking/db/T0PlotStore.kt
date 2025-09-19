@@ -258,7 +258,7 @@ class T0PlotStore(
     val changeList = mutableMapOf<SpeciesId, SpeciesDensityChangedModel>()
     for ((speciesId, newDensity) in newDensities) {
       val previous = existingDensities[speciesId]
-      if (previous?.compareTo(newDensity) != 0) {
+      if (previous != newDensity) {
         changeList[speciesId] =
             SpeciesDensityChangedModel(
                 speciesId,
