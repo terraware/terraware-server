@@ -1,13 +1,18 @@
 package com.terraformation.backend.accelerator
 
+import com.drew.imaging.FileType
 import com.drew.imaging.FileTypeDetector
 import com.drew.imaging.ImageMetadataReader
+import com.drew.lang.DateUtil
 import com.drew.lang.Rational
 import com.drew.metadata.Directory
 import com.drew.metadata.Metadata
 import com.drew.metadata.exif.ExifIFD0Directory
 import com.drew.metadata.exif.ExifSubIFDDirectory
 import com.drew.metadata.exif.GpsDirectory
+import com.drew.metadata.mov.QuickTimeDirectory
+import com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory
+import com.drew.metadata.mp4.Mp4Directory
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
@@ -28,7 +33,10 @@ import java.io.BufferedInputStream
 import java.io.InputStream
 import java.time.InstantSource
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import kotlin.math.withSign
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Coordinate
@@ -36,6 +44,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.context.event.EventListener
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
 @Named
 class ActivityMediaService(
@@ -65,21 +74,24 @@ class ActivityMediaService(
     val currentThreadName = Thread.currentThread().name
     Thread.ofVirtual().name("$currentThreadName-transfer").start { copier.transfer() }
 
+    var fileType: FileType? = null
     var exifMetadata: Metadata? = null
+    var mediaType: ActivityMediaType?
 
     val exifThread =
         Thread.ofVirtual().name("$currentThreadName-exif").start {
           exifStream.use {
-            // Wrap the input in a BufferedInputStream because detectFileType calls mark/reset on
-            // it. But that's only done to read a small amount of header data at the beginning of
-            // the file to determine the file type. (That's also why we can safely read both
-            // fileTypeStream and exifStream in the same thread.) After that, we throw the buffered
-            // wrapper away and close the copy stream; another copy stream is used to read the
-            // actual EXIF metadata to avoid BufferedInputStream copying bytes around needlessly.
-            val fileType =
-                fileTypeStream.use { FileTypeDetector.detectFileType(BufferedInputStream(it)) }
-
             try {
+              // Wrap the input in a BufferedInputStream because detectFileType calls mark/reset on
+              // it. But that's only done to read a small amount of header data at the beginning of
+              // the file to determine the file type. (That's also why we can safely read both
+              // fileTypeStream and exifStream in the same thread.) After that, we throw the
+              // buffered wrapper away and close the copy stream; another copy stream is used to
+              // read the actual EXIF metadata to avoid BufferedInputStream copying bytes around
+              // needlessly.
+              fileType =
+                  fileTypeStream.use { FileTypeDetector.detectFileType(BufferedInputStream(it)) }
+
               exifMetadata = ImageMetadataReader.readMetadata(exifStream, -1, fileType)
             } catch (e: Exception) {
               log.error("Failed to extract EXIF data from uploaded file", e)
@@ -99,11 +111,25 @@ class ActivityMediaService(
                 exifMetadata?.let { extractCapturedDate(it) } ?: getCurrentDate(activityId)
             val geolocation = exifMetadata?.let { extractGeolocation(it) }
 
+            val mimeType =
+                fileType?.mimeType
+                    ?: throw UnsupportedMediaTypeException("Cannot determine file type")
+
+            mediaType =
+                when {
+                  mimeType.startsWith("image/") -> ActivityMediaType.Photo
+                  mimeType.startsWith("video/") -> ActivityMediaType.Video
+                  else ->
+                      throw UnsupportedMediaTypeException(
+                          "${fileType!!.longName} ($mimeType) is not a supported file type"
+                      )
+                }
+
             dslContext
                 .insertInto(ACTIVITY_MEDIA_FILES)
                 .set(ACTIVITY_MEDIA_FILES.FILE_ID, fileId)
                 .set(ACTIVITY_MEDIA_FILES.ACTIVITY_ID, activityId)
-                .set(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID, ActivityMediaType.Photo)
+                .set(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID, mediaType)
                 .set(ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO, false)
                 .set(ACTIVITY_MEDIA_FILES.CAPTURED_DATE, capturedDate)
                 .set(ACTIVITY_MEDIA_FILES.GEOLOCATION, geolocation)
@@ -184,40 +210,64 @@ class ActivityMediaService(
     }
   }
 
-  /** Extracts the captured date, if any, from EXIF metadata. */
   private fun extractCapturedDate(metadata: Metadata): LocalDate? {
     return try {
-      // Try the original (capture) date first, then digitization date, then modification date.
-      val dateStr =
-          metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
-              ?: metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED)
-              ?: metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME)
-              ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_ORIGINAL)
-              ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_DIGITIZED)
-              ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME)
-
-      if (dateStr == null) {
-        log.debug("No date tags found in file")
-        null
-      } else if (dateStr.length < 8) {
-        log.warn("EXIF date string is too short: $dateStr")
-        null
-      } else {
-        // EXIF date/time strings always start with a 4-digit year, but after that there can be a
-        // variety of separators (2025:11:22, 2025-11-22, 2025.11-22) or no separator (20251122).
-        // And there can be a time of day after the date, or not.
-        val separator = if (dateStr[4].isDigit()) "" else dateStr.substring(4, 5)
-        val formatter = DateTimeFormatter.ofPattern("yyyy${separator}MM${separator}dd")
-        LocalDate.parse(dateStr.substring(0, 8 + separator.length * 2), formatter)
-      }
+      extractExifCapturedDate(metadata) ?: extractVideoCapturedDate(metadata)
     } catch (e: Exception) {
       log.warn("Failed to extract captured date from media metadata", e)
       null
     }
   }
 
-  /** Extracts GPS coordinates, if any, from EXIF metadata. */
+  /** Extracts the captured date, if any, from EXIF metadata. */
+  private fun extractExifCapturedDate(metadata: Metadata): LocalDate? {
+    // Try the original (capture) date first, then digitization date, then modification date.
+    val dateStr =
+        metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
+            ?: metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED)
+            ?: metadata.getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME)
+            ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_ORIGINAL)
+            ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_DIGITIZED)
+            ?: metadata.getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME)
+
+    return if (dateStr == null) {
+      null
+    } else if (dateStr.length < 8) {
+      log.warn("EXIF date string is too short: $dateStr")
+      null
+    } else {
+      // EXIF date/time strings always start with a 4-digit year, but after that there can be a
+      // variety of separators (2025:11:22, 2025-11-22, 2025.11-22) or no separator (20251122).
+      // And there can be a time of day after the date, or not.
+      val separator = if (dateStr[4].isDigit()) "" else dateStr.substring(4, 5)
+      val formatter = DateTimeFormatter.ofPattern("yyyy${separator}MM${separator}dd")
+      LocalDate.parse(dateStr.substring(0, 8 + separator.length * 2), formatter)
+    }
+  }
+
+  private fun extractVideoCapturedDate(metadata: Metadata): LocalDate? {
+    val date =
+        metadata.getDate<QuickTimeDirectory>(QuickTimeDirectory.TAG_CREATION_TIME)
+            ?: metadata.getDate<Mp4Directory>(Mp4Directory.TAG_CREATION_TIME)
+            ?: return null
+
+    // In MP4 files, the date is a mandatory header field; its value is the number of seconds from
+    // January 1, 1904. Treat values of 0 as missing.
+    if (date == DateUtil.get1Jan1904EpochDate(0)) {
+      return null
+    }
+
+    return LocalDate.ofInstant(date.toInstant(), ZoneOffset.UTC)
+  }
+
   private fun extractGeolocation(metadata: Metadata): Point? {
+    return extractExifGeolocation(metadata)
+        ?: extractQuickTimeGeolocation(metadata)
+        ?: extractMp4Geolocation(metadata)
+  }
+
+  /** Extracts GPS coordinates, if any, from EXIF metadata. */
+  private fun extractExifGeolocation(metadata: Metadata): Point? {
     val gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory::class.java) ?: return null
     val latitudeRef = gpsDirectory.getString(GpsDirectory.TAG_LATITUDE_REF) ?: return null
     val longitudeRef = gpsDirectory.getString(GpsDirectory.TAG_LONGITUDE_REF) ?: return null
@@ -240,6 +290,50 @@ class ActivityMediaService(
     return geometryFactory.createPoint(Coordinate(longitude, latitude))
   }
 
+  /**
+   * Extracts GPS coordinates, if any, from QuickTime metadata. Videos from iPhones will have this.
+   */
+  private fun extractQuickTimeGeolocation(metadata: Metadata): Point? {
+    val locationString =
+        metadata.getString<QuickTimeMetadataDirectory>(
+            QuickTimeMetadataDirectory.TAG_LOCATION_ISO6709
+        ) ?: return null
+
+    return parseIso6709Geolocation(locationString)
+  }
+
+  /**
+   * Extracts GPS coordinates, if any, from MP4 user data. Video from Android phones will have this.
+   */
+  private fun extractMp4Geolocation(metadata: Metadata): Point? {
+    val latitude = metadata.getDouble<Mp4Directory>(Mp4Directory.TAG_LATITUDE) ?: return null
+    val longitude = metadata.getDouble<Mp4Directory>(Mp4Directory.TAG_LONGITUDE) ?: return null
+
+    return geometryFactory.createPoint(Coordinate(longitude, latitude))
+  }
+
+  /**
+   * Parses an ISO-6709 location string. These locations are a sequence of signed decimal numbers.
+   * For example, `+12.34-56.7+8.9/` is a location at latitude 12.34 north, longitude 56.7 west, and
+   * altitude 8.9 meters above sea level.
+   */
+  private fun parseIso6709Geolocation(locationString: String): Point? {
+    val match = Regex("^([-+])([0-9.]+)([-+])([0-9.]+)").find(locationString)
+    if (match != null) {
+      val latitudeSign = if (match.groupValues[1] == "-") -1 else 1
+      val latitude = match.groupValues[2].toDoubleOrNull()?.withSign(latitudeSign)
+      val longitudeSign = if (match.groupValues[3] == "-") -1 else 1
+      val longitude = match.groupValues[4].toDoubleOrNull()?.withSign(longitudeSign)
+
+      if (latitude != null && longitude != null) {
+        return geometryFactory.createPoint(Coordinate(longitude, latitude))
+      }
+    }
+
+    log.warn("Can't parse ISO-6709 location: $locationString")
+    return null
+  }
+
   /** Converts GPS coordinates from degrees/minutes/seconds format to decimal. */
   private fun dmsToDouble(dms: Array<Rational>, isNegative: Boolean): Double {
     val degrees = dms[0].toDouble()
@@ -257,4 +351,12 @@ class ActivityMediaService(
   /** Extracts the value of a tag from any directory of a given type that contains it. */
   private inline fun <reified T : Directory> Metadata.getString(tagType: Int): String? =
       getDirectoriesOfType(T::class.java).firstNotNullOfOrNull { it.getString(tagType) }
+
+  /** Extracts the value of a tag from any directory of a given type that contains it. */
+  private inline fun <reified T : Directory> Metadata.getDate(tagType: Int): Date? =
+      getDirectoriesOfType(T::class.java).firstNotNullOfOrNull { it.getDate(tagType) }
+
+  /** Extracts the value of a tag from any directory of a given type that contains it. */
+  private inline fun <reified T : Directory> Metadata.getDouble(tagType: Int): Double? =
+      getDirectoriesOfType(T::class.java).firstNotNullOfOrNull { it.getDoubleObject(tagType) }
 }
