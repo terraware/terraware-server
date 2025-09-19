@@ -1432,6 +1432,30 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes`() {
+    service.on(
+        RateLimitedT0DataAssignedEvent(
+            organization.id,
+            plantingSite.id,
+            listOf(
+                PlotT0DensityChangedEventModel(
+                    monitoringPlot.id,
+                    monitoringPlotNumber = monitoringPlot.plotNumber,
+                    speciesDensityChanges = emptyList(),
+                ),
+                PlotT0DensityChangedEventModel(
+                    MonitoringPlotId(2),
+                    monitoringPlotNumber = 2L,
+                    speciesDensityChanges = emptyList(),
+                ),
+            ),
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
   fun `applicationSubmittedEvent should notify global role users and TFContact`() {
     every { userStore.getTerraformationContactUsers(any()) } returns
         listOf(tfContactUser1, tfContactUser2)

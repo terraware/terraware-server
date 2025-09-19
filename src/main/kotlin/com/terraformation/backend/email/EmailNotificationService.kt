@@ -883,6 +883,11 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: RateLimitedT0DataAssignedEvent) {
+    if (event.monitoringPlots.flatMap { plot -> plot.speciesDensityChanges }.isEmpty()) {
+      // changes were reversed before the event was eventually refired
+      return
+    }
+
     systemUser.run {
       val organization = organizationStore.fetchOneById(event.organizationId)
       val plantingSite =

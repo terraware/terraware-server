@@ -171,7 +171,10 @@ data class RateLimitedT0DataAssignedEvent(
         }
 
         plotsMap[newPlot.monitoringPlotId] =
-            newPlot.copy(speciesDensityChanges = combinedChanges.values.toList())
+            newPlot.copy(
+                speciesDensityChanges =
+                    combinedChanges.values.filter { it.previousPlotDensity != it.newPlotDensity }
+            )
       }
     }
 
