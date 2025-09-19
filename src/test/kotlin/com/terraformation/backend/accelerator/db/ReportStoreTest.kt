@@ -70,7 +70,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import java.time.ZoneOffset
-import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -435,10 +434,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 0,
                       ),
               ),
-              ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
-                  entry = ReportSystemMetricEntryModel(systemValue = 0),
-              ),
+              //              ReportSystemMetricModel(
+              //                  metric = SystemMetric.SurvivalRate,
+              //                  entry = ReportSystemMetricEntryModel(systemValue = 0),
+              //              ),
           )
 
       val reportModel =
@@ -524,15 +523,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 40,
                       ),
               ),
-              ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
-                  entry =
-                      ReportSystemMetricEntryModel(
-                          systemValue =
-                              (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density))
-                                  .roundToInt()
-                      ),
-              ),
+              //    ReportSystemMetricModel(
+              //        metric = SystemMetric.SurvivalRate,
+              //        entry =
+              //            ReportSystemMetricEntryModel(
+              //                systemValue =
+              //                    (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density))
+              //                        .roundToInt()
+              //            ),
+              //    ),
           ),
           store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics,
       )
@@ -1082,10 +1081,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 0,
                       ),
               ),
-              ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
-                  entry = ReportSystemMetricEntryModel(systemValue = 0),
-              ),
+              //              ReportSystemMetricModel(
+              //                  metric = SystemMetric.SurvivalRate,
+              //                  entry = ReportSystemMetricEntryModel(systemValue = 0),
+              //              ),
           )
 
       val reportModel =
@@ -2992,16 +2991,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
-                  reportId = reportId,
-                  target = 0,
-                  systemMetricId = SystemMetric.SurvivalRate,
-                  systemValue =
-                      (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
-                  systemTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              ),
+              //  ReportSystemMetricsRecord(
+              //      reportId = reportId,
+              //      target = 0,
+              //      systemMetricId = SystemMetric.SurvivalRate,
+              //      systemValue =
+              //          (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
+              //      systemTime = clock.instant,
+              //      modifiedBy = user.userId,
+              //      modifiedTime = clock.instant,
+              //  ),
           ),
           "Report system metrics",
       )
@@ -4323,13 +4322,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 0,
           systemValue = 50,
       )
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.SurvivalRate,
-          status = ReportMetricStatus.Unlikely,
-          target = 0,
-          systemValue = 50,
-      )
+      //      insertReportSystemMetric(
+      //          reportId = reportId,
+      //          metric = SystemMetric.SurvivalRate,
+      //          status = ReportMetricStatus.Unlikely,
+      //          target = 0,
+      //          systemValue = 50,
+      //      )
     }
 
     // Helper function to validate the report from setupReport() is in the published reports tables
@@ -4468,13 +4467,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   target = 0,
                   value = 50,
               ),
-              PublishedReportSystemMetricsRecord(
-                  reportId = reportId,
-                  systemMetricId = SystemMetric.SurvivalRate,
-                  statusId = ReportMetricStatus.Unlikely,
-                  target = 0,
-                  value = 50,
-              ),
+              //              PublishedReportSystemMetricsRecord(
+              //                  reportId = reportId,
+              //                  systemMetricId = SystemMetric.SurvivalRate,
+              //                  statusId = ReportMetricStatus.Unlikely,
+              //                  target = 0,
+              //                  value = 50,
+              //              ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.HectaresPlanted,

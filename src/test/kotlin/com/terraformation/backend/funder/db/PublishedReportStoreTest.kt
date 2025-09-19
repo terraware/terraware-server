@@ -171,14 +171,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectsComments = "Some plants had died.",
           status = ReportMetricStatus.Unlikely,
       )
-      insertPublishedReportSystemMetric(
-          reportId = reportId1,
-          metric = SystemMetric.SurvivalRate,
-          target = 6,
-          value = 6,
-          projectsComments = null,
-          status = ReportMetricStatus.Achieved,
-      )
+      //      insertPublishedReportSystemMetric(
+      //          reportId = reportId1,
+      //          metric = SystemMetric.SurvivalRate,
+      //          target = 6,
+      //          value = 6,
+      //          projectsComments = null,
+      //          status = ReportMetricStatus.Achieved,
+      //      )
 
       val reportId2 =
           insertReport(
@@ -317,20 +317,20 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               value = 5,
                               unit = null,
                           ),
-                          PublishedReportMetricModel(
-                              component = SystemMetric.SurvivalRate.componentId,
-                              description = SystemMetric.SurvivalRate.description,
-                              metricId = SystemMetric.SurvivalRate,
-                              name = SystemMetric.SurvivalRate.jsonValue,
-                              reference = SystemMetric.SurvivalRate.reference,
-                              status = ReportMetricStatus.Achieved,
-                              target = 6,
-                              type = SystemMetric.SurvivalRate.typeId,
-                              progressNotes = null,
-                              projectsComments = null,
-                              value = 6,
-                              unit = null,
-                          ),
+                          // PublishedReportMetricModel(
+                          //    component = SystemMetric.SurvivalRate.componentId,
+                          //    description = SystemMetric.SurvivalRate.description,
+                          //    metricId = SystemMetric.SurvivalRate,
+                          //    name = SystemMetric.SurvivalRate.jsonValue,
+                          //    reference = SystemMetric.SurvivalRate.reference,
+                          //    status = ReportMetricStatus.Achieved,
+                          //    target = 6,
+                          //    type = SystemMetric.SurvivalRate.typeId,
+                          //    progressNotes = null,
+                          //    projectsComments = null,
+                          //    value = 6,
+                          //    unit = null,
+                          // ),
                       ),
               ),
           ),

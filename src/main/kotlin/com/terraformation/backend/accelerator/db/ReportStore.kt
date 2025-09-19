@@ -1618,7 +1618,7 @@ class ReportStore(
       DSL.coalesce(
           DSL.case_()
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRateField)
+              // .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
