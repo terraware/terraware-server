@@ -85,6 +85,7 @@ import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
 import com.terraformation.backend.email.model.SeedFundReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
+import com.terraformation.backend.email.model.T0PlotDataSet
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
@@ -109,6 +110,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -876,6 +878,35 @@ class EmailNotificationService(
             ),
         )
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: RateLimitedT0DataAssignedEvent) {
+    if (event.monitoringPlots.flatMap { plot -> plot.speciesDensityChanges }.isEmpty()) {
+      // changes were reversed before the event was eventually refired
+      return
+    }
+
+    systemUser.run {
+      val organization = organizationStore.fetchOneById(event.organizationId)
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
+
+      val model =
+          T0PlotDataSet(
+              config,
+              organizationName = organization.name,
+              plantingSiteId = event.plantingSiteId,
+              plantingSiteName = plantingSite.name,
+              monitoringPlots = event.monitoringPlots,
+          )
+      emailService.sendOrganizationNotification(
+          event.organizationId,
+          model,
+          false,
+          setOf(Role.TerraformationContact),
+      )
     }
   }
 

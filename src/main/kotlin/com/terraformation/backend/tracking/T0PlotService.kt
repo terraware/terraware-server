@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -9,7 +10,9 @@ import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.T0PlotStore
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -19,10 +22,17 @@ class T0PlotService(
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val t0PlotStore: T0PlotStore,
 ) {
+  private data class PlotEventDetailsModel(
+      val plotNumber: Long,
+      val organizationId: OrganizationId,
+      val plantingSiteId: PlantingSiteId,
+  )
+
   fun assignT0PlotsData(plotsList: List<PlotT0DataModel>) {
     val plotIds = plotsList.map { it.monitoringPlotId }
-    val organizationMap = getOrgAndSitesFromPlots(plotIds)
-    val plantingSiteIds = organizationMap.values.flatten()
+    val plotMap = getPlotInfo(plotIds)
+    val orgList = plotMap.values.map { it.organizationId }.toSet()
+    val plantingSiteIds = plotMap.values.map { it.plantingSiteId }.toSet()
     require(plantingSiteIds.size == 1) { "Cannot assign T0 data to plots from multiple sites." }
 
     val plotsChangeList = mutableListOf<PlotT0DensityChangedModel>()
@@ -38,24 +48,62 @@ class T0PlotService(
       }
     }
 
+    val speciesToFetch =
+        plotsChangeList.flatMap { it.speciesDensityChanges.map { it.speciesId } }.toSet()
+    val speciesNames =
+        with(SPECIES) {
+          dslContext
+              .select(ID, SCIENTIFIC_NAME)
+              .from(this)
+              .where(ID.`in`(speciesToFetch))
+              .fetchMap(ID.asNonNullable(), SCIENTIFIC_NAME.asNonNullable())
+        }
+
     rateLimitedEventPublisher.publishEvent(
         RateLimitedT0DataAssignedEvent(
-            organizationId = organizationMap.keys.first(),
+            organizationId = orgList.first(),
             plantingSiteId = plantingSiteIds.first(),
-            monitoringPlots = plotsChangeList,
+            monitoringPlots =
+                plotsChangeList
+                    .map { changedModel ->
+                      PlotT0DensityChangedEventModel(
+                          monitoringPlotId = changedModel.monitoringPlotId,
+                          monitoringPlotNumber =
+                              plotMap[changedModel.monitoringPlotId]!!.plotNumber,
+                          speciesDensityChanges =
+                              changedModel.speciesDensityChanges
+                                  .map { it ->
+                                    SpeciesDensityChangedEventModel.of(
+                                        it,
+                                        speciesNames[it.speciesId]!!,
+                                    )
+                                  }
+                                  .sortedBy { it.speciesScientificName },
+                      )
+                    }
+                    .sortedBy { it.monitoringPlotNumber },
         )
     )
   }
 
-  private fun getOrgAndSitesFromPlots(
+  private fun getPlotInfo(
       plotIds: Collection<MonitoringPlotId>
-  ): Map<OrganizationId, List<PlantingSiteId>> {
+  ): Map<MonitoringPlotId, PlotEventDetailsModel> {
     return with(MONITORING_PLOTS) {
       dslContext
-          .selectDistinct(ORGANIZATION_ID, PLANTING_SITE_ID)
+          .select(ID, PLOT_NUMBER, ORGANIZATION_ID, PLANTING_SITE_ID)
           .from(this)
           .where(ID.`in`(plotIds.toSet()))
-          .fetchGroups(ORGANIZATION_ID.asNonNullable(), PLANTING_SITE_ID.asNonNullable())
+          .fetchMap(
+              ID.asNonNullable(),
+              { record ->
+                PlotEventDetailsModel(
+                    plotNumber = record[PLOT_NUMBER.asNonNullable()],
+                    organizationId = record[ORGANIZATION_ID.asNonNullable()],
+                    plantingSiteId = record[PLANTING_SITE_ID.asNonNullable()],
+                )
+              },
+          )
     }
   }
 }

@@ -1,0 +1,53 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.T0PlotDataSet" -->
+<!-- <#setting date_format="full"> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                ${strings("notification.observation.t0Set.email.body", plantingSiteName)}
+                </mj-text>
+            <mj-raw>
+                <#list monitoringPlots as plot>
+                    <#list plot.speciesDensityChanges as change>
+            </mj-raw>
+                        <mj-text mj-class="text-body01-regular" padding-top="4px">
+                            <strong>
+                                Plot ${plot.monitoringPlotNumber}:&nbsp;
+                                ${change.speciesScientificName}&nbsp;-&nbsp;
+                            </strong>
+                            <mj-raw>
+                                <#if change.previousPlotDensity??>
+                                    <#if change.newPlotDensity??>
+                                        ${change.previousPlotDensity}
+                                        → ${change.newPlotDensity}
+                                    <#else>
+                                        ${change.previousPlotDensity} → Removed
+                                    </#if>
+                                <#else>
+                                    <#if change.newPlotDensity??>
+                                        New → ${change.newPlotDensity}
+                                    <#else>
+                                        No change
+                                    </#if>
+                                </#if> ${strings("plants.per.hectare.parens")}
+                            </mj-raw>
+                        </mj-text>
+            <mj-raw>
+                    </#list>
+                </#list>
+            </mj-raw>
+
+                <mj-text mj-class="text-body-footer" css-class="text-body-footer">
+                ${link("notification.observation.t0Set.html.footer", manageT0SettingsUrl)}
+                </mj-text>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

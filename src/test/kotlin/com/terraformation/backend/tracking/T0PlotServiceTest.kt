@@ -16,8 +16,8 @@ import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.T0PlotStore
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
-import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
-import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
@@ -170,32 +170,39 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingSiteId = inserted.plantingSiteId,
               monitoringPlots =
                   listOf(
-                      PlotT0DensityChangedModel(
+                      PlotT0DensityChangedEventModel(
                           monitoringPlotId1,
-                          setOf(
-                              SpeciesDensityChangedModel(
+                          1L,
+                          listOf(
+                              SpeciesDensityChangedEventModel(
                                   speciesId1,
+                                  "Species 1",
                                   newPlotDensity = BigDecimal.valueOf(2),
                               ),
-                              SpeciesDensityChangedModel(
+                              SpeciesDensityChangedEventModel(
                                   speciesId2,
+                                  "Species 2",
                                   newPlotDensity = BigDecimal.valueOf(7),
                               ),
-                              SpeciesDensityChangedModel(
+                              SpeciesDensityChangedEventModel(
                                   speciesId3,
+                                  "Species 3",
                                   newPlotDensity = BigDecimal.valueOf(11),
                               ),
                           ),
                       ),
-                      PlotT0DensityChangedModel(
+                      PlotT0DensityChangedEventModel(
                           monitoringPlotId2,
-                          setOf(
-                              SpeciesDensityChangedModel(
+                          2L,
+                          listOf(
+                              SpeciesDensityChangedEventModel(
                                   speciesId1,
+                                  "Species 1",
                                   newPlotDensity = BigDecimal.valueOf(10),
                               ),
-                              SpeciesDensityChangedModel(
+                              SpeciesDensityChangedEventModel(
                                   speciesId2,
+                                  "Species 2",
                                   newPlotDensity = BigDecimal.valueOf(20),
                               ),
                           ),
