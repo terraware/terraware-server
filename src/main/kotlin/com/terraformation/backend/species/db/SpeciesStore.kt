@@ -168,39 +168,6 @@ class SpeciesStore(
         } ?: throw SpeciesNotFoundException(speciesId)
   }
 
-  fun fetchSpeciesByIdCollection(
-      speciesIds: Collection<SpeciesId>
-  ): Map<SpeciesId, ExistingSpeciesModel> {
-    val species =
-        dslContext
-            .select(
-                SPECIES.asterisk(),
-                speciesEcosystemTypesMultiset,
-                speciesGrowthFormsMultiset,
-                speciesPlantMaterialSourcingMethodsMultiset,
-                speciesSuccessionalGroupsMultiset,
-            )
-            .from(SPECIES)
-            .where(SPECIES.ID.`in`(speciesIds))
-            .and(SPECIES.DELETED_TIME.isNull)
-            .fetchMap(SPECIES.ID.asNonNullable()) {
-              ExistingSpeciesModel.of(
-                  it,
-                  speciesEcosystemTypesMultiset,
-                  speciesGrowthFormsMultiset,
-                  speciesPlantMaterialSourcingMethodsMultiset,
-                  speciesSuccessionalGroupsMultiset,
-              )
-            }
-
-    if (species.size != speciesIds.size) {
-      val missingSpeciesIds = speciesIds.minus(species.keys)
-      throw SpeciesNotFoundException(missingSpeciesIds.first())
-    }
-
-    return species
-  }
-
   fun fetchSpeciesByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ExistingSpeciesModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 

@@ -539,8 +539,6 @@ internal class EmailNotificationServiceTest {
     every { reportStore.fetchOne(acceleratorReportId) } returns report
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
     every { speciesStore.fetchSpeciesById(species.id) } returns species
-    every { speciesStore.fetchSpeciesByIdCollection(setOf(species.id)) } returns
-        mapOf(species.id to species)
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
