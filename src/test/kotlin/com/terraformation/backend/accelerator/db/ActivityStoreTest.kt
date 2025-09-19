@@ -406,7 +406,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if no permission to delete activity`() {
       insertOrganizationUser(role = Role.Manager)
-      insertUserGlobalRole(role = GlobalRole.TFExpert)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
       val activityId = insertActivity(projectId = projectId)
 
@@ -553,7 +553,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if no permission to update activity`() {
       insertOrganizationUser(role = Role.Manager)
-      insertUserGlobalRole(role = GlobalRole.TFExpert)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
       val activityId = insertActivity(projectId = projectId)
 
