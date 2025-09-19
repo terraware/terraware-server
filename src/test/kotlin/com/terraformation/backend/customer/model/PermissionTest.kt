@@ -2425,6 +2425,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *activityIds.forOrg1(),
         deleteActivity = true,
+        manageActivity = true,
         readActivity = true,
         updateActivity = true,
     )
@@ -2443,6 +2444,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         ProjectId(4000),
+        createActivity = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         listActivities = true,
@@ -2533,7 +2535,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ActivityId(3),
         ActivityId(4),
+        deleteActivity = true,
+        manageActivity = true,
         readActivity = true,
+        updateActivity = true,
     )
 
     permissions.expect(
