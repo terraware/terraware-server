@@ -149,7 +149,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
                           newPlotDensity = BigDecimal.valueOf(3),
@@ -210,7 +210,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
                           previousPlotDensity = BigDecimal.valueOf(2),
@@ -270,7 +270,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
                           previousPlotDensity = BigDecimal.valueOf(1),
@@ -329,7 +329,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
                           previousPlotDensity = BigDecimal.TEN,
@@ -381,7 +381,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
+                  setOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
           ),
           changedModel,
           "Changed model should be set with species data",
@@ -425,7 +425,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
                           previousPlotDensity = initialDensity,
@@ -492,7 +492,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
                       SpeciesDensityChangedModel(speciesId1, previousPlotDensity = density1),
                   ),
@@ -536,7 +536,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(speciesId1, newPlotDensity = density1),
                       SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
                   ),
@@ -575,7 +575,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  listOf(
+                  setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
                           previousPlotDensity = BigDecimal.valueOf(2),

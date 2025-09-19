@@ -10,10 +10,10 @@ import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import java.time.Duration
 import java.time.LocalDate
 
@@ -129,7 +129,7 @@ data class T0PlotDataAssignedEvent(
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId,
-    val monitoringPlots: List<PlotT0DensityChangedModel>,
+    val monitoringPlots: List<PlotT0DensityChangedEventModel>,
 ) : RateLimitedEvent<RateLimitedT0DataAssignedEvent> {
   override fun getRateLimitKey() =
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
@@ -143,7 +143,7 @@ data class RateLimitedT0DataAssignedEvent(
     require(existing.plantingSiteId == plantingSiteId) {
       "Cannot combine events for different plantingSiteIds"
     }
-    val plotsMap = mutableMapOf<MonitoringPlotId, PlotT0DensityChangedModel>()
+    val plotsMap = mutableMapOf<MonitoringPlotId, PlotT0DensityChangedEventModel>()
 
     existing.monitoringPlots.forEach { plot -> plotsMap[plot.monitoringPlotId] = plot }
 
@@ -153,7 +153,7 @@ data class RateLimitedT0DataAssignedEvent(
       if (existingPlot == null) {
         plotsMap[newPlot.monitoringPlotId] = newPlot
       } else {
-        val combinedChanges = mutableMapOf<SpeciesId, SpeciesDensityChangedModel>()
+        val combinedChanges = mutableMapOf<SpeciesId, SpeciesDensityChangedEventModel>()
 
         existingPlot.speciesDensityChanges.forEach { change ->
           combinedChanges[change.speciesId] = change

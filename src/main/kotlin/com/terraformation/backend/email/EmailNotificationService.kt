@@ -885,34 +885,16 @@ class EmailNotificationService(
   fun on(event: RateLimitedT0DataAssignedEvent) {
     systemUser.run {
       val organization = organizationStore.fetchOneById(event.organizationId)
-      val plantingSiteId =
-          parentStore.getPlantingSiteId(event.monitoringPlots.first().monitoringPlotId)!!
-      val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-      val speciesIds =
-          event.monitoringPlots.flatMap { it.speciesDensityChanges }.map { it.speciesId }.toSet()
-      val species = speciesStore.fetchSpeciesByIdCollection(speciesIds)
-
-      val plotDetailsMap =
-          plantingSite.plantingZones
-              .flatMap { it.plantingSubzones }
-              .flatMap { it.monitoringPlots }
-              .associate { it.id to it.plotNumber }
-
-      event.monitoringPlots.forEach {
-        it.monitoringPlotNumber = plotDetailsMap[it.monitoringPlotId]!!
-        it.speciesDensityChanges.forEach {
-          it.speciesScientificName = species[it.speciesId]!!.scientificName
-        }
-        it.speciesDensityChanges = it.speciesDensityChanges.sortedBy { it.speciesScientificName }
-      }
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
 
       val model =
           T0PlotDataSet(
               config,
               organizationName = organization.name,
-              plantingSiteId = plantingSiteId,
+              plantingSiteId = event.plantingSiteId,
               plantingSiteName = plantingSite.name,
-              monitoringPlots = event.monitoringPlots.sortedBy { it.monitoringPlotNumber },
+              monitoringPlots = event.monitoringPlots,
           )
       emailService.sendOrganizationNotification(
           event.organizationId,

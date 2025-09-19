@@ -134,10 +134,10 @@ import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
+import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import freemarker.template.Configuration
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -1405,12 +1405,14 @@ internal class EmailNotificationServiceTest {
             organization.id,
             plantingSite.id,
             listOf(
-                PlotT0DensityChangedModel(
+                PlotT0DensityChangedEventModel(
                     monitoringPlot.id,
+                    monitoringPlotNumber = monitoringPlot.plotNumber,
                     speciesDensityChanges =
                         listOf(
-                            SpeciesDensityChangedModel(
+                            SpeciesDensityChangedEventModel(
                                 species.id,
+                                speciesScientificName = species.scientificName,
                                 previousPlotDensity = BigDecimal.valueOf(10.123),
                                 newPlotDensity = BigDecimal.valueOf(20.456),
                             )
