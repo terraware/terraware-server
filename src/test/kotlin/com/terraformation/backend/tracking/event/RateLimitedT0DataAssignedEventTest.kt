@@ -298,6 +298,74 @@ class RateLimitedT0DataAssignedEventTest {
   }
 
   @Test
+  fun `combine with species that were removed`() {
+    val existingEvent =
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            listOf(
+                PlotT0DensityChangedEventModel(
+                    MonitoringPlotId(1),
+                    1L,
+                    speciesDensityChanges =
+                        listOf(
+                            SpeciesDensityChangedEventModel(
+                                speciesId = SpeciesId(1),
+                                speciesScientificName = "Species 1",
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = BigDecimal.valueOf(2),
+                            )
+                        ),
+                ),
+            ),
+        )
+
+    val newEvent =
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            listOf(
+                PlotT0DensityChangedEventModel(
+                    MonitoringPlotId(1),
+                    1L,
+                    speciesDensityChanges =
+                        listOf(
+                            SpeciesDensityChangedEventModel(
+                                speciesId = SpeciesId(1),
+                                speciesScientificName = "Species 1",
+                                previousPlotDensity = BigDecimal.valueOf(2),
+                                newPlotDensity = null,
+                            )
+                        ),
+                ),
+            ),
+        )
+
+    assertEquals(
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            listOf(
+                PlotT0DensityChangedEventModel(
+                    MonitoringPlotId(1),
+                    1L,
+                    speciesDensityChanges =
+                        listOf(
+                            SpeciesDensityChangedEventModel(
+                                speciesId = SpeciesId(1),
+                                speciesScientificName = "Species 1",
+                                previousPlotDensity = BigDecimal.valueOf(1),
+                                newPlotDensity = null,
+                            ),
+                        ),
+                ),
+            ),
+        ),
+        newEvent.combine(existingEvent),
+    )
+  }
+
+  @Test
   fun `combine with lots of data`() {
     val existingEvent =
         RateLimitedT0DataAssignedEvent(
