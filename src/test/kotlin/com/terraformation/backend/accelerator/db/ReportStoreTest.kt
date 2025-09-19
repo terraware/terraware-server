@@ -4470,13 +4470,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SurvivalRate,
-                  statusId = ReportMetricStatus.Unlikely,
-                  target = 0,
-                  value = 50,
-              ),
-              PublishedReportSystemMetricsRecord(
-                  reportId = reportId,
                   systemMetricId = SystemMetric.HectaresPlanted,
                   statusId = null,
                   target = null,
