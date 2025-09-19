@@ -1,2 +1,3 @@
+ece78b16990 Remove publishable from Survival Rate system metric (#3407)
 0ad76e3fc84 SW-7383 Do not include survival rate when not all sub areas have it (#3403)
 a7121229258 SW-7367 Read metadata from activity video files (#3404)
