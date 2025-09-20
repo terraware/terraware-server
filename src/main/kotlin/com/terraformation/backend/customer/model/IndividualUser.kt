@@ -154,7 +154,7 @@ data class IndividualUser(
   override fun canCreateAccession(facilityId: FacilityId) = isMember(facilityId)
 
   override fun canCreateActivity(projectId: ProjectId) =
-      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(projectId))
+      isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canCreateApiKey(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
@@ -227,7 +227,7 @@ data class IndividualUser(
       isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
   override fun canDeleteActivity(activityId: ActivityId) =
-      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
+      isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
 
   override fun canDeleteAutomation(automationId: AutomationId) =
       isAdminOrHigher(parentStore.getFacilityId(automationId))
@@ -311,7 +311,7 @@ data class IndividualUser(
   override fun canListSeedFundReports(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
-  override fun canManageActivity(activityId: ActivityId) = isAcceleratorAdmin()
+  override fun canManageActivity(activityId: ActivityId) = isTFExpertOrHigher()
 
   override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
 
@@ -603,7 +603,7 @@ data class IndividualUser(
       isMember(parentStore.getFacilityId(accessionId))
 
   override fun canUpdateActivity(activityId: ActivityId) =
-      isAcceleratorAdmin() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
+      isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(activityId))
 
   override fun canUpdateApplicationBoundary(applicationId: ApplicationId) =
       isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
