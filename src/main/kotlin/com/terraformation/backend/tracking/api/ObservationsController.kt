@@ -732,7 +732,7 @@ data class RecordedPlantPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(description = "GPS coordinates where plant was observed.") //
     val gpsCoordinates: Point,
-    val id: RecordedPlantId,
+    val id: RecordedPlantId?,
     @Schema(
         description = "Required if certainty is Known. Ignored if certainty is Other or Unknown."
     )

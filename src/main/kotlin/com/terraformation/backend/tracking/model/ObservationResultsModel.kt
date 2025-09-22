@@ -505,7 +505,7 @@ data class ObservationRollupResultsModel(
 data class RecordedPlantModel(
     val certainty: RecordedSpeciesCertainty,
     val gpsCoordinates: Point,
-    val id: RecordedPlantId,
+    val id: RecordedPlantId?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val status: RecordedPlantStatus,
