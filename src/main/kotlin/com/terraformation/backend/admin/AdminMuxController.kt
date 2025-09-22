@@ -103,7 +103,7 @@ class AdminMuxController(
       @RequestParam fileId: FileId,
       redirectAttributes: RedirectAttributes,
   ): String {
-    var playbackId: String? = null
+    val playbackId: String
 
     try {
       playbackId = muxService.sendFileToMux(fileId)
