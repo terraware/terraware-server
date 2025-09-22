@@ -45,14 +45,15 @@ fun MultipartFile.getPlainContentType(): String? {
  * @param allowedTypes Only accept content types from this set; throw NotSupportedException for
  *   types that aren't listed.
  */
-fun MultipartFile.getPlainContentType(allowedTypes: Set<String>): String {
-  val contentType = this.getPlainContentType()
+fun MultipartFile.getPlainContentType(allowedTypes: Set<MediaType>): String {
+  val plainContentType = this.getPlainContentType()
+  val contentType = plainContentType?.let { MediaType.parseMediaType(it) }
 
-  if (contentType == null || contentType !in allowedTypes) {
+  if (contentType == null || allowedTypes.none { it.includes(contentType) }) {
     throw NotSupportedException("Content type must be one of: ${allowedTypes.sorted()}")
   }
 
-  return contentType
+  return plainContentType
 }
 
 /**
