@@ -1,3 +1,5 @@
+51dfc2016b4 Update dependency org.apache.tika:tika-core to v3.2.3 (#3414)
+abc72b8bfdf Update dependency com.google.auth:google-auth-library-oauth2-http to v1.39.1 (#3411)
 18ebfb95914 Update dependency org.bouncycastle:bcpkix-jdk18on to v1.82 (#3416)
 6c428ac16ba Update plugin org.springframework.boot to v3.5.6 (#3415)
 fb342965320 Update Python dependencies (#3413)
