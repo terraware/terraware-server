@@ -1,13 +1,17 @@
 package com.terraformation.backend.file.mux
 
+import MuxApiStatus
 import MuxCreateVideoAssetRequestPayload
 import MuxCreateVideoAssetResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.MuxAssetStatus
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.VideoStreamNotFoundException
+import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.log.perClassLogger
 import io.jsonwebtoken.Jwts
 import io.ktor.client.HttpClient
@@ -19,6 +23,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import jakarta.inject.Named
 import java.io.StringReader
 import java.net.URI
@@ -32,7 +37,10 @@ import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
+import org.springframework.context.annotation.Lazy
+import org.springframework.context.event.EventListener
 
 @Named
 class MuxService(
@@ -41,6 +49,8 @@ class MuxService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
     private val httpClient: HttpClient,
+    @Lazy private val jobScheduler: JobScheduler,
+    private val systemUser: SystemUser,
 ) {
   /**
    * How long to make files available for Mux to download. The files will have random URLs but will
@@ -89,7 +99,9 @@ class MuxService(
   fun sendFileToMux(fileId: FileId): String {
     ensureEnabled()
 
-    val token = fileService.createToken(fileId, fileAccessTokenExpiration)
+    // This gets called from a JobRunr job after a file is uploaded, so we need to set the current
+    // user to attribute the token to since there won't be an active one.
+    val token = systemUser.run { fileService.createToken(fileId, fileAccessTokenExpiration) }
 
     val request =
         MuxCreateVideoAssetRequestPayload(
@@ -168,9 +180,9 @@ class MuxService(
 
   fun markAssetDeleted(fileId: FileId) {
     with(MUX_ASSETS) {
-      if (dslContext.deleteFrom(MUX_ASSETS).where(FILE_ID.eq(fileId)).execute() == 0) {
-        log.error("Got delete update for unknown file $fileId")
-      } else {
+      // If the asset doesn't exist, ignore it; this will be the case if we've initiated the
+      // deletion ourselves and we later get a callback from Mux notifying us of the deletion.
+      if (dslContext.deleteFrom(MUX_ASSETS).where(FILE_ID.eq(fileId)).execute() == 1) {
         log.info("Asset for file $fileId deleted by Mux")
       }
     }
@@ -189,6 +201,38 @@ class MuxService(
             .execute()
 
         log.warn("File $fileId marked as errored by Mux: $errorMessage")
+      }
+    }
+  }
+
+  /** Sends newly-uploaded video files to Mux if enabled. This is done asynchronously. */
+  @EventListener
+  fun on(event: VideoFileUploadedEvent) {
+    if (config.mux.enabled) {
+      jobScheduler.enqueue<MuxService> { sendFileToMux(event.fileId) }
+    }
+  }
+
+  @EventListener
+  fun on(event: VideoFileDeletedEvent) {
+    val assetId =
+        dslContext.fetchValue(MUX_ASSETS.ASSET_ID, MUX_ASSETS.FILE_ID.eq(event.fileId)) ?: return
+
+    // Asynchronously delete the asset from Mux; we don't want the event listener to block if
+    // Mux takes a long time to respond.
+    jobScheduler.enqueue<MuxService> { deleteMuxAssetIfExists(assetId) }
+
+    dslContext.deleteFrom(MUX_ASSETS).where(MUX_ASSETS.FILE_ID.eq(event.fileId)).execute()
+  }
+
+  @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
+  fun deleteMuxAssetIfExists(assetId: String) {
+    try {
+      sendRequest<Unit>("/video/v1/assets/$assetId")
+    } catch (e: ClientRequestException) {
+      // Ignore "not found" responses since this is a "delete if exists" operation.
+      if (e.response.status != HttpStatusCode.NotFound) {
+        throw e
       }
     }
   }
