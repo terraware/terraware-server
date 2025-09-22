@@ -24,9 +24,12 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.VideoStreamNotFoundException
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
+import com.terraformation.backend.file.mux.MuxService
+import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.point
 import io.mockk.Runs
 import io.mockk.every
@@ -51,6 +54,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
+  private val muxService: MuxService = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
@@ -68,6 +72,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         eventPublisher,
         fileService,
+        muxService,
         ParentStore(dslContext),
     )
   }
@@ -305,6 +310,38 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
 
       assertThrows<ActivityNotFoundException> { service.deleteMedia(activityId, fileId) }
+    }
+  }
+
+  @Nested
+  inner class GetMuxStreamInfo {
+    @Test
+    fun `returns stream info`() {
+      val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
+
+      val muxStream = MuxStreamModel(fileId, "playback", "token")
+      every { muxService.getMuxStream(fileId, any()) } returns muxStream
+
+      assertEquals(muxStream, service.getMuxStreamInfo(activityId, fileId))
+    }
+
+    @Test
+    fun `throws exception if file has no Mux stream`() {
+      val fileId = storeMedia("pixel.png", pngMetadata)
+
+      every { muxService.getMuxStream(fileId, any()) } throws VideoStreamNotFoundException(fileId)
+
+      assertThrows<VideoStreamNotFoundException> { service.getMuxStreamInfo(activityId, fileId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to read activity`() {
+      val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<ActivityNotFoundException> { service.getMuxStreamInfo(activityId, fileId) }
     }
   }
 
