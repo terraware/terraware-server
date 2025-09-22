@@ -103,7 +103,7 @@ class AdminMuxController(
       @RequestParam fileId: FileId,
       redirectAttributes: RedirectAttributes,
   ): String {
-    var playbackId: String? = null
+    val playbackId: String
 
     try {
       playbackId = muxService.sendFileToMux(fileId)
@@ -115,11 +115,11 @@ class AdminMuxController(
       redirectAttributes.failureMessage = "Failed to create asset: ${e.message}"
     }
 
-    return redirectToMuxHome(playbackId)
+    return redirectToMuxHome(fileId)
   }
 
-  private fun redirectToMuxHome(muxPlaybackId: String? = null): String {
-    val suffix = muxPlaybackId?.let { "?muxPlaybackId=$it" } ?: ""
+  private fun redirectToMuxHome(fileId: FileId? = null): String {
+    val suffix = fileId?.let { "?fileId=$it" } ?: ""
     return "redirect:/admin/mux$suffix"
   }
 }
