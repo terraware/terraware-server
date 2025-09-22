@@ -268,7 +268,7 @@
                            th:value="${zone.numPermanentPlots}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="1" name="numTemporary" th:id="|numTemporary-${zone.id}|"
+                    <input type="number" required min="0" name="numTemporary" th:id="|numTemporary-${zone.id}|"
                            th:value="${zone.numTemporaryPlots}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
