@@ -103,7 +103,7 @@ dependencies {
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.8.1")
-  implementation("com.google.auth:google-auth-library-oauth2-http:1.39.0")
+  implementation("com.google.auth:google-auth-library-oauth2-http:1.39.1")
   implementation("com.google.apis:google-api-services-drive:v3-rev20250910-2.0.0")
   implementation("com.opencsv:opencsv:5.12.0")
   implementation("com.pgvector:pgvector:0.1.6")
