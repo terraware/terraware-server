@@ -1,7 +1,7 @@
 ALTER TABLE tracking.planting_sites
-    ADD COLUMN survival_rate_includes_temp_plots BOOLEAN;
+    ADD COLUMN survival_rate_includes_temp_plots BOOLEAN NOT NULL DEFAULT FALSE;
 
-CREATE TABLE tracking.zone_t0_temp_density
+CREATE TABLE tracking.planting_zone_t0_temp_density
 (
     planting_zone_id BIGINT                   NOT NULL REFERENCES tracking.planting_zones ON DELETE CASCADE,
     species_id       BIGINT                   NOT NULL REFERENCES species ON DELETE CASCADE,

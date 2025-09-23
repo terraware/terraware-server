@@ -63,6 +63,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = now,
+                  survivalRateIncludesTempPlots = false,
                   timeZone = newTimeZone,
               )
           ),

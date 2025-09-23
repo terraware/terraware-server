@@ -524,6 +524,8 @@ COMMENT ON TABLE tracking.planting_zone_histories IS 'Versions of planting zone 
 
 COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
 
+COMMENT ON TABLE tracking.planting_zone_t0_temp_density IS 'Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the zone''s planting site.';
+
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_zones.boundary_modified_by IS 'Which user most recently edited the planting zone''s boundary.';
@@ -564,8 +566,6 @@ COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental n
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
 COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
-
-COMMENT ON TABLE tracking.zone_t0_temp_density IS 'Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if site_temp_inclusions is set to true for the zone''s planting site.';
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
