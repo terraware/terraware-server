@@ -169,8 +169,8 @@ data class PlantingSiteModel<
           plantingSeasons = plantingSeasons,
           plantingZones = plantingZones.map { it.toNew() },
           projectId = projectId,
-          timeZone = timeZone,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
+          timeZone = timeZone,
       )
 
   companion object {
