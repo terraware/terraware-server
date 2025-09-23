@@ -565,6 +565,8 @@ COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of cert
 
 COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
 
+COMMENT ON TABLE tracking.zone_t0_temp_density IS 'Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if site_temp_inclusions is set to true for the zone''s planting site.';
+
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
 COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, by any of the definitions. The 3 definitions at the time of creation were: having an application, having a participant, or the project''s org having an internal tag of "Accelerator".';

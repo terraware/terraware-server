@@ -2178,6 +2178,7 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId? = row.projectId,
       countryCode: String? = row.countryCode,
       insertHistory: Boolean = true,
+      survivalRateIncludesTempPlots: Boolean = false,
   ): PlantingSiteId {
     val effectiveBoundary =
         when {
@@ -2207,6 +2208,7 @@ abstract class DatabaseBackedTest {
             organizationId = organizationId,
             projectId = projectId,
             timeZone = timeZone,
+            survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
         )
 
     plantingSitesDao.insert(rowWithDefaults)
