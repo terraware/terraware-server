@@ -25,6 +25,8 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.InputStreamCopier
@@ -43,6 +45,7 @@ import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
@@ -50,6 +53,7 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class ActivityMediaService(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val parentStore: ParentStore,
 ) {
@@ -76,7 +80,7 @@ class ActivityMediaService(
 
     var fileType: FileType? = null
     var exifMetadata: Metadata? = null
-    var mediaType: ActivityMediaType?
+    var mediaType: ActivityMediaType? = null
 
     val exifThread =
         Thread.ofVirtual().name("$currentThreadName-exif").start {
@@ -139,6 +143,10 @@ class ActivityMediaService(
 
     log.info("Stored file $fileId for activity $activityId")
 
+    if (mediaType == ActivityMediaType.Video) {
+      eventPublisher.publishEvent(VideoFileUploadedEvent(fileId))
+    }
+
     return fileId
   }
 
@@ -161,11 +169,10 @@ class ActivityMediaService(
     checkFileExists(activityId, fileId)
 
     fileService.deleteFile(fileId) {
-      dslContext
-          .deleteFrom(ACTIVITY_MEDIA_FILES)
-          .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId))
-          .and(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
-          .execute()
+      deleteByCondition(
+          ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId)
+              .and(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+      )
     }
   }
 
@@ -190,10 +197,16 @@ class ActivityMediaService(
         .filterNotNull()
         .forEach { fileId ->
           fileService.deleteFile(fileId) {
-            dslContext
-                .deleteFrom(ACTIVITY_MEDIA_FILES)
-                .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
-                .execute()
+            val mediaType =
+                dslContext
+                    .deleteFrom(ACTIVITY_MEDIA_FILES)
+                    .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+                    .returning(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID)
+                    .fetchOne(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID)
+
+            if (mediaType == ActivityMediaType.Video) {
+              eventPublisher.publishEvent(VideoFileDeletedEvent(fileId))
+            }
           }
         }
   }

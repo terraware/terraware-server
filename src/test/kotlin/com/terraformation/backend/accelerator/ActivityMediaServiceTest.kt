@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
@@ -23,6 +24,8 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.point
 import io.mockk.Runs
@@ -46,6 +49,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
@@ -62,6 +66,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ActivityMediaService(
         clock,
         dslContext,
+        eventPublisher,
         fileService,
         ParentStore(dslContext),
     )
@@ -167,6 +172,20 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `publishes event when video is uploaded`() {
+      val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
+
+      eventPublisher.assertEventPublished(VideoFileUploadedEvent(fileId))
+    }
+
+    @Test
+    fun `does not publish video uploaded event when photo is uploaded`() {
+      storeMedia("pixel.png", pngMetadata)
+
+      eventPublisher.assertEventNotPublished<VideoFileUploadedEvent>()
+    }
+
+    @Test
     fun `throws exception if no permission to update project`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
@@ -258,6 +277,16 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEmpty(FILES)
       assertEquals(emptyList<ActivityMediaFilesRow>(), activityMediaFilesDao.findAll())
       fileStore.assertFileWasDeleted(storageUrl)
+      eventPublisher.assertEventNotPublished<VideoFileDeletedEvent>()
+    }
+
+    @Test
+    fun `publishes video deleted event if file was a video`() {
+      val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
+
+      service.deleteMedia(activityId, fileId)
+
+      eventPublisher.assertEventPublished(VideoFileDeletedEvent(fileId))
     }
 
     @Test
@@ -282,10 +311,12 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `handler for ActivityDeletionStartedEvent deletes media for activity`() {
     storeMedia("pixel.png", pngMetadata)
-    storeMedia("pixel.png", pngMetadata)
+    val videoFileId = storeMedia("videoHeaderOnly.mp4", mp4Metadata)
 
     val activity2Id = insertActivity()
     val activity2FileId = storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
+
+    eventPublisher.clear()
 
     service.on(ActivityDeletionStartedEvent(activityId))
 
@@ -295,6 +326,8 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         activityMediaFilesDao.findAll().map { it.activityId },
         "Activity IDs of remaining media",
     )
+
+    eventPublisher.assertExactEventsPublished(setOf(VideoFileDeletedEvent(videoFileId)))
 
     assertIsEventListener<ActivityDeletionStartedEvent>(service)
   }
