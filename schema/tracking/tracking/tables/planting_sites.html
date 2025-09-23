@@ -436,6 +436,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="survival_rate_includes_temp_plots">survival_rate_includes_temp_plots</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>false</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -513,12 +530,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>area_positive</td>
-                                    <td>(area_ha &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
                                     <td>planting_sites_description_check</td>
                                     <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>

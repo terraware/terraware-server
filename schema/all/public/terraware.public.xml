@@ -1070,6 +1070,7 @@
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
             <child column="species_id" foreignKey="planting_subzone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzone_populations"/>
             <child column="species_id" foreignKey="planting_zone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_populations"/>
+            <child column="species_id" foreignKey="planting_zone_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_t0_temp_densities"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_density_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_density"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
@@ -1662,6 +1663,8 @@
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <child column="modified_by" foreignKey="plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
+            <child column="created_by" foreignKey="planting_zone_t0_temp_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
+            <child column="modified_by" foreignKey="planting_zone_t0_temp_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
             <child column="boundary_modified_by" foreignKey="planting_zones_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>

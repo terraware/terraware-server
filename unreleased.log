@@ -1,3 +1,4 @@
+709cfe08be4 SW-7411 Add db column and table for temp plots in survival rates (#3427)
 d57c921aab3 SW-7367 Support video in activity media API (#3426)
 78479049e7c SW-7367 Get Mux stream info for activity video (#3425)
 099f73eaa66 SW-7367 Send activity videos to Mux (#3424)

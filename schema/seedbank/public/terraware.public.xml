@@ -173,6 +173,7 @@
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
             <child column="species_id" foreignKey="planting_subzone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzone_populations"/>
             <child column="species_id" foreignKey="planting_zone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_populations"/>
+            <child column="species_id" foreignKey="planting_zone_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_t0_temp_densities"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_density_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_density"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>

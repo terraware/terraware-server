@@ -993,6 +993,8 @@
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <child column="modified_by" foreignKey="plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
+            <child column="created_by" foreignKey="planting_zone_t0_temp_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
+            <child column="modified_by" foreignKey="planting_zone_t0_temp_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
             <child column="boundary_modified_by" foreignKey="planting_zones_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
