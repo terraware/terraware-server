@@ -196,6 +196,21 @@ class PlantingSitesController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(
+      summary = "Sets the boolean for including temp plots in site survival rate calculations."
+  )
+  @PutMapping("/{id}/survivalRateIncludesTempPlots")
+  fun updateTempPlotsSurvivalRate(
+      @PathVariable("id") id: PlantingSiteId,
+      @RequestParam("survivalRateIncludesTempPlots") survivalRateIncludesTempPlots: Boolean,
+  ): SimpleSuccessResponsePayload {
+    plantingSiteStore.updatePlantingSite(id, emptyList()) { model: ExistingPlantingSiteModel ->
+      model.copy(survivalRateIncludesTempPlots = survivalRateIncludesTempPlots)
+    }
+
+    return SimpleSuccessResponsePayload()
+  }
+
   @ApiResponse200
   @ApiResponse409(
       description = "The planting site is in use, e.g., there are plantings allocated to the site."
