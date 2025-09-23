@@ -410,7 +410,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "planting_subzones" to setOf(ALL, TRACKING),
                   "planting_zone_histories" to setOf(ALL, TRACKING),
                   "planting_zone_populations" to setOf(ALL, TRACKING),
-                  "planting_zone_t0_temp_density" to setOf(ALL, TRACKING),
+                  "planting_zone_t0_temp_densities" to setOf(ALL, TRACKING),
                   "planting_zones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
                   "plot_t0_density" to setOf(ALL, TRACKING),
