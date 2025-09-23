@@ -1,3 +1,8 @@
+099f73eaa66 SW-7367 Send activity videos to Mux (#3424)
+fa4a8a94cd6 Pass correct query param after admin UI Mux upload (#3423)
+9a1e38f6bb7 SW-7387 Allow zones to have 0 temporary plots (#3422)
+0c183a103a4 SW-7408 Fix observations payload NPE (#3421)
+ab88ed6baa6 Upgrade to Java 25 (#3419)
 f93965e52f7 Update Gradle to v9.1.0 (#3418)
 51dfc2016b4 Update dependency org.apache.tika:tika-core to v3.2.3 (#3414)
 abc72b8bfdf Update dependency com.google.auth:google-auth-library-oauth2-http to v1.39.1 (#3411)
