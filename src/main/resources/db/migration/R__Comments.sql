@@ -524,6 +524,8 @@ COMMENT ON TABLE tracking.planting_zone_histories IS 'Versions of planting zone 
 
 COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
 
+COMMENT ON TABLE tracking.planting_zone_t0_temp_densities IS 'Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the zone''s planting site.';
+
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_zones.boundary_modified_by IS 'Which user most recently edited the planting zone''s boundary.';

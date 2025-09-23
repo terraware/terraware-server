@@ -58,6 +58,7 @@ data class PlantingSiteModel<
     val plantingZones: List<PlantingZoneModel<PZID, PSZID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
+    val survivalRateIncludesTempPlots: Boolean = false,
 ) {
   /**
    * Returns the start date of the next observation for this planting site, or null if the planting
@@ -168,6 +169,7 @@ data class PlantingSiteModel<
           plantingSeasons = plantingSeasons,
           plantingZones = plantingZones.map { it.toNew() },
           projectId = projectId,
+          survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
           timeZone = timeZone,
       )
 
@@ -205,6 +207,8 @@ data class PlantingSiteModel<
             plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
             plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
+            survivalRateIncludesTempPlots =
+                record[PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
             timeZone = record[PLANTING_SITES.TIME_ZONE],
         )
 

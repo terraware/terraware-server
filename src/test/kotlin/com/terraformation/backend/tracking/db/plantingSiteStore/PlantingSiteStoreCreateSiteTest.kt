@@ -67,6 +67,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   modifiedBy = user.userId,
                   modifiedTime = Instant.EPOCH,
                   projectId = projectId,
+                  survivalRateIncludesTempPlots = false,
                   timeZone = timeZone,
               )
           ),
@@ -105,6 +106,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   modifiedTime = Instant.EPOCH,
                   name = "name",
                   organizationId = organizationId,
+                  survivalRateIncludesTempPlots = false,
               )
           ),
           plantingSitesDao.findAll(),
@@ -225,6 +227,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               modifiedTime = Instant.EPOCH,
               name = "name",
               organizationId = organizationId,
+              survivalRateIncludesTempPlots = false,
           ),
           plantingSitesRow.copy(boundary = null, gridOrigin = null),
           "Planting site",
