@@ -140,7 +140,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(expected.copy(survivalRateIncludesTempPlots = false)),
           plantingSitesDao.findAll(),
-          "Should include temp plots in survival rate calculation",
+          "Should exclude temp plots in survival rate calculation",
       )
     }
 
