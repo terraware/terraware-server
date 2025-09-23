@@ -9,6 +9,7 @@ import org.geotools.geojson.feature.FeatureJSON
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.InvalidMediaTypeException
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
@@ -47,13 +48,20 @@ fun MultipartFile.getPlainContentType(): String? {
  */
 fun MultipartFile.getPlainContentType(allowedTypes: Set<MediaType>): String {
   val plainContentType = this.getPlainContentType()
-  val contentType = plainContentType?.let { MediaType.parseMediaType(it) }
+  if (plainContentType != null) {
+    val contentType =
+        try {
+          MediaType.parseMediaType(plainContentType)
+        } catch (e: InvalidMediaTypeException) {
+          null
+        }
 
-  if (contentType == null || allowedTypes.none { it.includes(contentType) }) {
-    throw NotSupportedException("Content type must be one of: ${allowedTypes.sorted()}")
+    if (contentType != null && allowedTypes.any { it.includes(contentType) }) {
+      return plainContentType
+    }
   }
 
-  return plainContentType
+  throw NotSupportedException("Content type must be one of: ${allowedTypes.sorted()}")
 }
 
 /**
