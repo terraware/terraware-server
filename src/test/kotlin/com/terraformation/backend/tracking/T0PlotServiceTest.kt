@@ -9,7 +9,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
+import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
@@ -214,7 +214,7 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private fun densityRecord(plotId: MonitoringPlotId, speciesId: SpeciesId, density: BigDecimal) =
-      PlotT0DensityRecord(
+      PlotT0DensitiesRecord(
           monitoringPlotId = plotId,
           speciesId = speciesId,
           plotDensity = density,

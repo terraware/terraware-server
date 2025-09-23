@@ -38,7 +38,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
@@ -453,7 +453,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITY.MONITORING_PLOT_ID))
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
               .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
       )
@@ -574,7 +574,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .else_(null as Int?),
                     DSL.coalesce(
                         SPECIES_ID,
-                        PLOT_T0_DENSITY.SPECIES_ID,
+                        PLOT_T0_DENSITIES.SPECIES_ID,
                     ),
                     SPECIES_NAME,
                     DSL.coalesce(TOTAL_LIVE, 0),
@@ -585,21 +585,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     DSL.coalesce(
                         SURVIVAL_RATE,
                         DSL.`when`(
-                            PLOT_T0_DENSITY.PLOT_DENSITY.isNotNull,
+                            PLOT_T0_DENSITIES.PLOT_DENSITY.isNotNull,
                             DSL.inline(BigDecimal.ZERO),
                         ),
                     ),
-                    PLOT_T0_DENSITY.PLOT_DENSITY,
+                    PLOT_T0_DENSITIES.PLOT_DENSITY,
                 )
                 .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                .fullOuterJoin(PLOT_T0_DENSITY)
+                .fullOuterJoin(PLOT_T0_DENSITIES)
                 .on(
-                    PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID)
-                        .and(PLOT_T0_DENSITY.SPECIES_ID.eq(SPECIES_ID))
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID)
+                        .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                 )
                 .where(
                     MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
-                        .or(PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                        .or(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                 )
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
                 .orderBy(SPECIES_ID, SPECIES_NAME)
@@ -758,7 +758,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private fun plantingSubzoneSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
     val subzoneT0 =
-        with(PLOT_T0_DENSITY) {
+        with(PLOT_T0_DENSITIES) {
           DSL.select(
                   MONITORING_PLOTS.PLANTING_SUBZONE_ID,
                   SPECIES_ID,
@@ -953,7 +953,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private fun plantingZoneSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
     val zoneT0 =
-        with(PLOT_T0_DENSITY) {
+        with(PLOT_T0_DENSITIES) {
           DSL.select(
                   PLANTING_SUBZONES.PLANTING_ZONE_ID,
                   SPECIES_ID,
@@ -1173,7 +1173,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
     val siteT0 =
-        with(PLOT_T0_DENSITY) {
+        with(PLOT_T0_DENSITIES) {
           DSL.select(
                   MONITORING_PLOTS.PLANTING_SITE_ID,
                   SPECIES_ID,

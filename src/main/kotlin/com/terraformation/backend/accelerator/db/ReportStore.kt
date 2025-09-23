@@ -67,7 +67,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -1465,20 +1465,20 @@ class ReportStore(
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITY.MONITORING_PLOT_ID))
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
               .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
               .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
       )
 
   private val survivalRateDenominatorField =
-      with(PLOT_T0_DENSITY) {
+      with(PLOT_T0_DENSITIES) {
         DSL.sum(
             DSL.field(
                 DSL.select(DSL.sum(PLOT_DENSITY))
                     .from(this)
                     .where(
-                        PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.`in`(
+                        PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.`in`(
                             OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
                         )
                     )

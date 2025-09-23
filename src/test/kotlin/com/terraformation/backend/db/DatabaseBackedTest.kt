@@ -458,7 +458,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensityRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
@@ -468,7 +468,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.documentproducer.model.StableIds
@@ -3279,7 +3279,7 @@ abstract class DatabaseBackedTest {
   private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
 
   fun insertPlotT0Density(
-      row: PlotT0DensityRow = PlotT0DensityRow(),
+      row: PlotT0DensitiesRow = PlotT0DensitiesRow(),
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       plotDensity: BigDecimal = row.plotDensity ?: BigDecimal.valueOf(10),
@@ -3288,7 +3288,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
-    with(PLOT_T0_DENSITY) {
+    with(PLOT_T0_DENSITIES) {
       dslContext
           .insertInto(this)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
