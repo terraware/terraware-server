@@ -228,7 +228,7 @@ class MuxService(
   @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
   fun deleteMuxAssetIfExists(assetId: String) {
     try {
-      sendRequest<Unit>("/video/v1/assets/$assetId")
+      sendRequest<Unit>("/video/v1/assets/$assetId", method = HttpMethod.Delete)
     } catch (e: ClientRequestException) {
       // Ignore "not found" responses since this is a "delete if exists" operation.
       if (e.response.status != HttpStatusCode.NotFound) {
