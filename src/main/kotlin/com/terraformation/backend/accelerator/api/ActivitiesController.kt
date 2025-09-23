@@ -22,7 +22,9 @@ import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.SUPPORTED_VIDEO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.mux.MuxStreamModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -53,6 +55,8 @@ class ActivitiesController(
     private val activityMediaStore: ActivityMediaStore,
     private val activityStore: ActivityStore,
 ) {
+  private val supportedMediaTypes = SUPPORTED_PHOTO_TYPES + SUPPORTED_VIDEO_TYPES
+
   @Operation(summary = "Lists all of a project's activities.")
   @GetMapping
   fun listActivities(
@@ -113,7 +117,7 @@ class ActivitiesController(
       @PathVariable activityId: ActivityId,
       @RequestPart("file") file: MultipartFile,
   ): UploadActivityMediaResponsePayload {
-    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val contentType = file.getPlainContentType(supportedMediaTypes)
     val filename = file.getFilename("media")
 
     val fileId =
@@ -128,7 +132,7 @@ class ActivitiesController(
 
   @GetMapping("/{activityId}/media/{fileId}")
   @Operation(
-      summary = "Gets a media file for an activity.",
+      summary = "Gets a photo file for an activity.",
       description = PHOTO_OPERATION_DESCRIPTION,
   )
   @ResponseBody
@@ -145,6 +149,23 @@ class ActivitiesController(
     return activityMediaService
         .readMedia(activityId, fileId, maxWidth, maxHeight)
         .toResponseEntity()
+  }
+
+  @GetMapping("/{activityId}/media/{fileId}/stream")
+  @Operation(
+      summary = "Gets streaming details for a video for an activity.",
+      description =
+          "This does not return the actual streaming data; it just returns the necessary " +
+              "information to stream video from Mux.",
+  )
+  @ResponseBody
+  fun getActivityMediaStream(
+      @PathVariable activityId: ActivityId,
+      @PathVariable fileId: FileId,
+  ): GetActivityStreamResponsePayload {
+    val stream = activityMediaService.getMuxStreamInfo(activityId, fileId)
+
+    return GetActivityStreamResponsePayload(stream)
   }
 
   @Operation(summary = "Updates information about a media file for an activity.")
@@ -251,6 +272,15 @@ data class UpdateActivityRequestPayload(
 }
 
 data class GetActivityResponsePayload(val activity: ActivityPayload) : SuccessResponsePayload
+
+data class GetActivityStreamResponsePayload(
+    val playbackId: String,
+    val playbackToken: String,
+) : SuccessResponsePayload {
+  constructor(
+      model: MuxStreamModel
+  ) : this(playbackId = model.playbackId, playbackToken = model.playbackToken)
+}
 
 data class ListActivitiesResponsePayload(val activities: List<ActivityPayload>) :
     SuccessResponsePayload
