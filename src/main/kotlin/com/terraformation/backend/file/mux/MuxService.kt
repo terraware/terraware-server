@@ -66,6 +66,7 @@ class MuxService(
   private val fileAccessEndpoint = "/api/v1/files/tokens"
 
   private val muxApiUrl = URI("https://api.mux.com")
+  private val muxAssetsEndpoint = "/video/v1/assets"
 
   private val log = perClassLogger()
 
@@ -109,7 +110,7 @@ class MuxService(
             test = config.mux.useTestAssets,
             url = baseUrl.resolve("$fileAccessEndpoint/$token"),
         )
-    val response = sendRequest<MuxCreateVideoAssetResponsePayload>("/video/v1/assets", request)
+    val response = sendRequest<MuxCreateVideoAssetResponsePayload>(muxAssetsEndpoint, request)
 
     if (response.data.status == MuxApiStatus.errored) {
       log.warn("File $fileId marked as errored at creation time: ${response.data.errorMessage}")
@@ -228,7 +229,7 @@ class MuxService(
   @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr
   fun deleteMuxAssetIfExists(assetId: String) {
     try {
-      sendRequest<Unit>("/video/v1/assets/$assetId", method = HttpMethod.Delete)
+      sendRequest<Unit>("$muxAssetsEndpoint/$assetId", method = HttpMethod.Delete)
     } catch (e: ClientRequestException) {
       // Ignore "not found" responses since this is a "delete if exists" operation.
       if (e.response.status != HttpStatusCode.NotFound) {
