@@ -138,23 +138,28 @@ class MuxService(
    * Mux. For access control, this includes a time-limited playback token that expires.
    *
    * @param expiration How long the stream should be accessible. After this, clients will need to
-   *   request a new playback token.
+   *   request a new playback token. Default is the stream expiration in seconds as defined in the
+   *   server configuration.
    */
-  fun getMuxStream(
-      fileId: FileId,
-      expiration: Duration = Duration.ofSeconds(config.mux.streamExpirationSeconds),
-  ): MuxStreamModel {
+  fun getMuxStream(fileId: FileId, expiration: Duration? = null): MuxStreamModel {
     ensureEnabled()
+
+    // Supply the default expiration value here rather than as a default value for the
+    // parameter because doing it in the parameter would mess up tests that need to mock this
+    // service; they'd need to access the mock's "config" property which doesn't exist because
+    // the mock has no private properties to access.
+    val effectiveExpiration = expiration ?: Duration.ofSeconds(config.mux.streamExpirationSeconds)
 
     val playbackId =
         dslContext.fetchValue(MUX_ASSETS.PLAYBACK_ID, MUX_ASSETS.FILE_ID.eq(fileId))
             ?: throw VideoStreamNotFoundException(fileId)
+
     val token =
         Jwts.builder()
             .subject(playbackId)
             .claim("kid", signingKeyId)
             .claim("aud", "v") // "v" = token is for video playback
-            .expiration(Date(clock.instant().plus(expiration).toEpochMilli()))
+            .expiration(Date(clock.instant().plus(effectiveExpiration).toEpochMilli()))
             .signWith(signingKey)
             .compact()
 

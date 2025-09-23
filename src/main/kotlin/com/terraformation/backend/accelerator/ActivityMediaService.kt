@@ -28,6 +28,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
+import com.terraformation.backend.file.mux.MuxService
+import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.InputStreamCopier
 import jakarta.inject.Named
@@ -55,6 +57,7 @@ class ActivityMediaService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
+    private val muxService: MuxService,
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
@@ -161,6 +164,14 @@ class ActivityMediaService(
     checkFileExists(activityId, fileId)
 
     return fileService.readFile(fileId, maxWidth, maxHeight)
+  }
+
+  fun getMuxStreamInfo(activityId: ActivityId, fileId: FileId): MuxStreamModel {
+    requirePermissions { readActivity(activityId) }
+
+    checkFileExists(activityId, fileId)
+
+    return muxService.getMuxStream(fileId)
   }
 
   fun deleteMedia(activityId: ActivityId, fileId: FileId) {
