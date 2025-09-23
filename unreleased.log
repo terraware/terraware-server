@@ -1,3 +1,5 @@
+d57c921aab3 SW-7367 Support video in activity media API (#3426)
+78479049e7c SW-7367 Get Mux stream info for activity video (#3425)
 099f73eaa66 SW-7367 Send activity videos to Mux (#3424)
 fa4a8a94cd6 Pass correct query param after admin UI Mux upload (#3423)
 9a1e38f6bb7 SW-7387 Allow zones to have 0 temporary plots (#3422)
