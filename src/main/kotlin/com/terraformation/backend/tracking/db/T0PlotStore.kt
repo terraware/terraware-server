@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
@@ -243,6 +244,65 @@ class T0PlotStore(
         monitoringPlotId = monitoringPlotId,
         speciesDensityChanges = speciesDensityChanges,
     )
+  }
+
+  fun assignT0TempZoneSpeciesDensities(
+      plantingZoneId: PlantingZoneId,
+      densities: List<SpeciesDensityModel>,
+  ) {
+    requirePermissions { updateT0(plantingZoneId) }
+
+    val now = clock.instant()
+    val currentUserId = currentUser().userId
+
+    dslContext.transaction { _ ->
+      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+        dslContext
+            .deleteFrom(this)
+            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .and(SPECIES_ID.notIn(densities.map { it.speciesId }))
+            .execute()
+
+        var insertQuery =
+            dslContext.insertInto(
+                this,
+                PLANTING_ZONE_ID,
+                SPECIES_ID,
+                ZONE_DENSITY,
+                CREATED_BY,
+                CREATED_TIME,
+                MODIFIED_BY,
+                MODIFIED_TIME,
+            )
+
+        densities.forEach {
+          if (it.density < BigDecimal.ZERO) {
+            throw IllegalArgumentException("Zone density must not be negative")
+          }
+          insertQuery =
+              insertQuery.values(
+                  plantingZoneId,
+                  it.speciesId,
+                  it.density,
+                  currentUserId,
+                  now,
+                  currentUserId,
+                  now,
+              )
+
+          insertQuery
+              .onDuplicateKeyUpdate()
+              .set(ZONE_DENSITY, DSL.excluded(ZONE_DENSITY))
+              .set(MODIFIED_BY, currentUserId)
+              .set(MODIFIED_TIME, now)
+              .execute()
+        }
+      }
+
+      // future PR: publish event here
+    }
+
+    // future PR: return changed model
   }
 
   private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {

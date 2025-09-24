@@ -1220,7 +1220,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
-  fun updateT0() = allow { updateT0(monitoringPlotId) } ifUser { canUpdateT0(monitoringPlotId) }
+  fun updateT0Plot() = allow { updateT0(monitoringPlotId) } ifUser { canUpdateT0(monitoringPlotId) }
+
+  @Test
+  fun updateT0Zone() = allow { updateT0(plantingZoneId) } ifUser { canUpdateT0(plantingZoneId) }
 
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 

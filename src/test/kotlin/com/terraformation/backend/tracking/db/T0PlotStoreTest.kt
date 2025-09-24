@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
@@ -225,8 +226,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(3)),
-              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(7)),
+              plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(3)),
+              plotDensityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(7)),
           ),
           "Should insert species densities",
       )
@@ -283,8 +284,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2)),
-              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(4)),
+              plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2)),
+              plotDensityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(4)),
           ),
           "Should use final species density",
       )
@@ -330,8 +331,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(10)),
-              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(2)),
+              plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(10)),
+              plotDensityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(2)),
           ),
           "Should use observation for density",
       )
@@ -392,7 +393,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2))),
+          listOf(plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2))),
           "Should have deleted density for species not in observation",
       )
     }
@@ -464,7 +465,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(densityRecord(monitoringPlotId, speciesId1, density)),
+          listOf(plotDensityRecord(monitoringPlotId, speciesId1, density)),
           "Should have inserted density",
       )
 
@@ -578,7 +579,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(densityRecord(monitoringPlotId, speciesId2, density2)),
+          listOf(plotDensityRecord(monitoringPlotId, speciesId2, density2)),
           "Should have deleted existing density in plot",
       )
 
@@ -591,46 +592,6 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   monitoringPlotId = monitoringPlotId,
               ),
           )
-      )
-    }
-
-    @Test
-    fun `allows multiple species for same monitoring plot`() {
-      val density1 = BigDecimal.TEN
-      val density2 = BigDecimal.valueOf(20)
-
-      val changedModel =
-          store.assignT0PlotSpeciesDensities(
-              monitoringPlotId,
-              listOf(
-                  SpeciesDensityModel(speciesId1, density1),
-                  SpeciesDensityModel(speciesId2, density2),
-              ),
-          )
-
-      assertEquals(
-          PlotT0DensityChangedModel(
-              monitoringPlotId = monitoringPlotId,
-              speciesDensityChanges =
-                  setOf(
-                      SpeciesDensityChangedModel(speciesId1, newPlotDensity = density1),
-                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
-                  ),
-          ),
-          changedModel,
-          "Changed model has all species data",
-      )
-
-      assertTableEquals(
-          listOf(
-              densityRecord(monitoringPlotId, speciesId1, density1),
-              densityRecord(monitoringPlotId, speciesId2, density2),
-          ),
-          "Should have inserted two densities for monitoring plot",
-      )
-
-      eventPublisher.assertEventsPublished(
-          listOf(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
       )
     }
 
@@ -672,7 +633,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, density1),
+              plotDensityRecord(monitoringPlotId, speciesId1, density1),
           ),
           "Should have updated density",
       )
@@ -688,7 +649,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           monitoringPlotId,
           listOf(SpeciesDensityModel(speciesId1, BigDecimal.ZERO)),
       )
-      assertTableEquals(listOf(densityRecord(monitoringPlotId, speciesId1, BigDecimal.ZERO)))
+      assertTableEquals(listOf(plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.ZERO)))
     }
 
     @Test
@@ -702,15 +663,147 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
   }
 
-  private fun densityRecord(
+  @Nested
+  inner class AssignT0TempZoneSpeciesDensities {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.assignT0TempZoneSpeciesDensities(
+            plantingZoneId,
+            listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+        )
+      }
+    }
+
+    @Test
+    fun `inserts new T0 zone record with species and density`() {
+      val density = BigDecimal.valueOf(12)
+
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(SpeciesDensityModel(speciesId1, density)),
+      )
+
+      assertTableEquals(
+          listOf(zoneDensityRecord(plantingZoneId, speciesId1, density)),
+          "Should have inserted density",
+      )
+    }
+
+    @Test
+    fun `updates existing T0 zone record when planting zone and species already exist`() {
+      val initialDensity = BigDecimal.TEN
+      val updatedDensity = BigDecimal.valueOf(15)
+
+      clock.instant = clock.instant().minusSeconds(42)
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(
+              SpeciesDensityModel(speciesId1, initialDensity),
+              SpeciesDensityModel(speciesId2, initialDensity),
+          ),
+      )
+      clock.instant = clock.instant().plusSeconds(60)
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(
+              SpeciesDensityModel(speciesId1, updatedDensity),
+              SpeciesDensityModel(speciesId2, initialDensity),
+          ),
+      )
+
+      assertTableEquals(
+          listOf(
+              PlantingZoneT0TempDensitiesRecord(
+                  plantingZoneId,
+                  speciesId1,
+                  updatedDensity,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant().minusSeconds(60),
+                  modifiedTime = clock.instant(),
+              ),
+              PlantingZoneT0TempDensitiesRecord(
+                  plantingZoneId,
+                  speciesId2,
+                  initialDensity,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant().minusSeconds(60),
+                  modifiedTime = clock.instant(),
+              ),
+          ),
+          "Should have updated density on conflict",
+      )
+    }
+
+    @Test
+    fun `deletes existing densities in the zone`() {
+      val density1 = BigDecimal.TEN
+      val density2 = BigDecimal.valueOf(15)
+
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(SpeciesDensityModel(speciesId1, density1)),
+      )
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(SpeciesDensityModel(speciesId2, density2)),
+      )
+
+      assertTableEquals(
+          listOf(zoneDensityRecord(plantingZoneId, speciesId2, density2)),
+          "Should have deleted existing density in zone",
+      )
+    }
+
+    @Test
+    fun `allows for zero density values`() {
+      store.assignT0TempZoneSpeciesDensities(
+          plantingZoneId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.ZERO)),
+      )
+      assertTableEquals(listOf(zoneDensityRecord(plantingZoneId, speciesId1, BigDecimal.ZERO)))
+    }
+
+    @Test
+    fun `throws exception for negative density values`() {
+      assertThrows<IllegalArgumentException> {
+        store.assignT0TempZoneSpeciesDensities(
+            plantingZoneId,
+            listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(-1))),
+        )
+      }
+    }
+  }
+
+  private fun plotDensityRecord(
       plotId: MonitoringPlotId,
       speciesId: SpeciesId,
       density: BigDecimal,
-  ): PlotT0DensitiesRecord =
+  ) =
       PlotT0DensitiesRecord(
           monitoringPlotId = plotId,
           speciesId = speciesId,
           plotDensity = density,
+          createdBy = user.userId,
+          modifiedBy = user.userId,
+          createdTime = clock.instant(),
+          modifiedTime = clock.instant(),
+      )
+
+  private fun zoneDensityRecord(
+      zoneId: PlantingZoneId,
+      speciesId: SpeciesId,
+      density: BigDecimal,
+  ) =
+      PlantingZoneT0TempDensitiesRecord(
+          plantingZoneId = zoneId,
+          speciesId = speciesId,
+          zoneDensity = density,
           createdBy = user.userId,
           modifiedBy = user.userId,
           createdTime = clock.instant(),

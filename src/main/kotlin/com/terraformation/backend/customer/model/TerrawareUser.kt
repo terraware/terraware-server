@@ -659,6 +659,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateT0(monitoringPlotId: MonitoringPlotId): Boolean = defaultPermission
 
+  fun canUpdateT0(plantingZoneId: PlantingZoneId): Boolean = defaultPermission
+
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean = defaultPermission
 
   fun canUpdateUpload(uploadId: UploadId): Boolean = defaultPermission

@@ -13,6 +13,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -84,6 +85,16 @@ class T0PlotService(
                     .sortedBy { it.monitoringPlotNumber },
         )
     )
+  }
+
+  fun assignT0TempZoneData(zonesList: List<ZoneT0TempDataModel>) {
+    dslContext.transaction { _ ->
+      zonesList.forEach { model ->
+        t0PlotStore.assignT0TempZoneSpeciesDensities(model.plantingZoneId, model.densityData)
+      }
+    }
+
+    // future PR: publish rate-limited event here
   }
 
   private fun getPlotInfo(
