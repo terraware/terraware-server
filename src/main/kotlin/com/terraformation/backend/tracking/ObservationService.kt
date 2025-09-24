@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
@@ -79,6 +80,7 @@ class ObservationService(
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
     private val systemUser: SystemUser,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -186,7 +188,7 @@ class ObservationService(
       throw FileNotFoundException(fileId)
     }
 
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun storePhoto(

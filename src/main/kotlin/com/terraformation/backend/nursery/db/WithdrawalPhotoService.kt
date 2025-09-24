@@ -11,6 +11,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ImageUtils
@@ -25,6 +26,7 @@ class WithdrawalPhotoService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
+    private val thumbnailService: ThumbnailService,
     private val withdrawalPhotosDao: WithdrawalPhotosDao,
 ) {
   private val log = perClassLogger()
@@ -62,7 +64,7 @@ class WithdrawalPhotoService(
 
     requirePermissions { readWithdrawal(withdrawalId) }
 
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun listPhotos(withdrawalId: WithdrawalId): List<FileId> {

@@ -18,7 +18,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
@@ -35,7 +35,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.net.URI
 import kotlin.random.Random
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -47,22 +48,25 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
-  private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
+    FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
   }
   private val seedFundReportStore: SeedFundReportStore by lazy {
     SeedFundReportStore(
         clock,
         dslContext,
-        TestEventPublisher(),
+        eventPublisher,
         facilitiesDao,
         jacksonObjectMapper(),
         ParentStore(dslContext),
         projectsDao,
         seedFundReportsDao,
     )
+  }
+  private val thumbnailService: ThumbnailService by lazy {
+    ThumbnailService(dslContext, fileService, mockk())
   }
   private val service: SeedFundReportFileService by lazy {
     SeedFundReportFileService(
@@ -71,6 +75,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
         seedFundReportStore,
         seedFundReportFilesDao,
         seedFundReportPhotosDao,
+        thumbnailService,
     )
   }
 
@@ -86,7 +91,6 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     every { fileStore.delete(any()) } just Runs
     every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
     every { fileStore.write(any(), any()) } just Runs
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadSeedFundReport(any()) } returns true
     every { user.canUpdateSeedFundReport(any()) } returns true
   }
@@ -254,7 +258,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val maxWidth = 10
       val maxHeight = 20
 
-      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(content.inputStream(), 10L)
 
       val inputStream = service.readPhoto(seedFundReportId, fileId, maxWidth, maxHeight)

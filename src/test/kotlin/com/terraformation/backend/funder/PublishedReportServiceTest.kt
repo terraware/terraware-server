@@ -9,14 +9,14 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.time.ZoneOffset
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -26,12 +26,9 @@ import org.junit.jupiter.api.assertThrows
 class PublishedReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
-  private val fileService = mockk<FileService>()
+  private val thumbnailService = mockk<ThumbnailService>()
   private val service: PublishedReportService by lazy {
-    PublishedReportService(
-        fileService,
-        publishedReportPhotosDao,
-    )
+    PublishedReportService(publishedReportPhotosDao, thumbnailService)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -52,7 +49,7 @@ class PublishedReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     reportId = insertReport()
     insertPublishedReport()
 
-    every { fileService.readFile(any(), any(), any()) } returns inputStream
+    every { thumbnailService.readFile(any(), any(), any()) } returns inputStream
   }
 
   @Nested
@@ -83,7 +80,7 @@ class PublishedReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportPhoto()
 
       val inputStream = service.readPhoto(reportId, fileId)
-      verify(exactly = 1) { fileService.readFile(fileId) }
+      verify(exactly = 1) { thumbnailService.readFile(fileId) }
       assertArrayEquals(content, inputStream.readAllBytes(), "Photo data")
     }
   }

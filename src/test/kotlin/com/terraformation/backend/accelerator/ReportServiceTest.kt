@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.FileMetadata
 import io.mockk.every
 import io.mockk.mockk
@@ -47,6 +48,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         reportStore,
         publishedReportPhotosDao,
         SystemUser(usersDao),
+        ThumbnailService(dslContext, fileService, mockk()),
     )
   }
 
@@ -82,7 +84,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           fileId
         }
 
-    every { fileService.readFile(any(), any(), any()) } returns inputStream
+    every { fileService.readFile(any()) } returns inputStream
   }
 
   @Nested

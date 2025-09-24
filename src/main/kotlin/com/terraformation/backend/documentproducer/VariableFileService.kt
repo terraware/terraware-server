@@ -12,6 +12,7 @@ import com.terraformation.backend.documentproducer.model.ImageValueDetails
 import com.terraformation.backend.documentproducer.model.NewImageValue
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import jakarta.inject.Named
 import java.io.InputStream
@@ -20,6 +21,7 @@ import java.io.InputStream
 @Named
 class VariableFileService(
     private val fileService: FileService,
+    private val thumbnailService: ThumbnailService,
     private val variableValueStore: VariableValueStore,
 ) {
   fun readImageValue(
@@ -34,7 +36,7 @@ class VariableFileService(
     }
 
     if (existingValue is ExistingImageValue) {
-      return fileService.readFile(existingValue.value.fileId, maxWidth, maxHeight)
+      return thumbnailService.readFile(existingValue.value.fileId, maxWidth, maxHeight)
     } else {
       throw VariableValueTypeMismatchException(valueId, VariableType.Image)
     }

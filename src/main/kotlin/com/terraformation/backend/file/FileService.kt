@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -22,6 +23,7 @@ import java.time.Clock
 import java.time.Duration
 import java.util.UUID
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /**
@@ -33,9 +35,9 @@ class FileService(
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val eventPublisher: ApplicationEventPublisher,
     private val filesDao: FilesDao,
     private val fileStore: FileStore,
-    private val thumbnailStore: ThumbnailStore,
 ) {
   private val log = perClassLogger()
 
@@ -107,17 +109,9 @@ class FileService(
   }
 
   @Throws(IOException::class)
-  fun readFile(
-      fileId: FileId,
-      maxWidth: Int? = null,
-      maxHeight: Int? = null,
-  ): SizedInputStream {
-    return if (maxWidth != null || maxHeight != null) {
-      thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight)
-    } else {
-      val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
-      fileStore.read(filesRow.storageUrl!!).withContentType(filesRow.contentType)
-    }
+  fun readFile(fileId: FileId): SizedInputStream {
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+    return fileStore.read(filesRow.storageUrl!!).withContentType(filesRow.contentType)
   }
 
   /**
@@ -127,8 +121,10 @@ class FileService(
    *   is called in a transaction before the files table row is deleted.
    */
   fun deleteFile(fileId: FileId, deleteChildRows: () -> Unit) {
-    val storageUrl = fetchUrl(fileId)
-    thumbnailStore.deleteThumbnails(fileId)
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+    val storageUrl = filesRow.storageUrl!!
+
+    eventPublisher.publishEvent(FileDeletionStartedEvent(fileId))
 
     try {
       fileStore.delete(storageUrl)
@@ -184,19 +180,6 @@ class FileService(
     } catch (e: Exception) {
       log.error("Unable to prune file access tokens", e)
     }
-  }
-
-  /**
-   * Returns the storage URL of an existing file.
-   *
-   * @throws FileNotFoundException There was no record of the file.
-   */
-  private fun fetchUrl(fileId: FileId): URI {
-    return dslContext
-        .select(FILES.STORAGE_URL)
-        .from(FILES)
-        .where(FILES.ID.eq(fileId))
-        .fetchOne(FILES.STORAGE_URL) ?: throw FileNotFoundException(fileId)
   }
 
   private fun ensureFileExists(fileId: FileId) {

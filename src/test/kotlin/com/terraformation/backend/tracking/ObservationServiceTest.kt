@@ -47,7 +47,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
@@ -88,9 +88,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.Turtle
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import java.math.BigDecimal
@@ -122,17 +120,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
-  private val thumbnailStore: ThumbnailStore = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(
         dslContext,
         Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
         mockk(),
+        eventPublisher,
         filesDao,
         fileStore,
-        thumbnailStore,
     )
+  }
+  private val thumbnailService: ThumbnailService by lazy {
+    ThumbnailService(dslContext, fileService, mockk())
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
@@ -173,6 +173,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteStore,
         parentStore,
         SystemUser(usersDao),
+        thumbnailService,
     )
   }
   private val helper: ObservationTestHelper by lazy {
@@ -648,7 +649,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         val maxHeight = 30
         val thumbnailContent = byteArrayOf(9, 8, 7)
 
-        every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+        every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
             SizedInputStream(thumbnailContent.inputStream(), 3)
 
         val inputStream = service.readPhoto(observationId, plotId, fileId, maxWidth, maxHeight)
@@ -786,8 +787,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class OnPlantingSiteDeletion {
       @Test
       fun `only deletes photos for planting site that is being deleted`() {
-        every { thumbnailStore.deleteThumbnails(any()) } just Runs
-
         service.storePhoto(
             observationId,
             plotId,

@@ -5,14 +5,14 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
-import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import jakarta.inject.Named
 
 @Named
 class PublishedReportService(
-    private val fileService: FileService,
     private val publishedReportPhotosDao: PublishedReportPhotosDao,
+    private val thumbnailService: ThumbnailService,
 ) {
   fun readPhoto(
       reportId: ReportId,
@@ -25,6 +25,6 @@ class PublishedReportService(
     if (row?.reportId != reportId) {
       throw FileNotFoundException(fileId)
     }
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 }
