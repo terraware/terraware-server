@@ -36,7 +36,7 @@ observed_site_species_totals
 observed_subzone_species_totals
 observed_zone_species_totals
 planting_zone_t0_temp_densities
-plot_t0_density
+plot_t0_densities
 observation_biomass_quadrat_details
 observed_plot_coordinates
 plot_t0_observations

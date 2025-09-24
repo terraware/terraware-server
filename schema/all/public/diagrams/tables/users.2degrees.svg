@@ -5303,49 +5303,49 @@
 <polygon fill="black" stroke="black" points="1335.1,-4074.43 1343.71,-4076.1 1339,-4073.52 1342.89,-4072.6 1342.89,-4072.6 1342.89,-4072.6 1339,-4073.52 1342.06,-4069.09 1335.1,-4074.43 1335.1,-4074.43"/>
 <ellipse fill="none" stroke="black" cx="1331.99" cy="-4075.17" rx="3.2" ry="3.2"/>
 </g>
-<!-- tracking.plot_t0_density -->
+<!-- tracking.plot_t0_densities -->
 <g id="node141" class="node">
-<title>tracking.plot_t0_density</title>
-<g id="a_node141"><a xlink:href="../../../tracking/tables/plot_t0_density.html" xlink:title="tracking.plot_t0_density" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1334,-3962 1334,-4020 1521,-4020 1521,-3962 1334,-3962"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1334.5,-3998 1334.5,-4020 1521.5,-4020 1521.5,-3998 1334.5,-3998"/>
-<polygon fill="none" stroke="black" points="1334.5,-3998 1334.5,-4020 1521.5,-4020 1521.5,-3998 1334.5,-3998"/>
-<text text-anchor="start" x="1339.5" y="-4007.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plot_t0_density</text>
-<text text-anchor="start" x="1482.5" y="-4006.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1334.5,-3980 1334.5,-3998 1521.5,-3998 1521.5,-3980 1334.5,-3980"/>
-<text text-anchor="start" x="1337.5" y="-3986.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1334.5,-3962 1334.5,-3980 1412.5,-3980 1412.5,-3962 1334.5,-3962"/>
-<polygon fill="none" stroke="black" points="1334.5,-3962 1334.5,-3980 1412.5,-3980 1412.5,-3962 1334.5,-3962"/>
-<text text-anchor="start" x="1337.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="1412.5,-3962 1412.5,-3980 1480.5,-3980 1480.5,-3962 1412.5,-3962"/>
-<polygon fill="none" stroke="black" points="1412.5,-3962 1412.5,-3980 1480.5,-3980 1480.5,-3962 1412.5,-3962"/>
-<text text-anchor="start" x="1443.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1480.5,-3962 1480.5,-3980 1521.5,-3980 1521.5,-3962 1480.5,-3962"/>
-<polygon fill="none" stroke="black" points="1480.5,-3962 1480.5,-3980 1521.5,-3980 1521.5,-3962 1480.5,-3962"/>
-<text text-anchor="start" x="1511.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<title>tracking.plot_t0_densities</title>
+<g id="a_node141"><a xlink:href="../../../tracking/tables/plot_t0_densities.html" xlink:title="tracking.plot_t0_densities" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1329,-3962 1329,-4020 1526,-4020 1526,-3962 1329,-3962"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1329.5,-3998 1329.5,-4020 1526.5,-4020 1526.5,-3998 1329.5,-3998"/>
+<polygon fill="none" stroke="black" points="1329.5,-3998 1329.5,-4020 1526.5,-4020 1526.5,-3998 1329.5,-3998"/>
+<text text-anchor="start" x="1334.5" y="-4007.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plot_t0_densities</text>
+<text text-anchor="start" x="1487.5" y="-4006.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1329.5,-3980 1329.5,-3998 1526.5,-3998 1526.5,-3980 1329.5,-3980"/>
+<text text-anchor="start" x="1332.5" y="-3986.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1329.5,-3962 1329.5,-3980 1412.5,-3980 1412.5,-3962 1329.5,-3962"/>
+<polygon fill="none" stroke="black" points="1329.5,-3962 1329.5,-3980 1412.5,-3980 1412.5,-3962 1329.5,-3962"/>
+<text text-anchor="start" x="1332.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="1412.5,-3962 1412.5,-3980 1482.5,-3980 1482.5,-3962 1412.5,-3962"/>
+<polygon fill="none" stroke="black" points="1412.5,-3962 1412.5,-3980 1482.5,-3980 1482.5,-3962 1412.5,-3962"/>
+<text text-anchor="start" x="1445.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1482.5,-3962 1482.5,-3980 1526.5,-3980 1526.5,-3962 1482.5,-3962"/>
+<polygon fill="none" stroke="black" points="1482.5,-3962 1482.5,-3980 1526.5,-3980 1526.5,-3962 1482.5,-3962"/>
+<text text-anchor="start" x="1516.5" y="-3968.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
-<!-- tracking.plot_t0_density&#45;&gt;users -->
+<!-- tracking.plot_t0_densities&#45;&gt;users -->
 <g id="edge267" class="edge">
-<title>tracking.plot_t0_density:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1311.9,-3956.37C1298.44,-3952.89 1284.91,-3949.39 1272,-3946 1257.3,-3942.14 1253.95,-3939.75 1239,-3937 1172.9,-3924.84 683.2,-3926.81 637,-3878 599.39,-3838.26 649.72,-2894 595,-2900"/>
-<polygon fill="black" stroke="black" points="1318.12,-3957.98 1324.96,-3963.47 1322,-3958.99 1325.87,-3959.99 1325.87,-3959.99 1325.87,-3959.99 1322,-3958.99 1326.77,-3956.51 1318.12,-3957.98 1318.12,-3957.98"/>
-<ellipse fill="none" stroke="black" cx="1315.03" cy="-3957.18" rx="3.2" ry="3.2"/>
+<title>tracking.plot_t0_densities:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M1306.62,-3955C1294.92,-3951.97 1283.22,-3948.95 1272,-3946 1257.3,-3942.14 1253.95,-3939.75 1239,-3937 1172.9,-3924.84 683.2,-3926.81 637,-3878 599.39,-3838.26 649.72,-2894 595,-2900"/>
+<polygon fill="black" stroke="black" points="1313.14,-3956.69 1319.98,-3962.18 1317.01,-3957.69 1320.88,-3958.7 1320.88,-3958.7 1320.88,-3958.7 1317.01,-3957.69 1321.78,-3955.21 1313.14,-3956.69 1313.14,-3956.69"/>
+<ellipse fill="none" stroke="black" cx="1310.04" cy="-3955.89" rx="3.2" ry="3.2"/>
 </g>
-<!-- tracking.plot_t0_density&#45;&gt;users -->
+<!-- tracking.plot_t0_densities&#45;&gt;users -->
 <g id="edge268" class="edge">
-<title>tracking.plot_t0_density:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1311.9,-3969.28C1298.44,-3965.89 1284.91,-3962.39 1272,-3959 1257.3,-3955.14 1253.95,-3952.75 1239,-3950 1172.9,-3937.84 683.2,-3939.81 637,-3891 599.39,-3851.26 649.72,-2907 595,-2900"/>
-<polygon fill="black" stroke="black" points="1318.11,-3970.84 1324.99,-3976.27 1321.99,-3971.81 1325.87,-3972.78 1325.87,-3972.78 1325.87,-3972.78 1321.99,-3971.81 1326.74,-3969.28 1318.11,-3970.84 1318.11,-3970.84"/>
-<ellipse fill="none" stroke="black" cx="1315" cy="-3970.06" rx="3.2" ry="3.2"/>
+<title>tracking.plot_t0_densities:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M1306.62,-3967.95C1294.92,-3964.97 1283.22,-3961.95 1272,-3959 1257.3,-3955.14 1253.95,-3952.75 1239,-3950 1172.9,-3937.84 683.2,-3939.81 637,-3891 599.39,-3851.26 649.72,-2907 595,-2900"/>
+<polygon fill="black" stroke="black" points="1313.12,-3969.58 1320,-3975.03 1317,-3970.56 1320.88,-3971.54 1320.88,-3971.54 1320.88,-3971.54 1317,-3970.56 1321.76,-3968.05 1313.12,-3969.58 1313.12,-3969.58"/>
+<ellipse fill="none" stroke="black" cx="1310.02" cy="-3968.8" rx="3.2" ry="3.2"/>
 </g>
-<!-- tracking.plot_t0_density&#45;&gt;species -->
+<!-- tracking.plot_t0_densities&#45;&gt;species -->
 <g id="edge269" class="edge">
-<title>tracking.plot_t0_density:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M1312.06,-4002.55C1296.59,-4008.87 1282.48,-4017.97 1272,-4031 1241.16,-4069.34 1244.6,-4867.12 1239,-4916 1207.49,-5191.17 1130.27,-5517.36 1104.8,-5620.81"/>
-<polygon fill="black" stroke="black" points="1318.38,-4000.34 1327.12,-4001.1 1322.16,-3999.02 1325.93,-3997.7 1325.93,-3997.7 1325.93,-3997.7 1322.16,-3999.02 1324.74,-3994.3 1318.38,-4000.34 1318.38,-4000.34"/>
-<ellipse fill="none" stroke="black" cx="1315.36" cy="-4001.4" rx="3.2" ry="3.2"/>
+<title>tracking.plot_t0_densities:w&#45;&gt;species:e</title>
+<path fill="none" stroke="black" d="M1306.96,-4004.76C1293.5,-4010.94 1281.31,-4019.42 1272,-4031 1241.16,-4069.34 1244.6,-4867.12 1239,-4916 1207.49,-5191.17 1130.27,-5517.36 1104.8,-5620.81"/>
+<polygon fill="black" stroke="black" points="1313.33,-4002.26 1322.09,-4002.68 1317.05,-4000.79 1320.77,-3999.33 1320.77,-3999.33 1320.77,-3999.33 1317.05,-4000.79 1319.45,-3995.98 1313.33,-4002.26 1313.33,-4002.26"/>
+<ellipse fill="none" stroke="black" cx="1310.35" cy="-4003.43" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.plot_t0_observations -->
 <g id="node142" class="node">

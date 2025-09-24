@@ -1125,38 +1125,38 @@
 <polygon fill="black" stroke="black" points="641.51,-768.32 649.64,-771.6 645.5,-768.16 649.5,-768 649.5,-768 649.5,-768 645.5,-768.16 649.36,-764.4 641.51,-768.32 641.51,-768.32"/>
 <ellipse fill="none" stroke="black" cx="638.31" cy="-768.44" rx="3.2" ry="3.2"/>
 </g>
-<!-- tracking.plot_t0_density -->
+<!-- tracking.plot_t0_densities -->
 <g id="node32" class="node">
-<title>tracking.plot_t0_density</title>
-<g id="a_node32"><a xlink:href="../../../tracking/tables/plot_t0_density.html" xlink:title="tracking.plot_t0_density" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="633,-620 633,-700 820,-700 820,-620 633,-620"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="633.5,-678 633.5,-700 820.5,-700 820.5,-678 633.5,-678"/>
-<polygon fill="none" stroke="black" points="633.5,-678 633.5,-700 820.5,-700 820.5,-678 633.5,-678"/>
-<text text-anchor="start" x="638.5" y="-687.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plot_t0_density</text>
-<text text-anchor="start" x="781.5" y="-686.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="633.5,-656 633.5,-678 820.5,-678 820.5,-656 633.5,-656"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="638.5" y="-673"/>
+<title>tracking.plot_t0_densities</title>
+<g id="a_node32"><a xlink:href="../../../tracking/tables/plot_t0_densities.html" xlink:title="tracking.plot_t0_densities" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="628,-620 628,-700 825,-700 825,-620 628,-620"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="628.5,-678 628.5,-700 825.5,-700 825.5,-678 628.5,-678"/>
+<polygon fill="none" stroke="black" points="628.5,-678 628.5,-700 825.5,-700 825.5,-678 628.5,-678"/>
+<text text-anchor="start" x="633.5" y="-687.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.plot_t0_densities</text>
+<text text-anchor="start" x="786.5" y="-686.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="628.5,-656 628.5,-678 825.5,-678 825.5,-656 628.5,-656"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="633.5" y="-673"/>
 <text text-anchor="start" x="680.5" y="-664.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="633.5,-638 633.5,-656 820.5,-656 820.5,-638 633.5,-638"/>
-<text text-anchor="start" x="636.5" y="-644.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="633.5,-620 633.5,-638 711.5,-638 711.5,-620 633.5,-620"/>
-<polygon fill="none" stroke="black" points="633.5,-620 633.5,-638 711.5,-638 711.5,-620 633.5,-620"/>
-<text text-anchor="start" x="636.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="711.5,-620 711.5,-638 779.5,-638 779.5,-620 711.5,-620"/>
-<polygon fill="none" stroke="black" points="711.5,-620 711.5,-638 779.5,-638 779.5,-620 711.5,-620"/>
-<text text-anchor="start" x="742.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="779.5,-620 779.5,-638 820.5,-638 820.5,-620 779.5,-620"/>
-<polygon fill="none" stroke="black" points="779.5,-620 779.5,-638 820.5,-638 820.5,-620 779.5,-620"/>
-<text text-anchor="start" x="810.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="none" stroke="black" points="628.5,-638 628.5,-656 825.5,-656 825.5,-638 628.5,-638"/>
+<text text-anchor="start" x="631.5" y="-644.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="628.5,-620 628.5,-638 711.5,-638 711.5,-620 628.5,-620"/>
+<polygon fill="none" stroke="black" points="628.5,-620 628.5,-638 711.5,-638 711.5,-620 628.5,-620"/>
+<text text-anchor="start" x="631.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="711.5,-620 711.5,-638 781.5,-638 781.5,-620 711.5,-620"/>
+<polygon fill="none" stroke="black" points="711.5,-620 711.5,-638 781.5,-638 781.5,-620 711.5,-620"/>
+<text text-anchor="start" x="744.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="781.5,-620 781.5,-638 825.5,-638 825.5,-620 781.5,-620"/>
+<polygon fill="none" stroke="black" points="781.5,-620 781.5,-638 825.5,-638 825.5,-620 781.5,-620"/>
+<text text-anchor="start" x="815.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
-<!-- tracking.plot_t0_density&#45;&gt;species -->
+<!-- tracking.plot_t0_densities&#45;&gt;species -->
 <g id="edge32" class="edge">
-<title>tracking.plot_t0_density:w&#45;&gt;species:e</title>
-<path fill="none" stroke="black" d="M617.95,-668.13C595.1,-672.08 584.83,-686.4 571,-711 540.31,-765.58 591.62,-1273 529,-1273"/>
-<polygon fill="black" stroke="black" points="624.52,-667.62 632.78,-670.59 628.51,-667.31 632.5,-667 632.5,-667 632.5,-667 628.51,-667.31 632.22,-663.41 624.52,-667.62 624.52,-667.62"/>
-<ellipse fill="none" stroke="black" cx="621.33" cy="-667.87" rx="3.2" ry="3.2"/>
+<title>tracking.plot_t0_densities:w&#45;&gt;species:e</title>
+<path fill="none" stroke="black" d="M612.92,-668.39C592.2,-672.84 583.45,-687.77 571,-711 541.43,-766.2 591.62,-1273 529,-1273"/>
+<polygon fill="black" stroke="black" points="619.54,-667.76 627.84,-670.58 623.52,-667.38 627.5,-667 627.5,-667 627.5,-667 623.52,-667.38 627.16,-663.42 619.54,-667.76 619.54,-667.76"/>
+<ellipse fill="none" stroke="black" cx="616.35" cy="-668.07" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.recorded_plants -->
 <g id="node33" class="node">

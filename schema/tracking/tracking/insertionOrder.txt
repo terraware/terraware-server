@@ -29,7 +29,7 @@ planting_site_populations
 planting_subzone_populations
 planting_zone_populations
 planting_zone_t0_temp_densities
-plot_t0_density
+plot_t0_densities
 monitoring_plot_overlaps
 observation_requested_subzones
 observation_plot_conditions

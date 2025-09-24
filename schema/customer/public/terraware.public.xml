@@ -999,8 +999,8 @@
             <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="created_by" foreignKey="plantings_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
-            <child column="created_by" foreignKey="plot_t0_density_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_density"/>
-            <child column="modified_by" foreignKey="plot_t0_density_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_density"/>
+            <child column="created_by" foreignKey="plot_t0_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
+            <child column="modified_by" foreignKey="plot_t0_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
             <child column="created_by" foreignKey="plot_t0_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
             <child column="modified_by" foreignKey="plot_t0_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
          </column>

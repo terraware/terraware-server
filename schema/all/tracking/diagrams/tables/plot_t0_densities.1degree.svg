@@ -94,14 +94,14 @@
 <polygon fill="black" stroke="black" points="164.55,-308.07 172.08,-312.58 168.53,-308.54 172.5,-309 172.5,-309 172.5,-309 168.53,-308.54 172.92,-305.42 164.55,-308.07 164.55,-308.07"/>
 <ellipse fill="none" stroke="black" cx="161.38" cy="-307.7" rx="3.2" ry="3.2"/>
 </g>
-<!-- plot_t0_density -->
+<!-- plot_t0_densities -->
 <g id="node3" class="node">
-<title>plot_t0_density</title>
-<g id="a_node3"><a xlink:href="../../tables/plot_t0_density.html" xlink:title="plot_t0_density" target="_top">
+<title>plot_t0_densities</title>
+<g id="a_node3"><a xlink:href="../../tables/plot_t0_densities.html" xlink:title="plot_t0_densities" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="367,-37 367,-235 604,-235 604,-37 367,-37"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="369.5,-211 369.5,-233 602.5,-233 602.5,-211 369.5,-211"/>
 <polygon fill="none" stroke="black" points="369.5,-211 369.5,-233 602.5,-233 602.5,-211 369.5,-211"/>
-<text text-anchor="start" x="374.5" y="-220.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_density</text>
+<text text-anchor="start" x="374.5" y="-220.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_densities</text>
 <text text-anchor="start" x="563.5" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="369.5,-189 369.5,-211 502.5,-211 502.5,-189 369.5,-189"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="374.5" y="-206"/>
@@ -148,23 +148,23 @@
 </a>
 </g>
 </g>
-<!-- plot_t0_density&#45;&gt;monitoring_plots -->
+<!-- plot_t0_densities&#45;&gt;monitoring_plots -->
 <g id="edge5" class="edge">
-<title>plot_t0_density:w&#45;&gt;monitoring_plots:e</title>
+<title>plot_t0_densities:w&#45;&gt;monitoring_plots:e</title>
 <path fill="none" stroke="black" d="M354.2,-202.47C302.6,-223.74 394.59,-375 319.5,-375"/>
 <polygon fill="black" stroke="black" points="360.62,-201.36 369.11,-203.55 364.56,-200.68 368.5,-200 368.5,-200 368.5,-200 364.56,-200.68 367.89,-196.45 360.62,-201.36 360.62,-201.36"/>
 <ellipse fill="none" stroke="black" cx="357.46" cy="-201.91" rx="3.2" ry="3.2"/>
 </g>
-<!-- plot_t0_density&#45;&gt;public.users -->
+<!-- plot_t0_densities&#45;&gt;public.users -->
 <g id="edge3" class="edge">
-<title>plot_t0_density:w&#45;&gt;public.users:e</title>
+<title>plot_t0_densities:w&#45;&gt;public.users:e</title>
 <path fill="none" stroke="black" d="M353.64,-89.82C274.17,-87.88 243.04,-71.78 165,-107 135.56,-120.29 109.56,-146.27 91.76,-167.56"/>
 <polygon fill="black" stroke="black" points="360.5,-89.9 368.46,-93.6 364.5,-89.95 368.5,-90 368.5,-90 368.5,-90 364.5,-89.95 368.54,-86.4 360.5,-89.9 360.5,-89.9"/>
 <ellipse fill="none" stroke="black" cx="357.3" cy="-89.86" rx="3.2" ry="3.2"/>
 </g>
-<!-- plot_t0_density&#45;&gt;public.users -->
+<!-- plot_t0_densities&#45;&gt;public.users -->
 <g id="edge4" class="edge">
-<title>plot_t0_density:w&#45;&gt;public.users:e</title>
+<title>plot_t0_densities:w&#45;&gt;public.users:e</title>
 <path fill="none" stroke="black" d="M353.64,-67.75C274.04,-65.11 241.04,-42.87 165,-82 128.59,-100.74 100.7,-139.58 84.14,-167.81"/>
 <polygon fill="black" stroke="black" points="360.5,-67.87 368.44,-71.6 364.5,-67.93 368.5,-68 368.5,-68 368.5,-68 364.5,-67.93 368.56,-64.4 360.5,-67.87 360.5,-67.87"/>
 <ellipse fill="none" stroke="black" cx="357.3" cy="-67.81" rx="3.2" ry="3.2"/>
@@ -192,9 +192,9 @@
 </a>
 </g>
 </g>
-<!-- plot_t0_density&#45;&gt;public.species -->
+<!-- plot_t0_densities&#45;&gt;public.species -->
 <g id="edge6" class="edge">
-<title>plot_t0_density:w&#45;&gt;public.species:e</title>
+<title>plot_t0_densities:w&#45;&gt;public.species:e</title>
 <path fill="none" stroke="black" d="M354.11,-177.35C341.74,-176.28 329.22,-173.97 317.3,-171.06"/>
 <polygon fill="black" stroke="black" points="360.51,-177.64 368.34,-181.6 364.5,-177.82 368.5,-178 368.5,-178 368.5,-178 364.5,-177.82 368.66,-174.4 360.51,-177.64 360.51,-177.64"/>
 <ellipse fill="none" stroke="black" cx="357.31" cy="-177.5" rx="3.2" ry="3.2"/>

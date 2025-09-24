@@ -7,7 +7,7 @@ draft_planting_sites
 plot_t0_observations
 observed_plot_coordinates
 observation_biomass_quadrat_details
-plot_t0_density
+plot_t0_densities
 planting_zone_t0_temp_densities
 observed_zone_species_totals
 observed_subzone_species_totals

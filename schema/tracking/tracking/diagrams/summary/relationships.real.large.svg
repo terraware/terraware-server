@@ -38,9 +38,9 @@
 </g>
 </g>
 <!-- planting_subzones -->
-<g id="node22" class="node">
+<g id="node21" class="node">
 <title>planting_subzones</title>
-<g id="a_node22"><a xlink:href="../../tables/planting_subzones.html" xlink:title="planting_subzones" target="_top">
+<g id="a_node21"><a xlink:href="../../tables/planting_subzones.html" xlink:title="planting_subzones" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="564.5,-1113 564.5,-1461 736.5,-1461 736.5,-1113 564.5,-1113"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="564.5,-1439 564.5,-1461 736.5,-1461 736.5,-1439 564.5,-1439"/>
 <polygon fill="none" stroke="black" points="564.5,-1439 564.5,-1461 736.5,-1461 736.5,-1439 564.5,-1439"/>
@@ -590,9 +590,9 @@
 <ellipse fill="none" stroke="black" cx="1927.83" cy="-637.21" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_biomass_details -->
-<g id="node20" class="node">
+<g id="node19" class="node">
 <title>observation_biomass_details</title>
-<g id="a_node20"><a xlink:href="../../tables/observation_biomass_details.html" xlink:title="observation_biomass_details" target="_top">
+<g id="a_node19"><a xlink:href="../../tables/observation_biomass_details.html" xlink:title="observation_biomass_details" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1651,-377 1651,-703 1866,-703 1866,-377 1651,-377"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1651.5,-681 1651.5,-703 1866.5,-703 1866.5,-681 1651.5,-681"/>
 <polygon fill="none" stroke="black" points="1651.5,-681 1651.5,-703 1866.5,-703 1866.5,-681 1651.5,-681"/>
@@ -1148,54 +1148,10 @@
 <polygon fill="black" stroke="black" points="1365.9,-1624.68 1374.66,-1624.2 1369.45,-1622.84 1373,-1621 1373,-1621 1373,-1621 1369.45,-1622.84 1371.34,-1617.8 1365.9,-1624.68 1365.9,-1624.68"/>
 <ellipse fill="none" stroke="black" cx="1363.06" cy="-1626.15" rx="3.2" ry="3.2"/>
 </g>
-<!-- plot_t0_density -->
-<g id="node17" class="node">
-<title>plot_t0_density</title>
-<g id="a_node17"><a xlink:href="../../tables/plot_t0_density.html" xlink:title="plot_t0_density" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1135,-455 1135,-649 1269,-649 1269,-455 1135,-455"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1135,-627 1135,-649 1269,-649 1269,-627 1135,-627"/>
-<polygon fill="none" stroke="black" points="1135,-627 1135,-649 1269,-649 1269,-627 1135,-627"/>
-<text text-anchor="start" x="1140" y="-636.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_density</text>
-<text text-anchor="start" x="1230" y="-635.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1135,-605 1135,-627 1269,-627 1269,-605 1135,-605"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1140" y="-622"/>
-<text text-anchor="start" x="1156" y="-613.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
-<polygon fill="none" stroke="black" points="1135,-583 1135,-605 1269,-605 1269,-583 1135,-583"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1140" y="-600"/>
-<text text-anchor="start" x="1156" y="-591.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="1135,-561 1135,-583 1269,-583 1269,-561 1135,-561"/>
-<text text-anchor="start" x="1156" y="-569.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_density</text>
-<polygon fill="none" stroke="black" points="1135,-539 1135,-561 1269,-561 1269,-539 1135,-539"/>
-<text text-anchor="start" x="1156" y="-547.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
-<polygon fill="none" stroke="black" points="1135,-517 1135,-539 1269,-539 1269,-517 1135,-517"/>
-<text text-anchor="start" x="1156" y="-525.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
-<polygon fill="none" stroke="black" points="1135,-495 1135,-517 1269,-517 1269,-495 1135,-495"/>
-<text text-anchor="start" x="1156" y="-503.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="1135,-473 1135,-495 1269,-495 1269,-473 1135,-473"/>
-<text text-anchor="start" x="1156" y="-481.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="#ffffff" stroke="transparent" points="1135,-455 1135,-473 1200,-473 1200,-455 1135,-455"/>
-<polygon fill="none" stroke="black" points="1135,-455 1135,-473 1200,-473 1200,-455 1135,-455"/>
-<text text-anchor="start" x="1138" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1200,-455 1200,-473 1234,-473 1234,-455 1200,-455"/>
-<polygon fill="none" stroke="black" points="1200,-455 1200,-473 1234,-473 1234,-455 1200,-455"/>
-<text text-anchor="start" x="1224" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1234,-455 1234,-473 1269,-473 1269,-455 1234,-455"/>
-<polygon fill="none" stroke="black" points="1234,-455 1234,-473 1269,-473 1269,-455 1234,-455"/>
-<text text-anchor="start" x="1259" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- plot_t0_density&#45;&gt;monitoring_plots -->
-<g id="edge89" class="edge">
-<title>plot_t0_density:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M1119.73,-617.96C1101.74,-623.66 1096.41,-641.17 1085,-663 1032.68,-763.1 1118.45,-1165 1005.5,-1165"/>
-<polygon fill="black" stroke="black" points="1126.07,-617.09 1134.49,-619.57 1130.04,-616.55 1134,-616 1134,-616 1134,-616 1130.04,-616.55 1133.51,-612.43 1126.07,-617.09 1126.07,-617.09"/>
-<ellipse fill="none" stroke="black" cx="1122.9" cy="-617.53" rx="3.2" ry="3.2"/>
-</g>
 <!-- planting_zone_t0_temp_densities -->
-<g id="node18" class="node">
+<g id="node17" class="node">
 <title>planting_zone_t0_temp_densities</title>
-<g id="a_node18"><a xlink:href="../../tables/planting_zone_t0_temp_densities.html" xlink:title="planting_zone_t0_temp_densities" target="_top">
+<g id="a_node17"><a xlink:href="../../tables/planting_zone_t0_temp_densities.html" xlink:title="planting_zone_t0_temp_densities" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="531,-1631 531,-1825 770,-1825 770,-1631 531,-1631"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="531.5,-1803 531.5,-1825 770.5,-1825 770.5,-1803 531.5,-1803"/>
 <polygon fill="none" stroke="black" points="531.5,-1803 531.5,-1825 770.5,-1825 770.5,-1803 531.5,-1803"/>
@@ -1299,9 +1255,9 @@
 <ellipse fill="none" stroke="black" cx="519.43" cy="-1790.31" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_seasons -->
-<g id="node19" class="node">
+<g id="node18" class="node">
 <title>planting_seasons</title>
-<g id="a_node19"><a xlink:href="../../tables/planting_seasons.html" xlink:title="planting_seasons" target="_top">
+<g id="a_node18"><a xlink:href="../../tables/planting_seasons.html" xlink:title="planting_seasons" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="308.5,-480 308.5,-674 454.5,-674 454.5,-480 308.5,-480"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="308.5,-652 308.5,-674 454.5,-674 454.5,-652 308.5,-652"/>
 <polygon fill="none" stroke="black" points="308.5,-652 308.5,-674 454.5,-674 454.5,-652 308.5,-652"/>
@@ -1416,9 +1372,9 @@
 <ellipse fill="none" stroke="black" cx="1639.33" cy="-427.22" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_zone_species_totals -->
-<g id="node21" class="node">
+<g id="node20" class="node">
 <title>observed_zone_species_totals</title>
-<g id="a_node21"><a xlink:href="../../tables/observed_zone_species_totals.html" xlink:title="observed_zone_species_totals" target="_top">
+<g id="a_node20"><a xlink:href="../../tables/observed_zone_species_totals.html" xlink:title="observed_zone_species_totals" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1371,-2000 1371,-2304 1591,-2304 1591,-2000 1371,-2000"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1371,-2282 1371,-2304 1591,-2304 1591,-2282 1371,-2282"/>
 <polygon fill="none" stroke="black" points="1371,-2282 1371,-2304 1591,-2304 1591,-2282 1371,-2282"/>
@@ -1508,6 +1464,50 @@
 <path fill="none" stroke="black" d="M549,-1407.74C475.06,-1427.38 561.09,-1607 467.5,-1607"/>
 <polygon fill="black" stroke="black" points="555.56,-1406.95 563.93,-1409.57 559.53,-1406.48 563.5,-1406 563.5,-1406 563.5,-1406 559.53,-1406.48 563.07,-1402.43 555.56,-1406.95 555.56,-1406.95"/>
 <ellipse fill="none" stroke="black" cx="552.38" cy="-1407.33" rx="3.2" ry="3.2"/>
+</g>
+<!-- plot_t0_densities -->
+<g id="node22" class="node">
+<title>plot_t0_densities</title>
+<g id="a_node22"><a xlink:href="../../tables/plot_t0_densities.html" xlink:title="plot_t0_densities" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1130.5,-455 1130.5,-649 1273.5,-649 1273.5,-455 1130.5,-455"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1131,-627 1131,-649 1274,-649 1274,-627 1131,-627"/>
+<polygon fill="none" stroke="black" points="1131,-627 1131,-649 1274,-649 1274,-627 1131,-627"/>
+<text text-anchor="start" x="1136" y="-636.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_densities</text>
+<text text-anchor="start" x="1235" y="-635.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1131,-605 1131,-627 1274,-627 1274,-605 1131,-605"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1136" y="-622"/>
+<text text-anchor="start" x="1156" y="-613.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
+<polygon fill="none" stroke="black" points="1131,-583 1131,-605 1274,-605 1274,-583 1131,-583"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1136" y="-600"/>
+<text text-anchor="start" x="1156" y="-591.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="1131,-561 1131,-583 1274,-583 1274,-561 1131,-561"/>
+<text text-anchor="start" x="1156" y="-569.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_density</text>
+<polygon fill="none" stroke="black" points="1131,-539 1131,-561 1274,-561 1274,-539 1131,-539"/>
+<text text-anchor="start" x="1156" y="-547.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<polygon fill="none" stroke="black" points="1131,-517 1131,-539 1274,-539 1274,-517 1131,-517"/>
+<text text-anchor="start" x="1156" y="-525.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<polygon fill="none" stroke="black" points="1131,-495 1131,-517 1274,-517 1274,-495 1131,-495"/>
+<text text-anchor="start" x="1156" y="-503.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="1131,-473 1131,-495 1274,-495 1274,-473 1131,-473"/>
+<text text-anchor="start" x="1156" y="-481.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="#ffffff" stroke="transparent" points="1131,-455 1131,-473 1200,-473 1200,-455 1131,-455"/>
+<polygon fill="none" stroke="black" points="1131,-455 1131,-473 1200,-473 1200,-455 1131,-455"/>
+<text text-anchor="start" x="1134" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1200,-455 1200,-473 1237,-473 1237,-455 1200,-455"/>
+<polygon fill="none" stroke="black" points="1200,-455 1200,-473 1237,-473 1237,-455 1200,-455"/>
+<text text-anchor="start" x="1227" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1237,-455 1237,-473 1274,-473 1274,-455 1237,-455"/>
+<polygon fill="none" stroke="black" points="1237,-455 1237,-473 1274,-473 1274,-455 1237,-455"/>
+<text text-anchor="start" x="1264" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- plot_t0_densities&#45;&gt;monitoring_plots -->
+<g id="edge89" class="edge">
+<title>plot_t0_densities:w&#45;&gt;monitoring_plots:e</title>
+<path fill="none" stroke="black" d="M1115.84,-618.69C1014.79,-660.11 1125.47,-1165 1005.5,-1165"/>
+<polygon fill="black" stroke="black" points="1122.14,-617.5 1130.67,-619.54 1126.07,-616.75 1130,-616 1130,-616 1130,-616 1126.07,-616.75 1129.33,-612.46 1122.14,-617.5 1122.14,-617.5"/>
+<ellipse fill="none" stroke="black" cx="1119" cy="-618.09" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories -->
 <g id="node23" class="node">

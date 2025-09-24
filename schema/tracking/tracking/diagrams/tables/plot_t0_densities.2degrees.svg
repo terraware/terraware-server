@@ -566,14 +566,14 @@
 <polygon fill="black" stroke="black" points="582.58,-427.84 591.02,-430.24 586.54,-427.26 590.5,-426.68 590.5,-426.68 590.5,-426.68 586.54,-427.26 589.98,-423.12 582.58,-427.84 582.58,-427.84"/>
 <ellipse fill="none" stroke="black" cx="579.42" cy="-428.3" rx="3.2" ry="3.2"/>
 </g>
-<!-- plot_t0_density -->
+<!-- plot_t0_densities -->
 <g id="node15" class="node">
-<title>plot_t0_density</title>
-<g id="a_node15"><a xlink:href="../../tables/plot_t0_density.html" xlink:title="plot_t0_density" target="_top">
+<title>plot_t0_densities</title>
+<g id="a_node15"><a xlink:href="../../tables/plot_t0_densities.html" xlink:title="plot_t0_densities" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="580,-180.68 580,-378.68 817,-378.68 817,-180.68 580,-180.68"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="582.5,-354.68 582.5,-376.68 815.5,-376.68 815.5,-354.68 582.5,-354.68"/>
 <polygon fill="none" stroke="black" points="582.5,-354.68 582.5,-376.68 815.5,-376.68 815.5,-354.68 582.5,-354.68"/>
-<text text-anchor="start" x="587.5" y="-363.88" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_density</text>
+<text text-anchor="start" x="587.5" y="-363.88" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plot_t0_densities</text>
 <text text-anchor="start" x="776.5" y="-362.88" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="582.5,-332.68 582.5,-354.68 715.5,-354.68 715.5,-332.68 582.5,-332.68"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="587.5" y="-349.682"/>
@@ -618,9 +618,9 @@
 </a>
 </g>
 </g>
-<!-- plot_t0_density&#45;&gt;monitoring_plots -->
+<!-- plot_t0_densities&#45;&gt;monitoring_plots -->
 <g id="edge32" class="edge">
-<title>plot_t0_density:w&#45;&gt;monitoring_plots:e</title>
+<title>plot_t0_densities:w&#45;&gt;monitoring_plots:e</title>
 <path fill="none" stroke="black" d="M568.22,-349.36C529.73,-389.38 591.16,-627.68 532.5,-627.68"/>
 <polygon fill="black" stroke="black" points="574.14,-346.83 582.91,-346.99 577.82,-345.25 581.5,-343.68 581.5,-343.68 581.5,-343.68 577.82,-345.25 580.09,-340.37 574.14,-346.83 574.14,-346.83"/>
 <ellipse fill="none" stroke="black" cx="571.2" cy="-348.08" rx="3.2" ry="3.2"/>
