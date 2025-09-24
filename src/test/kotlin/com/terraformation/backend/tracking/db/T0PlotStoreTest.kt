@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -13,15 +14,19 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.util.HECTARES_IN_PLOT
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -152,11 +157,11 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          newPlotDensity = BigDecimal.valueOf(3),
+                          newPlotDensity = plotDensityToHectare(3),
                       ),
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          newPlotDensity = BigDecimal.valueOf(7),
+                          newPlotDensity = plotDensityToHectare(7),
                       ),
                   ),
           ),
@@ -179,8 +184,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(3)),
-              densityRecord(monitoringPlotId, speciesId2, BigDecimal.valueOf(7)),
+              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(3)),
+              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(7)),
           ),
           "Should insert species densities",
       )
@@ -213,8 +218,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = BigDecimal.valueOf(2),
-                          newPlotDensity = BigDecimal.valueOf(4),
+                          previousPlotDensity = plotDensityToHectare(2),
+                          newPlotDensity = plotDensityToHectare(4),
                       ),
                   ),
           ),
@@ -237,8 +242,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(2)),
-              densityRecord(monitoringPlotId, speciesId2, BigDecimal.valueOf(4)),
+              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2)),
+              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(4)),
           ),
           "Should use final species density",
       )
@@ -261,8 +266,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `observation overrides previous density`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 5, totalDead = 5)
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
-      insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(10))
-      insertPlotT0Density(plotDensity = BigDecimal.ONE)
+      insertPlotT0Density(speciesId = speciesId1, plotDensity = plotDensityToHectare(10))
+      insertPlotT0Density(plotDensity = plotDensityToHectare(1))
       val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       // speciesId1 should not be in the changed model since density was the same
@@ -273,8 +278,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = BigDecimal.valueOf(1),
-                          newPlotDensity = BigDecimal.valueOf(2),
+                          previousPlotDensity = plotDensityToHectare(1),
+                          newPlotDensity = plotDensityToHectare(2),
                       ),
                   ),
           ),
@@ -284,8 +289,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId, speciesId1, BigDecimal.valueOf(10)),
-              densityRecord(monitoringPlotId, speciesId2, BigDecimal.TWO),
+              densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(10)),
+              densityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(2)),
           ),
           "Should use observation for density",
       )
@@ -319,10 +324,10 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
       insertPlotT0Density(
           speciesId = speciesId1,
-          plotDensity = BigDecimal.TEN,
+          plotDensity = plotDensityToHectare(10),
           modifiedTime = clock.instant().minusSeconds(62),
       )
-      insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(20))
+      insertPlotT0Density(speciesId = speciesId2, plotDensity = plotDensityToHectare(20))
       val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
 
       assertEquals(
@@ -332,12 +337,12 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          previousPlotDensity = BigDecimal.TEN,
-                          newPlotDensity = BigDecimal.valueOf(2),
+                          previousPlotDensity = plotDensityToHectare(10),
+                          newPlotDensity = plotDensityToHectare(2),
                       ),
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = BigDecimal.valueOf(20),
+                          previousPlotDensity = plotDensityToHectare(20),
                       ),
                   ),
           ),
@@ -346,8 +351,36 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(densityRecord(monitoringPlotId, speciesId1, BigDecimal.TWO)),
+          listOf(densityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(2))),
           "Should have deleted density for species not in observation",
+      )
+    }
+
+    @Test
+    fun `stores expected scale of plot density when using an observation's data`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 60, totalDead = 20)
+
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      val dbDensity =
+          with(PLOT_T0_DENSITIES) {
+            dslContext
+                .select(PLOT_DENSITY)
+                .from(this)
+                .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(SPECIES_ID.eq(speciesId1))
+                .fetchOne(PLOT_DENSITY.asNonNullable())!!
+          }
+
+      assertEquals(
+          BigDecimal("888.8888888889"),
+          dbDensity,
+          "Should convert density to plants/ha",
+      )
+      assertEquals(
+          10,
+          dbDensity.scale(),
+          "Should store plot density with a scale of 10",
       )
     }
   }
@@ -640,4 +673,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           createdTime = clock.instant(),
           modifiedTime = clock.instant(),
       )
+
+  private fun plotDensityToHectare(density: Int): BigDecimal =
+      density.toBigDecimal().divide(HECTARES_IN_PLOT.toBigDecimal(), 10, RoundingMode.HALF_UP)
 }

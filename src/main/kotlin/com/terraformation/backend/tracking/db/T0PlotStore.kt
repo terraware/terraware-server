@@ -15,8 +15,10 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.util.HECTARES_IN_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.InstantSource
 import kotlin.collections.Map
 import org.jooq.DSLContext
@@ -133,7 +135,9 @@ class T0PlotStore(
               insertQuery.values(
                   monitoringPlotId,
                   speciesId,
-                  observationDensity.toBigDecimal(),
+                  observationDensity
+                      .toBigDecimal()
+                      .divide(HECTARES_IN_PLOT.toBigDecimal(), 10, RoundingMode.HALF_UP),
                   currentUserId,
                   now,
                   currentUserId,
@@ -157,7 +161,10 @@ class T0PlotStore(
       }
     }
 
-    val newDensities = observationDensities.mapValues { it.value.toBigDecimal() }
+    val newDensities =
+        observationDensities.mapValues {
+          it.value.toBigDecimal().divide(HECTARES_IN_PLOT.toBigDecimal(), 10, RoundingMode.HALF_UP)
+        }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
