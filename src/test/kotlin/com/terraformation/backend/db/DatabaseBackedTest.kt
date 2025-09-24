@@ -456,6 +456,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopula
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneT0TempDensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
@@ -468,6 +469,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -3275,8 +3277,29 @@ abstract class DatabaseBackedTest {
     }
   }
 
-  private val nextTreeNumber = mutableMapOf<ObservationId, Int>()
-  private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
+  fun insertPlantingZoneT0TempDensity(
+      row: PlantingZoneT0TempDensitiesRow = PlantingZoneT0TempDensitiesRow(),
+      plantingZoneId: PlantingZoneId = row.plantingZoneId ?: inserted.plantingZoneId,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      zoneDensity: BigDecimal = row.zoneDensity ?: BigDecimal.valueOf(10),
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+  ) {
+    with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      dslContext
+          .insertInto(this)
+          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .set(SPECIES_ID, speciesId)
+          .set(ZONE_DENSITY, zoneDensity)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, modifiedBy)
+          .set(MODIFIED_TIME, modifiedTime)
+          .execute()
+    }
+  }
 
   fun insertPlotT0Density(
       row: PlotT0DensitiesRow = PlotT0DensitiesRow(),
@@ -3323,6 +3346,9 @@ abstract class DatabaseBackedTest {
           .execute()
     }
   }
+
+  private val nextTreeNumber = mutableMapOf<ObservationId, Int>()
+  private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
 
   fun insertRecordedTree(
       row: RecordedTreesRow = RecordedTreesRow(),

@@ -3,16 +3,30 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import java.math.BigDecimal
 
 data class SpeciesDensityModel(
     val speciesId: SpeciesId,
-    val plotDensity: BigDecimal,
+    val density: BigDecimal,
+)
+
+data class SiteT0DataModel(
+    val plantingSiteId: PlantingSiteId,
+    val survivalRateIncludesTempPlots: Boolean,
+    val plots: List<PlotT0DataModel> = emptyList(),
+    val zones: List<ZoneT0TempDataModel> = emptyList(),
 )
 
 data class PlotT0DataModel(
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId? = null,
+    val densityData: List<SpeciesDensityModel> = emptyList(),
+)
+
+data class ZoneT0TempDataModel(
+    val plantingZoneId: PlantingZoneId,
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
 

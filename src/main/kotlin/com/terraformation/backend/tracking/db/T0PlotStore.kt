@@ -8,19 +8,24 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import kotlin.collections.Map
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
@@ -30,32 +35,30 @@ class T0PlotStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
-  fun fetchT0SiteData(plantingSiteId: PlantingSiteId): List<PlotT0DataModel> {
+  fun fetchT0SiteData(plantingSiteId: PlantingSiteId): SiteT0DataModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return with(PLOT_T0_DENSITIES) {
+    val plotMultiset = plotT0Multiset(plantingSiteId)
+    val zoneMultiset = zoneT0TempMultiset(plantingSiteId)
+
+    return with(PLANTING_SITES) {
       dslContext
-          .select(MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY, PLOT_T0_OBSERVATIONS.OBSERVATION_ID)
+          .select(
+              SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
+              plotMultiset,
+              zoneMultiset,
+          )
           .from(this)
-          .leftJoin(PLOT_T0_OBSERVATIONS)
-          .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
-          .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
-          .orderBy(monitoringPlots.PLOT_NUMBER)
-          .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
-          .map { (monitoringPlotId, records) ->
-            PlotT0DataModel(
-                monitoringPlotId = monitoringPlotId,
-                observationId = records.first()[PLOT_T0_OBSERVATIONS.OBSERVATION_ID],
-                densityData =
-                    records.map { record ->
-                      SpeciesDensityModel(
-                          speciesId = record[SPECIES_ID]!!,
-                          plotDensity = record[PLOT_DENSITY]!!,
-                      )
-                    },
+          .where(ID.eq(plantingSiteId))
+          .fetchOne { record ->
+            SiteT0DataModel(
+                plantingSiteId = plantingSiteId,
+                survivalRateIncludesTempPlots = record[SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
+                plots = record[plotMultiset]!!,
+                zones = record[zoneMultiset]!!,
             )
           }
-    }
+    } ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
   fun assignT0PlotObservation(
@@ -207,14 +210,14 @@ class T0PlotStore(
             )
 
         densities.forEach {
-          if (it.plotDensity < BigDecimal.ZERO) {
+          if (it.density < BigDecimal.ZERO) {
             throw IllegalArgumentException("Plot density must not be negative")
           }
           insertQuery =
               insertQuery.values(
                   monitoringPlotId,
                   it.speciesId,
-                  it.plotDensity,
+                  it.density,
                   currentUserId,
                   now,
                   currentUserId,
@@ -233,13 +236,75 @@ class T0PlotStore(
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
     }
 
-    val newDensities = densities.associate { it.speciesId to it.plotDensity }
+    val newDensities = densities.associate { it.speciesId to it.density }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
         monitoringPlotId = monitoringPlotId,
         speciesDensityChanges = speciesDensityChanges,
     )
+  }
+
+  private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {
+    return with(PLOT_T0_DENSITIES) {
+      DSL.multiset(
+              DSL.select(
+                      MONITORING_PLOT_ID,
+                      SPECIES_ID,
+                      PLOT_DENSITY,
+                      PLOT_T0_OBSERVATIONS.OBSERVATION_ID,
+                  )
+                  .from(this)
+                  .leftJoin(PLOT_T0_OBSERVATIONS)
+                  .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
+                  .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .orderBy(monitoringPlots.PLOT_NUMBER)
+          )
+          .convertFrom { records ->
+            records
+                .groupBy { it[MONITORING_PLOT_ID.asNonNullable()] }
+                .map { (monitoringPlotId, results) ->
+                  PlotT0DataModel(
+                      monitoringPlotId = monitoringPlotId,
+                      observationId = results.first()[PLOT_T0_OBSERVATIONS.OBSERVATION_ID],
+                      densityData =
+                          results.map { record ->
+                            SpeciesDensityModel(
+                                speciesId = record[SPECIES_ID]!!,
+                                density = record[PLOT_DENSITY]!!,
+                            )
+                          },
+                  )
+                }
+          }
+    }
+  }
+
+  private fun zoneT0TempMultiset(plantingSiteId: PlantingSiteId): Field<List<ZoneT0TempDataModel>> {
+    return with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      DSL.multiset(
+              DSL.select(PLANTING_ZONE_ID, SPECIES_ID, ZONE_DENSITY)
+                  .from(this)
+                  .where(plantingZones.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .orderBy(plantingZones.NAME)
+          )
+          .convertFrom { records ->
+            records
+                .groupBy { it[PLANTING_ZONE_ID.asNonNullable()] }
+                .map { (plantingZoneId, results) ->
+                  ZoneT0TempDataModel(
+                      plantingZoneId = plantingZoneId,
+                      densityData =
+                          results.map { record ->
+                            SpeciesDensityModel(
+                                speciesId = record[SPECIES_ID]!!,
+                                density = record[ZONE_DENSITY]!!,
+                            )
+                          },
+                  )
+                }
+          }
+    }
   }
 
   private fun fetchExistingDensities(

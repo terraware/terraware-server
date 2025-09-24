@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
@@ -22,8 +23,10 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
+import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.lazy
@@ -43,6 +46,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val store: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
 
   private lateinit var plantingSiteId: PlantingSiteId
+  private lateinit var plantingZoneId: PlantingZoneId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
@@ -56,7 +60,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val siteBoundary = multiPolygon(200)
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     insertPlantingSiteHistory()
-    insertPlantingZone()
+    plantingZoneId = insertPlantingZone(name = "Zone 2")
     insertPlantingSubzone()
     monitoringPlotId = insertMonitoringPlot(plotNumber = 2)
     observationId = insertObservation()
@@ -81,40 +85,77 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(7))
       val plot2 = insertMonitoringPlot(plotNumber = 1)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(11))
-      // data from monitoringPlot in other site not returned
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(101))
+      insertPlantingZoneT0TempDensity(speciesId = speciesId2, zoneDensity = BigDecimal.valueOf(102))
+      val zone2 = insertPlantingZone(name = "Zone 1")
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(201))
+      // data from other site not returned
       insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot(plotNumber = 3)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(20))
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(30))
 
       val expected =
-          listOf(
-              PlotT0DataModel(
-                  monitoringPlotId = plot2,
-                  densityData =
-                      listOf(
-                          SpeciesDensityModel(
-                              speciesId = speciesId1,
-                              plotDensity = BigDecimal.valueOf(11),
-                          )
+          SiteT0DataModel(
+              plantingSiteId = plantingSiteId,
+              survivalRateIncludesTempPlots = false,
+              plots =
+                  listOf(
+                      PlotT0DataModel(
+                          monitoringPlotId = plot2,
+                          densityData =
+                              listOf(
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId1,
+                                      density = BigDecimal.valueOf(11),
+                                  )
+                              ),
                       ),
-              ),
-              PlotT0DataModel(
-                  monitoringPlotId = monitoringPlotId,
-                  observationId = observationId,
-                  densityData =
-                      listOf(
-                          SpeciesDensityModel(
-                              speciesId = speciesId1,
-                              plotDensity = BigDecimal.valueOf(3),
-                          ),
-                          SpeciesDensityModel(
-                              speciesId = speciesId2,
-                              plotDensity = BigDecimal.valueOf(7),
-                          ),
+                      PlotT0DataModel(
+                          monitoringPlotId = monitoringPlotId,
+                          observationId = observationId,
+                          densityData =
+                              listOf(
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId1,
+                                      density = BigDecimal.valueOf(3),
+                                  ),
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId2,
+                                      density = BigDecimal.valueOf(7),
+                                  ),
+                              ),
                       ),
-              ),
+                  ),
+              zones =
+                  listOf(
+                      ZoneT0TempDataModel(
+                          plantingZoneId = zone2,
+                          densityData =
+                              listOf(
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId1,
+                                      density = BigDecimal.valueOf(201),
+                                  ),
+                              ),
+                      ),
+                      ZoneT0TempDataModel(
+                          plantingZoneId = plantingZoneId,
+                          densityData =
+                              listOf(
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId1,
+                                      density = BigDecimal.valueOf(101),
+                                  ),
+                                  SpeciesDensityModel(
+                                      speciesId = speciesId2,
+                                      density = BigDecimal.valueOf(102),
+                                  ),
+                              ),
+                      ),
+                  ),
           )
 
       assertEquals(expected, store.fetchT0SiteData(plantingSiteId))
