@@ -45,6 +45,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
             boundary = newBoundary,
             description = "new description",
             name = "new name",
+            survivalRateIncludesTempPlots = true,
             timeZone = newTimeZone,
         )
       }
@@ -63,7 +64,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = now,
-                  survivalRateIncludesTempPlots = false,
+                  survivalRateIncludesTempPlots = true,
                   timeZone = newTimeZone,
               )
           ),
@@ -92,55 +93,6 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
           ),
           plantingSiteHistoriesDao.findAll().map { it.copy(id = null) }.toSet(),
           "Planting site histories",
-      )
-    }
-
-    @Test
-    fun `updates just survival rate temp plots boolean`() {
-      val boundary = Turtle(point(1)).makeMultiPolygon { square(200) }
-      val initialModel =
-          store.createPlantingSite(
-              PlantingSiteModel.create(
-                  boundary = boundary,
-                  name = "initial name",
-                  organizationId = organizationId,
-                  timeZone = timeZone,
-              )
-          )
-
-      val expected =
-          PlantingSitesRow(
-              areaHa = BigDecimal("4.0"),
-              boundary = boundary,
-              gridOrigin = initialModel.gridOrigin,
-              id = initialModel.id,
-              organizationId = organizationId,
-              name = "initial name",
-              description = null,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-              survivalRateIncludesTempPlots = true,
-              timeZone = timeZone,
-          )
-
-      store.updatePlantingSite(initialModel.id, emptyList()) { model ->
-        model.copy(survivalRateIncludesTempPlots = true)
-      }
-      assertEquals(
-          listOf(expected),
-          plantingSitesDao.findAll(),
-          "Should include temp plots in survival rate calculation",
-      )
-
-      store.updatePlantingSite(initialModel.id, emptyList()) { model ->
-        model.copy(survivalRateIncludesTempPlots = false)
-      }
-      assertEquals(
-          listOf(expected.copy(survivalRateIncludesTempPlots = false)),
-          plantingSitesDao.findAll(),
-          "Should exclude temp plots in survival rate calculation",
       )
     }
 
