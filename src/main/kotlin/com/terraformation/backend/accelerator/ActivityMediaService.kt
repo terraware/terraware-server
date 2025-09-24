@@ -25,6 +25,7 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -59,6 +60,7 @@ class ActivityMediaService(
     private val fileService: FileService,
     private val muxService: MuxService,
     private val parentStore: ParentStore,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
   private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
@@ -163,7 +165,7 @@ class ActivityMediaService(
 
     checkFileExists(activityId, fileId)
 
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun getMuxStreamInfo(activityId: ActivityId, fileId: FileId): MuxStreamModel {

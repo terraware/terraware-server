@@ -11,6 +11,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -30,6 +31,7 @@ class PhotoRepository(
     private val dslContext: DSLContext,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -68,7 +70,7 @@ class PhotoRepository(
     requirePermissions { readAccession(accessionId) }
 
     val row = fetchFilesRow(accessionId, filename)
-    return fileService.readFile(row.id!!, maxWidth, maxHeight).withContentType(row.contentType)
+    return thumbnailService.readFile(row.id!!, maxWidth, maxHeight).withContentType(row.contentType)
   }
 
   /** Returns a list of metadata for an accession's photos. */

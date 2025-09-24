@@ -20,13 +20,10 @@ import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SN
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
-import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -34,7 +31,7 @@ import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -46,9 +43,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
 
   private val fileStore = InMemoryFileStore()
-  private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
+    FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
   }
 
   private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {
@@ -504,8 +500,6 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val fileIdOld = insertFile()
       val submissionSnapshotIdOld =
           insertSubmissionSnapshot(fileId = fileIdOld, submissionId = submissionId)
-
-      every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
       service.on(
           DeliverableStatusUpdatedEvent(

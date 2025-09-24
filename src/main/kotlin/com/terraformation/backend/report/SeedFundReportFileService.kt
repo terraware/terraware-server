@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportF
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.SeedFundReportStore
@@ -28,6 +29,7 @@ class SeedFundReportFileService(
     private val seedFundReportStore: SeedFundReportStore,
     private val seedFundReportFilesDao: SeedFundReportFilesDao,
     private val seedFundReportPhotosDao: SeedFundReportPhotosDao,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -54,7 +56,7 @@ class SeedFundReportFileService(
     // Make sure the photo is owned by the report.
     fetchPhotosRow(reportId, fileId)
 
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun readFile(reportId: SeedFundReportId, fileId: FileId): SizedInputStream {

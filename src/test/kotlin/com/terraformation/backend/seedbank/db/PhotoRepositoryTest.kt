@@ -18,7 +18,9 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
@@ -47,11 +49,13 @@ import org.springframework.security.access.AccessDeniedException
 
 class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionStore: AccessionStore
+  private val eventPublisher = TestEventPublisher()
   private lateinit var fileStore: InMemoryFileStore
   private lateinit var pathGenerator: PathGenerator
   private lateinit var fileService: FileService
   private val random: Random = mockk()
   private lateinit var repository: PhotoRepository
+  private lateinit var thumbnailService: ThumbnailService
   private val thumbnailStore: ThumbnailStore = mockk()
 
   override val user: TerrawareUser = mockUser()
@@ -83,7 +87,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             clock,
-            TestEventPublisher(),
+            eventPublisher,
             mockk(),
             mockk(),
         )
@@ -99,8 +103,16 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns true
     every { user.canUploadPhoto(any()) } returns true
 
-    fileService = FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
-    repository = PhotoRepository(accessionPhotosDao, dslContext, fileService, ImageUtils(fileStore))
+    fileService = FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
+    thumbnailService = ThumbnailService(dslContext, fileService, thumbnailStore)
+    repository =
+        PhotoRepository(
+            accessionPhotosDao,
+            dslContext,
+            fileService,
+            ImageUtils(fileStore),
+            thumbnailService,
+        )
 
     organizationId = insertOrganization()
     insertFacility()
@@ -131,8 +143,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto replaces existing photo with same filename`() {
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
-
     repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     every { random.nextLong() } returns 1
     repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata)
@@ -181,11 +191,11 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     val fileId = filesDao.findAll().first().id!!
 
-    every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
+    every { thumbnailStore.getThumbnailData(fileId, any(), any()) } returns thumbnailStream
 
     val stream = repository.readPhoto(accessionId, filename, width, height)
 
-    verify { thumbnailStore.getThumbnailData(fileId, width, height) }
+    verify { thumbnailService.readFile(fileId, width, height) }
 
     assertArrayEquals(thumbnailData, stream.readAllBytes())
   }
@@ -206,7 +216,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deletePhoto deletes one photo`() {
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canUpdateAccession(any()) } returns true
 
     every { random.nextLong() } returns 1L
@@ -226,7 +235,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     repository.deletePhoto(accessionId, "1.jpg")
 
-    verify { thumbnailStore.deleteThumbnails(onePixelFileId) }
+    eventPublisher.assertEventPublished(FileDeletionStartedEvent(onePixelFileId))
     assertThrows<NoSuchFileException>("$onePixelUrl should be deleted") {
       fileStore.size(onePixelUrl)
     }
@@ -247,7 +256,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteAllPhotos deletes multiple photos`() {
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canUpdateAccession(any()) } returns true
 
     every { random.nextLong() } returns 1L
@@ -262,7 +270,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     repository.deleteAllPhotos(accessionId)
 
-    fileIds.forEach { verify { thumbnailStore.deleteThumbnails(it) } }
+    fileIds.forEach { eventPublisher.assertEventPublished(FileDeletionStartedEvent(it)) }
     photoUrls.forEach { url ->
       assertThrows<NoSuchFileException>("$url should be deleted") { fileStore.size(url) }
     }

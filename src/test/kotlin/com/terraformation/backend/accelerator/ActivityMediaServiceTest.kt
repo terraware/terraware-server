@@ -23,17 +23,17 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.VideoStreamNotFoundException
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.point
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import java.time.LocalDate
 import kotlin.random.Random
@@ -61,10 +61,13 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         clock,
         config,
+        eventPublisher,
         filesDao,
         fileStore,
-        thumbnailStore,
     )
+  }
+  private val thumbnailService: ThumbnailService by lazy {
+    ThumbnailService(dslContext, fileService, thumbnailStore)
   }
   private val service: ActivityMediaService by lazy {
     ActivityMediaService(
@@ -74,6 +77,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         fileService,
         muxService,
         ParentStore(dslContext),
+        thumbnailService,
     )
   }
 
@@ -92,7 +96,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     insertOrganizationUser(role = Role.Admin)
 
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { config.keepInvalidUploads } returns false
   }
 
@@ -244,7 +247,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val maxWidth = 100
       val maxHeight = 100
 
-      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(thumbnailContent.inputStream(), 25L)
 
       val inputStream = service.readMedia(activityId, fileId, maxWidth, maxHeight)
@@ -347,7 +350,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Test
   fun `handler for ActivityDeletionStartedEvent deletes media for activity`() {
-    storeMedia("pixel.png", pngMetadata)
+    val imageFileId = storeMedia("pixel.png", pngMetadata)
     val videoFileId = storeMedia("videoHeaderOnly.mp4", mp4Metadata)
 
     val activity2Id = insertActivity()
@@ -364,7 +367,13 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         "Activity IDs of remaining media",
     )
 
-    eventPublisher.assertExactEventsPublished(setOf(VideoFileDeletedEvent(videoFileId)))
+    eventPublisher.assertExactEventsPublished(
+        setOf(
+            FileDeletionStartedEvent(imageFileId),
+            FileDeletionStartedEvent(videoFileId),
+            VideoFileDeletedEvent(videoFileId),
+        )
+    )
 
     assertIsEventListener<ActivityDeletionStartedEvent>(service)
   }

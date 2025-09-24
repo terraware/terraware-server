@@ -12,6 +12,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
 import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
@@ -31,6 +32,7 @@ class BatchPhotoService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -64,7 +66,7 @@ class BatchPhotoService(
 
     requirePermissions { readBatch(batchId) }
 
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun listPhotos(batchId: BatchId): List<BatchPhotosRow> {

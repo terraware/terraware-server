@@ -13,6 +13,7 @@ import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -28,6 +29,7 @@ class ReportService(
     private val reportStore: ReportStore,
     private val publishedReportPhotosDao: PublishedReportPhotosDao,
     private val systemUser: SystemUser,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -72,7 +74,7 @@ class ReportService(
   ): SizedInputStream {
     requirePermissions { readReport(reportId) }
     fetchReportPhotosRow(reportId, fileId)
-    return fileService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun storeReportPhoto(

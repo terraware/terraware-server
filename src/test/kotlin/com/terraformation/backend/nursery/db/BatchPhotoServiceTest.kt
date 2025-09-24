@@ -2,6 +2,7 @@ package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -15,15 +16,13 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.util.ImageUtils
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
@@ -42,20 +41,30 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
-  private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
         dslContext,
         Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
         mockk(),
+        eventPublisher,
         filesDao,
         fileStore,
-        thumbnailStore,
     )
   }
+  private val thumbnailService: ThumbnailService by lazy {
+    ThumbnailService(dslContext, fileService, mockk())
+  }
   private val service: BatchPhotoService by lazy {
-    BatchPhotoService(batchPhotosDao, clock, dslContext, fileService, ImageUtils(fileStore))
+    BatchPhotoService(
+        batchPhotosDao,
+        clock,
+        dslContext,
+        fileService,
+        ImageUtils(fileStore),
+        thumbnailService,
+    )
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
@@ -70,7 +79,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     insertFacility(type = FacilityType.Nursery)
     batchId = insertBatch()
 
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadBatch(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
   }
@@ -121,7 +129,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
       val maxWidth = 10
       val maxHeight = 20
 
-      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(content.inputStream(), 10L)
 
       val inputStream = service.readPhoto(batchId, fileId, maxWidth, maxHeight)

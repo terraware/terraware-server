@@ -2,6 +2,7 @@ package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -14,15 +15,11 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
-import io.mockk.Runs
-import io.mockk.confirmVerified
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
-import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.SocketTimeoutException
@@ -54,11 +51,11 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class FileServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
+  private val eventPublisher = TestEventPublisher()
   private lateinit var fileStore: FileStore
   private lateinit var pathGenerator: PathGenerator
   private lateinit var fileService: FileService
   private val random: Random = mockk()
-  private val thumbnailStore: ThumbnailStore = mockk()
 
   override val user: TerrawareUser = mockUser()
 
@@ -88,7 +85,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     photoPath = tempDir.resolve(relativePath)
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
-    fileService = FileService(dslContext, clock, config, filesDao, fileStore, thumbnailStore)
+    fileService = FileService(dslContext, clock, config, eventPublisher, filesDao, fileStore)
   }
 
   @AfterEach
@@ -215,30 +212,8 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `readFile returns thumbnail if photo dimensions are specified`() {
+  fun `deleteFile full-sized photo and publishes event to trigger thumbnail deletion`() {
     val photoData = Random.nextBytes(10)
-    val thumbnailData = Random.nextBytes(10)
-    val thumbnailStream =
-        SizedInputStream(ByteArrayInputStream(thumbnailData), thumbnailData.size.toLong())
-    val width = 123
-    val height = 456
-
-    val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
-
-    every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
-
-    val stream = fileService.readFile(fileId, width, height)
-
-    verify { thumbnailStore.getThumbnailData(fileId, width, height) }
-
-    assertArrayEquals(thumbnailData, stream.readAllBytes())
-  }
-
-  @Test
-  fun `deleteFile deletes thumbnails and full-sized photo`() {
-    val photoData = Random.nextBytes(10)
-
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
 
     fileService.storeFile("category", photoData.inputStream(), metadata.copy(filename = "1.jpg")) {}
 
@@ -259,8 +234,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
     assertTrue(deleteChildRowsFunctionCalled, "Delete child rows callback should have been called")
 
-    verify { thumbnailStore.deleteThumbnails(fileIdToDelete) }
-    confirmVerified(thumbnailStore)
+    eventPublisher.assertEventPublished(FileDeletionStartedEvent(fileIdToDelete))
 
     assertThrows<NoSuchFileException>("$photoUrlToDelete should be deleted") {
       fileStore.size(photoUrlToDelete)

@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -13,14 +14,12 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
-import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.util.ImageUtils
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
@@ -36,20 +35,29 @@ import org.springframework.http.MediaType
 internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
+  private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
-  private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(
         dslContext,
         Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
         mockk(),
+        eventPublisher,
         filesDao,
         fileStore,
-        thumbnailStore,
     )
   }
+  private val thumbnailService: ThumbnailService by lazy {
+    ThumbnailService(dslContext, fileService, mockk())
+  }
   private val service: WithdrawalPhotoService by lazy {
-    WithdrawalPhotoService(dslContext, fileService, ImageUtils(fileStore), withdrawalPhotosDao)
+    WithdrawalPhotoService(
+        dslContext,
+        fileService,
+        ImageUtils(fileStore),
+        thumbnailService,
+        withdrawalPhotosDao,
+    )
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
@@ -62,7 +70,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     organizationId = insertOrganization()
     insertFacility(type = FacilityType.Nursery)
 
-    every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canCreateWithdrawalPhoto(any()) } returns true
     every { user.canReadWithdrawal(any()) } returns true
   }
@@ -89,7 +96,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     val maxWidth = 10
     val maxHeight = 20
 
-    every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
+    every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
         SizedInputStream(content.inputStream(), 10L)
 
     val inputStream = service.readPhoto(withdrawalId, fileId, maxWidth, maxHeight)
