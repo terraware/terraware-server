@@ -54,7 +54,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
   private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk())
+    ThumbnailService(dslContext, fileService, mockk(), mockk())
   }
   private val service: BatchPhotoService by lazy {
     BatchPhotoService(

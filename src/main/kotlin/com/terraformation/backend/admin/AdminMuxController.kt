@@ -2,23 +2,29 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.log.perClassLogger
 import java.time.Duration
+import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
@@ -30,6 +36,7 @@ class AdminMuxController(
     private val config: TerrawareServerConfig,
     private val fileService: FileService,
     private val muxService: MuxService,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -39,6 +46,7 @@ class AdminMuxController(
       model: Model,
   ): String {
     model.addAttribute("muxEnabled", config.mux.enabled)
+    model.addAttribute("fileId", fileId)
 
     if (fileId != null) {
       try {
@@ -50,6 +58,16 @@ class AdminMuxController(
     }
 
     return "/admin/mux"
+  }
+
+  @GetMapping("/mux/thumbnail/{fileId}")
+  @ResponseBody
+  fun getMuxThumbnail(
+      @PathVariable fileId: FileId,
+      @RequestParam width: Int?,
+      @RequestParam height: Int?,
+  ): ResponseEntity<InputStreamResource> {
+    return thumbnailService.readFile(fileId, width, height).toResponseEntity()
   }
 
   @PostMapping("/createFileAccessToken")

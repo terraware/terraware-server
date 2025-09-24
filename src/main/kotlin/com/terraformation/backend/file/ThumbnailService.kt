@@ -4,8 +4,11 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
+import java.io.ByteArrayInputStream
+import javax.imageio.ImageIO
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
@@ -14,6 +17,7 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class ThumbnailService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
+    private val muxService: MuxService,
     private val thumbnailStore: ThumbnailStore,
 ) {
   private val log = perClassLogger()
@@ -48,6 +52,30 @@ class ThumbnailService(
     // For images, ThumbnailStore will handle scaling the original if needed.
     if (mediaType.startsWith("image/")) {
       return thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight)
+    }
+
+    // For other file types, if we've already generated a thumbnail, use it.
+    val existingData = thumbnailStore.getExistingThumbnailData(fileId, maxWidth, maxHeight)
+    if (existingData != null) {
+      return existingData
+    }
+
+    // For video, Mux will generate a still image, which we'll store at its original size the first
+    // time someone requests a thumbnail. Then we'll scale that still image to the desired size. We
+    // do the scaling ourselves because Mux limits the number of thumbnails per video.
+    if (mediaType.startsWith("video/")) {
+      val thumbnailFromExistingStillImage =
+          thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
+      if (thumbnailFromExistingStillImage != null) {
+        return thumbnailFromExistingStillImage
+      }
+
+      val thumbnailData = muxService.getStillJpegImage(fileId)
+      val image = ImageIO.read(ByteArrayInputStream(thumbnailData))
+      thumbnailStore.storeThumbnail(fileId, thumbnailData, image.width, image.height)
+
+      return thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
+          ?: throw ThumbnailNotReadyException(fileId)
     }
 
     throw UnsupportedMediaTypeException("Cannot generate thumbnails for files of type $mediaType")

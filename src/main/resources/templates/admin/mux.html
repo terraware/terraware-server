@@ -25,6 +25,10 @@
         ></mux-player>
     </th:block>
 
+    <img th:if="${fileId != null}"
+         th:src="|/admin/mux/thumbnail/${fileId}?width=300&height=300|"
+         alt="Thumbnail"/>
+
     <h3>Upload Video File and Send to Mux</h3>
 
     <form method="POST" action="/admin/uploadMuxVideo" enctype="multipart/form-data">
