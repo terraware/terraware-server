@@ -39,12 +39,12 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val store: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
+  private val store: T0Store by lazy { T0Store(clock, dslContext, eventPublisher) }
 
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var plantingZoneId: PlantingZoneId

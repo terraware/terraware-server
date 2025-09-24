@@ -7,7 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
-import com.terraformation.backend.tracking.db.T0PlotStore
+import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
@@ -18,10 +18,10 @@ import jakarta.inject.Named
 import org.jooq.DSLContext
 
 @Named
-class T0PlotService(
+class T0Service(
     private val dslContext: DSLContext,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
-    private val t0PlotStore: T0PlotStore,
+    private val t0Store: T0Store,
 ) {
   private data class PlotEventDetailsModel(
       val plotNumber: Long,
@@ -41,9 +41,9 @@ class T0PlotService(
       plotsList.forEach { model ->
         plotsChangeList.add(
             if (model.observationId == null) {
-              t0PlotStore.assignT0PlotSpeciesDensities(model.monitoringPlotId, model.densityData)
+              t0Store.assignT0PlotSpeciesDensities(model.monitoringPlotId, model.densityData)
             } else {
-              t0PlotStore.assignT0PlotObservation(model.monitoringPlotId, model.observationId)
+              t0Store.assignT0PlotObservation(model.monitoringPlotId, model.observationId)
             }
         )
       }
@@ -90,7 +90,7 @@ class T0PlotService(
   fun assignT0TempZoneData(zonesList: List<ZoneT0TempDataModel>) {
     dslContext.transaction { _ ->
       zonesList.forEach { model ->
-        t0PlotStore.assignT0TempZoneSpeciesDensities(model.plantingZoneId, model.densityData)
+        t0Store.assignT0TempZoneSpeciesDensities(model.plantingZoneId, model.densityData)
       }
     }
 

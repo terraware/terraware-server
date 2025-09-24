@@ -31,7 +31,7 @@ import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
-class T0PlotStore(
+class T0Store(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,

@@ -15,7 +15,7 @@ import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesReco
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.tracking.db.T0PlotStore
+import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
@@ -29,15 +29,15 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
+internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val rateLimitedEventPublisher = TestEventPublisher()
-  private val t0PlotStore: T0PlotStore by lazy { T0PlotStore(clock, dslContext, eventPublisher) }
-  private val service: T0PlotService by lazy {
-    T0PlotService(dslContext, rateLimitedEventPublisher, t0PlotStore)
+  private val t0Store: T0Store by lazy { T0Store(clock, dslContext, eventPublisher) }
+  private val service: T0Service by lazy {
+    T0Service(dslContext, rateLimitedEventPublisher, t0Store)
   }
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
