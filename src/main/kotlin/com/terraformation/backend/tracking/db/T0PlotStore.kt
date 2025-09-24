@@ -8,7 +8,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
@@ -32,7 +32,7 @@ class T0PlotStore(
   fun fetchT0SiteData(plantingSiteId: PlantingSiteId): List<PlotT0DataModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return with(PLOT_T0_DENSITY) {
+    return with(PLOT_T0_DENSITIES) {
       dslContext
           .select(MONITORING_PLOT_ID, SPECIES_ID, PLOT_DENSITY, PLOT_T0_OBSERVATIONS.OBSERVATION_ID)
           .from(this)
@@ -100,7 +100,7 @@ class T0PlotStore(
             .execute()
       }
 
-      with(PLOT_T0_DENSITY) {
+      with(PLOT_T0_DENSITIES) {
         // ensure no leftover densities for species that are not in this observation
         dslContext
             .deleteFrom(this)
@@ -184,7 +184,7 @@ class T0PlotStore(
         dslContext.deleteFrom(this).where(MONITORING_PLOT_ID.eq(monitoringPlotId)).execute()
       }
 
-      with(PLOT_T0_DENSITY) {
+      with(PLOT_T0_DENSITIES) {
         // ensure no leftover densities for species that are not in this request
         dslContext
             .deleteFrom(this)
@@ -243,7 +243,7 @@ class T0PlotStore(
   private fun fetchExistingDensities(
       monitoringPlotId: MonitoringPlotId
   ): Map<SpeciesId, BigDecimal> =
-      with(PLOT_T0_DENSITY) {
+      with(PLOT_T0_DENSITIES) {
         dslContext
             .select(SPECIES_ID, PLOT_DENSITY)
             .from(this)

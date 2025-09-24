@@ -59,7 +59,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
@@ -264,7 +264,7 @@ class ObservationStore(
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITY.MONITORING_PLOT_ID))
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
               .and(
                   DSL.or(
@@ -1632,11 +1632,11 @@ class ObservationStore(
         with(OBSERVED_ZONE_SPECIES_TOTALS) {
           val survivalRateDenominator =
               getSurvivalRateDenominator(
-                  PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(
+                  PLOT_T0_DENSITIES.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(
                           plantingZoneId
                       )
                       .and(plotHasCompletedPermanentObservations())
-                      .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
+                      .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id))
               )
           val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
 
@@ -1683,9 +1683,9 @@ class ObservationStore(
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         val survivalRateDenominator =
             getSurvivalRateDenominator(
-                PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
+                PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
                     .and(plotHasCompletedPermanentObservations())
-                    .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
+                    .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id))
             )
         val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
 
@@ -1731,7 +1731,7 @@ class ObservationStore(
     recalculateSurvivalRate(
         OBSERVED_PLOT_SPECIES_TOTALS,
         OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId),
-        PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId),
+        PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(monitoringPlotId),
     )
 
     val subzoneSelect =
@@ -1742,7 +1742,7 @@ class ObservationStore(
     recalculateSurvivalRate(
         OBSERVED_SUBZONE_SPECIES_TOTALS,
         OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.eq(subzoneSelect),
-        PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(subzoneSelect),
+        PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SUBZONE_ID.eq(subzoneSelect),
     )
 
     val zoneSelect =
@@ -1759,7 +1759,7 @@ class ObservationStore(
     recalculateSurvivalRate(
         OBSERVED_ZONE_SPECIES_TOTALS,
         OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(zoneSelect),
-        PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(zoneSelect),
+        PLOT_T0_DENSITIES.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(zoneSelect),
     )
 
     val siteSelect =
@@ -1769,7 +1769,7 @@ class ObservationStore(
     recalculateSurvivalRate(
         OBSERVED_SITE_SPECIES_TOTALS,
         OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect),
-        PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect),
+        PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect),
     )
   }
 
@@ -1784,7 +1784,7 @@ class ObservationStore(
         getSurvivalRateDenominator(
             survivalRateCondition
                 .and(plotHasCompletedPermanentObservations())
-                .and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesIdField))
+                .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesIdField))
         )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
@@ -2126,7 +2126,7 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
             false,
-            PLOT_T0_DENSITY.MONITORING_PLOT_ID.eq(monitoringPlotId)
+            PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(monitoringPlotId)
                 .and(completedOrCurrentObservationPlotsCondition),
         )
       }
@@ -2140,7 +2140,7 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
-              PLOT_T0_DENSITY.monitoringPlots.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)
+              PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)
                   .and(completedOrCurrentObservationPlotsCondition),
           )
         }
@@ -2153,7 +2153,7 @@ class ObservationStore(
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
-              PLOT_T0_DENSITY.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId)
+              PLOT_T0_DENSITIES.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(plantingZoneId)
                   .and(completedOrCurrentObservationPlotsCondition),
           )
         }
@@ -2165,7 +2165,7 @@ class ObservationStore(
             isPermanent,
             plantCountsBySpecies,
             cumulativeDeadFromCurrentObservation,
-            PLOT_T0_DENSITY.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
+            PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId)
                 .and(completedOrCurrentObservationPlotsCondition),
         )
       }
@@ -2273,7 +2273,7 @@ class ObservationStore(
 
         val survivalRateDenominator =
             getSurvivalRateDenominator(
-                survivalRateDensityCondition.and(PLOT_T0_DENSITY.SPECIES_ID.eq(speciesKey.id))
+                survivalRateDensityCondition.and(PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id))
             )
         val survivalRate =
             if (isPermanent && speciesKey.id != null) {
@@ -2385,7 +2385,9 @@ class ObservationStore(
 
   private fun getSurvivalRateDenominator(condition: Condition): Field<BigDecimal> =
       DSL.field(
-          DSL.select(DSL.sum(PLOT_T0_DENSITY.PLOT_DENSITY)).from(PLOT_T0_DENSITY).where(condition)
+          DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY))
+              .from(PLOT_T0_DENSITIES)
+              .where(condition)
       )
 
   private fun validateAdHocPlotInPlantingSite(

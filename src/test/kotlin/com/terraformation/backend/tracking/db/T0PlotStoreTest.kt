@@ -11,7 +11,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.records.PlotT0DensityRecord
+import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
@@ -439,7 +439,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlotT0DensityRecord(
+              PlotT0DensitiesRecord(
                   monitoringPlotId,
                   speciesId1,
                   updatedDensity,
@@ -448,7 +448,7 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = clock.instant().minusSeconds(60),
                   modifiedTime = clock.instant(),
               ),
-              PlotT0DensityRecord(
+              PlotT0DensitiesRecord(
                   monitoringPlotId,
                   speciesId2,
                   initialDensity,
@@ -630,8 +630,8 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       plotId: MonitoringPlotId,
       speciesId: SpeciesId,
       density: BigDecimal,
-  ): PlotT0DensityRecord =
-      PlotT0DensityRecord(
+  ): PlotT0DensitiesRecord =
+      PlotT0DensitiesRecord(
           monitoringPlotId = plotId,
           speciesId = speciesId,
           plotDensity = density,

@@ -9,7 +9,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITY
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
@@ -273,7 +273,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val species1 = speciesIds["Species 0"]!!
     val plot1 = plotIds["111"]!!
 
-    with(PLOT_T0_DENSITY) {
+    with(PLOT_T0_DENSITIES) {
       dslContext
           .update(this)
           .set(PLOT_DENSITY, BigDecimal.valueOf(20.0))
