@@ -746,6 +746,9 @@ data class IndividualUser(
   override fun canUpdateT0(monitoringPlotId: MonitoringPlotId) =
       isManagerOrHigher(parentStore.getOrganizationId(monitoringPlotId))
 
+  override fun canUpdateT0(plantingZoneId: PlantingZoneId) =
+      isManagerOrHigher(parentStore.getOrganizationId(plantingZoneId))
+
   override fun canUpdateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
 

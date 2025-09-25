@@ -52,6 +52,16 @@ class T0Controller(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @Operation(summary = "Assign T0 Data for a planting site, only applicable to temporary plots")
+  @PostMapping("/site/temp")
+  fun assignT0TempSiteData(
+      @RequestBody payload: AssignSiteT0TempDataRequestPayload
+  ): SimpleSuccessResponsePayload {
+    t0PlotService.assignT0TempZoneData(payload.zones.map { it.toModel() })
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class SpeciesDensityPayload(
@@ -92,11 +102,6 @@ data class PlotT0DataPayload(
       )
 }
 
-data class AssignSiteT0DataRequestPayload(
-    val plantingSiteId: PlantingSiteId,
-    val plots: List<PlotT0DataPayload> = emptyList(),
-)
-
 data class ZoneT0DataPayload(
     val plantingZoneId: PlantingZoneId,
     val densityData: List<SpeciesDensityPayload> = emptyList(),
@@ -107,6 +112,12 @@ data class ZoneT0DataPayload(
       plantingZoneId = model.plantingZoneId,
       densityData = model.densityData.map { SpeciesDensityPayload(it) },
   )
+
+  fun toModel() =
+      ZoneT0TempDataModel(
+          plantingZoneId = plantingZoneId,
+          densityData = densityData.map { it.toModel() },
+      )
 }
 
 data class SiteT0DataResponsePayload(
@@ -127,3 +138,13 @@ data class SiteT0DataResponsePayload(
 
 data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
     SuccessResponsePayload
+
+data class AssignSiteT0DataRequestPayload(
+    val plantingSiteId: PlantingSiteId,
+    val plots: List<PlotT0DataPayload> = emptyList(),
+)
+
+data class AssignSiteT0TempDataRequestPayload(
+    val plantingSiteId: PlantingSiteId,
+    val zones: List<ZoneT0DataPayload> = emptyList(),
+)

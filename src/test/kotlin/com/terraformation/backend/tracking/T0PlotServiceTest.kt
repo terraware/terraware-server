@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.multiPolygon
@@ -19,6 +21,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
@@ -39,6 +42,8 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
   private lateinit var monitoringPlotId2: MonitoringPlotId
+  private lateinit var plantingZoneId1: PlantingZoneId
+  private lateinit var plantingZoneId2: PlantingZoneId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
@@ -52,12 +57,13 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     val siteBoundary = multiPolygon(200)
     insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     insertPlantingSiteHistory()
-    insertPlantingZone()
+    plantingZoneId1 = insertPlantingZone()
     insertPlantingSubzone()
     monitoringPlotId1 = insertMonitoringPlot()
     observationId = insertObservation()
     insertObservationPlot()
     monitoringPlotId2 = insertMonitoringPlot()
+    plantingZoneId2 = insertPlantingZone()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
     speciesId3 = insertSpecies()
@@ -156,11 +162,11 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId1, speciesId1, plotDensityToHectare(2)),
-              densityRecord(monitoringPlotId1, speciesId2, plotDensityToHectare(7)),
-              densityRecord(monitoringPlotId1, speciesId3, plotDensityToHectare(11)),
-              densityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(100)),
-              densityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(200)),
+              plotDensityRecord(monitoringPlotId1, speciesId1, plotDensityToHectare(2)),
+              plotDensityRecord(monitoringPlotId1, speciesId2, plotDensityToHectare(7)),
+              plotDensityRecord(monitoringPlotId1, speciesId3, plotDensityToHectare(11)),
+              plotDensityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(100)),
+              plotDensityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(200)),
           ),
           "Should have inserted species densities",
       )
@@ -214,11 +220,66 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
   }
 
-  private fun densityRecord(plotId: MonitoringPlotId, speciesId: SpeciesId, density: BigDecimal) =
+  @Nested
+  inner class AssignT0TempZoneData {
+    @Test
+    fun `assigns all zones in list`() {
+      service.assignT0TempZoneData(
+          listOf(
+              ZoneT0TempDataModel(
+                  plantingZoneId1,
+                  listOf(
+                      SpeciesDensityModel(speciesId1, BigDecimal.valueOf(100)),
+                      SpeciesDensityModel(speciesId2, BigDecimal.valueOf(200)),
+                  ),
+              ),
+              ZoneT0TempDataModel(
+                  plantingZoneId2,
+                  densityData =
+                      listOf(
+                          SpeciesDensityModel(speciesId1, BigDecimal.valueOf(300)),
+                          SpeciesDensityModel(speciesId2, BigDecimal.valueOf(400)),
+                      ),
+              ),
+          )
+      )
+
+      assertTableEquals(
+          listOf(
+              zoneDensityRecord(plantingZoneId1, speciesId1, BigDecimal.valueOf(100)),
+              zoneDensityRecord(plantingZoneId1, speciesId2, BigDecimal.valueOf(200)),
+              zoneDensityRecord(plantingZoneId2, speciesId1, BigDecimal.valueOf(300)),
+              zoneDensityRecord(plantingZoneId2, speciesId2, BigDecimal.valueOf(400)),
+          ),
+          "Should have inserted species densities",
+      )
+    }
+  }
+
+  private fun plotDensityRecord(
+      plotId: MonitoringPlotId,
+      speciesId: SpeciesId,
+      density: BigDecimal,
+  ) =
       PlotT0DensitiesRecord(
           monitoringPlotId = plotId,
           speciesId = speciesId,
           plotDensity = density,
+          createdBy = user.userId,
+          modifiedBy = user.userId,
+          createdTime = clock.instant(),
+          modifiedTime = clock.instant(),
+      )
+
+  private fun zoneDensityRecord(
+      zoneId: PlantingZoneId,
+      speciesId: SpeciesId,
+      density: BigDecimal,
+  ) =
+      PlantingZoneT0TempDensitiesRecord(
+          plantingZoneId = zoneId,
+          speciesId = speciesId,
+          zoneDensity = density,
           createdBy = user.userId,
           modifiedBy = user.userId,
           createdTime = clock.instant(),

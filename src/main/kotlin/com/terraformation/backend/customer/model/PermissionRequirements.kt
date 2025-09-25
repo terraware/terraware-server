@@ -1976,6 +1976,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateT0(plantingZoneId: PlantingZoneId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateT0(plantingZoneId)) {
+        readPlantingZone(plantingZoneId)
+        throw AccessDeniedException("No permission to update T0 for planting zone $plantingZoneId")
+      }
+    }
+  }
+
   fun updateTimeseries(deviceId: DeviceId) {
     user.recordPermissionChecks {
       if (!user.canUpdateTimeseries(deviceId)) {

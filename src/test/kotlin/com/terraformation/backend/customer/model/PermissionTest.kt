@@ -644,6 +644,7 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -931,6 +932,7 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
+        updateT0 = true,
     )
 
     permissions.expect(*moduleEventIds.forOrg1(), readModuleEvent = true)
@@ -1136,6 +1138,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -1605,6 +1608,7 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.toTypedArray(),
         readPlantingZone = true,
         updatePlantingZone = true,
+        updateT0 = true,
     )
 
     permissions.expect(
@@ -3925,6 +3929,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg plantingZoneIds: PlantingZoneId,
         readPlantingZone: Boolean = false,
         updatePlantingZone: Boolean = false,
+        updateT0: Boolean = false,
     ) {
       plantingZoneIds.forEach { plantingZoneId ->
         val idInDatabase = getDatabaseId(plantingZoneId)
@@ -3938,6 +3943,11 @@ internal class PermissionTest : DatabaseTest() {
             updatePlantingZone,
             user.canUpdatePlantingZone(idInDatabase),
             "Can update planting zone $plantingZoneId",
+        )
+        assertEquals(
+            updateT0,
+            user.canUpdateT0(idInDatabase),
+            "Can update T0 for planting zone $plantingZoneId",
         )
 
         uncheckedPlantingZones.remove(plantingZoneId)
