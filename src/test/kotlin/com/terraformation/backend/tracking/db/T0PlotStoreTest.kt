@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
@@ -372,16 +373,18 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 .fetchOne(PLOT_DENSITY.asNonNullable())!!
           }
 
-      assertEquals(
-          BigDecimal("888.8888888889"),
-          dbDensity,
-          "Should convert density to plants/ha",
-      )
-      assertEquals(
-          10,
-          dbDensity.scale(),
-          "Should store plot density with a scale of 10",
-      )
+      assertAll({
+        assertEquals(
+            BigDecimal("888.8888888889"),
+            dbDensity,
+            "Should convert density to plants/ha",
+        )
+        assertEquals(
+            10,
+            dbDensity.scale(),
+            "Should store plot density with a scale of 10",
+        )
+      })
     }
   }
 
