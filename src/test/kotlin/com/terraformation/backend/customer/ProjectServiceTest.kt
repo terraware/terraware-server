@@ -53,6 +53,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val publisher = TestEventPublisher()
+
   private val service: ProjectService by lazy {
     ProjectService(
         AccessionStore(
@@ -97,6 +98,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao,
+            publisher,
         ),
         ProjectStore(
             clock,

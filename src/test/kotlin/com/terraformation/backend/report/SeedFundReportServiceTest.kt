@@ -147,6 +147,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao,
+            publisher,
         ),
         ProjectStore(
             clock,

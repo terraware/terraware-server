@@ -288,6 +288,61 @@ class RateLimitedT0DataAssignedEventTest {
     }
   }
 
+  @Nested
+  inner class CombineSiteTempSetting {
+    @Test
+    fun `combine keeps existing as previous value`() {
+      val existingEvent = event(previousSiteTempSetting = true, newSiteTempSetting = false)
+
+      val newEvent = event(previousSiteTempSetting = false, newSiteTempSetting = true)
+
+      assertEquals(
+          event(previousSiteTempSetting = true, newSiteTempSetting = true),
+          newEvent.combine(existingEvent),
+          "Should combine site temp setting correctly",
+      )
+    }
+
+    @Test
+    fun `combine with only changes to site settings doesn't affect other properties`() {
+      val existingEvent =
+          event(
+              plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
+              zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+          )
+
+      val newEvent = event(previousSiteTempSetting = false, newSiteTempSetting = true)
+
+      assertEquals(
+          event(
+              plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
+              zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+              previousSiteTempSetting = false,
+              newSiteTempSetting = true,
+          ),
+          newEvent.combine(existingEvent),
+          "Shouldn't change plots and zones when changing site temp setting",
+      )
+    }
+
+    @Test
+    fun `updates to non site temp settings doesn't delete existing ones`() {
+      val existingEvent = event(previousSiteTempSetting = true, newSiteTempSetting = false)
+
+      val newEvent = event(plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+
+      assertEquals(
+          event(
+              plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
+              previousSiteTempSetting = true,
+              newSiteTempSetting = false,
+          ),
+          newEvent.combine(existingEvent),
+          "Shouldn't remove site temp settings when they are not included",
+      )
+    }
+  }
+
   @Test
   fun `combines both plots and zones`() {
     val existingEvent =
@@ -308,12 +363,16 @@ class RateLimitedT0DataAssignedEventTest {
   private fun event(
       plots: List<PlotT0DensityChangedEventModel> = emptyList(),
       zones: List<ZoneT0DensityChangedEventModel> = emptyList(),
+      previousSiteTempSetting: Boolean? = null,
+      newSiteTempSetting: Boolean? = null,
   ): RateLimitedT0DataAssignedEvent =
       RateLimitedT0DataAssignedEvent(
           organizationId = organizationId,
           plantingSiteId = plantingSiteId,
           monitoringPlots = plots,
           plantingZones = zones,
+          previousSiteTempSetting = previousSiteTempSetting,
+          newSiteTempSetting = newSiteTempSetting,
       )
 
   private fun plotChangeModel(plotId: Int, densities: List<SpeciesDensityChangedEventModel>) =

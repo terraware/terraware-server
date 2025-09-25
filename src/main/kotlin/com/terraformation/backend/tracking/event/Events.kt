@@ -131,6 +131,8 @@ data class T0PlotDataAssignedEvent(
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId,
+    val previousSiteTempSetting: Boolean? = null,
+    val newSiteTempSetting: Boolean? = null,
     val monitoringPlots: List<PlotT0DensityChangedEventModel>? = null,
     val plantingZones: List<ZoneT0DensityChangedEventModel>? = null,
 ) : RateLimitedEvent<RateLimitedT0DataAssignedEvent> {
@@ -212,6 +214,8 @@ data class RateLimitedT0DataAssignedEvent(
     return RateLimitedT0DataAssignedEvent(
         organizationId = organizationId,
         plantingSiteId = plantingSiteId,
+        previousSiteTempSetting = existing.previousSiteTempSetting ?: previousSiteTempSetting,
+        newSiteTempSetting = newSiteTempSetting ?: existing.newSiteTempSetting,
         monitoringPlots = plotsMap.values.toList(),
         plantingZones = zonesMap.values.toList(),
     )

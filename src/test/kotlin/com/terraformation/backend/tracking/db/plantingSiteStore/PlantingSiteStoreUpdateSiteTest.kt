@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.Turtle
@@ -94,6 +95,15 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
           ),
           plantingSiteHistoriesDao.findAll().map { it.copy(id = null) }.toSet(),
           "Planting site histories",
+      )
+
+      rateLimitedEventPublisher.assertEventPublished(
+          RateLimitedT0DataAssignedEvent(
+              organizationId = organizationId,
+              plantingSiteId = initialModel.id,
+              previousSiteTempSetting = false,
+              newSiteTempSetting = true,
+          )
       )
     }
 
