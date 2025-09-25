@@ -45,6 +45,7 @@ import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -77,7 +78,9 @@ class PlantingSitesController(
   )
   fun listPlantingSites(
       @RequestParam //
-      organizationId: OrganizationId,
+      organizationId: OrganizationId? = null,
+      @RequestParam //
+      projectId: ProjectId? = null,
       @RequestParam
       @Schema(
           description = "If true, include planting zones and subzones for each site.",
@@ -86,7 +89,14 @@ class PlantingSitesController(
       full: Boolean?,
   ): ListPlantingSitesResponsePayload {
     val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
-    val models = plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
+    val models =
+        if (projectId != null) {
+          plantingSiteStore.fetchSitesByProjectId(projectId, depth)
+        } else if (organizationId != null) {
+          plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
+        } else {
+          throw BadRequestException("One of organizationId or projectId must be specified")
+        }
     val payloads = models.map { PlantingSitePayload(it) }
     return ListPlantingSitesResponsePayload(payloads)
   }
