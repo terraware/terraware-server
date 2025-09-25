@@ -85,7 +85,7 @@ import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
 import com.terraformation.backend.email.model.SeedFundReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
-import com.terraformation.backend.email.model.T0PlotDataSet
+import com.terraformation.backend.email.model.T0DataSet
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
@@ -883,7 +883,12 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: RateLimitedT0DataAssignedEvent) {
-    if (event.monitoringPlots.flatMap { plot -> plot.speciesDensityChanges }.isEmpty()) {
+    if (
+        (event.monitoringPlots == null ||
+            event.monitoringPlots.flatMap { plot -> plot.speciesDensityChanges }.isEmpty()) &&
+            (event.plantingZones == null ||
+                event.plantingZones.flatMap { zone -> zone.speciesDensityChanges }.isEmpty())
+    ) {
       // changes were reversed before the event was eventually refired
       return
     }
@@ -894,12 +899,13 @@ class EmailNotificationService(
           plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
 
       val model =
-          T0PlotDataSet(
+          T0DataSet(
               config,
               organizationName = organization.name,
               plantingSiteId = event.plantingSiteId,
               plantingSiteName = plantingSite.name,
-              monitoringPlots = event.monitoringPlots,
+              monitoringPlots = event.monitoringPlots ?: emptyList(),
+              plantingZones = event.plantingZones ?: emptyList(),
           )
       emailService.sendOrganizationNotification(
           event.organizationId,

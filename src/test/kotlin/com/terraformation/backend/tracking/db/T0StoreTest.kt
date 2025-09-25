@@ -28,6 +28,7 @@ import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.lazy
@@ -682,9 +683,20 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts new T0 zone record with species and density`() {
       val density = BigDecimal.valueOf(12)
 
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
-          listOf(SpeciesDensityModel(speciesId1, density)),
+      val changedModel =
+          store.assignT0TempZoneSpeciesDensities(
+              plantingZoneId,
+              listOf(SpeciesDensityModel(speciesId1, density)),
+          )
+
+      assertEquals(
+          ZoneT0TempDensityChangedModel(
+              plantingZoneId = plantingZoneId,
+              speciesDensityChanges =
+                  setOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
+          ),
+          changedModel,
+          "Changed model should be set with species data",
       )
 
       assertTableEquals(
@@ -707,12 +719,30 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
       )
       clock.instant = clock.instant().plusSeconds(60)
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
-          listOf(
-              SpeciesDensityModel(speciesId1, updatedDensity),
-              SpeciesDensityModel(speciesId2, initialDensity),
+      val changedModel =
+          store.assignT0TempZoneSpeciesDensities(
+              plantingZoneId,
+              listOf(
+                  SpeciesDensityModel(speciesId1, updatedDensity),
+                  SpeciesDensityModel(speciesId2, initialDensity),
+              ),
+          )
+
+      // speciesId2 should not be in the changed model since density was the same
+      assertEquals(
+          ZoneT0TempDensityChangedModel(
+              plantingZoneId = plantingZoneId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(
+                          speciesId1,
+                          previousPlotDensity = initialDensity,
+                          newPlotDensity = updatedDensity,
+                      ),
+                  ),
           ),
+          changedModel,
+          "Changed model should have previous value",
       )
 
       assertTableEquals(
@@ -749,9 +779,23 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           plantingZoneId,
           listOf(SpeciesDensityModel(speciesId1, density1)),
       )
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
-          listOf(SpeciesDensityModel(speciesId2, density2)),
+      val changedModel =
+          store.assignT0TempZoneSpeciesDensities(
+              plantingZoneId,
+              listOf(SpeciesDensityModel(speciesId2, density2)),
+          )
+
+      assertEquals(
+          ZoneT0TempDensityChangedModel(
+              plantingZoneId = plantingZoneId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
+                      SpeciesDensityChangedModel(speciesId1, previousPlotDensity = density1),
+                  ),
+          ),
+          changedModel,
+          "Changed model should have previous value",
       )
 
       assertTableEquals(

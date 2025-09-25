@@ -1,2 +1,2 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.T0PlotDataSet" -->
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.T0DataSet" -->
 ${strings("notification.observation.t0Set.email.subject", organizationName, plantingSiteName)}

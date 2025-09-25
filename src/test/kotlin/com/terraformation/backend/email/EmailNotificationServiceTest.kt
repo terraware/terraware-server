@@ -139,6 +139,7 @@ import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
+import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import freemarker.template.Configuration
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -1433,23 +1434,64 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes`() {
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
-            organization.id,
-            plantingSite.id,
-            listOf(
-                PlotT0DensityChangedEventModel(
-                    monitoringPlot.id,
-                    monitoringPlotNumber = monitoringPlot.plotNumber,
-                    speciesDensityChanges = emptyList(),
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            monitoringPlots =
+                listOf(
+                    PlotT0DensityChangedEventModel(
+                        monitoringPlot.id,
+                        monitoringPlotNumber = monitoringPlot.plotNumber,
+                        speciesDensityChanges = emptyList(),
+                    ),
+                    PlotT0DensityChangedEventModel(
+                        MonitoringPlotId(2),
+                        monitoringPlotNumber = 2L,
+                        speciesDensityChanges = emptyList(),
+                    ),
                 ),
-                PlotT0DensityChangedEventModel(
-                    MonitoringPlotId(2),
-                    monitoringPlotNumber = 2L,
-                    speciesDensityChanges = emptyList(),
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in zones`() {
+    service.on(
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            monitoringPlots = emptyList(),
+            plantingZones =
+                listOf(
+                    ZoneT0DensityChangedEventModel(
+                        plantingZone.id,
+                        zoneName = plantingZone.name,
+                        speciesDensityChanges = emptyList(),
+                    ),
+                    ZoneT0DensityChangedEventModel(
+                        PlantingZoneId(2),
+                        zoneName = "Z2",
+                        speciesDensityChanges = emptyList(),
+                    ),
                 ),
-            ),
+        )
+    )
+
+    assertNoMessageSent()
+  }
+
+  @Test
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no plots or zones`() {
+    service.on(
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            monitoringPlots = emptyList(),
+            plantingZones = emptyList(),
         )
     )
 

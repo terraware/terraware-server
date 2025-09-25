@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -14,6 +15,7 @@ import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
+import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import java.time.Duration
 import java.time.LocalDate
 
@@ -129,8 +131,33 @@ data class T0PlotDataAssignedEvent(
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId,
-    val monitoringPlots: List<PlotT0DensityChangedEventModel>,
+    val monitoringPlots: List<PlotT0DensityChangedEventModel>? = null,
+    val plantingZones: List<ZoneT0DensityChangedEventModel>? = null,
 ) : RateLimitedEvent<RateLimitedT0DataAssignedEvent> {
+  companion object {
+    private fun combineSpeciesChanges(
+        existingSpecies: List<SpeciesDensityChangedEventModel>,
+        newSpecies: List<SpeciesDensityChangedEventModel>,
+    ): List<SpeciesDensityChangedEventModel> {
+      val combinedChanges = mutableMapOf<SpeciesId, SpeciesDensityChangedEventModel>()
+
+      existingSpecies.forEach { change -> combinedChanges[change.speciesId] = change }
+
+      // Use previousPlotDensity from existing and newPlotDensity from current
+      newSpecies.forEach { newChange ->
+        val existingChange = combinedChanges[newChange.speciesId]
+        combinedChanges[newChange.speciesId] =
+            if (existingChange == null) {
+              newChange
+            } else {
+              newChange.copy(previousPlotDensity = existingChange.previousPlotDensity)
+            }
+      }
+
+      return combinedChanges.values.filter { it.previousPlotDensity != it.newPlotDensity }
+    }
+  }
+
   override fun getRateLimitKey() =
       mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
 
@@ -143,37 +170,41 @@ data class RateLimitedT0DataAssignedEvent(
     require(existing.plantingSiteId == plantingSiteId) {
       "Cannot combine events for different plantingSiteIds"
     }
+
     val plotsMap = mutableMapOf<MonitoringPlotId, PlotT0DensityChangedEventModel>()
-
-    existing.monitoringPlots.forEach { plot -> plotsMap[plot.monitoringPlotId] = plot }
-
+    existing.monitoringPlots?.forEach { plot -> plotsMap[plot.monitoringPlotId] = plot }
     // Merge current plots, combining speciesDensityChanges if plot already exists
-    monitoringPlots.forEach { newPlot ->
+    monitoringPlots?.forEach { newPlot ->
       val existingPlot = plotsMap[newPlot.monitoringPlotId]
       if (existingPlot == null) {
         plotsMap[newPlot.monitoringPlotId] = newPlot
       } else {
-        val combinedChanges = mutableMapOf<SpeciesId, SpeciesDensityChangedEventModel>()
-
-        existingPlot.speciesDensityChanges.forEach { change ->
-          combinedChanges[change.speciesId] = change
-        }
-
-        // Use previousPlotDensity from existing and newPlotDensity from current
-        newPlot.speciesDensityChanges.forEach { newChange ->
-          val existingChange = combinedChanges[newChange.speciesId]
-          combinedChanges[newChange.speciesId] =
-              if (existingChange == null) {
-                newChange
-              } else {
-                newChange.copy(previousPlotDensity = existingChange.previousPlotDensity)
-              }
-        }
-
         plotsMap[newPlot.monitoringPlotId] =
             newPlot.copy(
                 speciesDensityChanges =
-                    combinedChanges.values.filter { it.previousPlotDensity != it.newPlotDensity }
+                    combineSpeciesChanges(
+                        existingPlot.speciesDensityChanges,
+                        newPlot.speciesDensityChanges,
+                    )
+            )
+      }
+    }
+
+    val zonesMap = mutableMapOf<PlantingZoneId, ZoneT0DensityChangedEventModel>()
+    existing.plantingZones?.forEach { zone -> zonesMap[zone.plantingZoneId] = zone }
+    // Merge current zones, combining speciesDensityChanges if zone already exists
+    plantingZones?.forEach { newZone ->
+      val existingZone = zonesMap[newZone.plantingZoneId]
+      if (existingZone == null) {
+        zonesMap[newZone.plantingZoneId] = newZone
+      } else {
+        zonesMap[newZone.plantingZoneId] =
+            newZone.copy(
+                speciesDensityChanges =
+                    combineSpeciesChanges(
+                        existingZone.speciesDensityChanges,
+                        newZone.speciesDensityChanges,
+                    )
             )
       }
     }
@@ -182,6 +213,7 @@ data class RateLimitedT0DataAssignedEvent(
         organizationId = organizationId,
         plantingSiteId = plantingSiteId,
         monitoringPlots = plotsMap.values.toList(),
+        plantingZones = zonesMap.values.toList(),
     )
   }
 }

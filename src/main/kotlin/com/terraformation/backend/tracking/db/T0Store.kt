@@ -20,6 +20,7 @@ import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -249,11 +250,13 @@ class T0Store(
   fun assignT0TempZoneSpeciesDensities(
       plantingZoneId: PlantingZoneId,
       densities: List<SpeciesDensityModel>,
-  ) {
+  ): ZoneT0TempDensityChangedModel {
     requirePermissions { updateT0(plantingZoneId) }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
+
+    val existingDensities = fetchExistingDensities(plantingZoneId)
 
     dslContext.transaction { _ ->
       with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
@@ -299,10 +302,16 @@ class T0Store(
             .execute()
       }
 
-      // future PR: publish event here
+      // future PR: publish event here for recalculating
     }
 
-    // future PR: return changed model
+    val newDensities = densities.associate { it.speciesId to it.density }
+    val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
+
+    return ZoneT0TempDensityChangedModel(
+        plantingZoneId = plantingZoneId,
+        speciesDensityChanges = speciesDensityChanges,
+    )
   }
 
   private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {
@@ -376,6 +385,15 @@ class T0Store(
             .from(this)
             .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
             .fetchMap(SPECIES_ID.asNonNullable(), PLOT_DENSITY.asNonNullable())
+      }
+
+  private fun fetchExistingDensities(plantingZoneId: PlantingZoneId): Map<SpeciesId, BigDecimal> =
+      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+        dslContext
+            .select(SPECIES_ID, ZONE_DENSITY)
+            .from(this)
+            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .fetchMap(SPECIES_ID.asNonNullable(), ZONE_DENSITY.asNonNullable())
       }
 
   private fun buildSpeciesDensityChangeList(
