@@ -14,6 +14,7 @@ import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
@@ -536,9 +537,10 @@ class AcceleratorReportPublished(
     get() = "acceleratorReport/published"
 }
 
-class T0PlotDataSet(
+class T0DataSet(
     config: TerrawareServerConfig,
     val monitoringPlots: List<PlotT0DensityChangedEventModel>,
+    val plantingZones: List<ZoneT0DensityChangedEventModel>,
     val organizationName: String,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,

@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.T0PlotDataSet" -->
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.T0DataSet" -->
 ${strings("notification.observation.t0Set.email.body", plantingSiteName)}
 
 <#list monitoringPlots as plot><#list plot.speciesDensityChanges as change>
