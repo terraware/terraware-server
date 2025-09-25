@@ -62,7 +62,7 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone3, speciesId = species3, 600)
 
       val expected =
-          listOf(
+          setOf(
               PlotSpeciesModel(
                   monitoringPlotId = plot1,
                   species =
@@ -106,7 +106,7 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      assertEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId))
+      assertEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
     }
   }
 
