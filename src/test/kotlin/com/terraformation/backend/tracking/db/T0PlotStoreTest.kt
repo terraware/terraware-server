@@ -24,8 +24,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.util.HECTARES_PER_PLOT
-import com.terraformation.backend.util.divideHalfUp
+import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -678,5 +677,5 @@ internal class T0PlotStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
   private fun plotDensityToHectare(density: Int): BigDecimal =
-      density.toBigDecimal().divideHalfUp(HECTARES_PER_PLOT.toBigDecimal())
+      density.toBigDecimal().toPlantsPerHectare()
 }

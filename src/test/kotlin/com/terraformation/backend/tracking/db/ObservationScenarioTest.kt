@@ -28,9 +28,8 @@ import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
-import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.calculateAreaHectares
-import com.terraformation.backend.util.divideHalfUp
+import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.io.InputStreamReader
 import java.math.BigDecimal
@@ -46,7 +45,6 @@ import org.locationtech.jts.geom.MultiPolygon
 abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  protected val hectaresInPlot = HECTARES_PER_PLOT.toBigDecimal()
   protected lateinit var organizationId: OrganizationId
   protected lateinit var plantingSiteId: PlantingSiteId
   protected val allSpeciesNames = mutableSetOf<String>()
@@ -817,7 +815,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         if (cols.size <= speciesIndex + 1) {
           break
         }
-        val density = BigDecimal(cols[speciesIndex + 1])
+        val density = cols[speciesIndex + 1].toBigDecimal()
         val speciesId =
             speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
               insertSpecies(scientificName = "Species $speciesIndex")
@@ -825,7 +823,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         insertPlotT0Density(
             speciesId = speciesId,
             monitoringPlotId = plotId,
-            plotDensity = density.divideHalfUp(hectaresInPlot),
+            plotDensity = density.toPlantsPerHectare(),
         )
         speciesIndex++
       }
@@ -930,7 +928,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     insertPlotT0Density(
                         speciesId = speciesId!!,
                         monitoringPlotId = plotId,
-                        plotDensity = count.toBigDecimal().divideHalfUp(hectaresInPlot),
+                        plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                     )
                   }
             }
@@ -1130,7 +1128,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   insertPlotT0Density(
                       speciesId = speciesId!!,
                       monitoringPlotId = plotId,
-                      plotDensity = count.toBigDecimal().divideHalfUp(hectaresInPlot),
+                      plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                   )
                 }
           }

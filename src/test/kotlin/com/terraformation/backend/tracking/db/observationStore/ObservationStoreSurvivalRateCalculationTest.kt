@@ -13,7 +13,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIE
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
-import com.terraformation.backend.util.divideHalfUp
+import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import java.time.Instant
 import kotlin.collections.component1
@@ -87,7 +87,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate is calculated for a plot using plot density`() {
     val speciesId1 = insertSpecies()
-    insertPlotT0Density(plotDensity = BigDecimal.valueOf(11).divideHalfUp(hectaresInPlot))
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare())
 
     val recordedPlants =
         listOf(
@@ -131,15 +131,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val speciesId3 = insertSpecies()
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity = BigDecimal.valueOf(15).divideHalfUp(hectaresInPlot),
+        plotDensity = BigDecimal.valueOf(15).toPlantsPerHectare(),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity = BigDecimal.valueOf(23).divideHalfUp(hectaresInPlot),
+        plotDensity = BigDecimal.valueOf(23).toPlantsPerHectare(),
     )
     insertPlotT0Density(
         speciesId = speciesId3,
-        plotDensity = BigDecimal.valueOf(31).divideHalfUp(hectaresInPlot),
+        plotDensity = BigDecimal.valueOf(31).toPlantsPerHectare(),
     )
 
     // plot with no density for species 3
@@ -147,11 +147,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity = BigDecimal.valueOf(9).divideHalfUp(hectaresInPlot),
+        plotDensity = BigDecimal.valueOf(9).toPlantsPerHectare(),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity = BigDecimal.valueOf(19).divideHalfUp(hectaresInPlot),
+        plotDensity = BigDecimal.valueOf(19).toPlantsPerHectare(),
     )
 
     val plot1Plants =
@@ -294,7 +294,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           .update(this)
           .set(
               PLOT_DENSITY,
-              BigDecimal.valueOf(20.0).divideHalfUp(hectaresInPlot),
+              BigDecimal.valueOf(20).toPlantsPerHectare(),
           )
           .where(MONITORING_PLOT_ID.eq(plot1))
           .and(SPECIES_ID.eq(species1))

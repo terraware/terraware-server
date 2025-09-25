@@ -8,17 +8,13 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
-import com.terraformation.backend.util.HECTARES_PER_PLOT
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 
 abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-
-  protected val hectaresInPlot = HECTARES_PER_PLOT.toBigDecimal()
 
   protected val clock = TestClock()
   protected val store: ObservationStore by lazy {

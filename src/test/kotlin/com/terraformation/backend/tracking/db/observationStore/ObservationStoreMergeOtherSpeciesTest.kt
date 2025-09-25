@@ -34,7 +34,7 @@ import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
-import com.terraformation.backend.util.divideHalfUp
+import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -108,7 +108,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
   fun `updates observed species totals`() {
     val gpsCoordinates = point(1)
     val speciesId = insertSpecies()
-    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).divideHalfUp(hectaresInPlot))
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
 
     val observationId1 = insertObservation()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
