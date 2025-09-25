@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -197,7 +198,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             ),
         )
 
-    assertEquals(
+    assertSetEquals(
         expectedOrganizationUsers,
         organizationUsersDao.findAll().toSet(),
         "User should be removed from organizations, but other user should remain",

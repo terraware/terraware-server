@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
@@ -156,7 +157,11 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
         facilitiesDao.fetchOneById(facilityId)?.lastNotificationDate,
         "Should have set last notification date based on facility time zone",
     )
-    assertEquals(emptySet<FacilityId>(), notifiedFacilities, "Should not have sent notifications")
+    assertSetEquals(
+        emptySet<FacilityId>(),
+        notifiedFacilities,
+        "Should not have sent notifications",
+    )
   }
 
   @Test
@@ -184,6 +189,6 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
     scanner.sendNotifications()
 
-    assertEquals(setOf(notifiedFacilityId, laterFacilityId), notifiedFacilities)
+    assertSetEquals(setOf(notifiedFacilityId, laterFacilityId), notifiedFacilities)
   }
 }

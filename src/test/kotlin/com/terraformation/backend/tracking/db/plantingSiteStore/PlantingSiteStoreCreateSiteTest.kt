@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
@@ -249,7 +250,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       assertGeometryEquals(zone1Boundary, actualZones["Zone 1"]?.boundary, "Zone 1 boundary")
       assertGeometryEquals(zone2Boundary, actualZones["Zone 2"]?.boundary, "Zone 2 boundary")
-      assertEquals(
+      assertSetEquals(
           setOf(
               commonZonesRow.copy(
                   errorMargin = BigDecimal(1),
@@ -310,7 +311,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           actualSubzones.single { it.fullName == "Zone 2-Subzone 2" }.boundary,
           "Z2S2 boundary",
       )
-      assertEquals(
+      assertSetEquals(
           setOf(
               commonSubzonesRow.copy(
                   fullName = "Zone 1-Subzone 1",

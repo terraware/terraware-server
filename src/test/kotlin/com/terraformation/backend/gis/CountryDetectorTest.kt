@@ -1,10 +1,10 @@
 package com.terraformation.backend.gis
 
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.point
 import com.terraformation.backend.util.Turtle
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class CountryDetectorTest {
@@ -14,21 +14,21 @@ class CountryDetectorTest {
   fun `detects a geometry that is in one country`() {
     val geometry = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
 
-    assertEquals(setOf("GB"), detector.getCountries(geometry))
+    assertSetEquals(setOf("GB"), detector.getCountries(geometry))
   }
 
   @Test
   fun `detects a geometry that includes multiple countries`() {
     val geometry = Turtle(point(3.5, 50)).makePolygon { rectangle(150000, 100000) }
 
-    assertEquals(setOf("BE", "FR"), detector.getCountries(geometry))
+    assertSetEquals(setOf("BE", "FR"), detector.getCountries(geometry))
   }
 
   @Test
   fun `detects a geometry that is completely outside any country`() {
     val geometry = Turtle(point(0, 0)).makePolygon { rectangle(10, 10) }
 
-    assertEquals(emptySet<String>(), detector.getCountries(geometry))
+    assertSetEquals(emptySet<String>(), detector.getCountries(geometry))
   }
 
   @Test
@@ -42,6 +42,6 @@ class CountryDetectorTest {
         .isLessThan(CountryDetector.MIN_COVERAGE_PERCENT)
         .describedAs("Geometry intersects NL a little bit")
 
-    assertEquals(setOf("BE", "FR"), detector.getCountries(geometry))
+    assertSetEquals(setOf("BE", "FR"), detector.getCountries(geometry))
   }
 }

@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -81,7 +82,7 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
 
     store.abandonObservation(observationId)
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             earlierCompletedRow,
             laterCompletedRow,

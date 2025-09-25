@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
@@ -128,7 +129,7 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
             .put(path()) { content = """{"ownedBy": $newOwnerId}""" }
             .andExpect { status { isOk() } }
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 VariableOwnersRow(inserted.projectId, sectionId, newOwnerId),
                 VariableOwnersRow(inserted.projectId, otherSectionId, user.userId),

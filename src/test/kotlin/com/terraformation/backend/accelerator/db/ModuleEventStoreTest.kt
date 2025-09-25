@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
@@ -372,7 +373,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
       assertNotNull(eventsDao.fetchOneById(model.id))
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               EventProjectsRow(model.id, project1),
               EventProjectsRow(model.id, project2),

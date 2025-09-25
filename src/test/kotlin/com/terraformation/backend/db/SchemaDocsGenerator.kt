@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ACCELERATOR
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
@@ -528,12 +529,12 @@ class SchemaDocsGenerator : DatabaseTest() {
       // message is easier to read; assertEquals() would require hunting through a big list of
       // tables to spot the differences.
 
-      assertEquals(
+      assertSetEquals(
           emptySet<String>(),
           tablesFromDb - tables.keys,
           "Tables not listed in $schemaName schema doc configuration",
       )
-      assertEquals(
+      assertSetEquals(
           emptySet<String>(),
           tables.keys - tablesFromDb,
           "Nonexistent tables listed in $schemaName schema doc configuration",

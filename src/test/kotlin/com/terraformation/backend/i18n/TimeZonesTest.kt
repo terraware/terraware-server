@@ -2,6 +2,7 @@ package com.terraformation.backend.i18n
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.assertSetEquals
 import java.time.ZoneId
 import java.util.Locale
 import java.util.stream.Stream
@@ -21,7 +22,7 @@ internal class TimeZonesTest {
     val timeZoneNames = timeZones.getTimeZoneNames(locale).values
     val duplicateNames = timeZoneNames.groupBy { it }.filterValues { it.size > 1 }.keys
 
-    assertEquals(emptySet<String>(), duplicateNames)
+    assertSetEquals(emptySet<String>(), duplicateNames)
   }
 
   @MethodSource("locales")
@@ -60,7 +61,7 @@ internal class TimeZonesTest {
             }
             .toSet()
 
-    assertEquals(emptySet<ZoneId>(), localizedTimeZonesWithoutTranslations)
+    assertSetEquals(emptySet<ZoneId>(), localizedTimeZonesWithoutTranslations)
   }
 
   @MethodSource("browsers")
@@ -81,7 +82,7 @@ internal class TimeZonesTest {
             .toSet()
             .minus(browserZones)
 
-    assertEquals(emptySet<String>(), unsupportedZones)
+    assertSetEquals(emptySet<String>(), unsupportedZones)
   }
 
   @Test

@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverablesUploadedEvent
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
@@ -76,7 +77,7 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importDeliverables(csv.byteInputStream())
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               DeliverableVariablesRow(deliverableId1, variableId1, 0),
               DeliverableVariablesRow(deliverableId1, variableId2, 1),
@@ -110,7 +111,7 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importDeliverables(csv.byteInputStream())
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               DeliverableVariablesRow(deliverableId, tableVariableId, 0),
               DeliverableVariablesRow(deliverableId, columnVariableId1, 1),
@@ -168,7 +169,7 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importDeliverables(csv.byteInputStream())
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               DeliverableVariablesRow(deliverableId, variableId3, 0),
               DeliverableVariablesRow(deliverableId, variableId1, 1),

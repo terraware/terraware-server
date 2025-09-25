@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
@@ -30,7 +31,11 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(4, plots.size, "Number of monitoring plots created")
-      assertEquals(setOf(1, 2, 3, 4), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
+      assertSetEquals(
+          setOf(1, 2, 3, 4),
+          plots.map { it.permanentIndex }.toSet(),
+          "Permanent indexes",
+      )
       assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
       assertEquals(4L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
 
@@ -66,7 +71,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(2, plots.size, "Number of monitoring plots created")
-      assertEquals(setOf(1, 2), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
+      assertSetEquals(setOf(1, 2), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
       assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
       assertEquals(2L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
     }
@@ -98,7 +103,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       val plots = monitoringPlotsDao.findAll()
 
       assertEquals(3, plots.size, "Number of monitoring plots including existing one")
-      assertEquals(setOf(1, 2, 3), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
+      assertSetEquals(setOf(1, 2, 3), plots.map { it.permanentIndex }.toSet(), "Permanent indexes")
 
       assertTableEquals(
           plots
@@ -188,7 +193,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       store.ensurePermanentPlotsExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
-      assertEquals(
+      assertSetEquals(
           setOf(1L, 6L),
           plots.map { it.plotNumber }.toSet(),
           "Plot numbers including existing plot",

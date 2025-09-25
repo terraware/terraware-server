@@ -1,9 +1,9 @@
 package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.GlobalRole
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
@@ -126,7 +126,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
           .put("/api/v1/internalTags/organizations/$organizationId") { content = payload }
           .andExpect { status { isOk() } }
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               organizationId to InternalTagIds.Reporter,
               organizationId to newTagId,

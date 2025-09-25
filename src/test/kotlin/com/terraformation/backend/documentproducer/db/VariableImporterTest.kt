@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.tables.records.DeliverableVariablesRecord
@@ -488,12 +489,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           updateResult,
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf("Option 1", "Option 2", "Option 3"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[0].id!!).map { it.name }.toSet(),
           "Initial options",
       )
-      assertEquals(
+      assertSetEquals(
           setOf("Option 1", "Option 2"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[1].id!!).map { it.name }.toSet(),
           "Updated options",
@@ -524,7 +525,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           updateResult,
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariablesRow(
                   description = "Original description",
@@ -581,7 +582,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "New variable should be marked as replacement of existing one",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariablesRow(
                   id = initialVariableId,
@@ -643,7 +644,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           updateResult,
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariablesRow(
                   id = initialVariables[0].id,
@@ -744,7 +745,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           updateResult,
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(updatedVariables[4].id, updatedVariables[5].id),
           variableTableColumnsDao
               .fetchByTableVariableId(newTableVariableId)
@@ -786,7 +787,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           updateResult,
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(updatedVariables[3].id, updatedVariables[4].id),
           variableTableColumnsDao
               .fetchByTableVariableId(newTableVariableId)

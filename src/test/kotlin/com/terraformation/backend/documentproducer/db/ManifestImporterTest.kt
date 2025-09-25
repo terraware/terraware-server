@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
@@ -599,7 +600,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertNull(updatedTop.replacesVariableId, "Replaces ID for top")
       assertEquals(initialBottom.id, updatedBottom.replacesVariableId, "Replaces ID for bottom")
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariableSectionsRow(
                   renderHeading = true,
@@ -642,7 +643,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(initialTop2.id, updatedTop2.replacesVariableId, "Replaces ID for second top")
       assertEquals(initialBottom.id, updatedBottom.replacesVariableId, "Replaces ID for bottom")
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariableSectionsRow(
                   renderHeading = true,
@@ -692,7 +693,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(initialMiddle.id, updatedMiddle.replacesVariableId, "Replaces ID for middle")
       assertEquals(initialBottom.id, updatedBottom.replacesVariableId, "Replaces ID for bottom")
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariableSectionsRow(
                   renderHeading = true,
@@ -744,7 +745,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(initialTop.id, updatedTop.replacesVariableId, "Replaces ID for top")
       assertEquals(initialMiddle.id, updatedMiddle.replacesVariableId, "Replaces ID for middle")
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariableSectionsRow(
                   renderHeading = true,

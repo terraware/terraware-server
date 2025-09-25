@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -65,7 +66,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchGlobalRoles returns empty set if user has no global roles`() {
-    assertEquals(emptySet<GlobalRole>(), permissionStore.fetchGlobalRoles(user.userId))
+    assertSetEquals(emptySet<GlobalRole>(), permissionStore.fetchGlobalRoles(user.userId))
   }
 
   @Test
@@ -75,7 +76,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(role = GlobalRole.ReadOnly)
     insertUserGlobalRole(role = GlobalRole.SuperAdmin)
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             GlobalRole.AcceleratorAdmin,
             GlobalRole.TFExpert,

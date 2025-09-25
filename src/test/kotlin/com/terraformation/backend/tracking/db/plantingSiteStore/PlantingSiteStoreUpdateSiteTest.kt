@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -72,7 +73,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
           "Planting sites",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSiteHistoriesRow(
                   areaHa = BigDecimal("1.0"),

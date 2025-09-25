@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingProjectScoreModel
 import com.terraformation.backend.accelerator.model.NewProjectScoreModel
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
@@ -193,7 +194,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      assertEquals(expected, projectScoresDao.findAll().toSet())
+      assertSetEquals(expected, projectScoresDao.findAll().toSet())
     }
 
     @Test
@@ -243,7 +244,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      assertEquals(expected, projectScoresDao.findAll().toSet())
+      assertSetEquals(expected, projectScoresDao.findAll().toSet())
     }
 
     @Test

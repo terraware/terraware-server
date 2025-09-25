@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectFileNaming
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
@@ -214,7 +215,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               dealName = "Project deal name",
           )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               ProjectAcceleratorDetailsModel(
                   projectId = otherProject,

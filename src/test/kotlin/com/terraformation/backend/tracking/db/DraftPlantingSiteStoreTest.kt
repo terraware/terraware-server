@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
@@ -134,7 +135,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(draftIdToDelete)
 
-      assertEquals(
+      assertSetEquals(
           setOf(otherDraftId1, otherDraftId2),
           draftPlantingSitesDao.findAll().map { it.id }.toSet(),
           "Remaining IDs after deletion",

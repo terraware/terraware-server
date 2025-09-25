@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
@@ -225,7 +226,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
               """
           }
 
-      assertEquals(
+      assertSetEquals(
           setOf(0, 1, 2),
           valuesRows.map { it.listPosition }.toSet(),
           "List positions of values",

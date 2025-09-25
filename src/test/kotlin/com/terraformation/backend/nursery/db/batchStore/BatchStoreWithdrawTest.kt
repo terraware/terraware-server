@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
@@ -1071,7 +1072,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
           )
         },
         {
-          assertEquals(
+          assertSetEquals(
               setOf(
                   BatchQuantityHistoryRow(
                       batchId = newBatch.id!!,
@@ -1127,7 +1128,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
           )
         },
         {
-          assertEquals(
+          assertSetEquals(
               setOf(
                   WithdrawalsRow(
                       id = firstWithdrawal.id,

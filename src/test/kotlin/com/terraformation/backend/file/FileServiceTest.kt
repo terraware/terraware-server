@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -310,7 +311,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
     fileService.on(DailyTaskTimeArrivedEvent())
 
-    assertEquals(
+    assertSetEquals(
         setOf(token3, token4),
         dslContext.fetch(FILE_ACCESS_TOKENS).map { it.token }.toSet(),
         "Remaining tokens",

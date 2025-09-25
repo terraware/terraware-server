@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -37,7 +38,7 @@ class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
       val targetUserId = insertUser()
       expected.forEach { insertUserInternalInterest(it) }
 
-      assertEquals(
+      assertSetEquals(
           expected,
           store.fetchForUser(targetUserId),
           "Should be accessible via fetch method",
@@ -71,12 +72,12 @@ class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
           setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles),
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles),
           store.fetchForUser(targetUserId),
           "Should have updated categories of target user",
       )
-      assertEquals(
+      assertSetEquals(
           setOf(InternalInterest.CarbonEligibility),
           store.fetchForUser(otherUserId),
           "Should not have updated categories of other user",

@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -854,7 +855,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       val imageValuesRows = variableImageValuesDao.findAll().toSet()
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               VariableImageValuesRow(
                   caption = "Old caption",

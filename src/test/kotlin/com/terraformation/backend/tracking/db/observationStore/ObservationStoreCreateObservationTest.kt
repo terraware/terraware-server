@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -53,7 +54,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
 
     assertEquals(expected, actual)
 
-    assertEquals(
+    assertSetEquals(
         setOf(subzoneId1, subzoneId2),
         observationRequestedSubzonesDao.findAll().map { it.plantingSubzoneId }.toSet(),
         "Subzone IDs",

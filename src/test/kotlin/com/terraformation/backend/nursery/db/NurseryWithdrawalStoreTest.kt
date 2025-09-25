@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -10,7 +11,6 @@ import com.terraformation.backend.nursery.model.NurserySpeciesModel
 import com.terraformation.backend.nursery.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -106,7 +106,7 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      assertEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
+      assertSetEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
     }
   }
 

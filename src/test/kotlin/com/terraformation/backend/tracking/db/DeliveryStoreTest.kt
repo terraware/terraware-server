@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -88,7 +89,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Deliveries",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingsRow(
                   createdBy = user.userId,
@@ -115,7 +116,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Plantings",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSitePopulationsRow(plantingSiteId, speciesId1, 21, 20),
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 20, 20),
@@ -124,7 +125,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting site populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingZonePopulationsRow(plantingZoneId, speciesId1, 19, 18),
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 20, 20),
@@ -133,7 +134,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting zone populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 17, 16),
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
@@ -270,7 +271,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(user.userId, deliveriesRow.reassignedBy, "Reassigned user ID on delivery")
       assertEquals(clock.instant(), deliveriesRow.reassignedTime, "Reassigned time on delivery")
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSitePopulationsRow(plantingSiteId, speciesId1, 106, 105),
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 100, 100),
@@ -279,7 +280,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting site populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingZonePopulationsRow(plantingZoneId, speciesId1, 104, 103),
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 100, 100),
@@ -288,7 +289,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting zone populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 101, 100),
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 98, 98),
@@ -602,7 +603,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Plantings",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
@@ -611,7 +612,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting site populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingZonePopulationsRow(plantingZoneId, speciesId1, 3, 2),
               PlantingZonePopulationsRow(plantingZoneId, speciesId2, 4, 3),
@@ -620,7 +621,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Planting zone populations",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 3, 2),
               PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 3, 2),
@@ -674,7 +675,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           "Plantings",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSitePopulationsRow(plantingSiteId, speciesId1, 5, 4),
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 7, 6),
@@ -706,7 +707,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       store.undoDelivery(deliveryId, undoWithdrawalId)
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               PlantingSitePopulationsRow(plantingSiteId, speciesId1, 95, 10),
               PlantingSitePopulationsRow(plantingSiteId, speciesId2, 88, 9),
