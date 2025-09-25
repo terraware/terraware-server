@@ -5,10 +5,13 @@ import MuxCreateVideoAssetRequestPayload
 import MuxCreateVideoAssetResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.MuxAssetStatus
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.ThumbnailNotReadyException
 import com.terraformation.backend.file.VideoStreamNotFoundException
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
@@ -21,10 +24,12 @@ import io.ktor.client.request.basicAuth
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import jakarta.inject.Named
+import jakarta.ws.rs.core.UriBuilder
 import java.io.StringReader
 import java.net.URI
 import java.security.KeyFactory
@@ -67,6 +72,7 @@ class MuxService(
 
   private val muxApiUrl = URI("https://api.mux.com")
   private val muxAssetsEndpoint = "/video/v1/assets"
+  private val muxThumbnailUrl = URI("https://image.mux.com")
 
   private val log = perClassLogger()
 
@@ -134,6 +140,56 @@ class MuxService(
   }
 
   /**
+   * Returns a still image from a video file in JPEG format. The image will be a frame from the
+   * middle of the video.
+   *
+   * We use this to generate thumbnails from videos: the image from this method is stored in the
+   * file store, and then scaled down to the requested size. We do the scaling from the full-sized
+   * image ourselves rather than asking Mux to give us a scaled-down image because Mux imposes a
+   * limit on the number of thumbnails it can produce for a video. We don't want to have to worry
+   * about staying under that limit if our app needs thumbnails of various sizes.
+   */
+  fun getStillJpegImage(fileId: FileId): ByteArray {
+    ensureEnabled()
+
+    val streamModel =
+        try {
+          getMuxStream(fileId, tokenType = MuxTokenType.Thumbnail)
+        } catch (e: VideoStreamNotFoundException) {
+          // If this is a video file, the most likely scenario is that the client tried to fetch
+          // a thumbnail before we sent the file to Mux (which happens asynchronously).
+          val contentType =
+              dslContext.fetchValue(FILES.CONTENT_TYPE, FILES.ID.eq(fileId))
+                  ?: throw FileNotFoundException(fileId)
+          if (contentType.startsWith("video/")) {
+            throw ThumbnailNotReadyException(fileId)
+          } else {
+            throw e
+          }
+        }
+
+    val url =
+        UriBuilder.fromUri(muxThumbnailUrl)
+            .path("${streamModel.playbackId}/thumbnail.jpg")
+            .queryParam("token", streamModel.playbackToken)
+            .build()
+            .toURL()
+
+    return runBlocking {
+      try {
+        httpClient.request(url).bodyAsBytes()
+      } catch (e: ClientRequestException) {
+        if (e.response.status == HttpStatusCode.PreconditionFailed) {
+          throw ThumbnailNotReadyException(fileId)
+        } else {
+          log.debug("Mux response ${e.response.status}: ${e.response.bodyAsText()}")
+          throw e
+        }
+      }
+    }
+  }
+
+  /**
    * Returns information a client needs in order to configure a video player to stream a file from
    * Mux. For access control, this includes a time-limited playback token that expires.
    *
@@ -141,7 +197,11 @@ class MuxService(
    *   request a new playback token. Default is the stream expiration in seconds as defined in the
    *   server configuration.
    */
-  fun getMuxStream(fileId: FileId, expiration: Duration? = null): MuxStreamModel {
+  fun getMuxStream(
+      fileId: FileId,
+      expiration: Duration? = null,
+      tokenType: MuxTokenType = MuxTokenType.Video,
+  ): MuxStreamModel {
     ensureEnabled()
 
     // Supply the default expiration value here rather than as a default value for the
@@ -158,7 +218,7 @@ class MuxService(
         Jwts.builder()
             .subject(playbackId)
             .claim("kid", signingKeyId)
-            .claim("aud", "v") // "v" = token is for video playback
+            .claim("aud", tokenType.audience)
             .expiration(Date(clock.instant().plus(effectiveExpiration).toEpochMilli()))
             .signWith(signingKey)
             .compact()

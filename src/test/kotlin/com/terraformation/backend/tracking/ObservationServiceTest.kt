@@ -132,7 +132,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
   private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk())
+    ThumbnailService(dslContext, fileService, mockk(), mockk())
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(

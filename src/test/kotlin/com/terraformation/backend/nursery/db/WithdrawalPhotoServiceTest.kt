@@ -48,7 +48,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
   private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk())
+    ThumbnailService(dslContext, fileService, mockk(), mockk())
   }
   private val service: WithdrawalPhotoService by lazy {
     WithdrawalPhotoService(

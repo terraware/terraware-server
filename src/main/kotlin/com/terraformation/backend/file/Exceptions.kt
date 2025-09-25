@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.db.EntityNotFoundException
+import com.terraformation.backend.db.EntityStaleException
 import com.terraformation.backend.db.default_schema.FileId
 import java.io.IOException
 import java.net.URI
@@ -12,6 +13,9 @@ class InvalidStorageLocationException(val uri: URI, message: String? = null) : I
 class UploadFailedException(message: String, cause: Exception) : RuntimeException(message, cause) {
   constructor(cause: Exception) : this("Upload failed", cause)
 }
+
+class ThumbnailNotReadyException(fileId: FileId) :
+    EntityStaleException("Thumbnail not ready for file $fileId")
 
 class VideoStreamNotFoundException(val fileId: FileId) :
     EntityNotFoundException("No video stream found for file $fileId")

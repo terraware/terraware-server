@@ -67,7 +67,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
   private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, thumbnailStore)
+    ThumbnailService(dslContext, fileService, muxService, thumbnailStore)
   }
   private val service: ActivityMediaService by lazy {
     ActivityMediaService(

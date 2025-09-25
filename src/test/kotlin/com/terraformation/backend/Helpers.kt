@@ -143,6 +143,11 @@ fun rectanglePolygon(
  */
 fun dummyKeycloakInfo() = KeycloakInfo("client-id", "secret", "http://dummy/realms/terraware")
 
+/** A 1-pixel JPEG file for testing code that requires valid image data. */
+val onePixelJpeg: ByteArray by lazy {
+  TestClock::class.java.getResourceAsStream("/file/pixel.jpg").use { it.readAllBytes() }
+}
+
 /** A 1-pixel PNG file for testing code that requires valid image data. */
 val onePixelPng: ByteArray by lazy {
   TestClock::class.java.getResourceAsStream("/file/pixel.png").use { it.readAllBytes() }

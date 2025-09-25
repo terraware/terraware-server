@@ -104,7 +104,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUploadPhoto(any()) } returns true
 
     fileService = FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
-    thumbnailService = ThumbnailService(dslContext, fileService, thumbnailStore)
+    thumbnailService = ThumbnailService(dslContext, fileService, mockk(), thumbnailStore)
     repository =
         PhotoRepository(
             accessionPhotosDao,

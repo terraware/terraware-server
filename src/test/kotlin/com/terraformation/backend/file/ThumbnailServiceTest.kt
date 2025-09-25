@@ -7,10 +7,13 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.onePixelJpeg
 import io.mockk.Runs
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -22,6 +25,7 @@ import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
 
 class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
@@ -31,17 +35,18 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
+  private val muxService: MuxService = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, config, eventPublisher, filesDao, fileStore)
   }
   private val service: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, thumbnailStore)
+    ThumbnailService(dslContext, fileService, muxService, thumbnailStore)
   }
 
-  private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
-  private val metadata = FileMetadata.of(contentType, filename, 1L)
+  private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, filename, 1L)
+  private val videoMetadata = FileMetadata.of("video/mp4", filename, 1L)
 
   @Nested
   inner class OnFileDeletionStartedEvent {
@@ -90,6 +95,38 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
       verify { thumbnailStore.getThumbnailData(fileId, width, height) }
 
       assertArrayEquals(thumbnailData, stream.readAllBytes())
+    }
+
+    @Test
+    fun `fetches and stores still image from Mux if video file does not have one yet`() {
+      val fileId =
+          fileService.storeFile("category", Random.nextBytes(10).inputStream(), videoMetadata) {}
+      val thumbnailData = Random.nextBytes(10)
+      var stillImageStored = false
+
+      every { muxService.getStillJpegImage(fileId) } returns onePixelJpeg
+      every { thumbnailStore.getExistingThumbnailData(fileId, 20, 20) } returns null
+      every { thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, 20, 20) } answers
+          {
+            if (stillImageStored) SizedInputStream(thumbnailData.inputStream(), 10) else null
+          }
+      every { thumbnailStore.storeThumbnail(fileId, any(), 1, 1) } answers
+          {
+            stillImageStored = true
+          }
+
+      val stream = service.readFile(fileId, 20, 20)
+
+      verify { muxService.getStillJpegImage(fileId) }
+      verify { thumbnailStore.storeThumbnail(fileId, any(), 1, 1) }
+
+      assertArrayEquals(thumbnailData, stream.readAllBytes())
+    }
+
+    @Test
+    fun `throws exception if file does not exist`() {
+      assertThrows<FileNotFoundException>("without dimensions") { service.readFile(FileId(1)) }
+      assertThrows<FileNotFoundException>("with dimensions") { service.readFile(FileId(1), 5, 5) }
     }
   }
 }

@@ -48,7 +48,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         reportStore,
         publishedReportPhotosDao,
         SystemUser(usersDao),
-        ThumbnailService(dslContext, fileService, mockk()),
+        ThumbnailService(dslContext, fileService, mockk(), mockk()),
     )
   }
 

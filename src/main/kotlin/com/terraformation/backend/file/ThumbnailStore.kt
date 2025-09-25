@@ -87,15 +87,40 @@ class ThumbnailStore(
    *   computed based on [maxWidth].
    */
   fun getThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
+    val existing = getExistingThumbnailData(fileId, maxWidth, maxHeight)
+    if (existing != null) {
+      return existing
+    }
+
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+    val photoUrl = filesRow.storageUrl!!
+
+    return generateThumbnail(fileId, maxWidth, maxHeight, photoUrl)
+  }
+
+  /**
+   * Returns the contents of an existing thumbnail image for a photo, or null if the thumbnail has
+   * not been generated yet.
+   *
+   * At least one of [maxWidth] and [maxHeight] must be non-null. If both of them are non-null, the
+   * resulting thumbnail may be smaller than the limit depending on the aspect ratio of the original
+   * photo.
+   *
+   * @param maxWidth Maximum width of thumbnail in pixels. If null, the width will be computed based
+   *   on [maxHeight].
+   * @param maxHeight Maximum height of the thumbnail in pixels. If null, the height will be
+   *   computed based on [maxWidth].
+   */
+  fun getExistingThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream? {
     if (maxWidth == null && maxHeight == null) {
       throw IllegalArgumentException("At least one thumbnail dimension must be specified")
     }
 
-    if (maxWidth != null && (maxWidth < 1 || maxWidth > maxAllowedSize)) {
+    if (maxWidth != null && (maxWidth !in 1..maxAllowedSize)) {
       throw IllegalArgumentException("maxWidth is outside of allowed range 1-$maxAllowedSize")
     }
 
-    if (maxHeight != null && (maxHeight < 1 || maxHeight > maxAllowedSize)) {
+    if (maxHeight != null && (maxHeight !in 1..maxAllowedSize)) {
       throw IllegalArgumentException("maxHeight is outside of allowed range 1-$maxAllowedSize")
     }
 
@@ -112,7 +137,7 @@ class ThumbnailStore(
       }
     }
 
-    return generateThumbnail(fileId, maxWidth, maxHeight)
+    return null
   }
 
   /** Deletes all the thumbnails for a photo. */
@@ -134,13 +159,79 @@ class ThumbnailStore(
   }
 
   /**
-   * Generates a new thumbnail for a photo. Stores it in the file store and inserts a row in the
-   * thumbnails table with its information.
+   * Uses the largest existing thumbnail for a file to generate a new thumbnail of a particular
+   * size. This can be used in cases where it's expensive to extract a thumbnail from the original
+   * file; a large "thumbnail" can be extracted once, and then smaller ones can be generated
+   * inexpensively as needed.
    */
-  private fun generateThumbnail(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
-    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
-    val photoUrl = filesRow.storageUrl!!
+  fun generateThumbnailFromExistingThumbnail(
+      fileId: FileId,
+      maxWidth: Int?,
+      maxHeight: Int?,
+  ): SizedInputStream? {
+    val existingThumbnailStorageUrl =
+        with(THUMBNAILS) {
+          dslContext
+              .select(STORAGE_URL)
+              .from(THUMBNAILS)
+              .where(FILE_ID.eq(fileId))
+              .orderBy(WIDTH.desc(), HEIGHT.desc())
+              .limit(1)
+              .fetchOne(STORAGE_URL)
+        } ?: return null
 
+    return generateThumbnail(fileId, maxWidth, maxHeight, existingThumbnailStorageUrl)
+  }
+
+  /** Stores a thumbnail in the file store and records it in the database. */
+  fun storeThumbnail(
+      fileId: FileId,
+      content: ByteArray,
+      width: Int,
+      height: Int,
+      contentType: MediaType = MediaType.IMAGE_JPEG,
+  ) {
+    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
+    val size = content.size
+    val thumbUrl = getThumbnailUrl(filesRow.storageUrl!!, width, height)
+    try {
+      fileStore.write(thumbUrl, ByteArrayInputStream(content))
+    } catch (e: FileAlreadyExistsException) {
+      // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
+      // run the same search at the same time and there isn't already a thumbnail for one of
+      // the results. The assumption is that that kind of race will be rare enough that it's not
+      // worth trying to coordinate across servers to prevent it.
+      //
+      // We will still attempt to insert the database row in this case, though, to recover from
+      // situations where we'd previously written the file to the file store but failed to insert
+      // a row for it in the thumbnails table.
+      log.warn("File $fileId thumbnail $thumbUrl already exists; keeping existing file")
+    }
+    val thumbnailId =
+        with(THUMBNAILS) {
+          dslContext
+              .insertInto(THUMBNAILS)
+              .set(CONTENT_TYPE, contentType.toString())
+              .set(CREATED_TIME, clock.instant())
+              .set(HEIGHT, height)
+              .set(FILE_ID, fileId)
+              .set(SIZE, size)
+              .set(STORAGE_URL, thumbUrl)
+              .set(WIDTH, width)
+              .onConflictDoNothing()
+              .returning(ID)
+              .fetchOne()
+              ?.id
+        }
+    log.info("Created file $fileId thumbnail $thumbnailId dimensions $width x $height bytes $size")
+  }
+
+  private fun generateThumbnail(
+      fileId: FileId,
+      maxWidth: Int?,
+      maxHeight: Int?,
+      photoUrl: URI,
+  ): SizedInputStream {
     try {
       if (!semaphore.tryAcquire(0, TimeUnit.SECONDS)) {
         log.debug("Maximum number of thumbnails already being generated; waiting for one to finish")
@@ -151,48 +242,17 @@ class ThumbnailStore(
       }
 
       val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
+      val width = resizedImage.width
+      val height = resizedImage.height
       val buffer = encodeAsJpeg(resizedImage)
-      val size = buffer.size
 
-      val thumbUrl = getThumbnailUrl(photoUrl, resizedImage.width, resizedImage.height)
+      storeThumbnail(fileId, buffer, width, height)
 
-      try {
-        fileStore.write(thumbUrl, ByteArrayInputStream(buffer))
-      } catch (e: FileAlreadyExistsException) {
-        // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
-        // run the same search at the same time and there isn't already a thumbnail for one of
-        // the results. The assumption is that that kind of race will be rare enough that it's not
-        // worth trying to coordinate across servers to prevent it.
-        //
-        // We will still attempt to insert the database row in this case, though, to recover from
-        // situations where we'd previously written the file to the file store but failed to insert
-        // a row for it in the thumbnails table.
-        log.warn("Photo $fileId thumbnail $thumbUrl already exists; keeping existing file")
-      }
-
-      val thumbnailId =
-          with(THUMBNAILS) {
-            dslContext
-                .insertInto(THUMBNAILS)
-                .set(CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
-                .set(CREATED_TIME, clock.instant())
-                .set(HEIGHT, resizedImage.height)
-                .set(FILE_ID, fileId)
-                .set(SIZE, size)
-                .set(STORAGE_URL, thumbUrl)
-                .set(WIDTH, resizedImage.width)
-                .onConflictDoNothing()
-                .returning(ID)
-                .fetchOne()
-                ?.id
-          }
-
-      log.info(
-          "Created photo $fileId thumbnail $thumbnailId dimensions ${resizedImage.width} x " +
-              "${resizedImage.height} bytes $size",
+      return SizedInputStream(
+          ByteArrayInputStream(buffer),
+          buffer.size.toLong(),
+          MediaType.IMAGE_JPEG,
       )
-
-      return SizedInputStream(ByteArrayInputStream(buffer), size.toLong(), MediaType.IMAGE_JPEG)
     } finally {
       semaphore.release()
     }
