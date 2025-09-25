@@ -64,6 +64,7 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.toInstant
+import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
@@ -4796,26 +4797,50 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingCompletedTime = plantingCompletedDate1.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
     val subzone1plot1 = insertMonitoringPlot(permanentIndex = 1)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(10))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(11))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare(),
+    )
     val subzone1plot2 = insertMonitoringPlot(permanentIndex = 2)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(20))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(21))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(21).toPlantsPerHectare(),
+    )
     insertPlantingSubzone(
         areaHa = BigDecimal(20),
         plantingCompletedTime = pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
     val subzone2plot1 = insertMonitoringPlot(permanentIndex = 3)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(30))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(31))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(30).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(31).toPlantsPerHectare(),
+    )
     // Not counted towards hectares planted, not completed
     insertPlantingSubzone(
         areaHa = BigDecimal(1000),
         plantingCompletedTime = null,
     )
     val incompleteSubzonePlot1 = insertMonitoringPlot(permanentIndex = 4)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(40))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(41))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(40).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(41).toPlantsPerHectare(),
+    )
     // Not counted towards hectares planted, after reporting period
     insertPlantingSubzone(
         areaHa = BigDecimal(3000),
@@ -4823,8 +4848,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             futurePlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
     val futureSubzonePlot1 = insertMonitoringPlot(permanentIndex = 5)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(50))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(51))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(51).toPlantsPerHectare(),
+    )
 
     val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId2 = insertPlantingSiteHistory()
@@ -4834,9 +4865,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
     )
     val subzone3plot1 = insertMonitoringPlot(permanentIndex = 1)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(15))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(15).toPlantsPerHectare(),
+    )
     // not included because otherSpeciesId not observed in site 2
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(16))
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(16).toPlantsPerHectare(),
+    )
 
     val otherPlantingSiteId =
         insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
@@ -4849,8 +4886,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
     val excludedPlot = insertMonitoringPlot(permanentIndex = 1)
-    insertPlotT0Density(speciesId = speciesId, plotDensity = BigDecimal.valueOf(5))
-    insertPlotT0Density(speciesId = otherSpeciesId, plotDensity = BigDecimal.valueOf(6))
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(5).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = otherSpeciesId,
+        plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare(),
+    )
 
     val allPlots =
         listOf(

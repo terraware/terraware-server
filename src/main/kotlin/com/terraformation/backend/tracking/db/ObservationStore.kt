@@ -74,6 +74,7 @@ import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
+import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.eqOrIsNull
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -2385,7 +2386,7 @@ class ObservationStore(
 
   private fun getSurvivalRateDenominator(condition: Condition): Field<BigDecimal> =
       DSL.field(
-          DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY))
+          DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
               .from(PLOT_T0_DENSITIES)
               .where(condition)
       )

@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.util.HECTARES_PER_PLOT
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -531,7 +532,9 @@ fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
   val numKnownLive = this.sumOf { it.permanentLive }
 
   return if (sumDensity > BigDecimal.ZERO) {
-    ((numKnownLive * 100.0).toBigDecimal() / sumDensity).setScale(0, RoundingMode.HALF_UP).toInt()
+    ((numKnownLive * 100.0).toBigDecimal() / (sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())))
+        .setScale(0, RoundingMode.HALF_UP)
+        .toInt()
   } else {
     null
   }
@@ -563,7 +566,8 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
 
         val survivalRate =
             if (t0Density > BigDecimal.ZERO) {
-              ((permanentLive * 100.0).toBigDecimal() / t0Density)
+              ((permanentLive * 100.0).toBigDecimal() /
+                      (t0Density.times(HECTARES_PER_PLOT.toBigDecimal())))
                   .setScale(0, RoundingMode.HALF_UP)
                   .toInt()
             } else {

@@ -19,6 +19,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -133,8 +134,8 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   monitoringPlotId2,
                   densityData =
                       listOf(
-                          SpeciesDensityModel(speciesId1, BigDecimal.TEN),
-                          SpeciesDensityModel(speciesId2, BigDecimal.valueOf(20)),
+                          SpeciesDensityModel(speciesId1, BigDecimal.valueOf(100)),
+                          SpeciesDensityModel(speciesId2, BigDecimal.valueOf(200)),
                       ),
               ),
           )
@@ -155,11 +156,11 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertTableEquals(
           listOf(
-              densityRecord(monitoringPlotId1, speciesId1, BigDecimal.valueOf(2)),
-              densityRecord(monitoringPlotId1, speciesId2, BigDecimal.valueOf(7)),
-              densityRecord(monitoringPlotId1, speciesId3, BigDecimal.valueOf(11)),
-              densityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(10)),
-              densityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(20)),
+              densityRecord(monitoringPlotId1, speciesId1, plotDensityToHectare(2)),
+              densityRecord(monitoringPlotId1, speciesId2, plotDensityToHectare(7)),
+              densityRecord(monitoringPlotId1, speciesId3, plotDensityToHectare(11)),
+              densityRecord(monitoringPlotId2, speciesId1, BigDecimal.valueOf(100)),
+              densityRecord(monitoringPlotId2, speciesId2, BigDecimal.valueOf(200)),
           ),
           "Should have inserted species densities",
       )
@@ -177,17 +178,17 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = BigDecimal.valueOf(2),
+                                  newPlotDensity = plotDensityToHectare(2),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = BigDecimal.valueOf(7),
+                                  newPlotDensity = plotDensityToHectare(7),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId3,
                                   "Species 3",
-                                  newPlotDensity = BigDecimal.valueOf(11),
+                                  newPlotDensity = plotDensityToHectare(11),
                               ),
                           ),
                       ),
@@ -198,12 +199,12 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = BigDecimal.valueOf(10),
+                                  newPlotDensity = BigDecimal.valueOf(100),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = BigDecimal.valueOf(20),
+                                  newPlotDensity = BigDecimal.valueOf(200),
                               ),
                           ),
                       ),
@@ -223,4 +224,7 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           createdTime = clock.instant(),
           modifiedTime = clock.instant(),
       )
+
+  private fun plotDensityToHectare(density: Int): BigDecimal =
+      density.toBigDecimal().toPlantsPerHectare()
 }

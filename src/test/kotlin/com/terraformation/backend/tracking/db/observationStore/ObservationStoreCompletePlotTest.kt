@@ -31,6 +31,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
+import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -147,33 +148,69 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     val speciesId2 = insertSpecies()
     val speciesId3 = insertSpecies()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
-    insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(1))
-    insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(2))
-    insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(3))
+    insertPlotT0Density(
+        speciesId = speciesId1,
+        plotDensity = BigDecimal.valueOf(1).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId2,
+        plotDensity = BigDecimal.valueOf(2).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId3,
+        plotDensity = BigDecimal.valueOf(3).toPlantsPerHectare(),
+    )
     val zoneId1 = inserted.plantingZoneId
     val zone1SubzoneId1 = inserted.plantingSubzoneId
     val zone1PlotId2 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
     // excluded densities because not permanent
-    insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(4))
-    insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(5))
-    insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(6))
+    insertPlotT0Density(
+        speciesId = speciesId1,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId2,
+        plotDensity = BigDecimal.valueOf(5).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId3,
+        plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare(),
+    )
     val zoneId2 = insertPlantingZone()
     val zone2SubzoneId1 = insertPlantingSubzone()
     val zone2PlotId1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
-    insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(7))
-    insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(8))
-    insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(9))
+    insertPlotT0Density(
+        speciesId = speciesId1,
+        plotDensity = BigDecimal.valueOf(7).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId2,
+        plotDensity = BigDecimal.valueOf(8).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId3,
+        plotDensity = BigDecimal.valueOf(9).toPlantsPerHectare(),
+    )
 
     // We want to verify that the "plants since last observation" numbers aren't reset until all
     // the plots are completed.
     insertMonitoringPlot()
     insertObservationPlot()
     // excluded densities because not permanent
-    insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(10))
-    insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(11))
-    insertPlotT0Density(speciesId = speciesId3, plotDensity = BigDecimal.valueOf(12))
+    insertPlotT0Density(
+        speciesId = speciesId1,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId2,
+        plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare(),
+    )
+    insertPlotT0Density(
+        speciesId = speciesId3,
+        plotDensity = BigDecimal.valueOf(12).toPlantsPerHectare(),
+    )
     insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
     insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
     insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)

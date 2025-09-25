@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
@@ -133,7 +134,7 @@ class T0PlotStore(
               insertQuery.values(
                   monitoringPlotId,
                   speciesId,
-                  observationDensity.toBigDecimal(),
+                  observationDensity.toBigDecimal().toPlantsPerHectare(),
                   currentUserId,
                   now,
                   currentUserId,
@@ -157,7 +158,8 @@ class T0PlotStore(
       }
     }
 
-    val newDensities = observationDensities.mapValues { it.value.toBigDecimal() }
+    val newDensities =
+        observationDensities.mapValues { it.value.toBigDecimal().toPlantsPerHectare() }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(

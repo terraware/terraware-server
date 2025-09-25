@@ -29,6 +29,7 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.io.InputStreamReader
 import java.math.BigDecimal
@@ -449,8 +450,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
     assertResultsMatchCsv("$prefix/PlotStatsSummary.csv", actual) { row ->
       row.filterIndexed { index, _ ->
-        val positionInColumnGroup = (index - 1) % 10
-        positionInColumnGroup !in 4..8
+        val positionInColumnGroup = (index - 1) % 11
+        positionInColumnGroup !in 4..9
       }
     }
   }
@@ -814,12 +815,16 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         if (cols.size <= speciesIndex + 1) {
           break
         }
-        val density = BigDecimal(cols[speciesIndex + 1])
+        val density = cols[speciesIndex + 1].toBigDecimal()
         val speciesId =
             speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
               insertSpecies(scientificName = "Species $speciesIndex")
             }
-        insertPlotT0Density(speciesId = speciesId, monitoringPlotId = plotId, plotDensity = density)
+        insertPlotT0Density(
+            speciesId = speciesId,
+            monitoringPlotId = plotId,
+            plotDensity = density.toPlantsPerHectare(),
+        )
         speciesIndex++
       }
     }
@@ -923,7 +928,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     insertPlotT0Density(
                         speciesId = speciesId!!,
                         monitoringPlotId = plotId,
-                        plotDensity = count.toBigDecimal(),
+                        plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                     )
                   }
             }
@@ -1123,7 +1128,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   insertPlotT0Density(
                       speciesId = speciesId!!,
                       monitoringPlotId = plotId,
-                      plotDensity = count.toBigDecimal(),
+                      plotDensity = count.toBigDecimal().toPlantsPerHectare(),
                   )
                 }
           }
