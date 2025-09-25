@@ -45,6 +45,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
             boundary = newBoundary,
             description = "new description",
             name = "new name",
+            survivalRateIncludesTempPlots = true,
             timeZone = newTimeZone,
         )
       }
@@ -63,7 +64,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = now,
-                  survivalRateIncludesTempPlots = false,
+                  survivalRateIncludesTempPlots = true,
                   timeZone = newTimeZone,
               )
           ),

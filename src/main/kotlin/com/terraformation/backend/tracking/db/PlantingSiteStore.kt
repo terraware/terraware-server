@@ -475,6 +475,7 @@ class PlantingSiteStore(
             .set(MODIFIED_TIME, now)
             .set(NAME, edited.name)
             .set(PROJECT_ID, edited.projectId)
+            .set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, edited.survivalRateIncludesTempPlots)
             .set(TIME_ZONE, edited.timeZone)
             .apply {
               // Boundaries can only be updated on simple planting sites.

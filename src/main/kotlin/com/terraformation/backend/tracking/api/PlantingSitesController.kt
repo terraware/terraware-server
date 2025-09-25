@@ -699,6 +699,7 @@ data class UpdatePlantingSiteRequestPayload(
     val name: String,
     val plantingSeasons: List<UpdatedPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
+    val survivalRateIncludesTempPlots: Boolean? = null,
     val timeZone: ZoneId?,
 ) {
   fun applyTo(model: ExistingPlantingSiteModel) =
@@ -708,6 +709,7 @@ data class UpdatePlantingSiteRequestPayload(
           name = name,
           projectId = projectId,
           timeZone = timeZone,
+          survivalRateIncludesTempPlots = survivalRateIncludesTempPlots ?: false,
       )
 }
 
