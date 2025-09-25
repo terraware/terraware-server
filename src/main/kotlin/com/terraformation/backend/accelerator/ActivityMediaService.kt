@@ -13,20 +13,20 @@ import com.drew.metadata.exif.GpsDirectory
 import com.drew.metadata.mov.QuickTimeDirectory
 import com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory
 import com.drew.metadata.mp4.Mp4Directory
+import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
+import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
-import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
-import com.terraformation.backend.file.event.VideoFileDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
@@ -42,8 +42,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import kotlin.math.withSign
-import org.jooq.Condition
-import org.jooq.DSLContext
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
@@ -54,8 +52,8 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
 @Named
 class ActivityMediaService(
+    private val activityMediaStore: ActivityMediaStore,
     private val clock: InstantSource,
-    private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val muxService: MuxService,
@@ -69,6 +67,7 @@ class ActivityMediaService(
       activityId: ActivityId,
       data: InputStream,
       newFileMetadata: NewFileMetadata,
+      listPosition: Int? = null,
   ): FileId {
     requirePermissions { updateActivity(activityId) }
 
@@ -116,10 +115,6 @@ class ActivityMediaService(
             // because the file has been copied to the file store.
             exifThread.join()
 
-            val capturedDate =
-                exifMetadata?.let { extractCapturedDate(it) } ?: getCurrentDate(activityId)
-            val geolocation = exifMetadata?.let { extractGeolocation(it) }
-
             val mimeType =
                 fileType?.mimeType
                     ?: throw UnsupportedMediaTypeException("Cannot determine file type")
@@ -134,15 +129,20 @@ class ActivityMediaService(
                       )
                 }
 
-            dslContext
-                .insertInto(ACTIVITY_MEDIA_FILES)
-                .set(ACTIVITY_MEDIA_FILES.FILE_ID, fileId)
-                .set(ACTIVITY_MEDIA_FILES.ACTIVITY_ID, activityId)
-                .set(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID, mediaType)
-                .set(ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO, false)
-                .set(ACTIVITY_MEDIA_FILES.CAPTURED_DATE, capturedDate)
-                .set(ACTIVITY_MEDIA_FILES.GEOLOCATION, geolocation)
-                .execute()
+            val row =
+                ActivityMediaFilesRow(
+                    activityId = activityId,
+                    activityMediaTypeId = mediaType,
+                    capturedDate =
+                        exifMetadata?.let { extractCapturedDate(it) } ?: getCurrentDate(activityId),
+                    fileId = fileId,
+                    geolocation = exifMetadata?.let { extractGeolocation(it) },
+                    isCoverPhoto = false,
+                    isHiddenOnMap = false,
+                    listPosition = listPosition,
+                )
+
+            activityMediaStore.insertMediaFile(row)
           }
         }
 
@@ -163,7 +163,7 @@ class ActivityMediaService(
   ): SizedInputStream {
     requirePermissions { readActivity(activityId) }
 
-    checkFileExists(activityId, fileId)
+    activityMediaStore.ensureFileExists(activityId, fileId)
 
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
@@ -171,7 +171,7 @@ class ActivityMediaService(
   fun getMuxStreamInfo(activityId: ActivityId, fileId: FileId): MuxStreamModel {
     requirePermissions { readActivity(activityId) }
 
-    checkFileExists(activityId, fileId)
+    activityMediaStore.ensureFileExists(activityId, fileId)
 
     return muxService.getMuxStream(fileId)
   }
@@ -179,60 +179,26 @@ class ActivityMediaService(
   fun deleteMedia(activityId: ActivityId, fileId: FileId) {
     requirePermissions { updateActivity(activityId) }
 
-    checkFileExists(activityId, fileId)
+    activityMediaStore.ensureFileExists(activityId, fileId)
 
-    fileService.deleteFile(fileId) {
-      deleteByCondition(
-          ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId)
-              .and(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
-      )
-    }
+    fileService.deleteFile(fileId) { activityMediaStore.deleteFromDatabase(activityId, fileId) }
   }
 
   @EventListener
   fun on(event: ActivityDeletionStartedEvent) {
-    deleteByCondition(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(event.activityId))
+    deleteFiles(activityMediaStore.fetchByActivityId(event.activityId))
   }
 
   @EventListener
   fun on(event: OrganizationDeletionStartedEvent) {
-    deleteByCondition(
-        ACTIVITY_MEDIA_FILES.activities.projects.ORGANIZATION_ID.eq(event.organizationId)
-    )
+    deleteFiles(activityMediaStore.fetchByOrganizationId(event.organizationId))
   }
 
-  private fun deleteByCondition(condition: Condition) {
-    dslContext
-        .select(ACTIVITY_MEDIA_FILES.FILE_ID)
-        .from(ACTIVITY_MEDIA_FILES)
-        .where(condition)
-        .fetch(ACTIVITY_MEDIA_FILES.FILE_ID)
-        .filterNotNull()
-        .forEach { fileId ->
-          fileService.deleteFile(fileId) {
-            val mediaType =
-                dslContext
-                    .deleteFrom(ACTIVITY_MEDIA_FILES)
-                    .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
-                    .returning(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID)
-                    .fetchOne(ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID)
-
-            if (mediaType == ActivityMediaType.Video) {
-              eventPublisher.publishEvent(VideoFileDeletedEvent(fileId))
-            }
-          }
-        }
-  }
-
-  private fun checkFileExists(activityId: ActivityId, fileId: FileId) {
-    val fileExists =
-        dslContext.fetchExists(
-            ACTIVITY_MEDIA_FILES,
-            ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId),
-            ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId),
-        )
-    if (!fileExists) {
-      throw FileNotFoundException(fileId)
+  private fun deleteFiles(mediaFiles: List<ActivityMediaModel>) {
+    mediaFiles.forEach { mediaFile ->
+      fileService.deleteFile(mediaFile.fileId) {
+        activityMediaStore.deleteFromDatabase(mediaFile.activityId, mediaFile.fileId)
+      }
     }
   }
 

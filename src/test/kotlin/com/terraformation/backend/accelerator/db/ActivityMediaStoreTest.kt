@@ -2,10 +2,13 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -20,7 +23,10 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
-  private val store: ActivityMediaStore by lazy { ActivityMediaStore(clock, dslContext) }
+  private val eventPublisher = TestEventPublisher()
+  private val store: ActivityMediaStore by lazy {
+    ActivityMediaStore(clock, dslContext, eventPublisher)
+  }
 
   private lateinit var activityId: ActivityId
   private lateinit var organizationId: OrganizationId
@@ -67,6 +73,42 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `moves file earlier in list if requested`() {
+      val fileId1 = insertFile()
+      insertActivityMediaFile(listPosition = 1)
+      val fileId2 = insertFile()
+      insertActivityMediaFile(listPosition = 2)
+      val fileId3 = insertFile()
+      insertActivityMediaFile(listPosition = 3)
+      val fileId4 = insertFile()
+      insertActivityMediaFile(listPosition = 4)
+
+      store.updateMedia(activityId, fileId3) { it.copy(listPosition = 2) }
+
+      assertListPositions(listOf(fileId1, fileId3, fileId2, fileId4))
+    }
+
+    @Test
+    fun `moves file later in list if requested`() {
+      val fileId1 = insertFile()
+      insertActivityMediaFile(listPosition = 1)
+      val fileId2 = insertFile()
+      insertActivityMediaFile(listPosition = 2)
+      val fileId3 = insertFile()
+      insertActivityMediaFile(listPosition = 3)
+      val fileId4 = insertFile()
+      insertActivityMediaFile(listPosition = 4)
+
+      store.updateMedia(activityId, fileId2) { it.copy(listPosition = 3) }
+
+      assertListPositions(listOf(fileId1, fileId3, fileId2, fileId4), "Moved to middle of list")
+
+      store.updateMedia(activityId, fileId3) { it.copy(listPosition = 4) }
+
+      assertListPositions(listOf(fileId1, fileId2, fileId4, fileId3), "Moved to end of list")
+    }
+
+    @Test
     fun `clears isCoverPhoto on existing cover photo if it is set on updated file`() {
       val fileId1 = insertFile()
       insertActivityMediaFile(isCoverPhoto = true)
@@ -99,6 +141,16 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws exception if video is selected as cover photo`() {
+      val fileId = insertFile()
+      insertActivityMediaFile(type = ActivityMediaType.Video)
+
+      assertThrows<IllegalArgumentException> {
+        store.updateMedia(activityId, fileId) { it.copy(isCoverPhoto = true) }
+      }
+    }
+
+    @Test
     fun `throws exception if no permission to update activity`() {
       val fileId = insertFile()
       insertActivityMediaFile()
@@ -107,5 +159,16 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ActivityNotFoundException> { store.updateMedia(activityId, fileId) { it } }
     }
+  }
+
+  private fun assertListPositions(expected: List<FileId>, message: String? = null) {
+    assertEquals(
+        expected.mapIndexed { index, fileId -> fileId to index + 1 }.toMap(),
+        dslContext
+            .select(ACTIVITY_MEDIA_FILES.FILE_ID, ACTIVITY_MEDIA_FILES.LIST_POSITION)
+            .from(ACTIVITY_MEDIA_FILES)
+            .fetchMap(ACTIVITY_MEDIA_FILES.FILE_ID, ACTIVITY_MEDIA_FILES.LIST_POSITION),
+        message,
+    )
   }
 }
