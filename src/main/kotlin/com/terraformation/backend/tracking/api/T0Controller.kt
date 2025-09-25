@@ -111,7 +111,7 @@ data class ZoneT0DataPayload(
 
 data class SiteT0DataResponsePayload(
     val plantingSiteId: PlantingSiteId,
-    val survivalRatesIncludeTempPlots: Boolean = false,
+    val survivalRateIncludesTempPlots: Boolean = false,
     val plots: List<PlotT0DataPayload> = emptyList(),
     val zones: List<ZoneT0DataPayload> = emptyList(),
 ) {
@@ -119,7 +119,7 @@ data class SiteT0DataResponsePayload(
       model: SiteT0DataModel
   ) : this(
       plantingSiteId = model.plantingSiteId,
-      survivalRatesIncludeTempPlots = model.survivalRateIncludesTempPlots,
+      survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       plots = model.plots.map { PlotT0DataPayload(it) },
       zones = model.zones.map { ZoneT0DataPayload(it) },
   )
