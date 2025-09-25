@@ -265,7 +265,7 @@ class T0PlotStore(
 
         var insertQuery =
             dslContext.insertInto(
-                this,
+                PLANTING_ZONE_T0_TEMP_DENSITIES,
                 PLANTING_ZONE_ID,
                 SPECIES_ID,
                 ZONE_DENSITY,
@@ -275,28 +275,28 @@ class T0PlotStore(
                 MODIFIED_TIME,
             )
 
-        densities.forEach {
-          if (it.density < BigDecimal.ZERO) {
+        densities.forEach { model ->
+          if (model.density < BigDecimal.ZERO) {
             throw IllegalArgumentException("Zone density must not be negative")
           }
           insertQuery =
               insertQuery.values(
                   plantingZoneId,
-                  it.speciesId,
-                  it.density,
+                  model.speciesId,
+                  model.density,
                   currentUserId,
                   now,
                   currentUserId,
                   now,
               )
-
-          insertQuery
-              .onDuplicateKeyUpdate()
-              .set(ZONE_DENSITY, DSL.excluded(ZONE_DENSITY))
-              .set(MODIFIED_BY, currentUserId)
-              .set(MODIFIED_TIME, now)
-              .execute()
         }
+
+        insertQuery
+            .onDuplicateKeyUpdate()
+            .set(ZONE_DENSITY, DSL.excluded(ZONE_DENSITY))
+            .set(MODIFIED_BY, currentUserId)
+            .set(MODIFIED_TIME, now)
+            .execute()
       }
 
       // future PR: publish event here
