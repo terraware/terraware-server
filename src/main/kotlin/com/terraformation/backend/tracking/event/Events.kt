@@ -143,18 +143,18 @@ data class RateLimitedT0DataAssignedEvent(
 
       existingSpecies.forEach { change -> combinedChanges[change.speciesId] = change }
 
-      // Use previousPlotDensity from existing and newPlotDensity from current
+      // Use previousDensity from existing and newDensity from current
       newSpecies.forEach { newChange ->
         val existingChange = combinedChanges[newChange.speciesId]
         combinedChanges[newChange.speciesId] =
             if (existingChange == null) {
               newChange
             } else {
-              newChange.copy(previousPlotDensity = existingChange.previousPlotDensity)
+              newChange.copy(previousDensity = existingChange.previousDensity)
             }
       }
 
-      return combinedChanges.values.filter { it.previousPlotDensity != it.newPlotDensity }
+      return combinedChanges.values.filter { it.previousDensity != it.newDensity }
     }
   }
 

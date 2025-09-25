@@ -185,17 +185,17 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = plotDensityToHectare(2),
+                                  newDensity = plotDensityToHectare(2),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = plotDensityToHectare(7),
+                                  newDensity = plotDensityToHectare(7),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId3,
                                   "Species 3",
-                                  newPlotDensity = plotDensityToHectare(11),
+                                  newDensity = plotDensityToHectare(11),
                               ),
                           ),
                       ),
@@ -206,12 +206,12 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = BigDecimal.valueOf(100),
+                                  newDensity = BigDecimal.valueOf(100),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = BigDecimal.valueOf(200),
+                                  newDensity = BigDecimal.valueOf(200),
                               ),
                           ),
                       ),
@@ -311,12 +311,12 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = BigDecimal.valueOf(100),
+                                  newDensity = BigDecimal.valueOf(100),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = BigDecimal.valueOf(200),
+                                  newDensity = BigDecimal.valueOf(200),
                               ),
                           ),
                       ),
@@ -327,12 +327,12 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
                                   "Species 1",
-                                  newPlotDensity = BigDecimal.valueOf(300),
+                                  newDensity = BigDecimal.valueOf(300),
                               ),
                               SpeciesDensityChangedEventModel(
                                   speciesId2,
                                   "Species 2",
-                                  newPlotDensity = BigDecimal.valueOf(400),
+                                  newDensity = BigDecimal.valueOf(400),
                               ),
                           ),
                       ),

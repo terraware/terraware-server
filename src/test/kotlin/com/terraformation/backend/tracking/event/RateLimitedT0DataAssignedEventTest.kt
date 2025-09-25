@@ -338,7 +338,7 @@ class RateLimitedT0DataAssignedEventTest {
       SpeciesDensityChangedEventModel(
           speciesId = SpeciesId(speciesId.toLong()),
           speciesScientificName = "Species $speciesId",
-          previousPlotDensity = prevDensity?.let { BigDecimal.valueOf(it.toLong()) },
-          newPlotDensity = newDensity?.let { BigDecimal.valueOf(it.toLong()) },
+          previousDensity = prevDensity?.let { BigDecimal.valueOf(it.toLong()) },
+          newDensity = newDensity?.let { BigDecimal.valueOf(it.toLong()) },
       )
 }

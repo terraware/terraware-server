@@ -2,9 +2,12 @@
 ${strings("notification.observation.t0Set.email.body", plantingSiteName)}
 
 <#list monitoringPlots as plot><#list plot.speciesDensityChanges as change>
-    Plot ${plot.monitoringPlotNumber}: ${change.speciesScientificName} - <#if change.previousPlotDensity??><#if change.newPlotDensity??>${change.previousPlotDensity} -> ${change.newPlotDensity}<#else>${change.previousPlotDensity} → Removed</#if><#else><#if change.newPlotDensity??>New → ${change.newPlotDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
+    Plot ${plot.monitoringPlotNumber}: ${change.speciesScientificName} - <#if change.previousDensity??><#if change.newDensity??>${change.previousDensity} -> ${change.newDensity}<#else>${change.previousDensity} → Removed</#if><#else><#if change.newDensity??>New → ${change.newDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
 </#list></#list>
 
+<#list plantingZones as zone><#list zone.speciesDensityChanges as change>
+    ${zone.zoneName}: ${change.speciesScientificName} - <#if change.previousDensity??><#if change.newDensity??>${change.previousDensity} -> ${change.newDensity}<#else>${change.previousDensity} → Removed</#if><#else><#if change.newDensity??>New → ${change.newDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
+</#list></#list>
 
 ------------------------------
 
