@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.api
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
@@ -7,10 +8,13 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.T0PlotService
 import com.terraformation.backend.tracking.db.T0PlotStore
 import com.terraformation.backend.tracking.model.PlotT0DataModel
+import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import io.swagger.v3.oas.annotations.Operation
 import java.math.BigDecimal
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,11 +34,9 @@ class T0Controller(
   @Operation(summary = "Get all saved T0 Data for a planting site")
   @GetMapping("/site/{plantingSiteId}")
   fun getT0SiteData(@PathVariable plantingSiteId: PlantingSiteId): GetSiteT0DataResponsePayload {
-    val plotData = t0PlotStore.fetchT0SiteData(plantingSiteId)
+    val siteData = t0PlotStore.fetchT0SiteData(plantingSiteId)
 
-    return GetSiteT0DataResponsePayload(
-        data = SiteT0DataPayload(plantingSiteId, plotData.map { PlotT0DataPayload(it) })
-    )
+    return GetSiteT0DataResponsePayload(data = SiteT0DataResponsePayload(siteData))
   }
 
   @Operation(
@@ -44,7 +46,7 @@ class T0Controller(
   )
   @PostMapping("/site")
   fun assignT0SiteData(
-      @RequestBody payload: SiteT0DataPayload,
+      @RequestBody payload: AssignSiteT0DataRequestPayload,
   ): SimpleSuccessResponsePayload {
     t0PlotService.assignT0PlotsData(payload.plots.map { it.toModel() })
 
@@ -54,16 +56,19 @@ class T0Controller(
 
 data class SpeciesDensityPayload(
     val speciesId: SpeciesId,
-    val plotDensity: BigDecimal,
+    @JsonAlias("plotDensity") val density: BigDecimal,
 ) {
   constructor(
       model: SpeciesDensityModel
   ) : this(
       speciesId = model.speciesId,
-      plotDensity = model.plotDensity,
+      density = model.density,
   )
 
-  fun toModel() = SpeciesDensityModel(speciesId = speciesId, plotDensity = plotDensity)
+  val plotDensity: BigDecimal // for backwards compatibility in response payloads
+    get() = density
+
+  fun toModel() = SpeciesDensityModel(speciesId = speciesId, density = density)
 }
 
 data class PlotT0DataPayload(
@@ -87,9 +92,38 @@ data class PlotT0DataPayload(
       )
 }
 
-data class SiteT0DataPayload(
+data class AssignSiteT0DataRequestPayload(
     val plantingSiteId: PlantingSiteId,
     val plots: List<PlotT0DataPayload> = emptyList(),
 )
 
-data class GetSiteT0DataResponsePayload(val data: SiteT0DataPayload) : SuccessResponsePayload
+data class ZoneT0DataPayload(
+    val plantingZoneId: PlantingZoneId,
+    val densityData: List<SpeciesDensityPayload> = emptyList(),
+) {
+  constructor(
+      model: ZoneT0TempDataModel
+  ) : this(
+      plantingZoneId = model.plantingZoneId,
+      densityData = model.densityData.map { SpeciesDensityPayload(it) },
+  )
+}
+
+data class SiteT0DataResponsePayload(
+    val plantingSiteId: PlantingSiteId,
+    val survivalRateIncludesTempPlots: Boolean = false,
+    val plots: List<PlotT0DataPayload> = emptyList(),
+    val zones: List<ZoneT0DataPayload> = emptyList(),
+) {
+  constructor(
+      model: SiteT0DataModel
+  ) : this(
+      plantingSiteId = model.plantingSiteId,
+      survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
+      plots = model.plots.map { PlotT0DataPayload(it) },
+      zones = model.zones.map { ZoneT0DataPayload(it) },
+  )
+}
+
+data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
+    SuccessResponsePayload
