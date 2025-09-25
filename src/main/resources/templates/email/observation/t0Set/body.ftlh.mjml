@@ -17,20 +17,51 @@
             </mj-raw>
                         <mj-text mj-class="text-body01-regular" padding-top="4px">
                             <strong>
-                                Plot ${plot.monitoringPlotNumber}:&nbsp;
+                                Plot ${plot.monitoringPlotNumber}:
                                 ${change.speciesScientificName}&nbsp;-&nbsp;
                             </strong>
                             <mj-raw>
-                                <#if change.previousPlotDensity??>
-                                    <#if change.newPlotDensity??>
-                                        ${change.previousPlotDensity}
-                                        → ${change.newPlotDensity}
+                                <#if change.previousDensity??>
+                                    <#if change.newDensity??>
+                                        ${change.previousDensity}
+                                        → ${change.newDensity}
                                     <#else>
-                                        ${change.previousPlotDensity} → Removed
+                                        ${change.previousDensity} → Removed
                                     </#if>
                                 <#else>
-                                    <#if change.newPlotDensity??>
-                                        New → ${change.newPlotDensity}
+                                    <#if change.newDensity??>
+                                        New → ${change.newDensity}
+                                    <#else>
+                                        No change
+                                    </#if>
+                                </#if> ${strings("plants.per.hectare.parens")}
+                            </mj-raw>
+                        </mj-text>
+            <mj-raw>
+                    </#list>
+                </#list>
+            </mj-raw>
+
+            <mj-raw>
+                <#list plantingZones as zone>
+                    <#list zone.speciesDensityChanges as change>
+            </mj-raw>
+                        <mj-text mj-class="text-body01-regular" padding-top="4px">
+                            <strong>
+                                ${zone.zoneName}:
+                                ${change.speciesScientificName}&nbsp;-&nbsp;
+                            </strong>
+                            <mj-raw>
+                                <#if change.previousDensity??>
+                                    <#if change.newDensity??>
+                                        ${change.previousDensity}
+                                        → ${change.newDensity}
+                                    <#else>
+                                        ${change.previousDensity} → Removed
+                                    </#if>
+                                <#else>
+                                    <#if change.newDensity??>
+                                        New → ${change.newDensity}
                                     <#else>
                                         No change
                                     </#if>

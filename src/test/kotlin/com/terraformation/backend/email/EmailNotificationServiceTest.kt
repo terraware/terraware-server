@@ -1402,23 +1402,40 @@ internal class EmailNotificationServiceTest {
   fun `rateLimitedT0DataAssignedEvent should notify org TF contacts`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
-            organization.id,
-            plantingSite.id,
-            listOf(
-                PlotT0DensityChangedEventModel(
-                    monitoringPlot.id,
-                    monitoringPlotNumber = monitoringPlot.plotNumber,
-                    speciesDensityChanges =
-                        listOf(
-                            SpeciesDensityChangedEventModel(
-                                species.id,
-                                speciesScientificName = species.scientificName,
-                                previousPlotDensity = BigDecimal.valueOf(10.123),
-                                newPlotDensity = BigDecimal.valueOf(20.456),
-                            )
-                        ),
-                )
-            ),
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            monitoringPlots =
+                listOf(
+                    PlotT0DensityChangedEventModel(
+                        monitoringPlot.id,
+                        monitoringPlotNumber = monitoringPlot.plotNumber,
+                        speciesDensityChanges =
+                            listOf(
+                                SpeciesDensityChangedEventModel(
+                                    species.id,
+                                    speciesScientificName = species.scientificName,
+                                    previousDensity = BigDecimal.valueOf(10.123),
+                                    newDensity = BigDecimal.valueOf(20.456),
+                                )
+                            ),
+                    )
+                ),
+            plantingZones =
+                listOf(
+                    ZoneT0DensityChangedEventModel(
+                        plantingZone.id,
+                        zoneName = "This Zone",
+                        speciesDensityChanges =
+                            listOf(
+                                SpeciesDensityChangedEventModel(
+                                    species.id,
+                                    speciesScientificName = "OtherSpecies",
+                                    previousDensity = BigDecimal.valueOf(100.5),
+                                    newDensity = BigDecimal.valueOf(200.6),
+                                )
+                            ),
+                    )
+                ),
         )
     )
 
@@ -1430,11 +1447,15 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("10.123", message = message)
     assertBodyContains("20.456", message = message)
+    assertBodyContains("This Zone:", message = message)
+    assertBodyContains("OtherSpecies", message = message)
+    assertBodyContains("100.5", message = message)
+    assertBodyContains("200.6", message = message)
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 
   @Test
-  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots`() {
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots or zones`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
             organizationId = organization.id,
@@ -1449,6 +1470,19 @@ internal class EmailNotificationServiceTest {
                     PlotT0DensityChangedEventModel(
                         MonitoringPlotId(2),
                         monitoringPlotNumber = 2L,
+                        speciesDensityChanges = emptyList(),
+                    ),
+                ),
+            plantingZones =
+                listOf(
+                    ZoneT0DensityChangedEventModel(
+                        plantingZone.id,
+                        zoneName = plantingZone.name,
+                        speciesDensityChanges = emptyList(),
+                    ),
+                    ZoneT0DensityChangedEventModel(
+                        PlantingZoneId(2),
+                        zoneName = "Z2",
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
