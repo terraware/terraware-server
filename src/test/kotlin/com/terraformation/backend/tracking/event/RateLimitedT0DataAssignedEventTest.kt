@@ -33,6 +33,7 @@ class RateLimitedT0DataAssignedEventTest {
               ),
           ),
           newEvent.combine(existingEvent),
+          "Should add different plot",
       )
     }
 
@@ -52,6 +53,7 @@ class RateLimitedT0DataAssignedEventTest {
               ),
           ),
           newEvent.combine(existingEvent),
+          "Should add different species",
       )
     }
 
@@ -64,6 +66,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 4))))),
           newEvent.combine(existingEvent),
+          "Should modify newDensity on species",
       )
     }
 
@@ -76,6 +79,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(listOf(plotChangeModel(1, emptyList()))),
           newEvent.combine(existingEvent),
+          "Should leave densities as empty list because change was reverted",
       )
     }
 
@@ -88,6 +92,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, null))))),
           newEvent.combine(existingEvent),
+          "Should show species as removed",
       )
     }
 
@@ -137,6 +142,7 @@ class RateLimitedT0DataAssignedEventTest {
               ),
           ),
           newEvent.combine(existingEvent),
+          "Combine works with lots of data",
       )
     }
   }
@@ -159,6 +165,7 @@ class RateLimitedT0DataAssignedEventTest {
                   )
           ),
           newEvent.combine(existingEvent),
+          "Should add different zone",
       )
     }
 
@@ -180,6 +187,7 @@ class RateLimitedT0DataAssignedEventTest {
                   ),
           ),
           newEvent.combine(existingEvent),
+          "Should add different species",
       )
     }
 
@@ -193,6 +201,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 4))))),
           newEvent.combine(existingEvent),
+          "Should modify newDensity on species",
       )
     }
 
@@ -206,6 +215,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(zones = listOf(zoneChangeModel(1, emptyList()))),
           newEvent.combine(existingEvent),
+          "Should leave densities as empty list because change was reverted",
       )
     }
 
@@ -220,6 +230,7 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, null))))),
           newEvent.combine(existingEvent),
+          "Should show species as removed",
       )
     }
 
@@ -272,8 +283,26 @@ class RateLimitedT0DataAssignedEventTest {
                   ),
           ),
           newEvent.combine(existingEvent),
+          "Combine works with lots of data",
       )
     }
+  }
+
+  @Test
+  fun `combines both plots and zones`() {
+    val existingEvent =
+        event(plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+
+    val newEvent = event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))))
+
+    assertEquals(
+        event(
+            plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
+            zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+        ),
+        newEvent.combine(existingEvent),
+        "Should include both plots and zones after combine",
+    )
   }
 
   private fun event(
