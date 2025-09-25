@@ -9,8 +9,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.tracking.T0PlotService
-import com.terraformation.backend.tracking.db.T0PlotStore
+import com.terraformation.backend.tracking.T0Service
+import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
@@ -28,13 +28,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class T0Controller(
-    private val t0PlotService: T0PlotService,
-    private val t0PlotStore: T0PlotStore,
+    private val t0Service: T0Service,
+    private val t0Store: T0Store,
 ) {
   @Operation(summary = "Get all saved T0 Data for a planting site")
   @GetMapping("/site/{plantingSiteId}")
   fun getT0SiteData(@PathVariable plantingSiteId: PlantingSiteId): GetSiteT0DataResponsePayload {
-    val siteData = t0PlotStore.fetchT0SiteData(plantingSiteId)
+    val siteData = t0Store.fetchT0SiteData(plantingSiteId)
 
     return GetSiteT0DataResponsePayload(data = SiteT0DataResponsePayload(siteData))
   }
@@ -48,7 +48,7 @@ class T0Controller(
   fun assignT0SiteData(
       @RequestBody payload: AssignSiteT0DataRequestPayload,
   ): SimpleSuccessResponsePayload {
-    t0PlotService.assignT0PlotsData(payload.plots.map { it.toModel() })
+    t0Service.assignT0PlotsData(payload.plots.map { it.toModel() })
 
     return SimpleSuccessResponsePayload()
   }
@@ -58,7 +58,7 @@ class T0Controller(
   fun assignT0TempSiteData(
       @RequestBody payload: AssignSiteT0TempDataRequestPayload
   ): SimpleSuccessResponsePayload {
-    t0PlotService.assignT0TempZoneData(payload.zones.map { it.toModel() })
+    t0Service.assignT0TempZoneData(payload.zones.map { it.toModel() })
 
     return SimpleSuccessResponsePayload()
   }
