@@ -61,6 +61,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
@@ -71,6 +72,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
@@ -134,6 +136,7 @@ class PlantingSiteStore(
     private val plantingSitesDao: PlantingSitesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
     private val plantingZonesDao: PlantingZonesDao,
+    private val rateLimitedEventPublisher: RateLimitedEventPublisher,
 ) {
   private val log = perClassLogger()
 
@@ -518,6 +521,17 @@ class PlantingSiteStore(
       if (initialTimeZone != editedTimeZone) {
         eventPublisher.publishEvent(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone)
+        )
+      }
+
+      if (initial.survivalRateIncludesTempPlots != edited.survivalRateIncludesTempPlots) {
+        rateLimitedEventPublisher.publishEvent(
+            RateLimitedT0DataAssignedEvent(
+                organizationId = edited.organizationId,
+                plantingSiteId = edited.id,
+                previousSiteTempSetting = initial.survivalRateIncludesTempPlots,
+                newSiteTempSetting = edited.survivalRateIncludesTempPlots,
+            )
         )
       }
     }

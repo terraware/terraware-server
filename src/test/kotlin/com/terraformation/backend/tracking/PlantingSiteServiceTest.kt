@@ -56,6 +56,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        eventPublisher,
     )
   }
   private val service by lazy {

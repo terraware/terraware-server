@@ -47,6 +47,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao,
+            eventPublisher,
         ),
         SystemUser(usersDao),
     )
