@@ -31,13 +31,14 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val importer: PlantingSiteImporter by lazy {
     PlantingSiteImporter(
         PlantingSiteStore(
             clock,
             TestSingletons.countryDetector,
             dslContext,
-            TestEventPublisher(),
+            eventPublisher,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
@@ -45,6 +46,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             plantingSitesDao,
             plantingSubzonesDao,
             plantingZonesDao,
+            eventPublisher,
         )
     )
   }

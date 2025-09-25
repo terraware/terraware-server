@@ -41,6 +41,7 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        eventPublisher,
     )
   }
 

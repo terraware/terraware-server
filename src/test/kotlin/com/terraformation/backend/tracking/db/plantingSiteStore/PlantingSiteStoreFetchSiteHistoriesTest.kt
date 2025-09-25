@@ -47,6 +47,7 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        eventPublisher,
     )
   }
 
