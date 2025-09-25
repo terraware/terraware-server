@@ -3809,6 +3809,9 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.activityIds.add(it) }
   }
 
+  private var lastActivityMediaFileActivityId: ActivityId? = null
+  private var nextActivityMediaFileListPosition = 1
+
   protected fun insertActivityMediaFile(
       activityId: ActivityId = inserted.activityId,
       caption: String? = null,
@@ -3816,6 +3819,10 @@ abstract class DatabaseBackedTest {
       fileId: FileId = inserted.fileId,
       geolocation: Point? = null,
       isCoverPhoto: Boolean = false,
+      isHiddenOnMap: Boolean = false,
+      listPosition: Int =
+          if (activityId == lastActivityMediaFileActivityId) nextActivityMediaFileListPosition
+          else 1,
       type: ActivityMediaType = ActivityMediaType.Photo,
   ) {
     val row =
@@ -3827,9 +3834,14 @@ abstract class DatabaseBackedTest {
             fileId = fileId,
             geolocation = geolocation,
             isCoverPhoto = isCoverPhoto,
+            isHiddenOnMap = isHiddenOnMap,
+            listPosition = listPosition,
         )
 
     activityMediaFilesDao.insert(row)
+
+    lastActivityMediaFileActivityId = activityId
+    nextActivityMediaFileListPosition = listPosition + 1
   }
 
   private var nextInternalTagNumber = 1

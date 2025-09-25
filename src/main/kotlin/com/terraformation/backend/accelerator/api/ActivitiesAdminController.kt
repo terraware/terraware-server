@@ -92,6 +92,8 @@ data class AdminActivityMediaFilePayload(
     val fileId: FileId,
     val geolocation: Point?,
     val isCoverPhoto: Boolean,
+    val isHiddenOnMap: Boolean,
+    val listPosition: Int,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -104,6 +106,8 @@ data class AdminActivityMediaFilePayload(
       fileId = model.fileId,
       geolocation = model.geolocation,
       isCoverPhoto = model.isCoverPhoto,
+      isHiddenOnMap = model.isHiddenOnMap,
+      listPosition = model.listPosition,
       type = model.type,
   )
 }

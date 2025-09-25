@@ -115,6 +115,7 @@ class ActivitiesController(
   @RequestBodyPhotoFile
   fun uploadActivityMedia(
       @PathVariable activityId: ActivityId,
+      @RequestPart("listPosition", required = false) listPositionStr: String?,
       @RequestPart("file") file: MultipartFile,
   ): UploadActivityMediaResponsePayload {
     val contentType = file.getPlainContentType(supportedMediaTypes)
@@ -125,6 +126,7 @@ class ActivitiesController(
             activityId,
             file.inputStream,
             FileMetadata.of(contentType, filename, file.size),
+            listPositionStr?.toIntOrNull(),
         )
 
     return UploadActivityMediaResponsePayload(fileId)
@@ -198,6 +200,8 @@ data class ActivityMediaFilePayload(
     val fileId: FileId,
     val geolocation: Point?,
     val isCoverPhoto: Boolean,
+    val isHiddenOnMap: Boolean,
+    val listPosition: Int,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -208,6 +212,8 @@ data class ActivityMediaFilePayload(
       fileId = model.fileId,
       geolocation = model.geolocation,
       isCoverPhoto = model.isCoverPhoto,
+      isHiddenOnMap = model.isHiddenOnMap,
+      listPosition = model.listPosition,
       type = model.type,
   )
 }
@@ -251,9 +257,16 @@ data class CreateActivityRequestPayload(
 data class UpdateActivityMediaRequestPayload(
     val caption: String?,
     val isCoverPhoto: Boolean,
+    val isHiddenOnMap: Boolean,
+    val listPosition: Int,
 ) {
   fun applyTo(model: ActivityMediaModel): ActivityMediaModel {
-    return model.copy(caption = caption, isCoverPhoto = isCoverPhoto)
+    return model.copy(
+        caption = caption,
+        isCoverPhoto = isCoverPhoto,
+        isHiddenOnMap = isHiddenOnMap,
+        listPosition = listPosition,
+    )
   }
 }
 
