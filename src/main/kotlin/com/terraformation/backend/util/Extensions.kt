@@ -41,6 +41,13 @@ fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
     this == null && other == null || this != null && other != null && compareTo(other) == 0
 
 /**
+ * Simplifies divisions that need to include a specific scale, since we almost always want to divide
+ * half up.
+ */
+fun BigDecimal.divideHalfUp(other: BigDecimal, scale: Int = 10): BigDecimal =
+    this.divide(other, scale, RoundingMode.HALF_UP)
+
+/**
  * Generates an equality condition for a jOOQ field if the value is non-null, or an IS NULL if the
  * value is null.
  */

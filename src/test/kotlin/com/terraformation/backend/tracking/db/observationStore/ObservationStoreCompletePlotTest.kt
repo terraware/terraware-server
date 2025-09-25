@@ -31,9 +31,9 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
+import com.terraformation.backend.util.divideHalfUp
 import io.mockk.every
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import kotlin.math.roundToInt
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -150,18 +150,15 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity =
-            BigDecimal.valueOf(1).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(1).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity =
-            BigDecimal.valueOf(2).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(2).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId3,
-        plotDensity =
-            BigDecimal.valueOf(3).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(3).divideHalfUp(hectaresInPlot),
     )
     val zoneId1 = inserted.plantingZoneId
     val zone1SubzoneId1 = inserted.plantingSubzoneId
@@ -170,18 +167,15 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // excluded densities because not permanent
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity =
-            BigDecimal.valueOf(4).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(4).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity =
-            BigDecimal.valueOf(5).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(5).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId3,
-        plotDensity =
-            BigDecimal.valueOf(6).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(6).divideHalfUp(hectaresInPlot),
     )
     val zoneId2 = insertPlantingZone()
     val zone2SubzoneId1 = insertPlantingSubzone()
@@ -189,18 +183,15 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity =
-            BigDecimal.valueOf(7).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(7).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity =
-            BigDecimal.valueOf(8).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(8).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId3,
-        plotDensity =
-            BigDecimal.valueOf(9).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(9).divideHalfUp(hectaresInPlot),
     )
 
     // We want to verify that the "plants since last observation" numbers aren't reset until all
@@ -210,18 +201,15 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     // excluded densities because not permanent
     insertPlotT0Density(
         speciesId = speciesId1,
-        plotDensity =
-            BigDecimal.valueOf(10).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(10).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId2,
-        plotDensity =
-            BigDecimal.valueOf(11).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(11).divideHalfUp(hectaresInPlot),
     )
     insertPlotT0Density(
         speciesId = speciesId3,
-        plotDensity =
-            BigDecimal.valueOf(12).divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+        plotDensity = BigDecimal.valueOf(12).divideHalfUp(hectaresInPlot),
     )
     insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
     insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)

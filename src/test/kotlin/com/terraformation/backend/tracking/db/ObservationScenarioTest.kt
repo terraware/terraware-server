@@ -28,12 +28,12 @@ import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
-import com.terraformation.backend.util.HECTARES_IN_PLOT
+import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.divideHalfUp
 import io.mockk.every
 import java.io.InputStreamReader
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import kotlin.math.sqrt
@@ -46,8 +46,7 @@ import org.locationtech.jts.geom.MultiPolygon
 abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  protected val hectaresInPlot = HECTARES_IN_PLOT.toBigDecimal()
-  protected val divisionScale = 10
+  protected val hectaresInPlot = HECTARES_PER_PLOT.toBigDecimal()
   protected lateinit var organizationId: OrganizationId
   protected lateinit var plantingSiteId: PlantingSiteId
   protected val allSpeciesNames = mutableSetOf<String>()
@@ -826,7 +825,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         insertPlotT0Density(
             speciesId = speciesId,
             monitoringPlotId = plotId,
-            plotDensity = density.divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+            plotDensity = density.divideHalfUp(hectaresInPlot),
         )
         speciesIndex++
       }
@@ -931,10 +930,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     insertPlotT0Density(
                         speciesId = speciesId!!,
                         monitoringPlotId = plotId,
-                        plotDensity =
-                            count
-                                .toBigDecimal()
-                                .divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+                        plotDensity = count.toBigDecimal().divideHalfUp(hectaresInPlot),
                     )
                   }
             }
@@ -1134,10 +1130,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   insertPlotT0Density(
                       speciesId = speciesId!!,
                       monitoringPlotId = plotId,
-                      plotDensity =
-                          count
-                              .toBigDecimal()
-                              .divide(hectaresInPlot, divisionScale, RoundingMode.HALF_UP),
+                      plotDensity = count.toBigDecimal().divideHalfUp(hectaresInPlot),
                   )
                 }
           }

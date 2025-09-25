@@ -61,7 +61,7 @@ import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
-import com.terraformation.backend.util.HECTARES_IN_PLOT
+import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -805,7 +805,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           densityCol.gt(BigDecimal.ZERO),
                           DSL.coalesce(PERMANENT_LIVE, 0)
                               .div(densityCol)
-                              .div(DSL.inline(HECTARES_IN_PLOT)),
+                              .div(DSL.inline(HECTARES_PER_PLOT)),
                       ),
                   ),
                   densityCol,
@@ -1004,7 +1004,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           densityCol.gt(BigDecimal.ZERO),
                           DSL.coalesce(PERMANENT_LIVE, 0)
                               .div(densityCol)
-                              .div(DSL.inline(HECTARES_IN_PLOT)),
+                              .div(DSL.inline(HECTARES_PER_PLOT)),
                       ),
                   ),
                   densityCol,
@@ -1224,7 +1224,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           densityCol.gt(BigDecimal.ZERO),
                           DSL.coalesce(PERMANENT_LIVE, 0)
                               .div(densityCol)
-                              .div(DSL.inline(HECTARES_IN_PLOT)),
+                              .div(DSL.inline(HECTARES_PER_PLOT)),
                       ),
                   ),
                   densityCol,

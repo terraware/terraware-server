@@ -20,9 +20,9 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.util.HECTARES_IN_PLOT
+import com.terraformation.backend.util.HECTARES_PER_PLOT
+import com.terraformation.backend.util.divideHalfUp
 import java.math.BigDecimal
-import java.math.RoundingMode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -228,5 +228,5 @@ internal class T0PlotServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
   private fun plotDensityToHectare(density: Int): BigDecimal =
-      density.toBigDecimal().divide(HECTARES_IN_PLOT.toBigDecimal(), 10, RoundingMode.HALF_UP)
+      density.toBigDecimal().divideHalfUp(HECTARES_PER_PLOT.toBigDecimal())
 }

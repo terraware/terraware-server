@@ -68,7 +68,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
-import com.terraformation.backend.util.HECTARES_IN_PLOT
+import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -1487,7 +1487,7 @@ class ReportStore(
                         .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
                 )
             )
-            .times(DSL.inline(HECTARES_IN_PLOT))
+            .times(DSL.inline(HECTARES_PER_PLOT))
       }
 
   private val survivalRateNumeratorField = DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
