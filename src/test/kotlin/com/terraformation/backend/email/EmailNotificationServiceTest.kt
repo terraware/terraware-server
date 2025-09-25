@@ -18,6 +18,7 @@ import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -1719,7 +1720,7 @@ internal class EmailNotificationServiceTest {
 
     service.on(NotificationJobSucceededEvent())
 
-    assertEquals(setOf("1@test.com", "2@test.com"), sentMessages.keys, "Recipients")
+    assertSetEquals(setOf("1@test.com", "2@test.com"), sentMessages.keys, "Recipients")
   }
 
   @Test
@@ -1734,7 +1735,7 @@ internal class EmailNotificationServiceTest {
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(NotificationJobSucceededEvent())
 
-    assertEquals(setOf("2@test.com"), sentMessages.keys, "Recipients")
+    assertSetEquals(setOf("2@test.com"), sentMessages.keys, "Recipients")
   }
 
   @Test

@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -50,7 +51,7 @@ class PlantingZoneModelTest {
                   ),
           )
 
-      assertEquals(
+      assertSetEquals(
           setOf(MonitoringPlotId(3), MonitoringPlotId(4)),
           model.choosePermanentPlots(plantingSubzoneIds(2)),
       )

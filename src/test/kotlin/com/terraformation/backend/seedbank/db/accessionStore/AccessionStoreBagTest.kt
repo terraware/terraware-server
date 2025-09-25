@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.assertSetEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ internal class AccessionStoreBagTest : AccessionStoreTest() {
     val accessionId = initial.id!!
     val initialBags = bagsDao.fetchByAccessionId(accessionId)
 
-    assertEquals(
+    assertSetEquals(
         setOf("bag 1", "bag 2"),
         initialBags.map { it.bagNumber }.toSet(),
         "Initial bag numbers",

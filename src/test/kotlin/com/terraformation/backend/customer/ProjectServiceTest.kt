@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
@@ -186,7 +187,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
           listOf(plantingSiteId1, plantingSiteId2),
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               accessionId1 to projectId,
               accessionId2 to projectId,
@@ -196,7 +197,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
           "Accession projects",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               batchId1 to projectId,
               batchId2 to projectId,
@@ -206,7 +207,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
           "Batch projects",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               plantingSiteId1 to projectId,
               plantingSiteId2 to projectId,

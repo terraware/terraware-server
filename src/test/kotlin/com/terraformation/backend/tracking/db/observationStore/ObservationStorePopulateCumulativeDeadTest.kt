@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -123,7 +124,7 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
 
     val totalsForThisObservation = helper.fetchAllTotals() - totalsFromPreviousObservation
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             ObservedPlotSpeciesTotalsRow(
                 observationId = observationId,

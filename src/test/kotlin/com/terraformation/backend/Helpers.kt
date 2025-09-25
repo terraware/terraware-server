@@ -65,6 +65,24 @@ fun assertGeometryEquals(expected: Geometry?, actual: Geometry?, message: String
   }
 }
 
+/**
+ * Asserts that two sets are equal. If not, produces an assertion failure message with the items
+ * sorted by their string representations, each item on a separate line, to make it easier to spot
+ * differences.
+ */
+fun <T> assertSetEquals(expected: Set<T>, actual: Set<T>, message: String? = null) {
+  if (expected != actual) {
+    assertEquals(expected.toPrettyString(), actual.toPrettyString(), message)
+
+    // Should never get here unless the string representations of the items are incomplete.
+    assertEquals(
+        expected,
+        actual,
+        "Sets are not equal, but their items' string representations are the same",
+    )
+  }
+}
+
 fun point(x: Number, y: Number = x, z: Number? = null, srid: Int = SRID.LONG_LAT): Point {
   val geometryFactory = GeometryFactory(PrecisionModel(), srid)
   return geometryFactory.createPoint(
@@ -215,3 +233,10 @@ fun getEnvOrSkipTest(name: String): String {
   assumeNotNull(value, "$name not set; skipping test")
   return value
 }
+
+/**
+ * Returns a string representation of a Set with the items sorted and each item on its own indented
+ * line.
+ */
+private fun Set<*>.toPrettyString(): String =
+    sortedBy { it.toString() }.joinToString(",\n  ", "[\n  ", "\n]")

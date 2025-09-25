@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -1248,7 +1249,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val plantingSiteIdWithPlantings = helper.insertPlantedSite()
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
@@ -1346,7 +1347,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
@@ -1449,7 +1450,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingCreatedTime = Instant.EPOCH.minus(6 * 7, ChronoUnit.DAYS)
           )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
@@ -1566,7 +1567,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               plantingSiteIdWithCompletedObservation,
               anotherPlantingSiteIdWithCompletedObservation,
@@ -1803,7 +1804,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ReplacementDuration.LongTerm,
           )
 
-      assertEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
+      assertSetEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
       assertEquals(1, result.addedMonitoringPlotIds.size, "Number of plot IDs added")
 
       val plots = monitoringPlotsDao.findAll().associateBy { it.id!! }

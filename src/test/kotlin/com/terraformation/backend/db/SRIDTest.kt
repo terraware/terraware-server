@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.tables.references.SPATIAL_REF_SYS
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -36,6 +37,6 @@ class SRIDTest : DatabaseTest() {
             .toSortedSet()
     val mappingSrids = SRID.mapping.values.toSortedSet()
 
-    assertEquals(emptySet<Int>(), mappingSrids - postgisSrids, "Unrecognized SRIDs in mapping")
+    assertSetEquals(emptySet<Int>(), mappingSrids - postgisSrids, "Unrecognized SRIDs in mapping")
   }
 }

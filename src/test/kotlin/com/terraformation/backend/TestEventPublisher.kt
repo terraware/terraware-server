@@ -72,7 +72,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
       events: Set<Any>,
       message: String = "Expected events not published",
   ) {
-    assertEquals(events, publishedEvents.toSet(), message)
+    assertSetEquals(events, publishedEvents.toSet(), message)
   }
 
   /** Asserts that a particular event was published. */

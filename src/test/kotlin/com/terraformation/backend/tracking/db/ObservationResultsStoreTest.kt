@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
@@ -374,7 +375,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
       assertFalse(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
-      assertEquals(
+      assertSetEquals(
           setOf(
               ObservableCondition.AnimalDamage,
               ObservableCondition.Fungus,
@@ -814,8 +815,16 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
       val plotResults = results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0]
 
-      assertEquals(setOf(oldPlotId1, oldPlotId2), plotResults.overlapsWithPlotIds, "Overlaps with")
-      assertEquals(setOf(newPlotId1, newPlotId2), plotResults.overlappedByPlotIds, "Overlapped by")
+      assertSetEquals(
+          setOf(oldPlotId1, oldPlotId2),
+          plotResults.overlapsWithPlotIds,
+          "Overlaps with",
+      )
+      assertSetEquals(
+          setOf(newPlotId1, newPlotId2),
+          plotResults.overlappedByPlotIds,
+          "Overlapped by",
+      )
     }
 
     @Test
@@ -1057,7 +1066,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       )
 
       val summary = resultsStore.fetchSummariesForPlantingSite(inserted.plantingSiteId, 1).first()
-      assertEquals(
+      assertSetEquals(
           setOf(observation1Subzone1Result, observation1Subzone2Result, observation2Subzone3Result),
           summary.plantingZones.flatMap { it.plantingSubzones }.toSet(),
           "Planting subzones used for summary did not include the Incomplete subzone result",

@@ -12,6 +12,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -876,19 +877,19 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 status = SubmissionStatus.Completed,
             )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId1).toSet(),
             "Fetch application deliverables by projectId for org1 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId2).toSet(),
             "Fetch application deliverables by projectId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
@@ -898,7 +899,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by org2 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
@@ -909,7 +910,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project2PrescreenModel),
             store
                 .fetchApplicationDeliverables(
@@ -920,7 +921,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org2Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
@@ -931,19 +932,19 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project1ApplicationId).toSet(),
             "Fetch application deliverables by applicationId for org1 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project2ApplicationId).toSet(),
             "Fetch application deliverables by applicationId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
@@ -953,7 +954,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId for org2 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
@@ -964,7 +965,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId and deliverableId for org1 project1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org1Project2ApplicationModel),
             store
                 .fetchApplicationDeliverables(
@@ -975,7 +976,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId and deliverableId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(org2Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
@@ -986,7 +987,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId and deliverableId for org1 project2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1PrescreenModel,
                 org1Project1ApplicationModel,
@@ -997,7 +998,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by organizationId 1",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org2Project1PrescreenModel,
                 org2Project1ApplicationModel,
@@ -1007,7 +1008,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by organizationId 2",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1PrescreenModel,
                 org1Project2PrescreenModel,
@@ -1017,7 +1018,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by pre-screen deliverableId",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1ApplicationModel,
                 org1Project2ApplicationModel,
@@ -1027,7 +1028,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by application deliverableId",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1PrescreenModel,
                 org1Project2PrescreenModel,
@@ -1037,7 +1038,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by pre-screen moduleId",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1ApplicationModel,
                 org1Project2ApplicationModel,
@@ -1047,7 +1048,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by application moduleId",
         )
 
-        assertEquals(
+        assertSetEquals(
             setOf(
                 org1Project1PrescreenModel,
                 org1Project1ApplicationModel,
@@ -1713,7 +1714,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       store.submit(applicationId, validVariables(boundary))
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               ApplicationModulesRow(
                   applicationId = applicationId,

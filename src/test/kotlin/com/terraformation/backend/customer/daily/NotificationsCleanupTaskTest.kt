@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.daily
 
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
@@ -53,7 +54,7 @@ internal class NotificationsCleanupTaskTest : DatabaseTest() {
     val notificationId2 = insertNotification(UserId(1), createdTime = now.minus(Duration.ofDays(6)))
 
     val beforeCleanup = notificationsDao.findAll()
-    assertEquals(
+    assertSetEquals(
         setOf(notificationId1, notificationId2),
         beforeCleanup.map { it.id }.toSet(),
         "Expected notification IDs 1 and 2",

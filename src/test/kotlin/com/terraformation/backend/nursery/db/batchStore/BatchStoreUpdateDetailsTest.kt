@@ -1,5 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
@@ -88,7 +89,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
         after,
     )
 
-    assertEquals(
+    assertSetEquals(
         setOf(newSubLocationId1, newSubLocationId2),
         batchSubLocationsDao.findAll().map { it.subLocationId }.toSet(),
         "Should have replaced sub-locations list",
@@ -116,7 +117,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
         batchDetailsHistoryDao.findAll().map { it.copy(id = null) },
     )
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             BatchDetailsHistorySubLocationsRow(
                 subLocationId = newSubLocationId1,

@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.NewFacilityModel
@@ -300,7 +301,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     store.withIdleFacilities { actual.addAll(it) }
 
-    assertEquals(setOf(facilityId), actual)
+    assertSetEquals(setOf(facilityId), actual)
   }
 
   @Test
@@ -342,7 +343,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
         )
     val subLocations = store.fetchSubLocations(model.id)
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             SubLocationsRow(
                 createdBy = user.userId,

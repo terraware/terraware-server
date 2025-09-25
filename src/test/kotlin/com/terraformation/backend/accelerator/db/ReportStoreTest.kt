@@ -18,6 +18,7 @@ import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -707,19 +708,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = LocalDate.of(2041, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-      assertEquals(
+      assertSetEquals(
           setOf(reportModel1, reportModel2, otherReportModel1, otherReportModel2),
           store.fetch().toSet(),
           "Fetches all",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(reportModel1, reportModel2),
           store.fetch(projectId = projectId).toSet(),
           "Fetches by projectId",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(reportModel2, otherReportModel1),
           store.fetch(year = 2035).toSet(),
           "Fetches by year",
@@ -792,14 +793,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(emptyList<ReportModel>(), store.fetch(), "Contributor cannot see the reports")
 
       insertOrganizationUser(organizationId = organizationId, role = Role.Manager)
-      assertEquals(
+      assertSetEquals(
           setOf(reportModel, secondReportModel),
           store.fetch().toSet(),
           "Manager can see project reports within the organization",
       )
 
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
-      assertEquals(
+      assertSetEquals(
           setOf(reportModel, secondReportModel, otherReportModel),
           store.fetch().toSet(),
           "Read-only admin user can see all project reports",
@@ -3103,13 +3104,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               logframeUrl = URI("https://terraware.io/logframe"),
           )
 
-      assertEquals(
+      assertSetEquals(
           setOf(projectConfigModel1, projectConfigModel2),
           store.fetchProjectReportConfigs(projectId = projectId).toSet(),
           "fetches by projectId",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               projectConfigModel1,
               projectConfigModel2,

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.CredentialRepresentation
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.UserRepresentation
@@ -347,7 +348,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(acceleratorAdminUser, GlobalRole.AcceleratorAdmin)
     insertUserGlobalRole(readOnlyUser, GlobalRole.ReadOnly)
 
-    assertEquals(
+    assertSetEquals(
         setOf(acceleratorAdminUser, readOnlyUser),
         userStore
             .fetchWithGlobalRoles(setOf(GlobalRole.AcceleratorAdmin, GlobalRole.ReadOnly))

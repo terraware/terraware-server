@@ -1,5 +1,6 @@
 package com.terraformation.backend.i18n
 
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.SearchTables
@@ -61,7 +62,7 @@ class SearchFieldMetadataTest {
             .filterValues { it > 1 }
             .keys
 
-    assertEquals(emptySet<String>(), duplicateFields, "Found duplicate field names")
+    assertSetEquals(emptySet<String>(), duplicateFields, "Found duplicate field names")
   }
 
   private fun <T> mapAllSearchFields(func: (SearchTable, SearchField) -> T?): List<T> {

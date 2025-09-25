@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
@@ -119,7 +120,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableId4,
           )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               cohort1Deliverable1,
               cohort1Deliverable2,
@@ -132,7 +133,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           "Fetch with no filters",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               cohort1Deliverable1,
               cohort1Deliverable2,
@@ -143,13 +144,13 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           "Fetch with cohort filter",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(cohort1Deliverable3, cohort1Deliverable4, cohort2Deliverable3, cohort2Deliverable4),
           store.fetchDeliverableDueDates(moduleId = moduleId2).toSet(),
           "Fetch with module filter",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               cohort1Deliverable3,
               cohort1Deliverable4,
@@ -158,7 +159,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           "Fetch with cohort and module filter",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               cohort1Deliverable3,
               cohort2Deliverable3,
@@ -167,7 +168,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           "Fetch with deliverable filter",
       )
 
-      assertEquals(
+      assertSetEquals(
           setOf(
               cohort1Deliverable3,
           ),
@@ -177,7 +178,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           "Fetch with cohort and deliverable filter",
       )
 
-      assertEquals(
+      assertSetEquals(
           emptySet<DeliverableDueDateModel>(),
           store
               .fetchDeliverableDueDates(deliverableId = deliverableId1, moduleId = moduleId2)
@@ -237,7 +238,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               dueDate = LocalDate.of(2024, 7, 1),
           )
 
-      assertEquals(setOf(updatedRow, insertedRow), deliverableCohortDueDatesDao.findAll().toSet())
+      assertSetEquals(
+          setOf(updatedRow, insertedRow),
+          deliverableCohortDueDatesDao.findAll().toSet(),
+      )
     }
 
     @Test
@@ -299,7 +303,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               dueDate = LocalDate.of(2024, 7, 1),
           )
 
-      assertEquals(setOf(updatedRow, insertedRow), deliverableProjectDueDatesDao.findAll().toSet())
+      assertSetEquals(
+          setOf(updatedRow, insertedRow),
+          deliverableProjectDueDatesDao.findAll().toSet(),
+      )
     }
 
     @Test

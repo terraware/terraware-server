@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.db.DatabaseTest
@@ -189,7 +190,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
     insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Internal)
 
-    assertEquals(
+    assertSetEquals(
         setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
         store.fetchTagsByOrganization(organizationId),
     )
@@ -218,7 +219,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
         setOf(InternalTagIds.Reporter, InternalTagIds.Testing),
     )
 
-    assertEquals(
+    assertSetEquals(
         setOf(
             OrganizationInternalTagsRow(
                 createdBy = user.userId,
