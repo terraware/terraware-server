@@ -5,6 +5,7 @@ import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -285,8 +286,10 @@ tasks.withType<KotlinCompile> {
     // Kotlin and Java target compatibility must be the same.
     jvmTarget = JvmTarget.JVM_24
     allWarningsAsErrors = true
-
     extraWarnings = true
+
+    // No need to generate code that's binary-compatible with earlier Kotlin versions
+    jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
 
     // jOOQ generated code has redundant modifiers
     freeCompilerArgs.add("-Xwarning-level=REDUNDANT_MODALITY_MODIFIER:disabled")

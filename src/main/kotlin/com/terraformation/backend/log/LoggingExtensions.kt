@@ -42,7 +42,7 @@ inline fun <reified T : Any> T.perClassLogger(): Logger {
       }
 
   // Remove CGLIB suffixes from classes Spring decides to rewrite
-  val className = loggingClass.canonicalName.substringBefore("\$\$")
+  val className = loggingClass.canonicalName.substringBefore("$$")
 
   return LoggerFactory.getLogger(className)
 }

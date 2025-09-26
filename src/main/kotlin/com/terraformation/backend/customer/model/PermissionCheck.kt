@@ -70,10 +70,10 @@ abstract class PermissionCheck {
       className == IndividualUser::class.java.name ->
           !methodName.startsWith("recordPermissionCheck")
       className == PermissionCheck::class.java.name -> false
-      className == PermissionRequirements::class.java.name -> !methodName.contains("\$lambda\$")
+      className == PermissionRequirements::class.java.name -> !methodName.contains($$"$lambda$")
       // Kotlin wrapper method that populates default argument values; it will always be immediately
       // followed by a stack frame for the actual method.
-      methodName.endsWith("\$default") -> false
+      methodName.endsWith($$"$default") -> false
       else -> true
     }
   }

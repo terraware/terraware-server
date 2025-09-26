@@ -22,7 +22,6 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
 import java.util.UUID
 import kotlin.random.Random
-import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.JSONB
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -274,7 +273,7 @@ class AdminDevicesController(
   ): String {
     try {
       repeat(count) {
-        val calculatedName = name ?: HexUtils.toHexString(Random.nextBytes(4)).uppercase()
+        val calculatedName = name ?: Random.nextBytes(4).toHexString(HexFormat.UpperCase)
         val calculatedAddress = address ?: calculatedName
 
         val devicesRow =

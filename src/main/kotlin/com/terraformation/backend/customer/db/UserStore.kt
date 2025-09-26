@@ -42,8 +42,8 @@ import jakarta.inject.Named
 import jakarta.ws.rs.core.Response
 import java.time.Clock
 import java.time.Instant
-import java.util.Base64
 import java.util.Locale
+import kotlin.io.encoding.Base64
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
@@ -606,7 +606,7 @@ class UserStore(
     // offline token. There is no administrative Keycloak API to do that on behalf of a user.
     // When we're done, we will remove the password. Use a long random password so that even if
     // this process bombs out, an attacker won't be able to guess the password.
-    val randomPassword = Base64.getEncoder().encodeToString(Random.nextBytes(40))
+    val randomPassword = Base64.encode(Random.nextBytes(40))
 
     keycloakAdminClient.setPassword(authId, randomPassword)
 

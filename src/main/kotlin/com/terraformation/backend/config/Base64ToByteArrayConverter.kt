@@ -1,7 +1,7 @@
 package com.terraformation.backend.config
 
 import jakarta.inject.Named
-import java.util.Base64
+import kotlin.io.encoding.Base64
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding
 import org.springframework.core.convert.converter.Converter
 
@@ -13,11 +13,9 @@ import org.springframework.core.convert.converter.Converter
 @ConfigurationPropertiesBinding
 @Named
 class Base64ToByteArrayConverter : Converter<String, ByteArray> {
-  private val decoder = Base64.getDecoder()!!
-
   override fun convert(obj: String): ByteArray {
     return try {
-      decoder.decode(obj)
+      Base64.decode(obj)
     } catch (e: Exception) {
       throw IllegalArgumentException(e)
     }

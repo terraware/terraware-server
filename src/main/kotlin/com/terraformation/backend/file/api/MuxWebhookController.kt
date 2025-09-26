@@ -11,7 +11,6 @@ import com.terraformation.backend.log.withMDC
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.InternalServerErrorException
-import java.util.HexFormat
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 import org.springframework.web.bind.annotation.PostMapping
@@ -110,7 +109,7 @@ class MuxWebhookController(
     val hmac = HmacUtils.getInitializedMac(HmacAlgorithms.HMAC_SHA_256, webhookSecret)
     hmac.update(timestamp.toByteArray())
     hmac.update(PERIOD_BYTE)
-    val payloadHash = HexFormat.of().formatHex(hmac.doFinal(payload))
+    val payloadHash = hmac.doFinal(payload).toHexString()
 
     if (hashFromHeader != payloadHash) {
       log.debug("Hash mismatch: expected $payloadHash but header had $hashFromHeader")
