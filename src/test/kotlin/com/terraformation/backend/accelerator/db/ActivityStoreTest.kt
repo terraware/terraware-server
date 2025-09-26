@@ -200,6 +200,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           caption = "Caption 2",
           capturedDate = LocalDate.of(2024, 2, 20),
           geolocation = point(1),
+          isHiddenOnMap = true,
           type = ActivityMediaType.Video,
       )
 
@@ -219,6 +220,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               media =
                   listOf(
                       ActivityMediaModel(
+                          activityId = activityId,
                           caption = "Caption 1",
                           createdBy = user.userId,
                           createdTime = Instant.EPOCH,
@@ -226,9 +228,12 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId1,
                           geolocation = null,
                           isCoverPhoto = true,
+                          isHiddenOnMap = false,
+                          listPosition = 1,
                           type = ActivityMediaType.Photo,
                       ),
                       ActivityMediaModel(
+                          activityId = activityId,
                           caption = "Caption 2",
                           createdBy = user.userId,
                           createdTime = Instant.ofEpochSecond(1),
@@ -236,6 +241,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId2,
                           geolocation = point(1),
                           isCoverPhoto = false,
+                          isHiddenOnMap = true,
+                          listPosition = 2,
                           type = ActivityMediaType.Video,
                       ),
                   ),
@@ -276,7 +283,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       val fileId1 = insertFile()
-      insertActivityMediaFile(caption = "Caption")
+      insertActivityMediaFile(caption = "Caption", isHiddenOnMap = true)
 
       val activityId2 =
           insertActivity(
@@ -308,6 +315,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   media =
                       listOf(
                           ActivityMediaModel(
+                              activityId = activityId1,
                               caption = "Caption",
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
@@ -315,6 +323,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               fileId = fileId1,
                               geolocation = null,
                               isCoverPhoto = false,
+                              isHiddenOnMap = true,
+                              listPosition = 1,
                               type = ActivityMediaType.Photo,
                           ),
                       ),
@@ -333,6 +343,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   media =
                       listOf(
                           ActivityMediaModel(
+                              activityId = activityId2,
                               caption = null,
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
@@ -340,6 +351,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               fileId = fileId2,
                               geolocation = null,
                               isCoverPhoto = true,
+                              isHiddenOnMap = false,
+                              listPosition = 1,
                               type = ActivityMediaType.Photo,
                           ),
                       ),

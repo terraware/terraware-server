@@ -145,10 +145,13 @@ class ActivityStore(
       DSL.multiset(
               DSL.select(
                       ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID,
+                      ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
                       ACTIVITY_MEDIA_FILES.CAPTION,
                       ACTIVITY_MEDIA_FILES.CAPTURED_DATE,
                       ACTIVITY_MEDIA_FILES.FILE_ID,
                       ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO,
+                      ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP,
+                      ACTIVITY_MEDIA_FILES.LIST_POSITION,
                       FILES.CREATED_BY,
                       FILES.CREATED_TIME,
                       geolocationField,
@@ -157,7 +160,7 @@ class ActivityStore(
                   .join(FILES)
                   .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
                   .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(ACTIVITIES.ID))
-                  .orderBy(ACTIVITY_MEDIA_FILES.FILE_ID)
+                  .orderBy(ACTIVITY_MEDIA_FILES.LIST_POSITION)
           )
           .convertFrom { result -> result.map { ActivityMediaModel.of(it, geolocationField) } }
 
