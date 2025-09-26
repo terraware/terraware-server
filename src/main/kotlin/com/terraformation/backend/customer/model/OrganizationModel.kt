@@ -29,8 +29,8 @@ data class OrganizationModel(
 ) {
   constructor(
       record: Record,
-      facilitiesMultiset: Field<List<FacilityModel>>? = null,
-      internalTagsMultiset: Field<List<InternalTagId>>? = null,
+      facilitiesMultiset: Field<out List<FacilityModel>>? = null,
+      internalTagsMultiset: Field<out List<InternalTagId>>? = null,
       totalUsersSubquery: Field<Int>? = null,
   ) : this(
       id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),

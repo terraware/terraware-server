@@ -21,6 +21,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
+import java.util.concurrent.atomic.AtomicInteger
 import org.jooq.DSLContext
 
 data class ManifestImportResult(
@@ -234,7 +235,9 @@ class ManifestImporter(
             Regex("(.*?)(?:\\{\\{(?:[^}]*-\\s*)?([0-9]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
         val textVariablePairs =
             regex.findAll(csvVariable.defaultSectionText).map { it.groupValues.drop(1) }
-        var listPosition = 1
+
+        // This used to be an Int var but it triggered https://youtrack.jetbrains.com/issue/KT-76632
+        val listPosition = AtomicInteger(1)
 
         val defaultValuesRows =
             textVariablePairs
@@ -245,7 +248,7 @@ class ManifestImporter(
                             variableId = csvVariable.variableId,
                             variableTypeId = VariableType.Section,
                             variableManifestId = variableManifestId,
-                            listPosition = listPosition++,
+                            listPosition = listPosition.getAndAdd(1),
                             textValue = textValue,
                         )
                       } else {
@@ -264,7 +267,7 @@ class ManifestImporter(
                               variableId = csvVariable.variableId,
                               variableTypeId = VariableType.Section,
                               variableManifestId = variableManifestId,
-                              listPosition = listPosition++,
+                              listPosition = listPosition.getAndAdd(1),
                               usedVariableId = referencedVariable.id,
                               usedVariableTypeId = referencedVariable.type,
                               usageTypeId = VariableUsageType.Injection,
