@@ -89,7 +89,7 @@ def main():
     if not species_ids:
         raise Exception("No species are defined for organization.")
 
-    for n in range(0, args.number):
+    for _ in range(0, args.number):
         batch = create_batch(client, facility_id, species_ids)
         if args.verbose:
             print(json.dumps(batch, indent=2))

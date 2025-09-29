@@ -14,4 +14,7 @@ object SuperAdminAuthority : GrantedAuthority {
   override fun getAuthority(): String {
     return "ROLE_SUPER_ADMIN"
   }
+
+  @Suppress("unused") // GrantedAuthority extends Serializable
+  private fun readResolve(): Any = SuperAdminAuthority
 }

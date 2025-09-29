@@ -80,7 +80,7 @@ import org.springframework.security.core.GrantedAuthority
  * short-lived cache for information such as the user's roles in various contexts. For example, if
  * you access [facilityRoles] you will get a map of the user's role at each facility they have
  * access to. The first time you access that property, it will be fetched from the database, but it
- * will be cached afterwards.
+ * will be cached afterward.
  */
 data class IndividualUser(
     override val createdTime: Instant,

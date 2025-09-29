@@ -7,10 +7,10 @@ import java.util.Locale
 import org.springframework.context.i18n.LocaleContextHolder
 
 object Locales {
-  val ENGLISH = Locale.ENGLISH
-  val FRENCH = Locale.FRENCH
-  val GIBBERISH = Locale.forLanguageTag("gx")
-  val SPANISH = Locale.forLanguageTag("es")
+  val ENGLISH: Locale = Locale.ENGLISH
+  val FRENCH: Locale = Locale.FRENCH
+  val GIBBERISH: Locale = Locale.forLanguageTag("gx")
+  val SPANISH: Locale = Locale.forLanguageTag("es")
 }
 
 /**

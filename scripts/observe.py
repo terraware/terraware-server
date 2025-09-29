@@ -46,7 +46,7 @@ def generate_complete_plot_payload(plot_id, species_ids):
         "conditions": [],
         "notes": f"Notes for plot {plot_id}",
         "observedTime": isoformat(int(time.time())),
-        "plants": [generate_recorded_plant(species_ids) for i in range(0, num_plants)],
+        "plants": [generate_recorded_plant(species_ids) for _ in range(0, num_plants)],
     }
 
 

@@ -24,7 +24,7 @@ def run_timing_test(payload, client):
     total_time = 0
     runs = 100
 
-    for i in range(0, runs):
+    for _ in range(0, runs):
         total_time += time_search(payload, client)
 
     print(f"Did {runs} runs in {total_time} seconds, time per run {total_time / runs}")

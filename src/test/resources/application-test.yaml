@@ -33,8 +33,6 @@ terraware:
     apiClientId: "dummyClientForApiClients"
     clientId: "dummyClient"
     clientSecret: "dummySecret"
-    realm: "dummyRealm"
-    serverUrl: "http://dummy/"
 
 logging:
   level:

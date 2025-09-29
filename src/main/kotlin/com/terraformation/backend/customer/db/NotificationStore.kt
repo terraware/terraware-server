@@ -100,10 +100,6 @@ class NotificationStore(
    * @param notification The notification to insert into the table. This could be scoped to an
    *   organization or global. Global notifications will have the organizationId property set as
    *   null.
-   * @param targetOrganizationId The organization id that was relevant to this notification, used
-   *   primarily to validate permissions allowing creation of this notification. For global
-   *   notifications, the organization id in the notification model will be null, hence this
-   *   additional organization id parameter to capture context.
    */
   fun create(notification: CreateNotificationModel): NotificationId {
     requirePermissions { createNotification(notification.userId) }

@@ -48,7 +48,6 @@ class VariableValueService(
    * Creates new workflow history elements for each updated value.
    *
    * @param values list of updated values
-   * @param updateStatus if set to true, will set status to In Review, and feedback to null
    */
   private fun updateWorkflowHistory(values: List<ExistingValue>) {
     val projectId = values.firstOrNull()?.projectId ?: return

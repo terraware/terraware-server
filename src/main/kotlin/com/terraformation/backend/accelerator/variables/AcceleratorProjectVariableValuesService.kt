@@ -115,7 +115,7 @@ class AcceleratorProjectVariableValuesService(
     val carbonCapacity = getNumberValue(valuesByStableId, StableIds.carbonCapacity)
     val carbonCertifications =
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.carbonCertifications)
-            ?.mapNotNull { certification -> CarbonCertification.forDisplayName(certification) }
+            ?.map { certification -> CarbonCertification.forDisplayName(certification) }
             ?.toSet() ?: emptySet()
     val clickUpLink = getLinkValue(valuesByStableId, StableIds.clickUpLink)
     val confirmedReforestableLand = getNumberValue(valuesByStableId, StableIds.tfRestorableLand)

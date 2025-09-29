@@ -511,7 +511,7 @@ val ID_WRAPPERS =
  * Defines the synthetic data types that are embedded in the column lists of tables. We mostly use
  * this to represent compound primary keys.
  *
- * @see https://www.jooq.org/doc/latest/manual/code-generation/codegen-embeddable-types/
+ * See https://www.jooq.org/doc/latest/manual/code-generation/codegen-embeddable-types/
  */
 val EMBEDDABLES =
     listOf(
