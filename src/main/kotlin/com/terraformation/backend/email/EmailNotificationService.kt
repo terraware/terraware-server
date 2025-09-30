@@ -885,9 +885,9 @@ class EmailNotificationService(
   fun on(event: RateLimitedT0DataAssignedEvent) {
     if (
         (event.monitoringPlots == null ||
-            event.monitoringPlots.flatMap { plot -> plot.speciesDensityChanges }.isEmpty()) &&
+            event.monitoringPlots.all { it.speciesDensityChanges.isEmpty() }) &&
             (event.plantingZones == null ||
-                event.plantingZones.flatMap { zone -> zone.speciesDensityChanges }.isEmpty())
+                event.plantingZones.all { it.speciesDensityChanges.isEmpty() })
     ) {
       // changes were reversed before the event was eventually refired
       return

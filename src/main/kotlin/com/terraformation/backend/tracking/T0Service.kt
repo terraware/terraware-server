@@ -43,7 +43,6 @@ class T0Service(
   fun assignT0PlotsData(plotsList: List<PlotT0DataModel>) {
     val plotIds = plotsList.map { it.monitoringPlotId }
     val plotMap = getPlotInfo(plotIds)
-    val orgList = plotMap.values.map { it.organizationId }.toSet()
     val plantingSiteIds = plotMap.values.map { it.plantingSiteId }.toSet()
     require(plantingSiteIds.size == 1) { "Cannot assign T0 data to plots from multiple sites." }
 
@@ -63,10 +62,11 @@ class T0Service(
     val speciesToFetch =
         plotsChangeList.flatMap { it.speciesDensityChanges.map { it.speciesId } }.toSet()
     val speciesNames = getSpeciesNames(speciesToFetch)
+    val orgIds = plotMap.values.map { it.organizationId }.toSet()
 
     rateLimitedEventPublisher.publishEvent(
         RateLimitedT0DataAssignedEvent(
-            organizationId = orgList.first(),
+            organizationId = orgIds.first(),
             plantingSiteId = plantingSiteIds.first(),
             monitoringPlots =
                 plotsChangeList
@@ -94,7 +94,6 @@ class T0Service(
   fun assignT0TempZoneData(zonesList: List<ZoneT0TempDataModel>) {
     val zoneIds = zonesList.map { it.plantingZoneId }
     val zoneMap = getZoneInfo(zoneIds)
-    val orgList = zoneMap.values.map { it.organizationId }.toSet()
     val plantingSiteIds = zoneMap.values.map { it.plantingSiteId }.toSet()
     require(plantingSiteIds.size == 1) { "Cannot assign T0 data to zones from multiple sites." }
 
@@ -110,10 +109,11 @@ class T0Service(
     val speciesToFetch =
         zonesChangeList.flatMap { it.speciesDensityChanges.map { it.speciesId } }.toSet()
     val speciesNames = getSpeciesNames(speciesToFetch)
+    val orgIds = zoneMap.values.map { it.organizationId }.toSet()
 
     rateLimitedEventPublisher.publishEvent(
         RateLimitedT0DataAssignedEvent(
-            organizationId = orgList.first(),
+            organizationId = orgIds.first(),
             plantingSiteId = plantingSiteIds.first(),
             plantingZones =
                 zonesChangeList
