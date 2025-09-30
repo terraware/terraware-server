@@ -540,10 +540,12 @@ class AcceleratorReportPublished(
 class T0DataSet(
     config: TerrawareServerConfig,
     val monitoringPlots: List<PlotT0DensityChangedEventModel>,
-    val plantingZones: List<ZoneT0DensityChangedEventModel>,
+    val newSiteTempSetting: Boolean?,
     val organizationName: String,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,
+    val plantingZones: List<ZoneT0DensityChangedEventModel>,
+    val previousSiteTempSetting: Boolean?,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "observation/t0Set"

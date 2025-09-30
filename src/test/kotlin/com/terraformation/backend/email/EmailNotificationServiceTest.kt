@@ -1455,6 +1455,29 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `rateLimitedT0DataAssignedEvent sends correctly if only temp setting change`() {
+    service.on(
+        RateLimitedT0DataAssignedEvent(
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            monitoringPlots = emptyList(),
+            plantingZones = emptyList(),
+            previousSiteTempSetting = false,
+            newSiteTempSetting = true,
+        )
+    )
+
+    val message = sentMessageWithSubject("t0 planting density settings")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(plantingSite.name, message = message)
+    assertBodyContains(plantingSite.name, message = message)
+    assertBodyContains("Survival Rate Calculations Include Temporary Plot Data:", message = message)
+    assertBodyContains("Disabled", message = message)
+    assertBodyContains("Enabled", message = message)
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+  }
+
+  @Test
   fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots or zones`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
