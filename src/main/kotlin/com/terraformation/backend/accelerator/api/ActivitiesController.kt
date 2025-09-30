@@ -117,7 +117,7 @@ class ActivitiesController(
   fun uploadActivityMedia(
       @PathVariable activityId: ActivityId,
       @RequestPart("listPosition", required = false)
-      @Schema(type = "number", format = "int32")
+      @Schema(type = "integer", format = "int32")
       listPositionStr: String?,
       @RequestPart("file") file: MultipartFile,
   ): UploadActivityMediaResponsePayload {
