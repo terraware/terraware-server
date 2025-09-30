@@ -148,7 +148,7 @@ data class AdminActivityPayload(
 
 data class AdminCreateActivityRequestPayload(
     val date: LocalDate,
-    val description: String?,
+    val description: String,
     val isHighlight: Boolean,
     val isVerified: Boolean,
     val projectId: ProjectId,
@@ -168,7 +168,7 @@ data class AdminCreateActivityRequestPayload(
 
 data class AdminUpdateActivityRequestPayload(
     val date: LocalDate,
-    val description: String?,
+    val description: String,
     val isHighlight: Boolean,
     val isVerified: Boolean,
     val type: ActivityType,

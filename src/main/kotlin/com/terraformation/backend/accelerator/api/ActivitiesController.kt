@@ -249,7 +249,7 @@ data class ActivityPayload(
 
 data class CreateActivityRequestPayload(
     val date: LocalDate,
-    val description: String?,
+    val description: String,
     val projectId: ProjectId,
     val type: ActivityType,
 ) {
@@ -281,7 +281,7 @@ data class UpdateActivityMediaRequestPayload(
 
 data class UpdateActivityRequestPayload(
     val date: LocalDate,
-    val description: String?,
+    val description: String,
     val type: ActivityType,
 ) {
   fun applyTo(model: ExistingActivityModel): ExistingActivityModel {
