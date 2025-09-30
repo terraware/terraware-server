@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -156,21 +157,27 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all documents`() {
-      assertEquals(
-          listOf(existingDocument1, existingDocument2, existingDocument3),
-          store.fetchAll(),
+      assertSetEquals(
+          setOf(existingDocument1, existingDocument2, existingDocument3),
+          store.fetchAll().toSet(),
       )
     }
 
     @Test
     fun `fetches all documents for a given project ID`() {
-      assertEquals(listOf(existingDocument1, existingDocument2), store.fetchByProjectId(projectId1))
+      assertSetEquals(
+          setOf(existingDocument1, existingDocument2),
+          store.fetchByProjectId(projectId1).toSet(),
+      )
     }
 
     @Test
     fun `returns an empty list for a project ID with no documents`() {
       val projectIdWithNoDocuments = insertProject(name = "Empty Project")
-      assertEquals(emptyList<ProjectId>(), store.fetchByProjectId(projectIdWithNoDocuments))
+      assertEquals(
+          emptyList<ExistingDocumentModel>(),
+          store.fetchByProjectId(projectIdWithNoDocuments),
+      )
     }
 
     @Test
