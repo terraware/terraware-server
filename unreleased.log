@@ -1,3 +1,4 @@
+c5548612729 SW-7419 Publish event when site-uses-temp-setting changes (#3441)
 247021a2c38 SW-7418 Include zones in t0 changed email (#3439)
 82ffa932d29 SW-7418 Publish Zones in Rate Limited T0 Changed Event (#3438)
 6068203a023 Fix intermittent DocumentStoreTest failures (#3450)
