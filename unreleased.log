@@ -1,3 +1,4 @@
+07d79e360b3 SW-7419 Include temp-plots-included changes in T0 Set email (#3451)
 c5548612729 SW-7419 Publish event when site-uses-temp-setting changes (#3441)
 247021a2c38 SW-7418 Include zones in t0 changed email (#3439)
 82ffa932d29 SW-7418 Publish Zones in Rate Limited T0 Changed Event (#3438)
