@@ -28,6 +28,7 @@ import com.terraformation.backend.file.mux.MuxStreamModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.QueryParam
 import java.time.LocalDate
 import org.locationtech.jts.geom.Point
@@ -115,18 +116,26 @@ class ActivitiesController(
   @RequestBodyPhotoFile
   fun uploadActivityMedia(
       @PathVariable activityId: ActivityId,
-      @RequestPart("listPosition", required = false) listPositionStr: String?,
+      @RequestPart("listPosition", required = false)
+      @Schema(type = "number", format = "int32")
+      listPositionStr: String?,
       @RequestPart("file") file: MultipartFile,
   ): UploadActivityMediaResponsePayload {
     val contentType = file.getPlainContentType(supportedMediaTypes)
     val filename = file.getFilename("media")
+    val listPosition: Int? =
+        try {
+          listPositionStr?.ifBlank { null }?.toInt()
+        } catch (_: NumberFormatException) {
+          throw BadRequestException("listPosition must be an integer")
+        }
 
     val fileId =
         activityMediaService.storeMedia(
             activityId,
             file.inputStream,
             FileMetadata.of(contentType, filename, file.size),
-            listPositionStr?.toIntOrNull(),
+            listPosition,
         )
 
     return UploadActivityMediaResponsePayload(fileId)

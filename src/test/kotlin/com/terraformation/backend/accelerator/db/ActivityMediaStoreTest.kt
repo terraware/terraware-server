@@ -89,6 +89,20 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `maintains existing list position if requested`() {
+      val fileId1 = insertFile()
+      insertActivityMediaFile(listPosition = 1)
+      val fileId2 = insertFile()
+      insertActivityMediaFile(listPosition = 2)
+      val fileId3 = insertFile()
+      insertActivityMediaFile(listPosition = 3)
+
+      store.updateMedia(activityId, fileId2) { it.copy(caption = "New caption") }
+
+      assertListPositions(listOf(fileId1, fileId2, fileId3))
+    }
+
+    @Test
     fun `moves file later in list if requested`() {
       val fileId1 = insertFile()
       insertActivityMediaFile(listPosition = 1)

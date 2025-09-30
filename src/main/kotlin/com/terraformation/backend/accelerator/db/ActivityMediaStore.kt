@@ -219,6 +219,13 @@ class ActivityMediaStore(
     }
   }
 
+  /**
+   * Sets the list positions of the files in an activity.
+   *
+   * @param fileIds The list of activity media file IDs in the desired order. The file whose ID is
+   *   the first element of this list will have its list position set to 1, then 2 for the second
+   *   element of this list, and so forth.
+   */
   private fun updateListPositions(activityId: ActivityId, fileIds: List<FileId>) {
     val positionsMap = fileIds.mapIndexed { index, fileId -> fileId to index + 1 }.toMap()
     with(ACTIVITY_MEDIA_FILES) {
