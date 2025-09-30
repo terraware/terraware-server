@@ -48,6 +48,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="captured_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="geolocation" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="7" name="is_hidden_on_map" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="activity_media_files_pkey" unique="true">
             <column ascending="true" name="file_id"/>
@@ -57,6 +59,10 @@
          </index>
          <index name="one_cover_per_activity" unique="true">
             <column ascending="true" name="activity_id"/>
+         </index>
+         <index name="unambiguous_list_order" unique="true">
+            <column ascending="true" name="activity_id"/>
+            <column ascending="true" name="list_position"/>
          </index>
          <checkConstraint constraint="((is_cover_photo = false) OR (activity_media_type_id = 1))" name="cover_photo_only"/>
       </table>
@@ -350,8 +356,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>

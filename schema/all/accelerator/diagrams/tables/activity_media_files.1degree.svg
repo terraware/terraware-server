@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>activity_media_files</title>
 <g id="a_node1"><a xlink:href="../../tables/activity_media_files.html" xlink:title="activity_media_files" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="225,-158 225,-356 507,-356 507,-158 225,-158"/>
+<polygon fill="#ffffff" stroke="transparent" points="225,-114 225,-356 507,-356 507,-114 225,-114"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="227,-332 227,-354 505,-354 505,-332 227,-332"/>
 <polygon fill="none" stroke="black" points="227,-332 227,-354 505,-354 505,-332 227,-332"/>
 <text text-anchor="start" x="232" y="-341.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">activity_media_files</text>
@@ -51,16 +51,25 @@
 <text text-anchor="start" x="247" y="-186.2" font-family="Helvetica,sans-Serif" font-size="11.00">geolocation</text>
 <polygon fill="none" stroke="black" points="382,-178 382,-200 505,-200 505,-178 382,-178"/>
 <text text-anchor="start" x="385" y="-186.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
-<polygon fill="#ffffff" stroke="transparent" points="227,-160 227,-178 309,-178 309,-160 227,-160"/>
-<polygon fill="none" stroke="black" points="227,-160 227,-178 309,-178 309,-160 227,-160"/>
-<text text-anchor="start" x="230" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="309,-160 309,-178 382,-178 382,-160 309,-160"/>
-<polygon fill="none" stroke="black" points="309,-160 309,-178 382,-178 382,-160 309,-160"/>
-<text text-anchor="start" x="372" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="382,-160 382,-178 505,-178 505,-160 382,-160"/>
-<polygon fill="none" stroke="black" points="382,-160 382,-178 505,-178 505,-160 382,-160"/>
-<text text-anchor="start" x="486" y="-166.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="226,-159 226,-355 506,-355 506,-159 226,-159"/>
+<polygon fill="none" stroke="black" points="227,-156 227,-178 382,-178 382,-156 227,-156"/>
+<text text-anchor="start" x="247" y="-164.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_hidden_on_map</text>
+<polygon fill="none" stroke="black" points="382,-156 382,-178 505,-178 505,-156 382,-156"/>
+<text text-anchor="start" x="385" y="-164.2" font-family="Helvetica,sans-Serif" font-size="11.00">bool[1]</text>
+<polygon fill="#ffffff" stroke="transparent" points="227,-134 227,-156 382,-156 382,-134 227,-134"/>
+<polygon fill="none" stroke="black" points="227,-134 227,-156 382,-156 382,-134 227,-134"/>
+<text text-anchor="start" x="247" y="-142.2" font-family="Helvetica,sans-Serif" font-size="11.00">list_position</text>
+<polygon fill="none" stroke="black" points="382,-134 382,-156 505,-156 505,-134 382,-134"/>
+<text text-anchor="start" x="385" y="-142.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="#ffffff" stroke="transparent" points="227,-116 227,-134 309,-134 309,-116 227,-116"/>
+<polygon fill="none" stroke="black" points="227,-116 227,-134 309,-134 309,-116 227,-116"/>
+<text text-anchor="start" x="230" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="309,-116 309,-134 382,-134 382,-116 309,-116"/>
+<polygon fill="none" stroke="black" points="309,-116 309,-134 382,-134 382,-116 309,-116"/>
+<text text-anchor="start" x="372" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="382,-116 382,-134 505,-134 505,-116 382,-116"/>
+<polygon fill="none" stroke="black" points="382,-116 382,-134 505,-134 505,-116 382,-116"/>
+<text text-anchor="start" x="486" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="226,-115 226,-355 506,-355 506,-115 226,-115"/>
 </a>
 </g>
 </g>
