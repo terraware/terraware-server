@@ -887,7 +887,8 @@ class EmailNotificationService(
         (event.monitoringPlots == null ||
             event.monitoringPlots.all { it.speciesDensityChanges.isEmpty() }) &&
             (event.plantingZones == null ||
-                event.plantingZones.all { it.speciesDensityChanges.isEmpty() })
+                event.plantingZones.all { it.speciesDensityChanges.isEmpty() }) &&
+            event.previousSiteTempSetting == event.newSiteTempSetting
     ) {
       // changes were reversed before the event was eventually refired
       return
@@ -902,10 +903,12 @@ class EmailNotificationService(
           T0DataSet(
               config,
               organizationName = organization.name,
+              monitoringPlots = event.monitoringPlots ?: emptyList(),
+              newSiteTempSetting = event.newSiteTempSetting,
               plantingSiteId = event.plantingSiteId,
               plantingSiteName = plantingSite.name,
-              monitoringPlots = event.monitoringPlots ?: emptyList(),
               plantingZones = event.plantingZones ?: emptyList(),
+              previousSiteTempSetting = event.previousSiteTempSetting,
           )
       emailService.sendOrganizationNotification(
           event.organizationId,

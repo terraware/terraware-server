@@ -216,8 +216,10 @@ data class RateLimitedT0DataAssignedEvent(
         plantingSiteId = plantingSiteId,
         previousSiteTempSetting = existing.previousSiteTempSetting ?: previousSiteTempSetting,
         newSiteTempSetting = newSiteTempSetting ?: existing.newSiteTempSetting,
-        monitoringPlots = plotsMap.values.toList(),
-        plantingZones = zonesMap.values.toList(),
+        monitoringPlots =
+            if (monitoringPlots != null) plotsMap.values.toList() else existing.monitoringPlots,
+        plantingZones =
+            if (plantingZones != null) zonesMap.values.toList() else existing.plantingZones,
     )
   }
 }

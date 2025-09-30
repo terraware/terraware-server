@@ -341,6 +341,67 @@ class RateLimitedT0DataAssignedEventTest {
           "Shouldn't remove site temp settings when they are not included",
       )
     }
+
+    @Test
+    fun `alternating change types combines correctly when starting with temp setting`() {
+      val existingEvent = event(previousSiteTempSetting = true, newSiteTempSetting = false)
+      val finalEvent =
+          existingEvent
+              .combine(
+                  event(plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+              )
+              .combine(event(previousSiteTempSetting = false, newSiteTempSetting = true))
+              .combine(
+                  event(plots = listOf(plotChangeModel(2, listOf(speciesChangeModel(1, 1, 2)))))
+              )
+              .combine(event(previousSiteTempSetting = true, newSiteTempSetting = false))
+
+      assertEquals(
+          event(
+              plots =
+                  listOf(
+                      plotChangeModel(2, listOf(speciesChangeModel(1, 1, 2))),
+                      plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2))),
+                  ),
+              previousSiteTempSetting = true,
+              newSiteTempSetting = false,
+          ),
+          finalEvent,
+          "Should combine correctly when alternating",
+      )
+    }
+
+    @Test
+    fun `alternating change types combines correctly when starting with plots`() {
+      val existingEvent =
+          event(plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+      val finalEvent =
+          existingEvent
+              .combine(event(previousSiteTempSetting = false, newSiteTempSetting = true))
+              .combine(
+                  event(plots = listOf(plotChangeModel(2, listOf(speciesChangeModel(1, 1, 2)))))
+              )
+              .combine(event(previousSiteTempSetting = true, newSiteTempSetting = false))
+              .combine(
+                  event(plots = listOf(plotChangeModel(3, listOf(speciesChangeModel(1, 1, 2)))))
+              )
+              .combine(event(previousSiteTempSetting = false, newSiteTempSetting = true))
+
+      assertEquals(
+          event(
+              plots =
+                  listOf(
+                      plotChangeModel(3, listOf(speciesChangeModel(1, 1, 2))),
+                      plotChangeModel(2, listOf(speciesChangeModel(1, 1, 2))),
+                      plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2))),
+                  ),
+              previousSiteTempSetting = false,
+              newSiteTempSetting = true,
+          ),
+          finalEvent,
+          "Should combine correctly when alternating",
+      )
+    }
   }
 
   @Test

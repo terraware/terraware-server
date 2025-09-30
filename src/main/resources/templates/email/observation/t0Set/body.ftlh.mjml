@@ -73,6 +73,25 @@
                 </#list>
             </mj-raw>
 
+            <mj-raw>
+                <#if (previousSiteTempSetting!) != (newSiteTempSetting!)>
+            </mj-raw>
+                    <mj-text mj-class="text-body01-regular" padding-top="4px">
+                        <strong>
+                            ${strings("survivalRateTempSetting")}:
+                        </strong>
+                        <mj-raw>
+                            <#if newSiteTempSetting>
+                                ${strings("disabled")} → ${strings("enabled")}
+                            <#else>
+                                ${strings("enabled")} → ${strings("disabled")}
+                            </#if>
+                        </mj-raw>
+                    </mj-text>
+            <mj-raw>
+                </#if>
+            </mj-raw>
+
                 <mj-text mj-class="text-body-footer" css-class="text-body-footer">
                 ${link("notification.observation.t0Set.html.footer", manageT0SettingsUrl)}
                 </mj-text>
