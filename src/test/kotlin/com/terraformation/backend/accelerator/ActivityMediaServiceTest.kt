@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
@@ -16,6 +17,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
@@ -71,8 +73,8 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
   private val service: ActivityMediaService by lazy {
     ActivityMediaService(
+        ActivityMediaStore(clock, dslContext, eventPublisher),
         clock,
-        dslContext,
         eventPublisher,
         fileService,
         muxService,
@@ -168,6 +170,31 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `adjusts existing list positions if requested position conflicts with them`() {
+      val fileId1 = storeMedia("pixel.jpg")
+      val fileId2 = storeMedia("pixel.jpg")
+      val fileId3 = storeMedia("pixel.jpg", listPosition = 1)
+
+      assertListPositions(listOf(fileId3, fileId1, fileId2))
+    }
+
+    @Test
+    fun `puts new file in last position if requested position is greater than list size`() {
+      val fileId1 = storeMedia("pixel.jpg")
+      val fileId2 = storeMedia("pixel.jpg", listPosition = 5000)
+
+      assertListPositions(listOf(fileId1, fileId2))
+    }
+
+    @Test
+    fun `puts new file in first position if requested position is less than 1`() {
+      val fileId1 = storeMedia("pixel.jpg")
+      val fileId2 = storeMedia("pixel.jpg", listPosition = 0)
+
+      assertListPositions(listOf(fileId2, fileId1))
+    }
+
+    @Test
     fun `uses default captured date for corrupted image file`() {
       val corruptedData =
           byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte()) // Incomplete JPEG header
@@ -214,9 +241,11 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ActivityMediaFilesRow(
               activityId = activityId,
               activityMediaTypeId = type,
+              capturedDate = capturedDate,
               fileId = fileId,
               isCoverPhoto = false,
-              capturedDate = capturedDate,
+              isHiddenOnMap = false,
+              listPosition = 1,
           ),
           row.copy(geolocation = null),
       )
@@ -286,6 +315,17 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(emptyList<ActivityMediaFilesRow>(), activityMediaFilesDao.findAll())
       fileStore.assertFileWasDeleted(storageUrl)
       eventPublisher.assertEventNotPublished<VideoFileDeletedEvent>()
+    }
+
+    @Test
+    fun `adjusts list positions of remaining files`() {
+      val fileId1 = storeMedia("pixel.jpg")
+      val fileId2 = storeMedia("pixel.jpg")
+      val fileId3 = storeMedia("pixel.jpg")
+
+      service.deleteMedia(activityId, fileId2)
+
+      assertListPositions(listOf(fileId1, fileId3))
     }
 
     @Test
@@ -408,11 +448,13 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       filename: String,
       metadata: NewFileMetadata = jpegMetadata,
       activityId: ActivityId = this.activityId,
+      listPosition: Int? = null,
   ): FileId {
     return service.storeMedia(
         activityId,
         javaClass.getResourceAsStream("/file/$filename"),
         metadata,
+        listPosition,
     )
   }
 
@@ -421,5 +463,16 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       metadata: NewFileMetadata = jpegMetadata,
   ): FileId {
     return service.storeMedia(activityId, content.inputStream(), metadata)
+  }
+
+  private fun assertListPositions(expected: List<FileId>, message: String? = null) {
+    assertEquals(
+        expected.mapIndexed { index, fileId -> fileId to index + 1 }.toMap(),
+        dslContext
+            .select(ACTIVITY_MEDIA_FILES.FILE_ID, ACTIVITY_MEDIA_FILES.LIST_POSITION)
+            .from(ACTIVITY_MEDIA_FILES)
+            .fetchMap(ACTIVITY_MEDIA_FILES.FILE_ID, ACTIVITY_MEDIA_FILES.LIST_POSITION),
+        message,
+    )
   }
 }
