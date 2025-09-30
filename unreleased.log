@@ -1,3 +1,7 @@
+d8ac6299976 Upgrade to Kotlin 2.2 (#3443)
+ebbd392c826 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.1.0 (#3446)
+a1a2fe90673 Update plugin com.diffplug.spotless to v8 (#3445)
+f52a1bc849a Update database dependencies to v11.13.2 (#3444)
 e335e27bbaf Rename T0Plot service and store to T0 (#3434)
 81b32c3d734 SW-7412 Assign T0 data at zone-level for temp plots (#3433)
 a1bd8e966d4 SW-7413 Retrieve T0 data at zone-level for temp plots (#3432)
