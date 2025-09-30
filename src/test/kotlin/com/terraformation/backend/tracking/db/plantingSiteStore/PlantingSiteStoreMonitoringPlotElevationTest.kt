@@ -40,6 +40,7 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        eventPublisher,
     )
   }
 

@@ -22,6 +22,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   protected val identifierGenerator: IdentifierGenerator by lazy {
     IdentifierGenerator(clock, dslContext)
   }
+  protected val rateLimitedEventPublisher = TestEventPublisher()
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
@@ -35,6 +36,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        rateLimitedEventPublisher,
     )
   }
 

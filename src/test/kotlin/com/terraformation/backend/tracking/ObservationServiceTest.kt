@@ -159,6 +159,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao,
+        eventPublisher,
     )
   }
 
