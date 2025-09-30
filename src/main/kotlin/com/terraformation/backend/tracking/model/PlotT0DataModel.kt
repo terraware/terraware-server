@@ -32,12 +32,12 @@ data class ZoneT0TempDataModel(
 
 data class SpeciesDensityChangedModel(
     val speciesId: SpeciesId,
-    val previousPlotDensity: BigDecimal? = null,
-    val newPlotDensity: BigDecimal? = null,
+    val previousDensity: BigDecimal? = null,
+    val newDensity: BigDecimal? = null,
 ) {
   init {
-    require(previousPlotDensity != null || newPlotDensity != null) {
-      "Either previousPlotDensity or newPlotDensity must be non-null."
+    require(previousDensity != null || newDensity != null) {
+      "Either previousDensity or newDensity must be non-null."
     }
   }
 }
@@ -57,12 +57,12 @@ data class ZoneT0TempDensityChangedModel(
 data class SpeciesDensityChangedEventModel(
     val speciesId: SpeciesId,
     val speciesScientificName: String,
-    val previousPlotDensity: BigDecimal? = null,
-    val newPlotDensity: BigDecimal? = null,
+    val previousDensity: BigDecimal? = null,
+    val newDensity: BigDecimal? = null,
 ) {
   init {
-    require(previousPlotDensity != null || newPlotDensity != null) {
-      "Either previousPlotDensity or newPlotDensity must be non-null."
+    require(previousDensity != null || newDensity != null) {
+      "Either previousDensity or newDensity must be non-null."
     }
   }
 
@@ -71,8 +71,8 @@ data class SpeciesDensityChangedEventModel(
         SpeciesDensityChangedEventModel(
             speciesId = speciesChangeModel.speciesId,
             speciesScientificName = scientificName,
-            previousPlotDensity = speciesChangeModel.previousPlotDensity,
-            newPlotDensity = speciesChangeModel.newPlotDensity,
+            previousDensity = speciesChangeModel.previousDensity,
+            newDensity = speciesChangeModel.newDensity,
         )
   }
 }

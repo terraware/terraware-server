@@ -407,8 +407,8 @@ class T0Store(
         changeList[speciesId] =
             SpeciesDensityChangedModel(
                 speciesId,
-                previousPlotDensity = previous,
-                newPlotDensity = newDensity,
+                previousDensity = previous,
+                newDensity = newDensity,
             )
       }
     }
@@ -419,7 +419,7 @@ class T0Store(
           changeList[speciesId] =
               SpeciesDensityChangedModel(
                   speciesId,
-                  previousPlotDensity = existingDensities[speciesId],
+                  previousDensity = existingDensities[speciesId],
               )
         }
 

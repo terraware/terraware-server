@@ -200,11 +200,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          newPlotDensity = plotDensityToHectare(3),
+                          newDensity = plotDensityToHectare(3),
                       ),
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          newPlotDensity = plotDensityToHectare(7),
+                          newDensity = plotDensityToHectare(7),
                       ),
                   ),
           ),
@@ -261,8 +261,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = plotDensityToHectare(2),
-                          newPlotDensity = plotDensityToHectare(4),
+                          previousDensity = plotDensityToHectare(2),
+                          newDensity = plotDensityToHectare(4),
                       ),
                   ),
           ),
@@ -321,8 +321,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = plotDensityToHectare(1),
-                          newPlotDensity = plotDensityToHectare(2),
+                          previousDensity = plotDensityToHectare(1),
+                          newDensity = plotDensityToHectare(2),
                       ),
                   ),
           ),
@@ -380,12 +380,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          previousPlotDensity = plotDensityToHectare(10),
-                          newPlotDensity = plotDensityToHectare(2),
+                          previousDensity = plotDensityToHectare(10),
+                          newDensity = plotDensityToHectare(2),
                       ),
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = plotDensityToHectare(20),
+                          previousDensity = plotDensityToHectare(20),
                       ),
                   ),
           ),
@@ -459,7 +459,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PlotT0DensityChangedModel(
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
-                  setOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
+                  setOf(SpeciesDensityChangedModel(speciesId1, newDensity = density)),
           ),
           changedModel,
           "Changed model should be set with species data",
@@ -506,8 +506,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          previousPlotDensity = initialDensity,
-                          newPlotDensity = updatedDensity,
+                          previousDensity = initialDensity,
+                          newDensity = updatedDensity,
                       ),
                   ),
           ),
@@ -571,8 +571,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               monitoringPlotId = monitoringPlotId,
               speciesDensityChanges =
                   setOf(
-                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
-                      SpeciesDensityChangedModel(speciesId1, previousPlotDensity = density1),
+                      SpeciesDensityChangedModel(speciesId2, newDensity = density2),
+                      SpeciesDensityChangedModel(speciesId1, previousDensity = density1),
                   ),
           ),
           changedModel,
@@ -616,13 +616,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          previousPlotDensity = BigDecimal.valueOf(2),
-                          newPlotDensity = density1,
+                          previousDensity = BigDecimal.valueOf(2),
+                          newDensity = density1,
                       ),
                       SpeciesDensityChangedModel(
                           speciesId2,
-                          previousPlotDensity = BigDecimal.valueOf(4),
-                          newPlotDensity = null,
+                          previousDensity = BigDecimal.valueOf(4),
+                          newDensity = null,
                       ),
                   ),
           ),
@@ -693,7 +693,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ZoneT0TempDensityChangedModel(
               plantingZoneId = plantingZoneId,
               speciesDensityChanges =
-                  setOf(SpeciesDensityChangedModel(speciesId1, newPlotDensity = density)),
+                  setOf(SpeciesDensityChangedModel(speciesId1, newDensity = density)),
           ),
           changedModel,
           "Changed model should be set with species data",
@@ -736,8 +736,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   setOf(
                       SpeciesDensityChangedModel(
                           speciesId1,
-                          previousPlotDensity = initialDensity,
-                          newPlotDensity = updatedDensity,
+                          previousDensity = initialDensity,
+                          newDensity = updatedDensity,
                       ),
                   ),
           ),
@@ -790,8 +790,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingZoneId = plantingZoneId,
               speciesDensityChanges =
                   setOf(
-                      SpeciesDensityChangedModel(speciesId2, newPlotDensity = density2),
-                      SpeciesDensityChangedModel(speciesId1, previousPlotDensity = density1),
+                      SpeciesDensityChangedModel(speciesId2, newDensity = density2),
+                      SpeciesDensityChangedModel(speciesId1, previousDensity = density1),
                   ),
           ),
           changedModel,
