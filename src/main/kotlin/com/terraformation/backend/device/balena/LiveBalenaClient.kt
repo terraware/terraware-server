@@ -207,9 +207,9 @@ class LiveBalenaClient(
   ): String {
     val elements =
         listOfNotNull(
-            filter?.joinToString("+and+", prefix = "\$filter="),
-            expand?.joinToString(",", prefix = "\$expand="),
-            select?.joinToString(",", prefix = "\$select="),
+            filter?.joinToString("+and+", prefix = $$"$filter="),
+            expand?.joinToString(",", prefix = $$"$expand="),
+            select?.joinToString(",", prefix = $$"$select="),
         )
 
     return if (elements.isNotEmpty()) elements.joinToString("&", prefix = "?") else ""

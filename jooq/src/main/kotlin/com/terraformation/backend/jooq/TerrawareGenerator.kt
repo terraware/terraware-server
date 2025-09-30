@@ -2,7 +2,7 @@ package com.terraformation.backend.jooq
 
 import java.io.File
 import java.sql.Connection
-import java.util.Base64
+import kotlin.io.encoding.Base64
 import org.jooq.codegen.JavaWriter
 import org.jooq.codegen.KotlinGenerator
 import org.jooq.meta.SchemaDefinition
@@ -270,7 +270,7 @@ class TerrawareGenerator : KotlinGenerator() {
 
   fun excludes() =
       ENUM_TABLES.entries.joinToString("|") { (schemaName, tables) ->
-        tables.joinToString { "$schemaName\\.$it\$" }
+        tables.joinToString { "$schemaName\\.$it$" }
       }
 
   private fun schemaPackage(targetPackage: String, schemaName: String): String {
@@ -287,7 +287,7 @@ class TerrawareGenerator : KotlinGenerator() {
         word
       } else {
         val bytes = word.toByteArray()
-        Base64.getEncoder().encodeToString(bytes).trimEnd('=')
+        Base64.encode(bytes).trimEnd('=')
       }
     }
   }

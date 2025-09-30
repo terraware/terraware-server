@@ -2,7 +2,6 @@ package com.terraformation.backend.auth
 
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
-import java.util.HexFormat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
@@ -31,7 +30,7 @@ class SpringSessionCompatibilityTest {
 
   @Test
   fun `can deserialize security context used by frontend test suite`() {
-    val binary = HexFormat.of().parseHex(hexEncodedSecurityContext)
+    val binary = hexEncodedSecurityContext.hexToByteArray()
 
     assertDoesNotThrow("Serialized session format has changed! See class docs for instructions.") {
       ObjectInputStream(ByteArrayInputStream(binary)).readObject()!!

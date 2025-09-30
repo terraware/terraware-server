@@ -3,7 +3,6 @@ package com.terraformation.backend.customer
 import com.terraformation.backend.auth.SimplePrincipal
 import java.io.ByteArrayOutputStream
 import java.io.ObjectOutputStream
-import java.util.HexFormat
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextImpl
 
@@ -42,8 +41,7 @@ fun main(args: Array<String>) {
   ByteArrayOutputStream().use { byteStream ->
     ObjectOutputStream(byteStream).use { objectStream -> objectStream.writeObject(springContext) }
 
-    val bytes = byteStream.toByteArray()
-    val hex = HexFormat.of().formatHex(bytes)
+    val hex = byteStream.toByteArray().toHexString()
 
     println("Hex-encoded SPRING_SECURITY_CONTEXT for auth ID $authId:")
     println()

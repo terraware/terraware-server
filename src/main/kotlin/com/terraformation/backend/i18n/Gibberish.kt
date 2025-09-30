@@ -2,8 +2,8 @@ package com.terraformation.backend.i18n
 
 import java.text.DecimalFormatSymbols
 import java.text.spi.DecimalFormatSymbolsProvider
-import java.util.Base64
 import java.util.Locale
+import kotlin.io.encoding.Base64
 
 /**
  * Converts an English string to gibberish for localization testing:
@@ -13,11 +13,9 @@ import java.util.Locale
  * Note that this function does not preserve placeholder tokens.
  */
 fun String.toGibberish(): String {
-  val encoder = Base64.getEncoder()
-
   return split('\n').joinToString("\n") { line ->
     line.split(' ').asReversed().joinToString(" ") { word ->
-      encoder.encodeToString(word.toByteArray()).trimEnd('=')
+      Base64.encode(word.toByteArray()).trimEnd('=')
     }
   }
 }

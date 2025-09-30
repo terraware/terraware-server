@@ -37,8 +37,8 @@ import java.security.PrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Duration
 import java.time.InstantSource
-import java.util.Base64
 import java.util.Date
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
@@ -308,8 +308,7 @@ class MuxService(
    * that decode to PEM-formatted RSA private keys.
    */
   private fun parseSigningKey(): PrivateKey {
-    val pemString =
-        Base64.getDecoder().decode(config.mux.signingKeyPrivate).toString(Charsets.US_ASCII)
+    val pemString = Base64.decode(config.mux.signingKeyPrivate!!).toString(Charsets.US_ASCII)
     val pemObj = PEMParser(StringReader(pemString)).readObject() as PEMKeyPair
     val keySpec = PKCS8EncodedKeySpec(pemObj.privateKeyInfo.encoded)
     return KeyFactory.getInstance("RSA").generatePrivate(keySpec)

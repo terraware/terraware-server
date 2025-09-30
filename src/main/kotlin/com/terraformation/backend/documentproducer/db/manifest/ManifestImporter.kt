@@ -231,8 +231,7 @@ class ManifestImporter(
 
     private fun importDefaultSectionText(csvVariable: CsvSectionVariable) {
       if (csvVariable.defaultSectionText != null) {
-        val regex =
-            Regex("(.*?)(?:\\{\\{(?:[^}]*-\\s*)?([0-9]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
+        val regex = Regex("(.*?)(?:\\{\\{(?:[^}]*-\\s*)?([0-9]+)}}|$)", RegexOption.DOT_MATCHES_ALL)
         val textVariablePairs =
             regex.findAll(csvVariable.defaultSectionText).map { it.groupValues.drop(1) }
 
