@@ -48,6 +48,12 @@ data class PlotT0DensityChangedModel(
     val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
 )
 
+data class ZoneT0TempDensityChangedModel(
+    val plantingZoneId: PlantingZoneId,
+    val zoneName: String? = null,
+    val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
+)
+
 data class SpeciesDensityChangedEventModel(
     val speciesId: SpeciesId,
     val speciesScientificName: String,
@@ -74,5 +80,11 @@ data class SpeciesDensityChangedEventModel(
 data class PlotT0DensityChangedEventModel(
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotNumber: Long,
+    val speciesDensityChanges: List<SpeciesDensityChangedEventModel>,
+)
+
+data class ZoneT0DensityChangedEventModel(
+    val plantingZoneId: PlantingZoneId,
+    val zoneName: String,
     val speciesDensityChanges: List<SpeciesDensityChangedEventModel>,
 )

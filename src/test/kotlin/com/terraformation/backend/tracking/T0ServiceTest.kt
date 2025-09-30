@@ -21,6 +21,7 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
+import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
@@ -223,6 +224,49 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class AssignT0TempZoneData {
     @Test
+    fun `throws exception if from multiple orgs`() {
+      insertOrganization()
+      insertPlantingSite()
+      val otherPlantingZoneId = insertPlantingZone()
+
+      assertThrows<IllegalArgumentException> {
+        service.assignT0TempZoneData(
+            listOf(
+                ZoneT0TempDataModel(
+                    plantingZoneId1,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+                ZoneT0TempDataModel(
+                    otherPlantingZoneId,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+            )
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if from multiple sites`() {
+      insertPlantingSite()
+      val otherPlantingZoneId = insertPlantingZone()
+
+      assertThrows<IllegalArgumentException> {
+        service.assignT0TempZoneData(
+            listOf(
+                ZoneT0TempDataModel(
+                    plantingZoneId1,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+                ZoneT0TempDataModel(
+                    otherPlantingZoneId,
+                    densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+                ),
+            )
+        )
+      }
+    }
+
+    @Test
     fun `assigns all zones in list`() {
       service.assignT0TempZoneData(
           listOf(
@@ -252,6 +296,48 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               zoneDensityRecord(plantingZoneId2, speciesId2, BigDecimal.valueOf(400)),
           ),
           "Should have inserted species densities",
+      )
+
+      rateLimitedEventPublisher.assertEventPublished(
+          RateLimitedT0DataAssignedEvent(
+              organizationId = inserted.organizationId,
+              plantingSiteId = inserted.plantingSiteId,
+              plantingZones =
+                  listOf(
+                      ZoneT0DensityChangedEventModel(
+                          plantingZoneId1,
+                          "Z1",
+                          listOf(
+                              SpeciesDensityChangedEventModel(
+                                  speciesId1,
+                                  "Species 1",
+                                  newPlotDensity = BigDecimal.valueOf(100),
+                              ),
+                              SpeciesDensityChangedEventModel(
+                                  speciesId2,
+                                  "Species 2",
+                                  newPlotDensity = BigDecimal.valueOf(200),
+                              ),
+                          ),
+                      ),
+                      ZoneT0DensityChangedEventModel(
+                          plantingZoneId2,
+                          "Z2",
+                          listOf(
+                              SpeciesDensityChangedEventModel(
+                                  speciesId1,
+                                  "Species 1",
+                                  newPlotDensity = BigDecimal.valueOf(300),
+                              ),
+                              SpeciesDensityChangedEventModel(
+                                  speciesId2,
+                                  "Species 2",
+                                  newPlotDensity = BigDecimal.valueOf(400),
+                              ),
+                          ),
+                      ),
+                  ),
+          )
       )
     }
   }
