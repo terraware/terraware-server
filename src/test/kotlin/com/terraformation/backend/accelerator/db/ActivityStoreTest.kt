@@ -126,6 +126,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewActivityModel(
               activityDate = LocalDate.EPOCH,
               activityType = ActivityType.SeedCollection,
+              description = "description",
               projectId = projectId,
           )
 
@@ -141,6 +142,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewActivityModel(
               activityDate = LocalDate.EPOCH,
               activityType = ActivityType.SeedCollection,
+              description = "description",
               projectId = projectId,
           )
 
