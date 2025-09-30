@@ -9,10 +9,6 @@ import java.math.BigDecimal
  * Represents the changes that need to be made to an existing planting site to make it match an
  * updated version supplied by the user. The emphasis here is on changes to the site's structure;
  * simple changes like edits to the site name aren't included.
- *
- * This may include a list of [problems] encountered while calculating the differences between the
- * two versions of the site. If so, the edit should be considered invalid and the changes shouldn't
- * be applied to the site.
  */
 data class PlantingSiteEdit(
     /**

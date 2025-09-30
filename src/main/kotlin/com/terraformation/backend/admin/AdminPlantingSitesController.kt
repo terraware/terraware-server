@@ -114,9 +114,7 @@ class AdminPlantingSitesController(
         }
 
     val months =
-        Month.values().associateWith {
-          it.getDisplayName(TextStyle.FULL_STANDALONE, Locale.ENGLISH)
-        }
+        Month.entries.associateWith { it.getDisplayName(TextStyle.FULL_STANDALONE, Locale.ENGLISH) }
 
     val observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId)
     val canManageObservations =

@@ -1,11 +1,11 @@
 package com.terraformation.backend.file.api
 
-import MuxWebhookRequestPayload
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.file.mux.MuxService
+import com.terraformation.backend.file.mux.MuxWebhookRequestPayload
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import io.swagger.v3.oas.annotations.Operation

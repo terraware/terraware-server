@@ -90,7 +90,7 @@ def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
     test_results = []
     recording_date = start_date
 
-    for i in range(0, germination_count):
+    for _ in range(0, germination_count):
         test_results.append(
             generate_test_result(recording_date, seeds_tested / germination_count)
         )
@@ -295,7 +295,7 @@ def main():
 
     species_ids = [species["id"] for species in client.list_species(organization_id)]
 
-    for n in range(0, args.number):
+    for _ in range(0, args.number):
         accession = create_accession(client, facility_id, species_ids)
         if args.verbose:
             print(json.dumps(accession, indent=2))

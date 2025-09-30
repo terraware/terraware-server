@@ -49,7 +49,7 @@ interface RateLimitedEvent<T : RateLimitedEvent<T>> {
    * If this returns [existing] (the default behavior), the effect is to discard additional events
    * during the rate-limit period.
    *
-   * If this returns [this], the effect is to only keep the most recent event during the rate-limit
+   * If this returns `this`, the effect is to only keep the most recent event during the rate-limit
    * period.
    */
   fun combine(existing: T): T = existing

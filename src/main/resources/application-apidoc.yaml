@@ -38,8 +38,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "dummy"
-  session:
-    store-type: none
 
 terraware:
   web-app-url: http://dummy

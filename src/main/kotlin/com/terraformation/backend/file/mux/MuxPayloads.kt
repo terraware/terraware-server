@@ -1,5 +1,7 @@
 @file:Suppress("PropertyName") // Properties use snake_case to match Mux API
 
+package com.terraformation.backend.file.mux
+
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.MuxAssetStatus
 import java.net.URI

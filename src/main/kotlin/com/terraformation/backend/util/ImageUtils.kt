@@ -23,8 +23,7 @@ class ImageUtils(private val fileStore: FileStore) {
   /**
    * Parse EXIF metadata and return orientation if present.
    *
-   * @see https://exiv2.org/tags.html (274 decimal tag)
-   * @see https://drewnoakes.com/code/exif/
+   * See https://exiv2.org/tags.html (274 decimal tag) and https://drewnoakes.com/code/exif/
    */
   fun getOrientation(photoUrl: URI): Int? {
     fileStore.read(photoUrl).use { stream ->
@@ -48,9 +47,8 @@ class ImageUtils(private val fileStore: FileStore) {
    * Rotate an image by a specified orientation. Orientations are from 1 through 8. This utility
    * leverages Thumbnailator's built-in filters to rotate and flip.
    *
-   * @see https://sirv.com/help/articles/rotate-photos-to-be-upright/
-   * @see
-   *   https://coobird.github.io/thumbnailator/javadoc/0.4.8/net/coobird/thumbnailator/util/exif/Orientation.html
+   * See https://sirv.com/help/articles/rotate-photos-to-be-upright/ and
+   * https://coobird.github.io/thumbnailator/javadoc/0.4.8/net/coobird/thumbnailator/util/exif/Orientation.html
    */
   fun rotate(image: BufferedImage, orientation: Int?): BufferedImage {
     return when (orientation) {

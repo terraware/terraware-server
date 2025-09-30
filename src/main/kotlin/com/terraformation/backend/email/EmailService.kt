@@ -44,7 +44,7 @@ class EmailService(
 
   companion object {
     val defaultOrgRolesForNotification: Set<Role> =
-        Role.values().filter { it != Role.TerraformationContact }.toSet()
+        Role.entries.filter { it != Role.TerraformationContact }.toSet()
   }
 
   /**

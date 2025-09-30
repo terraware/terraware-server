@@ -258,7 +258,7 @@ def generate_monitoring_observation_payload(planting_site_id, species_ids):
     observed_time = isoformat(int(time.time()) - random.randint(0, 86400))
 
     payload = {
-        "plants": [generate_recorded_plant(species_ids) for i in range(0, num_plants)],
+        "plants": [generate_recorded_plant(species_ids) for _ in range(0, num_plants)],
         "observationType": "Monitoring",
         "plantingSiteId": planting_site_id,
         "observedTime": observed_time,
