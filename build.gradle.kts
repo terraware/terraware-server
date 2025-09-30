@@ -275,7 +275,7 @@ sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
   toolchain { languageVersion = JavaLanguageVersion.of(25) }
-  targetCompatibility = JavaVersion.VERSION_23
+  targetCompatibility = JavaVersion.VERSION_24
 }
 
 node { yarnVersion = "1.22.17" }
@@ -283,14 +283,17 @@ node { yarnVersion = "1.22.17" }
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget = JvmTarget.JVM_23
+    jvmTarget = JvmTarget.JVM_24
     allWarningsAsErrors = true
 
     extraWarnings = true
 
     // jOOQ generated code has redundant modifiers
-    freeCompilerArgs.add("-Xsuppress-warning=REDUNDANT_MODALITY_MODIFIER")
-    freeCompilerArgs.add("-Xsuppress-warning=REDUNDANT_VISIBILITY_MODIFIER")
+    freeCompilerArgs.add("-Xwarning-level=REDUNDANT_MODALITY_MODIFIER:disabled")
+    freeCompilerArgs.add("-Xwarning-level=REDUNDANT_VISIBILITY_MODIFIER:disabled")
+
+    // Opt into future behavior of annotations on properties
+    freeCompilerArgs.add("-Xannotation-default-target=param-property")
   }
 
   dependsOn(generateVersionFile)
