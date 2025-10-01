@@ -29,7 +29,8 @@ import com.terraformation.backend.db.default_schema.tables.records.OrganizationU
 import com.terraformation.backend.db.default_schema.tables.records.ProjectInternalUsersRecord
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -573,6 +574,20 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           store.fetchInternalUsers(projectId),
           "Should have 2 internal users",
+      )
+    }
+
+    @Test
+    fun `filters internal users by role`() {
+      insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.ProjectLead)
+      val userId2 = insertUser()
+      insertProjectInternalUser(projectId = projectId, role = ProjectInternalRole.CarbonLead)
+      insertUser()
+      insertProjectInternalUser(roleName = "Rock Star")
+
+      assertEquals(
+          listOf(createProjectInternalRow(userId = userId2, role = ProjectInternalRole.CarbonLead)),
+          store.fetchInternalUsers(projectId, ProjectInternalRole.CarbonLead),
       )
     }
   }
