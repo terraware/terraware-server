@@ -102,7 +102,6 @@ class ProjectAcceleratorVariableValuesModelTest {
                 ),
             slackLink = URI("https://slackLink"),
             standard = "standard",
-            projectLead = null,
             totalCarbon = BigDecimal(9),
             totalExpansionPotential = BigDecimal(3),
             totalVCU = BigDecimal(24),

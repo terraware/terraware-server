@@ -600,8 +600,6 @@ COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
 
-COMMENT ON TABLE accelerator.default_project_leads IS 'Default project leads to use at application submission time based on project region.';
-
 COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
 
 COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';

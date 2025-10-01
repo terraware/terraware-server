@@ -60,7 +60,6 @@ import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesD
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
-import com.terraformation.backend.db.accelerator.tables.daos.DefaultProjectLeadsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableCohortDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
@@ -98,7 +97,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModules
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.DefaultProjectLeadsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
@@ -149,7 +147,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
-import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
@@ -614,7 +611,6 @@ abstract class DatabaseBackedTest {
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
-  protected val defaultProjectLeadsDao: DefaultProjectLeadsDao by lazyDao()
   protected val defaultVotersDao: DefaultVotersDao by lazyDao()
   protected val deliverableCohortDueDatesDao: DeliverableCohortDueDatesDao by lazyDao()
   protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
@@ -892,7 +888,6 @@ abstract class DatabaseBackedTest {
       plantingSitesCql: String? = row.plantingSitesCql,
       projectBoundariesCql: String? = row.projectBoundariesCql,
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectLead: String? = row.projectLead,
       totalCarbon: Number? = row.totalCarbon,
       totalExpansionPotential: Number? = row.totalExpansionPotential,
       whatNeedsToBeTrue: String? = row.whatNeedsToBeTrue,
@@ -922,7 +917,6 @@ abstract class DatabaseBackedTest {
             plantingSitesCql = plantingSitesCql,
             projectBoundariesCql = projectBoundariesCql,
             projectId = projectId,
-            projectLead = projectLead,
             totalCarbon = totalCarbon?.toBigDecimal(),
             totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
             whatNeedsToBeTrue = whatNeedsToBeTrue,
@@ -1157,11 +1151,6 @@ abstract class DatabaseBackedTest {
         )
 
     projectScoresDao.insert(row)
-  }
-
-  protected fun insertDefaultProjectLead(region: Region, projectLead: String?) {
-    val row = DefaultProjectLeadsRow(region, projectLead)
-    defaultProjectLeadsDao.insert(row)
   }
 
   protected fun insertDefaultVoter(userId: UserId) {
