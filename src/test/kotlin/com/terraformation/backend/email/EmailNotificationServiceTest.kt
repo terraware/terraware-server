@@ -1,10 +1,13 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -14,8 +17,10 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAdd
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
@@ -42,6 +47,8 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -65,12 +72,14 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
@@ -170,6 +179,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl
 
 internal class EmailNotificationServiceTest {
   private val acceleratorUser: IndividualUser = mockk()
+  private val activityStore: ActivityStore = mockk()
   private val adminUser: IndividualUser = mockk()
   private val automationStore: AutomationStore = mockk()
   private val clock: InstantSource = mockk()
@@ -183,6 +193,7 @@ internal class EmailNotificationServiceTest {
   private val parentStore: ParentStore = mockk()
   private val participantStore: ParticipantStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
+  private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService = mockk()
   private val projectStore: ProjectStore = mockk()
   private val reportStore: ReportStore = mockk()
   private val sender: EmailSender = mockk()
@@ -210,6 +221,7 @@ internal class EmailNotificationServiceTest {
 
   private val service =
       EmailNotificationService(
+          activityStore,
           automationStore,
           clock,
           config,
@@ -223,6 +235,7 @@ internal class EmailNotificationServiceTest {
           parentStore,
           participantStore,
           plantingSiteStore,
+          projectAcceleratorDetailsService,
           projectStore,
           reportStore,
           speciesStore,
@@ -291,6 +304,7 @@ internal class EmailNotificationServiceTest {
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
   private val acceleratorReportId = ReportId(1)
+  private val acceleratorUserId = UserId(3)
   private val applicationId = ApplicationId(1)
   private val monitoringPlot =
       MonitoringPlotModel(
@@ -374,6 +388,27 @@ internal class EmailNotificationServiceTest {
           plantingSiteId = plantingSite.id,
           startDate = LocalDate.of(2023, 9, 1),
           state = ObservationState.Upcoming,
+      )
+
+  private val activity =
+      ExistingActivityModel(
+          activityDate = LocalDate.of(2025, 1, 2),
+          activityType = ActivityType.SeedCollection,
+          createdBy = acceleratorUserId,
+          createdTime = Instant.EPOCH,
+          description = "description",
+          id = ActivityId(1),
+          isHighlight = false,
+          media = emptyList(),
+          modifiedBy = acceleratorUserId,
+          modifiedTime = Instant.EPOCH,
+          projectId = project.id,
+      )
+
+  private val projectAcceleratorDetails =
+      ProjectAcceleratorDetailsModel(
+          dealName = "XXX_DealName",
+          projectId = project.id,
       )
 
   private val deliverableCategory = DeliverableCategory.Compliance
@@ -472,8 +507,8 @@ internal class EmailNotificationServiceTest {
   private val tfContactUserId2 = UserId(50)
   private val tfContactEmail1 = "tfcontact1@terraformation.com"
   private val tfContactEmail2 = "tfcontact2@terraformation.com"
-  private val tfContactUser1 = userForEmail(tfContactEmail1)
-  private val tfContactUser2 = userForEmail(tfContactEmail2)
+  private val tfContactUser1 = userForEmail(tfContactEmail1, tfContactUserId1)
+  private val tfContactUser2 = userForEmail(tfContactEmail2, tfContactUserId2)
 
   private val sectionOwnerUserId = UserId(6)
   private val sectionOwnerEmail = "owner@terraformation.com"
@@ -502,7 +537,8 @@ internal class EmailNotificationServiceTest {
     every { acceleratorUser.email } returns "accelerator@terraformation.com"
     every { acceleratorUser.fullName } returns "Accelerator Expert"
     every { acceleratorUser.locale } returns Locale.ENGLISH
-    every { acceleratorUser.userId } returns UserId(3)
+    every { acceleratorUser.userId } returns acceleratorUserId
+    every { activityStore.fetchOneById(activity.id) } returns activity
     every { adminUser.canSendAlert(any()) } returns true
     every { adminUser.email } returns "admin@test.com"
     every { adminUser.fullName } returns "Admin Name"
@@ -537,6 +573,8 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
     every { participantStore.fetchOneById(participant.id) } returns participant
     every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
+    every { projectAcceleratorDetailsService.fetchOneById(project.id) } returns
+        projectAcceleratorDetails
     every { projectStore.fetchOneById(project.id) } returns project
     every { reportStore.fetchOne(acceleratorReportId) } returns report
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
@@ -555,6 +593,7 @@ internal class EmailNotificationServiceTest {
     every {
       userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
     } returns listOf(tfContactUser1, tfContactUser2)
+    every { userStore.fetchFullNameById(acceleratorUserId) } returns acceleratorUser.fullName
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId1) } returns tfContactUser1
@@ -1399,6 +1438,31 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
+  fun `activityCreatedEvent should notify project lead`() {
+    every { projectStore.fetchInternalUsers(project.id, ProjectInternalRole.ProjectLead) } returns
+        listOf(
+            ProjectInternalUsersRow(
+                project.id,
+                tfContactUser1.userId,
+                ProjectInternalRole.ProjectLead,
+            )
+        )
+    every { userStore.fetchManyById(listOf(tfContactUserId1)) } returns listOf(tfContactUser1)
+
+    val event = ActivityCreatedEvent(activity.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("New activity logged")
+    assertSubjectContains(projectAcceleratorDetails.dealName!!, message = message)
+    assertBodyContains("activity created", message = message)
+    assertBodyContains("Seed Collection", message = message)
+    assertBodyContains("2025-01-02", message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail1))
+  }
+
+  @Test
   fun `rateLimitedT0DataAssignedEvent should notify org TF contacts`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
@@ -2009,7 +2073,7 @@ internal class EmailNotificationServiceTest {
     }
   }
 
-  private fun userForEmail(email: String): IndividualUser {
+  private fun userForEmail(email: String, userId: UserId? = null): IndividualUser {
     val mock: IndividualUser = mockk()
 
     every { mock.email } returns email
@@ -2019,6 +2083,7 @@ internal class EmailNotificationServiceTest {
     } else {
       every { mock.locale } returns Locale.ENGLISH
     }
+    userId?.let { every { mock.userId } returns it }
 
     return mock
   }

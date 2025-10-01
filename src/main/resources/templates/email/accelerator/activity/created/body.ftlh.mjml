@@ -1,0 +1,23 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ActivityCreated" -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold"
+                         padding-right="0px">
+                    ${strings("notification.accelerator.activity.created.email.body", enumString(activityType), activityDate, createdByName)}
+                </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${detailsUrl?no_esc}">
+                    ${strings("notification.accelerator.activity.created.email.buttonLabel")}
+                </mj-button>
+
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
