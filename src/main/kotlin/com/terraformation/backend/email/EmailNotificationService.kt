@@ -941,10 +941,7 @@ class EmailNotificationService(
               activityDate = activity.activityDate,
               activityType = activity.activityType,
               createdByName = createdByName,
-              detailsUrl =
-                  webAppUrls
-                      .fullAcceleratorConsoleActivity(event.activityId, activity.projectId)
-                      .toString(),
+              detailsUrl = webAppUrls.fullAcceleratorConsoleActivity(event.activityId).toString(),
               projectDealName = acceleratorDetails.dealName ?: project.name,
           )
 

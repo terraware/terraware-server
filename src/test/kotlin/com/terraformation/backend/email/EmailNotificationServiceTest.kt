@@ -1458,6 +1458,10 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("activity created", message = message)
     assertBodyContains("Seed Collection", message = message)
     assertBodyContains("2025-01-02", message = message)
+    assertBodyContains(
+        webAppUrls.fullAcceleratorConsoleActivity(activity.id).toString(),
+        message = message,
+    )
 
     assertRecipientsEqual(setOf(tfContactEmail1))
   }

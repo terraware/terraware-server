@@ -100,9 +100,10 @@ class WebAppUrls(
         .build()
   }
 
-  fun fullAcceleratorConsoleActivity(activityId: ActivityId, projectId: ProjectId): URI {
+  fun fullAcceleratorConsoleActivity(activityId: ActivityId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/accelerator/activity-log/${projectId}/${activityId}")
+        .path("/accelerator/activity-log/")
+        .queryParam("activityId", activityId)
         .build()
   }
 
