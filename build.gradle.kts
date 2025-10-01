@@ -194,6 +194,7 @@ testing {
           targets {
             all {
               testTask.configure {
+                jvmArgs("-Dfile.encoding=UTF-8", "-Duser.country=US", "-Xmx5120m")
                 systemProperty("java.locale.providers", "SPI,CLDR")
                 testLogging { exceptionFormat = TestExceptionFormat.FULL }
               }
