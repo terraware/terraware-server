@@ -174,8 +174,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
       fun `updates an existing project accelerator details row`() {
         insertProjectAcceleratorDetails(
             projectId = projectId,
+            dealDescription = "Deal description",
             dealName = "Existing deal name",
-            projectLead = "Project Lead",
         )
 
         insertValue(dealNameVariableId, textValue = "New deal name")
@@ -184,8 +184,8 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
         assertTableEquals(
             ProjectAcceleratorDetailsRecord(
                 projectId = projectId,
+                dealDescription = "Deal description",
                 dealName = "New deal name",
-                projectLead = "Project Lead",
             )
         )
       }
