@@ -97,6 +97,19 @@ class RateLimitedT0DataAssignedEventTest {
     }
 
     @Test
+    fun `combine with species that were deleted after adding`() {
+      val existingEvent = event(listOf(plotChangeModel(1, listOf(speciesChangeModel(1, null, 2)))))
+
+      val newEvent = event(listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 2, null)))))
+
+      assertEquals(
+          event(listOf(plotChangeModel(1, emptyList()))),
+          newEvent.combine(existingEvent),
+          "Should have species were added then deleted",
+      )
+    }
+
+    @Test
     fun `combine with lots of data`() {
       val existingEvent =
           event(
