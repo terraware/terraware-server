@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
@@ -55,6 +56,8 @@ class ActivityStore(
             .set(ACTIVITIES.VERIFIED_TIME, verifiedTime)
             .returningResult(ACTIVITIES.ID)
             .fetchOne(ACTIVITIES.ID)!!
+
+    eventPublisher.publishEvent(ActivityCreatedEvent(activityId))
 
     return ExistingActivityModel(
         activityDate = model.activityDate,
