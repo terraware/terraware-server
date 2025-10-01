@@ -720,7 +720,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.ActivityCreated,
         title = "New activity logged for DEAL_name",
         body = "New Seed Collection activity created for 2025-01-01.",
-        localUrl = webAppUrls.acceleratorConsoleActivity(activityId, projectId),
+        localUrl = webAppUrls.acceleratorConsoleActivity(activityId),
         userId = projectLead,
         organizationId = null,
     )

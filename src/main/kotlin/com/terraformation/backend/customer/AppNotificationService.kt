@@ -632,7 +632,7 @@ class AppNotificationService(
           activity.projectId,
           NotificationType.ActivityCreated,
           renderMessage,
-          webAppUrls.acceleratorConsoleActivity(event.activityId, activity.projectId),
+          webAppUrls.acceleratorConsoleActivity(event.activityId),
           ProjectInternalRole.ProjectLead,
       )
     }
