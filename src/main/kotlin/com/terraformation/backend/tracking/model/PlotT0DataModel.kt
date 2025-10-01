@@ -60,12 +60,6 @@ data class SpeciesDensityChangedEventModel(
     val previousDensity: BigDecimal? = null,
     val newDensity: BigDecimal? = null,
 ) {
-  init {
-    require(previousDensity != null || newDensity != null) {
-      "Either previousDensity or newDensity must be non-null."
-    }
-  }
-
   companion object {
     fun of(speciesChangeModel: SpeciesDensityChangedModel, scientificName: String) =
         SpeciesDensityChangedEventModel(
