@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -97,6 +98,10 @@ class WebAppUrls(
         .queryParam("stage", state)
         .queryParam("facilityId", facilityId)
         .build()
+  }
+
+  fun acceleratorConsoleActivity(activityId: ActivityId, projectId: ProjectId): URI {
+    return UriBuilder.fromPath("/accelerator/activity-log/${projectId}/${activityId}").build()
   }
 
   fun fullAcceleratorConsoleApplication(applicationId: ApplicationId): URI {

@@ -1,5 +1,7 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
@@ -7,6 +9,7 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -36,6 +39,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
@@ -73,6 +77,7 @@ import org.springframework.context.event.EventListener
 
 @Named
 class AppNotificationService(
+    private val activityStore: ActivityStore,
     private val automationStore: AutomationStore,
     private val deliverableStore: DeliverableStore,
     private val deviceStore: DeviceStore,
@@ -86,6 +91,7 @@ class AppNotificationService(
     private val parentStore: ParentStore,
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
@@ -607,6 +613,31 @@ class AppNotificationService(
     }
   }
 
+  @EventListener
+  fun on(event: ActivityCreatedEvent) {
+    systemUser.run {
+      val activity = activityStore.fetchOneById(event.activityId)
+      val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(activity.projectId)
+      val project = projectStore.fetchOneById(activity.projectId)
+
+      val renderMessage = {
+        messages.activityCreated(
+            activityDate = activity.activityDate,
+            activityType = activity.activityType,
+            projectDealName = acceleratorDetails.dealName ?: project.name,
+        )
+      }
+
+      insertProjectInternalNotifications(
+          activity.projectId,
+          NotificationType.ActivityCreated,
+          renderMessage,
+          webAppUrls.acceleratorConsoleActivity(event.activityId, activity.projectId),
+          ProjectInternalRole.ProjectLead,
+      )
+    }
+  }
+
   private fun notifyDeliverableStatusUpdated(projectId: ProjectId, deliverableId: DeliverableId) {
     systemUser.run {
       val organizationId = parentStore.getOrganizationId(projectId)!!
@@ -679,6 +710,24 @@ class AppNotificationService(
         recipients.forEach { user ->
           insert(notificationType, user, organizationId, renderMessage, localUrl)
         }
+      }
+    }
+  }
+
+  private fun insertProjectInternalNotifications(
+      projectId: ProjectId,
+      notificationType: NotificationType,
+      renderMessage: () -> NotificationMessage,
+      localUrl: URI,
+      role: ProjectInternalRole,
+  ) {
+    systemUser.run {
+      val internalUserIds =
+          projectStore.fetchInternalUsers(projectId, role).mapNotNull { it.userId }
+      val recipients = userStore.fetchManyById(internalUserIds)
+
+      dslContext.transaction { _ ->
+        recipients.forEach { user -> insert(notificationType, user, null, renderMessage, localUrl) }
       }
     }
   }
