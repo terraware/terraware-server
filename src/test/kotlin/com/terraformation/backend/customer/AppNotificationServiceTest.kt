@@ -702,7 +702,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store activity created notification`() {
-    val projectId = insertProject()
+    insertProject()
     val dealNameVariableId = insertTextVariable(stableId = StableIds.dealName.value)
     insertValue(dealNameVariableId, textValue = "DEAL_name")
 
