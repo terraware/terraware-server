@@ -2,6 +2,7 @@ package com.terraformation.backend.i18n
 
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.db.LocalizableEnum
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -202,6 +203,22 @@ class Messages {
       getMessage("accessionCsvQuantityUnitsInvalid", validQuantityUnits)
 
   fun accessionCsvStatusInvalid() = getMessage("accessionCsvStatusInvalid", validAccessionStates)
+
+  fun activityCreated(
+      activityDate: LocalDate,
+      activityType: ActivityType,
+      projectDealName: String,
+  ) =
+      NotificationMessage(
+          title =
+              getMessage("notification.accelerator.activity.created.app.title", projectDealName),
+          body =
+              getMessage(
+                  "notification.accelerator.activity.created.app.body",
+                  activityType.getDisplayName(currentLocale()),
+                  activityDate,
+              ),
+      )
 
   fun batchCsvColumnName(position: Int) = getMessage("batchCsvColumnName.$position")
 

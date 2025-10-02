@@ -5,13 +5,17 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -19,6 +23,7 @@ import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
+import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
@@ -39,6 +44,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
@@ -51,6 +57,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
@@ -68,11 +75,12 @@ import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableOwnerStore
 import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
+import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
-import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
@@ -127,12 +135,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private val messages: Messages = Messages()
 
   private lateinit var accessionStore: AccessionStore
+  private lateinit var activityStore: ActivityStore
   private lateinit var automationStore: AutomationStore
   private lateinit var deliverableStore: DeliverableStore
   private lateinit var deviceStore: DeviceStore
   private lateinit var documentStore: DocumentStore
   private lateinit var facilityStore: FacilityStore
-  private lateinit var fundingEntityStore: FundingEntityStore
   private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
@@ -140,6 +148,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var parentStore: ParentStore
   private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
+  private lateinit var projectAcceleratorDetailsService: ProjectAcceleratorDetailsService
   private lateinit var projectStore: ProjectStore
   private lateinit var reportStore: ReportStore
   private lateinit var speciesStore: SpeciesStore
@@ -174,6 +183,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
             IdentifierGenerator(clock, dslContext),
         )
+    activityStore = ActivityStore(clock, dslContext, publisher, parentStore)
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deliverableStore = DeliverableStore(dslContext)
     deviceStore = DeviceStore(devicesDao)
@@ -265,9 +275,32 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             variableTableColumnsDao,
             variableTextsDao,
         )
+    projectAcceleratorDetailsService =
+        ProjectAcceleratorDetailsService(
+            AcceleratorProjectVariableValuesService(
+                countriesDao,
+                variableStore,
+                VariableValueStore(
+                    clock,
+                    dslContext,
+                    mockk(),
+                    variableImageValuesDao,
+                    variableLinkValuesDao,
+                    variablesDao,
+                    variableSectionValuesDao,
+                    variableSelectOptionValuesDao,
+                    variableValuesDao,
+                    variableValueTableRowsDao,
+                ),
+                SystemUser(usersDao),
+            ),
+            ProjectAcceleratorDetailsStore(clock, dslContext, publisher),
+        )
+
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
     service =
         AppNotificationService(
+            activityStore,
             automationStore,
             deliverableStore,
             deviceStore,
@@ -281,6 +314,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             participantStore,
             plantingSiteStore,
+            projectAcceleratorDetailsService,
             projectStore,
             reportStore,
             speciesStore,
@@ -662,6 +696,32 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "2025 Q1 Report Submitted for DEAL_name",
         body = "DEAL_name has submitted their 2025 Q1 Report.",
         localUrl = webAppUrls.acceleratorConsoleReport(reportId, projectId),
+        organizationId = null,
+    )
+  }
+
+  @Test
+  fun `should store activity created notification`() {
+    insertProject()
+    val dealNameVariableId = insertTextVariable(stableId = StableIds.dealName.value)
+    insertValue(dealNameVariableId, textValue = "DEAL_name")
+
+    val projectLead = insertUser()
+    insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
+
+    val activityId =
+        insertActivity(
+            activityDate = LocalDate.of(2025, Month.JANUARY, 1),
+            activityType = ActivityType.SeedCollection,
+        )
+
+    testEventNotification(
+        ActivityCreatedEvent(activityId),
+        type = NotificationType.ActivityCreated,
+        title = "New activity logged for DEAL_name",
+        body = "New Seed Collection activity created for 2025-01-01.",
+        localUrl = webAppUrls.acceleratorConsoleActivity(activityId),
+        userId = projectLead,
         organizationId = null,
     )
   }
