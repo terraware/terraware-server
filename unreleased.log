@@ -1,3 +1,4 @@
+a1237920d7f SW-7471 Include media in admin activity payloads (#3460)
 386d8975a8d SW-7463 Email notifications for new activities (#3456)
 3d86bf8d745 SW-7463 In-app notifications for new activities (#3455)
 5124c61e37a SW-7463 Publish event on activity creation (#3454)
