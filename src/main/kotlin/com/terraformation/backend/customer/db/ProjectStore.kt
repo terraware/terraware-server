@@ -18,6 +18,7 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -201,10 +202,22 @@ class ProjectStore(
     }
   }
 
-  fun fetchInternalUsers(projectId: ProjectId): List<ProjectInternalUsersRow> {
+  fun fetchInternalUsers(
+      projectId: ProjectId,
+      role: ProjectInternalRole? = null,
+  ): List<ProjectInternalUsersRow> {
     requirePermissions { readProject(projectId) }
 
-    return projectInternalUsersDao.fetchByProjectId(projectId)
+    val conditions =
+        listOfNotNull(
+            PROJECT_INTERNAL_USERS.PROJECT_ID.eq(projectId),
+            role?.let { PROJECT_INTERNAL_USERS.PROJECT_INTERNAL_ROLE_ID.eq(it) },
+        )
+
+    return dslContext
+        .selectFrom(PROJECT_INTERNAL_USERS)
+        .where(conditions)
+        .fetchInto(ProjectInternalUsersRow::class.java)
   }
 
   /**
