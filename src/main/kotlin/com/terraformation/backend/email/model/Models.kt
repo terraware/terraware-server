@@ -7,6 +7,8 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.LocalizableEnum
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -88,6 +90,11 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
 
   fun dateString(date: LocalDate): String =
       DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(currentLocale()).format(date)
+
+  /** Returns the display name of a localizable enum in the current locale. */
+  fun enumString(value: LocalizableEnum<*>): String {
+    return value.getDisplayName(currentLocale())
+  }
 }
 
 class DocumentsUpdate(
@@ -535,6 +542,18 @@ class AcceleratorReportPublished(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "acceleratorReport/published"
+}
+
+class ActivityCreated(
+    config: TerrawareServerConfig,
+    val activityDate: LocalDate,
+    val activityType: ActivityType,
+    val createdByName: String,
+    val detailsUrl: String,
+    val projectDealName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accelerator/activity/created"
 }
 
 class T0DataSet(

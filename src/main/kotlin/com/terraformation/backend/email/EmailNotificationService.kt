@@ -1,10 +1,13 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -39,6 +42,8 @@ import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
@@ -53,6 +58,7 @@ import com.terraformation.backend.email.model.AcceleratorReportPublished
 import com.terraformation.backend.email.model.AcceleratorReportSubmitted
 import com.terraformation.backend.email.model.AcceleratorReportUpcoming
 import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.ActivityCreated
 import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.CompletedSectionVariableUpdated
 import com.terraformation.backend.email.model.DeliverableReadyForReview
@@ -123,6 +129,7 @@ import org.springframework.context.event.EventListener
 
 @Named
 class EmailNotificationService(
+    private val activityStore: ActivityStore,
     private val automationStore: AutomationStore,
     private val clock: InstantSource,
     private val config: TerrawareServerConfig,
@@ -136,6 +143,7 @@ class EmailNotificationService(
     private val parentStore: ParentStore,
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
     private val reportStore: ReportStore,
     private val speciesStore: SpeciesStore,
@@ -920,6 +928,28 @@ class EmailNotificationService(
   }
 
   @EventListener
+  fun on(event: ActivityCreatedEvent) {
+    systemUser.run {
+      val activity = activityStore.fetchOneById(event.activityId)
+      val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(activity.projectId)
+      val project = projectStore.fetchOneById(activity.projectId)
+      val createdByName = userStore.fetchFullNameById(activity.createdBy) ?: "?"
+
+      val model =
+          ActivityCreated(
+              config,
+              activityDate = activity.activityDate,
+              activityType = activity.activityType,
+              createdByName = createdByName,
+              detailsUrl = webAppUrls.fullAcceleratorConsoleActivity(event.activityId).toString(),
+              projectDealName = acceleratorDetails.dealName ?: project.name,
+          )
+
+      sendToProjectInternalUsers(activity.projectId, model, ProjectInternalRole.ProjectLead)
+    }
+  }
+
+  @EventListener
   fun on(@Suppress("UNUSED_PARAMETER") event: NotificationJobStartedEvent) {
     pendingEmails.remove()
   }
@@ -980,6 +1010,21 @@ class EmailNotificationService(
       )
     } else {
       log.info("Organization ${organization.id} has no contact, so not sending notification")
+    }
+  }
+
+  /** Sends an email notification to project internal users with a specific role. */
+  private fun sendToProjectInternalUsers(
+      projectId: ProjectId,
+      model: EmailTemplateModel,
+      role: ProjectInternalRole,
+  ) {
+    systemUser.run {
+      val internalUserIds =
+          projectStore.fetchInternalUsers(projectId, role).mapNotNull { it.userId }
+      val recipients = userStore.fetchManyById(internalUserIds)
+
+      recipients.forEach { user -> emailService.sendUserNotification(user, model, false) }
     }
   }
 

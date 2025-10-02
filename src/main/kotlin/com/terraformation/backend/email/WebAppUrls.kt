@@ -100,6 +100,13 @@ class WebAppUrls(
         .build()
   }
 
+  fun fullAcceleratorConsoleActivity(activityId: ActivityId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accelerator/activity-log/")
+        .queryParam("activityId", activityId)
+        .build()
+  }
+
   fun acceleratorConsoleActivity(activityId: ActivityId): URI {
     return UriBuilder.fromPath("/accelerator/activity-log/")
         .queryParam("activityId", activityId)
