@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
@@ -53,7 +54,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class Create {
     @Test
-    fun `populates fields`() {
+    fun `populates fields and publishes event`() {
       insertOrganizationUser(role = Role.Admin)
 
       val model =
@@ -83,6 +84,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               verifiedTime = null,
           )
       )
+
+      eventPublisher.assertEventPublished(ActivityCreatedEvent(model.id))
     }
 
     @Test
