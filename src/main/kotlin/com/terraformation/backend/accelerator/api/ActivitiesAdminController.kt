@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import jakarta.ws.rs.QueryParam
 import java.time.Instant
 import java.time.LocalDate
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
@@ -40,9 +42,12 @@ class ActivitiesAdminController(
       [GlobalRole.ReadOnly, GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin]
   )
   fun adminListActivities(
-      @QueryParam("projectId") projectId: ProjectId
+      @QueryParam("projectId") projectId: ProjectId,
+      @Parameter(description = "If true, include a list of media files for each activity.")
+      @RequestParam(defaultValue = "true")
+      includeMedia: Boolean = true,
   ): AdminListActivitiesResponsePayload {
-    val activities = activityStore.fetchByProjectId(projectId)
+    val activities = activityStore.fetchByProjectId(projectId, includeMedia)
 
     return AdminListActivitiesResponsePayload(activities.map { AdminActivityPayload(it) })
   }
@@ -55,7 +60,7 @@ class ActivitiesAdminController(
       [GlobalRole.ReadOnly, GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin]
   )
   fun adminGetActivity(@PathVariable("id") id: ActivityId): AdminGetActivityResponsePayload {
-    val activity = activityStore.fetchOneById(id)
+    val activity = activityStore.fetchOneById(id, includeMedia = true)
 
     return AdminGetActivityResponsePayload(AdminActivityPayload(activity))
   }
