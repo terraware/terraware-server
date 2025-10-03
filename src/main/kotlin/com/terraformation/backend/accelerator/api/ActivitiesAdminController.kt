@@ -67,7 +67,7 @@ class ActivitiesAdminController(
 
   @Operation(summary = "Creates a new activity including accelerator-admin-only details.")
   @PostMapping
-  @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
+  @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun adminCreateActivity(
       @RequestBody payload: AdminCreateActivityRequestPayload
   ): AdminGetActivityResponsePayload {
@@ -78,7 +78,7 @@ class ActivitiesAdminController(
 
   @Operation(summary = "Updates an activity including its accelerator-admin-only details.")
   @PutMapping("/{id}")
-  @RequireGlobalRole([GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
+  @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun adminUpdateActivity(
       @PathVariable("id") id: ActivityId,
       @RequestBody payload: AdminUpdateActivityRequestPayload,
