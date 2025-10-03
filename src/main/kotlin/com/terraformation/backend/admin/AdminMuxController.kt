@@ -67,7 +67,12 @@ class AdminMuxController(
       @RequestParam width: Int?,
       @RequestParam height: Int?,
   ): ResponseEntity<InputStreamResource> {
-    return thumbnailService.readFile(fileId, width, height).toResponseEntity()
+    return try {
+      thumbnailService.readFile(fileId, width, height).toResponseEntity()
+    } catch (e: Exception) {
+      log.error("Unable to get thumbnail", e)
+      throw e
+    }
   }
 
   @PostMapping("/createFileAccessToken")

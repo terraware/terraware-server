@@ -66,7 +66,7 @@ class ThumbnailService(
       return thumbnailFromExistingStillImage
     }
 
-    // For video or for image formats we don't support natively, Mux will generate a
+    // For video or for image formats we don't support natively, Mux or ConvertAPI will generate a
     // JPEG image, which we'll store at its original size the first time someone requests a
     // thumbnail. Then we'll scale that still image to the desired size.
     val converter =

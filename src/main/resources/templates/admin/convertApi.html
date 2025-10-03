@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        form { padding-bottom: 1em; }
+        mux-player { max-width: 640px; }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>ConvertAPI Integration</h2>
+
+<img th:if="${fileId != null}" height="100" th:src="|/admin/mux/thumbnail/${fileId}?height=100|" />
+
+<th:block th:if="${convertApiEnabled}">
+    <h3>Upload File and View Thumbnail</h3>
+
+    <p>
+    <details>
+        <summary>
+            If the file is of a type that isn't in this list (expand to view), it will first be sent
+            to ConvertAPI for conversion to JPEG.
+        </summary>
+        <ul>
+            <li th:each="format : ${imageFormats}" th:text="${format}"/>
+        </ul>
+    </details>
+    </p>
+
+    <form method="POST" action="/admin/uploadFile" enctype="multipart/form-data">
+        <label>
+            Image file
+            <input type="file" name="file" required/>
+        </label>
+        <button type="submit">Upload</button>
+    </form>
+
+    <h3>Convert Image to JPEG</h3>
+
+    <p>
+        This will send the file to ConvertAPI and open the JPEG file in a new window.
+    </p>
+
+    <form method="POST" action="/admin/convertImage" enctype="multipart/form-data" target="_blank">
+        <label>
+            Image file
+            <input type="file" name="file" required/>
+        </label>
+        <button type="submit">Convert</button>
+    </form>
+</th:block>
+
+<p th:if="!${convertApiEnabled}">
+    The ConvertAPI integration is disabled.
+</p>
+
+</body>
+</html>
