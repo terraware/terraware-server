@@ -306,13 +306,13 @@ class TerrawareServerConfig(
   }
 
   class ConvertApiConfig(
-      val apiKey: String? = null,
+      val apiToken: String? = null,
       @DefaultValue("false") val enabled: Boolean = false,
   ) {
     init {
       if (enabled) {
-        if (apiKey == null) {
-          throw IllegalArgumentException("API key is required if ConvertAPI is enabled")
+        if (apiToken == null) {
+          throw IllegalArgumentException("API token is required if ConvertAPI is enabled")
         }
       }
     }

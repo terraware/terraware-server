@@ -73,7 +73,7 @@ class ConvertApiService(
       runBlocking {
         val response =
             httpClient.post(url) {
-              bearerAuth(config.convertApi.apiKey!!)
+              bearerAuth(config.convertApi.apiToken!!)
               contentType(ContentType.Application.OctetStream)
               header("Content-Disposition", "attachment; filename=file.$originalFormatName")
               header("Content-Length", original.size)
