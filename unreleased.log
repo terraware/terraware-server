@@ -1,1 +1,2 @@
+a8c4e253596 Fix inconsistent use of ThumbnailService stubs (#3461)
 e9466506dfd Fix incorrect include paths in activity created MJML (#3463)
