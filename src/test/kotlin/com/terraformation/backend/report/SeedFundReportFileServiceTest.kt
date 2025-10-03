@@ -65,9 +65,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
         seedFundReportsDao,
     )
   }
-  private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk(), mockk())
-  }
+  private val thumbnailService: ThumbnailService = mockk()
   private val service: SeedFundReportFileService by lazy {
     SeedFundReportFileService(
         filesDao,
@@ -242,10 +240,11 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   inner class ReadPhoto {
     @Test
     fun `returns photo data`() {
-      val content = Random.Default.nextBytes(10)
+      val content = Random.nextBytes(10)
       val fileId = storePhoto(content = content)
 
-      every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
+      every { thumbnailService.readFile(fileId) } returns
+          SizedInputStream(content.inputStream(), 10L)
 
       val inputStream = service.readPhoto(seedFundReportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
