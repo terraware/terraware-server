@@ -53,9 +53,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         fileStore,
     )
   }
-  private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk(), mockk())
-  }
+  private val thumbnailService: ThumbnailService = mockk()
   private val service: BatchPhotoService by lazy {
     BatchPhotoService(
         batchPhotosDao,
@@ -117,6 +115,13 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns photo data`() {
       val fileId = storePhoto(content = onePixelPng)
+
+      every { thumbnailService.readFile(fileId) } returns
+          SizedInputStream(
+              onePixelPng.inputStream(),
+              onePixelPng.size.toLong(),
+              MediaType.IMAGE_PNG,
+          )
 
       val inputStream = service.readPhoto(batchId, fileId)
       assertArrayEquals(onePixelPng, inputStream.readAllBytes(), "File content")

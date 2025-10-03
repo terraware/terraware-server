@@ -195,7 +195,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     val stream = repository.readPhoto(accessionId, filename, width, height)
 
-    verify { thumbnailService.readFile(fileId, width, height) }
+    verify { thumbnailStore.getThumbnailData(fileId, width, height) }
 
     assertArrayEquals(thumbnailData, stream.readAllBytes())
   }

@@ -132,9 +132,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         fileStore,
     )
   }
-  private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk(), mockk())
-  }
+  private val thumbnailService: ThumbnailService = mockk()
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -641,6 +639,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `returns photo data`() {
+        every { thumbnailService.readFile(fileId) } returns
+            SizedInputStream(content.inputStream(), content.size.toLong())
+
         val inputStream = service.readPhoto(observationId, plotId, fileId)
         assertArrayEquals(content, inputStream.readAllBytes())
       }

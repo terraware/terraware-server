@@ -47,9 +47,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
         fileStore,
     )
   }
-  private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, mockk(), mockk())
-  }
+  private val thumbnailService: ThumbnailService = mockk()
   private val service: WithdrawalPhotoService by lazy {
     WithdrawalPhotoService(
         dslContext,
@@ -84,6 +82,9 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `readPhoto returns photo data`() {
     val fileId = storePhoto(content = onePixelPng)
+
+    every { thumbnailService.readFile(fileId) } returns
+        SizedInputStream(onePixelPng.inputStream(), onePixelPng.size.toLong())
 
     val inputStream = service.readPhoto(withdrawalId, fileId)
     assertArrayEquals(onePixelPng, inputStream.readAllBytes(), "File content")
