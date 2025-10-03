@@ -4,7 +4,6 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
-import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.ByteArrayInputStream
@@ -17,7 +16,7 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class ThumbnailService(
     private val dslContext: DSLContext,
     private val fileService: FileService,
-    private val muxService: MuxService,
+    private val jpegConverters: List<JpegConverter>,
     private val thumbnailStore: ThumbnailStore,
 ) {
   private val log = perClassLogger()
@@ -45,12 +44,13 @@ class ThumbnailService(
   }
 
   private fun getThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
-    val mediaType =
+    val mimeType =
         dslContext.fetchValue(FILES.CONTENT_TYPE, FILES.ID.eq(fileId))
             ?: throw FileNotFoundException(fileId)
 
-    // For images, ThumbnailStore will handle scaling the original if needed.
-    if (mediaType.startsWith("image/")) {
+    // For images with natively-supported formats, ThumbnailStore will handle scaling the original
+    // if needed.
+    if (thumbnailStore.canGenerateThumbnails(mimeType)) {
       return thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight)
     }
 
@@ -60,24 +60,26 @@ class ThumbnailService(
       return existingData
     }
 
-    // For video, Mux will generate a still image, which we'll store at its original size the first
-    // time someone requests a thumbnail. Then we'll scale that still image to the desired size. We
-    // do the scaling ourselves because Mux limits the number of thumbnails per video.
-    if (mediaType.startsWith("video/")) {
-      val thumbnailFromExistingStillImage =
-          thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
-      if (thumbnailFromExistingStillImage != null) {
-        return thumbnailFromExistingStillImage
-      }
-
-      val thumbnailData = muxService.getStillJpegImage(fileId)
-      val image = ImageIO.read(ByteArrayInputStream(thumbnailData))
-      thumbnailStore.storeThumbnail(fileId, thumbnailData, image.width, image.height)
-
-      return thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
-          ?: throw ThumbnailNotReadyException(fileId)
+    val thumbnailFromExistingStillImage =
+        thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
+    if (thumbnailFromExistingStillImage != null) {
+      return thumbnailFromExistingStillImage
     }
 
-    throw UnsupportedMediaTypeException("Cannot generate thumbnails for files of type $mediaType")
+    // For video or for image formats we don't support natively, Mux will generate a
+    // JPEG image, which we'll store at its original size the first time someone requests a
+    // thumbnail. Then we'll scale that still image to the desired size.
+    val converter =
+        jpegConverters.firstOrNull { it.canConvertToJpeg(mimeType) }
+            ?: throw UnsupportedMediaTypeException(
+                "Cannot generate thumbnails for files of type $mimeType"
+            )
+
+    val jpegImage = converter.convertToJpeg(fileId)
+    val image = ImageIO.read(ByteArrayInputStream(jpegImage))
+    thumbnailStore.storeThumbnail(fileId, jpegImage, image.width, image.height)
+
+    return thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
+        ?: throw ThumbnailNotReadyException(fileId)
   }
 }

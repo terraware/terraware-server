@@ -69,7 +69,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     )
   }
   private val thumbnailService: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, muxService, thumbnailStore)
+    ThumbnailService(dslContext, fileService, listOf(muxService), thumbnailStore)
   }
   private val service: ActivityMediaService by lazy {
     ActivityMediaService(
@@ -276,7 +276,8 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val maxWidth = 100
       val maxHeight = 100
 
-      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
+      every { thumbnailStore.canGenerateThumbnails("image/png") } returns true
+      every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(thumbnailContent.inputStream(), 25L)
 
       val inputStream = service.readMedia(activityId, fileId, maxWidth, maxHeight)

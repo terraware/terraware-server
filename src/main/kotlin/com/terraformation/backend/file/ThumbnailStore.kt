@@ -73,6 +73,9 @@ class ThumbnailStore(
    */
   private val thumbnailTimeoutSecs: Long = 60
 
+  /** Which image MIME types we can scale natively. */
+  private val supportedMimeTypes = ImageIO.getReaderMIMETypes().toSet()
+
   /**
    * Returns the contents of a thumbnail image for a photo. This may return a cached copy of a
    * thumbnail if one exists, or it may scale the original image down on demand.
@@ -224,6 +227,11 @@ class ThumbnailStore(
               ?.id
         }
     log.info("Created file $fileId thumbnail $thumbnailId dimensions $width x $height bytes $size")
+  }
+
+  /** Returns true if we can generate thumbnails directly from a given media type. */
+  fun canGenerateThumbnails(mimeType: String): Boolean {
+    return mimeType.substringBefore(';') in supportedMimeTypes
   }
 
   private fun generateThumbnail(

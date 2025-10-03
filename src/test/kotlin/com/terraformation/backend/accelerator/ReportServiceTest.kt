@@ -25,7 +25,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.time.ZoneOffset
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -48,7 +48,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         reportStore,
         publishedReportPhotosDao,
         SystemUser(usersDao),
-        ThumbnailService(dslContext, fileService, mockk(), mockk()),
+        ThumbnailService(dslContext, fileService, listOf(mockk()), mockk()),
     )
   }
 

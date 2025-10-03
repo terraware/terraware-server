@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.MuxAssetStatus
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.JpegConverter
 import com.terraformation.backend.file.ThumbnailNotReadyException
 import com.terraformation.backend.file.VideoStreamNotFoundException
 import com.terraformation.backend.file.event.VideoFileDeletedEvent
@@ -53,7 +54,7 @@ class MuxService(
     private val httpClient: HttpClient,
     @Lazy private val jobScheduler: JobScheduler,
     private val systemUser: SystemUser,
-) {
+) : JpegConverter {
   /**
    * How long to make files available for Mux to download. The files will have random URLs but will
    * be accessible without authentication for this amount of time; it should be long enough to let
@@ -136,6 +137,10 @@ class MuxService(
     return playbackId
   }
 
+  override fun canConvertToJpeg(mimeType: String): Boolean {
+    return mimeType.startsWith("video/")
+  }
+
   /**
    * Returns a still image from a video file in JPEG format. The image will be a frame from the
    * middle of the video.
@@ -146,7 +151,7 @@ class MuxService(
    * limit on the number of thumbnails it can produce for a video. We don't want to have to worry
    * about staying under that limit if our app needs thumbnails of various sizes.
    */
-  fun getStillJpegImage(fileId: FileId): ByteArray {
+  override fun convertToJpeg(fileId: FileId): ByteArray {
     ensureEnabled()
 
     val streamModel =
