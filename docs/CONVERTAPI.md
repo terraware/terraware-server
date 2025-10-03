@@ -30,7 +30,7 @@ You can tell Terraware about the API token via environment variables or by putti
 terraware:
   convert-api:
     enabled: true
-    api-token: "Your API token from step 2"
+    api-key: "Your API token from step 2"
 ```
 
 If you're running terraware-server in a Docker container, you can use environment variables, e.g., `TERRAWARE_CONVERTAPI_ENABLED=true`.
