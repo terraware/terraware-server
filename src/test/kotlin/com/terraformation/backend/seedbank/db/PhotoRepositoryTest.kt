@@ -191,6 +191,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     val fileId = filesDao.findAll().first().id!!
 
+    every { thumbnailStore.canGenerateThumbnails(metadata.contentType) } returns true
     every { thumbnailStore.getThumbnailData(fileId, any(), any()) } returns thumbnailStream
 
     val stream = repository.readPhoto(accessionId, filename, width, height)

@@ -11,7 +11,6 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.model.FileMetadata
-import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelJpeg
 import io.mockk.Runs
@@ -35,13 +34,14 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
-  private val muxService: MuxService = mockk()
+  private val converter1: JpegConverter = mockk()
+  private val converter2: JpegConverter = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, config, eventPublisher, filesDao, fileStore)
   }
   private val service: ThumbnailService by lazy {
-    ThumbnailService(dslContext, fileService, muxService, thumbnailStore)
+    ThumbnailService(dslContext, fileService, listOf(converter1, converter2), thumbnailStore)
   }
 
   private val filename = "test-photo.jpg"
@@ -88,6 +88,7 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
 
       val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
 
+      every { thumbnailStore.canGenerateThumbnails(metadata.contentType) } returns true
       every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
 
       val stream = service.readFile(fileId, width, height)
@@ -98,13 +99,16 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetches and stores still image from Mux if video file does not have one yet`() {
+    fun `fetches and stores JPEG image from converters if video file does not have one yet`() {
       val fileId =
           fileService.storeFile("category", Random.nextBytes(10).inputStream(), videoMetadata) {}
       val thumbnailData = Random.nextBytes(10)
       var stillImageStored = false
 
-      every { muxService.getStillJpegImage(fileId) } returns onePixelJpeg
+      every { converter1.canConvertToJpeg(videoMetadata.contentType) } returns false
+      every { converter2.canConvertToJpeg(videoMetadata.contentType) } returns true
+      every { converter2.convertToJpeg(fileId) } returns onePixelJpeg
+      every { thumbnailStore.canGenerateThumbnails(videoMetadata.contentType) } returns false
       every { thumbnailStore.getExistingThumbnailData(fileId, 20, 20) } returns null
       every { thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, 20, 20) } answers
           {
@@ -117,7 +121,9 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
 
       val stream = service.readFile(fileId, 20, 20)
 
-      verify { muxService.getStillJpegImage(fileId) }
+      verify { converter1.canConvertToJpeg(videoMetadata.contentType) }
+      verify { converter2.canConvertToJpeg(videoMetadata.contentType) }
+      verify { converter2.convertToJpeg(fileId) }
       verify { thumbnailStore.storeThumbnail(fileId, any(), 1, 1) }
 
       assertArrayEquals(thumbnailData, stream.readAllBytes())

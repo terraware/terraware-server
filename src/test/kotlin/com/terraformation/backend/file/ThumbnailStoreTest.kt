@@ -36,6 +36,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -109,6 +110,30 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
         }
 
     return thumbnailsRow
+  }
+
+  @Nested
+  inner class CanGenerateThumbnails {
+    @Test
+    fun `returns true for common image types but not video types`() {
+      val expected =
+          mapOf(
+              "application/octet-stream" to false,
+              "image/jpeg" to true,
+              "image/png" to true,
+              "image/tiff" to true,
+              "video/mp4" to false,
+              "video/quicktime" to false,
+          )
+      val actual = expected.keys.associateWith { store.canGenerateThumbnails(it) }
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `ignores MIME type suffixes`() {
+      assertTrue(store.canGenerateThumbnails("image/jpeg; foo=bar"))
+    }
   }
 
   @Nested
