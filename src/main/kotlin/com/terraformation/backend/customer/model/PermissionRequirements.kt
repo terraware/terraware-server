@@ -735,14 +735,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun manageDefaultProjectLeads() {
-    user.recordPermissionChecks {
-      if (!user.canManageDefaultProjectLeads()) {
-        throw AccessDeniedException("No permission to manage default project leads")
-      }
-    }
-  }
-
   fun manageDeliverables() {
     user.recordPermissionChecks {
       if (!user.canManageDeliverables()) {

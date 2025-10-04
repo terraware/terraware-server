@@ -359,8 +359,6 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canManageActivity(activityId: ActivityId): Boolean = defaultPermission
 
-  fun canManageDefaultProjectLeads(): Boolean = defaultPermission
-
   fun canManageDeliverables(): Boolean = defaultPermission
 
   fun canManageDisclaimers(): Boolean = defaultPermission

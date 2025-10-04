@@ -52,7 +52,6 @@ class ProjectAcceleratorDetailsModelTest {
             projectArea = BigDecimal(23),
             projectHighlightPhotoValueId = VariableValueId(123),
             projectId = ProjectId(1),
-            projectLead = "lead",
             projectZoneFigureValueId = VariableValueId(456),
             region = Region.LatinAmericaCaribbean,
             riskTrackerLink = URI("https://riskTrackerLink"),

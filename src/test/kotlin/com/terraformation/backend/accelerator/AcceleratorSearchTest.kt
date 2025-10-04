@@ -68,7 +68,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         pipeline = Pipeline.AcceleratorProjects,
         plantingSitesCql = "tf_accelerator:fid=123",
         projectBoundariesCql = "project_no=5",
-        projectLead = "lead",
         totalExpansionPotential = 3,
         whatNeedsToBeTrue = "needs",
     )
@@ -95,7 +94,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 "acceleratorDetails.pipeline",
                 "acceleratorDetails.plantingSitesCql",
                 "acceleratorDetails.projectBoundariesCql",
-                "acceleratorDetails.projectLead",
                 "acceleratorDetails.totalExpansionPotential",
                 "acceleratorDetails.whatNeedsToBeTrue",
                 "landUseModelTypes.landUseModelType",
@@ -127,7 +125,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                             "pipeline" to "Accelerator Projects",
                             "plantingSitesCql" to "tf_accelerator:fid=123",
                             "projectBoundariesCql" to "project_no=5",
-                            "projectLead" to "lead",
                             "totalExpansionPotential" to "3",
                             "whatNeedsToBeTrue" to "needs",
                         ),

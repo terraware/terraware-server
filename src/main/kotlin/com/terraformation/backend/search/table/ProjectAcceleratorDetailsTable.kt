@@ -48,7 +48,6 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             nonLocalizableEnumField("pipeline", PIPELINE_ID),
             textField("plantingSitesCql", PLANTING_SITES_CQL),
             textField("projectBoundariesCql", PROJECT_BOUNDARIES_CQL),
-            textField("projectLead", PROJECT_LEAD),
             bigDecimalField("totalCarbon", TOTAL_CARBON),
             bigDecimalField("totalExpansionPotential", TOTAL_EXPANSION_POTENTIAL),
             textField("whatNeedsToBeTrue", WHAT_NEEDS_TO_BE_TRUE),

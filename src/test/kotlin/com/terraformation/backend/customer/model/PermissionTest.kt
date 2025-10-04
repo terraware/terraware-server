@@ -1553,7 +1553,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSupportIssue = true,
-        manageDefaultProjectLeads = true,
         manageDisclaimers = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
@@ -2008,7 +2007,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         deleteUsers = true,
         importGlobalSpeciesData = true,
-        manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageDisclaimers = true,
         manageInternalTags = true,
@@ -2287,7 +2285,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = false,
-        manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageInternalTags = false,
         manageModuleEvents = true,
@@ -3585,7 +3582,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteSupportIssue: Boolean = false,
         deleteUsers: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
-        manageDefaultProjectLeads: Boolean = false,
         manageDeliverables: Boolean = false,
         manageDisclaimers: Boolean = false,
         manageInternalTags: Boolean = false,
@@ -3672,11 +3668,6 @@ internal class PermissionTest : DatabaseTest() {
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
           "Can import global species data",
-      )
-      assertEquals(
-          manageDefaultProjectLeads,
-          user.canManageDefaultProjectLeads(),
-          "Can manage default project leads",
       )
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageDisclaimers, user.canManageDisclaimers(), "Can manage disclaimers")

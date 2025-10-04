@@ -10,8 +10,6 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.tables.daos.DefaultProjectLeadsDao
-import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
@@ -24,9 +22,7 @@ class ApplicationService(
     private val applicationStore: ApplicationStore,
     private val applicationVariableValuesService: ApplicationVariableValuesService,
     private val config: TerrawareServerConfig,
-    private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
-    private val defaultProjectLeadsDao: DefaultProjectLeadsDao,
     private val hubSpotService: HubSpotService,
     private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
@@ -127,8 +123,6 @@ class ApplicationService(
     val landUseModelTypes =
         variableValues.landUseModelHectares.filterValues { it.signum() > 0 }.keys
     val countryCode = variableValues.countryCode
-    val region = countryCode?.let { countriesDao.fetchOneByCode(it) }?.regionId
-    val projectLead = region?.let { defaultProjectLeadsDao.fetchOneByRegionId(it) }?.projectLead
 
     val dealName = variableValues.dealName ?: application.internalName
 
@@ -144,7 +138,6 @@ class ApplicationService(
             fileNaming = application.internalName,
             landUseModelTypes = landUseModelTypes,
             numNativeSpecies = variableValues.numSpeciesToBePlanted,
-            projectLead = projectLead,
             totalExpansionPotential = variableValues.totalExpansionPotential,
         )
       }
