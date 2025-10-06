@@ -925,8 +925,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationUser(optedInMember, organizationId)
       insertOrganizationUser(optedOutMember, organizationId)
 
-      val expected = setOf("optedInMember@x.com")
-      val actual = userStore.fetchByOrganizationId(organizationId).map { it.email }.toSet()
+      val expected = listOf("optedInMember@x.com")
+      val actual = userStore.fetchByOrganizationId(organizationId).map { it.email }
 
       assertEquals(expected, actual)
     }
@@ -950,7 +950,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
               .map { it.email }
               .toSet()
 
-      assertEquals(expected, actual)
+      assertSetEquals(expected, actual)
     }
 
     @Test
@@ -965,9 +965,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationUser(tfContact1, role = Role.TerraformationContact)
       insertOrganizationUser(tfContact2, role = Role.TerraformationContact)
 
-      assertEquals(
-          userStore.getTerraformationContactUsers(organizationId).map { it.email },
-          listOf("tfcontact1@terraformation.com", "tfcontact2@terraformation.com"),
+      assertSetEquals(
+          setOf("tfcontact1@terraformation.com", "tfcontact2@terraformation.com"),
+          userStore.getTerraformationContactUsers(organizationId).map { it.email }.toSet(),
       )
     }
 
@@ -975,8 +975,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns no terraformation contact users if one does not exist`() {
       every { user.canListOrganizationUsers(any()) } returns true
       assertEquals(
-          userStore.getTerraformationContactUsers(organizationId).size,
-          0,
+          emptyList<IndividualUser>(),
+          userStore.getTerraformationContactUsers(organizationId),
           "Should be no Terraformation Contact users",
       )
     }
