@@ -1,3 +1,4 @@
+5a7befea461 Update dependency software.amazon.awssdk:bom to v2.34.9 (#3457)
 a2dfc3fcbc9 Update dependency net.coobird:thumbnailator to v0.4.21 (#3469)
 cae66b7e9c3 Fix intermittent UserStoreTest failures (#3471)
 7b2fdce08a9 SW-7472 Support thumbnail generation for HEIC images (#3464)
