@@ -14,6 +14,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
 import com.terraformation.backend.util.toPlantsPerHectare
+import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import kotlin.collections.component1
@@ -273,6 +274,16 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate is calculated for a site including temp plot data`() {
+    val newPlantingSiteId =
+        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+
+    every { user.canReadPlantingSite(newPlantingSiteId) } returns true
+
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteTempData", numSpecies = 3)
+  }
+
+  @Test
   fun `survival rate calculation excludes t0 densities for plots that have no observations`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateNoObservations", numSpecies = 2)
   }
@@ -316,6 +327,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     importSiteFromCsvFile(prefix, 30)
     observationId = insertObservation()
     importT0DensitiesCsv(prefix)
+    importT0ZoneDensitiesCsv(prefix)
     importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
@@ -341,7 +353,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
-      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
+      cols[1]
+          .takeIf { it.isNotEmpty() }
+          ?.let { ratesMap[null] = it.removeSuffix("%").toDoubleOrNull() }
       plotRates[plotId] = ratesMap
     }
 
@@ -358,7 +372,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
-      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
+      cols[1]
+          .takeIf { it.isNotEmpty() }
+          ?.let { ratesMap[null] = it.removeSuffix("%").toDoubleOrNull() }
       subzoneRates[subzoneId] = ratesMap
     }
 
@@ -375,7 +391,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
-      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
+      cols[1]
+          .takeIf { it.isNotEmpty() }
+          ?.let { ratesMap[null] = it.removeSuffix("%").toDoubleOrNull() }
       zoneRates[zoneId] = ratesMap
     }
 
@@ -390,8 +408,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           ratesMap[speciesPair.second] = rate
         }
       }
-      ratesMap[null] = cols[1].takeIf { it.isNotEmpty() }?.removeSuffix("%")?.toDoubleOrNull()
-      siteRates[plantingSiteId] = ratesMap
+      cols[1]
+          .takeIf { it.isNotEmpty() }
+          ?.let { ratesMap[null] = it.removeSuffix("%").toDoubleOrNull() }
+      siteRates[inserted.plantingSiteId] = ratesMap
     }
 
     return listOf(plotRates, subzoneRates, zoneRates, siteRates)
@@ -425,7 +445,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       message: String,
   ) {
     val idFields = listOf("Plot", "Subzone", "Zone", "Site")
-    val actualList = fetchSurvivalRates(plantingSiteId)
+    val actualList = fetchSurvivalRates(inserted.plantingSiteId)
 
     expected.forEachIndexed { index, expectedByIdMap ->
       val level = idFields[index]
