@@ -96,6 +96,12 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with the Balena cloud service to manage sensor kits. */
     val balena: BalenaConfig = BalenaConfig(),
 
+    /**
+     * Configures how the server interacts with the ConvertAPI cloud service to work with file
+     * formats we don't support natively.
+     */
+    val convertApi: ConvertApiConfig = ConvertApiConfig(),
+
     /** Configures how the server interacts with Dropbox. */
     val dropbox: DropboxConfig = DropboxConfig(),
 
@@ -296,6 +302,19 @@ class TerrawareServerConfig(
 
     companion object {
       const val BALENA_API_URL = "https://api.balena-cloud.com"
+    }
+  }
+
+  class ConvertApiConfig(
+      val apiToken: String? = null,
+      @DefaultValue("false") val enabled: Boolean = false,
+  ) {
+    init {
+      if (enabled) {
+        if (apiToken == null) {
+          throw IllegalArgumentException("API token is required if ConvertAPI is enabled")
+        }
+      }
     }
   }
 
