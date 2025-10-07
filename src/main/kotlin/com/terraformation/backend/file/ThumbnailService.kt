@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
+import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
 @Named
@@ -22,31 +23,28 @@ class ThumbnailService(
   private val log = perClassLogger()
 
   /**
-   * Reads a file or a thumbnail image representing the file. The original file is read if neither
-   * [maxWidth] nor [maxHeight] is specified; otherwise an image that is no larger than the maximum
-   * width and height is returned.
+   * MIME types that are acceptable to return. We'll return the original file if it is of one of
+   * these types and the caller asks for its full-sized version.
+   */
+  private val acceptableMimeTypes = setOf(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE)
+
+  /**
+   * Returns a thumbnail image representing an image or video file. An image with the same
+   * dimensions as the original file is returned if neither [maxWidth] nor [maxHeight] is specified.
+   * Otherwise, an image that is no larger than the maximum width and height is returned.
+   *
+   * The returned image's dimensions will never be larger than the original file's.
    */
   fun readFile(fileId: FileId, maxWidth: Int? = null, maxHeight: Int? = null): SizedInputStream {
-    return if (maxWidth == null && maxHeight == null) {
-      fileService.readFile(fileId)
-    } else {
-      getThumbnailData(fileId, maxWidth, maxHeight)
-    }
-  }
-
-  @EventListener
-  fun on(event: FileDeletionStartedEvent) {
-    try {
-      thumbnailStore.deleteThumbnails(event.fileId)
-    } catch (e: Exception) {
-      log.error("Unable to delete thumbnails for file ${event.fileId}", e)
-    }
-  }
-
-  private fun getThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream {
     val mimeType =
         dslContext.fetchValue(FILES.CONTENT_TYPE, FILES.ID.eq(fileId))
             ?: throw FileNotFoundException(fileId)
+
+    // If the user is requesting a full-sized version of the image and the original's file type is
+    // already acceptable, just give them the original file.
+    if (maxWidth == null && maxHeight == null && mimeType in acceptableMimeTypes) {
+      return fileService.readFile(fileId)
+    }
 
     // For images with natively-supported formats, ThumbnailStore will handle scaling the original
     // if needed.
@@ -79,7 +77,22 @@ class ThumbnailService(
     val image = ImageIO.read(ByteArrayInputStream(jpegImage))
     thumbnailStore.storeThumbnail(fileId, jpegImage, image.width, image.height)
 
+    if (maxWidth == null && maxHeight == null) {
+      // Return the full-sized JPEG we just created.
+      return thumbnailStore.getExistingThumbnailData(fileId, maxWidth, maxHeight)
+          ?: throw ThumbnailNotReadyException(fileId)
+    }
+
     return thumbnailStore.generateThumbnailFromExistingThumbnail(fileId, maxWidth, maxHeight)
         ?: throw ThumbnailNotReadyException(fileId)
+  }
+
+  @EventListener
+  fun on(event: FileDeletionStartedEvent) {
+    try {
+      thumbnailStore.deleteThumbnails(event.fileId)
+    } catch (e: Exception) {
+      log.error("Unable to delete thumbnails for file ${event.fileId}", e)
+    }
   }
 }

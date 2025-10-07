@@ -68,13 +68,32 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class ReadFile {
     @Test
-    fun `returns original file if no dimensions are specified`() {
+    fun `returns original file if no dimensions specified and file is of acceptable type`() {
       val photoData = Random.nextBytes(10)
       val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
 
       val stream = service.readFile(fileId)
 
       assertArrayEquals(photoData, stream.readAllBytes())
+    }
+
+    @Test
+    fun `returns full-sized thumbnail if no dimensions specified and file is of unacceptable type`() {
+      val contentType = "image/crazy"
+      val originalMetadata = metadata.copy(contentType = contentType)
+      val photoData = Random.nextBytes(10)
+      val thumbnailData = Random.nextBytes(10)
+      val fileId = fileService.storeFile("category", photoData.inputStream(), originalMetadata) {}
+
+      every { thumbnailStore.canGenerateThumbnails(contentType) } returns true
+      every { thumbnailStore.getThumbnailData(fileId, null, null) } answers
+          {
+            SizedInputStream(thumbnailData.inputStream(), 10, MediaType.IMAGE_JPEG)
+          }
+
+      val stream = service.readFile(fileId)
+
+      assertArrayEquals(thumbnailData, stream.readAllBytes())
     }
 
     @Test
