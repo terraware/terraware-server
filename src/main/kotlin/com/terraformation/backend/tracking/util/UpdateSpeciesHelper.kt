@@ -13,77 +13,71 @@ import org.jooq.Record1
 import org.jooq.Select
 import org.jooq.impl.DSL
 
-// todo see if you can change these to getters
 interface UpdateSpeciesHelper {
-  fun getTempZoneCondition(): Condition
-
-  fun getT0DensityCondition(): Condition
-
-  fun getAlternateCompletedCondition(): Condition
+  val tempZoneCondition: Condition
+  val t0DensityCondition: Condition
+  val alternateCompletedCondition: Condition
 }
 
-class UpdatePlotSpeciesHelper(private val plotId: MonitoringPlotId) : UpdateSpeciesHelper {
-  override fun getTempZoneCondition(): Condition = MONITORING_PLOTS.ID.eq(plotId)
+class UpdatePlotSpeciesHelper(plotId: MonitoringPlotId) : UpdateSpeciesHelper {
+  override val tempZoneCondition = MONITORING_PLOTS.ID.eq(plotId)
 
-  override fun getT0DensityCondition(): Condition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
+  override val t0DensityCondition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
 
-  override fun getAlternateCompletedCondition(): Condition =
-      OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
+  override val alternateCompletedCondition = OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
 class UpdateSubzoneSpeciesHelper(
-    private val subzoneSelect: Select<Record1<PlantingSubzoneId?>>,
-    private val plotId: MonitoringPlotId? = null,
+    subzoneSelect: Select<Record1<PlantingSubzoneId?>>,
+    plotId: MonitoringPlotId? = null,
 ) : UpdateSpeciesHelper {
   constructor(
       subzoneId: PlantingSubzoneId,
       plotId: MonitoringPlotId? = null,
   ) : this(DSL.select(DSL.inline(subzoneId)), plotId)
 
-  override fun getTempZoneCondition(): Condition =
-      MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
+  override val tempZoneCondition = MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
 
-  override fun getT0DensityCondition(): Condition =
+  override val t0DensityCondition =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SUBZONE_ID.eq(subzoneSelect)
 
-  override fun getAlternateCompletedCondition(): Condition =
+  override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
 class UpdateZoneSpeciesHelper(
-    private val zoneSelect: Select<Record1<PlantingZoneId?>>,
-    private val plotId: MonitoringPlotId? = null,
+    zoneSelect: Select<Record1<PlantingZoneId?>>,
+    plotId: MonitoringPlotId? = null,
 ) : UpdateSpeciesHelper {
   constructor(
       zoneId: PlantingZoneId,
       plotId: MonitoringPlotId? = null,
   ) : this(DSL.select(DSL.inline(zoneId)), plotId)
 
-  override fun getTempZoneCondition(): Condition =
-      PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
+  override val tempZoneCondition = PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
 
-  override fun getT0DensityCondition(): Condition =
+  override val t0DensityCondition =
       PLOT_T0_DENSITIES.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(zoneSelect)
 
-  override fun getAlternateCompletedCondition(): Condition =
+  override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
 class UpdateSiteSpeciesHelper(
-    private val siteSelect: Select<Record1<PlantingSiteId?>>,
-    private val plotId: MonitoringPlotId? = null,
+    siteSelect: Select<Record1<PlantingSiteId?>>,
+    plotId: MonitoringPlotId? = null,
 ) : UpdateSpeciesHelper {
   constructor(
       siteId: PlantingSiteId,
       plotId: MonitoringPlotId? = null,
   ) : this(DSL.select(DSL.inline(siteId)), plotId)
 
-  override fun getTempZoneCondition(): Condition =
+  override val tempZoneCondition =
       PLANTING_ZONE_T0_TEMP_DENSITIES.plantingZones.PLANTING_SITE_ID.eq(siteSelect)
 
-  override fun getT0DensityCondition(): Condition =
+  override val t0DensityCondition =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
 
-  override fun getAlternateCompletedCondition(): Condition =
+  override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }

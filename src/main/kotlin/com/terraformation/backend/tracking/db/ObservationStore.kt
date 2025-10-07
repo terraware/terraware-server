@@ -2404,7 +2404,7 @@ class ObservationStore(
       DSL.field(
           DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
               .from(PLOT_T0_DENSITIES)
-              .where(updateHelper.getT0DensityCondition())
+              .where(updateHelper.t0DensityCondition)
               .and(condition)
               .and(
                   // plot has completed observations
@@ -2420,7 +2420,7 @@ class ObservationStore(
                           .and(
                               DSL.or(
                                   OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
-                                  updateHelper.getAlternateCompletedCondition(),
+                                  updateHelper.alternateCompletedCondition,
                               )
                           )
                   )
@@ -2442,7 +2442,7 @@ class ObservationStore(
                     )
                 )
                 .where(condition)
-                .and(updateHelper.getTempZoneCondition())
+                .and(updateHelper.tempZoneCondition)
                 .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
                 .and(MONITORING_PLOTS.PERMANENT_INDEX.isNull)
         )
