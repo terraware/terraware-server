@@ -8,7 +8,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.util.ImageUtils
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -172,10 +171,21 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns existing thumbnail with same size as original if neither width nor height is specified`() {
+      val expected = Random.nextBytes(10)
+
+      insertThumbnail(photoWidth - 1, photoHeight - 1)
+      insertThumbnail(photoWidth, photoHeight, expected)
+
+      val actual = store.getThumbnailData(fileId, null, null)
+
+      assertArrayEquals(expected, actual.readAllBytes())
+    }
+
+    @Test
     fun `requires width and height to be within valid range`() {
       val testCases =
           mapOf(
-              "no dimensions" to listOf(null, null),
               "zero width" to listOf(0, 500),
               "zero height" to listOf(500, 0),
               "negative width" to listOf(-1, 500),
@@ -244,6 +254,35 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
           streamSlot.captured.readAllBytes(),
           "Should have written same image to file store that was returned to caller",
       )
+    }
+
+    @Test
+    fun `constrains thumbnail to original image size`() {
+      val width = photoWidth + 1
+      val height = photoHeight + 1
+
+      val thumbUrlSlot: CapturingSlot<URI> = slot()
+      val streamSlot: CapturingSlot<InputStream> = slot()
+      justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot)) }
+
+      val actual = store.getThumbnailData(fileId, width, height)
+      val actualBytes = actual.readAllBytes()
+
+      verify(exactly = 1) { fileStore.write(any(), any()) }
+
+      assertEquals(
+          URI("file:///a/b/c/thumb/original-${photoWidth}x$photoHeight.jpg"),
+          thumbUrlSlot.captured,
+          "Should have derived thumbnail URL from original photo URL",
+      )
+      assertArrayEquals(
+          actualBytes,
+          streamSlot.captured.readAllBytes(),
+          "Should have written same image to file store that was returned to caller",
+      )
+
+      val image = ImageIO.read(actualBytes.inputStream())
+      assertEquals(photoWidth to photoHeight, image.width to image.height, "Image dimensions")
     }
 
     @Test
@@ -391,22 +430,18 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `stores new thumbnail in thumb subdirectory of original file`() {
-      val existingThumbnailUrl = insertThumbnail(1, 1, onePixelPng).storageUrl!!
+      val existingThumbnailUrl = insertThumbnail(64, 48, getJpegData(64, 48)).storageUrl!!
 
-      every { fileStore.read(existingThumbnailUrl) } answers
-          {
-            SizedInputStream(ByteArrayInputStream(onePixelPng), onePixelPng.size.toLong())
-          }
       justRun { fileStore.write(any(), any()) }
 
-      val thumbnailStream = store.generateThumbnailFromExistingThumbnail(fileId, 50, null)
+      val thumbnailStream = store.generateThumbnailFromExistingThumbnail(fileId, 32, null)
       assertNotNull(thumbnailStream)
       thumbnailStream.close()
 
       val newThumbnailUrl =
           thumbnailsDao.findAll().map { it.storageUrl!! }.single { it != existingThumbnailUrl }
 
-      assertEquals("$existingThumbnailUrl".replace("1x1", "50x50"), "$newThumbnailUrl")
+      assertEquals("$existingThumbnailUrl".replace("64x48", "32x24"), "$newThumbnailUrl")
     }
   }
 
@@ -468,18 +503,20 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     private const val photoWidth = 640
     private const val photoHeight = 480
 
-    private val photoJpegData: ByteArray by lazy {
-      val canvas = BufferedImage(photoWidth, photoHeight, BufferedImage.TYPE_INT_RGB)
-      val outputStream = ByteArrayOutputStream()
-      ImageIO.write(canvas, "JPEG", outputStream)
-      outputStream.toByteArray()
-    }
+    private val photoJpegData: ByteArray by lazy { getJpegData(photoWidth, photoHeight) }
 
     private val photoPngData: ByteArray by lazy {
       val canvas = BufferedImage(photoWidth, photoHeight, BufferedImage.TYPE_INT_ARGB)
       val outputStream = ByteArrayOutputStream()
       ImageIO.write(canvas, "PNG", outputStream)
       outputStream.toByteArray()
+    }
+
+    private fun getJpegData(width: Int, height: Int): ByteArray {
+      val canvas = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+      val outputStream = ByteArrayOutputStream()
+      ImageIO.write(canvas, "JPEG", outputStream)
+      return outputStream.toByteArray()
     }
   }
 }

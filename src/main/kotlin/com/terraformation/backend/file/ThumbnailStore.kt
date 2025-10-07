@@ -56,7 +56,7 @@ class ThumbnailStore(
   val minSizeForHighQuality = 320
 
   /** Don't allow scaling to widths or heights larger than this. */
-  private val maxAllowedSize = 2000
+  private val maxAllowedSize = 10000
 
   private val log = perClassLogger()
 
@@ -105,20 +105,15 @@ class ThumbnailStore(
    * Returns the contents of an existing thumbnail image for a photo, or null if the thumbnail has
    * not been generated yet.
    *
-   * At least one of [maxWidth] and [maxHeight] must be non-null. If both of them are non-null, the
-   * resulting thumbnail may be smaller than the limit depending on the aspect ratio of the original
-   * photo.
+   * The original image's aspect ratio will be preserved, such that the result is no larger than the
+   * dimensions specified by [maxWidth] and [maxHeight]; it may be smaller than the requested size.
    *
-   * @param maxWidth Maximum width of thumbnail in pixels. If null, the width will be computed based
-   *   on [maxHeight].
-   * @param maxHeight Maximum height of the thumbnail in pixels. If null, the height will be
-   *   computed based on [maxWidth].
+   * @param maxWidth Maximum width of thumbnail in pixels. If null, the original image's width will
+   *   be used.
+   * @param maxHeight Maximum height of the thumbnail in pixels. If null, the original image's
+   *   height will be used.
    */
   fun getExistingThumbnailData(fileId: FileId, maxWidth: Int?, maxHeight: Int?): SizedInputStream? {
-    if (maxWidth == null && maxHeight == null) {
-      throw IllegalArgumentException("At least one thumbnail dimension must be specified")
-    }
-
     if (maxWidth != null && (maxWidth !in 1..maxAllowedSize)) {
       throw IllegalArgumentException("maxWidth is outside of allowed range 1-$maxAllowedSize")
     }
@@ -134,7 +129,7 @@ class ThumbnailStore(
 
       try {
         return fileStore.read(thumbUrl).withContentType(thumbnailsRow.contentType!!)
-      } catch (e: NoSuchFileException) {
+      } catch (_: NoSuchFileException) {
         log.warn("Found thumbnail $thumbUrl in database but file did not exist; regenerating it")
         thumbnailsDao.delete(thumbnailsRow)
       }
@@ -153,7 +148,7 @@ class ThumbnailStore(
 
       try {
         fileStore.delete(storageUrl)
-      } catch (e: NoSuchFileException) {
+      } catch (_: NoSuchFileException) {
         log.warn("Thumbnail $storageUrl was already deleted from file store")
       }
 
@@ -199,7 +194,7 @@ class ThumbnailStore(
     val thumbUrl = getThumbnailUrl(filesRow.storageUrl!!, width, height)
     try {
       fileStore.write(thumbUrl, ByteArrayInputStream(content))
-    } catch (e: FileAlreadyExistsException) {
+    } catch (_: FileAlreadyExistsException) {
       // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
       // run the same search at the same time and there isn't already a thumbnail for one of
       // the results. The assumption is that that kind of race will be rare enough that it's not
@@ -287,6 +282,15 @@ class ThumbnailStore(
     graphics.fillRect(0, 0, newImage.width, newImage.height)
     graphics.drawImage(originalImage, null, null)
 
+    // Never scale the image larger than its original size; return the original image (with
+    // white background) if the caller tries to upscale.
+    val newWidth = minOf(maxWidth ?: Int.MAX_VALUE, originalImage.width)
+    val newHeight = minOf(maxHeight ?: Int.MAX_VALUE, originalImage.height)
+
+    if (newWidth >= originalImage.width && newHeight >= originalImage.height) {
+      return newImage
+    }
+
     // If the image is large enough for visual quality to matter, use a higher-quality scaling
     // algorithm.
     val useHighQuality =
@@ -299,12 +303,12 @@ class ThumbnailStore(
         }
 
     return log.debugWithTiming(
-        "Resizing image from ${originalImage.width} x ${originalImage.height} to $maxWidth x $maxHeight"
+        "Resizing image from ${originalImage.width} x ${originalImage.height} to $newWidth x $newHeight"
     ) {
       Thumbnails.of(newImage)
           .imageType(BufferedImage.TYPE_INT_RGB)
           .scalingMode(scalingMode)
-          .size(maxWidth ?: Int.MAX_VALUE, maxHeight ?: Int.MAX_VALUE)
+          .size(newWidth, newHeight)
           .asBufferedImage()
     }
   }
@@ -328,25 +332,26 @@ class ThumbnailStore(
    */
   private fun fetchByMaximumSize(fileId: FileId, width: Int?, height: Int?): ThumbnailsRow? {
     val sizeCondition =
-        if (width != null) {
-          if (height != null) {
+        when {
+          width != null && height != null -> {
             // Return an image with either the height or the width requested, whichever one causes
             // the other dimension to not exceed the requested value.
             DSL.or(
                 THUMBNAILS.HEIGHT.eq(height).and(THUMBNAILS.WIDTH.le(width)),
                 THUMBNAILS.WIDTH.eq(width).and(THUMBNAILS.HEIGHT.le(height)),
             )
-          } else {
-            THUMBNAILS.WIDTH.eq(width)
           }
-        } else {
-          THUMBNAILS.HEIGHT.eq(height)
+          width != null -> THUMBNAILS.WIDTH.eq(width)
+          height != null -> THUMBNAILS.HEIGHT.eq(height)
+          // Return the largest available thumbnail.
+          else -> null
         }
+
+    val conditions = listOfNotNull(THUMBNAILS.FILE_ID.eq(fileId), sizeCondition)
 
     return dslContext
         .selectFrom(THUMBNAILS)
-        .where(THUMBNAILS.FILE_ID.eq(fileId))
-        .and(sizeCondition)
+        .where(conditions)
         .orderBy(THUMBNAILS.WIDTH.desc(), THUMBNAILS.HEIGHT.desc())
         .limit(1)
         .fetchOneInto(ThumbnailsRow::class.java)
