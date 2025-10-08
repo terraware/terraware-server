@@ -18,6 +18,7 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -241,6 +242,7 @@ data class ActivityPayload(
     val id: ActivityId,
     val isHighlight: Boolean,
     val media: List<ActivityMediaFilePayload>,
+    val status: ActivityStatus,
     val type: ActivityType,
 ) {
   constructor(
@@ -251,6 +253,7 @@ data class ActivityPayload(
       id = model.id,
       isHighlight = model.isHighlight,
       media = model.media.map { ActivityMediaFilePayload(it) },
+      status = model.activityStatus,
       type = model.activityType,
   )
 }
@@ -290,6 +293,7 @@ data class UpdateActivityMediaRequestPayload(
 data class UpdateActivityRequestPayload(
     val date: LocalDate,
     val description: String,
+    val status: ActivityStatus,
     val type: ActivityType,
 ) {
   fun applyTo(model: ExistingActivityModel): ExistingActivityModel {
