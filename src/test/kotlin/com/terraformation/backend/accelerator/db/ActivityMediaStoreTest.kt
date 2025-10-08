@@ -7,10 +7,12 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,13 +31,15 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private lateinit var activityId: ActivityId
+  private lateinit var createdBy: UserId
   private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
+    createdBy = insertUser()
     organizationId = insertOrganization()
     val projectId = insertProject(organizationId)
-    activityId = insertActivity(projectId = projectId)
+    activityId = insertActivity(createdBy = createdBy, projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
   }
@@ -44,12 +48,12 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class UpdateMedia {
     @Test
     fun `updates writable fields`() {
-      val otherUserId = insertUser()
-      val fileId = insertFile(createdBy = otherUserId)
+      val fileId = insertFile(createdBy = createdBy)
       insertActivityMediaFile()
 
-      val filesBefore = dslContext.selectFrom(FILES).fetch()
-      val activityMediaFilesBefore = dslContext.selectFrom(ACTIVITY_MEDIA_FILES).fetch()
+      val activitiesBefore = dslContext.fetchSingle(ACTIVITIES)
+      val activityMediaFilesBefore = dslContext.fetchSingle(ACTIVITY_MEDIA_FILES)
+      val filesBefore = dslContext.fetchSingle(FILES)
 
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
@@ -59,13 +63,19 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       assertTableEquals(
-          activityMediaFilesBefore.first().also { record ->
+          activitiesBefore.also { record ->
+            record.modifiedBy = user.userId
+            record.modifiedTime = now
+          }
+      )
+      assertTableEquals(
+          activityMediaFilesBefore.also { record ->
             record.caption = "New caption"
             record.isCoverPhoto = true
           }
       )
       assertTableEquals(
-          filesBefore.first().also { record ->
+          filesBefore.also { record ->
             record.modifiedBy = user.userId
             record.modifiedTime = now
           }
