@@ -94,7 +94,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -1779,56 +1778,17 @@ class ObservationStore(
   }
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
-    recalculateSurvivalRate(
-        OBSERVED_PLOT_SPECIES_TOTALS,
-        OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId),
-        ObservationSpeciesPlot(monitoringPlotId),
-    )
+    recalculateSurvivalRate(ObservationSpeciesPlot(monitoringPlotId))
 
-    val subzoneSelect =
-        DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+    recalculateSurvivalRate(ObservationSpeciesSubzone(monitoringPlotId))
 
-    recalculateSurvivalRate(
-        OBSERVED_SUBZONE_SPECIES_TOTALS,
-        OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.eq(subzoneSelect),
-        ObservationSpeciesSubzone(subzoneSelect),
-    )
+    recalculateSurvivalRate(ObservationSpeciesZone(monitoringPlotId))
 
-    val zoneSelect =
-        DSL.select(PLANTING_SUBZONES.PLANTING_ZONE_ID)
-            .from(PLANTING_SUBZONES)
-            .where(
-                PLANTING_SUBZONES.ID.eq(
-                    DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-                        .from(MONITORING_PLOTS)
-                        .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-                )
-            )
-
-    recalculateSurvivalRate(
-        OBSERVED_ZONE_SPECIES_TOTALS,
-        OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(zoneSelect),
-        ObservationSpeciesZone(zoneSelect),
-    )
-
-    val siteSelect =
-        DSL.select(MONITORING_PLOTS.PLANTING_SITE_ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-    recalculateSurvivalRate(
-        OBSERVED_SITE_SPECIES_TOTALS,
-        OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect),
-        ObservationSpeciesSite(siteSelect),
-    )
+    recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
   }
 
-  private fun recalculateSurvivalRate(
-      table: Table<*>,
-      tableCondition: Condition,
-      updateScope: ObservationSpeciesScope,
-  ) {
+  private fun recalculateSurvivalRate(updateScope: ObservationSpeciesScope) {
+    val table = updateScope.observedTotalsTable
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val survivalRatePermanentDenominator =
@@ -1875,7 +1835,7 @@ class ObservationStore(
                         )
                 ),
         )
-        .where(tableCondition)
+        .where(updateScope.observedTotalsCondition)
         .execute()
   }
 
