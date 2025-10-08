@@ -160,12 +160,17 @@ class ActivityMediaService(
       fileId: FileId,
       maxWidth: Int? = null,
       maxHeight: Int? = null,
+      raw: Boolean = false,
   ): SizedInputStream {
     requirePermissions { readActivity(activityId) }
 
     activityMediaStore.ensureFileExists(activityId, fileId)
 
-    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
+    return if (raw) {
+      fileService.readFile(fileId)
+    } else {
+      thumbnailService.readFile(fileId, maxWidth, maxHeight)
+    }
   }
 
   fun getMuxStreamInfo(activityId: ActivityId, fileId: FileId): MuxStreamModel {

@@ -156,9 +156,17 @@ class ActivitiesController(
       @QueryParam("maxHeight")
       @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
       maxHeight: Int? = null,
+      @QueryParam("raw")
+      @Schema(
+          description =
+              "If true, return the originally uploaded media file verbatim. maxWidth and " +
+                  "maxHeight are ignored when raw is true.",
+          defaultValue = "false",
+      )
+      raw: Boolean? = null,
   ): ResponseEntity<InputStreamResource> {
     return activityMediaService
-        .readMedia(activityId, fileId, maxWidth, maxHeight)
+        .readMedia(activityId, fileId, maxWidth, maxHeight, raw == true)
         .toResponseEntity()
   }
 
