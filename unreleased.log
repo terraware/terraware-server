@@ -1,3 +1,4 @@
+203356bbc73 Refactor to utilize ObservationSpeciesScope more (#3479)
 8b1344b6c11 Assert that t0 data can only be assigned to permanent plots (#3480)
 b2f8ae0e97e SW-7415 Add temp plots to survival rate recalculations (#3478)
 f2de54e6743 Run JUnit tests in headless mode (#3477)
