@@ -6,6 +6,10 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import org.jooq.Condition
@@ -17,6 +21,7 @@ interface ObservationSpeciesScope {
   val tempZoneCondition: Condition
   val t0DensityCondition: Condition
   val alternateCompletedCondition: Condition
+  val observedTotalsPlantingSiteTempCondition: Condition
 }
 
 class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope {
@@ -25,6 +30,10 @@ class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope
   override val t0DensityCondition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
 
   override val alternateCompletedCondition = OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVED_PLOT_SPECIES_TOTALS.monitoringPlots.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+          .eq(true)
 }
 
 class ObservationSpeciesSubzone(
@@ -43,6 +52,11 @@ class ObservationSpeciesSubzone(
 
   override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVED_SUBZONE_SPECIES_TOTALS.plantingSubzones.plantingSites
+          .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+          .eq(true)
 }
 
 class ObservationSpeciesZone(
@@ -61,6 +75,11 @@ class ObservationSpeciesZone(
 
   override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVED_ZONE_SPECIES_TOTALS.plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
+          true
+      )
 }
 
 class ObservationSpeciesSite(
@@ -80,4 +99,7 @@ class ObservationSpeciesSite(
 
   override val alternateCompletedCondition =
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
+
+  override val observedTotalsPlantingSiteTempCondition =
+      OBSERVED_SITE_SPECIES_TOTALS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true)
 }
