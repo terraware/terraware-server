@@ -94,8 +94,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.Table
-import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.event.EventListener
@@ -1779,56 +1777,17 @@ class ObservationStore(
   }
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
-    recalculateSurvivalRate(
-        OBSERVED_PLOT_SPECIES_TOTALS,
-        OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId),
-        ObservationSpeciesPlot(monitoringPlotId),
-    )
+    recalculateSurvivalRate(ObservationSpeciesPlot(monitoringPlotId))
 
-    val subzoneSelect =
-        DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+    recalculateSurvivalRate(ObservationSpeciesSubzone(monitoringPlotId))
 
-    recalculateSurvivalRate(
-        OBSERVED_SUBZONE_SPECIES_TOTALS,
-        OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.eq(subzoneSelect),
-        ObservationSpeciesSubzone(subzoneSelect),
-    )
+    recalculateSurvivalRate(ObservationSpeciesZone(monitoringPlotId))
 
-    val zoneSelect =
-        DSL.select(PLANTING_SUBZONES.PLANTING_ZONE_ID)
-            .from(PLANTING_SUBZONES)
-            .where(
-                PLANTING_SUBZONES.ID.eq(
-                    DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-                        .from(MONITORING_PLOTS)
-                        .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-                )
-            )
-
-    recalculateSurvivalRate(
-        OBSERVED_ZONE_SPECIES_TOTALS,
-        OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(zoneSelect),
-        ObservationSpeciesZone(zoneSelect),
-    )
-
-    val siteSelect =
-        DSL.select(MONITORING_PLOTS.PLANTING_SITE_ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-    recalculateSurvivalRate(
-        OBSERVED_SITE_SPECIES_TOTALS,
-        OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect),
-        ObservationSpeciesSite(siteSelect),
-    )
+    recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
   }
 
-  private fun recalculateSurvivalRate(
-      table: Table<*>,
-      tableCondition: Condition,
-      updateScope: ObservationSpeciesScope,
-  ) {
+  private fun <ID : Any> recalculateSurvivalRate(updateScope: ObservationSpeciesScope<ID>) {
+    val table = updateScope.observedTotalsTable
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val survivalRatePermanentDenominator =
@@ -1875,7 +1834,7 @@ class ObservationStore(
                         )
                 ),
         )
-        .where(tableCondition)
+        .where(updateScope.observedTotalsCondition)
         .execute()
   }
 
@@ -2180,9 +2139,7 @@ class ObservationStore(
     if (plantCountsBySpecies.isNotEmpty()) {
       if (monitoringPlotId != null) {
         updateSpeciesTotalsTable(
-            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
             observationId,
-            monitoringPlotId,
             isPermanent,
             plantCountsBySpecies,
             false,
@@ -2194,9 +2151,7 @@ class ObservationStore(
       if (!isAdHoc) {
         if (plantingSubzoneId != null) {
           updateSpeciesTotalsTable(
-              OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
               observationId,
-              plantingSubzoneId,
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
@@ -2207,9 +2162,7 @@ class ObservationStore(
 
         if (plantingZoneId != null) {
           updateSpeciesTotalsTable(
-              OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
               observationId,
-              plantingZoneId,
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
@@ -2219,9 +2172,7 @@ class ObservationStore(
         }
 
         updateSpeciesTotalsTable(
-            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
             observationId,
-            plantingSite.id!!,
             isPermanent,
             plantCountsBySpecies,
             cumulativeDeadFromCurrentObservation,
@@ -2243,16 +2194,14 @@ class ObservationStore(
    *   observation of the area, up to and including [observationId].
    */
   private fun <ID : Any> updateSpeciesTotalsTable(
-      scopeIdField: TableField<*, ID?>,
       observationId: ObservationId,
-      scopeId: ID,
       isPermanent: Boolean,
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
       cumulativeDeadFromCurrentObservation: Boolean = false,
       plantingSite: PlantingSitesRow,
-      updateScope: ObservationSpeciesScope,
+      updateScope: ObservationSpeciesScope<ID>,
   ) {
-    val table = scopeIdField.table!!
+    val table = updateScope.observedTotalsTable
     val observationIdField =
         table.field(
             "observation_id",
@@ -2298,7 +2247,7 @@ class ObservationStore(
               dslContext
                   .select(cumulativeDeadField)
                   .from(table)
-                  .where(scopeIdField.eq(scopeId))
+                  .where(updateScope.observedTotalsScopeField.eq(updateScope.scopeId))
                   .and(observationIdCondition)
                   .and(certaintyField.eq(speciesKey.certainty))
                   .and(
@@ -2361,7 +2310,7 @@ class ObservationStore(
             dslContext
                 .insertInto(table)
                 .set(observationIdField, observationId)
-                .set(scopeIdField, scopeId)
+                .set(updateScope.observedTotalsScopeField, updateScope.scopeId)
                 .set(certaintyField, speciesKey.certainty)
                 .set(speciesIdField, speciesKey.id)
                 .set(speciesNameField, speciesKey.name)
@@ -2377,8 +2326,8 @@ class ObservationStore(
 
         if (rowsInserted == 0) {
           val scopeIdAndSpeciesCondition =
-              scopeIdField
-                  .eq(scopeId)
+              updateScope.observedTotalsScopeField
+                  .eq(updateScope.scopeId)
                   .and(
                       if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
                       else speciesIdField.isNull
@@ -2452,7 +2401,7 @@ class ObservationStore(
             log.withMDC(
                 "table" to table.name,
                 "observation" to observationId,
-                "scope" to scopeId,
+                "scope" to updateScope.scopeId,
                 "species" to speciesKey,
             ) {
               log.error("BUG! Insert and update of species totals both failed")
@@ -2481,8 +2430,8 @@ class ObservationStore(
               )
       )
 
-  private fun getSurvivalRateDenominator(
-      updateScope: ObservationSpeciesScope,
+  private fun <ID : Any> getSurvivalRateDenominator(
+      updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
   ): Field<BigDecimal> =
       DSL.field(
@@ -2499,8 +2448,8 @@ class ObservationStore(
               )
       )
 
-  private fun getSurvivalRateTempDenominator(
-      updateScope: ObservationSpeciesScope,
+  private fun <ID : Any> getSurvivalRateTempDenominator(
+      updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
   ): Field<BigDecimal> =
       with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
