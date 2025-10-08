@@ -11,7 +11,7 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.JpegConverter
 import com.terraformation.backend.file.ThumbnailNotReadyException
 import com.terraformation.backend.file.VideoStreamNotFoundException
-import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.log.perClassLogger
 import io.jsonwebtoken.Jwts
@@ -282,15 +282,17 @@ class MuxService(
   }
 
   @EventListener
-  fun on(event: VideoFileDeletedEvent) {
-    val assetId =
-        dslContext.fetchValue(MUX_ASSETS.ASSET_ID, MUX_ASSETS.FILE_ID.eq(event.fileId)) ?: return
+  fun on(event: FileDeletionStartedEvent) {
+    if (canConvertToJpeg(event.contentType)) {
+      val assetId =
+          dslContext.fetchValue(MUX_ASSETS.ASSET_ID, MUX_ASSETS.FILE_ID.eq(event.fileId)) ?: return
 
-    // Asynchronously delete the asset from Mux; we don't want the event listener to block if
-    // Mux takes a long time to respond.
-    jobScheduler.enqueue<MuxService> { deleteMuxAssetIfExists(assetId) }
+      // Asynchronously delete the asset from Mux; we don't want the event listener to block if
+      // Mux takes a long time to respond.
+      jobScheduler.enqueue<MuxService> { deleteMuxAssetIfExists(assetId) }
 
-    dslContext.deleteFrom(MUX_ASSETS).where(MUX_ASSETS.FILE_ID.eq(event.fileId)).execute()
+      dslContext.deleteFrom(MUX_ASSETS).where(MUX_ASSETS.FILE_ID.eq(event.fileId)).execute()
+    }
   }
 
   @Suppress("MemberVisibilityCanBePrivate") // Called by JobRunr

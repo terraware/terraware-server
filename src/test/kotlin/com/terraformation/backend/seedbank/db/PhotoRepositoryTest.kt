@@ -10,7 +10,6 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
-import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
@@ -20,7 +19,7 @@ import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.ThumbnailStore
-import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
@@ -109,6 +108,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         PhotoRepository(
             accessionPhotosDao,
             dslContext,
+            eventPublisher,
             fileService,
             ImageUtils(fileStore),
             thumbnailService,
@@ -143,11 +143,11 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto replaces existing photo with same filename`() {
-    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
+    val oldFileId = repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata)
     every { random.nextLong() } returns 1
     repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata)
 
-    fileStore.assertFileNotExists(photoStorageUrl, "Earlier photo file should have been deleted")
+    eventPublisher.assertEventPublished(FileReferenceDeletedEvent(oldFileId))
     assertEquals(1, accessionPhotosDao.fetchByAccessionId(accessionId).size, "Number of photos")
 
     val stream = repository.readPhoto(accessionId, filename)
@@ -231,16 +231,11 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val sixPixelPhotoRow = photoRows.find { it.fileName == "6.jpg" }!!
 
     val onePixelFileId = onePixelPhotoRow.id!!
-    val onePixelUrl = onePixelPhotoRow.storageUrl!!
     val sixPixelFileId = sixPixelPhotoRow.id!!
 
     repository.deletePhoto(accessionId, "1.jpg")
 
-    eventPublisher.assertEventPublished(FileDeletionStartedEvent(onePixelFileId))
-    assertThrows<NoSuchFileException>("$onePixelUrl should be deleted") {
-      fileStore.size(onePixelUrl)
-    }
-    assertEquals(listOf(sixPixelPhotoRow), filesDao.findAll(), "File rows after deletion")
+    eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(onePixelFileId)))
     assertEquals(
         listOf(AccessionPhotosRow(accessionId, sixPixelFileId)),
         accessionPhotosDao.findAll(),
@@ -267,17 +262,12 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     val photoRows = filesDao.findAll()
     val fileIds = photoRows.mapNotNull { it.id }
-    val photoUrls = photoRows.mapNotNull { it.storageUrl }
 
     repository.deleteAllPhotos(accessionId)
 
-    fileIds.forEach { eventPublisher.assertEventPublished(FileDeletionStartedEvent(it)) }
-    photoUrls.forEach { url ->
-      assertThrows<NoSuchFileException>("$url should be deleted") { fileStore.size(url) }
-    }
+    eventPublisher.assertEventsPublished(fileIds.map { FileReferenceDeletedEvent(it) }.toSet())
 
     assertTableEmpty(ACCESSION_PHOTOS)
-    assertTableEmpty(FILES)
   }
 
   @Test

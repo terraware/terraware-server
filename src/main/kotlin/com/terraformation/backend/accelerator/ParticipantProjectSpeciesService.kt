@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
@@ -232,9 +233,9 @@ class ParticipantProjectSpeciesService(
                 .fetchOne(FILE_ID)
 
         if (fileId != null) {
-          fileService.deleteFile(fileId) {
-            dslContext.deleteFrom(SUBMISSION_SNAPSHOTS).where(FILE_ID.eq(fileId)).execute()
-          }
+          dslContext.deleteFrom(SUBMISSION_SNAPSHOTS).where(FILE_ID.eq(fileId)).execute()
+
+          eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
         }
       }
 

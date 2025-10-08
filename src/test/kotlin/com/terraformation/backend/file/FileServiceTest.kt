@@ -15,8 +15,10 @@ import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -212,36 +214,64 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     assertThrows(FileNotFoundException::class.java) { fileService.readFile(FileId(123)) }
   }
 
-  @Test
-  fun `deleteFile full-sized photo and publishes event to trigger thumbnail deletion`() {
-    val photoData = Random.nextBytes(10)
+  @Nested
+  inner class FileReferenceDeletedEventHandler {
+    @Test
+    fun `deletes file from file store and publishes event to trigger thumbnail deletion`() {
+      val photoData = Random.nextBytes(10)
 
-    fileService.storeFile("category", photoData.inputStream(), metadata.copy(filename = "1.jpg")) {}
+      fileService.storeFile(
+          "category",
+          photoData.inputStream(),
+          metadata.copy(filename = "1.jpg"),
+      ) {}
 
-    val expectedPhotos = filesDao.findAll()
+      val expectedPhotos = filesDao.findAll()
 
-    every { random.nextLong() } returns 2L
-    val fileIdToDelete =
-        fileService.storeFile(
-            "category",
-            photoData.inputStream(),
-            metadata.copy(filename = "2.jpg"),
-        ) {}
+      every { random.nextLong() } returns 2L
+      val fileIdToDelete =
+          fileService.storeFile(
+              "category",
+              photoData.inputStream(),
+              metadata.copy(filename = "2.jpg"),
+          ) {}
 
-    val photoUrlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
+      val photoUrlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
 
-    var deleteChildRowsFunctionCalled = false
-    fileService.deleteFile(fileIdToDelete) { deleteChildRowsFunctionCalled = true }
+      fileService.on(FileReferenceDeletedEvent(fileIdToDelete))
 
-    assertTrue(deleteChildRowsFunctionCalled, "Delete child rows callback should have been called")
+      eventPublisher.assertEventPublished(FileDeletionStartedEvent(fileIdToDelete, "image/jpeg"))
 
-    eventPublisher.assertEventPublished(FileDeletionStartedEvent(fileIdToDelete))
+      assertThrows<NoSuchFileException>("$photoUrlToDelete should be deleted") {
+        fileStore.size(photoUrlToDelete)
+      }
 
-    assertThrows<NoSuchFileException>("$photoUrlToDelete should be deleted") {
-      fileStore.size(photoUrlToDelete)
+      assertEquals(expectedPhotos, filesDao.findAll(), "Photos")
     }
 
-    assertEquals(expectedPhotos, filesDao.findAll(), "Photos")
+    @Test
+    fun `does not delete file from file store if there are still references`() {
+      insertOrganization()
+      insertProject()
+      insertActivity()
+      val fileId =
+          fileService.storeFile("category", Random.nextBytes(1).inputStream(), metadata) {
+            insertActivityMediaFile(fileId = it)
+          }
+      val filesTableBefore = dslContext.fetch(FILES)
+      val storageUrl = filesTableBefore.first().storageUrl!!
+
+      fileService.on(FileReferenceDeletedEvent(fileId))
+
+      eventPublisher.assertEventNotPublished<FileDeletionStartedEvent>()
+      assertEquals(1L, fileStore.size(storageUrl))
+      assertTableEquals(filesTableBefore)
+    }
+
+    @Test
+    fun `listens for event`() {
+      assertIsEventListener<FileReferenceDeletedEvent>(fileService)
+    }
   }
 
   @Nested

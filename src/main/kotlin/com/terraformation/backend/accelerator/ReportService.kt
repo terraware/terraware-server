@@ -14,16 +14,19 @@ import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRo
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
 class ReportService(
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val reportPhotosDao: ReportPhotosDao,
     private val reportStore: ReportStore,
@@ -54,7 +57,8 @@ class ReportService(
       // The photo is already published. Mark the row to be deleted on the next publishing
       reportPhotosDao.update(reportPhotosRow.copy(deleted = true))
     } else {
-      fileService.deleteFile(fileId) { reportPhotosDao.delete(reportPhotosRow) }
+      reportPhotosDao.delete(reportPhotosRow)
+      eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
     }
   }
 
@@ -124,10 +128,10 @@ class ReportService(
       log.warn("Skipping deleting photo $fileId from report $reportId.")
     }
 
-    fileService.deleteFile(fileId) {
-      publishedReportPhotosDao.delete(publishedReportsRow)
-      reportPhotosDao.delete(reportPhotosRow)
-    }
+    publishedReportPhotosDao.delete(publishedReportsRow)
+    reportPhotosDao.delete(reportPhotosRow)
+
+    eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
   }
 
   private fun fetchReportPhotosRow(reportId: ReportId, fileId: FileId): ReportPhotosRow {

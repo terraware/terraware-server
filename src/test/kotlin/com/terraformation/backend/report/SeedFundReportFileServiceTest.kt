@@ -19,6 +19,7 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
@@ -27,12 +28,10 @@ import com.terraformation.backend.report.event.SeedFundReportDeletionStartedEven
 import com.terraformation.backend.report.model.SeedFundReportFileModel
 import com.terraformation.backend.report.model.SeedFundReportPhotoModel
 import io.mockk.Runs
-import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.excludeRecords
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
 import java.net.URI
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -68,6 +67,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   private val thumbnailService: ThumbnailService = mockk()
   private val service: SeedFundReportFileService by lazy {
     SeedFundReportFileService(
+        eventPublisher,
         filesDao,
         fileService,
         seedFundReportStore,
@@ -100,20 +100,23 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       excludeRecords { fileStore.newUrl(any(), any(), any()) }
       excludeRecords { fileStore.write(any(), any()) }
 
-      storeFile(filename = "a.txt")
-      storeFile(filename = "b.txt")
-      storePhoto()
-      storePhoto()
-
-      val storageUrls = filesDao.findAll().map { it.storageUrl!! }
+      val fileId1 = storeFile(filename = "a.txt")
+      val fileId2 = storeFile(filename = "b.txt")
+      val photoId1 = storePhoto()
+      val photoId2 = storePhoto()
 
       service.on(SeedFundReportDeletionStartedEvent(seedFundReportId))
 
+      eventPublisher.assertEventsPublished(
+          setOf(
+              FileReferenceDeletedEvent(fileId1),
+              FileReferenceDeletedEvent(fileId2),
+              FileReferenceDeletedEvent(photoId1),
+              FileReferenceDeletedEvent(photoId2),
+          )
+      )
       assertTableEmpty(SEED_FUND_REPORT_PHOTOS)
       assertTableEmpty(SEED_FUND_REPORT_FILES)
-
-      storageUrls.forEach { verify { fileStore.delete(it) } }
-      confirmVerified(fileStore)
 
       assertIsEventListener<SeedFundReportDeletionStartedEvent>(service)
     }

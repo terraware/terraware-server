@@ -49,6 +49,7 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
@@ -790,14 +791,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class OnPlantingSiteDeletion {
       @Test
       fun `only deletes photos for planting site that is being deleted`() {
-        service.storePhoto(
-            observationId,
-            plotId,
-            point(1),
-            ObservationPlotPosition.NortheastCorner,
-            onePixelPng.inputStream(),
-            metadata,
-        )
+        val fileId =
+            service.storePhoto(
+                observationId,
+                plotId,
+                point(1),
+                ObservationPlotPosition.NortheastCorner,
+                onePixelPng.inputStream(),
+                metadata,
+            )
 
         insertPlantingSite()
         insertPlantingZone()
@@ -818,11 +820,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
 
-        assertEquals(
-            listOf(otherSiteFileId),
-            filesDao.findAll().map { it.id },
-            "Files table should only have file from other observation",
-        )
+        eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(fileId)))
         assertEquals(
             listOf(otherSiteFileId),
             observationPhotosDao.findAll().map { it.fileId },

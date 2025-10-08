@@ -12,6 +12,7 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ImageUtils
@@ -19,11 +20,13 @@ import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
 class WithdrawalPhotoService(
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
     private val thumbnailService: ThumbnailService,
@@ -95,7 +98,8 @@ class WithdrawalPhotoService(
           .where(condition)
           .fetch(FILE_ID.asNonNullable())
           .forEach { fileId ->
-            fileService.deleteFile(fileId) { withdrawalPhotosDao.deleteById(fileId) }
+            withdrawalPhotosDao.deleteById(fileId)
+            eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
           }
     }
   }

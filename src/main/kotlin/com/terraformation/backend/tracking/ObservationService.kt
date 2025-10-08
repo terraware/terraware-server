@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOT
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
@@ -626,7 +627,8 @@ class ObservationService(
           .where(condition)
           .fetch(FILE_ID.asNonNullable())
           .forEach { fileId ->
-            fileService.deleteFile(fileId) { observationPhotosDao.deleteById(fileId) }
+            observationPhotosDao.deleteById(fileId)
+            eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
           }
     }
   }

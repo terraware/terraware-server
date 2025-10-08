@@ -10,13 +10,13 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
@@ -59,6 +59,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         batchPhotosDao,
         clock,
         dslContext,
+        eventPublisher,
         fileService,
         ImageUtils(fileStore),
         thumbnailService,
@@ -191,16 +192,14 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class DeletePhoto {
     @Test
-    fun `marks photo as deleted and removes file`() {
+    fun `marks photo as deleted and publishes reference deleted event`() {
       val fileId = storePhoto()
-      val storageUrl = filesDao.fetchOneById(fileId)!!.storageUrl!!
       val createdTime = clock.instant
       val deletedTime = createdTime.plusSeconds(1)
 
       clock.instant = deletedTime
       service.deletePhoto(batchId, fileId)
 
-      assertTableEmpty(FILES)
       assertEquals(
           listOf(
               BatchPhotosRow(
@@ -215,7 +214,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
           batchPhotosDao.findAll().map { it.copy(id = null) },
       )
 
-      fileStore.assertFileWasDeleted(storageUrl)
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
     }
 
     @Test
@@ -245,15 +244,14 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     insertFacility(type = FacilityType.Nursery)
     val otherOrgBatchId = insertBatch()
 
-    storePhoto()
-    storePhoto()
-    storePhoto(facility2BatchId)
+    val fileId1 = storePhoto()
+    val fileId2 = storePhoto()
+    val fileId3 = storePhoto(facility2BatchId)
     val otherOrgFileId = storePhoto(otherOrgBatchId)
     val otherBatchPhotoId = batchPhotosDao.fetchByFileId(otherOrgFileId).first().id!!
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 
-    assertEquals(listOf(otherOrgFileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
     assertEquals(
         listOf(
             BatchPhotosRow(
@@ -268,6 +266,14 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         "Remaining photos",
     )
 
+    eventPublisher.assertEventsPublished(
+        setOf(
+            FileReferenceDeletedEvent(fileId1),
+            FileReferenceDeletedEvent(fileId2),
+            FileReferenceDeletedEvent(fileId3),
+        )
+    )
+
     assertIsEventListener<OrganizationDeletionStartedEvent>(service)
   }
 
@@ -275,14 +281,13 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   fun `handler for BatchDeletionStartedEvent deletes batch photos`() {
     val otherBatchId = insertBatch()
 
-    storePhoto()
-    storePhoto()
+    val fileId1 = storePhoto()
+    val fileId2 = storePhoto()
     val otherBatchFileId = storePhoto(otherBatchId)
     val otherBatchPhotoId = batchPhotosDao.fetchByFileId(otherBatchFileId).first().id!!
 
     service.on(BatchDeletionStartedEvent(batchId))
 
-    assertEquals(listOf(otherBatchFileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
     assertEquals(
         listOf(
             BatchPhotosRow(
@@ -295,6 +300,13 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         ),
         batchPhotosDao.findAll(),
         "Remaining photos",
+    )
+
+    eventPublisher.assertEventsPublished(
+        setOf(
+            FileReferenceDeletedEvent(fileId1),
+            FileReferenceDeletedEvent(fileId2),
+        )
     )
 
     assertIsEventListener<BatchDeletionStartedEvent>(service)

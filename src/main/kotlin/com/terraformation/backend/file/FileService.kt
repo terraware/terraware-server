@@ -5,12 +5,23 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_FILES
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
+import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -23,13 +34,12 @@ import java.time.Clock
 import java.time.Duration
 import java.util.UUID
 import org.jooq.DSLContext
+import org.jooq.TableField
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
-/**
- * Manages storage of files including metadata. In this implementation, files are stored on the
- * filesystem and metadata in the database.
- */
+/** Manages storage of files including metadata. */
 @Named
 class FileService(
     private val dslContext: DSLContext,
@@ -40,6 +50,26 @@ class FileService(
     private val fileStore: FileStore,
 ) {
   private val log = perClassLogger()
+
+  /**
+   * Fields that count as references to files. If a file isn't referenced in any of these, it will
+   * be deleted from the file store. This doesn't necessarily include all the foreign-key
+   * relationships with the files table, just ones whose presence should cause the file to be
+   * considered still in use. For example, thumbnails aren't included here.
+   */
+  private val referencingFields: Collection<TableField<*, FileId?>> =
+      listOf(
+          ACCESSION_PHOTOS.FILE_ID,
+          ACTIVITY_MEDIA_FILES.FILE_ID,
+          BATCH_PHOTOS.FILE_ID,
+          OBSERVATION_PHOTOS.FILE_ID,
+          PUBLISHED_REPORT_PHOTOS.FILE_ID,
+          REPORT_PHOTOS.FILE_ID,
+          SEED_FUND_REPORT_FILES.FILE_ID,
+          SUBMISSION_SNAPSHOTS.FILE_ID,
+          VARIABLE_IMAGE_VALUES.FILE_ID,
+          WITHDRAWAL_PHOTOS.FILE_ID,
+      )
 
   /**
    * Stores a file on the file store and records its information in the database.
@@ -114,30 +144,6 @@ class FileService(
     return fileStore.read(filesRow.storageUrl!!).withContentType(filesRow.contentType)
   }
 
-  /**
-   * Deletes a file and its thumbnails.
-   *
-   * @param deleteChildRows Deletes any rows from child tables that refer to the files table. This
-   *   is called in a transaction before the files table row is deleted.
-   */
-  fun deleteFile(fileId: FileId, deleteChildRows: () -> Unit) {
-    val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
-    val storageUrl = filesRow.storageUrl!!
-
-    eventPublisher.publishEvent(FileDeletionStartedEvent(fileId))
-
-    try {
-      fileStore.delete(storageUrl)
-    } catch (e: NoSuchFileException) {
-      log.warn("File $storageUrl was already deleted from file store")
-    }
-
-    dslContext.transaction { _ ->
-      deleteChildRows()
-      filesDao.deleteById(fileId)
-    }
-  }
-
   fun createToken(fileId: FileId, expiration: Duration): String {
     ensureFileExists(fileId)
 
@@ -171,7 +177,32 @@ class FileService(
   }
 
   @EventListener
-  fun on(event: DailyTaskTimeArrivedEvent) {
+  fun on(event: FileReferenceDeletedEvent) {
+    val fileId = event.fileId
+    if (!isReferenced(fileId)) {
+      val filesRow = filesDao.fetchOneById(fileId)
+      val storageUrl = filesRow?.storageUrl
+
+      if (storageUrl == null) {
+        log.error("Reference to file $fileId was deleted but the file does not exist")
+        return
+      }
+
+      // Clean up thumbnails, Mux assets, etc.
+      eventPublisher.publishEvent(FileDeletionStartedEvent(event.fileId, filesRow.contentType!!))
+
+      try {
+        fileStore.delete(storageUrl)
+      } catch (_: NoSuchFileException) {
+        log.warn("File $storageUrl was already deleted from file store")
+      }
+
+      filesDao.deleteById(fileId)
+    }
+  }
+
+  @EventListener
+  fun on(@Suppress("unused") event: DailyTaskTimeArrivedEvent) {
     try {
       dslContext
           .deleteFrom(FILE_ACCESS_TOKENS)
@@ -192,8 +223,18 @@ class FileService(
   private fun deleteIfExists(storageUrl: URI) {
     try {
       fileStore.delete(storageUrl)
-    } catch (ignore: NoSuchFileException) {
+    } catch (_: NoSuchFileException) {
       // Swallow this; file is already deleted
     }
+  }
+
+  /** Returns true if a file is referenced by any application-specific entities. */
+  private fun isReferenced(fileId: FileId): Boolean {
+    val existsConditions =
+        referencingFields.map { field ->
+          DSL.exists(DSL.selectOne().from(field.table).where(field.eq(fileId)))
+        }
+
+    return dslContext.select(DSL.or(existsConditions)).fetchSingle().value1()
   }
 }
