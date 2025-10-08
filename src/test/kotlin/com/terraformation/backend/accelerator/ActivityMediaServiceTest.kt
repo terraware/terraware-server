@@ -305,6 +305,16 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns raw file when requested`() {
+      val testContent =
+          javaClass.getResourceAsStream("/file/videoAndroid.mp4")!!.use { it.readAllBytes() }
+      val fileId = storeMediaBytes(testContent, mp4Metadata)
+
+      val inputStream = service.readMedia(activityId, fileId, raw = true)
+      assertArrayEquals(testContent, inputStream.readAllBytes(), "Raw content")
+    }
+
+    @Test
     fun `throws exception if file not associated with activity`() {
       val otherProjectId = insertProject()
       val otherActivityId = insertActivity(projectId = otherProjectId)
