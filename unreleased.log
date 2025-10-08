@@ -1,3 +1,6 @@
+f2de54e6743 Run JUnit tests in headless mode (#3477)
+8b39e8685f2 SW-7503 Treat media file updates as activity updates (#3476)
+3b3fc3d53c1 SW-7414 Refactor Survival Rate Density Condition and update helpers (#3473)
 f36b1b9b56f SW-7414 Add temp plots to completePlot survival rate calc (#3472)
 13777c51516 SW-7472 Return full-sized images as JPEG (#3474)
 5a7befea461 Update dependency software.amazon.awssdk:bom to v2.34.9 (#3457)
