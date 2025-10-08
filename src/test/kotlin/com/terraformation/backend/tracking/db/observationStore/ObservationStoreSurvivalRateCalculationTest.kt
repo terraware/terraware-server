@@ -581,41 +581,43 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val idFields = listOf("Plot", "Subzone", "Zone", "Site")
     val actualList = fetchSurvivalRates(inserted.plantingSiteId)
 
-    val assertionList = emptyList<Triple<String, String, String>>().toMutableList()
-    expected.forEachIndexed { index, expectedByIdMap ->
-      val level = idFields[index]
-      val actualByIdMap = actualList[index]
-
-      val allIdsMatch =
-          actualByIdMap.all { (id, actualSpeciesMap) ->
-            val expectedSpeciesMap = expectedByIdMap[id] ?: return@all false
-
-            actualSpeciesMap.all { (speciesId, actualRate) ->
-              val expectedRate = expectedSpeciesMap[speciesId]
-              when {
-                expectedRate == null -> actualRate == null
-                actualRate == null -> false
-                expectedRate is Double -> expectedRate.roundToInt() == actualRate
-                else -> expectedRate == actualRate
-              }
-            } &&
-                expectedSpeciesMap.all { (speciesId, _) -> actualSpeciesMap.containsKey(speciesId) }
-          } && expectedByIdMap.all { (id, _) -> actualByIdMap.containsKey(id) }
-
-      if (!allIdsMatch) {
-        val expectedString =
-            expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
-            }
-        val actualString =
-            actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-              "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
-            }
-        assertionList += Triple(expectedString, actualString, "$message - $level")
-      }
-    }
     assertAll(
-        assertionList.map { triple -> { assertEquals(triple.first, triple.second, triple.third) } }
+        expected.mapIndexed { index, expectedByIdMap ->
+          {
+            val level = idFields[index]
+            val actualByIdMap = actualList[index]
+
+            val allIdsMatch =
+                actualByIdMap.all { (id, actualSpeciesMap) ->
+                  val expectedSpeciesMap = expectedByIdMap[id] ?: return@all false
+
+                  actualSpeciesMap.all { (speciesId, actualRate) ->
+                    val expectedRate = expectedSpeciesMap[speciesId]
+                    when {
+                      expectedRate == null -> actualRate == null
+                      actualRate == null -> false
+                      expectedRate is Double -> expectedRate.roundToInt() == actualRate
+                      else -> expectedRate == actualRate
+                    }
+                  } &&
+                      expectedSpeciesMap.all { (speciesId, _) ->
+                        actualSpeciesMap.containsKey(speciesId)
+                      }
+                } && expectedByIdMap.all { (id, _) -> actualByIdMap.containsKey(id) }
+
+            if (!allIdsMatch) {
+              val expectedString =
+                  expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+                    "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
+                  }
+              val actualString =
+                  actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
+                    "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
+                  }
+              assertEquals(expectedString, actualString, "$message - $level")
+            }
+          }
+        }
     )
   }
 

@@ -1563,13 +1563,19 @@ class ObservationStore(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
   ) {
-    data class ZoneInfo(
+    data class SubzoneSpeciesRecord(
+        val certaintyId: RecordedSpeciesCertainty,
+        val speciesId: SpeciesId?,
+        val speciesName: String?,
+        val plantingZoneId: PlantingZoneId,
         val permanentLive: Int,
-        val totalLive: Int,
         val cumulativeDead: Int,
+        val totalLive: Int,
         val survivalRateIncludesTempPlots: Boolean,
     )
-    val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<PlantingZoneId, List<ZoneInfo>>> =
+
+    val liveAndDeadTotals:
+        Map<RecordedSpeciesKey, Map<PlantingZoneId, List<SubzoneSpeciesRecord>>> =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
           val observationIdForSubzoneField =
               DSL.select(OBSERVATIONS.ID)
@@ -1614,32 +1620,26 @@ class ObservationStore(
               .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
               .and(OBSERVATION_ID.eq(observationIdForSubzoneField))
               .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).plus(TOTAL_LIVE).gt(0))
-              .fetch()
-              .groupBy { (certaintyId, speciesId, speciesName, _, _, _, _, _) ->
-                RecordedSpeciesKey(certaintyId, speciesId, speciesName)
+              .fetch { record ->
+                SubzoneSpeciesRecord(
+                    certaintyId = record[CERTAINTY_ID.asNonNullable()],
+                    speciesId = record[SPECIES_ID],
+                    speciesName = record[SPECIES_NAME],
+                    plantingZoneId = record[PLANTING_SUBZONES.PLANTING_ZONE_ID.asNonNullable()],
+                    permanentLive = record[PERMANENT_LIVE.asNonNullable()],
+                    cumulativeDead = record[CUMULATIVE_DEAD.asNonNullable()],
+                    totalLive = record[TOTAL_LIVE.asNonNullable()],
+                    survivalRateIncludesTempPlots =
+                        record[
+                            PLANTING_SUBZONES.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+                                .asNonNullable()],
+                )
+              }
+              .groupBy { record ->
+                RecordedSpeciesKey(record.certaintyId, record.speciesId, record.speciesName)
               }
               .mapValues { (_, recordsForSpecies) ->
-                recordsForSpecies
-                    .groupBy { (_, _, _, plantingZoneId, _, _, _, _) -> plantingZoneId }
-                    .mapValues { (_, recordsForZone) ->
-                      recordsForZone.map {
-                          (
-                              _,
-                              _,
-                              _,
-                              _,
-                              permanentLive,
-                              cumulativeDead,
-                              totalLive,
-                              survivalRateIncludesTempPlots) ->
-                        ZoneInfo(
-                            permanentLive,
-                            totalLive,
-                            cumulativeDead,
-                            survivalRateIncludesTempPlots,
-                        )
-                      }
-                    }
+                recordsForSpecies.groupBy { it.plantingZoneId }
               }
         }
 
@@ -1649,10 +1649,10 @@ class ObservationStore(
         val totalLive = liveAndDeadForZone.sumOf { it.totalLive }
         val totalDead = liveAndDeadForZone.sumOf { it.cumulativeDead }
         val zoneMortalityRate =
-            if (totalDead > 0) {
+            if (totalPermanentLive + totalDead > 0) {
               ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
             } else {
-              0
+              null
             }
 
         with(OBSERVED_ZONE_SPECIES_TOTALS) {
@@ -1685,10 +1685,7 @@ class ObservationStore(
                   .insertInto(OBSERVED_ZONE_SPECIES_TOTALS)
                   .set(CERTAINTY_ID, speciesKey.certainty)
                   .set(CUMULATIVE_DEAD, totalDead)
-                  .set(
-                      MORTALITY_RATE,
-                      if (totalDead > 0 && totalPermanentLive > 0) zoneMortalityRate else null,
-                  )
+                  .set(MORTALITY_RATE, zoneMortalityRate)
                   .set(OBSERVATION_ID, observationId)
                   .set(PERMANENT_LIVE, totalPermanentLive)
                   .set(PLANTING_ZONE_ID, plantingZoneId)
@@ -1701,11 +1698,7 @@ class ObservationStore(
             dslContext
                 .update(OBSERVED_ZONE_SPECIES_TOTALS)
                 .set(CUMULATIVE_DEAD, totalDead)
-                .set(
-                    MORTALITY_RATE,
-                    if (totalDead > 0 && totalPermanentLive > 0) DSL.inline(zoneMortalityRate)
-                    else MORTALITY_RATE,
-                )
+                .set(MORTALITY_RATE, zoneMortalityRate?.let { DSL.inline(it) } ?: MORTALITY_RATE)
                 .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(SURVIVAL_RATE, survivalRate)
                 .where(OBSERVATION_ID.eq(observationId))
