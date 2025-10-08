@@ -18,10 +18,13 @@ import org.jooq.Record
 import org.jooq.Record1
 import org.jooq.Select
 import org.jooq.Table
+import org.jooq.TableField
 import org.jooq.impl.DSL
 
-interface ObservationSpeciesScope {
+interface ObservationSpeciesScope<ID : Any> {
+  val scopeId: ID
   val observedTotalsTable: Table<out Record>
+  val observedTotalsScopeField: TableField<*, ID?>
   val tempZoneCondition: Condition
   val t0DensityCondition: Condition
   val alternateCompletedCondition: Condition
@@ -29,8 +32,12 @@ interface ObservationSpeciesScope {
   val observedTotalsPlantingSiteTempCondition: Condition
 }
 
-class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope {
+class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope<MonitoringPlotId> {
+  override val scopeId = plotId
+
   override val observedTotalsTable = OBSERVED_PLOT_SPECIES_TOTALS
+
+  override val observedTotalsScopeField = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID
 
   override val tempZoneCondition = MONITORING_PLOTS.ID.eq(plotId)
 
@@ -48,11 +55,12 @@ class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope
 class ObservationSpeciesSubzone(
     subzoneSelect: Select<Record1<PlantingSubzoneId?>>,
     plotId: MonitoringPlotId? = null,
-) : ObservationSpeciesScope {
+    subzoneId: PlantingSubzoneId? = null,
+) : ObservationSpeciesScope<PlantingSubzoneId> {
   constructor(
       subzoneId: PlantingSubzoneId,
       plotId: MonitoringPlotId? = null,
-  ) : this(DSL.select(DSL.inline(subzoneId)), plotId)
+  ) : this(DSL.select(DSL.inline(subzoneId)), plotId, subzoneId)
 
   constructor(
       plotId: MonitoringPlotId
@@ -63,7 +71,11 @@ class ObservationSpeciesSubzone(
       plotId,
   )
 
+  override val scopeId = subzoneId!!
+
   override val observedTotalsTable = OBSERVED_SUBZONE_SPECIES_TOTALS
+
+  override val observedTotalsScopeField = OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID
 
   override val tempZoneCondition = MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
 
@@ -85,11 +97,12 @@ class ObservationSpeciesSubzone(
 class ObservationSpeciesZone(
     zoneSelect: Select<Record1<PlantingZoneId?>>,
     plotId: MonitoringPlotId? = null,
-) : ObservationSpeciesScope {
+    zoneId: PlantingZoneId? = null,
+) : ObservationSpeciesScope<PlantingZoneId> {
   constructor(
       zoneId: PlantingZoneId,
       plotId: MonitoringPlotId? = null,
-  ) : this(DSL.select(DSL.inline(zoneId)), plotId)
+  ) : this(DSL.select(DSL.inline(zoneId)), plotId, zoneId)
 
   constructor(
       plotId: MonitoringPlotId
@@ -106,7 +119,11 @@ class ObservationSpeciesZone(
       plotId,
   )
 
+  override val scopeId = zoneId!!
+
   override val observedTotalsTable = OBSERVED_ZONE_SPECIES_TOTALS
+
+  override val observedTotalsScopeField = OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID
 
   override val tempZoneCondition = PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
 
@@ -128,7 +145,8 @@ class ObservationSpeciesZone(
 class ObservationSpeciesSite(
     siteSelect: Select<Record1<PlantingSiteId?>>,
     plotId: MonitoringPlotId? = null,
-) : ObservationSpeciesScope {
+    siteId: PlantingSiteId? = null,
+) : ObservationSpeciesScope<PlantingSiteId> {
   constructor(
       siteId: PlantingSiteId,
       plotId: MonitoringPlotId? = null,
@@ -143,7 +161,11 @@ class ObservationSpeciesSite(
       plotId,
   )
 
+  override val scopeId = siteId!!
+
   override val observedTotalsTable = OBSERVED_SITE_SPECIES_TOTALS
+
+  override val observedTotalsScopeField = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
 
   override val tempZoneCondition =
       PLANTING_ZONE_T0_TEMP_DENSITIES.plantingZones.PLANTING_SITE_ID.eq(siteSelect)
