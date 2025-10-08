@@ -781,6 +781,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       val plotNumber = cols[1]
       val subzoneId = subzoneIds[subzoneName]!!
       val subzoneHistoryId = subzoneHistoryIds[subzoneId]!!
+      val isPermanent = cols[2] == "Permanent"
 
       val plotId =
           insertMonitoringPlot(
@@ -788,11 +789,11 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               plantingSubzoneId = subzoneId,
               plotNumber = plotNumber.toLong(),
               sizeMeters = sizeMeters,
-              permanentIndex = plotNumber.toInt(),
+              permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
       insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId)
 
-      if (cols[2] == "Permanent") {
+      if (isPermanent) {
         permanentPlotNumbers.add(plotNumber)
         permanentPlotIds.add(plotId)
       }
@@ -824,6 +825,36 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             speciesId = speciesId,
             monitoringPlotId = plotId,
             plotDensity = density.toPlantsPerHectare(),
+        )
+        speciesIndex++
+      }
+    }
+    return true
+  }
+
+  fun importT0ZoneDensitiesCsv(prefix: String): Boolean {
+    val filePath = "$prefix/T0ZoneDensities.csv"
+    if (javaClass.getResource(filePath) == null) {
+      return false
+    }
+    mapCsv(filePath, 1) { cols ->
+      val zoneName = cols[0]
+      val zoneId = zoneIds[zoneName]!!
+
+      var speciesIndex = 0
+      while (true) {
+        if (cols.size <= speciesIndex + 1) {
+          break
+        }
+        val density = cols[speciesIndex + 1].toBigDecimal()
+        val speciesId =
+            speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
+              insertSpecies(scientificName = "Species $speciesIndex")
+            }
+        insertPlantingZoneT0TempDensity(
+            speciesId = speciesId,
+            plantingZoneId = zoneId,
+            zoneDensity = density.toPlantsPerHectare(),
         )
         speciesIndex++
       }
