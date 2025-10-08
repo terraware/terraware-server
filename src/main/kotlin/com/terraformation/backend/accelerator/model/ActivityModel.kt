@@ -27,6 +27,9 @@ data class ExistingActivityModel(
     val verifiedBy: UserId? = null,
     val verifiedTime: Instant? = null,
 ) {
+  val isVerified: Boolean
+    get() = verifiedBy != null
+
   companion object {
     fun of(
         record: Record,

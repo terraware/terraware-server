@@ -118,15 +118,11 @@ class ActivityStore(
         isHighlight = updatedModel.isHighlight
         activityStatusId = updatedModel.activityStatus
 
-        if (
-            existingModel.activityStatus == ActivityStatus.NotVerified &&
-                updatedModel.activityStatus == ActivityStatus.Verified
-        ) {
+        if (!existingModel.isVerified && updatedModel.activityStatus == ActivityStatus.Verified) {
           verifiedBy = currentUser().userId
           verifiedTime = now
         } else if (
-            existingModel.activityStatus == ActivityStatus.Verified &&
-                updatedModel.activityStatus == ActivityStatus.NotVerified
+            existingModel.isVerified && updatedModel.activityStatus == ActivityStatus.NotVerified
         ) {
           verifiedBy = null
           verifiedTime = null
