@@ -2470,6 +2470,24 @@ class ObservationStore(
     }
   }
 
+  private fun plotHasCompletedObservations(
+      monitoringPlotIdField: Field<MonitoringPlotId?>,
+      isPermanent: Boolean,
+      alternateCompleteCondition: Condition = DSL.falseCondition(),
+  ): Condition =
+      DSL.exists(
+          DSL.selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
+              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
+              .and(
+                  DSL.or(
+                      OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
+                      alternateCompleteCondition,
+                  )
+              )
+      )
+
   private fun getSurvivalRateDenominator(
       updateScope: ObservationSpeciesScope,
       condition: Condition,
@@ -2480,27 +2498,14 @@ class ObservationStore(
               .where(updateScope.t0DensityCondition)
               .and(condition)
               .and(
-                  // plot has completed observations
-                  DSL.exists(
-                      DSL.selectOne()
-                          .from(OBSERVATION_PLOTS)
-                          .where(
-                              OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                  PLOT_T0_DENSITIES.MONITORING_PLOT_ID
-                              )
-                          )
-                          .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
-                          .and(
-                              DSL.or(
-                                  OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
-                                  updateScope.alternateCompletedCondition,
-                              )
-                          )
+                  plotHasCompletedObservations(
+                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                      true,
+                      updateScope.alternateCompletedCondition,
                   )
               )
       )
 
-  // todo refactor the exists section for both of these
   private fun getSurvivalRateTempDenominator(
       updateScope: ObservationSpeciesScope,
       condition: Condition,
@@ -2520,17 +2525,10 @@ class ObservationStore(
                 .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
                 .and(MONITORING_PLOTS.PERMANENT_INDEX.isNull)
                 .and(
-                    DSL.exists(
-                        DSL.selectOne()
-                            .from(OBSERVATION_PLOTS)
-                            .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                            .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
-                            .and(
-                                DSL.or(
-                                    OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
-                                    updateScope.alternateCompletedCondition,
-                                )
-                            )
+                    plotHasCompletedObservations(
+                        MONITORING_PLOTS.ID,
+                        false,
+                        updateScope.alternateCompletedCondition,
                     )
                 )
         )
