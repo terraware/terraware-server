@@ -462,8 +462,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             activityDate = LocalDate.of(2024, 2, 1),
             description = "Updated description",
             // Updates to admin-only fields should be ignored.
+            activityStatus = ActivityStatus.Verified,
             isHighlight = true,
-            isVerified = true,
         )
       }
 
@@ -503,11 +503,11 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(activityId) { existing ->
         existing.copy(
+            activityStatus = ActivityStatus.Verified,
             activityType = ActivityType.Planting,
             activityDate = LocalDate.of(2024, 2, 1),
             description = "Updated description",
             isHighlight = true,
-            isVerified = true,
         )
       }
 
@@ -531,7 +531,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `clears verifiedBy and verifiedTime if isVerified goes from true to false`() {
+    fun `clears verifiedBy and verifiedTime if status goes from Verified to Not Verified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       val activityId = insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
@@ -540,7 +540,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(isVerified = false) }
+      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.NotVerified) }
 
       record.activityStatusId = ActivityStatus.NotVerified
       record.modifiedTime = updateTime
@@ -551,7 +551,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `leaves verifiedBy and verifiedTime alone if isVerified remains true`() {
+    fun `leaves verifiedBy and verifiedTime alone if status remains Verified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       val otherUserId = insertUser()
 
@@ -564,6 +564,26 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(activityId) { it }
 
+      record.modifiedTime = updateTime
+
+      assertTableEquals(record)
+    }
+
+    @Test
+    fun `leaves verifiedBy and verifiedTime alone if status changes to Do Not Use`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      val otherUserId = insertUser()
+
+      val verifiedTime = Instant.ofEpochSecond(30)
+      val activityId = insertActivity(verifiedBy = otherUserId, verifiedTime = verifiedTime)
+      val record = dslContext.fetchOne(ACTIVITIES)!!
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { it.copy(activityStatus = ActivityStatus.DoNotUse) }
+
+      record.activityStatusId = ActivityStatus.DoNotUse
       record.modifiedTime = updateTime
 
       assertTableEquals(record)

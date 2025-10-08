@@ -10,6 +10,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -175,16 +176,16 @@ data class AdminUpdateActivityRequestPayload(
     val date: LocalDate,
     val description: String,
     val isHighlight: Boolean,
-    val isVerified: Boolean,
+    val status: ActivityStatus,
     val type: ActivityType,
 ) {
   fun applyTo(model: ExistingActivityModel): ExistingActivityModel {
     return model.copy(
         activityDate = date,
+        activityStatus = status,
         activityType = type,
         description = description,
         isHighlight = isHighlight,
-        isVerified = isVerified,
     )
   }
 }

@@ -116,19 +116,20 @@ class ActivityStore(
 
       if (currentUser().canManageActivity(activityId)) {
         isHighlight = updatedModel.isHighlight
+        activityStatusId = updatedModel.activityStatus
 
-        if (!existingModel.isVerified && updatedModel.isVerified) {
-          activityStatusId = ActivityStatus.Verified
+        if (
+            existingModel.activityStatus == ActivityStatus.NotVerified &&
+                updatedModel.activityStatus == ActivityStatus.Verified
+        ) {
           verifiedBy = currentUser().userId
           verifiedTime = now
-        } else if (existingModel.isVerified && !updatedModel.isVerified) {
-          activityStatusId = ActivityStatus.NotVerified
+        } else if (
+            existingModel.activityStatus == ActivityStatus.Verified &&
+                updatedModel.activityStatus == ActivityStatus.NotVerified
+        ) {
           verifiedBy = null
           verifiedTime = null
-        }
-
-        if (updatedModel.activityStatus == ActivityStatus.DoNotUse) {
-          activityStatusId = ActivityStatus.DoNotUse
         }
       }
 

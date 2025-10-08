@@ -299,6 +299,7 @@ data class UpdateActivityRequestPayload(
   fun applyTo(model: ExistingActivityModel): ExistingActivityModel {
     return model.copy(
         activityDate = date,
+        activityStatus = status,
         activityType = type,
         description = description,
     )
