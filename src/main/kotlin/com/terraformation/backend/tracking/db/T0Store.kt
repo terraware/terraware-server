@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
@@ -68,6 +69,10 @@ class T0Store(
       observationId: ObservationId,
   ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
+
+    require(isMonitoringPlotPermanent(monitoringPlotId)) {
+      "Cannot assign T0 data to non-permanent plot $monitoringPlotId."
+    }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
@@ -178,6 +183,10 @@ class T0Store(
       densities: List<SpeciesDensityModel>,
   ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
+
+    require(isMonitoringPlotPermanent(monitoringPlotId)) {
+      "Cannot assign T0 data to non-permanent plot $monitoringPlotId."
+    }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
@@ -424,5 +433,14 @@ class T0Store(
         }
 
     return changeList.values.toSet()
+  }
+
+  private fun isMonitoringPlotPermanent(monitoringPlotId: MonitoringPlotId): Boolean {
+    return with(MONITORING_PLOTS) {
+      dslContext.fetchExists(
+          this,
+          ID.eq(monitoringPlotId).and(PERMANENT_INDEX.isNotNull),
+      )
+    }
   }
 }

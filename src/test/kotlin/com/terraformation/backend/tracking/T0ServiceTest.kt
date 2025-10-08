@@ -60,10 +60,10 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPlantingSiteHistory()
     plantingZoneId1 = insertPlantingZone()
     insertPlantingSubzone()
-    monitoringPlotId1 = insertMonitoringPlot()
+    monitoringPlotId1 = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
     insertObservationPlot()
-    monitoringPlotId2 = insertMonitoringPlot()
+    monitoringPlotId2 = insertMonitoringPlot(permanentIndex = 2)
     plantingZoneId2 = insertPlantingZone()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
@@ -78,7 +78,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
-      val otherSitePlotId = insertMonitoringPlot()
+      val otherSitePlotId = insertMonitoringPlot(permanentIndex = 3)
 
       assertThrows<IllegalArgumentException> {
         service.assignT0PlotsData(
@@ -98,7 +98,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
-      val otherSitePlotId = insertMonitoringPlot()
+      val otherSitePlotId = insertMonitoringPlot(permanentIndex = 4)
 
       assertThrows<IllegalArgumentException> {
         service.assignT0PlotsData(

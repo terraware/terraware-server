@@ -31,6 +31,7 @@ import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
 import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
+import kotlin.IllegalArgumentException
 import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -64,7 +65,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPlantingSiteHistory()
     plantingZoneId = insertPlantingZone(name = "Zone 2")
     insertPlantingSubzone()
-    monitoringPlotId = insertMonitoringPlot(plotNumber = 2)
+    monitoringPlotId = insertMonitoringPlot(plotNumber = 2, permanentIndex = 2)
     observationId = insertObservation()
     insertObservationPlot()
     speciesId1 = insertSpecies()
@@ -173,6 +174,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<AccessDeniedException> {
         store.assignT0PlotObservation(monitoringPlotId, observationId)
+      }
+    }
+
+    @Test
+    fun `throws exception when plot is not permanent`() {
+      val tempPlot = insertMonitoringPlot(plotNumber = 1)
+
+      assertThrows<IllegalArgumentException> {
+        store.assignT0PlotObservation(tempPlot, observationId)
       }
     }
 
@@ -440,6 +450,18 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<AccessDeniedException> {
         store.assignT0PlotSpeciesDensities(
             monitoringPlotId,
+            listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception when plot is not permanent`() {
+      val tempPlot = insertMonitoringPlot(plotNumber = 1)
+
+      assertThrows<IllegalArgumentException> {
+        store.assignT0PlotSpeciesDensities(
+            tempPlot,
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
         )
       }
