@@ -98,6 +98,8 @@ class ActivityMediaStore(
         updateListPositions(activityId, fileIds)
       }
 
+      markActivityModified(activityId)
+
       with(FILES) {
         dslContext
             .update(FILES)
@@ -141,6 +143,8 @@ class ActivityMediaStore(
       }
 
       updateListPositions(activityId, orderedFileIds)
+
+      markActivityModified(activityId)
     }
   }
 
@@ -167,6 +171,8 @@ class ActivityMediaStore(
         }
 
         updateListPositions(activityId, fetchFileIds(activityId))
+
+        markActivityModified(activityId)
       }
     }
   }
@@ -234,6 +240,17 @@ class ActivityMediaStore(
           .set(LIST_POSITION, DSL.case_(FILE_ID.asNonNullable()).mapValues(positionsMap))
           .where(FILE_ID.`in`(fileIds))
           .and(ACTIVITY_ID.eq(activityId))
+          .execute()
+    }
+  }
+
+  private fun markActivityModified(activityId: ActivityId) {
+    with(ACTIVITIES) {
+      dslContext
+          .update(ACTIVITIES)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .where(ID.eq(activityId))
           .execute()
     }
   }

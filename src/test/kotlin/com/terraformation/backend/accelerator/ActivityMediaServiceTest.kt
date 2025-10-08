@@ -17,10 +17,12 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -37,6 +39,7 @@ import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Instant
 import java.time.LocalDate
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -88,13 +91,15 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val pngMetadata = NewFileMetadata("image/png", "test.png", null, 95L, null)
 
   private lateinit var activityId: ActivityId
+  private lateinit var createdBy: UserId
   private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
+    createdBy = insertUser()
     organizationId = insertOrganization()
     val projectId = insertProject(organizationId)
-    activityId = insertActivity(projectId = projectId)
+    activityId = insertActivity(createdBy = createdBy, projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
 
@@ -103,6 +108,21 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class StoreMedia {
+    @Test
+    fun `updates activity modified by and time`() {
+      val activityBefore = dslContext.fetchSingle(ACTIVITIES)
+
+      clock.instant = Instant.ofEpochSecond(500)
+      storeMedia("pixel.jpg")
+
+      assertTableEquals(
+          activityBefore.also { record ->
+            record.modifiedBy = user.userId
+            record.modifiedTime = clock.instant
+          }
+      )
+    }
+
     @Test
     fun `stores photo and extracts date and GPS metadata`() {
       assertMediaFileEquals(
@@ -316,6 +336,23 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(emptyList<ActivityMediaFilesRow>(), activityMediaFilesDao.findAll())
       fileStore.assertFileWasDeleted(storageUrl)
       eventPublisher.assertEventNotPublished<VideoFileDeletedEvent>()
+    }
+
+    @Test
+    fun `updates activity modified by and time`() {
+      val fileId = storeMedia("pixel.jpg")
+      val activityBefore = dslContext.fetchSingle(ACTIVITIES)
+
+      clock.instant = Instant.ofEpochSecond(500)
+
+      service.deleteMedia(activityId, fileId)
+
+      assertTableEquals(
+          activityBefore.also { record ->
+            record.modifiedBy = user.userId
+            record.modifiedTime = clock.instant
+          }
+      )
     }
 
     @Test
