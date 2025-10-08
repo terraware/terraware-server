@@ -13,13 +13,13 @@ import org.jooq.Record1
 import org.jooq.Select
 import org.jooq.impl.DSL
 
-interface UpdateSpeciesHelper {
+interface ObservationSpeciesScope {
   val tempZoneCondition: Condition
   val t0DensityCondition: Condition
   val alternateCompletedCondition: Condition
 }
 
-class UpdatePlotSpeciesHelper(plotId: MonitoringPlotId) : UpdateSpeciesHelper {
+class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope {
   override val tempZoneCondition = MONITORING_PLOTS.ID.eq(plotId)
 
   override val t0DensityCondition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
@@ -27,10 +27,10 @@ class UpdatePlotSpeciesHelper(plotId: MonitoringPlotId) : UpdateSpeciesHelper {
   override val alternateCompletedCondition = OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
-class UpdateSubzoneSpeciesHelper(
+class ObservationSpeciesSubzone(
     subzoneSelect: Select<Record1<PlantingSubzoneId?>>,
     plotId: MonitoringPlotId? = null,
-) : UpdateSpeciesHelper {
+) : ObservationSpeciesScope {
   constructor(
       subzoneId: PlantingSubzoneId,
       plotId: MonitoringPlotId? = null,
@@ -45,10 +45,10 @@ class UpdateSubzoneSpeciesHelper(
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
-class UpdateZoneSpeciesHelper(
+class ObservationSpeciesZone(
     zoneSelect: Select<Record1<PlantingZoneId?>>,
     plotId: MonitoringPlotId? = null,
-) : UpdateSpeciesHelper {
+) : ObservationSpeciesScope {
   constructor(
       zoneId: PlantingZoneId,
       plotId: MonitoringPlotId? = null,
@@ -63,10 +63,10 @@ class UpdateZoneSpeciesHelper(
       if (plotId == null) DSL.falseCondition() else OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId)
 }
 
-class UpdateSiteSpeciesHelper(
+class ObservationSpeciesSite(
     siteSelect: Select<Record1<PlantingSiteId?>>,
     plotId: MonitoringPlotId? = null,
-) : UpdateSpeciesHelper {
+) : ObservationSpeciesScope {
   constructor(
       siteId: PlantingSiteId,
       plotId: MonitoringPlotId? = null,
