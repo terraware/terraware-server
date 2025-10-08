@@ -23,6 +23,12 @@ VALUES (1, 'Photo'),
        (2, 'Video')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.activity_statuses (id, name)
+VALUES (1, 'Not Verified'),
+       (2, 'Verified'),
+       (3, 'Do Not Use')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.activity_types (id, name)
 VALUES (1, 'Seed Collection'),
        (2, 'Nursery'),

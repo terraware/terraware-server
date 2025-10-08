@@ -9,6 +9,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.tables.Activities.Companion.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -39,11 +40,13 @@ class ActivityStore(
     val userId = currentUser().userId
     val verifiedBy = if (model.isVerified) userId else null
     val verifiedTime = if (model.isVerified) now else null
+    val status = if (model.isVerified) ActivityStatus.Verified else ActivityStatus.NotVerified
 
     val activityId =
         dslContext
             .insertInto(ACTIVITIES)
             .set(ACTIVITIES.ACTIVITY_DATE, model.activityDate)
+            .set(ACTIVITIES.ACTIVITY_STATUS_ID, status)
             .set(ACTIVITIES.ACTIVITY_TYPE_ID, model.activityType)
             .set(ACTIVITIES.CREATED_BY, userId)
             .set(ACTIVITIES.CREATED_TIME, now)
@@ -61,6 +64,7 @@ class ActivityStore(
 
     return ExistingActivityModel(
         activityDate = model.activityDate,
+        activityStatus = status,
         activityType = model.activityType,
         createdBy = userId,
         createdTime = now,
@@ -114,11 +118,17 @@ class ActivityStore(
         isHighlight = updatedModel.isHighlight
 
         if (!existingModel.isVerified && updatedModel.isVerified) {
+          activityStatusId = ActivityStatus.Verified
           verifiedBy = currentUser().userId
           verifiedTime = now
         } else if (existingModel.isVerified && !updatedModel.isVerified) {
+          activityStatusId = ActivityStatus.NotVerified
           verifiedBy = null
           verifiedTime = null
+        }
+
+        if (updatedModel.activityStatus == ActivityStatus.DoNotUse) {
+          activityStatusId = ActivityStatus.DoNotUse
         }
       }
 

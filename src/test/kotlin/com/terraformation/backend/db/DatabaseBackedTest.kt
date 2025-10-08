@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -3788,10 +3789,13 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = inserted.projectId,
       verifiedBy: UserId? = null,
       verifiedTime: Instant? = if (verifiedBy != null) Instant.EPOCH else null,
+      activityStatus: ActivityStatus =
+          if (verifiedBy != null) ActivityStatus.Verified else ActivityStatus.NotVerified,
   ): ActivityId {
     val row =
         ActivitiesRow(
             activityDate = activityDate,
+            activityStatusId = activityStatus,
             activityTypeId = activityType,
             createdBy = createdBy,
             createdTime = createdTime,

@@ -15,6 +15,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
@@ -71,6 +72,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 1, 15),
+              activityStatusId = ActivityStatus.NotVerified,
               activityTypeId = ActivityType.SeedCollection,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -106,6 +108,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 1, 15),
+              activityStatusId = ActivityStatus.Verified,
               activityTypeId = ActivityType.SeedCollection,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -169,6 +172,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           ExistingActivityModel(
               activityDate = LocalDate.of(2024, 2, 20),
+              activityStatus = ActivityStatus.NotVerified,
               activityType = ActivityType.Monitoring,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -216,6 +220,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           ExistingActivityModel(
               activityDate = LocalDate.of(2024, 2, 20),
+              activityStatus = ActivityStatus.NotVerified,
               activityType = ActivityType.Monitoring,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -311,6 +316,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ExistingActivityModel(
                   activityDate = LocalDate.of(2024, 2, 20),
+                  activityStatus = ActivityStatus.NotVerified,
                   activityType = ActivityType.Monitoring,
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
@@ -339,6 +345,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ExistingActivityModel(
                   activityDate = LocalDate.of(2024, 3, 21),
+                  activityStatus = ActivityStatus.NotVerified,
                   activityType = ActivityType.Planting,
                   createdBy = user.userId,
                   createdTime = Instant.ofEpochSecond(1),
@@ -463,6 +470,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.NotVerified,
               activityTypeId = ActivityType.Planting,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -506,6 +514,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.Verified,
               activityTypeId = ActivityType.Planting,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -533,6 +542,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(activityId) { model -> model.copy(isVerified = false) }
 
+      record.activityStatusId = ActivityStatus.NotVerified
       record.modifiedTime = updateTime
       record.verifiedBy = null
       record.verifiedTime = null
