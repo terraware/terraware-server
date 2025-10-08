@@ -1563,7 +1563,13 @@ class ObservationStore(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
   ) {
-    val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<PlantingZoneId, List<Pair<Int, Int>>>> =
+    data class ZoneInfo(
+        val permanentLive: Int,
+        val totalLive: Int,
+        val cumulativeDead: Int,
+        val survivalRateIncludesTempPlots: Boolean,
+    )
+    val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<PlantingZoneId, List<ZoneInfo>>> =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
           val observationIdForSubzoneField =
               DSL.select(OBSERVATIONS.ID)
@@ -1599,23 +1605,39 @@ class ObservationStore(
                   PLANTING_SUBZONES.PLANTING_ZONE_ID.asNonNullable(),
                   PERMANENT_LIVE.asNonNullable(),
                   CUMULATIVE_DEAD.asNonNullable(),
+                  TOTAL_LIVE.asNonNullable(),
+                  PLANTING_SUBZONES.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable(),
               )
               .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
               .join(PLANTING_SUBZONES)
               .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
               .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
               .and(OBSERVATION_ID.eq(observationIdForSubzoneField))
-              .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).gt(0))
+              .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).plus(TOTAL_LIVE).gt(0))
               .fetch()
-              .groupBy { (certaintyId, speciesId, speciesName, _, _, _) ->
+              .groupBy { (certaintyId, speciesId, speciesName, _, _, _, _, _) ->
                 RecordedSpeciesKey(certaintyId, speciesId, speciesName)
               }
               .mapValues { (_, recordsForSpecies) ->
                 recordsForSpecies
-                    .groupBy { (_, _, _, plantingZoneId, _, _) -> plantingZoneId }
+                    .groupBy { (_, _, _, plantingZoneId, _, _, _, _) -> plantingZoneId }
                     .mapValues { (_, recordsForZone) ->
-                      recordsForZone.map { (_, _, _, _, permanentLive, cumulativeDead) ->
-                        permanentLive to cumulativeDead
+                      recordsForZone.map {
+                          (
+                              _,
+                              _,
+                              _,
+                              _,
+                              permanentLive,
+                              cumulativeDead,
+                              totalLive,
+                              survivalRateIncludesTempPlots) ->
+                        ZoneInfo(
+                            permanentLive,
+                            totalLive,
+                            cumulativeDead,
+                            survivalRateIncludesTempPlots,
+                        )
                       }
                     }
               }
@@ -1623,31 +1645,52 @@ class ObservationStore(
 
     liveAndDeadTotals.forEach { (speciesKey, zoneToLiveAndDead) ->
       zoneToLiveAndDead.forEach { (plantingZoneId, liveAndDeadForZone) ->
-        val totalLive = liveAndDeadForZone.sumOf { it.first }
-        val totalDead = liveAndDeadForZone.sumOf { it.second }
+        val totalPermanentLive = liveAndDeadForZone.sumOf { it.permanentLive }
+        val totalLive = liveAndDeadForZone.sumOf { it.totalLive }
+        val totalDead = liveAndDeadForZone.sumOf { it.cumulativeDead }
         val zoneMortalityRate =
             if (totalDead > 0) {
-              ((totalDead * 100.0) / (totalLive + totalDead).toDouble()).roundToInt()
+              ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
             } else {
               0
             }
 
         with(OBSERVED_ZONE_SPECIES_TOTALS) {
-          val survivalRateDenominator =
+          val updateScope = ObservationSpeciesZone(plantingZoneId)
+          val survivalRatePermanentDenominator =
               getSurvivalRateDenominator(
-                  ObservationSpeciesZone(plantingZoneId),
+                  updateScope,
                   PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
               )
-          val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+          val survivalRateTempDenominator =
+              getSurvivalRateTempDenominator(
+                  updateScope,
+                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+              )
+          val survivalRateDenominator =
+              DSL.coalesce(
+                  survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+                  survivalRatePermanentDenominator,
+                  survivalRateTempDenominator,
+              )
+          val survivalRate =
+              if (liveAndDeadForZone.first().survivalRateIncludesTempPlots) {
+                DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+              } else {
+                DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator)
+              }
 
           val rowsInserted =
               dslContext
                   .insertInto(OBSERVED_ZONE_SPECIES_TOTALS)
                   .set(CERTAINTY_ID, speciesKey.certainty)
                   .set(CUMULATIVE_DEAD, totalDead)
-                  .set(MORTALITY_RATE, zoneMortalityRate)
+                  .set(
+                      MORTALITY_RATE,
+                      if (totalDead > 0 && totalPermanentLive > 0) zoneMortalityRate else null,
+                  )
                   .set(OBSERVATION_ID, observationId)
-                  .set(PERMANENT_LIVE, totalLive)
+                  .set(PERMANENT_LIVE, totalPermanentLive)
                   .set(PLANTING_ZONE_ID, plantingZoneId)
                   .set(SPECIES_ID, speciesKey.id)
                   .set(SPECIES_NAME, speciesKey.name)
@@ -1658,8 +1701,12 @@ class ObservationStore(
             dslContext
                 .update(OBSERVED_ZONE_SPECIES_TOTALS)
                 .set(CUMULATIVE_DEAD, totalDead)
-                .set(MORTALITY_RATE, zoneMortalityRate)
-                .set(PERMANENT_LIVE, totalLive)
+                .set(
+                    MORTALITY_RATE,
+                    if (totalDead > 0 && totalPermanentLive > 0) DSL.inline(zoneMortalityRate)
+                    else MORTALITY_RATE,
+                )
+                .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(SURVIVAL_RATE, survivalRate)
                 .where(OBSERVATION_ID.eq(observationId))
                 .and(PLANTING_ZONE_ID.eq(plantingZoneId))
@@ -1671,22 +1718,40 @@ class ObservationStore(
         }
       }
 
-      val totalLive = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.first }
-      val totalDead = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.second }
+      val totalPermanentLive = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.permanentLive }
+      val totalLive = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.totalLive }
+      val totalDead = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.cumulativeDead }
       val siteMortalityRate =
           if (totalDead > 0) {
-            ((totalDead * 100.0) / (totalLive + totalDead).toDouble()).roundToInt()
+            ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
           } else {
             0
           }
 
       with(OBSERVED_SITE_SPECIES_TOTALS) {
-        val survivalRateDenominator =
+        val updateScope = ObservationSpeciesSite(plantingSiteId)
+        val survivalRatePermanentDenominator =
             getSurvivalRateDenominator(
-                ObservationSpeciesSite(plantingSiteId),
+                updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
             )
-        val survivalRate = DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+        val survivalRateTempDenominator =
+            getSurvivalRateTempDenominator(
+                updateScope,
+                PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+            )
+        val survivalRateDenominator =
+            DSL.coalesce(
+                survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+                survivalRatePermanentDenominator,
+                survivalRateTempDenominator,
+            )
+        val survivalRate =
+            if (zoneToLiveAndDead.flatMap { it.value }.first().survivalRateIncludesTempPlots) {
+              DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+            } else {
+              DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator)
+            }
 
         val rowsInserted =
             dslContext
@@ -1695,7 +1760,7 @@ class ObservationStore(
                 .set(CUMULATIVE_DEAD, totalDead)
                 .set(MORTALITY_RATE, siteMortalityRate)
                 .set(OBSERVATION_ID, observationId)
-                .set(PERMANENT_LIVE, totalLive)
+                .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(PLANTING_SITE_ID, plantingSiteId)
                 .set(SPECIES_ID, speciesKey.id)
                 .set(SPECIES_NAME, speciesKey.name)
@@ -1707,7 +1772,7 @@ class ObservationStore(
               .update(OBSERVED_SITE_SPECIES_TOTALS)
               .set(CUMULATIVE_DEAD, totalDead)
               .set(MORTALITY_RATE, siteMortalityRate)
-              .set(PERMANENT_LIVE, totalLive)
+              .set(PERMANENT_LIVE, totalPermanentLive)
               .set(SURVIVAL_RATE, survivalRate)
               .where(OBSERVATION_ID.eq(observationId))
               .and(PLANTING_SITE_ID.eq(plantingSiteId))
@@ -1721,12 +1786,6 @@ class ObservationStore(
   }
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
-    if (!isMonitoringPlotPermanent(monitoringPlotId)) {
-      throw IllegalStateException(
-          "Cannot recalculate survival rates for non permanent plot $monitoringPlotId"
-      )
-    }
-
     recalculateSurvivalRate(
         OBSERVED_PLOT_SPECIES_TOTALS,
         OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId),
@@ -1779,13 +1838,25 @@ class ObservationStore(
   ) {
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
-    val survivalRateDenominator =
+    val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
             updateScope,
             PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesIdField),
         )
+    val survivalRateTempDenominator =
+        getSurvivalRateTempDenominator(
+            updateScope,
+            PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesIdField),
+        )
+    val survivalRateDenominator =
+        DSL.coalesce(
+            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+            survivalRatePermanentDenominator,
+            survivalRateTempDenominator,
+        )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+    val totalLiveField = table.field("total_live", Int::class.java)!!
 
     dslContext
         .update(table)
@@ -1797,7 +1868,18 @@ class ObservationStore(
                     DSL.castNull(SQLDataType.INTEGER),
                 )
                 .else_(
-                    (permanentLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
+                    DSL.case_()
+                        .`when`(
+                            updateScope.observedTotalsPlantingSiteTempCondition,
+                            (totalLiveField
+                                .mul(BigDecimal.valueOf(100))
+                                .div(survivalRateDenominator)),
+                        )
+                        .else_(
+                            (permanentLiveField
+                                .mul(BigDecimal.valueOf(100))
+                                .div(survivalRateDenominator)),
+                        )
                 ),
         )
         .where(tableCondition)
@@ -1807,15 +1889,6 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     recalculateSurvivalRates(event.monitoringPlotId)
-  }
-
-  private fun isMonitoringPlotPermanent(monitoringPlotId: MonitoringPlotId): Boolean {
-    return with(MONITORING_PLOTS) {
-      dslContext.fetchExists(
-          this,
-          ID.eq(monitoringPlotId).and(PERMANENT_INDEX.isNotNull),
-      )
-    }
   }
 
   private fun deleteObservation(observationId: ObservationId) {
@@ -2427,6 +2500,7 @@ class ObservationStore(
               )
       )
 
+  // todo refactor the exists section for both of these
   private fun getSurvivalRateTempDenominator(
       updateScope: ObservationSpeciesScope,
       condition: Condition,
@@ -2445,6 +2519,20 @@ class ObservationStore(
                 .and(updateScope.tempZoneCondition)
                 .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
                 .and(MONITORING_PLOTS.PERMANENT_INDEX.isNull)
+                .and(
+                    DSL.exists(
+                        DSL.selectOne()
+                            .from(OBSERVATION_PLOTS)
+                            .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                            .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                            .and(
+                                DSL.or(
+                                    OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
+                                    updateScope.alternateCompletedCondition,
+                                )
+                            )
+                    )
+                )
         )
       }
 
