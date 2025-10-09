@@ -48,6 +48,7 @@ import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
@@ -393,6 +394,7 @@ internal class EmailNotificationServiceTest {
   private val activity =
       ExistingActivityModel(
           activityDate = LocalDate.of(2025, 1, 2),
+          activityStatus = ActivityStatus.Verified,
           activityType = ActivityType.SeedCollection,
           createdBy = acceleratorUserId,
           createdTime = Instant.EPOCH,

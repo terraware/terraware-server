@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -12,6 +13,7 @@ import org.jooq.Record
 
 data class ExistingActivityModel(
     val activityDate: LocalDate,
+    val activityStatus: ActivityStatus,
     val activityType: ActivityType,
     val createdBy: UserId,
     val createdTime: Instant,
@@ -24,7 +26,6 @@ data class ExistingActivityModel(
     val projectId: ProjectId,
     val verifiedBy: UserId? = null,
     val verifiedTime: Instant? = null,
-    val isVerified: Boolean = verifiedBy != null,
 ) {
   companion object {
     fun of(
@@ -34,6 +35,7 @@ data class ExistingActivityModel(
       return with(ACTIVITIES) {
         ExistingActivityModel(
             activityDate = record[ACTIVITY_DATE]!!,
+            activityStatus = record[ACTIVITY_STATUS_ID]!!,
             activityType = record[ACTIVITY_TYPE_ID]!!,
             createdBy = record[CREATED_BY]!!,
             createdTime = record[CREATED_TIME]!!,

@@ -577,6 +577,8 @@ COMMENT ON TABLE accelerator.activity_media_files IS 'Information about activity
 
 COMMENT ON TABLE accelerator.activity_media_types IS '(Enum) Types of media that can be associated with entries in the activity log.';
 
+COMMENT ON TABLE accelerator.activity_statuses IS '(Enum) Statuses of entries in the activity log.';
+
 COMMENT ON TABLE accelerator.activity_types IS '(Enum) Types of entries in the activity log.';
 
 COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';

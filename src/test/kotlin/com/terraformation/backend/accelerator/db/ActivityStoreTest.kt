@@ -15,6 +15,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
@@ -71,6 +72,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 1, 15),
+              activityStatusId = ActivityStatus.NotVerified,
               activityTypeId = ActivityType.SeedCollection,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -106,6 +108,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 1, 15),
+              activityStatusId = ActivityStatus.Verified,
               activityTypeId = ActivityType.SeedCollection,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
@@ -169,6 +172,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           ExistingActivityModel(
               activityDate = LocalDate.of(2024, 2, 20),
+              activityStatus = ActivityStatus.NotVerified,
               activityType = ActivityType.Monitoring,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -216,6 +220,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val expected =
           ExistingActivityModel(
               activityDate = LocalDate.of(2024, 2, 20),
+              activityStatus = ActivityStatus.NotVerified,
               activityType = ActivityType.Monitoring,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -311,6 +316,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ExistingActivityModel(
                   activityDate = LocalDate.of(2024, 2, 20),
+                  activityStatus = ActivityStatus.NotVerified,
                   activityType = ActivityType.Monitoring,
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
@@ -339,6 +345,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ExistingActivityModel(
                   activityDate = LocalDate.of(2024, 3, 21),
+                  activityStatus = ActivityStatus.NotVerified,
                   activityType = ActivityType.Planting,
                   createdBy = user.userId,
                   createdTime = Instant.ofEpochSecond(1),
@@ -455,14 +462,15 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             activityDate = LocalDate.of(2024, 2, 1),
             description = "Updated description",
             // Updates to admin-only fields should be ignored.
+            activityStatus = ActivityStatus.Verified,
             isHighlight = true,
-            isVerified = true,
         )
       }
 
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.NotVerified,
               activityTypeId = ActivityType.Planting,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -495,17 +503,18 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(activityId) { existing ->
         existing.copy(
+            activityStatus = ActivityStatus.Verified,
             activityType = ActivityType.Planting,
             activityDate = LocalDate.of(2024, 2, 1),
             description = "Updated description",
             isHighlight = true,
-            isVerified = true,
         )
       }
 
       assertTableEquals(
           ActivitiesRecord(
               activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.Verified,
               activityTypeId = ActivityType.Planting,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -522,7 +531,47 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `clears verifiedBy and verifiedTime if isVerified goes from true to false`() {
+    fun `sets verifiedBy and verifiedTime if status goes from NotVerified to Verified`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val activityId = insertActivity()
+      val record = dslContext.fetchOne(ACTIVITIES)!!
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+
+      record.activityStatusId = ActivityStatus.Verified
+      record.modifiedTime = updateTime
+      record.verifiedBy = user.userId
+      record.verifiedTime = updateTime
+
+      assertTableEquals(record)
+    }
+
+    @Test
+    fun `sets verifiedBy and verifiedTime if status goes from DoNotUse to Verified`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val activityId = insertActivity(activityStatus = ActivityStatus.DoNotUse)
+      val record = dslContext.fetchOne(ACTIVITIES)!!
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+
+      record.activityStatusId = ActivityStatus.Verified
+      record.modifiedTime = updateTime
+      record.verifiedBy = user.userId
+      record.verifiedTime = updateTime
+
+      assertTableEquals(record)
+    }
+
+    @Test
+    fun `clears verifiedBy and verifiedTime if status goes from Verified to NotVerified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       val activityId = insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
@@ -531,8 +580,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(isVerified = false) }
+      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.NotVerified) }
 
+      record.activityStatusId = ActivityStatus.NotVerified
       record.modifiedTime = updateTime
       record.verifiedBy = null
       record.verifiedTime = null
@@ -541,7 +591,27 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `leaves verifiedBy and verifiedTime alone if isVerified remains true`() {
+    fun `clears verifiedBy and verifiedTime if status goes from Verified to DoNotUse`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val activityId = insertActivity(verifiedBy = user.userId, verifiedTime = Instant.EPOCH)
+      val record = dslContext.fetchOne(ACTIVITIES)!!
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.DoNotUse) }
+
+      record.activityStatusId = ActivityStatus.DoNotUse
+      record.modifiedTime = updateTime
+      record.verifiedBy = null
+      record.verifiedTime = null
+
+      assertTableEquals(record)
+    }
+
+    @Test
+    fun `leaves verifiedBy and verifiedTime alone if status remains Verified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       val otherUserId = insertUser()
 

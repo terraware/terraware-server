@@ -20,6 +20,7 @@ val ENUM_TABLES =
     mapOf(
         "accelerator" to
             listOf(
+                EnumTable("activity_statuses"),
                 EnumTable("activity_types"),
                 EnumTable("activity_media_types", isLocalizable = false),
                 EnumTable("application_module_statuses"),
