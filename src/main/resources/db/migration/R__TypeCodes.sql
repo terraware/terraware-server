@@ -31,12 +31,13 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.activity_types (id, name)
 VALUES (1, 'Seed Collection'),
-       (2, 'Nursery'),
+       (2, 'Nursery and Propagule Operations'),
        (3, 'Planting'),
        (4, 'Monitoring'),
        (5, 'Site Visit'),
-       (6, 'Stakeholder Engagement'),
-       (7, 'Drone Flight')
+       (6, 'Social Impact'),
+       (7, 'Drone Flight'),
+       (8, 'Others')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.application_module_statuses (id, name)
