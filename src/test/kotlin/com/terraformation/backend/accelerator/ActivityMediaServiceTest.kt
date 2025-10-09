@@ -23,15 +23,13 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.VideoStreamNotFoundException
-import com.terraformation.backend.file.event.FileDeletionStartedEvent
-import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
@@ -336,16 +334,12 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class DeleteMedia {
     @Test
-    fun `deletes media file and removes from storage`() {
+    fun `deletes media file`() {
       val fileId = storeMedia("pixel.png", pngMetadata)
-      val storageUrl = filesDao.fetchOneById(fileId)!!.storageUrl!!
 
       service.deleteMedia(activityId, fileId)
 
-      assertTableEmpty(FILES)
-      assertEquals(emptyList<ActivityMediaFilesRow>(), activityMediaFilesDao.findAll())
-      fileStore.assertFileWasDeleted(storageUrl)
-      eventPublisher.assertEventNotPublished<VideoFileDeletedEvent>()
+      assertTableEmpty(ACTIVITY_MEDIA_FILES)
     }
 
     @Test
@@ -377,12 +371,12 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `publishes video deleted event if file was a video`() {
+    fun `publishes reference deleted event`() {
       val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
 
       service.deleteMedia(activityId, fileId)
 
-      eventPublisher.assertEventPublished(VideoFileDeletedEvent(fileId))
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
     }
 
     @Test
@@ -442,13 +436,12 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     val videoFileId = storeMedia("videoHeaderOnly.mp4", mp4Metadata)
 
     val activity2Id = insertActivity()
-    val activity2FileId = storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
+    storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
 
     eventPublisher.clear()
 
     service.on(ActivityDeletionStartedEvent(activityId))
 
-    assertEquals(listOf(activity2FileId), filesDao.findAll().map { it.id }, "Remaining file IDs")
     assertEquals(
         listOf(activity2Id),
         activityMediaFilesDao.findAll().map { it.activityId },
@@ -457,9 +450,8 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     eventPublisher.assertExactEventsPublished(
         setOf(
-            FileDeletionStartedEvent(imageFileId),
-            FileDeletionStartedEvent(videoFileId),
-            VideoFileDeletedEvent(videoFileId),
+            FileReferenceDeletedEvent(imageFileId),
+            FileReferenceDeletedEvent(videoFileId),
         )
     )
 
@@ -476,13 +468,19 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     val otherProjectId = insertProject(otherOrgId)
     val otherActivityId = insertActivity(projectId = otherProjectId)
 
-    storeMedia("pixel.png", pngMetadata)
-    storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
-    val otherOrgFileId = storeMedia("photoWithGps.jpg", jpegMetadata, otherActivityId)
+    val fileId1 = storeMedia("pixel.png", pngMetadata)
+    val fileId2 = storeMedia("photoWithDate.jpg", jpegMetadata, activity2Id)
+    storeMedia("photoWithGps.jpg", jpegMetadata, otherActivityId)
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 
-    assertEquals(listOf(otherOrgFileId), filesDao.findAll().map { it.id }, "Remaining file IDs")
+    eventPublisher.assertExactEventsPublished(
+        setOf(
+            FileReferenceDeletedEvent(fileId1),
+            FileReferenceDeletedEvent(fileId2),
+        )
+    )
+
     assertEquals(
         listOf(otherActivityId),
         activityMediaFilesDao.findAll().map { it.activityId },

@@ -184,9 +184,7 @@ class ActivityMediaService(
   fun deleteMedia(activityId: ActivityId, fileId: FileId) {
     requirePermissions { updateActivity(activityId) }
 
-    activityMediaStore.ensureFileExists(activityId, fileId)
-
-    fileService.deleteFile(fileId) { activityMediaStore.deleteFromDatabase(activityId, fileId) }
+    activityMediaStore.deleteFromDatabase(activityId, fileId)
   }
 
   @EventListener
@@ -201,9 +199,7 @@ class ActivityMediaService(
 
   private fun deleteFiles(mediaFiles: List<ActivityMediaModel>) {
     mediaFiles.forEach { mediaFile ->
-      fileService.deleteFile(mediaFile.fileId) {
-        activityMediaStore.deleteFromDatabase(mediaFile.activityId, mediaFile.fileId)
-      }
+      activityMediaStore.deleteFromDatabase(mediaFile.activityId, mediaFile.fileId)
     }
   }
 

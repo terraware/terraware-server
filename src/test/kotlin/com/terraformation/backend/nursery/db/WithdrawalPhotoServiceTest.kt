@@ -15,6 +15,7 @@ import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
@@ -51,6 +52,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val service: WithdrawalPhotoService by lazy {
     WithdrawalPhotoService(
         dslContext,
+        eventPublisher,
         fileService,
         ImageUtils(fileStore),
         thumbnailService,
@@ -139,8 +141,8 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `handler for OrganizationDeletionStartedEvent deletes photos for all withdrawals in organization`() {
-    storePhoto()
-    storePhoto()
+    val fileId1 = storePhoto()
+    val fileId2 = storePhoto()
 
     val facilityId2 = insertFacility(type = FacilityType.Nursery)
     val facility2WithdrawalId = insertNurseryWithdrawal(facilityId = facilityId2)
@@ -153,11 +155,17 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 
-    assertEquals(listOf(otherOrgfileId), filesDao.findAll().map { it.id }, "Remaining photo IDs")
     assertEquals(
         listOf(WithdrawalPhotosRow(fileId = otherOrgfileId, withdrawalId = otherOrgWithdrawalId)),
         withdrawalPhotosDao.findAll(),
         "Remaining withdrawal photos",
+    )
+
+    eventPublisher.assertEventsPublished(
+        setOf(
+            FileReferenceDeletedEvent(fileId1),
+            FileReferenceDeletedEvent(fileId2),
+        )
     )
 
     assertIsEventListener<OrganizationDeletionStartedEvent>(service)

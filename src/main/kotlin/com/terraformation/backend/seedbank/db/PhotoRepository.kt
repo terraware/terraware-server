@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -22,6 +24,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.file.NoSuchFileException
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /** Manages storage of accession photos. */
@@ -29,6 +32,7 @@ import org.springframework.context.event.EventListener
 class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
     private val thumbnailService: ThumbnailService,
@@ -36,7 +40,7 @@ class PhotoRepository(
   private val log = perClassLogger()
 
   @Throws(IOException::class)
-  fun storePhoto(accessionId: AccessionId, data: InputStream, metadata: NewFileMetadata) {
+  fun storePhoto(accessionId: AccessionId, data: InputStream, metadata: NewFileMetadata): FileId {
     requirePermissions { uploadPhoto(accessionId) }
 
     val fileId =
@@ -56,8 +60,11 @@ class PhotoRepository(
         .forEach { oldFileId ->
           log.info("Deleting earlier file $oldFileId for accession $accessionId photo $filename")
           // Deletes all rows and files except for the one with the highest ID.
-          fileService.deleteFile(oldFileId) { accessionPhotosDao.deleteById(oldFileId) }
+          accessionPhotosDao.deleteById(oldFileId)
+          eventPublisher.publishEvent(FileReferenceDeletedEvent(oldFileId))
         }
+
+    return fileId
   }
 
   @Throws(IOException::class)
@@ -101,7 +108,8 @@ class PhotoRepository(
     fetchFilesRows(accessionId, filename)
         .mapNotNull { it.id }
         .forEach { fileId ->
-          fileService.deleteFile(fileId) { accessionPhotosDao.deleteById(fileId) }
+          accessionPhotosDao.deleteById(fileId)
+          eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
         }
   }
 
@@ -117,7 +125,8 @@ class PhotoRepository(
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .fetch(ACCESSION_PHOTOS.FILE_ID.asNonNullable())
         .forEach { fileId ->
-          fileService.deleteFile(fileId) { accessionPhotosDao.deleteById(fileId) }
+          accessionPhotosDao.deleteById(fileId)
+          eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
         }
   }
 

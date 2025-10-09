@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.SystemUser
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotos
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import io.mockk.every
 import io.mockk.mockk
@@ -37,12 +39,14 @@ import org.springframework.security.access.AccessDeniedException
 class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
+  private val eventPublisher = TestEventPublisher()
   private val reportStore = mockk<ReportStore>()
   private val fileService = mockk<FileService>()
 
   private val service: ReportService by lazy {
     ReportService(
         dslContext,
+        eventPublisher,
         fileService,
         reportPhotosDao,
         reportStore,
@@ -71,11 +75,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPublishedReport()
 
     every { reportStore.publishReport(any()) } returns Unit
-    every { fileService.deleteFile(any(), any()) } answers
-        {
-          val func = secondArg<(() -> Unit)?>()
-          func?.let { it() }
-        }
     every { fileService.storeFile(any(), any(), any(), any(), any()) } answers
         {
           val func = arg<((fileId: FileId) -> Unit)?>(4)
@@ -160,7 +159,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportPhoto()
 
       service.deleteReportPhoto(reportId, deletedFileId)
-      verify(exactly = 1) { fileService.deleteFile(any(), any()) }
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(deletedFileId))
 
       assertTableEquals(
           listOf(ReportPhotosRecord(reportId = reportId, fileId = existingFileId, deleted = false))
@@ -179,7 +178,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportPhoto()
 
       service.deleteReportPhoto(reportId, deletedFileId)
-      verify(exactly = 0) { fileService.deleteFile(any(), any()) }
+      eventPublisher.assertEventNotPublished<FileReferenceDeletedEvent>()
 
       assertTableEquals(
           listOf(

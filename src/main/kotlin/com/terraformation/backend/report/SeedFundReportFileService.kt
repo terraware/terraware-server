@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportP
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.SeedFundReportStore
@@ -20,10 +21,12 @@ import com.terraformation.backend.report.model.SeedFundReportFileModel
 import com.terraformation.backend.report.model.SeedFundReportPhotoModel
 import jakarta.inject.Named
 import java.io.InputStream
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
 class SeedFundReportFileService(
+    private val eventPublisher: ApplicationEventPublisher,
     private val filesDao: FilesDao,
     private val fileService: FileService,
     private val seedFundReportStore: SeedFundReportStore,
@@ -113,7 +116,8 @@ class SeedFundReportFileService(
 
     val row = fetchPhotosRow(reportId, fileId)
 
-    fileService.deleteFile(fileId) { seedFundReportPhotosDao.delete(row) }
+    seedFundReportPhotosDao.delete(row)
+    eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
   }
 
   fun deleteFile(reportId: SeedFundReportId, fileId: FileId) {
@@ -121,7 +125,8 @@ class SeedFundReportFileService(
 
     val row = fetchFilesRow(reportId, fileId)
 
-    fileService.deleteFile(fileId) { seedFundReportFilesDao.delete(row) }
+    seedFundReportFilesDao.delete(row)
+    eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
   }
 
   @EventListener

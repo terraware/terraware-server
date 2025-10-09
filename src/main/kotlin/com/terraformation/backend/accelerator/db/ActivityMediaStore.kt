@@ -13,7 +13,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
-import com.terraformation.backend.file.event.VideoFileDeletedEvent
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -158,22 +158,16 @@ class ActivityMediaStore(
     withLockedActivity(activityId) {
       ensureFileExists(activityId, fileId)
 
-      with(ACTIVITY_MEDIA_FILES) {
-        val mediaType =
-            dslContext
-                .deleteFrom(ACTIVITY_MEDIA_FILES)
-                .where(FILE_ID.eq(fileId))
-                .returning(ACTIVITY_MEDIA_TYPE_ID)
-                .fetchOne(ACTIVITY_MEDIA_TYPE_ID)
+      dslContext
+          .deleteFrom(ACTIVITY_MEDIA_FILES)
+          .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+          .execute()
 
-        if (mediaType == ActivityMediaType.Video) {
-          eventPublisher.publishEvent(VideoFileDeletedEvent(fileId))
-        }
+      updateListPositions(activityId, fetchFileIds(activityId))
 
-        updateListPositions(activityId, fetchFileIds(activityId))
+      markActivityModified(activityId)
 
-        markActivityModified(activityId)
-      }
+      eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
     }
   }
 

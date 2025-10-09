@@ -13,6 +13,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
+import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
@@ -23,6 +24,7 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
@@ -30,6 +32,7 @@ class BatchPhotoService(
     private val batchPhotosDao: BatchPhotosDao,
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val imageUtils: ImageUtils,
     private val thumbnailService: ThumbnailService,
@@ -85,16 +88,16 @@ class BatchPhotoService(
 
     requirePermissions { updateBatch(batchId) }
 
-    fileService.deleteFile(fileId) {
-      dslContext
-          .update(BATCH_PHOTOS)
-          .set(BATCH_PHOTOS.DELETED_BY, currentUser().userId)
-          .set(BATCH_PHOTOS.DELETED_TIME, clock.instant())
-          .setNull(BATCH_PHOTOS.FILE_ID)
-          .where(BATCH_PHOTOS.BATCH_ID.eq(batchId))
-          .and(BATCH_PHOTOS.FILE_ID.eq(fileId))
-          .execute()
-    }
+    dslContext
+        .update(BATCH_PHOTOS)
+        .set(BATCH_PHOTOS.DELETED_BY, currentUser().userId)
+        .set(BATCH_PHOTOS.DELETED_TIME, clock.instant())
+        .setNull(BATCH_PHOTOS.FILE_ID)
+        .where(BATCH_PHOTOS.BATCH_ID.eq(batchId))
+        .and(BATCH_PHOTOS.FILE_ID.eq(fileId))
+        .execute()
+
+    eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
   }
 
   /** Deletes all the photos from all the batches owned by an organization. */
@@ -135,7 +138,8 @@ class BatchPhotoService(
           .fetch()
           .forEach { (batchPhotoId, fileId) ->
             if (fileId != null) {
-              fileService.deleteFile(fileId) { batchPhotosDao.deleteById(batchPhotoId) }
+              batchPhotosDao.deleteById(batchPhotoId)
+              eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
             } else {
               // The photo file is already deleted, but we kept a record of its history.
               batchPhotosDao.deleteById(batchPhotoId)

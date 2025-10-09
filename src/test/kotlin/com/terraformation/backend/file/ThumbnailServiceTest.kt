@@ -56,7 +56,7 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
 
       every { thumbnailStore.deleteThumbnails(fileId) } just Runs
 
-      service.on(FileDeletionStartedEvent(fileId))
+      service.on(FileDeletionStartedEvent(fileId, MediaType.IMAGE_JPEG_VALUE))
 
       verify { thumbnailStore.deleteThumbnails(fileId) }
       confirmVerified(thumbnailStore)
