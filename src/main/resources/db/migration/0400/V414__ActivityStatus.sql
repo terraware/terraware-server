@@ -23,7 +23,8 @@ ALTER TABLE accelerator.activities
 ALTER TABLE accelerator.activities
     ADD CONSTRAINT activity_status_verified
     CHECK (
-        (verified_by IS NULL AND activity_status_id = 1)
-            OR (verified_by IS NOT NULL AND activity_status_id = 2)
-            OR (activity_status_id = 3)
-        );
+        CASE activity_status_id
+            WHEN 2 THEN verified_by IS NOT NULL
+            ELSE verified_by IS NULL
+        END
+    )
