@@ -779,7 +779,8 @@ class NestedQueryBuilder(
     } else if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
-      val sublistQuery = getSublistQuery(relativeField, criteria[fieldPath.prefix])
+      val sublistQuery =
+          getSublistQuery(relativeField, criteria[prefix.relativeSublistPrefix(sublistName)])
       sublistQuery.addSelectField(fieldPath, criteria)
       selectFieldPositions.computeIfAbsent(sublistName) { nextSelectFieldPosition++ }
     } else {

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
@@ -117,6 +118,62 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
             prefix,
             fields,
             mapOf(prefix to NoConditionNode()),
+        )
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `retrieves user details correctly when internal users are filtered`() {
+    // this tests the ability to filter on a sublist field when there are flattened fields in the
+    // sublist
+
+    val project1 = insertProject()
+    insertUser(firstName = "Project", lastName = "Lead")
+    insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
+    insertUser(firstName = "Restoration", lastName = "Lead")
+    insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
+    val project2 = insertProject()
+
+    val prefix = SearchFieldPrefix(searchTables.projects)
+    val fields =
+        listOf(
+                "id",
+                "name",
+                "internalUsers.user_firstName",
+                "internalUsers.user_lastName",
+            )
+            .map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$project1",
+                    "name" to "Project 1",
+                    "internalUsers" to
+                        listOf(
+                            mapOf(
+                                "user_firstName" to "Project",
+                                "user_lastName" to "Lead",
+                            )
+                        ),
+                ),
+                mapOf(
+                    "id" to "$project2",
+                    "name" to "Project 2",
+                ),
+            )
+        )
+
+    val actual =
+        searchService.search(
+            prefix,
+            fields,
+            mapOf(
+                prefix.relativeSublistPrefix("internalUsers")!! to
+                    FieldNode(prefix.resolve("internalUsers.role"), listOf("Project Lead"))
+            ),
         )
 
     assertJsonEquals(expected, actual)
