@@ -2420,7 +2420,7 @@ class ObservationStore(
       DSL.exists(
           DSL.selectOne()
               .from(
-                  DSL.select(OBSERVATION_PLOTS.OBSERVATION_ID, OBSERVATION_PLOTS.IS_PERMANENT)
+                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
                       .from(OBSERVATION_PLOTS)
                       .where(
                           OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
