@@ -2419,15 +2419,25 @@ class ObservationStore(
   ): Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
-              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
-              .and(
-                  DSL.or(
-                      OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull,
-                      alternateCompleteCondition,
-                  )
+              .from(
+                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
+                      .from(OBSERVATION_PLOTS)
+                      .where(
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
+                              .and(
+                                  OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull.or(
+                                      alternateCompleteCondition
+                                  )
+                              )
+                      )
+                      .orderBy(
+                          OBSERVATION_PLOTS.COMPLETED_TIME.desc().nullsFirst(),
+                          OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
+                      )
+                      .limit(1)
+                      .asTable("most_recent")
               )
+              .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
       )
 
   private fun <ID : Any> getSurvivalRateDenominator(
@@ -2465,7 +2475,6 @@ class ObservationStore(
                 .where(condition)
                 .and(updateScope.tempZoneCondition)
                 .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-                .and(MONITORING_PLOTS.PERMANENT_INDEX.isNull)
                 .and(
                     plotHasCompletedObservations(
                         MONITORING_PLOTS.ID,

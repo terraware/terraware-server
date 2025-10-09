@@ -88,6 +88,50 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate is 0 if plot is no longer permanent`() {
+    val observation2 = insertObservation()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+
+    val speciesId = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.TEN.toPlantsPerHectare())
+    val recordedPlants =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        recordedPlants,
+    )
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(30),
+        recordedPlants,
+    )
+
+    assertSurvivalRates(
+        listOf(
+            mapOf(plotId to mapOf(speciesId to 0)),
+            mapOf(subzoneId to mapOf(speciesId to 0, null to 0)),
+            mapOf(zoneId to mapOf(speciesId to 0, null to 0)),
+            mapOf(plantingSiteId to mapOf(speciesId to 0, null to 0)),
+        ),
+        "All survival rates should be 0",
+    )
+  }
+
+  @Test
   fun `survival rate is calculated for a plot using plot density`() {
     val speciesId1 = insertSpecies()
     insertPlotT0Density(plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare())
