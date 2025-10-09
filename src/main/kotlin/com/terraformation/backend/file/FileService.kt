@@ -3,23 +3,16 @@ package com.terraformation.backend.file
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
+import com.terraformation.backend.db.DefaultCatalog
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
-import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
-import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
-import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_FILES
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
-import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
-import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
-import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
+import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
+import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -52,23 +45,16 @@ class FileService(
   private val log = perClassLogger()
 
   /**
-   * Fields that count as references to files. If a file isn't referenced in any of these, it will
-   * be deleted from the file store. This doesn't necessarily include all the foreign-key
-   * relationships with the files table, just ones whose presence should cause the file to be
-   * considered still in use. For example, thumbnails aren't included here.
+   * Fields that are foreign key references to the files table but that should not count as active
+   * references when we're scanning to see if a file is still in use anywhere. These will typically
+   * be for things that are derived from the file and should be deleted when the file is deleted,
+   * e.g., thumbnails.
    */
-  private val referencingFields: Collection<TableField<*, FileId?>> =
-      listOf(
-          ACCESSION_PHOTOS.FILE_ID,
-          ACTIVITY_MEDIA_FILES.FILE_ID,
-          BATCH_PHOTOS.FILE_ID,
-          OBSERVATION_PHOTOS.FILE_ID,
-          PUBLISHED_REPORT_PHOTOS.FILE_ID,
-          REPORT_PHOTOS.FILE_ID,
-          SEED_FUND_REPORT_FILES.FILE_ID,
-          SUBMISSION_SNAPSHOTS.FILE_ID,
-          VARIABLE_IMAGE_VALUES.FILE_ID,
-          WITHDRAWAL_PHOTOS.FILE_ID,
+  private val inactiveReferringFields =
+      setOf(
+          FILE_ACCESS_TOKENS.FILE_ID,
+          MUX_ASSETS.FILE_ID,
+          THUMBNAILS.FILE_ID,
       )
 
   /**
@@ -231,10 +217,30 @@ class FileService(
   /** Returns true if a file is referenced by any application-specific entities. */
   private fun isReferenced(fileId: FileId): Boolean {
     val existsConditions =
-        referencingFields.map { field ->
+        activeReferringFields.map { field ->
           DSL.exists(DSL.selectOne().from(field.table).where(field.eq(fileId)))
         }
 
     return dslContext.select(DSL.or(existsConditions)).fetchSingle().value1()
+  }
+
+  /**
+   * Fields that count as active references to files. If a file is referenced in any of these, it
+   * will not be deleted from the file store by the [FileReferenceDeletedEvent] handler.
+   *
+   * This doesn't necessarily include all the foreign-key relationships with the files table, just
+   * ones whose presence should cause the file to be considered still in use. The fields in
+   * [inactiveReferringFields] are excluded from this list.
+   */
+  @Suppress("UNCHECKED_CAST")
+  private val activeReferringFields: Collection<TableField<*, FileId?>> by lazy {
+    DefaultCatalog.DEFAULT_CATALOG.schemas.flatMap { schema ->
+      schema.tables.flatMap { table ->
+        table.references
+            .filter { reference -> reference.key.fields == listOf(FILES.ID) }
+            .map { it.fields.first() as TableField<*, FileId?> }
+            .filterNot { it in inactiveReferringFields }
+      }
+    }
   }
 }

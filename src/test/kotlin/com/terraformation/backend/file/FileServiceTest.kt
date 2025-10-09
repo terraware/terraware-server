@@ -269,6 +269,35 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `ignores references that should not prevent file deletion`() {
+      val photoData = Random.nextBytes(10)
+
+      every { random.nextLong() } returns 2L
+      val fileIdToDelete =
+          fileService.storeFile(
+              "category",
+              photoData.inputStream(),
+              metadata.copy(filename = "2.jpg"),
+          ) {}
+
+      dslContext.batchInsert(
+          FileAccessTokensRecord("token", fileIdToDelete, user.userId, Instant.EPOCH, Instant.EPOCH)
+      )
+
+      val urlToDelete = filesDao.fetchOneById(fileIdToDelete)!!.storageUrl!!
+
+      fileService.on(FileReferenceDeletedEvent(fileIdToDelete))
+
+      eventPublisher.assertEventPublished(FileDeletionStartedEvent(fileIdToDelete, "image/jpeg"))
+
+      assertThrows<NoSuchFileException>("$urlToDelete should be deleted") {
+        fileStore.size(urlToDelete)
+      }
+
+      assertTableEmpty(FILES)
+    }
+
+    @Test
     fun `listens for event`() {
       assertIsEventListener<FileReferenceDeletedEvent>(fileService)
     }
