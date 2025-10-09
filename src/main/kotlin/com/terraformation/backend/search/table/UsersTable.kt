@@ -65,6 +65,16 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                     ),
                     DSL.exists(
                         DSL.selectOne()
+                            .from(PROJECT_INTERNAL_USERS)
+                            .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
+                            .and(
+                                currentUser().canReadAllAcceleratorDetails().let {
+                                  if (it) DSL.trueCondition() else DSL.falseCondition()
+                                }
+                            )
+                    ),
+                    DSL.exists(
+                        DSL.selectOne()
                             .from(PROJECTS)
                             .join(PROJECT_INTERNAL_USERS)
                             .on(PROJECTS.ID.eq(PROJECT_INTERNAL_USERS.PROJECT_ID))

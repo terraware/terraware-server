@@ -1,6 +1,9 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
@@ -28,8 +31,8 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
   @BeforeEach
   fun insertOtherUsers() {
     deviceManagerUserId = insertUser(type = UserType.DeviceManager)
-    bothOrgsUserId = insertUser()
-    otherOrgUserId = insertUser()
+    bothOrgsUserId = insertUser(firstName = "User 1")
+    otherOrgUserId = insertUser(firstName = "User 2")
 
     otherOrganizationId = insertOrganization()
 
@@ -105,7 +108,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val userOrganizationIdField = usersPrefix.resolve("organizationMemberships_organization_id")
 
     val fields = listOf(userIdField, userOrganizationIdField)
-    val sortOrder = fields.map { SearchSortField(it) }
+    val sortOrder = listOf(SearchSortField(usersPrefix.resolve("firstName")))
 
     val expected =
         SearchResults(
@@ -188,5 +191,39 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val actual =
         searchService.search(membersPrefix, fields, mapOf(membersPrefix to criteria), sortOrder)
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `should be able to retrieve internal users that are not in the same org`() {
+    every { user.canReadAllAcceleratorDetails() } returns true
+
+    val projectId = insertProject(organizationId = organizationId)
+    insertOrganizationInternalTag(
+        organizationId = organizationId,
+        tagId = InternalTagIds.Accelerator,
+    )
+    insertProjectInternalUser(userId = bothOrgsUserId, role = ProjectInternalRole.RegionalExpert)
+    insertProjectInternalUser(userId = otherOrgUserId, role = ProjectInternalRole.GISLead)
+
+    val prefix = SearchFieldPrefix(tables.projects)
+    val fields = listOf("id", "internalUsers.user_id").map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$projectId",
+                    "internalUsers" to
+                        listOf(
+                            mapOf("user_id" to "$bothOrgsUserId"),
+                            mapOf("user_id" to "$otherOrgUserId"),
+                        ),
+                )
+            )
+        )
+
+    val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+
+    assertJsonEquals(expected, actual)
   }
 }
