@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
@@ -311,7 +312,7 @@ class T0Store(
             .execute()
       }
 
-      // future PR: publish event here for recalculating
+      eventPublisher.publishEvent(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
     }
 
     val newDensities = densities.associate { it.speciesId to it.density }

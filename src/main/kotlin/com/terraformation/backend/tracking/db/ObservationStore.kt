@@ -67,6 +67,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -1860,6 +1861,11 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     recalculateSurvivalRates(event.monitoringPlotId)
+  }
+
+  @EventListener
+  fun on(event: T0ZoneDataAssignedEvent) {
+    recalculateSurvivalRates(event.plantingZoneId)
   }
 
   private fun deleteObservation(observationId: ObservationId) {
