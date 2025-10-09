@@ -1,3 +1,4 @@
+b7c99b6a865 Update survival rate denominator check for permanence (#3483)
 070e9908451 Use event-based flow to delete unreferenced files (#3481)
 ffe8b36c8a0 SW-7512 Allow download of raw activity media files (#3482)
 203356bbc73 Refactor to utilize ObservationSpeciesScope more (#3479)
