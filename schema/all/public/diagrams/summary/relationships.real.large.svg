@@ -6497,9 +6497,9 @@
 <!-- accelerator.project_overall_scores&#45;&gt;projects -->
 <g id="edge34" class="edge">
 <title>accelerator.project_overall_scores:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1317.98,-1213.72C1275.34,-1225.37 1307.76,-1294.22 1301,-1352 1264.81,-1661.13 1278.25,-3841.92 1268,-4153 1262.15,-4330.72 1359.32,-5751 1181.5,-5751"/>
-<polygon fill="black" stroke="black" points="1324.56,-1212.94 1332.92,-1215.58 1328.53,-1212.47 1332.5,-1212 1332.5,-1212 1332.5,-1212 1328.53,-1212.47 1332.08,-1208.42 1324.56,-1212.94 1324.56,-1212.94"/>
-<ellipse fill="none" stroke="black" cx="1321.38" cy="-1213.31" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1318,-1214.06C1284.16,-1225.43 1307.6,-1281.89 1301,-1330 1258.38,-1640.78 1278.31,-3839.48 1268,-4153 1262.15,-4330.72 1359.32,-5751 1181.5,-5751"/>
+<polygon fill="black" stroke="black" points="1324.58,-1213.12 1333.01,-1215.56 1328.54,-1212.56 1332.5,-1212 1332.5,-1212 1332.5,-1212 1328.54,-1212.56 1331.99,-1208.44 1324.58,-1213.12 1324.58,-1213.12"/>
+<ellipse fill="none" stroke="black" cx="1321.41" cy="-1213.57" rx="3.2" ry="3.2"/>
 </g>
 <!-- seedbank.accession_photos -->
 <g id="node131" class="node">
@@ -7993,48 +7993,50 @@
 <g id="node158" class="node">
 <title>accelerator.activities</title>
 <g id="a_node158"><a xlink:href="../../../accelerator/tables/activities.html" xlink:title="accelerator.activities" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1371.5,-1363 1371.5,-1667 1541.5,-1667 1541.5,-1363 1371.5,-1363"/>
+<polygon fill="#ffffff" stroke="transparent" points="1371.5,-1341 1371.5,-1667 1541.5,-1667 1541.5,-1341 1371.5,-1341"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1371.5,-1645 1371.5,-1667 1541.5,-1667 1541.5,-1645 1371.5,-1645"/>
 <polygon fill="none" stroke="black" points="1371.5,-1645 1371.5,-1667 1541.5,-1667 1541.5,-1645 1371.5,-1645"/>
 <text text-anchor="start" x="1376.5" y="-1654.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.activities</text>
 <text text-anchor="start" x="1502.5" y="-1653.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="1371.5,-1623 1371.5,-1645 1541.5,-1645 1541.5,-1623 1371.5,-1623"/>
-<text text-anchor="start" x="1420.5" y="-1631.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="1414.5" y="-1631.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="1371.5,-1601 1371.5,-1623 1541.5,-1623 1541.5,-1601 1371.5,-1601"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1376.5" y="-1618"/>
-<text text-anchor="start" x="1420.5" y="-1609.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="1414.5" y="-1609.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="1371.5,-1579 1371.5,-1601 1541.5,-1601 1541.5,-1579 1371.5,-1579"/>
-<text text-anchor="start" x="1420.5" y="-1587.2" font-family="Helvetica,sans-Serif" font-size="11.00">activity_type_id</text>
+<text text-anchor="start" x="1414.5" y="-1587.2" font-family="Helvetica,sans-Serif" font-size="11.00">activity_type_id</text>
 <polygon fill="none" stroke="black" points="1371.5,-1557 1371.5,-1579 1541.5,-1579 1541.5,-1557 1371.5,-1557"/>
-<text text-anchor="start" x="1420.5" y="-1565.2" font-family="Helvetica,sans-Serif" font-size="11.00">activity_date</text>
+<text text-anchor="start" x="1414.5" y="-1565.2" font-family="Helvetica,sans-Serif" font-size="11.00">activity_date</text>
 <polygon fill="none" stroke="black" points="1371.5,-1535 1371.5,-1557 1541.5,-1557 1541.5,-1535 1371.5,-1535"/>
-<text text-anchor="start" x="1420.5" y="-1543.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
+<text text-anchor="start" x="1414.5" y="-1543.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
 <polygon fill="none" stroke="black" points="1371.5,-1513 1371.5,-1535 1541.5,-1535 1541.5,-1513 1371.5,-1513"/>
-<text text-anchor="start" x="1420.5" y="-1521.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_highlight</text>
+<text text-anchor="start" x="1414.5" y="-1521.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_highlight</text>
 <polygon fill="none" stroke="black" points="1371.5,-1491 1371.5,-1513 1541.5,-1513 1541.5,-1491 1371.5,-1491"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1376.5" y="-1508"/>
-<text text-anchor="start" x="1420.5" y="-1499.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="1414.5" y="-1499.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="1371.5,-1469 1371.5,-1491 1541.5,-1491 1541.5,-1469 1371.5,-1469"/>
-<text text-anchor="start" x="1420.5" y="-1477.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="1414.5" y="-1477.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="1371.5,-1447 1371.5,-1469 1541.5,-1469 1541.5,-1447 1371.5,-1447"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1376.5" y="-1464"/>
-<text text-anchor="start" x="1420.5" y="-1455.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="1414.5" y="-1455.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="1371.5,-1425 1371.5,-1447 1541.5,-1447 1541.5,-1425 1371.5,-1425"/>
-<text text-anchor="start" x="1420.5" y="-1433.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="1414.5" y="-1433.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="1371.5,-1403 1371.5,-1425 1541.5,-1425 1541.5,-1403 1371.5,-1403"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1376.5" y="-1420"/>
-<text text-anchor="start" x="1420.5" y="-1411.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_by</text>
+<text text-anchor="start" x="1414.5" y="-1411.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_by</text>
 <polygon fill="none" stroke="black" points="1371.5,-1381 1371.5,-1403 1541.5,-1403 1541.5,-1381 1371.5,-1381"/>
-<text text-anchor="start" x="1420.5" y="-1389.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_time</text>
-<polygon fill="#ffffff" stroke="transparent" points="1371.5,-1363 1371.5,-1381 1440.5,-1381 1440.5,-1363 1371.5,-1363"/>
-<polygon fill="none" stroke="black" points="1371.5,-1363 1371.5,-1381 1440.5,-1381 1440.5,-1363 1371.5,-1363"/>
-<text text-anchor="start" x="1374.5" y="-1369.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="1440.5,-1363 1440.5,-1381 1504.5,-1381 1504.5,-1363 1440.5,-1363"/>
-<polygon fill="none" stroke="black" points="1440.5,-1363 1440.5,-1381 1504.5,-1381 1504.5,-1363 1440.5,-1363"/>
-<text text-anchor="start" x="1467.5" y="-1369.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1504.5,-1363 1504.5,-1381 1541.5,-1381 1541.5,-1363 1504.5,-1363"/>
-<polygon fill="none" stroke="black" points="1504.5,-1363 1504.5,-1381 1541.5,-1381 1541.5,-1363 1504.5,-1363"/>
-<text text-anchor="start" x="1531.5" y="-1369.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<text text-anchor="start" x="1414.5" y="-1389.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_time</text>
+<polygon fill="none" stroke="black" points="1371.5,-1359 1371.5,-1381 1541.5,-1381 1541.5,-1359 1371.5,-1359"/>
+<text text-anchor="start" x="1414.5" y="-1367.2" font-family="Helvetica,sans-Serif" font-size="11.00">activity_status_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1371.5,-1341 1371.5,-1359 1440.5,-1359 1440.5,-1341 1371.5,-1341"/>
+<polygon fill="none" stroke="black" points="1371.5,-1341 1371.5,-1359 1440.5,-1359 1440.5,-1341 1371.5,-1341"/>
+<text text-anchor="start" x="1374.5" y="-1347.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="1440.5,-1341 1440.5,-1359 1504.5,-1359 1504.5,-1341 1440.5,-1341"/>
+<polygon fill="none" stroke="black" points="1440.5,-1341 1440.5,-1359 1504.5,-1359 1504.5,-1341 1440.5,-1341"/>
+<text text-anchor="start" x="1467.5" y="-1347.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1504.5,-1341 1504.5,-1359 1541.5,-1359 1541.5,-1341 1504.5,-1341"/>
+<polygon fill="none" stroke="black" points="1504.5,-1341 1504.5,-1359 1541.5,-1359 1541.5,-1341 1504.5,-1341"/>
+<text text-anchor="start" x="1531.5" y="-1347.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

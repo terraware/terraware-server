@@ -25,6 +25,9 @@
             <parent column="id" foreignKey="activities_verified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="verified_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="activity_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="activities_activity_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activity_statuses"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="activities_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -32,6 +35,7 @@
          <index name="activities_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
+         <checkConstraint constraint="&#10;CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END" name="activity_status_verified"/>
          <checkConstraint constraint="((verified_by IS NULL) = (verified_time IS NULL))" name="verified_by_requires_time"/>
       </table>
       <table name="activity_media_files" remarks="Information about activity-related media such as photos and videos." schema="accelerator" type="TABLE">
@@ -76,6 +80,19 @@
             <column ascending="true" name="id"/>
          </index>
          <index name="activity_media_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="activity_statuses" remarks="(Enum) Statuses of entries in the activity log." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="activity_status_id" foreignKey="activities_activity_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="activity_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="activity_statuses_name_key" unique="true">
             <column ascending="true" name="name"/>
          </index>
       </table>
@@ -356,8 +373,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -1158,8 +1175,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_frequency_id" nullable="false" remarks="Frequency of the report, that can determine report data. Must match with frequency of the configuration." size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
             <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
+            <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>

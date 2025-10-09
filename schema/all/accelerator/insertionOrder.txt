@@ -11,6 +11,7 @@ report_quarters
 submission_statuses
 vote_options
 activity_media_types
+activity_statuses
 activity_types
 application_module_statuses
 document_stores
@@ -32,8 +33,8 @@ deliverables
 applications
 submissions
 deal_stages
-activities
 events
+activities
 default_project_leads
 default_voters
 report_achievements

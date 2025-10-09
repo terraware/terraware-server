@@ -21,16 +21,16 @@
 <text text-anchor="start" x="1089.5" y="-4180.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="958.5,-4150 958.5,-4172 1128.5,-4172 1128.5,-4150 958.5,-4150"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="963.5" y="-4167"/>
-<text text-anchor="start" x="1007.5" y="-4158.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="1001.5" y="-4158.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="958.5,-4128 958.5,-4150 1128.5,-4150 1128.5,-4128 958.5,-4128"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="963.5" y="-4145"/>
-<text text-anchor="start" x="1007.5" y="-4136.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="1001.5" y="-4136.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="958.5,-4106 958.5,-4128 1128.5,-4128 1128.5,-4106 958.5,-4106"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="963.5" y="-4123"/>
-<text text-anchor="start" x="1007.5" y="-4114.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="1001.5" y="-4114.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="958.5,-4084 958.5,-4106 1128.5,-4106 1128.5,-4084 958.5,-4084"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="963.5" y="-4101"/>
-<text text-anchor="start" x="1007.5" y="-4092.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_by</text>
+<text text-anchor="start" x="1001.5" y="-4092.2" font-family="Helvetica,sans-Serif" font-size="11.00">verified_by</text>
 <polygon fill="none" stroke="black" points="958.5,-4066 958.5,-4084 1128.5,-4084 1128.5,-4066 958.5,-4066"/>
 <text text-anchor="start" x="961.5" y="-4072.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="958.5,-4048 958.5,-4066 1027.5,-4066 1027.5,-4048 958.5,-4048"/>

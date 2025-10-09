@@ -11,6 +11,7 @@ report_quarters
 submission_statuses
 vote_options
 activity_media_types
+activity_statuses
 activity_types
 application_module_statuses
 document_stores

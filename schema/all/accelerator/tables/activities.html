@@ -355,6 +355,28 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="activity_status_id">activity_status_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="activities.activity_status_id references activity_statuses.id via activities_activity_status_id_fkey"><a href='activity_statuses.html'>activity_statuses</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">activities_activity_status_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -425,6 +447,10 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+                                <tr>
+                                    <td>activity_status_verified</td>
+                                    <td>&#10;CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END</td>
+                                </tr>
                                 <tr>
                                     <td>verified_by_requires_time</td>
                                     <td>((verified_by IS NULL) &#61; (verified_time IS NULL))</td>
