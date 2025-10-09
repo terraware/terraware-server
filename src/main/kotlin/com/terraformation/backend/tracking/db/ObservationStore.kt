@@ -1786,6 +1786,29 @@ class ObservationStore(
     recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
   }
 
+  fun recalculateSurvivalRates(plantingZoneId: PlantingZoneId) {
+    val subzoneGroups: Map<PlantingSubzoneId, List<MonitoringPlotId>> =
+        dslContext
+            .select(PLANTING_SUBZONES.ID.asNonNullable(), MONITORING_PLOTS.ID.asNonNullable())
+            .from(MONITORING_PLOTS)
+            .join(PLANTING_SUBZONES)
+            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+            .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
+            .fetch()
+            .groupBy(
+                { it[PLANTING_SUBZONES.ID.asNonNullable()] },
+                { it[MONITORING_PLOTS.ID.asNonNullable()] },
+            )
+
+    subzoneGroups.values.flatten().forEach { recalculateSurvivalRate(ObservationSpeciesPlot(it)) }
+
+    subzoneGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubzone(it)) }
+
+    recalculateSurvivalRate(ObservationSpeciesZone(plantingZoneId))
+
+    recalculateSurvivalRate(ObservationSpeciesSite(plantingZoneId))
+  }
+
   private fun <ID : Any> recalculateSurvivalRate(updateScope: ObservationSpeciesScope<ID>) {
     val table = updateScope.observedTotalsTable
     val speciesIdField =

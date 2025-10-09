@@ -488,8 +488,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           .and(SPECIES_ID.eq(species1))
           .execute()
     }
-    val plotsInUpdatedZone = listOf("111", "112")
-    plotsInUpdatedZone.forEach { observationStore.recalculateSurvivalRates(plotIds[it]!!) }
+    observationStore.recalculateSurvivalRates(zone1)
 
     val ratesAfterUpdate =
         loadExpectedSurvivalRates(
