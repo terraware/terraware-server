@@ -22,6 +22,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
@@ -725,6 +726,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(zoneDensityRecord(plantingZoneId, speciesId1, density)),
           "Should have inserted density",
       )
+
+      eventPublisher.assertEventPublished(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
     }
 
     @Test
@@ -790,6 +793,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Should have updated density on conflict",
       )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+          )
+      )
     }
 
     @Test
@@ -824,6 +834,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(zoneDensityRecord(plantingZoneId, speciesId2, density2)),
           "Should have deleted existing density in zone",
       )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+          )
+      )
     }
 
     @Test
@@ -833,6 +850,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(SpeciesDensityModel(speciesId1, BigDecimal.ZERO)),
       )
       assertTableEquals(listOf(zoneDensityRecord(plantingZoneId, speciesId1, BigDecimal.ZERO)))
+
+      eventPublisher.assertEventPublished(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
     }
 
     @Test

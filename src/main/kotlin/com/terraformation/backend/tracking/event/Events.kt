@@ -128,6 +128,8 @@ data class T0PlotDataAssignedEvent(
     val observationId: ObservationId? = null,
 )
 
+data class T0ZoneDataAssignedEvent(val plantingZoneId: PlantingZoneId)
+
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId,
