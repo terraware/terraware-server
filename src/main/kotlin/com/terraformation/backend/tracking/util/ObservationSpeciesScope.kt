@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import org.jooq.Condition
@@ -156,6 +157,14 @@ class ObservationSpeciesSite(
           .from(MONITORING_PLOTS)
           .where(MONITORING_PLOTS.ID.eq(plotId)),
       plotId,
+  )
+
+  constructor(
+      zoneId: PlantingZoneId
+  ) : this(
+      DSL.select(PLANTING_ZONES.PLANTING_SITE_ID)
+          .from(PLANTING_ZONES)
+          .where(PLANTING_ZONES.ID.eq(zoneId))
   )
 
   override val scopeId = siteSelect
