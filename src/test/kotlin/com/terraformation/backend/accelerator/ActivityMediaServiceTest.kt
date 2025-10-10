@@ -8,9 +8,11 @@ import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
@@ -21,6 +23,7 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.FileService
@@ -91,12 +94,13 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var activityId: ActivityId
   private lateinit var createdBy: UserId
   private lateinit var organizationId: OrganizationId
+  private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
     createdBy = insertUser()
     organizationId = insertOrganization()
-    val projectId = insertProject(organizationId)
+    projectId = insertProject(organizationId)
     activityId = insertActivity(createdBy = createdBy, projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
@@ -399,6 +403,78 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class DeletionEventHandlers {
+    private lateinit var activityFileId: FileId
+    private lateinit var otherActivityFileId: FileId
+    private lateinit var otherProjectActivityFileId: FileId
+    private lateinit var otherOrganizationActivityFileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      activityFileId = storeMedia(activityId = activityId)
+      otherActivityFileId = storeMedia(activityId = insertActivity())
+      insertProject()
+      otherProjectActivityFileId = storeMedia(activityId = insertActivity())
+      insertOrganization()
+      insertOrganizationUser(role = Role.Admin)
+      insertProject()
+      otherOrganizationActivityFileId = storeMedia(activityId = insertActivity())
+    }
+
+    @Test
+    fun activityDeletionStartedEvent() {
+      service.on(ActivityDeletionStartedEvent(activityId))
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(activityFileId))
+
+      assertRemainingFileIds(
+          setOf(otherActivityFileId, otherProjectActivityFileId, otherOrganizationActivityFileId)
+      )
+
+      assertIsEventListener<ActivityDeletionStartedEvent>(service)
+    }
+
+    @Test
+    fun projectDeletionStartedEvent() {
+      service.on(ProjectDeletionStartedEvent(projectId))
+
+      eventPublisher.assertEventsPublished(
+          setOf(
+              FileReferenceDeletedEvent(activityFileId),
+              FileReferenceDeletedEvent(otherActivityFileId),
+          )
+      )
+
+      assertRemainingFileIds(setOf(otherProjectActivityFileId, otherOrganizationActivityFileId))
+
+      assertIsEventListener<ProjectDeletionStartedEvent>(service)
+    }
+
+    @Test
+    fun organizationDeletionStartedEvent() {
+      service.on(OrganizationDeletionStartedEvent(organizationId))
+
+      eventPublisher.assertEventsPublished(
+          setOf(
+              FileReferenceDeletedEvent(activityFileId),
+              FileReferenceDeletedEvent(otherActivityFileId),
+              FileReferenceDeletedEvent(otherProjectActivityFileId),
+          )
+      )
+
+      assertRemainingFileIds(setOf(otherOrganizationActivityFileId))
+
+      assertIsEventListener<OrganizationDeletionStartedEvent>(service)
+    }
+
+    private fun assertRemainingFileIds(expected: Set<FileId>) {
+      val actual = activityMediaFilesDao.findAll().map { it.fileId!! }.toSet()
+
+      assertSetEquals(expected, actual, "Remaining file IDs")
+    }
+  }
+
+  @Nested
   inner class GetMuxStreamInfo {
     @Test
     fun `returns stream info`() {
@@ -491,7 +567,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private fun storeMedia(
-      filename: String,
+      filename: String = "pixel.jpg",
       metadata: NewFileMetadata = jpegMetadata,
       activityId: ActivityId = this.activityId,
       listPosition: Int? = null,

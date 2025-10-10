@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import jakarta.inject.Named
@@ -51,6 +52,15 @@ class ActivityMediaStore(
             ACTIVITY_MEDIA_FILES.activities.projects.ORGANIZATION_ID.eq(organizationId)
         )
         .filter { user.canReadActivity(it.activityId) }
+  }
+
+  fun fetchByProjectId(projectId: ProjectId): List<ActivityMediaModel> {
+    requirePermissions { readProject(projectId) }
+
+    val user = currentUser()
+    return fetchByCondition(ACTIVITY_MEDIA_FILES.activities.PROJECT_ID.eq(projectId)).filter {
+      user.canReadActivity(it.activityId)
+    }
   }
 
   fun updateMedia(
