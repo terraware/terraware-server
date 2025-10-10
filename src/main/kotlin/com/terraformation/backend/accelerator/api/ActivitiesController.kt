@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.QueryParam
+import java.time.Instant
 import java.time.LocalDate
 import org.locationtech.jts.geom.Point
 import org.springframework.core.io.InputStreamResource
@@ -242,6 +243,7 @@ data class ActivityPayload(
     val id: ActivityId,
     val isHighlight: Boolean,
     val media: List<ActivityMediaFilePayload>,
+    val publishedTime: Instant?,
     val status: ActivityStatus,
     val type: ActivityType,
 ) {
@@ -253,6 +255,7 @@ data class ActivityPayload(
       id = model.id,
       isHighlight = model.isHighlight,
       media = model.media.map { ActivityMediaFilePayload(it) },
+      publishedTime = model.publishedTime,
       status = model.activityStatus,
       type = model.activityType,
   )
