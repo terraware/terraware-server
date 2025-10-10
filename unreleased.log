@@ -1,3 +1,5 @@
+233064f7c3e Update dependency python to 3.14 (#3491)
+bd67ae49826 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.4.+ (#3489)
 a785a677262 SW-7514 Fix issue where sublist filtering depends on order of search fields (#3488)
 b11ad328495 Delete activity media when project is deleted (#3490)
 f3eccd10572 SW-7439 Publish T0 Zone Data assigned event (#3485)
