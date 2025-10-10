@@ -122,7 +122,8 @@ class PublishedActivityStore(
                   .from(ACTIVITY_MEDIA_FILES)
                   .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId)),
           )
-          .onDuplicateKeyUpdate()
+          .onConflict(FILE_ID)
+          .doUpdate()
           .set(ACTIVITY_MEDIA_TYPE_ID, DSL.excluded(ACTIVITY_MEDIA_TYPE_ID))
           .set(CAPTION, DSL.excluded(CAPTION))
           .set(CAPTURED_DATE, DSL.excluded(CAPTURED_DATE))

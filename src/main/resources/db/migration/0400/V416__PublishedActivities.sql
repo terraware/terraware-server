@@ -20,5 +20,7 @@ CREATE TABLE funder.published_activity_media_files (
     list_position          INTEGER NOT NULL,
     captured_date          DATE NOT NULL,
     caption                TEXT,
-    geolocation            GEOMETRY(POINT)
+    geolocation            GEOMETRY(POINT),
+
+    UNIQUE (activity_id, list_position) DEFERRABLE INITIALLY DEFERRED
 );

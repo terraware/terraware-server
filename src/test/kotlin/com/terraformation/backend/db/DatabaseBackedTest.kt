@@ -3899,6 +3899,9 @@ abstract class DatabaseBackedTest {
         )
 
     publishedActivityMediaFilesDao.insert(row)
+
+    lastPublishedActivityMediaFileActivityId = activityId
+    nextPublishedActivityMediaFileListPosition = listPosition + 1
   }
 
   private var nextInternalTagNumber = 1
