@@ -70,7 +70,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
-        python-version: '3.13'
+        python-version: '3.14'
 
     - name: Generate basic list of notifications
       run: python ./.github/scripts/notifications.py
