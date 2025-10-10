@@ -304,6 +304,8 @@ import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.daos.FundingEntitiesDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityProjectsDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityUsersDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedActivitiesDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedActivityMediaFilesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCertsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
@@ -315,6 +317,8 @@ import com.terraformation.backend.db.funder.tables.daos.PublishedReportSystemMet
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedActivitiesRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityMediaFilesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonCertsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
@@ -685,6 +689,8 @@ abstract class DatabaseBackedTest {
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectVoteDecisionDao: ProjectVoteDecisionsDao by lazyDao()
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
+  protected val publishedActivitiesDao: PublishedActivitiesDao by lazyDao()
+  protected val publishedActivityMediaFilesDao: PublishedActivityMediaFilesDao by lazyDao()
   protected val publishedProjectCarbonCertsDao: PublishedProjectCarbonCertsDao by lazyDao()
   protected val publishedProjectDetailsDao: PublishedProjectDetailsDao by lazyDao()
   protected val publishedProjectLandUseDao: PublishedProjectLandUseDao by lazyDao()
@@ -3835,6 +3841,67 @@ abstract class DatabaseBackedTest {
 
     lastActivityMediaFileActivityId = activityId
     nextActivityMediaFileListPosition = listPosition + 1
+  }
+
+  protected fun insertPublishedActivity(
+      activityId: ActivityId = inserted.activityId,
+      activityDate: LocalDate = LocalDate.EPOCH,
+      activityType: ActivityType = ActivityType.Planting,
+      description: String = "Activity",
+      isHighlight: Boolean = false,
+      projectId: ProjectId = inserted.projectId,
+      publishedBy: UserId = currentUser().userId,
+      publishedTime: Instant = Instant.EPOCH,
+  ) {
+    val row =
+        PublishedActivitiesRow(
+            activityDate = activityDate,
+            activityId = activityId,
+            activityTypeId = activityType,
+            description = description,
+            isHighlight = isHighlight,
+            projectId = projectId,
+            publishedBy = publishedBy,
+            publishedTime = publishedTime,
+        )
+
+    publishedActivitiesDao.insert(row)
+  }
+
+  private var lastPublishedActivityMediaFileActivityId: ActivityId? = null
+  private var nextPublishedActivityMediaFileListPosition = 1
+
+  protected fun insertPublishedActivityMediaFile(
+      activityId: ActivityId = inserted.activityId,
+      caption: String? = null,
+      capturedDate: LocalDate = LocalDate.EPOCH,
+      fileId: FileId = inserted.fileId,
+      geolocation: Point? = null,
+      isCoverPhoto: Boolean = false,
+      isHiddenOnMap: Boolean = false,
+      listPosition: Int =
+          if (activityId == lastPublishedActivityMediaFileActivityId)
+              nextPublishedActivityMediaFileListPosition
+          else 1,
+      type: ActivityMediaType = ActivityMediaType.Photo,
+  ) {
+    val row =
+        PublishedActivityMediaFilesRow(
+            activityId = activityId,
+            activityMediaTypeId = type,
+            caption = caption,
+            capturedDate = capturedDate,
+            fileId = fileId,
+            geolocation = geolocation,
+            isCoverPhoto = isCoverPhoto,
+            isHiddenOnMap = isHiddenOnMap,
+            listPosition = listPosition,
+        )
+
+    publishedActivityMediaFilesDao.insert(row)
+
+    lastPublishedActivityMediaFileActivityId = activityId
+    nextPublishedActivityMediaFileListPosition = listPosition + 1
   }
 
   private var nextInternalTagNumber = 1
