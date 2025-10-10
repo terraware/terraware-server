@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.funder.db.PublishedActivityStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.ws.rs.QueryParam
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ActivitiesAdminController(
     private val activityStore: ActivityStore,
+    private val publishedActivityStore: PublishedActivityStore,
 ) {
   @GetMapping
   @Operation(summary = "Lists all of a project's activities with accelerator-admin-only details.")
@@ -85,6 +87,18 @@ class ActivitiesAdminController(
       @RequestBody payload: AdminUpdateActivityRequestPayload,
   ): SimpleSuccessResponsePayload {
     activityStore.update(id, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @Operation(
+      summary = "Publishes an activity.",
+      description = "Only verified activities may be published.",
+  )
+  @PostMapping("/{id}/publish")
+  @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
+  fun adminPublishActivity(@PathVariable id: ActivityId): SimpleSuccessResponsePayload {
+    publishedActivityStore.publish(id)
 
     return SimpleSuccessResponsePayload()
   }
