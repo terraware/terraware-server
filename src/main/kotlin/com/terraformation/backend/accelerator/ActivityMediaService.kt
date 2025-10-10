@@ -203,6 +203,10 @@ class ActivityMediaService(
     deleteFiles(activityMediaStore.fetchByOrganizationId(event.organizationId))
   }
 
+  /**
+   * Deletes media files from the database. This publishes events that may also cause the files to
+   * be deleted from the file store.
+   */
   private fun deleteFiles(mediaFiles: List<ActivityMediaModel>) {
     mediaFiles.forEach { mediaFile ->
       activityMediaStore.deleteFromDatabase(mediaFile.activityId, mediaFile.fileId)

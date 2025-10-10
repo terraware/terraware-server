@@ -8,6 +8,8 @@ import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
@@ -34,6 +36,42 @@ class PublishedActivityStore(
       publishMediaFileDeletions(activityId)
       publishCurrentMediaFiles(activityId)
     }
+  }
+
+  @Deprecated("Do not call this except when handling deletion of the underlying activity")
+  fun deletePublishedActivity(activityId: ActivityId) {
+    deletePublishedMediaFiles(PUBLISHED_ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId))
+
+    dslContext
+        .deleteFrom(PUBLISHED_ACTIVITIES)
+        .where(PUBLISHED_ACTIVITIES.ACTIVITY_ID.eq(activityId))
+        .execute()
+  }
+
+  @Deprecated("Do not call this except when handling deletion of the organization")
+  fun deletePublishedActivities(organizationId: OrganizationId) {
+    deletePublishedMediaFiles(
+        PUBLISHED_ACTIVITY_MEDIA_FILES.publishedActivities.projects.ORGANIZATION_ID.eq(
+            organizationId
+        )
+    )
+
+    dslContext
+        .deleteFrom(PUBLISHED_ACTIVITIES)
+        .where(PUBLISHED_ACTIVITIES.projects.ORGANIZATION_ID.eq(organizationId))
+        .execute()
+  }
+
+  @Deprecated("Do not call this except when handling deletion of the project")
+  fun deletePublishedActivities(projectId: ProjectId) {
+    deletePublishedMediaFiles(
+        PUBLISHED_ACTIVITY_MEDIA_FILES.publishedActivities.PROJECT_ID.eq(projectId)
+    )
+
+    dslContext
+        .deleteFrom(PUBLISHED_ACTIVITIES)
+        .where(PUBLISHED_ACTIVITIES.PROJECT_ID.eq(projectId))
+        .execute()
   }
 
   private fun publishActivityDetails(activityId: ActivityId) {
