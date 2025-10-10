@@ -603,10 +603,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun manageActivity() =
       allow { manageActivity(activityId) } ifUser { canManageActivity(activityId) }
 
-  @Test
-  fun manageDefaultProjectLeads() =
-      allow { manageDefaultProjectLeads() } ifUser { canManageDefaultProjectLeads() }
-
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
 
   @Test fun manageDisclaimers() = allow { manageDisclaimers() } ifUser { canManageDisclaimers() }

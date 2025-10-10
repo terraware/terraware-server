@@ -66,9 +66,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         applicationStore,
         applicationVariableValuesService,
         config,
-        countriesDao,
         TestSingletons.countryDetector,
-        defaultProjectLeadsDao,
         hubSpotService,
         preScreenBoundarySubmissionFetcher,
         projectAcceleratorDetailsService,
@@ -223,12 +221,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `populates project accelerator details with boundary area size on pre-screen success`() {
-      val projectLead = "Johnny Appleseed"
       val internalName = "KEN_Project 1"
       val totalExpansionPotential = BigDecimal(1000)
 
       val projectId = insertProject()
-      insertDefaultProjectLead(Region.SubSaharanAfrica, projectLead)
 
       val applicationVariableValues =
           ApplicationVariableValues(
@@ -308,7 +304,6 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               numNativeSpecies = 50,
               projectId = projectId,
               region = Region.SubSaharanAfrica,
-              projectLead = projectLead,
               totalExpansionPotential = totalExpansionPotential,
           ),
           projectAcceleratorDetailsService.fetchOneById(projectId),
@@ -318,12 +313,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `populates project accelerator details with total land use on pre-screen success if no boundary`() {
-      val projectLead = "Johnny Appleseed"
       val internalName = "KEN_Project 1"
       val totalExpansionPotential = BigDecimal(1000)
 
       val projectId = insertProject()
-      insertDefaultProjectLead(Region.SubSaharanAfrica, projectLead)
 
       val applicationVariableValues =
           ApplicationVariableValues(
@@ -403,7 +396,6 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               numNativeSpecies = 50,
               projectId = projectId,
               region = Region.SubSaharanAfrica,
-              projectLead = projectLead,
               totalExpansionPotential = totalExpansionPotential,
           ),
           projectAcceleratorDetailsService.fetchOneById(projectId),

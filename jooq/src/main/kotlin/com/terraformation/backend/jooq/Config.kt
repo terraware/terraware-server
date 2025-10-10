@@ -167,13 +167,7 @@ val ENUM_TABLES =
                     "project_internal_roles",
                     listOf("project_internal_users\\.project_internal_role_id"),
                 ),
-                EnumTable(
-                    "regions",
-                    listOf(
-                        "accelerator\\.default_project_leads\\.region_id",
-                        "countries\\.region_id",
-                    ),
-                ),
+                EnumTable("regions", listOf("countries\\.region_id")),
                 EnumTable("roles"),
                 EnumTable("seed_fund_report_statuses", listOf("seed_fund_reports\\.status_id")),
                 EnumTable("seed_storage_behaviors"),

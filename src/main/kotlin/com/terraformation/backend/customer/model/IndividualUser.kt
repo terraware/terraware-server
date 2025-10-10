@@ -313,8 +313,6 @@ data class IndividualUser(
 
   override fun canManageActivity(activityId: ActivityId) = isTFExpertOrHigher()
 
-  override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
-
   override fun canManageDeliverables() = isAcceleratorAdmin()
 
   override fun canManageDisclaimers() = isSuperAdmin()
