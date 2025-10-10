@@ -21,7 +21,6 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
@@ -193,7 +192,6 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  @Disabled("Waiting on SW-7192")
   fun `filters by stable id when prefix starts at project`() {
     val projectId1 = insertProject(name = "Project 1")
     val projectId2 = insertProject(name = "Project 2")
@@ -220,7 +218,7 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                 "variables.projectId",
                 "variables.stableId",
                 "variables.variableId",
-                "variables.variableValueId",
+                "variables.values_variableValueId",
             )
             .map { prefix.resolve(it) }
 
@@ -231,37 +229,30 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "$projectId1",
                     "name" to "Project 1",
                     "variables" to
-                        mapOf(
-                            "projectId" to "$projectId1",
-                            "stableId" to stableId1,
-                            "variableId" to "$variableId1",
-                            "variableValueId" to "$included1",
-                        ),
-                ),
-                mapOf(
-                    "id" to "$projectId1",
-                    "name" to "Project 1",
-                    "variables" to
-                        mapOf(
-                            "projectId" to "$projectId1",
-                            "stableId" to stableId3,
-                            "variableId" to "$variableId3",
-                            "variableValueId" to "$included3",
+                        listOf(
+                            mapOf(
+                                "projectId" to "$projectId1",
+                                "stableId" to stableId1,
+                                "variableId" to "$variableId1",
+                                "values_variableValueId" to "$included1",
+                            ),
+                            mapOf(
+                                "projectId" to "$projectId1",
+                                "stableId" to stableId3,
+                                "variableId" to "$variableId3",
+                                "values_variableValueId" to "$included3",
+                            ),
                         ),
                 ),
             ),
             cursor = null,
         )
 
-    val search =
-        AndNode(
-            listOf(
-                FieldNode(prefix.resolve("id"), listOf(projectId1.toString())),
-                FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3)),
-            )
-        )
+    val search = AndNode(listOf(FieldNode(prefix.resolve("id"), listOf(projectId1.toString()))))
+    val variablesPrefix = prefix.relativeSublistPrefix("variables")!!
+    val filters = FieldNode(prefix.resolve("variables.stableId"), listOf(stableId1, stableId3))
     val actual =
-        Locales.GIBBERISH.use { searchService.search(prefix, fields, mapOf(prefix to search)) }
+        searchService.search(prefix, fields, mapOf(prefix to search, variablesPrefix to filters))
 
     assertJsonEquals(expected, actual)
   }
