@@ -63,25 +63,26 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                                 )
                             )
                     ),
-                    if (currentUser().canReadAllAcceleratorDetails())
-                        DSL.exists(
-                            DSL.selectOne()
-                                .from(PROJECT_INTERNAL_USERS)
-                                .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
-                        )
-                    else
-                        DSL.exists(
-                            DSL.selectOne()
-                                .from(PROJECTS)
-                                .join(PROJECT_INTERNAL_USERS)
-                                .on(PROJECTS.ID.eq(PROJECT_INTERNAL_USERS.PROJECT_ID))
-                                .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
-                                .and(
-                                    PROJECTS.ORGANIZATION_ID.`in`(
-                                        currentUser().organizationRoles.keys
-                                    )
-                                )
-                        ),
+                    if (currentUser().canReadAllAcceleratorDetails()) {
+                      DSL.exists(
+                          DSL.selectOne()
+                              .from(PROJECT_INTERNAL_USERS)
+                              .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
+                      )
+                    } else {
+                      DSL.exists(
+                          DSL.selectOne()
+                              .from(PROJECTS)
+                              .join(PROJECT_INTERNAL_USERS)
+                              .on(PROJECTS.ID.eq(PROJECT_INTERNAL_USERS.PROJECT_ID))
+                              .where(USERS.ID.eq(PROJECT_INTERNAL_USERS.USER_ID))
+                              .and(
+                                  PROJECTS.ORGANIZATION_ID.`in`(
+                                      currentUser().organizationRoles.keys
+                                  )
+                              )
+                      )
+                    },
                 )
             )
         )
