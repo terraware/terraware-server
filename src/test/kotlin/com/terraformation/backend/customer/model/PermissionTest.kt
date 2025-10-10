@@ -712,6 +712,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -742,6 +743,7 @@ internal class PermissionTest : DatabaseTest() {
         *activityIds.forOrg1(),
         deleteActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -994,6 +996,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -1024,6 +1027,7 @@ internal class PermissionTest : DatabaseTest() {
         *activityIds.forOrg1(),
         deleteActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -1191,6 +1195,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         createParticipantProjectSpecies = true,
         listActivities = true,
+        listPublishedActivities = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -1210,6 +1215,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *activityIds.forOrg1(),
         readActivity = true,
+        readPublishedActivity = true,
     )
 
     permissions.expect(
@@ -1676,6 +1682,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1741,6 +1748,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteActivity = true,
         manageActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -1842,6 +1850,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1888,6 +1897,7 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1988,6 +1998,7 @@ internal class PermissionTest : DatabaseTest() {
         *activityIds.toTypedArray(),
         deleteActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         manageActivity = true,
         updateActivity = true,
     )
@@ -2115,6 +2126,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2168,6 +2180,7 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2268,6 +2281,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteActivity = true,
         manageActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -2397,6 +2411,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2428,6 +2443,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteActivity = true,
         manageActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -2449,6 +2465,7 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2539,6 +2556,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteActivity = true,
         manageActivity = true,
         readActivity = true,
+        readPublishedActivity = true,
         updateActivity = true,
     )
 
@@ -2683,6 +2701,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2697,6 +2716,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2713,6 +2733,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(4000),
         listActivities = true,
+        listPublishedActivities = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2750,6 +2771,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *activityIds.toTypedArray(),
         readActivity = true,
+        readPublishedActivity = true,
     )
 
     permissions.expect(
@@ -2974,7 +2996,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
-        listActivities = true,
+        listPublishedActivities = true,
         readProjectFunderDetails = true,
         readPublishedReports = true,
         readProject = true,
@@ -2982,7 +3004,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *activityIds.forOrg1(),
-        readActivity = true,
+        readPublishedActivity = true,
     )
 
     permissions.expect(
@@ -4121,6 +4143,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         listActivities: Boolean = false,
+        listPublishedActivities: Boolean = false,
         readDefaultVoters: Boolean = false,
         readInternalVariableWorkflowDetails: Boolean = false,
         readProject: Boolean = false,
@@ -4174,6 +4197,11 @@ internal class PermissionTest : DatabaseTest() {
             listActivities,
             user.canListActivities(idInDatabase),
             "Can list activities for project $projectId",
+        )
+        assertEquals(
+            listPublishedActivities,
+            user.canListPublishedActivities(idInDatabase),
+            "Can list published activities for project $projectId",
         )
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
@@ -4542,6 +4570,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteActivity: Boolean = false,
         manageActivity: Boolean = false,
         readActivity: Boolean = false,
+        readPublishedActivity: Boolean = false,
         updateActivity: Boolean = false,
     ) {
       activityIds
@@ -4563,6 +4592,11 @@ internal class PermissionTest : DatabaseTest() {
                 readActivity,
                 user.canReadActivity(idInDatabase),
                 "Can read activity $entityId",
+            )
+            assertEquals(
+                readPublishedActivity,
+                user.canReadPublishedActivity(idInDatabase),
+                "Can read published activity $entityId",
             )
             assertEquals(
                 updateActivity,

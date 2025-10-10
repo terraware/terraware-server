@@ -54,16 +54,11 @@ data class FunderUser(
   override fun canDeleteFunder(userId: UserId) =
       permissionStore.fetchFundingEntity(userId) == fundingEntityId
 
-  override fun canListActivities(projectId: ProjectId) = projectId in projectIds
-
   override fun canListFundingEntityUsers(entityId: FundingEntityId) = fundingEntityId == entityId
 
   override fun canListNotifications(organizationId: OrganizationId?) = organizationId == null
 
-  override fun canReadActivity(activityId: ActivityId): Boolean {
-    val projectId = parentStore.getProjectId(activityId) ?: return false
-    return canReadProject(projectId)
-  }
+  override fun canListPublishedActivities(projectId: ProjectId) = projectId in projectIds
 
   override fun canReadCurrentDisclaimer(): Boolean = true
 
@@ -72,6 +67,9 @@ data class FunderUser(
   override fun canReadProject(projectId: ProjectId) = projectId in projectIds
 
   override fun canReadProjectFunderDetails(projectId: ProjectId) = projectId in projectIds
+
+  override fun canReadPublishedActivity(activityId: ActivityId) =
+      parentStore.getProjectId(activityId) in projectIds
 
   override fun canReadPublishedReport(reportId: ReportId) =
       parentStore.getProjectId(reportId) in projectIds
