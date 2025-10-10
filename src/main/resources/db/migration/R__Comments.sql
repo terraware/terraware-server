@@ -794,6 +794,10 @@ COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding
 COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
 COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 
+COMMENT ON TABLE funder.published_activities IS 'Published project activities visible to funders.';
+
+COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
+
 COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
 COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
