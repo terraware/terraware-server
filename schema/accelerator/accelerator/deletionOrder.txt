@@ -1,6 +1,5 @@
 hubspot_token
 default_voters
-default_project_leads
 deliverable_documents
 submission_documents
 report_system_metrics

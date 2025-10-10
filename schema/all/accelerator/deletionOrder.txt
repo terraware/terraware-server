@@ -23,7 +23,6 @@ cohort_modules
 report_challenges
 report_achievements
 default_voters
-default_project_leads
 activities
 events
 deal_stages

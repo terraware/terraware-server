@@ -35,7 +35,6 @@ submissions
 deal_stages
 events
 activities
-default_project_leads
 default_voters
 report_achievements
 report_challenges

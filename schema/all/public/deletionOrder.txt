@@ -59,6 +59,7 @@ species_native_categories
 seed_storage_behaviors
 seed_fund_report_statuses
 roles
+regions
 project_internal_roles
 plant_material_sourcing_methods
 organization_types
@@ -74,7 +75,6 @@ disclaimers
 device_template_categories
 conservation_categories
 chat_memory_message_types
-regions
 land_use_model_types
 seed_treatments
 time_zones

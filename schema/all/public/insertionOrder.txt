@@ -1,7 +1,6 @@
 time_zones
 seed_treatments
 land_use_model_types
-regions
 chat_memory_message_types
 conservation_categories
 device_template_categories
@@ -17,6 +16,7 @@ notification_criticalities
 organization_types
 plant_material_sourcing_methods
 project_internal_roles
+regions
 roles
 seed_fund_report_statuses
 seed_storage_behaviors

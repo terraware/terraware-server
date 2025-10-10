@@ -58,6 +58,5 @@ report_standard_metrics
 report_system_metrics
 submission_documents
 deliverable_documents
-default_project_leads
 default_voters
 hubspot_token
