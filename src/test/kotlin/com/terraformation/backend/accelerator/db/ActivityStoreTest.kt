@@ -168,6 +168,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityType = ActivityType.Monitoring,
               description = "Test monitoring activity",
           )
+      val publishedTime = Instant.ofEpochSecond(5858)
+      insertPublishedActivity(publishedTime = publishedTime)
 
       val expected =
           ExistingActivityModel(
@@ -183,6 +185,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
               projectId = projectId,
+              publishedBy = user.userId,
+              publishedTime = publishedTime,
           )
 
       assertEquals(expected, store.fetchOneById(activityId))
@@ -304,6 +308,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               isHighlight = true,
               modifiedTime = Instant.ofEpochSecond(2),
           )
+      val publishedTime = Instant.ofEpochSecond(5858)
+      insertPublishedActivity(publishedTime = publishedTime)
 
       val fileId2 = insertFile()
       insertActivityMediaFile(isCoverPhoto = true)
@@ -371,6 +377,8 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = Instant.ofEpochSecond(2),
                   projectId = projectId,
+                  publishedBy = user.userId,
+                  publishedTime = publishedTime,
               ),
           )
 
