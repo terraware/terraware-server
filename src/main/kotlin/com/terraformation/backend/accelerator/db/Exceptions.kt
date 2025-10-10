@@ -20,6 +20,12 @@ class ActivityNotFoundException(id: ActivityId) : EntityNotFoundException("Activ
 class ApplicationNotFoundException(id: ApplicationId) :
     EntityNotFoundException("Application $id not found")
 
+class CannotDeletePublishedActivityException(activityId: ActivityId) :
+    MismatchedStateException("Activity $activityId has been published and cannot be deleted")
+
+class CannotUpdatePublishedActivityException(activityId: ActivityId) :
+    MismatchedStateException("Activity $activityId has been published and cannot be updated")
+
 class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 
 class CohortHasParticipantsException(id: CohortId) :

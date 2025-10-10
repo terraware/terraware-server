@@ -422,6 +422,22 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `accelerator admin can delete published activity`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val activityId = insertActivity(projectId = projectId)
+      insertPublishedActivity()
+
+      eventPublisher.register<ActivityDeletionStartedEvent> {
+        publishedActivitiesDao.deleteById(it.activityId)
+      }
+
+      store.delete(activityId)
+
+      assertTableEmpty(ACTIVITIES)
+    }
+
+    @Test
     fun `throws ActivityNotFoundException if activity does not exist`() {
       insertOrganizationUser(role = Role.Admin)
 
@@ -436,6 +452,16 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activityId = insertActivity(projectId = projectId)
 
       assertThrows<AccessDeniedException> { store.delete(activityId) }
+    }
+
+    @Test
+    fun `throws exception if non-admin user tries to delete published activity`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId = insertActivity(projectId = projectId)
+      insertPublishedActivity()
+
+      assertThrows<CannotDeletePublishedActivityException> { store.delete(activityId) }
     }
   }
 
@@ -487,7 +513,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `accelerator admin can update additional fields`() {
+    fun `accelerator admin can update additional fields even if activity is published`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       val activityId =
@@ -497,6 +523,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Original description",
               projectId = projectId,
           )
+      insertPublishedActivity()
 
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
@@ -646,6 +673,18 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activityId = insertActivity(projectId = projectId)
 
       assertThrows<AccessDeniedException> {
+        store.update(activityId) { it.copy(description = "Updated") }
+      }
+    }
+
+    @Test
+    fun `throws exception if non-admin user tries to update published activity`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId = insertActivity(projectId = projectId)
+      insertPublishedActivity()
+
+      assertThrows<CannotUpdatePublishedActivityException> {
         store.update(activityId) { it.copy(description = "Updated") }
       }
     }
