@@ -41,13 +41,16 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
   fun `returns internal users`() {
     val projectId = insertProject()
     val projectLead = insertUser()
+    insertOrganizationUser()
     insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
     val other = insertUser()
+    insertOrganizationUser()
     insertProjectInternalUser(roleName = "Other")
     // other org internal users are excluded
     insertOrganization()
     insertProject()
     insertUser()
+    insertOrganizationUser()
     insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
 
     val prefix = SearchFieldPrefix(searchTables.projectInternalUsers)
@@ -86,7 +89,7 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
     insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
     val otherOrg = insertOrganization()
     val otherProject = insertProject()
-    insertUser()
+    val otherOrgUser = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
@@ -107,8 +110,8 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "role" to "Restoration Lead",
                     "project_id" to "$otherProject",
+                    "user_id" to "$otherOrgUser",
                     "project_organization_id" to "$otherOrg",
-                    // can't see the user details because user and project are not in org
                 ),
             )
         )
