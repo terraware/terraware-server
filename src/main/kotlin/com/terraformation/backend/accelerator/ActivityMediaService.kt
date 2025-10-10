@@ -18,6 +18,7 @@ import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.accelerator.ActivityId
@@ -190,6 +191,11 @@ class ActivityMediaService(
   @EventListener
   fun on(event: ActivityDeletionStartedEvent) {
     deleteFiles(activityMediaStore.fetchByActivityId(event.activityId))
+  }
+
+  @EventListener
+  fun on(event: ProjectDeletionStartedEvent) {
+    deleteFiles(activityMediaStore.fetchByProjectId(event.projectId))
   }
 
   @EventListener
