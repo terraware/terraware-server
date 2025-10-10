@@ -17,13 +17,16 @@ import org.springframework.context.ApplicationEventPublisher
  * assert that your events were published with (or without) rate limiting.
  */
 class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher {
+  private val eventListeners = mutableListOf<Pair<Class<*>, (Any) -> Unit>>()
   private val publishedEvents = mutableListOf<Any>()
 
   override fun publishEvent(event: Any) {
+    callListeners(event)
     publishedEvents.add(event)
   }
 
   override fun <T : RateLimitedEvent<T>> publishEvent(event: T) {
+    callListeners(event)
     publishedEvents.add(event)
   }
 
@@ -115,10 +118,28 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
     assertEquals(emptyList<Any>(), publishedEvents, message)
   }
 
+  /** Registers a listener function for events of a given class. */
+  fun <T : Any> register(clazz: Class<T>, listener: (T) -> Unit) {
+    @Suppress("UNCHECKED_CAST") eventListeners.add(clazz to listener as (Any) -> Unit)
+  }
+
+  /** Registers a listener function for events of a given class. */
+  inline fun <reified T : Any> register(noinline listener: (T) -> Unit) {
+    register(T::class.java, listener)
+  }
+
   /** Asserts that no event of a particular type has been published. */
   inline fun <reified T : Any> assertEventNotPublished(
       message: String = "Expected no events of type ${T::class.java.name}"
   ) {
     assertEventNotPublished(T::class.java, message)
+  }
+
+  private fun callListeners(event: Any) {
+    eventListeners.forEach { (clazz, listener) ->
+      if (clazz.isInstance(event)) {
+        listener(event)
+      }
+    }
   }
 }
