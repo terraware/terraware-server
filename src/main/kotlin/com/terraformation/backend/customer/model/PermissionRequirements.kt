@@ -715,6 +715,17 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun listPublishedActivities(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canListPublishedActivities(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to list published activities in project $projectId"
+        )
+      }
+    }
+  }
+
   fun listSeedFundReports(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canListSeedFundReports(organizationId)) {
@@ -1257,6 +1268,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadProjectVotes(projectId)) {
         readProject(projectId)
         throw AccessDeniedException("No permission to view votes for project $projectId")
+      }
+    }
+  }
+
+  fun readPublishedActivity(activityId: ActivityId) {
+    user.recordPermissionChecks {
+      if (!user.canReadPublishedActivity(activityId)) {
+        throw ActivityNotFoundException(activityId)
       }
     }
   }
