@@ -12,9 +12,12 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
+import com.terraformation.backend.funder.model.PublishedActivityMediaModel
+import com.terraformation.backend.funder.model.PublishedActivityModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -38,6 +41,15 @@ class PublishedActivityStore(
       publishMediaFileDeletions(activityId)
       publishCurrentMediaFiles(activityId)
     }
+  }
+
+  fun fetchByProjectId(
+      projectId: ProjectId,
+      includeMedia: Boolean,
+  ): List<PublishedActivityModel> {
+    requirePermissions { listPublishedActivities(projectId) }
+
+    return fetchByCondition(PUBLISHED_ACTIVITIES.PROJECT_ID.eq(projectId), includeMedia)
   }
 
   fun ensureFileExists(activityId: ActivityId, fileId: FileId) {
@@ -86,6 +98,53 @@ class PublishedActivityStore(
         .deleteFrom(PUBLISHED_ACTIVITIES)
         .where(PUBLISHED_ACTIVITIES.PROJECT_ID.eq(projectId))
         .execute()
+  }
+
+  private val geolocationField = PUBLISHED_ACTIVITY_MEDIA_FILES.GEOLOCATION.forMultiset()
+
+  private val mediaMultiset =
+      with(PUBLISHED_ACTIVITY_MEDIA_FILES) {
+        DSL.multiset(
+                DSL.select(
+                        ACTIVITY_MEDIA_TYPE_ID,
+                        ACTIVITY_ID,
+                        CAPTION,
+                        CAPTURED_DATE,
+                        FILE_ID,
+                        IS_COVER_PHOTO,
+                        IS_HIDDEN_ON_MAP,
+                        LIST_POSITION,
+                        geolocationField,
+                    )
+                    .from(PUBLISHED_ACTIVITY_MEDIA_FILES)
+                    .where(ACTIVITY_ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
+                    .orderBy(LIST_POSITION)
+            )
+            .convertFrom { result ->
+              result.map { PublishedActivityMediaModel.of(it, geolocationField) }
+            }
+      }
+
+  private fun fetchByCondition(
+      condition: Condition,
+      includeMedia: Boolean,
+  ): List<PublishedActivityModel> {
+    return with(PUBLISHED_ACTIVITIES) {
+      if (includeMedia) {
+        dslContext
+            .select(asterisk(), mediaMultiset)
+            .from(PUBLISHED_ACTIVITIES)
+            .where(condition)
+            .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
+            .fetch { PublishedActivityModel.of(it, mediaMultiset) }
+      } else {
+        dslContext
+            .selectFrom(PUBLISHED_ACTIVITIES)
+            .where(condition)
+            .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
+            .fetch { PublishedActivityModel.of(it, null) }
+      }
+    }
   }
 
   private fun publishActivityDetails(activityId: ActivityId) {
