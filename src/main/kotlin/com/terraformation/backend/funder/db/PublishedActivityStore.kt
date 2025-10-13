@@ -3,11 +3,13 @@ package com.terraformation.backend.funder.db
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
@@ -35,6 +37,18 @@ class PublishedActivityStore(
       publishActivityDetails(activityId)
       publishMediaFileDeletions(activityId)
       publishCurrentMediaFiles(activityId)
+    }
+  }
+
+  fun ensureFileExists(activityId: ActivityId, fileId: FileId) {
+    val fileExists =
+        dslContext.fetchExists(
+            PUBLISHED_ACTIVITY_MEDIA_FILES,
+            PUBLISHED_ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId),
+            PUBLISHED_ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId),
+        )
+    if (!fileExists) {
+      throw FileNotFoundException(fileId)
     }
   }
 
