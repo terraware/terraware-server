@@ -1,3 +1,4 @@
+91e8d857961 SW-7503 Delete published versions of deleted activities (#3493)
 d4089732967 SW-7503 Allow activities to be published (#3492)
 41bb32565bd Update ktor monorepo to v3.3.1 (#3502)
 7080a57d446 Update database dependencies (#3501)

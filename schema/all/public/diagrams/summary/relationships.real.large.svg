@@ -3271,37 +3271,10 @@
 <polygon fill="black" stroke="black" points="902.5,-11767 910.5,-11770.6 906.5,-11767 910.5,-11767 910.5,-11767 910.5,-11767 906.5,-11767 910.5,-11763.4 902.5,-11767 902.5,-11767"/>
 <ellipse fill="none" stroke="black" cx="899.3" cy="-11767" rx="3.2" ry="3.2"/>
 </g>
-<!-- ecosystem_types -->
-<g id="node67" class="node">
-<title>ecosystem_types</title>
-<g id="a_node67"><a xlink:href="../../tables/ecosystem_types.html" xlink:title="ecosystem_types" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="919,-15145 919,-15229 1064,-15229 1064,-15145 919,-15145"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="919.5,-15207 919.5,-15229 1064.5,-15229 1064.5,-15207 919.5,-15207"/>
-<polygon fill="none" stroke="black" points="919.5,-15207 919.5,-15229 1064.5,-15229 1064.5,-15207 919.5,-15207"/>
-<text text-anchor="start" x="924.5" y="-15216.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">ecosystem_types</text>
-<text text-anchor="start" x="1025.5" y="-15215.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="919.5,-15185 919.5,-15207 1064.5,-15207 1064.5,-15185 919.5,-15185"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="924.5" y="-15202"/>
-<text text-anchor="start" x="951.5" y="-15193.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="919.5,-15163 919.5,-15185 1064.5,-15185 1064.5,-15163 919.5,-15163"/>
-<polygon fill="none" stroke="black" points="919.5,-15163 919.5,-15185 1064.5,-15185 1064.5,-15163 919.5,-15163"/>
-<text text-anchor="start" x="951.5" y="-15171.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="919.5,-15145 919.5,-15163 980.5,-15163 980.5,-15145 919.5,-15145"/>
-<polygon fill="none" stroke="black" points="919.5,-15145 919.5,-15163 980.5,-15163 980.5,-15145 919.5,-15145"/>
-<text text-anchor="start" x="922.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="980.5,-15145 980.5,-15163 1017.5,-15163 1017.5,-15145 980.5,-15145"/>
-<polygon fill="none" stroke="black" points="980.5,-15145 980.5,-15163 1017.5,-15163 1017.5,-15145 980.5,-15145"/>
-<text text-anchor="start" x="1007.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1017.5,-15145 1017.5,-15163 1064.5,-15163 1064.5,-15145 1017.5,-15145"/>
-<polygon fill="none" stroke="black" points="1017.5,-15145 1017.5,-15163 1064.5,-15163 1064.5,-15145 1017.5,-15145"/>
-<text text-anchor="start" x="1045.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
 <!-- device_managers -->
-<g id="node68" class="node">
+<g id="node67" class="node">
 <title>device_managers</title>
-<g id="a_node68"><a xlink:href="../../tables/device_managers.html" xlink:title="device_managers" target="_top">
+<g id="a_node67"><a xlink:href="../../tables/device_managers.html" xlink:title="device_managers" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1243,-8093 1243,-8419 1404,-8419 1404,-8093 1243,-8093"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1243.5,-8397 1243.5,-8419 1404.5,-8419 1404.5,-8397 1243.5,-8397"/>
 <polygon fill="none" stroke="black" points="1243.5,-8397 1243.5,-8419 1404.5,-8419 1404.5,-8397 1243.5,-8397"/>
@@ -3367,6 +3340,33 @@
 <polygon fill="black" stroke="black" points="1241.54,-8184.04 1241.86,-8192.03 1240.26,-8192.09 1239.94,-8184.1 1241.54,-8184.04"/>
 <polyline fill="none" stroke="black" points="1242.5,-8188 1238.5,-8188.16 "/>
 <ellipse fill="none" stroke="black" cx="1235.31" cy="-8188.29" rx="3.2" ry="3.2"/>
+</g>
+<!-- ecosystem_types -->
+<g id="node68" class="node">
+<title>ecosystem_types</title>
+<g id="a_node68"><a xlink:href="../../tables/ecosystem_types.html" xlink:title="ecosystem_types" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="919,-15145 919,-15229 1064,-15229 1064,-15145 919,-15145"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="919.5,-15207 919.5,-15229 1064.5,-15229 1064.5,-15207 919.5,-15207"/>
+<polygon fill="none" stroke="black" points="919.5,-15207 919.5,-15229 1064.5,-15229 1064.5,-15207 919.5,-15207"/>
+<text text-anchor="start" x="924.5" y="-15216.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">ecosystem_types</text>
+<text text-anchor="start" x="1025.5" y="-15215.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="919.5,-15185 919.5,-15207 1064.5,-15207 1064.5,-15185 919.5,-15185"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="924.5" y="-15202"/>
+<text text-anchor="start" x="951.5" y="-15193.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="919.5,-15163 919.5,-15185 1064.5,-15185 1064.5,-15163 919.5,-15163"/>
+<polygon fill="none" stroke="black" points="919.5,-15163 919.5,-15185 1064.5,-15185 1064.5,-15163 919.5,-15163"/>
+<text text-anchor="start" x="951.5" y="-15171.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="919.5,-15145 919.5,-15163 980.5,-15163 980.5,-15145 919.5,-15145"/>
+<polygon fill="none" stroke="black" points="919.5,-15145 919.5,-15163 980.5,-15163 980.5,-15145 919.5,-15145"/>
+<text text-anchor="start" x="922.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="980.5,-15145 980.5,-15163 1017.5,-15163 1017.5,-15145 980.5,-15145"/>
+<polygon fill="none" stroke="black" points="980.5,-15145 980.5,-15163 1017.5,-15163 1017.5,-15145 980.5,-15145"/>
+<text text-anchor="start" x="1007.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1017.5,-15145 1017.5,-15163 1064.5,-15163 1064.5,-15145 1017.5,-15145"/>
+<polygon fill="none" stroke="black" points="1017.5,-15145 1017.5,-15163 1064.5,-15163 1064.5,-15145 1017.5,-15145"/>
+<text text-anchor="start" x="1045.5" y="-15151.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
 </g>
 <!-- species_ecosystem_types -->
 <g id="node70" class="node">
