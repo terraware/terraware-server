@@ -55,9 +55,9 @@ data class ObservationSpeciesResultsModel(
      */
     val cumulativeDead: Int,
     /**
-     * Number of live plants observed in monitoring plots in the latest observations, including past
-     * observations if latest observation doesn't include all sub-areas. This only applies to Zones
-     * and Sites since subzones are fully observed in a single observation.
+     * Number of live plants observed in monitoring plots in the latest observations. If this is for
+     * a zone or site, it may also include past observations (excluding ad-hoc) if the latest
+     * observation doesn't include all subareas.
      */
     val latestLive: Int,
     /**

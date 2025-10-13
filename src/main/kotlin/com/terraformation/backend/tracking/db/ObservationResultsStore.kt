@@ -492,8 +492,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
    *     9. Total live in permanent plots (non-nullable)
    *     10. Survival Rate (nullable)
    *     11. T0 Density (nullable)
-   *     12. Latest Live across multiple observations if needed (non-nullable) This one is only used
-   *         by zones and sites.
+   *     12. Latest Live from latest observation (or across multiple observations if not all
+   *         subzones are in the latest observation) (non-nullable)
    */
   private fun speciesMultiset(
       query:
