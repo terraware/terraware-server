@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -84,7 +85,9 @@ class ActivityStore(
     // Check that the activity exists.
     fetchOneById(activityId, false)
 
-    // TODO: Don't let end users delete published activities once publication is implemented
+    if (isPublished(activityId) && !currentUser().canManageActivity(activityId)) {
+      throw CannotDeletePublishedActivityException(activityId)
+    }
 
     dslContext.transaction { _ ->
       eventPublisher.publishEvent(ActivityDeletionStartedEvent(activityId))
@@ -103,7 +106,9 @@ class ActivityStore(
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
 
-    // TODO: Don't let end users edit published activities once publication is implemented
+    if (isPublished(activityId) && !currentUser().canManageActivity(activityId)) {
+      throw CannotUpdatePublishedActivityException(activityId)
+    }
 
     val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
 
@@ -196,5 +201,12 @@ class ActivityStore(
         }
       }
     }
+  }
+
+  private fun isPublished(activityId: ActivityId): Boolean {
+    return dslContext.fetchExists(
+        PUBLISHED_ACTIVITIES,
+        PUBLISHED_ACTIVITIES.ACTIVITY_ID.eq(activityId),
+    )
   }
 }
