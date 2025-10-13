@@ -368,7 +368,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(tempPlot1 to plot1SurvivalRates),
             mapOf(subzone1 to plot1SurvivalRates),
             mapOf(zoneId to plot1SurvivalRates),
-            mapOf(plantingSiteId to plot1SurvivalRates.filterKeys { it != null }),
+            mapOf(plantingSiteId to plot1SurvivalRates),
         ),
         "Temp plot 1 survival rates",
     )
@@ -398,15 +398,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         )
     assertSurvivalRates(
         listOf(
-            mapOf(
-                // excludes plot1 because it's in a different observation
-                tempPlot2 to plot2SurvivalRates,
-            ),
-            mapOf(
-                subzone2 to plot2SurvivalRates,
-            ),
+            // excludes plot1 because it's in a different observation
+            mapOf(tempPlot2 to plot2SurvivalRates),
+            mapOf(subzone2 to plot2SurvivalRates),
+            // but include plot1 at the zone and site level
             mapOf(zoneId to survivalRates1And2),
-            mapOf(plantingSiteId to survivalRates1And2.filterKeys { it != null }),
+            mapOf(plantingSiteId to survivalRates1And2),
         ),
         "Plots 1 and 2 survival rates",
     )
