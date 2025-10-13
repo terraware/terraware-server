@@ -1,3 +1,4 @@
+1052f1e214a SW-7506 Return publication status of activities (#3496)
 c39ed7cde93 SW-7506 Non-admins cannot modify published activities (#3495)
 9d72bb31284 SW-7503 Admin endpoint to publish an activity (#3494)
 91e8d857961 SW-7503 Delete published versions of deleted activities (#3493)
