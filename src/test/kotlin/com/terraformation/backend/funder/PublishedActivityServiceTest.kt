@@ -241,26 +241,7 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class ReadMedia {
     @Test
-    fun `returns media data for correct activity`() {
-      switchToFunderUser()
-      insertFundingEntityProject()
-
-      val fileId = insertFile()
-      insertPublishedActivity()
-      insertPublishedActivityMediaFile()
-
-      val testContent = Random.nextBytes(10)
-      every { thumbnailService.readFile(fileId) } answers
-          {
-            SizedInputStream(testContent.inputStream(), 10, MediaType.IMAGE_JPEG)
-          }
-
-      val inputStream = service.readMedia(activityId, fileId)
-      assertArrayEquals(testContent, inputStream.readAllBytes(), "File content")
-    }
-
-    @Test
-    fun `returns thumbnail data when dimensions specified`() {
+    fun `returns thumbnail data for specified dimensions`() {
       switchToFunderUser()
       insertFundingEntityProject()
 
@@ -272,10 +253,9 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val maxWidth = 100
       val maxHeight = 100
 
-      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } answers
-          {
-            SizedInputStream(thumbnailContent.inputStream(), 25, MediaType.IMAGE_JPEG)
-          }
+      every {
+        thumbnailService.readFile(fileId, maxWidth, maxHeight, forceThumbnail = true)
+      } answers { SizedInputStream(thumbnailContent.inputStream(), 25, MediaType.IMAGE_JPEG) }
 
       val inputStream = service.readMedia(activityId, fileId, maxWidth, maxHeight)
       assertArrayEquals(thumbnailContent, inputStream.readAllBytes(), "Thumbnail content")

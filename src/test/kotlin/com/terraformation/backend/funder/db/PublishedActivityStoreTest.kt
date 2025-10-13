@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
@@ -15,9 +16,14 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.records.PublishedActivitiesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityMediaFilesRecord
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
+import com.terraformation.backend.funder.model.PublishedActivityMediaModel
+import com.terraformation.backend.funder.model.PublishedActivityModel
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.LocalDate
@@ -56,6 +62,159 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             verifiedBy = user.userId,
             verifiedTime = Instant.EPOCH,
         )
+  }
+
+  @Nested
+  inner class FetchByProjectId {
+    @Test
+    fun `lists published activities for funder user who has access to project`() {
+      switchToFunder()
+
+      val activityId1 = insertActivity(isHighlight = true, verifiedBy = user.userId)
+      insertPublishedActivity(
+          activityDate = LocalDate.of(2025, 1, 1),
+          activityType = ActivityType.SeedCollection,
+          description = "Activity 1",
+          isHighlight = true,
+      )
+      val activity1FileId1 = insertFile()
+      insertActivityMediaFile()
+      insertPublishedActivityMediaFile()
+      val activity1FileId2 = insertFile()
+      insertActivityMediaFile()
+      insertPublishedActivityMediaFile()
+      val activityId2 = insertActivity(verifiedBy = user.userId)
+      insertPublishedActivity(
+          activityDate = LocalDate.of(2025, 1, 2),
+          activityType = ActivityType.Monitoring,
+          description = "Activity 2",
+      )
+      val activity2FileId = insertFile()
+      insertActivityMediaFile()
+      insertPublishedActivityMediaFile()
+
+      // Activities from other projects shouldn't be included.
+      insertProject()
+      insertFundingEntityProject()
+      insertActivity(verifiedBy = user.userId)
+      insertPublishedActivity()
+
+      assertEquals(
+          listOf(
+              PublishedActivityModel(
+                  activityDate = LocalDate.of(2025, 1, 1),
+                  activityType = ActivityType.SeedCollection,
+                  description = "Activity 1",
+                  id = activityId1,
+                  isHighlight = true,
+                  media =
+                      listOf(
+                          PublishedActivityMediaModel(
+                              activityId = activityId1,
+                              caption = null,
+                              capturedDate = LocalDate.EPOCH,
+                              fileId = activity1FileId1,
+                              geolocation = null,
+                              isCoverPhoto = false,
+                              isHiddenOnMap = false,
+                              listPosition = 1,
+                              type = ActivityMediaType.Photo,
+                          ),
+                          PublishedActivityMediaModel(
+                              activityId = activityId1,
+                              caption = null,
+                              capturedDate = LocalDate.EPOCH,
+                              fileId = activity1FileId2,
+                              geolocation = null,
+                              isCoverPhoto = false,
+                              isHiddenOnMap = false,
+                              listPosition = 2,
+                              type = ActivityMediaType.Photo,
+                          ),
+                      ),
+                  projectId = projectId,
+                  publishedBy = user.userId,
+                  publishedTime = Instant.EPOCH,
+              ),
+              PublishedActivityModel(
+                  activityDate = LocalDate.of(2025, 1, 2),
+                  activityType = ActivityType.Monitoring,
+                  description = "Activity 2",
+                  id = activityId2,
+                  isHighlight = false,
+                  media =
+                      listOf(
+                          PublishedActivityMediaModel(
+                              activityId = activityId2,
+                              caption = null,
+                              capturedDate = LocalDate.EPOCH,
+                              fileId = activity2FileId,
+                              geolocation = null,
+                              isCoverPhoto = false,
+                              isHiddenOnMap = false,
+                              listPosition = 1,
+                              type = ActivityMediaType.Photo,
+                          ),
+                      ),
+                  projectId = projectId,
+                  publishedBy = user.userId,
+                  publishedTime = Instant.EPOCH,
+              ),
+          ),
+          store.fetchByProjectId(projectId, includeMedia = true),
+      )
+    }
+
+    @Test
+    fun `does not include media if not requested`() {
+      switchToFunder()
+
+      val activityId1 = insertActivity(isHighlight = true, verifiedBy = user.userId)
+      insertPublishedActivity(
+          activityDate = LocalDate.of(2025, 1, 1),
+          activityType = ActivityType.SeedCollection,
+          description = "Activity 1",
+          isHighlight = true,
+      )
+      insertFile()
+      insertActivityMediaFile()
+      insertPublishedActivityMediaFile()
+
+      assertEquals(
+          listOf(
+              PublishedActivityModel(
+                  activityDate = LocalDate.of(2025, 1, 1),
+                  activityType = ActivityType.SeedCollection,
+                  description = "Activity 1",
+                  id = activityId1,
+                  isHighlight = true,
+                  media = emptyList(),
+                  projectId = projectId,
+                  publishedBy = user.userId,
+                  publishedTime = Instant.EPOCH,
+              ),
+          ),
+          store.fetchByProjectId(projectId, includeMedia = false),
+      )
+    }
+
+    @Test
+    fun `throws exception for funder user who does not have access to project`() {
+      switchToFunder()
+      dslContext.deleteFrom(FUNDING_ENTITY_PROJECTS).execute()
+
+      assertThrows<ProjectNotFoundException> {
+        store.fetchByProjectId(projectId, includeMedia = false)
+      }
+    }
+
+    private fun switchToFunder() {
+      dslContext.update(USERS).set(USERS.USER_TYPE_ID, UserType.Funder).execute()
+      switchToUser(user.userId)
+      insertFundingEntity()
+      insertFundingEntityUser()
+      insertFundingEntityProject()
+    }
   }
 
   @Nested

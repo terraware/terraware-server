@@ -30,7 +30,7 @@ class PublishedActivityService(
 
     publishedActivityStore.ensureFileExists(activityId, fileId)
 
-    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight, forceThumbnail = true)
   }
 
   fun getMuxStreamInfo(activityId: ActivityId, fileId: FileId): MuxStreamModel {
