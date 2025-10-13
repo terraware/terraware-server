@@ -1138,6 +1138,17 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             }
             .flatten()
 
+    with(OBSERVATION_REQUESTED_SUBZONES) {
+      dslContext
+          .insertInto(OBSERVATION_REQUESTED_SUBZONES, OBSERVATION_ID, PLANTING_SUBZONE_ID)
+          .select(
+              DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
+                  .from(MONITORING_PLOTS)
+                  .where(MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() }))
+          )
+          .execute()
+    }
+
     // This would normally happen in ObservationService.startObservation after plot selection;
     // do it explicitly since we're specifying our own plots in the test data.
     observationStore.populateCumulativeDead(observationId)
