@@ -355,6 +355,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canListPublishedActivities(projectId: ProjectId): Boolean = defaultPermission
+
   fun canListSeedFundReports(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canManageActivity(activityId: ActivityId): Boolean = defaultPermission
@@ -490,6 +492,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canReadProjectScores(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean = defaultPermission
+
+  fun canReadPublishedActivity(activityId: ActivityId): Boolean = defaultPermission
 
   fun canReadPublishedProjects(): Boolean = defaultPermission
 

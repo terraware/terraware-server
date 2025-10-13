@@ -175,6 +175,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingZoneNotFoundException::class) { canReadPlantingZone(it) }
   private val projectId: ProjectId by
       readableId(ProjectNotFoundException::class) { canReadProject(it) }
+  private val publishedActivityId: ActivityId by
+      readableId(ActivityNotFoundException::class) { canReadPublishedActivity(it) }
   private val reportId: ReportId by readableId(ReportNotFoundException::class) { canReadReport(it) }
   private val seedFundReportId: SeedFundReportId by
       readableId(SeedFundReportNotFoundException::class) { canReadSeedFundReport(it) }
@@ -593,6 +595,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun listPublishedActivities() =
+      allow { listPublishedActivities(projectId) } ifUser { canListPublishedActivities(projectId) }
+
+  @Test
   fun listReports() =
       allow { listSeedFundReports(organizationId) } ifUser
           {
@@ -869,6 +875,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadProjectScores(projectId) }
     requirements.readProjectScores(projectId)
   }
+
+  @Test fun readPublishedActivity() = testRead { readPublishedActivity(publishedActivityId) }
 
   @Test
   fun readPublishedProjects() {

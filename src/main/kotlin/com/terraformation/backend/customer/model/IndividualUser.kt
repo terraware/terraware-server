@@ -308,6 +308,9 @@ data class IndividualUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId) =
       isMember(organizationId) || isGlobalReader(organizationId)
 
+  override fun canListPublishedActivities(projectId: ProjectId) =
+      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canListSeedFundReports(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
@@ -507,6 +510,10 @@ data class IndividualUser(
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
+
+  override fun canReadPublishedActivity(activityId: ActivityId): Boolean {
+    return isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(activityId))
+  }
 
   override fun canReadPublishedProjects() = isReadOnlyOrHigher()
 
