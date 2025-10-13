@@ -190,15 +190,31 @@ class ActivityStore(
     return with(ACTIVITIES) {
       if (includeMedia) {
         dslContext
-            .select(asterisk(), mediaMultiset)
+            .select(
+                asterisk(),
+                PUBLISHED_ACTIVITIES.PUBLISHED_BY,
+                PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
+                mediaMultiset,
+            )
             .from(ACTIVITIES)
+            .leftJoin(PUBLISHED_ACTIVITIES)
+            .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
             .where(condition)
             .orderBy(ID)
             .fetch { ExistingActivityModel.of(it, mediaMultiset) }
       } else {
-        dslContext.select(asterisk()).from(ACTIVITIES).where(condition).orderBy(ID).fetch {
-          ExistingActivityModel.of(it, null)
-        }
+        dslContext
+            .select(
+                asterisk(),
+                PUBLISHED_ACTIVITIES.PUBLISHED_BY,
+                PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
+            )
+            .from(ACTIVITIES)
+            .leftJoin(PUBLISHED_ACTIVITIES)
+            .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
+            .where(condition)
+            .orderBy(ID)
+            .fetch { ExistingActivityModel.of(it, null) }
       }
     }
   }

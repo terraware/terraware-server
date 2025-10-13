@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
@@ -24,6 +25,8 @@ data class ExistingActivityModel(
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val projectId: ProjectId,
+    val publishedBy: UserId? = null,
+    val publishedTime: Instant? = null,
     val verifiedBy: UserId? = null,
     val verifiedTime: Instant? = null,
 ) {
@@ -46,6 +49,8 @@ data class ExistingActivityModel(
             modifiedBy = record[MODIFIED_BY]!!,
             modifiedTime = record[MODIFIED_TIME]!!,
             projectId = record[PROJECT_ID]!!,
+            publishedBy = record[PUBLISHED_ACTIVITIES.PUBLISHED_BY],
+            publishedTime = record[PUBLISHED_ACTIVITIES.PUBLISHED_TIME],
             verifiedBy = record[VERIFIED_BY],
             verifiedTime = record[VERIFIED_TIME],
         )
