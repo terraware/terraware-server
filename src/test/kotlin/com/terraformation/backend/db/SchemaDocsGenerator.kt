@@ -234,6 +234,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "funding_entities" to setOf(ALL, FUNDER),
                   "funding_entity_users" to setOf(ALL, FUNDER),
                   "funding_entity_projects" to setOf(ALL, FUNDER),
+                  "published_activities" to setOf(ALL, FUNDER),
+                  "published_activity_media_files" to setOf(ALL, FUNDER),
                   "published_project_carbon_certs" to setOf(ALL, FUNDER),
                   "published_project_land_use" to setOf(ALL, FUNDER),
                   "published_project_sdg" to setOf(ALL, FUNDER),
