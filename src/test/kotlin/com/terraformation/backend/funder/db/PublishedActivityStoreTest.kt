@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.records.PublishedActivitiesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityMediaFilesRecord
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -67,11 +68,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class FetchByProjectId {
     @Test
     fun `lists published activities for funder user who has access to project`() {
-      dslContext.update(USERS).set(USERS.USER_TYPE_ID, UserType.Funder).execute()
-      switchToUser(user.userId)
-      insertFundingEntity()
-      insertFundingEntityUser()
-      insertFundingEntityProject()
+      switchToFunder()
 
       val activityId1 = insertActivity(isHighlight = true, verifiedBy = user.userId)
       insertPublishedActivity(
@@ -170,11 +167,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `does not include media if not requested`() {
-      dslContext.update(USERS).set(USERS.USER_TYPE_ID, UserType.Funder).execute()
-      switchToUser(user.userId)
-      insertFundingEntity()
-      insertFundingEntityUser()
-      insertFundingEntityProject()
+      switchToFunder()
 
       val activityId1 = insertActivity(isHighlight = true, verifiedBy = user.userId)
       insertPublishedActivity(
@@ -207,14 +200,20 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception for funder user who does not have access to project`() {
-      dslContext.update(USERS).set(USERS.USER_TYPE_ID, UserType.Funder).execute()
-      switchToUser(user.userId)
-      insertFundingEntity()
-      insertFundingEntityUser()
+      switchToFunder()
+      dslContext.deleteFrom(FUNDING_ENTITY_PROJECTS).execute()
 
       assertThrows<ProjectNotFoundException> {
         store.fetchByProjectId(projectId, includeMedia = false)
       }
+    }
+
+    private fun switchToFunder() {
+      dslContext.update(USERS).set(USERS.USER_TYPE_ID, UserType.Funder).execute()
+      switchToUser(user.userId)
+      insertFundingEntity()
+      insertFundingEntityUser()
+      insertFundingEntityProject()
     }
   }
 

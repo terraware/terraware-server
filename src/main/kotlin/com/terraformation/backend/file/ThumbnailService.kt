@@ -35,14 +35,21 @@ class ThumbnailService(
    *
    * The returned image's dimensions will never be larger than the original file's.
    */
-  fun readFile(fileId: FileId, maxWidth: Int? = null, maxHeight: Int? = null): SizedInputStream {
+  fun readFile(
+      fileId: FileId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+      forceThumbnail: Boolean = false,
+  ): SizedInputStream {
     val mimeType =
         dslContext.fetchValue(FILES.CONTENT_TYPE, FILES.ID.eq(fileId))
             ?: throw FileNotFoundException(fileId)
 
     // If the user is requesting a full-sized version of the image and the original's file type is
     // already acceptable, just give them the original file.
-    if (maxWidth == null && maxHeight == null && mimeType in acceptableMimeTypes) {
+    if (
+        maxWidth == null && maxHeight == null && mimeType in acceptableMimeTypes && !forceThumbnail
+    ) {
       return fileService.readFile(fileId)
     }
 

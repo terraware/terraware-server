@@ -97,6 +97,23 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns thumbnail if forceThumbnail is true`() {
+      val photoData = Random.nextBytes(10)
+      val thumbnailData = Random.nextBytes(10)
+      val fileId = fileService.storeFile("category", photoData.inputStream(), metadata) {}
+
+      every { thumbnailStore.canGenerateThumbnails(metadata.contentType) } returns true
+      every { thumbnailStore.getThumbnailData(fileId, null, null) } answers
+          {
+            SizedInputStream(thumbnailData.inputStream(), 10, MediaType.IMAGE_JPEG)
+          }
+
+      val stream = service.readFile(fileId, forceThumbnail = true)
+
+      assertArrayEquals(thumbnailData, stream.readAllBytes())
+    }
+
+    @Test
     fun `returns photo thumbnail if photo dimensions are specified`() {
       val photoData = Random.nextBytes(10)
       val thumbnailData = Random.nextBytes(10)
