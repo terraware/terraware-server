@@ -58,6 +58,7 @@
             <child column="file_id" foreignKey="report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_photos"/>
             <child column="file_id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submission_snapshots"/>
             <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="file_id" foreignKey="published_activity_media_files_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_media_files"/>
             <child column="file_id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_photos"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>

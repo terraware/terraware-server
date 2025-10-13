@@ -3,6 +3,8 @@ cohort_phases
 metric_components
 metric_types
 report_frequencies
+activity_media_types
+activity_types
 application_statuses
 deliverable_types
 internal_interests
@@ -10,9 +12,7 @@ pipelines
 report_quarters
 submission_statuses
 vote_options
-activity_media_types
 activity_statuses
-activity_types
 application_module_statuses
 document_stores
 event_statuses
@@ -28,12 +28,12 @@ participants
 project_report_configs
 reports
 report_photos
+activities
 project_metrics
 deliverables
 applications
 submissions
 deal_stages
-activities
 events
 deliverable_variables
 project_overall_scores

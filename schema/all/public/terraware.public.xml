@@ -408,6 +408,7 @@
             <child column="file_id" foreignKey="report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_photos"/>
             <child column="file_id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submission_snapshots"/>
             <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="file_id" foreignKey="published_activity_media_files_file_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_media_files"/>
             <child column="file_id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_report_photos"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
@@ -833,6 +834,7 @@
             <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
             <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
             <child column="project_id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="project_id" foreignKey="published_activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_activities"/>
             <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
             <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
             <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
@@ -1590,6 +1592,7 @@
             <child column="created_by" foreignKey="funding_entities_created_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
             <child column="modified_by" foreignKey="funding_entities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="funding_entities"/>
             <child column="user_id" foreignKey="funding_entity_users_user_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_users"/>
+            <child column="published_by" foreignKey="published_activities_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activities"/>
             <child column="published_by" foreignKey="published_project_details_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
             <child column="published_by" foreignKey="published_reports_published_by_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
             <child column="created_by" foreignKey="batch_details_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>

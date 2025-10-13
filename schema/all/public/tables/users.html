@@ -371,6 +371,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="published_activities.published_by references users.id via published_activities_published_by_fkey"><a href='../../funder/tables/published_activities.html'>published_activities</a><span class='relatedKey'>.published_by</span></td>
+                                                <td class="constraint detail">published_activities_published_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="published_project_details.published_by references users.id via published_project_details_published_by_fkey"><a href='../../funder/tables/published_project_details.html'>published_project_details</a><span class='relatedKey'>.published_by</span></td>
                                                 <td class="constraint detail">published_project_details_published_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>

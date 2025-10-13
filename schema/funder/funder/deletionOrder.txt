@@ -8,7 +8,9 @@ published_report_project_metrics
 published_report_photos
 published_report_challenges
 published_report_achievements
+published_activity_media_files
 funding_entity_users
 funding_entity_projects
+published_activities
 funding_entities
 published_reports

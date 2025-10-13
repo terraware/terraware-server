@@ -23,7 +23,6 @@ cohort_modules
 report_challenges
 report_achievements
 default_voters
-activities
 events
 deal_stages
 submissions
@@ -32,6 +31,7 @@ deliverables
 modules
 reports
 project_report_configs
+activities
 participants
 cohorts
 project_metrics
@@ -45,9 +45,7 @@ event_types
 event_statuses
 document_stores
 application_module_statuses
-activity_types
 activity_statuses
-activity_media_types
 vote_options
 submission_statuses
 report_quarters
@@ -55,6 +53,8 @@ pipelines
 internal_interests
 deliverable_types
 application_statuses
+activity_types
+activity_media_types
 report_frequencies
 metric_types
 metric_components

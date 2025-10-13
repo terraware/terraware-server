@@ -1,7 +1,9 @@
 published_reports
 funding_entities
+published_activities
 funding_entity_projects
 funding_entity_users
+published_activity_media_files
 published_report_achievements
 published_report_challenges
 published_report_photos

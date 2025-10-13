@@ -52,6 +52,46 @@
             <column ascending="true" name="user_id"/>
          </index>
       </table>
+      <table name="published_activities" remarks="Published project activities visible to funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="activity_id" foreignKey="published_activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activity_media_files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="activity_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_highlight" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="activity_id" sequenceNumberInPK="1"/>
+         <index name="published_activities_pkey" unique="true">
+            <column ascending="true" name="activity_id"/>
+         </index>
+         <index name="published_activities_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="published_activity_media_files" remarks="Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="activity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="activity_id" foreignKey="published_activity_media_files_activity_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_activities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="activity_media_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_cover_photo" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_hidden_on_map" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="captured_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="geolocation" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="file_id" sequenceNumberInPK="1"/>
+         <index name="published_activity_media_files_pkey" unique="true">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="published_activity_media_files_activity_id_list_position_key" unique="true">
+            <column ascending="true" name="activity_id"/>
+            <column ascending="true" name="list_position"/>
+         </index>
+      </table>
       <table name="published_project_carbon_certs" remarks="Carbon Certifications for published projects." schema="funder" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="carbon_certification" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

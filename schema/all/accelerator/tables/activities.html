@@ -135,6 +135,11 @@
                                                 <td class="constraint detail">activity_media_files_activity_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="published_activities.activity_id references activities.id via published_activities_activity_id_fkey"><a href='../../funder/tables/published_activities.html'>published_activities</a><span class='relatedKey'>.activity_id</span></td>
+                                                <td class="constraint detail">published_activities_activity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -448,12 +453,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>verified_by_requires_time</td>
-                                    <td>((verified_by IS NULL) &#61; (verified_time IS NULL))</td>
-                                </tr>
-                                <tr>
                                     <td>activity_status_verified</td>
                                     <td>&#10;CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END</td>
+                                </tr>
+                                <tr>
+                                    <td>verified_by_requires_time</td>
+                                    <td>((verified_by IS NULL) &#61; (verified_time IS NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>
