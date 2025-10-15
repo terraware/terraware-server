@@ -1,3 +1,4 @@
+2ff1406bcd8 SW-7416 Add temp plots to observations results for sites (#3504)
 142e51fb98d SW-7416 Add temp plots to observations results for zones (#3503)
 a130050db32 Upgrade to ktfmt 0.59; use it to reformat code (#3507)
 5a2a7d463e6 SW-7416 Add temp plots to observation results for plots and subzones (#3497)
