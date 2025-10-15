@@ -55,6 +55,12 @@ data class ObservationSpeciesResultsModel(
      */
     val cumulativeDead: Int,
     /**
+     * Number of live plants observed in monitoring plots in the latest observations. If this is for
+     * a zone or site, it may also include past observations (excluding ad-hoc) if the latest
+     * observation doesn't include all subareas.
+     */
+    val latestLive: Int,
+    /**
      * Percentage of plants in permanent monitoring plots that are dead. If there are no permanent
      * monitoring plots (or if this is a plot-level result for a temporary monitoring plot) this
      * will be null. The mortality rate is calculated using [cumulativeDead] and [permanentLive].
@@ -533,7 +539,7 @@ fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
 ): Int? {
   val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
   val numKnownLive =
-      if (includeTempPlots) this.sumOf { it.totalLive } else this.sumOf { it.permanentLive }
+      if (includeTempPlots) this.sumOf { it.latestLive } else this.sumOf { it.permanentLive }
 
   val numerator = (numKnownLive * 100.0).toBigDecimal()
   val denominator = sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())
@@ -587,6 +593,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
         ObservationSpeciesResultsModel(
             certainty = key.first,
             cumulativeDead = cumulativeDead,
+            latestLive = groupedSpecies.sumOf { it.latestLive },
             mortalityRate = mortalityRate,
             permanentLive = permanentLive,
             speciesId = key.second,
