@@ -123,9 +123,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertSurvivalRates(
         listOf(
             mapOf(plotId to mapOf(speciesId to 0)),
-            mapOf(subzoneId to mapOf(speciesId to 0, null to 0)),
-            mapOf(zoneId to mapOf(speciesId to 0, null to 0)),
-            mapOf(plantingSiteId to mapOf(speciesId to 0, null to 0)),
+            mapOf(subzoneId to mapOf(speciesId to null)),
+            mapOf(zoneId to mapOf(speciesId to null)),
+            mapOf(plantingSiteId to mapOf(speciesId to null)),
         ),
         "All survival rates should be 0",
     )
@@ -316,7 +316,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate is recalculated correctly for a subzone that has only temp plots`() {
-    val plantingSiteId = insertPlantingSite(survivalRateIncludesTempPlots = true)
+    val plantingSiteId = insertPlantingSite(survivalRateIncludesTempPlots = true, x = 0, y = 0)
     val zoneId = insertPlantingZone()
     val subzone1 = insertPlantingSubzone()
     val observationId1 = insertObservation()
@@ -361,14 +361,14 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         mapOf(
             speciesId1 to 100.0 * 10 / 15,
             speciesId2 to 100.0 * 15 / 30,
-            // null to 100.0 * (10 + 15) / (15 + 30), // will be added later
+            null to 100.0 * (10 + 15) / (15 + 30),
         )
     assertSurvivalRates(
         listOf(
             mapOf(tempPlot1 to plot1SurvivalRates),
             mapOf(subzone1 to plot1SurvivalRates),
-            mapOf(zoneId to plot1SurvivalRates),
-            mapOf(plantingSiteId to plot1SurvivalRates),
+            mapOf(zoneId to plot1SurvivalRates.filterKeys { it != null }),
+            mapOf(plantingSiteId to plot1SurvivalRates.filterKeys { it != null }),
         ),
         "Temp plot 1 survival rates",
     )
@@ -388,13 +388,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         mapOf(
             speciesId1 to 100.0 * 4 / 15,
             speciesId2 to 100.0 * 9 / 30,
-            // null to 100.0 * (4 + 9) / (15 + 30), // will be added later
+            null to 100.0 * (4 + 9) / (15 + 30),
         )
     val survivalRates1And2: Map<SpeciesId?, Double?> =
         mapOf(
             speciesId1 to (100.0 * (10 + 4) / (15 + 15)),
             speciesId2 to (100.0 * (15 + 9) / (30 + 30)),
-            // null to 100.0 * (10 + 4 + 15 + 9) / (15 + 15 + 30 + 30), // will be added later
+            null to 100.0 * (10 + 4 + 15 + 9) / (15 + 15 + 30 + 30),
         )
     assertSurvivalRates(
         listOf(
@@ -405,8 +405,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(
                 subzone2 to plot2SurvivalRates,
             ),
-            mapOf(zoneId to survivalRates1And2),
-            mapOf(plantingSiteId to survivalRates1And2),
+            mapOf(zoneId to survivalRates1And2.filterKeys { it != null }),
+            mapOf(plantingSiteId to survivalRates1And2.filterKeys { it != null }),
         ),
         "Plots 1 and 2 survival rates",
     )

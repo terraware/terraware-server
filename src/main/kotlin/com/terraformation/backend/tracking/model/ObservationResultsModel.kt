@@ -24,6 +24,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import org.locationtech.jts.geom.Point
@@ -527,12 +528,21 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
   }
 }
 
-fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(): Int? {
+fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
+    includeTempPlots: Boolean = false
+): Int? {
   val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
-  val numKnownLive = this.sumOf { it.permanentLive }
+  val numKnownLive =
+      if (includeTempPlots) this.sumOf { it.totalLive } else this.sumOf { it.permanentLive }
+
+  val numerator = (numKnownLive * 100.0).toBigDecimal()
+  val denominator = sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())
+  val scale = max(numerator.scale(), denominator.scale())
 
   return if (sumDensity > BigDecimal.ZERO) {
-    ((numKnownLive * 100.0).toBigDecimal() / (sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())))
+    numerator
+        .setScale(scale)
+        .div(denominator.setScale(scale))
         .setScale(0, RoundingMode.HALF_UP)
         .toInt()
   } else {
