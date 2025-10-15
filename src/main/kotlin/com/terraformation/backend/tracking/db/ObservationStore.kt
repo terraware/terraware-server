@@ -1576,32 +1576,6 @@ class ObservationStore(
     val liveAndDeadTotals:
         Map<RecordedSpeciesKey, Map<PlantingZoneId, List<SubzoneSpeciesRecord>>> =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
-          val observationIdForSubzoneField =
-              DSL.select(OBSERVATIONS.ID)
-                  .from(OBSERVATIONS)
-                  .join(OBSERVATION_REQUESTED_SUBZONES)
-                  .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID))
-                  .where(
-                      OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)
-                  )
-                  .and(
-                      OBSERVATIONS.COMPLETED_TIME.le(
-                          DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                              .from(OBSERVATIONS)
-                              .where(OBSERVATIONS.ID.eq(observationId))
-                      )
-                  )
-                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                  .orderBy(
-                      // Prefer results from this observation if any. True is considered
-                      // greater than false, so sorting by an "=" expression in descending
-                      // order means the matches come first.
-                      OBSERVATION_ID.eq(observationId).desc(),
-                      // Otherwise take the results from the latest observation.
-                      OBSERVATIONS.COMPLETED_TIME.desc(),
-                  )
-                  .limit(1)
-
           dslContext
               .select(
                   CERTAINTY_ID.asNonNullable(),
@@ -1617,7 +1591,7 @@ class ObservationStore(
               .join(PLANTING_SUBZONES)
               .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
               .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(OBSERVATION_ID.eq(observationIdForSubzoneField))
+              .and(OBSERVATION_ID.eq(latestObservationForSubzoneField(DSL.inline(observationId))))
               .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).plus(TOTAL_LIVE).gt(0))
               .fetch { record ->
                 SubzoneSpeciesRecord(
