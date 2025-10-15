@@ -1491,46 +1491,59 @@ class ReportStore(
 
   private val survivalRatePermDenominatorField =
       with(PLOT_T0_DENSITIES) {
-        DSL.sum(
-                DSL.field(
-                    DSL.select(DSL.sum(PLOT_DENSITY))
-                        .from(this)
-                        .where(
-                            monitoringPlots.PLANTING_SITE_ID.`in`(
-                                OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+        DSL.coalesce(
+                DSL.sum(
+                    DSL.field(
+                        DSL.select(DSL.sum(PLOT_DENSITY))
+                            .from(this)
+                            .where(
+                                monitoringPlots.PLANTING_SITE_ID.`in`(
+                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                )
                             )
-                        )
-                        .and(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
-                        .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
-                )
+                            .and(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                    )
+                ),
+                BigDecimal.ZERO,
             )
             .times(DSL.inline(HECTARES_PER_PLOT))
       }
 
   private val survivalRateTempDenominatorField =
       with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
-        DSL.sum(
-                DSL.field(
-                    DSL.select(DSL.sum(ZONE_DENSITY))
-                        .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                        .join(MONITORING_PLOTS)
-                        .on(MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(PLANTING_ZONE_ID))
-                        .where(
-                            MONITORING_PLOTS.PLANTING_SITE_ID.`in`(
-                                OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+        DSL.coalesce(
+                DSL.sum(
+                    DSL.field(
+                        DSL.select(DSL.sum(ZONE_DENSITY))
+                            .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
+                            .join(MONITORING_PLOTS)
+                            .on(
+                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
+                                    PLANTING_ZONE_ID
+                                )
                             )
-                        )
-                        .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-                        .and(plotHasCompletedObservations(MONITORING_PLOTS.ID, false))
-                        .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
-                )
+                            .where(
+                                MONITORING_PLOTS.PLANTING_SITE_ID.`in`(
+                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                )
+                            )
+                            .and(
+                                plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
+                                    true
+                                )
+                            )
+                            .and(plotHasCompletedObservations(MONITORING_PLOTS.ID, false))
+                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                    )
+                ),
+                BigDecimal.ZERO,
             )
             .times(DSL.inline(HECTARES_PER_PLOT))
       }
 
   private val survivalRateDenominatorField =
-      DSL.coalesce(survivalRatePermDenominatorField, BigDecimal.ZERO)
-          .plus(DSL.coalesce(survivalRateTempDenominatorField, BigDecimal.ZERO))
+      survivalRatePermDenominatorField.plus(survivalRateTempDenominatorField)
 
   private val survivalRateNumeratorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) {
