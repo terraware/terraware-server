@@ -1,0 +1,19 @@
+Subzone,Name,Type,Area (ha)
+Alpha-1,111,Permanent,0.0625
+Alpha-1,112,Temporary,0.0625
+Alpha-1,113,Permanent,0.0625
+Beta-1,211,Permanent,0.0625
+Beta-1,212,Permanent,0.0625
+Beta-1,213,Permanent,0.0625
+Beta-2,221,Temporary,0.0625
+Beta-2,222,Temporary,0.0625
+Beta-2,223,Temporary,0.0625
+Beta-2,224,Temporary,0.0625
+Charlie-1,311,Temporary,0.0625
+Charlie-1,312,Permanent,0.0625
+Charlie-1,313,Temporary,0.0625
+Charlie-2,321,Permanent,0.0625
+Charlie-2,322,Temporary,0.0625
+Charlie-2,323,Temporary,0.0625
+Charlie-2,324,Temporary,0.0625
+Charlie-2,325,Permanent,0.0625

@@ -120,6 +120,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     )
 
     val hasT0DensitiesSpecified = importT0DensitiesCsv(prefix)
+    importT0ZoneDensitiesCsv(prefix)
 
     val observationTimes =
         List(numObservations) {

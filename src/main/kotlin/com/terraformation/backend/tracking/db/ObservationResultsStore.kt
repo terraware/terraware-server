@@ -644,6 +644,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .on(
                     PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID)
                         .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
+                        .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
                 )
                 .fullOuterJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
                 .on(
@@ -651,6 +652,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             monitoringPlots.plantingSubzones.PLANTING_ZONE_ID
                         )
                         .and(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
+                        .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
                 )
                 .where(
                     MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
@@ -1051,6 +1053,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 species = species,
                 survivalRate = survivalRate,
                 survivalRateStdDev = survivalRateStdDev,
+                survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
                 totalPlants = totalPlants,
                 totalSpecies = totalLiveSpeciesExceptUnknown,
             )
