@@ -28,14 +28,14 @@ class TerrawareGenerator : KotlinGenerator() {
     out.printImports()
     out.println(
         """
-          import com.fasterxml.jackson.annotation.JsonCreator
-          import com.fasterxml.jackson.annotation.JsonValue
-          import com.terraformation.backend.db.EnumFromReferenceTable
-          import com.terraformation.backend.db.LocalizableEnum
-          import com.terraformation.backend.i18n.currentLocale
-          import java.util.Locale
-          import java.util.concurrent.ConcurrentHashMap
-          import org.jooq.impl.AbstractConverter
+        import com.fasterxml.jackson.annotation.JsonCreator
+        import com.fasterxml.jackson.annotation.JsonValue
+        import com.terraformation.backend.db.EnumFromReferenceTable
+        import com.terraformation.backend.db.LocalizableEnum
+        import com.terraformation.backend.i18n.currentLocale
+        import java.util.Locale
+        import java.util.concurrent.ConcurrentHashMap
+        import org.jooq.impl.AbstractConverter
 
         """
             .trimIndent()

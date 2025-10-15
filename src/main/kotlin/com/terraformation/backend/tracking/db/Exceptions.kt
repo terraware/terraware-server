@@ -38,9 +38,7 @@ class CrossOrganizationDeliveryNotAllowedException(
     )
 
 class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
-    MismatchedStateException(
-        "Deliveries to planting site $plantingSiteId must include subzone IDs"
-    )
+    MismatchedStateException("Deliveries to planting site $plantingSiteId must include subzone IDs")
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
@@ -49,9 +47,7 @@ class DraftPlantingSiteNotFoundException(val draftSiteId: DraftPlantingSiteId) :
     EntityNotFoundException("Draft planting site $draftSiteId not found")
 
 class InvalidObservationStartDateException(val startDate: LocalDate) :
-    IllegalArgumentException(
-        "Observation start date $startDate should be within a year from today"
-    )
+    IllegalArgumentException("Observation start date $startDate should be within a year from today")
 
 class InvalidObservationEndDateException(val startDate: LocalDate, val endDate: LocalDate) :
     IllegalArgumentException(
@@ -106,9 +102,7 @@ class PlotAlreadyCompletedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException("Monitoring plot $monitoringPlotId observation is already completed")
 
 class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
-    MismatchedStateException(
-        "Monitoring plot $monitoringPlotId is not claimed by the current user"
-    )
+    MismatchedStateException("Monitoring plot $monitoringPlotId is not claimed by the current user")
 
 class PlotNotFoundException(val monitoringPlotId: MonitoringPlotId) :
     EntityNotFoundException("Monitoring plot $monitoringPlotId not found")

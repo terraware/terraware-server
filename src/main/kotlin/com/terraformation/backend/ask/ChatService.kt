@@ -48,7 +48,7 @@ class ChatService(
 
       ---------------------
       {project_context}
-      
+
       {context}
       ---------------------
 
@@ -56,16 +56,16 @@ class ChatService(
       is not in the context, inform the user that you can't answer the question. You may use general
       knowledge of geography and science to interpret the context. If there are multiple entries in
       the context with similar information, prefer the newer ones if you can determine their dates.
-      
+
       Query: {query}
-      
+
       Answer:
       """
           .trimIndent()
 
   private val includeVariablesAndDocumentsPrompt =
       """
-      
+
       Include a list of the submission document names and a list of the variable names of any
       documents or variables that support the answer.
       """
