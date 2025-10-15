@@ -230,6 +230,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
+    val survivalRateIncludesTempPlots: Boolean,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
@@ -297,6 +298,7 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
+    val survivalRateIncludesTempPlots: Boolean,
     override val totalPlants: Int,
     override val totalSpecies: Int,
 ) : BaseMonitoringResult {
@@ -311,6 +313,8 @@ data class ObservationPlantingZoneRollupResultsModel(
       if (nonNullSubzoneResults.isEmpty()) {
         return null
       }
+      val survivalRateIncludesTempPlots =
+          nonNullSubzoneResults.first().survivalRateIncludesTempPlots
 
       val plantingCompleted = subzoneResults.values.none { it == null || !it.plantingCompleted }
 
@@ -321,7 +325,7 @@ data class ObservationPlantingZoneRollupResultsModel(
       val species =
           nonNullSubzoneResults
               .map { it.species }
-              .reduce { acc, species -> acc.unionSpecies(species) }
+              .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
       val totalLiveSpeciesExceptUnknown =
           species.count {
@@ -359,7 +363,8 @@ data class ObservationPlantingZoneRollupResultsModel(
               }
               .calculateWeightedStandardDeviation()
       val survivalRate =
-          if (nonNullSubzoneResults.all { it.survivalRate != null }) species.calculateSurvivalRate()
+          if (nonNullSubzoneResults.all { it.survivalRate != null })
+              species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           else null
       val survivalRateStdDev =
           if (survivalRate != null)
@@ -388,6 +393,7 @@ data class ObservationPlantingZoneRollupResultsModel(
           species = species,
           survivalRate = survivalRate,
           survivalRateStdDev = survivalRateStdDev,
+          survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
           totalPlants = species.sumOf { it.totalLive + it.totalDead },
           totalSpecies = totalLiveSpeciesExceptUnknown,
       )
@@ -426,6 +432,7 @@ data class ObservationRollupResultsModel(
       if (nonNullZoneResults.isEmpty()) {
         return null
       }
+      val survivalRateIncludesTempPlots = nonNullZoneResults.first().survivalRateIncludesTempPlots
 
       val plantingCompleted = zoneResults.values.none { it == null || !it.plantingCompleted }
 
@@ -434,7 +441,9 @@ data class ObservationRollupResultsModel(
             zone.plantingSubzones.flatMap { it.monitoringPlots }
           }
       val species =
-          nonNullZoneResults.map { it.species }.reduce { acc, species -> acc.unionSpecies(species) }
+          nonNullZoneResults
+              .map { it.species }
+              .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
       val totalLiveSpeciesExceptUnknown =
           species.count {
@@ -475,7 +484,8 @@ data class ObservationRollupResultsModel(
               }
               .calculateWeightedStandardDeviation()
       val survivalRate =
-          if (nonNullZoneResults.all { it.survivalRate != null }) species.calculateSurvivalRate()
+          if (nonNullZoneResults.all { it.survivalRate != null })
+              species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           else null
       val survivalRateStdDev =
           if (survivalRate != null)
@@ -537,15 +547,15 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
 fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
     includeTempPlots: Boolean = false
 ): Int? {
-  val sumDensity = this.mapNotNull { it.t0Density }.sumOf { it }
+  val sumDensity = this.mapNotNull { it.t0Density }.takeIf { it.isNotEmpty() }?.sumOf { it }
   val numKnownLive =
       if (includeTempPlots) this.sumOf { it.latestLive } else this.sumOf { it.permanentLive }
 
   val numerator = (numKnownLive * 100.0).toBigDecimal()
-  val denominator = sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())
-  val scale = max(numerator.scale(), denominator.scale())
 
-  return if (sumDensity > BigDecimal.ZERO) {
+  return if (sumDensity != null && sumDensity > BigDecimal.ZERO) {
+    val denominator = sumDensity.times(HECTARES_PER_PLOT.toBigDecimal())
+    val scale = max(numerator.scale(), denominator.scale())
     numerator
         .setScale(scale)
         .div(denominator.setScale(scale))
@@ -562,13 +572,15 @@ fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
  * monitoring plots data.
  */
 fun List<ObservationSpeciesResultsModel>.unionSpecies(
-    other: List<ObservationSpeciesResultsModel>
+    other: List<ObservationSpeciesResultsModel>,
+    includeTempPlots: Boolean,
 ): List<ObservationSpeciesResultsModel> {
   val combined = this + other
   return combined
       .groupBy { Triple(it.certainty, it.speciesId, it.speciesName) }
       .map { (key, groupedSpecies) ->
         val permanentLive = groupedSpecies.sumOf { it.permanentLive }
+        val totalLive = groupedSpecies.sumOf { it.totalLive }
         val cumulativeDead = groupedSpecies.sumOf { it.cumulativeDead }
         val numNonExistingPlants = permanentLive + cumulativeDead
         val t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO }
@@ -580,9 +592,10 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
               0
             }
 
+        val survivalRateNumerator = if (includeTempPlots) totalLive else permanentLive
         val survivalRate =
             if (t0Density > BigDecimal.ZERO) {
-              ((permanentLive * 100.0).toBigDecimal() /
+              ((survivalRateNumerator * 100.0).toBigDecimal() /
                       (t0Density.times(HECTARES_PER_PLOT.toBigDecimal())))
                   .setScale(0, RoundingMode.HALF_UP)
                   .toInt()

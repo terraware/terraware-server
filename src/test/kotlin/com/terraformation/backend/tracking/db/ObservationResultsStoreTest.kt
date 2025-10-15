@@ -1118,6 +1118,21 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
+    fun `fetch observation summary with temp plots`() {
+      val plantingSiteId =
+          insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+      every { user.canReadPlantingSite(plantingSiteId) } returns true
+
+      runSummaryScenario(
+          "/tracking/observation/ObservationsSummaryTempPlots",
+          numObservations = 3,
+          numSpecies = 3,
+          sizeMeters = 25,
+          plantingSiteId,
+      )
+    }
+
+    @Test
     fun `plots without observations don't count towards survival rate denominator sums`() {
       runSummaryScenario(
           "/tracking/observation/SurvivalRateNoObservations",
