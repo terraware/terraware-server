@@ -64,7 +64,6 @@ import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
-import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -1126,35 +1125,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     val latestLiveField =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
-          val observationIdForSubzoneField =
-              DSL.select(OBSERVATIONS.ID)
-                  .from(OBSERVATIONS)
-                  .join(OBSERVATION_REQUESTED_SUBZONES)
-                  .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID))
-                  .where(
-                      OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)
-                  )
-                  .and(
-                      OBSERVATIONS.COMPLETED_TIME.le(
-                          DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                              .from(OBSERVATIONS)
-                              .where(
-                                  OBSERVATIONS.ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID)
-                              )
-                      )
-                  )
-                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-                  .orderBy(
-                      // Prefer results from the same observation as the zone if it exists. True is
-                      // considered greater than false, so sorting by an "=" expression in
-                      // descending order means the matches come first.
-                      OBSERVATION_ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID).desc(),
-                      // Otherwise take the results from the next latest observation for that
-                      // subzone.
-                      OBSERVATIONS.COMPLETED_TIME.desc(),
-                  )
-                  .limit(1)
-
           DSL.field(
               DSL.select(
                       DSL.sum(DSL.coalesce(OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE, 0))
@@ -1169,7 +1139,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           )
                           .and(SPECIES_ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID))
                   )
-                  .and(OBSERVATION_ID.eq(observationIdForSubzoneField))
+                  .and(
+                      OBSERVATION_ID.eq(
+                          latestObservationForSubzoneField(
+                              OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID
+                          )
+                      )
+                  )
           )
         }
 
@@ -1178,10 +1154,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                   MORTALITY_RATE,
-                  DSL.coalesce(
-                      SPECIES_ID,
-                      permSpeciesCol,
-                  ),
+                  DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
                   SPECIES_NAME,
                   DSL.coalesce(TOTAL_LIVE, 0),
                   DSL.coalesce(TOTAL_DEAD, 0),
@@ -1381,7 +1354,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   }
 
   private fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
-    val siteT0 =
+    val permSiteT0 =
         with(PLOT_T0_DENSITIES) {
           DSL.select(
                   MONITORING_PLOTS.PLANTING_SITE_ID,
@@ -1395,27 +1368,83 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .groupBy(MONITORING_PLOTS.PLANTING_SITE_ID, SPECIES_ID)
               .asTable()
         }
-    val siteCol =
-        siteT0.field(
+
+    val tempSiteT0 =
+        with(MONITORING_PLOTS) {
+          DSL.select(
+                  plantingSites.ID.`as`("planting_site_id"),
+                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
+                  DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY).`as`("plot_density"),
+              )
+              .from(this)
+              .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .on(
+                  PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
+                      plantingSubzones.PLANTING_ZONE_ID
+                  )
+              )
+              .where(plotHasCompletedObservations(ID, false))
+              .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+              .groupBy(plantingSites.ID, PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID)
+              .asTable()
+        }
+
+    val permSiteCol =
+        permSiteT0.field(
             "planting_site_id",
             SQLDataType.BIGINT.asConvertedDataType(PlantingSiteIdConverter()),
         )!!
-    val speciesCol =
-        siteT0.field(
+    val permSpeciesCol =
+        permSiteT0.field(
             "species_id",
             SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()),
         )!!
-    val densityCol = siteT0.field("plot_density", BigDecimal::class.java)!!
+    val permDensityCol = permSiteT0.field("plot_density", BigDecimal::class.java)!!
+
+    val tempSiteCol =
+        tempSiteT0.field(
+            "planting_site_id",
+            SQLDataType.BIGINT.asConvertedDataType(PlantingSiteIdConverter()),
+        )!!
+    val tempSpeciesCol =
+        tempSiteT0.field(
+            "species_id",
+            SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()),
+        )!!
+    val tempDensityCol = tempSiteT0.field("plot_density", BigDecimal::class.java)!!
+
+    val latestLiveField =
+        with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+          DSL.field(
+              DSL.select(
+                      DSL.sum(DSL.coalesce(OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE, 0))
+                          .cast(SQLDataType.INTEGER)
+                  )
+                  .from(PLANTING_SUBZONES)
+                  .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
+                  .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                  .where(
+                      PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
+                              OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                          )
+                          .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                  )
+                  .and(
+                      OBSERVATION_ID.eq(
+                          latestObservationForSubzoneField(
+                              OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
+                          )
+                      )
+                  )
+          )
+        }
 
     return with(OBSERVED_SITE_SPECIES_TOTALS) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                   MORTALITY_RATE,
-                  DSL.coalesce(
-                      SPECIES_ID,
-                      speciesCol,
-                  ),
+                  DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
                   SPECIES_NAME,
                   DSL.coalesce(TOTAL_LIVE, 0),
                   DSL.coalesce(TOTAL_DEAD, 0),
@@ -1425,23 +1454,53 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   DSL.coalesce(
                       SURVIVAL_RATE,
                       DSL.`when`(
-                          densityCol.gt(BigDecimal.ZERO),
-                          DSL.coalesce(PERMANENT_LIVE, 0)
-                              .div(densityCol)
-                              .div(DSL.inline(HECTARES_PER_PLOT)),
+                          DSL.coalesce(permDensityCol, BigDecimal.ZERO)
+                              .plus(DSL.coalesce(tempDensityCol, BigDecimal.ZERO))
+                              .gt(BigDecimal.ZERO),
+                          BigDecimal.ZERO,
                       ),
                   ),
-                  densityCol,
-                  DSL.coalesce(TOTAL_LIVE, 0), // todo update in next PR
+                  DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
+                  DSL.coalesce(latestLiveField, 0),
               )
               .from(OBSERVED_SITE_SPECIES_TOTALS)
-              .fullOuterJoin(siteT0)
-              .on(siteCol.eq(PLANTING_SITE_ID).and(speciesCol.eq(SPECIES_ID)))
+              // full outer join because we want survival rate to be 0 if a species wasn't observed
+              // but has t0 density data set
+              .fullOuterJoin(permSiteT0)
+              .on(permSiteCol.eq(PLANTING_SITE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
+              .fullOuterJoin(tempSiteT0)
+              .on(tempSiteCol.eq(PLANTING_SITE_ID).and(tempSpeciesCol.eq(SPECIES_ID)))
               .where(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
       )
     }
   }
+
+  private fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) =
+      with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        DSL.select(OBSERVATIONS.ID)
+            .from(OBSERVATIONS)
+            .join(OBSERVATION_REQUESTED_SUBZONES)
+            .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID))
+            .where(OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_ID))
+            .and(
+                OBSERVATIONS.COMPLETED_TIME.le(
+                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                        .from(OBSERVATIONS)
+                        .where(OBSERVATIONS.ID.eq(observationIdField))
+                )
+            )
+            .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+            .orderBy(
+                // Prefer results from the same observation as the `observationId` if it exists.
+                // True is considered greater than false, so sorting by an "=" expression in
+                // descending order means the matches come first.
+                OBSERVATION_ID.eq(observationIdField).desc(),
+                // Otherwise take the results from the next latest observation for that area.
+                OBSERVATIONS.COMPLETED_TIME.desc(),
+            )
+            .limit(1)
+      }
 
   private fun fetchByCondition(
       condition: Condition,
@@ -1467,6 +1526,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             PLANTING_SITE_HISTORIES.ID,
             plantingSiteSpeciesMultisetField,
             plantingZonesField,
+            OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
         )
         .from(OBSERVATIONS)
         .leftJoin(PLANTING_SITE_HISTORIES)
@@ -1480,6 +1540,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val zones = record[plantingZonesField]
           val species = record[plantingSiteSpeciesMultisetField]
+          val survivalRateIncludesTempPlots =
+              record[OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]
+
           val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
           val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
@@ -1521,7 +1584,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     }
                   }
                   .calculateWeightedStandardDeviation()
-          val survivalRate = species.calculateSurvivalRate()
+          val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           val survivalRateStdDev =
               monitoringPlots
                   .mapNotNull { plot ->
