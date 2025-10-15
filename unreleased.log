@@ -1,3 +1,8 @@
+142e51fb98d SW-7416 Add temp plots to observations results for zones (#3503)
+a130050db32 Upgrade to ktfmt 0.59; use it to reformat code (#3507)
+5a2a7d463e6 SW-7416 Add temp plots to observation results for plots and subzones (#3497)
+1339f3f2e55 Update geoToolsVersion to v34 (#3505)
+e5465cf2abc Update dependency org.commonmark:commonmark to v0.27.0 (#3506)
 8e08a1ded35 SW-7505 Funder API to read published activities (#3500)
 3a635ef99de SW-7505 Methods to read published activity media files (#3499)
 a2ef6f58549 SW-7505 Funders can't access unpublished activities (#3498)
