@@ -448,8 +448,7 @@ data class UpdateAccessionRequestPayloadV2(
 data class CreateAccessionResponsePayloadV2(val accession: AccessionPayloadV2) :
     SuccessResponsePayload
 
-data class GetAccessionResponsePayloadV2(val accession: AccessionPayloadV2) :
-    SuccessResponsePayload
+data class GetAccessionResponsePayloadV2(val accession: AccessionPayloadV2) : SuccessResponsePayload
 
 data class UpdateAccessionResponsePayloadV2(val accession: AccessionPayloadV2) :
     SuccessResponsePayload
