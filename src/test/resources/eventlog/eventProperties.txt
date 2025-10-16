@@ -1,0 +1,21 @@
+#
+# List of all the required properties in persistent event classes.
+#
+# Specifically, this means all the properties declared in the primary constructor that aren't
+# nullable and don't have default values. Child objects are recursively walked and their required
+# properties must also be listed here.
+#
+# This is used by PersistentEventTest to verify that we aren't making backward-incompatible changes
+# to existing event classes. If an event class's primary constructor has a new non-nullable property
+# without a default value, any existing instances of it in the event log will fail JSON
+# deserialization.
+#
+
+com.terraformation.backend.eventlog.PersistentEventTest$TestChildFieldEventV1/child.field: String
+com.terraformation.backend.eventlog.PersistentEventTest$TestNonPrimaryConstructorPropertyEventV1/x: Int
+com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV1/x: Int
+com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV2/x: Int
+
+#
+# Please add new entries in alphabetical (case-sensitive ASCII) order.
+#
