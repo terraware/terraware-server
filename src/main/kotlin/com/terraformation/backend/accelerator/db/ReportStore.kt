@@ -1471,22 +1471,18 @@ class ReportStore(
   ): Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(
-                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
-                      .from(OBSERVATION_PLOTS)
-                      .where(
-                          OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
-                              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
-                      )
+              .from(OBSERVATION_PLOTS)
+              .where(
+                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
+                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
+                      .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
                       .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
-                      .orderBy(
-                          OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
-                          OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
-                      )
-                      .limit(1)
-                      .asTable("most_recent")
               )
-              .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
+              .orderBy(
+                  OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
+                  OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
+              )
+              .limit(1)
       )
 
   private val survivalRatePermDenominatorField =
