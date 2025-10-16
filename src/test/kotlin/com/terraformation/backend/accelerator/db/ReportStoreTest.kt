@@ -62,6 +62,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.toInstant
 import com.terraformation.backend.util.toPlantsPerHectare
@@ -97,7 +98,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var projectId: ProjectId
 
   private val sitesLiveSum = 6 + 11 + 6 + 7
-  private val site1T0Density = 10 + 11 + 20 + 21 + 30 + 31 + 40 + 41 + 50 + 51
+  private val site1T0Density = 10 + 11 + 30 + 31 + 40 + 41 + 50 + 51
+  private val site1T0DensityWithTemp = 10 + 11 + 100 + 110 + 30 + 31 + 40 + 41 + 50 + 51
   private val site2T0Density = 15 // 16 not observed
 
   @BeforeEach
@@ -537,6 +539,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics,
+      )
+
+      // check just survival rate with temp plots
+      with(PLANTING_SITES) {
+        dslContext.update(this).set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true).execute()
+      }
+
+      val systemMetrics =
+          store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics
+
+      assertEquals(
+          ReportSystemMetricModel(
+              metric = SystemMetric.SurvivalRate,
+              entry =
+                  ReportSystemMetricEntryModel(
+                      systemValue =
+                          (sitesLiveSum * 100.0 / (site1T0DensityWithTemp + site2T0Density))
+                              .roundToInt()
+                  ),
+          ),
+          systemMetrics.find { it.metric == SystemMetric.SurvivalRate },
+          "Should include temp plots in survival rate metric",
       )
     }
 
@@ -4791,6 +4815,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val plantingSiteId1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId1 = insertPlantingSiteHistory()
     insertPlantingZone()
+    insertPlantingZoneT0TempDensity(
+        speciesId = speciesId,
+        zoneDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
+    )
+    insertPlantingZoneT0TempDensity(
+        speciesId = otherSpeciesId,
+        zoneDensity = BigDecimal.valueOf(110).toPlantsPerHectare(),
+    )
     val plantingSubzoneId1 =
         insertPlantingSubzone(
             areaHa = BigDecimal(10),
@@ -4805,15 +4837,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare(),
     )
-    val subzone1plot2 = insertMonitoringPlot(permanentIndex = 2)
-    insertPlotT0Density(
-        speciesId = speciesId,
-        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
-    )
-    insertPlotT0Density(
-        speciesId = otherSpeciesId,
-        plotDensity = BigDecimal.valueOf(21).toPlantsPerHectare(),
-    )
+    val subzone1plot2 = insertMonitoringPlot(permanentIndex = null)
     insertPlantingSubzone(
         areaHa = BigDecimal(20),
         plantingCompletedTime = pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
@@ -4860,6 +4884,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId2 = insertPlantingSiteHistory()
     insertPlantingZone()
+    insertPlantingZoneT0TempDensity(
+        speciesId = speciesId,
+        zoneDensity = BigDecimal.valueOf(200).toPlantsPerHectare(),
+    )
+    insertPlantingZoneT0TempDensity(
+        speciesId = otherSpeciesId,
+        zoneDensity = BigDecimal.valueOf(210).toPlantsPerHectare(),
+    )
     insertPlantingSubzone(
         areaHa = BigDecimal(30),
         plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
@@ -4879,6 +4911,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
     val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
     insertPlantingZone()
+    insertPlantingZoneT0TempDensity(
+        speciesId = speciesId,
+        zoneDensity = BigDecimal.valueOf(300).toPlantsPerHectare(),
+    )
+    insertPlantingZoneT0TempDensity(
+        speciesId = otherSpeciesId,
+        zoneDensity = BigDecimal.valueOf(310).toPlantsPerHectare(),
+    )
     // Not counted towards hectares planted, outside of project site
     val otherPlantingSubzoneId =
         insertPlantingSubzone(
@@ -4905,6 +4945,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             subzone3plot1,
             excludedPlot,
         )
+    val tempPlots = listOf(subzone1plot2)
 
     val deliveryId =
         insertDelivery(
@@ -4982,7 +5023,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     allPlots.forEach {
       insertObservationPlot(
           monitoringPlotId = it,
-          isPermanent = true,
+          isPermanent = it !in tempPlots,
           completedTime = observationTime,
       )
     }
@@ -4992,6 +5033,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 0,
+        totalLive = 0,
         cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
@@ -5000,6 +5042,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 0,
+        totalLive = 0,
         cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
@@ -5008,6 +5051,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 0,
+        totalLive = 0,
         cumulativeDead = 1000,
     )
 
@@ -5021,7 +5065,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     allPlots.forEach {
       insertObservationPlot(
           monitoringPlotId = it,
-          isPermanent = true,
+          isPermanent = it !in tempPlots,
           completedTime = observationTime,
       )
     }
@@ -5031,6 +5075,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 6,
+        totalLive = 6,
         cumulativeDead = 1,
     )
     insertObservedSiteSpeciesTotals(
@@ -5039,6 +5084,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 11,
+        totalLive = 11,
         cumulativeDead = 3,
     )
     insertObservedSiteSpeciesTotals(
@@ -5047,6 +5093,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 6,
+        totalLive = 6,
         cumulativeDead = 7,
     )
     // Unknown plants are not counted towards mortality/survival rates
@@ -5055,6 +5102,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId = plantingSiteId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 0,
+        totalLive = 0,
         cumulativeDead = 1000,
     )
 
@@ -5070,7 +5118,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     allPlots.forEach {
       insertObservationPlot(
           monitoringPlotId = it,
-          isPermanent = true,
+          isPermanent = it !in tempPlots,
           completedTime = observationTime,
       )
     }
@@ -5080,6 +5128,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 7,
+        totalLive = 7,
         cumulativeDead = 2,
     )
     insertObservedSiteSpeciesTotals(
@@ -5088,6 +5137,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 12,
+        totalLive = 12,
         cumulativeDead = 4,
     )
     insertObservedSiteSpeciesTotals(
@@ -5096,6 +5146,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 7,
+        totalLive = 7,
         cumulativeDead = 8,
     )
     // Unknown plants are not counted towards mortality/survival rate
@@ -5104,6 +5155,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId = plantingSiteId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 1,
+        totalLive = 1,
         cumulativeDead = 100,
     )
 
@@ -5118,7 +5170,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     allPlots.forEach {
       insertObservationPlot(
           monitoringPlotId = it,
-          isPermanent = true,
+          isPermanent = it !in tempPlots,
           completedTime = observationTime,
       )
     }
@@ -5128,6 +5180,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 7,
+        totalLive = 7,
         cumulativeDead = 9,
     )
 
@@ -5145,7 +5198,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     allPlots.forEach {
       insertObservationPlot(
           monitoringPlotId = it,
-          isPermanent = true,
+          isPermanent = it !in tempPlots,
           completedTime = observationTime,
       )
     }
@@ -5155,6 +5208,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 0,
+        totalLive = 0,
         cumulativeDead = 1000,
     )
     // Total plants: 50

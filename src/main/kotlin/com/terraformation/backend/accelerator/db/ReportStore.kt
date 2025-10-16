@@ -58,15 +58,18 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
@@ -1462,35 +1465,90 @@ class ReportStore(
           )
           .convertFrom { it.toInt() }
 
-  private val plotHasCompletedPermanentObservations =
+  private fun plotHasCompletedObservations(
+      monitoringPlotIdField: Field<MonitoringPlotId?>,
+      isPermanent: Boolean,
+  ): Condition =
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_PLOTS)
-              .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
-              .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
-              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
-              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+              .where(
+                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
+                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
+                      .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+                      .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
+              )
+              .orderBy(
+                  OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
+                  OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
+              )
+              .limit(1)
       )
 
-  private val survivalRateDenominatorField =
+  private val survivalRatePermDenominatorField =
       with(PLOT_T0_DENSITIES) {
-        DSL.sum(
-                DSL.field(
-                    DSL.select(DSL.sum(PLOT_DENSITY))
-                        .from(this)
-                        .where(
-                            PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.`in`(
-                                OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+        DSL.coalesce(
+                DSL.sum(
+                    DSL.field(
+                        DSL.select(DSL.sum(PLOT_DENSITY))
+                            .from(this)
+                            .where(
+                                monitoringPlots.PLANTING_SITE_ID.`in`(
+                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                )
                             )
-                        )
-                        .and(plotHasCompletedPermanentObservations)
-                        .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
-                )
+                            .and(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                    )
+                ),
+                BigDecimal.ZERO,
             )
             .times(DSL.inline(HECTARES_PER_PLOT))
       }
 
-  private val survivalRateNumeratorField = DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
+  private val survivalRateTempDenominatorField =
+      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+        DSL.coalesce(
+                DSL.sum(
+                    DSL.field(
+                        DSL.select(DSL.sum(ZONE_DENSITY))
+                            .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
+                            .join(MONITORING_PLOTS)
+                            .on(
+                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
+                                    PLANTING_ZONE_ID
+                                )
+                            )
+                            .where(
+                                MONITORING_PLOTS.PLANTING_SITE_ID.`in`(
+                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                )
+                            )
+                            .and(
+                                plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
+                                    true
+                                )
+                            )
+                            .and(plotHasCompletedObservations(MONITORING_PLOTS.ID, false))
+                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                    )
+                ),
+                BigDecimal.ZERO,
+            )
+            .times(DSL.inline(HECTARES_PER_PLOT))
+      }
+
+  private val survivalRateDenominatorField =
+      survivalRatePermDenominatorField.plus(survivalRateTempDenominatorField)
+
+  private val survivalRateNumeratorField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) {
+        DSL.sum(
+            DSL.case_()
+                .`when`(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, TOTAL_LIVE)
+                .else_(PERMANENT_LIVE)
+        )
+      }
 
   // Fetch the latest observations per planting site from the reporting period and calculate the
   // survival rate
