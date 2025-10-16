@@ -1,3 +1,4 @@
+5f1623f8138 SW-7417 Add temp plots to survival rate in funder reports (#3510)
 4d2e2e5b8c3 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.13 (#3323)
 19cbcf0fc77 Refactor latest observation for subzone query (#3509)
 71a3d78d8e0 SW-7416 Add temp plots to observation summary survival calculations (#3508)
