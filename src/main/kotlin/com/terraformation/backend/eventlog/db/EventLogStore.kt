@@ -163,8 +163,12 @@ class EventLogStore(
   }
 
   /**
-   * Updates an event's payload and class in the database after it is upgraded to a new version. The
-   * original class and payload are preserved.
+   * Updates an event's payload and class in the database after it is upgraded to a new version.
+   *
+   * The original class and payload (that is, the class and payload from when the event was
+   * originally published) are preserved. If an event is upgraded repeatedly as new versions are
+   * introduced over time, the intermediate versions are not preserved, just the original one and
+   * the latest one.
    */
   private fun writeNewEventVersion(eventLogId: EventLogId, eventObject: PersistentEvent) {
     with(EVENT_LOG) {
