@@ -43,6 +43,7 @@ import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
@@ -496,8 +497,10 @@ internal class EmailNotificationServiceTest {
           startDate = LocalDate.of(2025, Month.JANUARY, 1),
           endDate = LocalDate.of(2025, Month.MARCH, 31),
           createdBy = UserId(1),
+          createdByUser = SimpleUserModel(UserId(1), "First", "Last"),
           createdTime = Instant.EPOCH,
           modifiedBy = UserId(1),
+          modifiedByUser = SimpleUserModel(UserId(1), "First", "Last"),
           modifiedTime = Instant.EPOCH,
           submittedBy = UserId(1),
           submittedTime = Instant.EPOCH,

@@ -48,7 +48,7 @@ class SystemUser(
      * The system user's username (email address) in the users table. This is used to look up the
      * system user's user ID.
      */
-    private const val USERNAME = "system"
+    const val USERNAME = "system"
     private const val EMAIL = "systemUser@terraformation.com"
   }
 

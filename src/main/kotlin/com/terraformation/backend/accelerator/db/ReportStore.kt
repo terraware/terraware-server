@@ -14,6 +14,7 @@ import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportConfigNotFoundException
@@ -44,8 +45,11 @@ import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METR
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -834,6 +838,8 @@ class ReportStore(
           null
         }
 
+    val usersField = reportUsersMultiset()
+
     return dslContext
         .select(
             REPORTS.asterisk(),
@@ -841,6 +847,7 @@ class ReportStore(
             achievementsMultiset,
             challengesMultiset,
             photosMultiset,
+            usersField,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
@@ -856,6 +863,7 @@ class ReportStore(
               achievementsField = achievementsMultiset,
               challengesField = challengesMultiset,
               photosField = photosMultiset,
+              usersField = usersField,
               projectMetricsField = projectMetricsField,
               standardMetricsField = standardMetricsField,
               systemMetricsField = systemMetricsField,
@@ -1333,6 +1341,47 @@ class ReportStore(
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
           )
           .convertFrom { results -> results.map { ReportProjectMetricModel.of(it) } }
+
+  private fun userIsInSameOrg() =
+      with(ORGANIZATION_USERS) {
+        DSL.field(
+            DSL.exists(
+                DSL.selectOne()
+                    .from(ORGANIZATION_USERS)
+                    .where(USER_ID.eq(USERS.ID))
+                    .and(
+                        ORGANIZATION_ID.`in`(
+                            if (currentUser().userId == systemUser.userId) emptyList()
+                            else currentUser().organizationRoles.keys
+                        )
+                    )
+            )
+        )
+      }
+
+  private fun reportUsersMultiset(): Field<Map<UserId, SimpleUserModel>> {
+    val sameOrgField = userIsInSameOrg()
+    return with(USERS) {
+      DSL.multiset(
+              DSL.selectDistinct(ID, FIRST_NAME, LAST_NAME, EMAIL, sameOrgField)
+                  .from(USERS)
+                  .where(ID.`in`(REPORTS.CREATED_BY, REPORTS.MODIFIED_BY, REPORTS.SUBMITTED_BY))
+          )
+          .convertFrom { results ->
+            results
+                .map {
+                  SimpleUserModel.create(
+                      it[ID.asNonNullable()],
+                      it[FIRST_NAME.asNonNullable()],
+                      it[LAST_NAME.asNonNullable()],
+                      it[EMAIL.asNonNullable()],
+                      it[sameOrgField],
+                  )
+                }
+                .associateBy { it.userId }
+          }
+    }
+  }
 
   private fun timestampToLocalDateField(
       timestampField: Field<Instant?>,
