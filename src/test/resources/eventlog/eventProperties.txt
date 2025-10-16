@@ -11,6 +11,12 @@
 # deserialization.
 #
 
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestCircularEventV3/organizationId: OrganizationId
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationCreatedEventV1/name: String
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationDeletedEventV1/organizationId: OrganizationId
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationDeletedEventV2/organizationId: OrganizationId
+com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationDeletedEventV3/organizationId: OrganizationId
 com.terraformation.backend.eventlog.PersistentEventTest$TestChildFieldEventV1/child.field: String
 com.terraformation.backend.eventlog.PersistentEventTest$TestNonPrimaryConstructorPropertyEventV1/x: Int
 com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV1/x: Int
