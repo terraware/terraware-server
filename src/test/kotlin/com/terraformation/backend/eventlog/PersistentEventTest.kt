@@ -226,12 +226,12 @@ class PersistentEventTest {
   //
   // class TestUpgradableEventWithCycleV1(val x: Int) : UpgradableEvent {
   //   override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
-  //       TestUpgradableEventWithCycleV2()
+  //       TestUpgradableEventWithCycleV2(x)
   // }
   //
   // class TestUpgradableEventWithCycleV2(val x: Int) : UpgradableEvent {
   //   override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
-  //       TestUpgradableEventWithCycleV1()
+  //       TestUpgradableEventWithCycleV1(x)
   // }
 
   // Uncomment to verify the "upgrade to class with same name as original" test
