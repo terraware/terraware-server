@@ -77,6 +77,14 @@ COMMENT ON TABLE disclaimers IS 'Disclaimers content and effective dates.';
 
 COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
 
+COMMENT ON TABLE event_log IS 'Holds historical information about what operations were performed at what times. Events are JSON-serialized objects that may contain identifiers such as organization IDs; identifiers are not treated as foreign keys, so events may contain references to objects that were subsequently deleted.';
+COMMENT ON COLUMN event_log.event_class IS 'Fully-qualified class name of the event whose payload is stored in the payload column. May be a newer version of the event class than was originally written at the time of the operation.';
+COMMENT ON COLUMN event_log.original_event_class IS 'If the event has been migrated to a newer version, the fully-qualified class name of the event as it was originally stored.';
+COMMENT ON COLUMN event_log.original_payload IS 'If the event has been migrated to a newer version, the JSON-serialized contents of the event as it was originally stored.';
+COMMENT ON COLUMN event_log.payload IS 'JSON-serialized contents of the event object of the class specified by event_class.';
+
+COMMENT ON PROCEDURE event_log_create_id_index IS 'Creates an index on the event_log table for a top-level field in the event payload. The field is treated as a BIGINT. Only rows that have a non-null value for the field are indexed. The event class is included as a secondary key to support "all events of type X for entity Y" queries.';
+
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';

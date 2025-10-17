@@ -148,6 +148,7 @@ class PersistentEventTest {
             Class.forName(it) as Class<out PersistentEvent>
           }
           .map { it.kotlin }
+          .filterNot { it.hasAnnotation<SkipPersistentEventTest>() }
           .toList()
     }
 
