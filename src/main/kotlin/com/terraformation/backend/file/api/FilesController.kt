@@ -4,6 +4,8 @@ import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.file.FileService
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Size
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -26,7 +28,10 @@ class FilesController(
           "This endpoint does not require authentication; it's intended to offer temporary file " +
               "access for third-party services such as video transcoding.",
   )
-  fun getFileForToken(@PathVariable token: String): ResponseEntity<InputStreamResource> {
+  @Valid
+  fun getFileForToken(
+      @PathVariable @Size(min = 8) token: String
+  ): ResponseEntity<InputStreamResource> {
     return fileService.readFileForToken(token).toResponseEntity()
   }
 }
