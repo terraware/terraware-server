@@ -12,7 +12,7 @@
             <column ascending="true" name="platform"/>
          </index>
       </table>
-      <table name="countries" remarks="Country information per ISO-3166." schema="public" type="TABLE">
+      <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="applications_country_code_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
             <child column="country_code" foreignKey="published_project_details_country_code_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
@@ -42,7 +42,7 @@
          <checkConstraint constraint="(code = upper(code))" name="countries_code_caps"/>
          <checkConstraint constraint="(length(code) = 2)" name="countries_code_length"/>
       </table>
-      <table name="country_subdivisions" remarks="Country subdivision (state, province, region, etc.) information per ISO-3166-2." schema="public" type="TABLE">
+      <table name="country_subdivisions" numRows="57" remarks="Country subdivision (state, province, region, etc.) information per ISO-3166-2." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Full ISO-3166-2 subdivision code including country code prefix." size="2147483647" type="text" typeCode="12">
             <child column="country_subdivision_code" foreignKey="organizations_country_subdivision_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
          </column>
