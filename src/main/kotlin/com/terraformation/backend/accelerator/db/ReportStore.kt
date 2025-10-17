@@ -14,6 +14,7 @@ import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportConfigNotFoundException
@@ -44,8 +45,11 @@ import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METR
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -71,6 +75,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -96,6 +101,7 @@ class ReportStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val messages: Messages,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -834,6 +840,8 @@ class ReportStore(
           null
         }
 
+    val usersField = reportUsersMultiset()
+
     return dslContext
         .select(
             REPORTS.asterisk(),
@@ -841,6 +849,7 @@ class ReportStore(
             achievementsMultiset,
             challengesMultiset,
             photosMultiset,
+            usersField,
             projectMetricsField,
             standardMetricsField,
             systemMetricsField,
@@ -856,6 +865,7 @@ class ReportStore(
               achievementsField = achievementsMultiset,
               challengesField = challengesMultiset,
               photosField = photosMultiset,
+              usersField = usersField,
               projectMetricsField = projectMetricsField,
               standardMetricsField = standardMetricsField,
               systemMetricsField = systemMetricsField,
@@ -1333,6 +1343,54 @@ class ReportStore(
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
           )
           .convertFrom { results -> results.map { ReportProjectMetricModel.of(it) } }
+
+  private fun userIsInSameOrg() =
+      with(ORGANIZATION_USERS) {
+        DSL.field(
+            if (currentUser() is SystemUser) {
+              DSL.falseCondition()
+            } else {
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(ORGANIZATION_USERS)
+                      .where(USER_ID.eq(USERS.ID))
+                      .and(ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+              )
+            }
+        )
+      }
+
+  private fun reportUsersMultiset(): Field<Map<UserId, SimpleUserModel>> {
+    val sameOrgField = userIsInSameOrg()
+    return with(USERS) {
+      DSL.multiset(
+              DSL.selectDistinct(
+                      ID,
+                      FIRST_NAME,
+                      LAST_NAME,
+                      EMAIL,
+                      sameOrgField,
+                      DELETED_TIME,
+                  )
+                  .from(USERS)
+                  .where(ID.`in`(REPORTS.CREATED_BY, REPORTS.MODIFIED_BY, REPORTS.SUBMITTED_BY))
+          )
+          .convertFrom { results ->
+            results
+                .map {
+                  SimpleUserModel.create(
+                      it[ID.asNonNullable()],
+                      "${it[FIRST_NAME]} ${it[LAST_NAME]}",
+                      it[EMAIL.asNonNullable()],
+                      it[sameOrgField],
+                      it[DELETED_TIME] != null,
+                      messages,
+                  )
+                }
+                .associateBy { it.userId }
+          }
+    }
+  }
 
   private fun timestampToLocalDateField(
       timestampField: Field<Instant?>,

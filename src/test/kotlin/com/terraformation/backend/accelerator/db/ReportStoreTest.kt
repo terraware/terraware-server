@@ -20,6 +20,7 @@ import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -63,6 +64,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.toInstant
 import com.terraformation.backend.util.toPlantsPerHectare
@@ -88,10 +90,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val messages = Messages()
 
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val store: ReportStore by lazy {
-    ReportStore(clock, dslContext, eventPublisher, reportsDao, systemUser)
+    ReportStore(clock, dslContext, eventPublisher, messages, reportsDao, systemUser)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -116,6 +119,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns report details`() {
       val configId = insertProjectReportConfig()
+      val tfUser = insertUser()
+
       val reportId =
           insertReport(
               status = ReportStatus.NeedsUpdate,
@@ -130,7 +135,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
               modifiedTime = Instant.ofEpochSecond(8000),
-              submittedBy = user.userId,
+              submittedBy = tfUser,
               submittedTime = Instant.ofEpochSecond(6000),
           )
 
@@ -187,15 +192,66 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportPhotoModel(fileId = fileId2, caption = "photo caption 2"),
                   ),
               createdBy = systemUser.userId,
+              createdByUser = SimpleUserModel(systemUser.userId, "Terraware System"),
               createdTime = Instant.ofEpochSecond(4000),
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.ofEpochSecond(8000),
-              submittedBy = user.userId,
+              submittedBy = tfUser,
+              submittedByUser = SimpleUserModel(tfUser, "First Last"),
               submittedTime = Instant.ofEpochSecond(6000),
           )
 
       clock.instant = LocalDate.of(2031, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
       assertEquals(listOf(reportModel), store.fetch())
+    }
+
+    @Test
+    fun `overwrites user names as needed`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val deletedUser = insertUser(deletedTime = clock.instant, email = "deleted@gone.com")
+      insertOrganizationUser(userId = deletedUser)
+
+      insertProjectReportConfig()
+      insertOrganization()
+      val tfUser = insertUser()
+      insertOrganizationUser(userId = tfUser)
+
+      insertReport(
+          status = ReportStatus.NeedsUpdate,
+          startDate = LocalDate.of(2030, Month.JANUARY, 1),
+          endDate = LocalDate.of(2030, Month.MARCH, 31),
+          highlights = "highlights",
+          internalComment = "internal comment",
+          feedback = "feedback",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+          createdBy = tfUser,
+          createdTime = Instant.ofEpochSecond(4000),
+          modifiedBy = systemUser.userId,
+          modifiedTime = Instant.ofEpochSecond(8000),
+          submittedBy = deletedUser,
+          submittedTime = Instant.ofEpochSecond(6000),
+      )
+
+      clock.instant = LocalDate.of(2031, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      val actualModel = store.fetch().first()
+      assertEquals(
+          SimpleUserModel(tfUser, "Terraformation Team"),
+          actualModel.createdByUser,
+          "Should have changed deleted user to 'Terraformation Team'",
+      )
+      assertEquals(
+          SimpleUserModel(deletedUser, "Former User"),
+          actualModel.submittedByUser,
+          "Should have changed tf user to 'Former User'",
+      )
+      assertEquals(
+          SimpleUserModel(systemUser.userId, "Terraformation Team"),
+          actualModel.modifiedByUser,
+          "Should have changed system user to 'Terraformation Team'",
+      )
     }
 
     @Test
@@ -457,8 +513,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
               projectMetrics = projectMetrics,
               standardMetrics = standardMetrics,
@@ -581,8 +639,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
           )
 
@@ -611,8 +671,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = today,
               endDate = today.plusDays(31),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
           )
 
@@ -640,8 +702,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
               internalComment = "internal comment",
           )
@@ -704,8 +768,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.of(2030, Month.OCTOBER, 1),
               endDate = LocalDate.of(2030, Month.DECEMBER, 31),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
           )
 
@@ -787,8 +853,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
           )
 
@@ -1126,8 +1194,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
               projectMetrics = projectMetrics,
               standardMetrics = standardMetrics,

@@ -235,7 +235,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectsDao,
             projectInternalUsersDao,
         )
-    reportStore = ReportStore(clock, dslContext, publisher, reportsDao, SystemUser(usersDao))
+    reportStore =
+        ReportStore(clock, dslContext, publisher, messages, reportsDao, SystemUser(usersDao))
     speciesStore =
         SpeciesStore(
             clock,

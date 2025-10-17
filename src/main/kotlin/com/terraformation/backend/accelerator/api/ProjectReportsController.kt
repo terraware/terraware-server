@@ -26,6 +26,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectMetricId
@@ -472,6 +473,13 @@ data class NewAcceleratorReportConfigPayload(
       )
 }
 
+data class SimpleUserPayload(
+    val userId: UserId,
+    val fullName: String,
+) {
+  constructor(model: SimpleUserModel) : this(model.userId, model.fullName)
+}
+
 data class AcceleratorReportPayload(
     val achievements: List<String>,
     val additionalComments: String?,
@@ -484,6 +492,7 @@ data class AcceleratorReportPayload(
     val id: ReportId,
     val internalComment: String?,
     val modifiedBy: UserId,
+    val modifiedByUser: SimpleUserPayload,
     val modifiedTime: Instant,
     val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
@@ -493,6 +502,7 @@ data class AcceleratorReportPayload(
     val startDate: LocalDate,
     val status: ReportStatus,
     val submittedBy: UserId?,
+    val submittedByUser: SimpleUserPayload?,
     val submittedTime: Instant?,
     val systemMetrics: List<ReportSystemMetricPayload>,
 ) {
@@ -510,6 +520,7 @@ data class AcceleratorReportPayload(
       id = model.id,
       internalComment = model.internalComment,
       modifiedBy = model.modifiedBy,
+      modifiedByUser = SimpleUserPayload(model.modifiedByUser),
       modifiedTime = model.modifiedTime,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
@@ -519,6 +530,7 @@ data class AcceleratorReportPayload(
       startDate = model.startDate,
       status = model.status,
       submittedBy = model.submittedBy,
+      submittedByUser = model.submittedByUser?.let { SimpleUserPayload(it) },
       submittedTime = model.submittedTime,
       systemMetrics = model.systemMetrics.map { ReportSystemMetricPayload(it) },
   )

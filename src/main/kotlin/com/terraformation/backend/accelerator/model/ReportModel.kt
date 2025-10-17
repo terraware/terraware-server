@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -62,6 +63,7 @@ data class ReportModel(
     val challenges: List<ReportChallengeModel> = emptyList(),
     val configId: ProjectReportConfigId,
     val createdBy: UserId,
+    val createdByUser: SimpleUserModel,
     val createdTime: Instant,
     val endDate: LocalDate,
     val feedback: String? = null,
@@ -71,6 +73,7 @@ data class ReportModel(
     val id: ReportId,
     val internalComment: String? = null,
     val modifiedBy: UserId,
+    val modifiedByUser: SimpleUserModel,
     val modifiedTime: Instant,
     val photos: List<ReportPhotoModel> = emptyList(),
     val projectDealName: String? = null,
@@ -81,6 +84,7 @@ data class ReportModel(
     val startDate: LocalDate,
     val status: ReportStatus,
     val submittedBy: UserId? = null,
+    val submittedByUser: SimpleUserModel? = null,
     val submittedTime: Instant? = null,
     val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
@@ -154,7 +158,13 @@ data class ReportModel(
         systemMetricsField: Field<List<ReportSystemMetricModel>>?,
         achievementsField: Field<List<String>>?,
         challengesField: Field<List<ReportChallengeModel>>?,
+        usersField: Field<Map<UserId, SimpleUserModel>>,
     ): ReportModel {
+      val usersMap = record[usersField]!!
+      val createdById = record[REPORTS.CREATED_BY]!!
+      val modifiedById = record[REPORTS.MODIFIED_BY]!!
+      val submittedById = record[REPORTS.SUBMITTED_BY]
+
       return with(REPORTS) {
         ReportModel(
             id = record[ID]!!,
@@ -178,11 +188,14 @@ data class ReportModel(
             feedback = record[FEEDBACK],
             additionalComments = record[ADDITIONAL_COMMENTS],
             financialSummaries = record[FINANCIAL_SUMMARIES],
-            createdBy = record[CREATED_BY]!!,
+            createdBy = createdById,
+            createdByUser = usersMap[createdById]!!,
             createdTime = record[CREATED_TIME]!!,
-            modifiedBy = record[MODIFIED_BY]!!,
+            modifiedBy = modifiedById,
+            modifiedByUser = usersMap[modifiedById]!!,
             modifiedTime = record[MODIFIED_TIME]!!,
-            submittedBy = record[SUBMITTED_BY],
+            submittedBy = submittedById,
+            submittedByUser = usersMap[submittedById],
             submittedTime = record[SUBMITTED_TIME],
             photos = photosField?.let { record[it] } ?: emptyList(),
             projectMetrics = projectMetricsField?.let { record[it] } ?: emptyList(),

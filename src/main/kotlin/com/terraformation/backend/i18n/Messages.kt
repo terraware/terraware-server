@@ -530,6 +530,10 @@ class Messages {
     }
   }
 
+  fun formerUser() = getMessage("formerUser")
+
+  fun terraformationTeam() = getMessage("terraformationTeam")
+
   fun timeZoneWithCity(timeZoneName: String, cityName: String) =
       getMessage("timeZoneWithCity", timeZoneName, cityName)
 
