@@ -75,6 +75,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -100,6 +101,7 @@ class ReportStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val messages: Messages,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -1363,7 +1365,14 @@ class ReportStore(
     val sameOrgField = userIsInSameOrg()
     return with(USERS) {
       DSL.multiset(
-              DSL.selectDistinct(ID, FIRST_NAME, LAST_NAME, EMAIL, sameOrgField)
+              DSL.selectDistinct(
+                      ID,
+                      FIRST_NAME,
+                      LAST_NAME,
+                      EMAIL,
+                      sameOrgField,
+                      DELETED_TIME.isNotNull,
+                  )
                   .from(USERS)
                   .where(ID.`in`(REPORTS.CREATED_BY, REPORTS.MODIFIED_BY, REPORTS.SUBMITTED_BY))
           )
@@ -1372,10 +1381,11 @@ class ReportStore(
                 .map {
                   SimpleUserModel.create(
                       it[ID.asNonNullable()],
-                      it[FIRST_NAME.asNonNullable()],
-                      it[LAST_NAME.asNonNullable()],
+                      "${it[FIRST_NAME.asNonNullable()]} ${it[LAST_NAME.asNonNullable()]}",
                       it[EMAIL.asNonNullable()],
                       it[sameOrgField],
+                      it[DELETED_TIME.isNotNull.asNonNullable()],
+                      messages,
                   )
                 }
                 .associateBy { it.userId }

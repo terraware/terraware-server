@@ -475,10 +475,9 @@ data class NewAcceleratorReportConfigPayload(
 
 data class SimpleUserPayload(
     val userId: UserId,
-    val firstName: String? = null,
-    val lastName: String? = null,
+    val fullName: String,
 ) {
-  constructor(model: SimpleUserModel) : this(model.userId, model.firstName, model.lastName)
+  constructor(model: SimpleUserModel) : this(model.userId, model.fullName)
 }
 
 data class AcceleratorReportPayload(
