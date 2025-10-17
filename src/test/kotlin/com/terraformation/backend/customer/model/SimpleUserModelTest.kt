@@ -78,6 +78,7 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `uses message if user has been deleted`() {
+      every { user.canReadUser(any()) } returns true
       val userId = UserId(1000)
 
       assertEquals(
@@ -86,7 +87,7 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
               userId = userId,
               fullName = "Some Name",
               email = "test@other.com",
-              userIsInSameOrg = true,
+              userIsInSameOrg = false,
               userIsDeleted = true,
               messages = messages,
           ),

@@ -25,12 +25,12 @@ data class SimpleUserModel(
         messages: Messages,
     ): SimpleUserModel {
       return when {
-        (!userIsDeleted && (userIsInSameOrg || currentUser().canReadUser(userId))) ->
+        !userIsDeleted && (userIsInSameOrg || currentUser().canReadUser(userId)) ->
             SimpleUserModel(userId, fullName)
-        (emailIsTf(email)) -> SimpleUserModel(userId, messages.terraformationTeam())
-        (userIsDeleted) -> SimpleUserModel(userId, messages.formerUser())
+        emailIsTf(email) -> SimpleUserModel(userId, messages.terraformationTeam())
+        userIsDeleted -> SimpleUserModel(userId, messages.formerUser())
         else -> {
-          log.warn("User {} cannot read name of user {}", currentUser().userId, userId)
+          log.error("User {} cannot read name of user {}", currentUser().userId, userId)
           return SimpleUserModel(userId)
         }
       }

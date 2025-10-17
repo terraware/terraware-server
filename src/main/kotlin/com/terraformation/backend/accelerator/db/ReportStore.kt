@@ -1347,8 +1347,9 @@ class ReportStore(
   private fun userIsInSameOrg() =
       with(ORGANIZATION_USERS) {
         DSL.field(
-            if (currentUser() is SystemUser) DSL.falseCondition()
-            else {
+            if (currentUser() is SystemUser) {
+              DSL.falseCondition()
+            } else {
               DSL.exists(
                   DSL.selectOne()
                       .from(ORGANIZATION_USERS)
@@ -1369,7 +1370,7 @@ class ReportStore(
                       LAST_NAME,
                       EMAIL,
                       sameOrgField,
-                      DELETED_TIME.isNotNull,
+                      DELETED_TIME,
                   )
                   .from(USERS)
                   .where(ID.`in`(REPORTS.CREATED_BY, REPORTS.MODIFIED_BY, REPORTS.SUBMITTED_BY))
@@ -1379,10 +1380,10 @@ class ReportStore(
                 .map {
                   SimpleUserModel.create(
                       it[ID.asNonNullable()],
-                      "${it[FIRST_NAME.asNonNullable()]} ${it[LAST_NAME.asNonNullable()]}",
+                      "${it[FIRST_NAME]} ${it[LAST_NAME]}",
                       it[EMAIL.asNonNullable()],
                       it[sameOrgField],
-                      it[DELETED_TIME.isNotNull.asNonNullable()],
+                      it[DELETED_TIME] != null,
                       messages,
                   )
                 }
