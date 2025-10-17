@@ -1,3 +1,4 @@
+53a0907692b SW-7562 Reject invalid requests for file access (#3516)
 ef452e7c396 SW-7375 Add user names to report model (#3511)
 0cb9ad8e4e6 SW-7532 Store and fetch persistent events (#3513)
 39a4152d52c SW-7532 Add persistent event interfaces (#3512)
