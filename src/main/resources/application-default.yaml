@@ -54,4 +54,4 @@ logging:
       %clr([%15.15t]){faint}
       %clr(%-40.40logger{39}){cyan}
       %clr(:){faint}
-      %m%clr(%replace( %X){'^ $',''}){cyan}%n%wEx
+      %m%clr(%replace( %X){'^ $',''}%replace( %kvp){'^ $',''}){cyan}%n%wEx
