@@ -29,6 +29,7 @@ thumbnails
 project_report_settings
 organization_report_settings
 identifier_sequences
+event_log
 device_templates
 uploads
 timeseries

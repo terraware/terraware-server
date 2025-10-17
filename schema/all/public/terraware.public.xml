@@ -295,6 +295,57 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="event_log" remarks="Holds historical information about what operations were performed at what times. Events are JSON-serialized objects that may contain identifiers such as organization IDs; identifiers are not treated as foreign keys, so events may contain references to objects that were subsequently deleted." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="event_log_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="event_class" nullable="false" remarks="Fully-qualified class name of the event whose payload is stored in the payload column. May be a newer version of the event class than was originally written at the time of the operation." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="payload" nullable="false" remarks="JSON-serialized contents of the event object of the class specified by event_class." size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="original_event_class" nullable="true" remarks="If the event has been migrated to a newer version, the fully-qualified class name of the event as it was originally stored." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="original_payload" nullable="true" remarks="If the event has been migrated to a newer version, the JSON-serialized contents of the event as it was originally stored." size="2147483647" type="jsonb" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="event_log_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="event_log_accessionid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_activityid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_batchid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="event_log_created_time_idx" unique="false">
+            <column ascending="true" name="created_time"/>
+         </index>
+         <index name="event_log_event_class_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_facilityid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_observationid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_organizationid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_plantingsiteid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_projectid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_withdrawalid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+      </table>
       <table name="facilities" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_sub_locations"/>
@@ -1609,6 +1660,7 @@
             <child column="user_id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="created_by" foreignKey="devices_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="created_by" foreignKey="event_log_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="event_log"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="created_by" foreignKey="file_access_tokens_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="file_access_tokens"/>
@@ -2942,6 +2994,20 @@ END;]]></definition>
          <parameters>
             <parameter mode="IN" name="geom1" type="geometry"/>
             <parameter mode="IN" name="geom2" type="geometry"/>
+         </parameters>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="event_log_create_id_index(IN field_name text)" securityType="INVOKER" type="PROCEDURE">
+         <comment><![CDATA[Creates an index on the event_log table for a top-level field in the event payload. The field is treated as a BIGINT. Only rows that have a non-null value for the field are indexed. The event class is included as a secondary key to support "all events of type X for entity Y" queries.]]></comment>
+         <definition language="plpgsql"><![CDATA[DECLARE
+        -- Field name surrounded by single quotes, e.g., 'fooId'
+        quoted_field_name TEXT := '''' || field_name || '''';
+    BEGIN
+        EXECUTE 'CREATE INDEX event_log_' || LOWER(field_name) || '_idx' ||
+                ' ON event_log (CAST(payload->>' || quoted_field_name || ' AS BIGINT), event_class)' ||
+                ' WHERE payload->>' || quoted_field_name || ' IS NOT NULL;';
+    END;]]></definition>
+         <parameters>
+            <parameter mode="IN" name="field_name" type="text"/>
          </parameters>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="exist(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">

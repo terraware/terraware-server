@@ -184,13 +184,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_image_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_image_values_variable_value_id_variable_id_variab_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_image_values_variable_value_id_variable_id_variab_fkey</td>
+                                                <td title="variable_image_values.variable_type_id references variable_types.id via variable_image_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_image_values_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_image_values.variable_type_id references variable_types.id via variable_image_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_image_values_variable_type_id_fkey</td>
+                                                <td title="variable_image_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_image_values_variable_value_id_variable_id_variab_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_image_values_variable_value_id_variable_id_variab_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>

@@ -1585,6 +1585,20 @@ END;]]></definition>
             <parameter mode="IN" name="geom2" type="geometry"/>
          </parameters>
       </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="event_log_create_id_index(IN field_name text)" securityType="INVOKER" type="PROCEDURE">
+         <comment><![CDATA[Creates an index on the event_log table for a top-level field in the event payload. The field is treated as a BIGINT. Only rows that have a non-null value for the field are indexed. The event class is included as a secondary key to support "all events of type X for entity Y" queries.]]></comment>
+         <definition language="plpgsql"><![CDATA[DECLARE
+        -- Field name surrounded by single quotes, e.g., 'fooId'
+        quoted_field_name TEXT := '''' || field_name || '''';
+    BEGIN
+        EXECUTE 'CREATE INDEX event_log_' || LOWER(field_name) || '_idx' ||
+                ' ON event_log (CAST(payload->>' || quoted_field_name || ' AS BIGINT), event_class)' ||
+                ' WHERE payload->>' || quoted_field_name || ' IS NOT NULL;';
+    END;]]></definition>
+         <parameters>
+            <parameter mode="IN" name="field_name" type="text"/>
+         </parameters>
+      </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="exist(hstore, text)" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="c"><![CDATA[hstore_exists]]></definition>

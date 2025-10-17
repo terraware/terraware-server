@@ -47,6 +47,7 @@ internal_tags
 timeseries
 uploads
 device_templates
+event_log
 identifier_sequences
 organization_report_settings
 project_report_settings
