@@ -24,6 +24,7 @@ this file.
   <springProfile name="logstash">
     <appender name="LOGSTASH" class="ch.qos.logback.core.ConsoleAppender">
       <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <jsonFactoryDecorator class="com.terraformation.backend.log.LogstashDecorator"/>
         <customFields>
           {"log_type": "application"}
         </customFields>

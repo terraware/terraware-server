@@ -137,6 +137,7 @@ dependencies {
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
+  implementation("net.logstash.logback:logstash-logback-encoder:8.1")
   implementation(kotlin("reflect"))
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
@@ -148,7 +149,6 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
-  runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.1")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
   runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
