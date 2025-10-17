@@ -29,10 +29,10 @@ data class SimpleUserModel(
             SimpleUserModel(userId, fullName)
         (emailIsTf(email)) -> SimpleUserModel(userId, messages.terraformationTeam())
         (userIsDeleted) -> SimpleUserModel(userId, messages.formerUser())
-        else ->
-            SimpleUserModel(userId).also {
-              log.debug("User {} cannot read name of user {}", currentUser().userId, userId)
-            }
+        else -> {
+          log.warn("User {} cannot read name of user {}", currentUser().userId, userId)
+          return SimpleUserModel(userId)
+        }
       }
     }
   }

@@ -1347,17 +1347,15 @@ class ReportStore(
   private fun userIsInSameOrg() =
       with(ORGANIZATION_USERS) {
         DSL.field(
-            DSL.exists(
-                DSL.selectOne()
-                    .from(ORGANIZATION_USERS)
-                    .where(USER_ID.eq(USERS.ID))
-                    .and(
-                        ORGANIZATION_ID.`in`(
-                            if (currentUser().userId == systemUser.userId) emptyList()
-                            else currentUser().organizationRoles.keys
-                        )
-                    )
-            )
+            if (currentUser() is SystemUser) DSL.falseCondition()
+            else {
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(ORGANIZATION_USERS)
+                      .where(USER_ID.eq(USERS.ID))
+                      .and(ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
+              )
+            }
         )
       }
 
