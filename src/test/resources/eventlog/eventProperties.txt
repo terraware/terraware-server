@@ -11,6 +11,10 @@
 # deserialization.
 #
 
+com.terraformation.backend.customer.event.OrganizationCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.customer.event.OrganizationCreatedEventV2/name: String
+com.terraformation.backend.customer.event.OrganizationCreatedEventV2/organizationId: OrganizationId
+com.terraformation.backend.customer.event.OrganizationDeletedEventV1/organizationId: OrganizationId
 com.terraformation.backend.eventlog.db.EventLogStoreTest$TestCircularEventV3/organizationId: OrganizationId
 com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationCreatedEventV1/name: String
 com.terraformation.backend.eventlog.db.EventLogStoreTest$TestOrganizationCreatedEventV1/organizationId: OrganizationId
