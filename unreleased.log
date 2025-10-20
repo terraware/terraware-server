@@ -1,3 +1,6 @@
+3c060c231b8 SW-7560 Log persistent events to console/Datadog (#3515)
+255c0e998d5 Prevent double CI runs for Renovate PRs (#3524)
+101029aca80 Update dependency com.google.apis:google-api-services-drive to v3-rev20251013-2.0.0 (#3522)
 515d66e5d67 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.5 (#3521)
 f6f9ac9db23 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.39 (#3520)
 2269e403663 Update database dependencies (#3519)
