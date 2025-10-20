@@ -1010,7 +1010,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
           )
       val orgReportId = insertSeedFundReport(status = SeedFundReportStatus.New, year = 1994)
 
-      service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
+      service.on(ProjectRenamedEvent("New Name", organizationId, projectId))
 
       assertEquals(
           mapOf(

@@ -2,7 +2,10 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationCreatedEvent
+import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -159,6 +162,8 @@ class OrganizationStore(
     return dslContext.transactionResult { _ ->
       organizationsDao.insert(fullRow)
 
+      val organizationId = fullRow.id!!
+
       with(ORGANIZATION_USERS) {
         dslContext
             .insertInto(ORGANIZATION_USERS)
@@ -166,7 +171,7 @@ class OrganizationStore(
             .set(CREATED_TIME, clock.instant())
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
-            .set(ORGANIZATION_ID, fullRow.id)
+            .set(ORGANIZATION_ID, organizationId)
             .set(ROLE_ID, Role.Owner)
             .set(USER_ID, ownerUserId)
             .execute()
@@ -176,11 +181,15 @@ class OrganizationStore(
         with(ORGANIZATION_MANAGED_LOCATION_TYPES) {
           dslContext
               .insertInto(ORGANIZATION_MANAGED_LOCATION_TYPES)
-              .set(ORGANIZATION_ID, fullRow.id)
+              .set(ORGANIZATION_ID, organizationId)
               .set(MANAGED_LOCATION_TYPE_ID, locationType)
               .execute()
         }
       }
+
+      publisher.publishEvent(
+          OrganizationCreatedEvent(organizationId = organizationId, name = row.name!!)
+      )
 
       fullRow.toModel(totalUsers = 1)
     }
@@ -218,6 +227,12 @@ class OrganizationStore(
           OrganizationTimeZoneChangedEvent(organizationId, existingRow?.timeZone, row.timeZone)
       )
     }
+
+    if (existingRow?.name != row.name) {
+      publisher.publishEvent(
+          OrganizationRenamedEvent(name = row.name!!, organizationId = organizationId)
+      )
+    }
   }
 
   /**
@@ -250,6 +265,8 @@ class OrganizationStore(
     // to the organization. This can cause the deletion to take a long time to finish: consider,
     // for example, an organization with a month's worth of historical sensor data.
     organizationsDao.deleteById(organizationId)
+
+    publisher.publishEvent(OrganizationDeletedEvent(organizationId))
   }
 
   /** Returns a list of the organization's individual users. */

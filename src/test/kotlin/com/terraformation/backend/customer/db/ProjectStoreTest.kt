@@ -5,6 +5,8 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.customer.event.ProjectCreatedEvent
+import com.terraformation.backend.customer.event.ProjectDeletedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
@@ -94,6 +96,14 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val actual = projectsDao.fetchOneById(newProjectId)
 
       assertEquals(expected, actual)
+
+      eventPublisher.assertEventPublished(
+          ProjectCreatedEvent(
+              name = "Project name",
+              organizationId = organizationId,
+              projectId = newProjectId,
+          )
+      )
     }
 
     @Test
@@ -277,7 +287,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(expected, actual)
 
-      eventPublisher.assertEventPublished(ProjectRenamedEvent(projectId, before.name!!, "New name"))
+      eventPublisher.assertEventPublished(
+          ProjectRenamedEvent(
+              name = "New name",
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
     }
 
     @Test
@@ -654,12 +670,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class Delete {
     @Test
-    fun `publishes ProjectDeletionStartedEvent`() {
+    fun `publishes events`() {
       val projectId = insertProject()
 
       store.delete(projectId)
 
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
+      eventPublisher.assertEventPublished(ProjectDeletedEvent(organizationId, projectId))
     }
   }
 
