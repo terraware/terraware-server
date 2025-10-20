@@ -23,6 +23,7 @@ import org.jooq.Field
 import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 @Named
 class EventLogStore(
@@ -68,6 +69,14 @@ class EventLogStore(
       projectId: ProjectId
   ): List<EventLogEntry<T>> {
     return fetchByProjectId(projectId, listOf(T::class))
+  }
+
+  fun <T : PersistentEvent> fetchByIntegerField(
+      fieldName: String,
+      fieldValue: Long,
+      eventClasses: Collection<KClass<out T>>,
+  ): List<EventLogEntry<T>> {
+    return fetchByIdField(fieldValue, fieldName, SQLDataType.BIGINT, eventClasses)
   }
 
   private fun <I : Any, T : PersistentEvent> fetchByIdField(

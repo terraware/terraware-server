@@ -31,6 +31,24 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class FetchByIntegerField {
+    @Test
+    fun `can fetch by organization id`() {
+      val event = TestOrganizationCreatedEventV1(OrganizationId(1), "One")
+      val eventLogId = store.insertEvent(event)
+
+      assertEquals(
+          listOf(EventLogEntry(user.userId, Instant.EPOCH, event, eventLogId)),
+          store.fetchByIntegerField(
+              "organizationId",
+              1,
+              listOf(TestOrganizationCreatedEventV1::class),
+          ),
+      )
+    }
+  }
+
+  @Nested
   inner class FetchByOrganizationId {
     @Test
     fun `can fetch single class by organization id`() {
