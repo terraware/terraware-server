@@ -6,9 +6,9 @@ Genus species ",Species (Common Name),"Germinating Quantity
 
 If you have any seeds that are germinating of this species in your nursery input that quantity here. Only enter numbers or an error will occur during upload. ","Seedling Quantity
 
-This number will add inventory with the ""active growth"" status in Terraware. Only enter numbers or an error will occur during upload. ","Stored Date*
+This number will add inventory with the ""active growth"" status in Terraware. Only enter numbers or an error will occur during upload. ","Ready to Plant Quantity This number will be added to the ""Ready to Plant Quantity."" Enter a number or an error will occur during upload.","Stored Date*
 Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Sub-Location
-Scientific name, Common name ,"1",2,2022-01-01,
-Second name,,,,2022-01-02,"Location 1
+Scientific name, Common name ,1,2,4,2022-01-01,
+Second name,,,,,2022-01-02,"Location 1
   Location 2"
-Scientific name,,,,2022-01-03,
+Scientific name,,,,,2022-01-03,

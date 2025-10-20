@@ -30,7 +30,7 @@ internal class BatchCsvValidatorTest {
   fun `accepts well-formed row`() {
     assertValidationResults(
         header +
-            "\nScientific name,Common name,1,2,2022-01-23,\"Valid Location\n  Valid Location 2 \""
+            "\nScientific name,Common name,1,2,3,2022-01-23,\"Valid Location\n  Valid Location 2 \""
     )
   }
 
@@ -71,7 +71,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects header row with too many columns`() {
     assertValidationResults(
-        "1,2,3,4,5,6,7",
+        "1,2,3,4,5,6,7,8",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -88,7 +88,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with missing or invalid date`() {
     assertValidationResults(
-        "$header\nScientific name,,0,1,,\nScientific name,,0,1,Jan 18,",
+        "$header\nScientific name,,0,1,2,,\nScientific name,,0,1,2,Jan 18,",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -116,9 +116,9 @@ internal class BatchCsvValidatorTest {
   fun `rejects rows with invalid scientific names`() {
     assertValidationResults(
         "$header\n" +
-            "This name is way too long,,0,1,2022-01-01,\n" +
-            "Short,,0,1,2022-01-01,\n" +
-            "Bad character!,,0,1,2022-01-01,",
+            "This name is way too long,,0,1,2,2022-01-01,\n" +
+            "Short,,0,1,2,2022-01-01,\n" +
+            "Bad character!,,0,1,2,2022-01-01,",
         setOf(
             UploadProblemsRow(
                 field = "Species (Scientific Name)",
@@ -155,12 +155,15 @@ internal class BatchCsvValidatorTest {
   fun `rejects rows with invalid seedling counts`() {
     assertValidationResults(
         "$header\n" +
-            "Scientific name,,A,1,2022-01-01,\n" +
-            "Scientific name,,-1,1,2022-01-01,\n" +
-            "Scientific name,,1.5,1,2022-01-01,\n" +
-            "Scientific name,,1,A,2022-01-01,\n" +
-            "Scientific name,,1,-1,2022-01-01,\n" +
-            "Scientific name,,1,1.5,2022-01-01,\n",
+            "Scientific name,,A,1,1,2022-01-01,\n" +
+            "Scientific name,,-1,1,1,2022-01-01,\n" +
+            "Scientific name,,1.5,1,1,2022-01-01,\n" +
+            "Scientific name,,1,A,1,2022-01-01,\n" +
+            "Scientific name,,1,-1,1,2022-01-01,\n" +
+            "Scientific name,,1,1.5,1,2022-01-01,\n" +
+            "Scientific name,,1,1,A,2022-01-01,\n" +
+            "Scientific name,,1,1,-1,2022-01-01,\n" +
+            "Scientific name,,1,1,1.5,2022-01-01,\n",
         setOf(
             UploadProblemsRow(
                 field = "Germinating Quantity",
@@ -216,6 +219,33 @@ internal class BatchCsvValidatorTest {
                 uploadId = uploadId,
                 value = "1.5",
             ),
+            UploadProblemsRow(
+                field = "Ready to Plant Quantity",
+                isError = true,
+                message = messages.batchCsvQuantityInvalid(),
+                position = 8,
+                typeId = UploadProblemType.MalformedValue,
+                uploadId = uploadId,
+                value = "A",
+            ),
+            UploadProblemsRow(
+                field = "Ready to Plant Quantity",
+                isError = true,
+                message = messages.batchCsvQuantityInvalid(),
+                position = 9,
+                typeId = UploadProblemType.MalformedValue,
+                uploadId = uploadId,
+                value = "-1",
+            ),
+            UploadProblemsRow(
+                field = "Ready to Plant Quantity",
+                isError = true,
+                message = messages.batchCsvQuantityInvalid(),
+                position = 10,
+                typeId = UploadProblemType.MalformedValue,
+                uploadId = uploadId,
+                value = "1.5",
+            ),
         ),
     )
   }
@@ -223,7 +253,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with nonexistent sub-location`() {
     assertValidationResults(
-        "$header\nScientific name,,0,1,2021-02-03,Bogus Location",
+        "$header\nScientific name,,0,1,2,2021-02-03,Bogus Location",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -243,7 +273,7 @@ internal class BatchCsvValidatorTest {
   fun `returns localized field names in problem data`() {
     Locales.GIBBERISH.use {
       assertValidationResults(
-          "$header\nThis name is way too long,,0,1,2022-01-01,\n",
+          "$header\nThis name is way too long,,0,1,,2022-01-01,\n",
           setOf(
               UploadProblemsRow(
                   field = "Species (Scientific Name)".toGibberish(),
@@ -262,7 +292,7 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `accepts localized number formatting`() {
     Locales.GIBBERISH.use {
-      assertValidationResults("$header\nScientific name,,0,123&456,2022-01-01,\n")
+      assertValidationResults("$header\nScientific name,,0,123&456,,2022-01-01,\n")
     }
   }
 

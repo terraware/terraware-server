@@ -1,13 +1,15 @@
 "Espèce (Nom scientifique)*
 
-Veuillez entrer le nom scientifique au format suivant :
+Veuillez saisir le nom scientifique au format suivant :
 
-Genre espèce",Espèce (Nom commun),"Quantité de germination
+Genre espèce",Espèce (Nom commun),"Quantité en germination
 
-Si vous avez des graines de cette espèce en train de germer dans votre pépinière, entrez cette quantité ici. Veuillez entrer uniquement des chiffres pour éviter une erreur lors du téléchargement.","Quantité de plants
+Ce nombre sera ajouté à la 'Quantité de germination/établissement'. Entrez un nombre, sinon une erreur se produira lors du téléchargement.","Quantité de plantules
 
-Ce nombre ajoutera de l'inventaire avec le statut 'non prêt' dans Terraware. Veuillez entrer uniquement des chiffres pour éviter une erreur lors du téléchargement.","Date de stockage*
+Ce nombre sera ajouté à la 'Quantité de croissance active'. Entrez un nombre, sinon une erreur se produira lors du téléchargement.","Quantité prête à planter
 
-Veuillez entrer au format AAAA-MM-JJ ou une erreur se produira lors du téléchargement. Si vous n'êtes pas sûr de la date exacte, une estimation est acceptable!","Sous-emplacements
+Ce nombre sera ajouté à la 'Quantité prête à planter'. Entrez un nombre, sinon une erreur se produira lors du téléchargement.","Date ajoutée*
 
-Si les plants se trouvent dans plus d'un sous-emplacement, séparez les noms des sous-emplacements avec des sauts de ligne."
+Veuillez saisir une date au format AAAA-MM-JJ, sinon une erreur se produira lors du téléchargement. Si vous ne connaissez pas la date exacte d’ajout de l’inventaire, saisissez une date approximative.","Sous-emplacements
+
+Si les plantules se trouvent dans plusieurs sous-emplacements de la pépinière, saisissez chaque sous-emplacement séparé par des sauts de ligne."
