@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        .results, .results td, .results th {
+            border: 1px black solid;
+            border-collapse: collapse;
+        }
+
+        .results td, .results th {
+            padding: 3px;
+        }
+    </style>
+
+    <script th:fragment="additionalScript" th:inline="javascript">
+        /*<![CDATA[*/
+        const allEventClasses = /*[[${allEventClasses}]]*/ [];
+        const selectedIdFieldFromServer = /*[[${idField}]]*/ '';
+        const selectedClassesFromServer = /*[[${selectedClasses}]]*/ [];
+        const tableColumns = /*[[${tableColumns}]]*/ [];
+
+        const eventClassMap = allEventClasses.reduce((map, eventClass) => {
+            map[eventClass.qualifiedName] = eventClass;
+            return map;
+        }, {});
+
+        function populateEventClassesSelect() {
+            const selectedClassesFromServerMap =
+                    (selectedClassesFromServer || []).reduce((map, eventClass) => {
+                        map[eventClass] = true;
+                        return map;
+                    }, {});
+
+            const select = document.getElementById('selectedClasses');
+            select.innerHTML = '';
+
+            allEventClasses.forEach(eventClass => {
+                const option = document.createElement('option');
+                option.selected = selectedClassesFromServerMap[eventClass.qualifiedName] === true;
+                option.text = eventClass.displayName;
+                option.title = eventClass.qualifiedName;
+                option.value = eventClass.qualifiedName;
+                select.appendChild(option);
+            });
+        }
+
+        function updateIdFieldOptions() {
+            const selectedClassesSelect = document.getElementById('selectedClasses');
+            const idFieldSelect = document.getElementById('idField');
+            const selectedOptions = Array.from(selectedClassesSelect.selectedOptions);
+
+            if (selectedOptions.length === 0) {
+                idFieldSelect.innerHTML = '<option value="" disabled>Select event classes first</option>';
+                idFieldSelect.disabled = true;
+                enableSearchIfPropertySelected();
+                return;
+            }
+
+            const propertiesOfSelectedClasses =
+                    selectedOptions
+                            .map(option => {
+                                const eventClass = eventClassMap[option.value];
+                                return eventClass ? eventClass.idProperties : [];
+                            });
+
+            // Find properties that all selected classes have in common, if any.
+            let commonProperties = propertiesOfSelectedClasses[0] || [];
+            for (let i = 1; i < propertiesOfSelectedClasses.length; i++) {
+                commonProperties = commonProperties.filter(prop =>
+                        propertiesOfSelectedClasses[i].includes(prop)
+                );
+            }
+
+            if (commonProperties.length === 0) {
+                idFieldSelect.innerHTML = '<option value="" disabled>No common properties found</option>';
+                idFieldSelect.disabled = true;
+            } else {
+                idFieldSelect.innerHTML = '';
+
+                commonProperties.sort();
+
+                commonProperties.forEach(property => {
+                    const option = document.createElement('option');
+                    option.value = property;
+                    option.text = property;
+                    option.selected = property === selectedIdFieldFromServer;
+                    idFieldSelect.appendChild(option);
+                });
+
+                idFieldSelect.disabled = false;
+            }
+
+            enableSearchIfPropertySelected();
+        }
+
+        function enableSearchIfPropertySelected() {
+            const idFieldSelect = document.getElementById('idField');
+            const idValueInput = document.getElementById('idValue');
+            const searchButton = document.getElementById('searchButton');
+
+            const hasValidIdField = !idFieldSelect.disabled && idFieldSelect.value !== '';
+
+            idValueInput.disabled = !hasValidIdField;
+            searchButton.disabled = !hasValidIdField;
+        }
+
+        function getEventClassesWithProperty(propertyName) {
+            return allEventClasses.filter(eventClass =>
+                    eventClass.idProperties.includes(propertyName)
+            );
+        }
+
+        // When the user clicks on an ID value, update the search form so it searches for all
+        // events related to that ID.
+        function navigateToProperty(propertyName, value) {
+            if (!value || value.trim() === '') return;
+
+            const eventClassesWithProperty = getEventClassesWithProperty(propertyName);
+            if (eventClassesWithProperty.length === 0) return;
+
+            // Select all event classes that have this property
+            const selectedClassesSelect = document.getElementById('selectedClasses');
+            Array.from(selectedClassesSelect.options).forEach(option => {
+                option.selected = eventClassesWithProperty.some(eventClass =>
+                        eventClass.qualifiedName === option.value
+                );
+            });
+
+            updateIdFieldOptions();
+
+            document.getElementById('idField').value = propertyName;
+            document.getElementById('idValue').value = value;
+
+            enableSearchIfPropertySelected();
+        }
+
+        function makeIdValuesClickable() {
+            if (!tableColumns) {
+                return;
+            }
+
+            tableColumns.forEach((column, columnIndex) => {
+                if (column.name.endsWith('Id')) {
+                    const cells = document.querySelectorAll(`.js-cell-${columnIndex}`);
+                    cells.forEach(cell => {
+                        const value = cell.dataset.value;
+                        if (value) {
+                            cell.style.cursor = 'pointer';
+                            cell.style.textDecoration = 'underline';
+                            cell.style.color = 'blue';
+                            cell.addEventListener('click', () => {
+                                navigateToProperty(column.name, value);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateEventClassesSelect();
+            updateIdFieldOptions();
+            makeIdValuesClickable();
+
+            document.getElementById('selectedClasses').addEventListener('change', updateIdFieldOptions);
+            document.getElementById('idField').addEventListener('change', enableSearchIfPropertySelected);
+        });
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Event Log</h2>
+
+<form method="GET" action="/admin/eventLog" id="eventLogForm">
+    <label>
+        Events
+        <select id="selectedClasses" name="selectedClasses" multiple="multiple" size="8">
+        </select>
+    </label>
+    <label>
+        with
+        <select id="idField" name="idField">
+            <option value="" disabled>Select event classes first</option>
+        </select>
+    </label>
+    <label>
+        =
+        <input id="idValue" type="number" name="idValue" th:value="${idValue}"/>
+    </label>
+    <input id="searchButton" type="submit" value="Search"/>
+</form>
+
+<th:block th:if="${tableRows != null}">
+    <h2>Search Results</h2>
+
+    <table class="results">
+        <thead>
+        <tr>
+            <th th:each="column : ${tableColumns}" th:text="${column.name}">Column</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="row : ${tableRows}" class="striped">
+            <td th:each="cell, cellStat : ${row}" th:title="${cell.tooltip}">
+                <span th:text="${cell.value}"
+                      th:class="|js-cell-${cellStat.index}|"
+                      th:data-column-index="${cellStat.index}"
+                      th:data-value="${cell.value}"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>
+        Hover over the user ID or class for more details. Click an ID value to set the search form
+        to look for all events with that ID.
+    </p>
+</th:block>
+
+</body>
+</html>
