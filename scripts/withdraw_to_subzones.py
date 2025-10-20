@@ -62,7 +62,7 @@ def main():
             print(f"Withdrawing to subzone {planting_subzone['id']}")
             client.withdraw_seedling_batch(
                 generate_nursery_withdrawal(
-                    batch["facility_id"],
+                    batch["facilityId"],
                     args.batch,
                     args.planting_site,
                     planting_subzone["id"],

@@ -57,6 +57,20 @@ To advance that server's clock by 3 days:
 ./clock.py -d 3
 ```
 
+## Creating batch withdrawals
+
+```
+./withdraw_to_subzones.py -b 306 -p 190
+```
+
+and a quick example of repeating this 500 times:
+
+```
+for i in {1..500}; do
+  ./withdraw_to_subzones.py -b 306 -p 190
+done
+```
+
 ## Generating fake timeseries data for a facility's devices
 
 If you have already created temperature/humidity sensor devices and PV system devices using
