@@ -3,6 +3,8 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.ProjectCreatedEvent
+import com.terraformation.backend.customer.event.ProjectDeletedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
@@ -79,16 +81,33 @@ class ProjectStore(
       throw ProjectNameInUseException(model.name)
     }
 
-    return row.id!!
+    val projectId = row.id!!
+
+    eventPublisher.publishEvent(
+        ProjectCreatedEvent(
+            name = model.name,
+            organizationId = model.organizationId,
+            projectId = projectId,
+        )
+    )
+
+    return projectId
   }
 
   fun delete(projectId: ProjectId) {
     requirePermissions { deleteProject(projectId) }
 
+    val organizationId =
+        parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
+
     dslContext.transaction { _ ->
       eventPublisher.publishEvent(ProjectDeletionStartedEvent(projectId))
 
       projectsDao.deleteById(projectId)
+
+      eventPublisher.publishEvent(
+          ProjectDeletedEvent(organizationId = organizationId, projectId = projectId)
+      )
     }
   }
 
@@ -113,7 +132,13 @@ class ProjectStore(
       }
 
       if (existing.name != updated.name) {
-        eventPublisher.publishEvent(ProjectRenamedEvent(projectId, existing.name, updated.name))
+        eventPublisher.publishEvent(
+            ProjectRenamedEvent(
+                name = updated.name,
+                organizationId = existing.organizationId,
+                projectId = projectId,
+            )
+        )
       }
     }
   }

@@ -4,11 +4,10 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.PersistentEvent
 
-/** Published when a project's name is changed. */
-data class ProjectRenamedEventV1(
+data class ProjectCreatedEventV1(
     val name: String,
     val organizationId: OrganizationId,
     val projectId: ProjectId,
 ) : PersistentEvent
 
-typealias ProjectRenamedEvent = ProjectRenamedEventV1
+typealias ProjectCreatedEvent = ProjectCreatedEventV1
