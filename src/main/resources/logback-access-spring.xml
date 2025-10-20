@@ -46,60 +46,7 @@
     <appender-ref ref="LOGSTASH"/>
   </springProfile>
 
-  <springProfile name="jsonlog">
-    <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-      <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
-        <providers>
-          <timestamp/>
-          <version/>
-
-          <!-- Standard access log fields -->
-          <contentLength/>
-          <elapsedTime/>
-          <method/>
-          <protocol/>
-          <remoteHost/>
-          <remoteUser/>
-          <requestedUri/>
-          <requestedUrl/>
-          <statusCode/>
-
-          <requestHeaders>
-            <fieldName>headers</fieldName>
-            <lowerCaseHeaderNames>true</lowerCaseHeaderNames>
-            <filter>
-              <include>Referer</include>
-              <include>User-Agent</include>
-            </filter>
-          </requestHeaders>
-
-          <pattern>
-            <omitEmptyFields>true</omitEmptyFields>
-            <pattern>
-              {
-                "authId": "#nullNA{%u}",
-                "email": "#nullNA{%reqAttribute{terrawareEmail}}",
-                "message": "%h - %u [%t] \"%r\" %s %b \"%i{Referer}\" \"%i{User-Agent}\"",
-                "requestId": "#nullNA{%reqAttribute{terrawareRequestId}}"
-              }
-            </pattern>
-          </pattern>
-        </providers>
-      </encoder>
-
-      <file>${ACCESS_LOG_FILE}</file>
-      <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-        <fileNamePattern>${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${ACCESS_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
-        <cleanHistoryOnStart>${LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START:-false}</cleanHistoryOnStart>
-        <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
-        <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-0}</totalSizeCap>
-        <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
-      </rollingPolicy>
-    </appender>
-    <appender-ref ref="JSONFILE"/>
-  </springProfile>
-
-  <springProfile name="!jsonlog &amp; !logstash">
+  <springProfile name="!logstash">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
       <encoder>
         <pattern>combined</pattern>

@@ -1,14 +1,10 @@
 <!--
-Logging configuration. This uses Spring profiles to control the logging behavior. There
-are two profiles you can use:
+Logging configuration. This uses Spring profiles to control the logging behavior. There is
+currently one profile you can use:
 
 logstash - Formats logs as JSON and writes them to stdout. This is suitable when running in
            ECS or other managed container environments. Application and access logs will be
            distinguished by the "log_type" field.
-
-jsonlog - Formats logs as JSON and writes them to rolling logfiles, as defined by the LOG_FILE
-          and ACCESS_LOG_FILE environment variables. This is suitable when running on a host
-          where something like the Datadog agent can consume multiple logfiles.
 
 The default behavior, if neither of those profiles is active, is to format log messages as
 human-readable text (for application log messages) and as Apache-style access log lines (for
@@ -36,26 +32,8 @@ this file.
     </root>
   </springProfile>
 
-  <springProfile name="jsonlog">
-    <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-      <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-      <file>${LOG_FILE}</file>
-      <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-        <fileNamePattern>${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
-        <cleanHistoryOnStart>${LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START:-false}</cleanHistoryOnStart>
-        <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
-        <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-0}</totalSizeCap>
-        <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
-      </rollingPolicy>
-    </appender>
-
-    <root level="INFO">
-      <appender-ref ref="JSONFILE"/>
-    </root>
-  </springProfile>
-
   <!-- If we aren't logging JSON, log text to the console, but don't do both. -->
-  <springProfile name="!jsonlog &amp; !logstash">
+  <springProfile name="!logstash">
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
