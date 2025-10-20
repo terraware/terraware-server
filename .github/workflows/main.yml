@@ -10,10 +10,6 @@ on:
     tags:
       # Releases with date-based tags, e.g., v20230411.1
       - v2[0-9]+.[0-9]+
-  pull_request:
-    branches-ignore:
-      # No need to run the workflow on Renovate PRs; it will have already run on the branches.
-      - renovate/**
 
 permissions:
   id-token: write
@@ -27,6 +23,10 @@ concurrency:
 
 jobs:
   build:
+    # Don't run the workflow on "pull_request" actions for Renovate PRs; it will have already
+    # run on the "push" action.
+    if: ${{ github.event_name != 'pull_request' || !startsWith(github.head_ref, 'renovate/') }}
+
     environment:
       name: ${{ (github.ref == 'refs/heads/main' && 'staging') || (startsWith(github.ref, 'refs/tags/v2') && 'prod') || null }}
       url: ${{ (github.ref == 'refs/heads/main' && 'https://staging.terraware.io/') || (startsWith(github.ref, 'refs/tags/v2') && 'https://terraware.io/') || null }}
