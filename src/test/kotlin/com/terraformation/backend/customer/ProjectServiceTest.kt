@@ -33,7 +33,6 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -100,14 +99,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             plantingZonesDao,
             publisher,
         ),
-        ProjectStore(
-            clock,
-            dslContext,
-            publisher,
-            parentStore,
-            projectsDao,
-            projectInternalUsersDao,
-        ),
+        ProjectStore(clock, dslContext, publisher, parentStore, projectsDao),
         UserStore(
             clock,
             config,

@@ -51,7 +51,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         eventPublisher,
         parentStore,
         projectsDao,
-        projectInternalUsersDao,
     )
   }
 

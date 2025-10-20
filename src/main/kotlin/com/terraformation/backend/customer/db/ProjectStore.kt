@@ -20,7 +20,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.daos.ProjectInternalUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
@@ -40,7 +39,6 @@ class ProjectStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
     private val projectsDao: ProjectsDao,
-    private val projectInternalUsersDao: ProjectInternalUsersDao,
 ) {
   fun fetchOneById(projectId: ProjectId): ExistingProjectModel {
     requirePermissions { readProject(projectId) }
