@@ -1,3 +1,4 @@
+262c081437e Remove unused dependency from ProjectStore (#3525)
 12717abbfc0 Remove "jsonlog" Spring profile (#3523)
 3c060c231b8 SW-7560 Log persistent events to console/Datadog (#3515)
 255c0e998d5 Prevent double CI runs for Renovate PRs (#3524)
