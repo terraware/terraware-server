@@ -18,6 +18,7 @@ class BatchCsvValidator(
           null,
           this::validateQuantity,
           this::validateQuantity,
+          this::validateQuantity,
           this::validateDate,
           this::validateSubLocation,
       )

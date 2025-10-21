@@ -1,11 +1,15 @@
-"Especie (nombre científico)*
+"Especie (Nombre científico)*
 
 Ingrese el nombre científico en el siguiente formato:
 
-Género especie",Especie (Nombre común),"Cantidad de germinación
+Género especie",Especie (Nombre común),"Cantidad germinante
 
-Si tiene alguna semilla de esta especie que esté germinando en su vivero, ingrese esa cantidad aquí. Ingrese solo números o se producirá un error durante la carga.","Cantidad de plántulas
+Este número se añadirá a la 'Cantidad de germinación/establecimiento'. Ingrese un número o se producirá un error al cargar.","Cantidad de plántulas
 
-Este número agregará inventario con el estado ""no listo"" en Terraware. Ingrese solo números o se producirá un error durante la carga.","Fecha de almacenamiento*
-Ingrese el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!","Sub-Lugar
-Si las plántulas se encuentran en más de una sub-lugar, separe los nombres de las sub-lugares con saltos de línea."
+Este número se añadirá a la 'Cantidad de crecimiento activo'. Ingrese un número o se producirá un error al cargar.","Cantidad lista para plantar
+
+Este número se añadirá a la 'Cantidad lista para plantar'. Ingrese un número o se producirá un error al cargar.","Fecha agregada*
+
+Ingrese una fecha en formato AAAA-MM-DD o se producirá un error al cargar. Si no conoce la fecha exacta en que se agregó el inventario, ingrese una fecha aproximada.","Sububicaciones
+
+Si las plántulas están en más de una sububicación en el vivero, ingrese cada sububicación separada por saltos de línea."

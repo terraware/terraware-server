@@ -123,8 +123,9 @@ class BatchImporter(
     val commonName = values[1]
     val germinatingQuantity = values[2]?.toBigDecimal(locale)?.toInt() ?: 0
     val seedlingQuantity = values[3]?.toBigDecimal(locale)?.toInt() ?: 0
-    val storedDate = LocalDate.parse(values[4])
-    val subLocationNames = values[5]?.lines()?.map { it.trim() } ?: emptyList()
+    val readyQuantity = values[4]?.toBigDecimal(locale)?.toInt() ?: 0
+    val storedDate = LocalDate.parse(values[5])
+    val subLocationNames = values[6]?.lines()?.map { it.trim() } ?: emptyList()
 
     val speciesId =
         speciesStore.importSpecies(
@@ -143,7 +144,7 @@ class BatchImporter(
             facilityId = facilityId,
             germinatingQuantity = germinatingQuantity,
             hardeningOffQuantity = 0,
-            readyQuantity = 0,
+            readyQuantity = readyQuantity,
             speciesId = speciesId,
             subLocationIds = subLocationNames.mapNotNull { subLocationIds[it] }.toSet(),
         )

@@ -174,13 +174,13 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedActiveGrowthQuantity = 2,
                 latestObservedGerminatingQuantity = 1,
                 latestObservedHardeningOffQuantity = 0,
-                latestObservedReadyQuantity = 0,
+                latestObservedReadyQuantity = 4,
                 latestObservedTime = Instant.EPOCH,
                 lossRate = 0,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 organizationId = organizationId,
-                readyQuantity = 0,
+                readyQuantity = 4,
                 speciesId = SpeciesId(1),
                 version = 1,
             ),
@@ -276,13 +276,13 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedActiveGrowthQuantity = 2,
                 latestObservedGerminatingQuantity = 123456,
                 latestObservedHardeningOffQuantity = 0,
-                latestObservedReadyQuantity = 0,
+                latestObservedReadyQuantity = 3,
                 latestObservedTime = Instant.EPOCH,
                 lossRate = 0,
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 organizationId = organizationId,
-                readyQuantity = 0,
+                readyQuantity = 3,
                 speciesId = SpeciesId(1),
                 version = 1,
             ),
@@ -301,7 +301,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   fun `rejects files with validation errors`() {
     val uploadId =
         insertBatchUpload(
-            headerAnd("ShortName,,1,1,2022-01-01,\n"),
+            headerAnd("ShortName,,1,1,1,2022-01-01,\n"),
             UploadStatus.AwaitingValidation,
         )
 
@@ -325,7 +325,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `uses new name if a species has been renamed`() {
     val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
-    val uploadId = insertBatchUpload(headerAnd("Old name,,,,2022-01-01,"))
+    val uploadId = insertBatchUpload(headerAnd("Old name,,,,,2022-01-01,"))
 
     importer.importCsv(uploadId, false)
 
