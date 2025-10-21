@@ -1472,7 +1472,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .on(permSiteCol.eq(PLANTING_SITE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
               .fullOuterJoin(tempSiteT0)
               .on(tempSiteCol.eq(PLANTING_SITE_ID).and(tempSpeciesCol.eq(SPECIES_ID)))
-              .where(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
+              .where(
+                  PLANTING_SITE_ID.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID)
+                      .or(permSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
+                      .or(tempSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
+              )
+              .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
+              //              .where(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
       )
     }
