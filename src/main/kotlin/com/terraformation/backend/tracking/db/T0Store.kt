@@ -9,8 +9,11 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
@@ -28,9 +31,11 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import kotlin.collections.Map
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -63,6 +68,96 @@ class T0Store(
             )
           }
     } ?: throw PlantingSiteNotFoundException(plantingSiteId)
+  }
+
+  fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    data class T0SiteData(
+        val monitoringPlotId: MonitoringPlotId,
+        val plantingZoneId: PlantingZoneId,
+        val isPermanent: Boolean,
+        val speciesId: SpeciesId,
+        val plotDensity: BigDecimal?,
+        val zoneDensity: BigDecimal?,
+        val subzoneWithdrawalDensity: BigDecimal?,
+        val plotHasCompletedObservations: Boolean,
+    )
+
+    val siteData =
+        with(MONITORING_PLOTS) {
+          val subzoneDensity =
+              DSL.round(
+                  PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) /
+                      PLANTING_SUBZONES.AREA_HA
+              )
+
+          val completedObservationsField =
+              plotHasCompletedObservations(ID, PERMANENT_INDEX.isNotNull)
+
+          val allSpecies =
+              DSL.selectDistinct(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
+                  .from(PLANTING_SUBZONE_POPULATIONS)
+                  .leftJoin(PLANTING_SUBZONES)
+                  .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                  .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .asTable()
+
+          val speciesField = allSpecies.field(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)!!
+
+          dslContext
+              .select(
+                  ID,
+                  plantingSubzones.PLANTING_ZONE_ID,
+                  PERMANENT_INDEX.isNotNull,
+                  speciesField,
+                  PLOT_T0_DENSITIES.PLOT_DENSITY,
+                  PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY,
+                  subzoneDensity,
+                  completedObservationsField,
+              )
+              .from(this)
+              .crossJoin(allSpecies)
+              .leftJoin(PLOT_T0_DENSITIES)
+              .on(
+                  ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID)
+                      .and(speciesField.eq(PLOT_T0_DENSITIES.SPECIES_ID))
+              )
+              .leftJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .on(
+                  plantingSubzones.PLANTING_ZONE_ID.eq(
+                          PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
+                      )
+                      .and(speciesField.eq(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID))
+              )
+              .leftJoin(PLANTING_SUBZONE_POPULATIONS)
+              .on(
+                  PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
+                      .and(speciesField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
+              )
+              .leftJoin(PLANTING_SUBZONES)
+              .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .fetch { record ->
+                T0SiteData(
+                    monitoringPlotId = record[ID.asNonNullable()],
+                    plantingZoneId = record[plantingSubzones.PLANTING_ZONE_ID.asNonNullable()],
+                    isPermanent = record[PERMANENT_INDEX.isNotNull],
+                    speciesId = record[speciesField.asNonNullable()],
+                    plotDensity = record[PLOT_T0_DENSITIES.PLOT_DENSITY],
+                    zoneDensity = record[PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY],
+                    subzoneWithdrawalDensity = record[subzoneDensity],
+                    plotHasCompletedObservations = record[completedObservationsField],
+                )
+              }
+        }
+
+    return siteData.all { datum ->
+      datum.plotHasCompletedObservations &&
+          datum.subzoneWithdrawalDensity != null &&
+          ((datum.isPermanent && datum.plotDensity != null) ||
+              (!datum.isPermanent && datum.zoneDensity != null))
+    }
   }
 
   fun assignT0PlotObservation(
@@ -444,4 +539,23 @@ class T0Store(
       )
     }
   }
+
+  private fun plotHasCompletedObservations(
+      monitoringPlotIdField: Field<MonitoringPlotId?>,
+      isPermanent: Field<Boolean?>,
+  ): Condition =
+      DSL.exists(
+          DSL.selectOne()
+              .from(OBSERVATION_PLOTS)
+              .where(
+                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
+                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
+                      .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+              )
+              .orderBy(
+                  OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
+                  OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
+              )
+              .limit(1)
+      )
 }
