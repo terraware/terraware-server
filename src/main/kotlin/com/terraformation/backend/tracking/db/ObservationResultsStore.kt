@@ -1478,7 +1478,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .or(tempSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
               )
               .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
-              //              .where(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
       )
     }
