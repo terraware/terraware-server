@@ -6,6 +6,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesIdConverter
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -425,7 +426,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-  private val photosGpsField = OBSERVATION_PHOTOS.GPS_COORDINATES.forMultiset()
+  private val photosGpsField = FILES.GEOLOCATION.forMultiset()
 
   private val photosMultiset =
       DSL.multiset(
@@ -436,6 +437,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       OBSERVATION_PHOTOS.TYPE_ID,
                   )
                   .from(OBSERVATION_PHOTOS)
+                  .join(FILES)
+                  .on(OBSERVATION_PHOTOS.FILE_ID.eq(FILES.ID))
                   .where(OBSERVATION_PHOTOS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                   .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                   .orderBy(OBSERVATION_PHOTOS.FILE_ID)

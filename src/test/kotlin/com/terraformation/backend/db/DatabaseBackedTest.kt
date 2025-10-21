@@ -489,6 +489,7 @@ import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
@@ -1739,18 +1740,22 @@ abstract class DatabaseBackedTest {
       fileName: String = row.fileName ?: "fileName",
       contentType: String = row.contentType ?: "image/jpeg",
       size: Long = row.size ?: 1,
+      capturedLocalTime: LocalDateTime? = row.capturedLocalTime,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      geolocation: Point? = row.geolocation?.centroid,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       storageUrl: Any = row.storageUrl ?: "http://dummy/${nextStorageUrlNumber++}",
   ): FileId {
     val rowWithDefaults =
         row.copy(
+            capturedLocalTime = capturedLocalTime,
             contentType = contentType,
             createdBy = createdBy,
             createdTime = createdTime,
             fileName = fileName,
+            geolocation = geolocation,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             size = size,
@@ -3071,14 +3076,12 @@ abstract class DatabaseBackedTest {
       fileId: FileId = row.fileId ?: inserted.fileId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
       type: ObservationPhotoType = row.typeId ?: ObservationPhotoType.Plot,
   ) {
     val rowWithDefaults =
         row.copy(
             fileId = fileId,
-            gpsCoordinates = gpsCoordinates,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             positionId = position,
@@ -3814,9 +3817,7 @@ abstract class DatabaseBackedTest {
   protected fun insertActivityMediaFile(
       activityId: ActivityId = inserted.activityId,
       caption: String? = null,
-      capturedDate: LocalDate = LocalDate.EPOCH,
       fileId: FileId = inserted.fileId,
-      geolocation: Point? = null,
       isCoverPhoto: Boolean = false,
       isHiddenOnMap: Boolean = false,
       listPosition: Int =
@@ -3829,9 +3830,7 @@ abstract class DatabaseBackedTest {
             activityId = activityId,
             activityMediaTypeId = type,
             caption = caption,
-            capturedDate = capturedDate,
             fileId = fileId,
-            geolocation = geolocation,
             isCoverPhoto = isCoverPhoto,
             isHiddenOnMap = isHiddenOnMap,
             listPosition = listPosition,
@@ -3874,9 +3873,7 @@ abstract class DatabaseBackedTest {
   protected fun insertPublishedActivityMediaFile(
       activityId: ActivityId = inserted.activityId,
       caption: String? = null,
-      capturedDate: LocalDate = LocalDate.EPOCH,
       fileId: FileId = inserted.fileId,
-      geolocation: Point? = null,
       isCoverPhoto: Boolean = false,
       isHiddenOnMap: Boolean = false,
       listPosition: Int =
@@ -3890,9 +3887,7 @@ abstract class DatabaseBackedTest {
             activityId = activityId,
             activityMediaTypeId = type,
             caption = caption,
-            capturedDate = capturedDate,
             fileId = fileId,
-            geolocation = geolocation,
             isCoverPhoto = isCoverPhoto,
             isHiddenOnMap = isHiddenOnMap,
             listPosition = listPosition,

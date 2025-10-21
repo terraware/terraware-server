@@ -195,7 +195,6 @@ class ObservationService(
   fun storePhoto(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
-      gpsCoordinates: Point,
       position: ObservationPlotPosition?,
       data: InputStream,
       metadata: NewFileMetadata,
@@ -203,6 +202,9 @@ class ObservationService(
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
+    if (metadata.geolocation == null) {
+      throw IllegalArgumentException("Geolocation is required for observation photos")
+    }
     if (type == ObservationPhotoType.Quadrat && position == null) {
       throw IllegalArgumentException("Position is required for a quadrat photo")
     }
@@ -216,7 +218,6 @@ class ObservationService(
           observationPhotosDao.insert(
               ObservationPhotosRow(
                   fileId = fileId,
-                  gpsCoordinates = gpsCoordinates,
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
                   positionId = position,

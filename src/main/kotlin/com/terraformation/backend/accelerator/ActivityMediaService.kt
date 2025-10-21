@@ -110,12 +110,25 @@ class ActivityMediaService(
 
     val fileId =
         storageStream.use {
-          fileService.storeFile("activity", storageStream, newFileMetadata) { fileId ->
-            // Make sure we've finished extracting EXIF metadata from the stream before trying
-            // to pull values from it. At this point, storageStream has been completely consumed
-            // because the file has been copied to the file store.
-            exifThread.join()
+          fileService.storeFile(
+              "activity",
+              storageStream,
+              newFileMetadata,
+              populateMetadata = { metadata ->
+                // Make sure we've finished extracting EXIF metadata from the stream before trying
+                // to pull values from it. At this point, storageStream has been completely consumed
+                // because the file has been copied to the file store.
+                exifThread.join()
 
+                val capturedDate =
+                    exifMetadata?.let { extractCapturedDate(it) } ?: getCurrentDate(activityId)
+                metadata.copy(
+                    // TODO: Extract time of day from EXIF, not just date
+                    capturedLocalTime = capturedDate.atStartOfDay(),
+                    geolocation = exifMetadata?.let { extractGeolocation(it) },
+                )
+              },
+          ) { fileId ->
             val mimeType =
                 fileType?.mimeType
                     ?: throw UnsupportedMediaTypeException("Cannot determine file type")
@@ -134,10 +147,7 @@ class ActivityMediaService(
                 ActivityMediaFilesRow(
                     activityId = activityId,
                     activityMediaTypeId = mediaType,
-                    capturedDate =
-                        exifMetadata?.let { extractCapturedDate(it) } ?: getCurrentDate(activityId),
                     fileId = fileId,
-                    geolocation = exifMetadata?.let { extractGeolocation(it) },
                     isCoverPhoto = false,
                     isHiddenOnMap = false,
                     listPosition = listPosition,

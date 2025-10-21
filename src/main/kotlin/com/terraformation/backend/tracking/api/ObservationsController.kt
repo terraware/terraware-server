@@ -412,12 +412,11 @@ class ObservationsController(
 
     val fileId =
         observationService.storePhoto(
-            data = file.inputStream,
-            gpsCoordinates = payload.gpsCoordinates,
-            metadata = FileMetadata.of(contentType, filename, file.size),
-            monitoringPlotId = plotId,
             observationId = observationId,
+            monitoringPlotId = plotId,
             position = payload.position,
+            data = file.inputStream,
+            metadata = FileMetadata.of(contentType, filename, file.size, payload.gpsCoordinates),
             type = payload.type ?: ObservationPhotoType.Plot,
         )
 

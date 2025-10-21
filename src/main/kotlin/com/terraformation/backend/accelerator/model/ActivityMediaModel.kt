@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.Geometry
@@ -16,9 +17,9 @@ import org.locationtech.jts.geom.Point
 data class ActivityMediaModel(
     val activityId: ActivityId,
     val caption: String?,
+    val capturedLocalTime: LocalDateTime,
     val createdBy: UserId,
     val createdTime: Instant,
-    val capturedDate: LocalDate,
     val fileId: FileId,
     val geolocation: Point?,
     val isCoverPhoto: Boolean,
@@ -26,17 +27,20 @@ data class ActivityMediaModel(
     val listPosition: Int,
     val type: ActivityMediaType,
 ) {
+  val capturedDate: LocalDate
+    get() = capturedLocalTime.toLocalDate()
+
   companion object {
     fun of(
         record: Record,
-        geolocationField: Field<Geometry?> = ACTIVITY_MEDIA_FILES.GEOLOCATION,
+        geolocationField: Field<Geometry?> = FILES.GEOLOCATION,
     ): ActivityMediaModel {
       return ActivityMediaModel(
           activityId = record[ACTIVITY_MEDIA_FILES.ACTIVITY_ID]!!,
           caption = record[ACTIVITY_MEDIA_FILES.CAPTION],
+          capturedLocalTime = record[FILES.CAPTURED_LOCAL_TIME]!!,
           createdBy = record[FILES.CREATED_BY]!!,
           createdTime = record[FILES.CREATED_TIME]!!,
-          capturedDate = record[ACTIVITY_MEDIA_FILES.CAPTURED_DATE]!!,
           fileId = record[ACTIVITY_MEDIA_FILES.FILE_ID]!!,
           geolocation = record[geolocationField] as? Point,
           isCoverPhoto = record[ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO]!!,

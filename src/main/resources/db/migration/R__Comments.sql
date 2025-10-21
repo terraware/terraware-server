@@ -100,6 +100,8 @@ COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be repre
 COMMENT ON TABLE file_access_tokens IS 'Temporary tokens for unauthenticated access to files from the file store.';
 
 COMMENT ON TABLE files IS 'Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`.';
+COMMENT ON COLUMN files.captured_local_time IS 'If applicable, the date and time in the local time zone of wherever the file''s data was captured. For example, the time a photo was taken. This may differ from `created_time`, which represents when the file was stored in Terraware. This is typically extracted from the file itself, e.g., EXIF metadata.';
+COMMENT ON COLUMN files.geolocation IS 'If applicable, the location where the file was created. For photos, typically extracted from EXIF metadata.';
 
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';
 

@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.records.PublishedActivitiesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityMediaFilesRecord
@@ -77,10 +78,11 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Activity 1",
           isHighlight = true,
       )
-      val activity1FileId1 = insertFile()
+      val activity1FileId1 =
+          insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay(), geolocation = point(0))
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
-      val activity1FileId2 = insertFile()
+      val activity1FileId2 = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
       val activityId2 = insertActivity(verifiedBy = user.userId)
@@ -89,7 +91,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           activityType = ActivityType.Monitoring,
           description = "Activity 2",
       )
-      val activity2FileId = insertFile()
+      val activity2FileId = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
 
@@ -112,9 +114,9 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedActivityMediaModel(
                               activityId = activityId1,
                               caption = null,
-                              capturedDate = LocalDate.EPOCH,
+                              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity1FileId1,
-                              geolocation = null,
+                              geolocation = point(0),
                               isCoverPhoto = false,
                               isHiddenOnMap = false,
                               listPosition = 1,
@@ -123,7 +125,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedActivityMediaModel(
                               activityId = activityId1,
                               caption = null,
-                              capturedDate = LocalDate.EPOCH,
+                              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity1FileId2,
                               geolocation = null,
                               isCoverPhoto = false,
@@ -147,7 +149,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedActivityMediaModel(
                               activityId = activityId2,
                               caption = null,
-                              capturedDate = LocalDate.EPOCH,
+                              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity2FileId,
                               geolocation = null,
                               isCoverPhoto = false,
@@ -223,17 +225,12 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `publishes activity and media files`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      val fileId1 = insertFile()
-      insertActivityMediaFile(
-          caption = "Photo caption",
-          capturedDate = LocalDate.of(2024, 1, 10),
-          isCoverPhoto = true,
-      )
+      val fileId1 = insertFile(capturedLocalTime = LocalDate.of(2024, 1, 10).atStartOfDay())
+      insertActivityMediaFile(caption = "Photo caption", isCoverPhoto = true)
 
-      val fileId2 = insertFile()
+      val fileId2 = insertFile(geolocation = point(1))
       insertActivityMediaFile(
           caption = "Video caption",
-          geolocation = point(1),
           isHiddenOnMap = true,
           type = ActivityMediaType.Video,
       )
@@ -259,9 +256,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   activityId = activityId,
                   activityMediaTypeId = ActivityMediaType.Photo,
                   caption = "Photo caption",
-                  capturedDate = LocalDate.of(2024, 1, 10),
                   fileId = fileId1,
-                  geolocation = null,
                   isCoverPhoto = true,
                   isHiddenOnMap = false,
                   listPosition = 1,
@@ -270,9 +265,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   activityId = activityId,
                   activityMediaTypeId = ActivityMediaType.Video,
                   caption = "Video caption",
-                  capturedDate = LocalDate.EPOCH,
                   fileId = fileId2,
-                  geolocation = point(1),
                   isCoverPhoto = false,
                   isHiddenOnMap = true,
                   listPosition = 2,
@@ -340,11 +333,13 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `publishes newly-added and modified media files`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      val fileId1 = insertFile()
+      val fileId1 =
+          insertFile(
+              capturedLocalTime = LocalDate.of(2024, 1, 1).atStartOfDay(),
+              geolocation = point(0),
+          )
       insertActivityMediaFile(
           caption = "Original caption",
-          capturedDate = LocalDate.of(2024, 1, 1),
-          geolocation = point(0),
           isCoverPhoto = true,
       )
 
@@ -355,19 +350,22 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           .set(ACTIVITY_MEDIA_FILES.CAPTION, "Updated caption")
           .set(ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO, false)
           .set(ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP, true)
-          .set(ACTIVITY_MEDIA_FILES.GEOLOCATION, point(3))
           .set(ACTIVITY_MEDIA_FILES.LIST_POSITION, 2)
           .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId1))
           .execute()
 
-      val fileId2 = insertFile()
+      val fileId2 =
+          insertFile(
+              capturedLocalTime = LocalDate.of(2024, 1, 2).atStartOfDay(),
+              geolocation = point(1, 2),
+          )
       insertActivityMediaFile(
           caption = "New video file",
-          capturedDate = LocalDate.of(2024, 1, 2),
-          geolocation = point(1, 2),
           listPosition = 1,
           type = ActivityMediaType.Video,
       )
+
+      val filesBefore = dslContext.fetch(FILES)
 
       store.publish(activityId)
 
@@ -378,8 +376,6 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   fileId = fileId2,
                   activityMediaTypeId = ActivityMediaType.Video,
                   caption = "New video file",
-                  capturedDate = LocalDate.of(2024, 1, 2),
-                  geolocation = point(1, 2),
                   isCoverPhoto = false,
                   isHiddenOnMap = false,
                   listPosition = 1,
@@ -389,14 +385,14 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   fileId = fileId1,
                   activityMediaTypeId = ActivityMediaType.Photo,
                   caption = "Updated caption",
-                  capturedDate = LocalDate.of(2024, 1, 1),
-                  geolocation = point(3),
                   isCoverPhoto = false,
                   isHiddenOnMap = true,
                   listPosition = 2,
               ),
           )
       )
+
+      assertTableEquals(filesBefore)
     }
 
     @Test

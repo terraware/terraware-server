@@ -60,6 +60,9 @@ class FileService(
   /**
    * Stores a file on the file store and records its information in the database.
    *
+   * @param populateMetadata Function to populate any metadata properties whose values aren't known
+   *   initially. Called after the file has been written to the file store but before the file's
+   *   information has been inserted into the database.
    * @param validateFile Function to check that the file's contents are valid. If not, this should
    *   throw an exception.
    * @param insertChildRows Function to write any additional use-case-specific data about the file.
@@ -73,6 +76,7 @@ class FileService(
       data: InputStream,
       metadata: NewFileMetadata,
       validateFile: ((URI) -> Unit)? = null,
+      populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
       insertChildRows: (FileId) -> Unit,
   ): FileId {
     val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
@@ -100,12 +104,16 @@ class FileService(
     }
 
     try {
+      val fullMetadata = populateMetadata?.invoke(metadata) ?: metadata
+
       val filesRow =
           FilesRow(
-              contentType = metadata.contentType,
+              capturedLocalTime = fullMetadata.capturedLocalTime,
+              contentType = fullMetadata.contentType,
               createdTime = clock.instant(),
               createdBy = currentUser().userId,
-              fileName = metadata.filename,
+              fileName = fullMetadata.filename,
+              geolocation = fullMetadata.geolocation,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               size = metadata.size,

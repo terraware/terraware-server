@@ -21,6 +21,7 @@ import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
 import java.io.IOException
@@ -100,10 +101,15 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   fun `storeFile writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
     val size = photoData.size.toLong()
+    val geolocation = point(1)
     var insertedChildRow = false
 
     val fileId =
-        fileService.storeFile("category", photoData.inputStream(), metadata.copy(size = size)) {
+        fileService.storeFile(
+            "category",
+            photoData.inputStream(),
+            metadata.copy(geolocation = geolocation, size = size),
+        ) {
           insertedChildRow = true
         }
 
@@ -111,6 +117,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
         FilesRow(
             contentType = contentType,
             fileName = filename,
+            geolocation = geolocation,
             id = fileId,
             storageUrl = photoStorageUrl,
             size = size,
