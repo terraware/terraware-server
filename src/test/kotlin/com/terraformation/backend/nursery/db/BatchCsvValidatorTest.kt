@@ -92,7 +92,7 @@ internal class BatchCsvValidatorTest {
         errors =
             setOf(
                 UploadProblemsRow(
-                    field = "Stored Date",
+                    field = "Date Added",
                     isError = true,
                     message = messages.csvRequiredFieldMissing(),
                     position = 2,
@@ -100,7 +100,7 @@ internal class BatchCsvValidatorTest {
                     uploadId = uploadId,
                 ),
                 UploadProblemsRow(
-                    field = "Stored Date",
+                    field = "Date Added",
                     isError = true,
                     message = messages.csvDateMalformed(),
                     position = 3,
