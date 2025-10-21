@@ -2,6 +2,12 @@ ALTER TABLE files ADD COLUMN captured_local_time TIMESTAMP;
 ALTER TABLE files ADD COLUMN geolocation GEOMETRY(Point);
 
 UPDATE files
+SET geolocation = pamf.geolocation,
+    captured_local_time = pamf.captured_date
+FROM funder.published_activity_media_files pamf
+WHERE pamf.file_id = files.id;
+
+UPDATE files
 SET geolocation = amf.geolocation,
     captured_local_time = amf.captured_date
 FROM accelerator.activity_media_files amf
