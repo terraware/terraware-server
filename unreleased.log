@@ -1,3 +1,4 @@
+f86685c2825 SW-7581 Remove image file validation (#3532)
 201a2f42096 SW-7570 Add endpoint for checking if all site t0 data has been set (#3531)
 07427ffae2a SW-7569 Move geolocation, capture time to files table (#3530)
 308b2045615 SW-7483 Add Ready to Plant column to batch import CSV (#3528)
