@@ -9,7 +9,7 @@
   "private": true,
   "devDependencies": {
     "llm-autotranslate": "^1.0.0",
-    "mjml": "4.15.3",
+    "mjml": "4.16.1",
     "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
