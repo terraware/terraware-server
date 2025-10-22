@@ -1,3 +1,4 @@
+031b83309e3 SW-7566 Make survival rate require all subareas to have a survival rate (#3533)
 f86685c2825 SW-7581 Remove image file validation (#3532)
 201a2f42096 SW-7570 Add endpoint for checking if all site t0 data has been set (#3531)
 07427ffae2a SW-7569 Move geolocation, capture time to files table (#3530)
