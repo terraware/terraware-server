@@ -39,6 +39,8 @@ import kotlin.IllegalArgumentException
 import kotlin.lazy
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -211,8 +213,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           .execute()
       insertPlantingSubzonePopulation(speciesId = speciesId1)
 
-      assertEquals(
-          false,
+      assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "Requires all plots to have completed observations",
       )
@@ -222,8 +223,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `permanent plot has no t0 density set`() {
       insertPlantingSubzonePopulation(speciesId = speciesId1)
 
-      assertEquals(
-          false,
+      assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "Requires all permanent plots to have t0 data set",
       )
@@ -234,8 +234,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSubzonePopulation(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId1)
 
-      assertEquals(
-          false,
+      assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "Requires all temp plots to have t0 data set",
       )
@@ -247,8 +246,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlantingSubzonePopulation(speciesId = speciesId2)
 
-      assertEquals(
-          false,
+      assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "Requires all withdrawn species to have t0 data",
       )
@@ -263,8 +261,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSubzonePopulation(speciesId = speciesId1)
       insertPlantingSubzonePopulation(speciesId = speciesId2)
 
-      assertEquals(
-          true,
+      assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "All site data set",
       )
