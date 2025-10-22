@@ -1008,16 +1008,30 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
-            val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+            val survivalRatePlots =
+                monitoringPlots.filter { survivalRateIncludesTempPlots || it.isPermanent }
+            val survivalRate =
+                if (
+                    survivalRatePlots.isNotEmpty() &&
+                        survivalRatePlots.all { it.survivalRate != null }
+                ) {
+                  species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+                } else {
+                  null
+                }
             val survivalRateStdDev =
-                monitoringPlots
-                    .mapNotNull { plot ->
-                      plot.survivalRate?.let { survivalRate ->
-                        val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                        survivalRate to sumDensity.toDouble()
+                if (survivalRate != null) {
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.survivalRate?.let { survivalRate ->
+                          val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                          survivalRate to sumDensity.toDouble()
+                        }
                       }
-                    }
-                    .calculateWeightedStandardDeviation()
+                      .calculateWeightedStandardDeviation()
+                } else {
+                  null
+                }
 
             val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
             val completedPlotsPlantingDensities =
@@ -1305,16 +1319,25 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
-            val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+            val survivalRate =
+                if (subzones.isNotEmpty() && subzones.all { it.survivalRate != null }) {
+                  species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+                } else {
+                  null
+                }
             val survivalRateStdDev =
-                monitoringPlots
-                    .mapNotNull { plot ->
-                      plot.survivalRate?.let { survivalRate ->
-                        val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                        survivalRate to sumDensity.toDouble()
+                if (survivalRate != null) {
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.survivalRate?.let { survivalRate ->
+                          val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                          survivalRate to sumDensity.toDouble()
+                        }
                       }
-                    }
-                    .calculateWeightedStandardDeviation()
+                      .calculateWeightedStandardDeviation()
+                } else {
+                  null
+                }
 
             val plantingCompleted = record[zonePlantingCompletedField]
             val completedPlotsPlantingDensities =
@@ -1568,16 +1591,25 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     }
                   }
                   .calculateWeightedStandardDeviation()
-          val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+          val survivalRate =
+              if (zones.isNotEmpty() && zones.all { it.survivalRate != null }) {
+                species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+              } else {
+                null
+              }
           val survivalRateStdDev =
-              monitoringPlots
-                  .mapNotNull { plot ->
-                    plot.survivalRate?.let { survivalRate ->
-                      val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                      survivalRate to sumDensity.toDouble()
+              if (survivalRate != null) {
+                monitoringPlots
+                    .mapNotNull { plot ->
+                      plot.survivalRate?.let { survivalRate ->
+                        val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                        survivalRate to sumDensity.toDouble()
+                      }
                     }
-                  }
-                  .calculateWeightedStandardDeviation()
+                    .calculateWeightedStandardDeviation()
+              } else {
+                null
+              }
 
           ObservationResultsModel(
               adHocPlot = record[adHocPlotsField].firstOrNull(),
