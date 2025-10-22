@@ -88,6 +88,20 @@ class SearchController(
     )
   }
 
+  @Operation(summary = "Get the total count of values matching a set of search criteria.")
+  @PostMapping("/count")
+  fun searchCount(@RequestBody payload: SearchRequestPayload): SearchCountResponsePayload {
+    val rootPrefix = resolvePrefix(payload.prefix)
+
+    return SearchCountResponsePayload(
+        searchService.searchCount(
+            rootPrefix,
+            payload.fields.map { rootPrefix.resolve(it) },
+            payload.toSearchCriteria(rootPrefix),
+        )
+    )
+  }
+
   @ApiResponse(
       responseCode = "200",
       content =

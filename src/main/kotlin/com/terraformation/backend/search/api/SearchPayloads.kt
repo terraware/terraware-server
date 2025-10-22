@@ -207,3 +207,5 @@ data class FieldValuesPayload(
 )
 
 data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>)
+
+data class SearchCountResponsePayload(val count: Long)
