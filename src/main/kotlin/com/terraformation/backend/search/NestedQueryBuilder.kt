@@ -620,9 +620,10 @@ class NestedQueryBuilder(
   fun addSelectFields(
       fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
+      excludeMultisets: Boolean = false,
   ) {
     assertNotRendered()
-    fields.forEach { addSelectField(it, criteria) }
+    fields.forEach { addSelectField(it, criteria, excludeMultisets) }
   }
 
   /**
@@ -777,6 +778,7 @@ class NestedQueryBuilder(
   private fun addSelectField(
       fieldPath: SearchFieldPath,
       criteria: Map<SearchFieldPrefix, SearchNode>,
+      excludeMultisets: Boolean = false,
   ) {
     val relativeField = fieldPath.relativeTo(prefix)
 
@@ -795,6 +797,9 @@ class NestedQueryBuilder(
         nextSelectFieldPosition += searchField.selectFields.size
       }
     } else if (relativeField.isNested) {
+      if (excludeMultisets) {
+        return
+      }
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
       val sublistQuery =

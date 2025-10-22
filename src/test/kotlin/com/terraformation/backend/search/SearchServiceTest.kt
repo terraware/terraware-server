@@ -12,6 +12,7 @@ import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -200,6 +201,20 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
+    }
+  }
+
+  @Nested
+  inner class BuildQuery {
+    @Test
+    fun `buildQuery throws exception`() {
+      val prefix = SearchFieldPrefix(searchTables.species)
+      val fields =
+          listOf("nurseryProjects.project.id", "organization.id").map { prefix.resolve(it) }
+
+      assertThrows<IllegalArgumentException> {
+        searchService.buildQuery(prefix, fields, emptyMap(), excludeMultisets = true)
+      }
     }
   }
 }

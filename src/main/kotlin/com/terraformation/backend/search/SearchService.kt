@@ -85,9 +85,13 @@ class SearchService(private val dslContext: DSLContext) {
       fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
       sortOrder: List<SearchSortField> = emptyList(),
+      excludeMultisets: Boolean = false,
   ): NestedQueryBuilder {
+    require(!excludeMultisets || fields.any { !it.isNested }) {
+      "Requires at least one non-nested field when excluding multisets."
+    }
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
-    queryBuilder.addSelectFields(fields, criteria)
+    queryBuilder.addSelectFields(fields, criteria, excludeMultisets)
     queryBuilder.addSortFields(sortOrder)
     queryBuilder.addCondition(queryBuilder.filterResults(rootPrefix, criteria[rootPrefix]))
 
@@ -203,7 +207,7 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       criteria: Map<SearchFieldPrefix, SearchNode>,
   ): Long {
-    val queryBuilder = buildQuery(rootPrefix, emptyList(), criteria, emptyList())
+    val queryBuilder = buildQuery(rootPrefix, emptyList(), criteria, emptyList(), true)
     val query = queryBuilder.toSelectCountQuery()
 
     val count =
