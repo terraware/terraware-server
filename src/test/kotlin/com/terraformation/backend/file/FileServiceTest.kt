@@ -1,8 +1,10 @@
 package com.terraformation.backend.file
 
+import com.drew.imaging.FileType
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
@@ -15,11 +17,13 @@ import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
+import com.terraformation.backend.db.default_schema.tables.records.FilesRecord
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import io.mockk.every
@@ -33,6 +37,7 @@ import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
@@ -95,80 +100,217 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     assertTrue(tempDir.toFile().deleteRecursively(), "Deleting temporary directory")
   }
 
-  @Test
-  fun `storeFile writes file and database row`() {
-    val photoData = Random(System.currentTimeMillis()).nextBytes(10)
-    val size = photoData.size.toLong()
-    val geolocation = point(1)
-    var insertedChildRow = false
+  @Nested
+  inner class StoreFile {
+    @Test
+    fun `writes file and database row`() {
+      val photoData = Random(System.currentTimeMillis()).nextBytes(10)
+      val size = photoData.size.toLong()
+      var insertedChildRow = false
 
-    val fileId =
-        fileService.storeFile(
-            "category",
-            photoData.inputStream(),
-            metadata.copy(geolocation = geolocation, size = size),
-        ) {
-          insertedChildRow = true
-        }
-
-    val expectedPhoto =
-        FilesRow(
-            contentType = contentType,
-            fileName = filename,
-            geolocation = geolocation,
-            id = fileId,
-            storageUrl = photoStorageUrl,
-            size = size,
-            createdBy = user.userId,
-            createdTime = uploadedTime,
-            modifiedBy = user.userId,
-            modifiedTime = uploadedTime,
-        )
-
-    assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
-    assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
-
-    assertTrue(insertedChildRow, "Called function to insert child row")
-
-    val actualPhoto = filesDao.fetchOneById(fileId)!!
-    assertEquals(expectedPhoto, actualPhoto)
-  }
-
-  @Test
-  fun `storeFile deletes file if database insert fails`() {
-    assertThrows(DuplicateKeyException::class.java) {
-      fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {
-        throw DuplicateKeyException("something failed, oh no")
-      }
-    }
-
-    assertFalse(Files.exists(photoPath), "File should not exist")
-  }
-
-  @Test
-  fun `storeFile deletes file if contents can't be read from input stream`() {
-    val badStream =
-        object : InputStream() {
-          override fun read(): Int {
-            throw SocketTimeoutException()
+      val fileId =
+          fileService.storeFile("category", photoData.inputStream(), metadata.copy(size = size)) {
+            insertedChildRow = true
           }
-        }
 
-    assertThrows<SocketTimeoutException> {
-      fileService.storeFile("category", badStream, metadata) {}
+      val expectedPhoto =
+          FilesRow(
+              contentType = contentType,
+              fileName = filename,
+              id = fileId,
+              storageUrl = photoStorageUrl,
+              size = size,
+              createdBy = user.userId,
+              createdTime = uploadedTime,
+              modifiedBy = user.userId,
+              modifiedTime = uploadedTime,
+          )
+
+      assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
+      assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
+
+      assertTrue(insertedChildRow, "Called function to insert child row")
+
+      val actualPhoto = filesDao.fetchOneById(fileId)!!
+      assertEquals(expectedPhoto, actualPhoto)
     }
 
-    assertFalse(Files.exists(photoPath), "File should not exist")
-  }
+    @Test
+    fun `stores file that has no EXIF metadata`() {
+      val data = Random.nextBytes(10)
+      val size = data.size.toLong()
+      var insertedChildRow = false
 
-  @Test
-  fun `storeFile throws exception if directory cannot be created`() {
-    // Directory creation will fail if a path element already exists and is not a directory.
-    Files.createDirectories(photoPath.parent.parent)
-    Files.createFile(photoPath.parent)
+      val fileId =
+          fileService.storeFile("category", data.inputStream(), metadata.copy(size = size)) {
+            insertedChildRow = true
+          }
 
-    assertThrows(IOException::class.java) {
-      fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {}
+      assertTableEquals(
+          FilesRecord(
+              contentType = contentType,
+              fileName = filename,
+              id = fileId,
+              storageUrl = photoStorageUrl,
+              size = size,
+              createdBy = user.userId,
+              createdTime = uploadedTime,
+              modifiedBy = user.userId,
+              modifiedTime = uploadedTime,
+          )
+      )
+
+      assertTrue(Files.exists(photoPath), "Photo file $photoPath exists")
+      assertArrayEquals(data, Files.readAllBytes(photoPath), "File contents")
+
+      assertTrue(insertedChildRow, "Called function to insert child row")
+    }
+
+    @Test
+    fun `uses metadata values from populateMetadata callback`() {
+      val data = Random.nextBytes(10)
+      val size = data.size.toLong()
+      val capturedTime = LocalDateTime.of(2025, 1, 2, 3, 4, 5)
+      val geolocation = point(0)
+
+      val fileId =
+          fileService.storeFile(
+              category = "category",
+              data = data.inputStream(),
+              newFileMetadata = metadata.copy(size = size),
+              populateMetadata = { it: NewFileMetadata ->
+                it.copy(capturedLocalTime = capturedTime, geolocation = geolocation)
+              },
+              insertChildRows = {},
+          )
+
+      assertTableEquals(
+          FilesRecord(
+              capturedLocalTime = capturedTime,
+              contentType = contentType,
+              fileName = filename,
+              geolocation = geolocation,
+              id = fileId,
+              storageUrl = photoStorageUrl,
+              size = size,
+              createdBy = user.userId,
+              createdTime = uploadedTime,
+              modifiedBy = user.userId,
+              modifiedTime = uploadedTime,
+          )
+      )
+    }
+
+    @Test
+    fun `extracts metadata from file if available`() {
+      val data =
+          javaClass.getResourceAsStream("/file/photoWithDateAndGps.jpg")!!.use { it.readAllBytes() }
+      val size = data.size.toLong()
+
+      fileService.storeFile(
+          category = "category",
+          data = data.inputStream(),
+          newFileMetadata = metadata.copy(size = size),
+          insertChildRows = {},
+      )
+
+      val filesRecord = dslContext.fetchSingle(FILES)
+      assertEquals(
+          LocalDateTime.of(2023, 5, 15, 0, 0, 0),
+          filesRecord.capturedLocalTime,
+          "Should have used captured time from file",
+      )
+      assertGeometryEquals(
+          point(-122.4194, 37.7749),
+          filesRecord.geolocation,
+          "Should have used geolocation from file",
+      )
+    }
+
+    @Test
+    fun `uses caller-supplied metadata if any instead of values from file`() {
+      val data =
+          javaClass.getResourceAsStream("/file/photoWithDateAndGps.jpg")!!.use { it.readAllBytes() }
+      val size = data.size.toLong()
+      val capturedLocalTime = LocalDateTime.of(2025, 1, 2, 3, 4, 5)
+      val geolocation = point(0)
+
+      fileService.storeFile(
+          category = "category",
+          data = data.inputStream(),
+          newFileMetadata =
+              metadata.copy(
+                  capturedLocalTime = capturedLocalTime,
+                  geolocation = geolocation,
+                  size = size,
+              ),
+          insertChildRows = {},
+      )
+
+      val filesRecord = dslContext.fetchSingle(FILES)
+      assertEquals(
+          capturedLocalTime,
+          filesRecord.capturedLocalTime,
+          "Should have used caller-supplied captured time",
+      )
+      assertGeometryEquals(
+          geolocation,
+          filesRecord.geolocation,
+          "Should have used caller-supplied geolocation",
+      )
+    }
+
+    @Test
+    fun `passes detected file type to insertChildRows function`() {
+      val data =
+          javaClass.getResourceAsStream("/file/photoWithDateAndGps.jpg")!!.use { it.readAllBytes() }
+      val size = data.size.toLong()
+      var storedFile: FileService.StoredFile? = null
+
+      fileService.storeFile(
+          category = "category",
+          data = data.inputStream(),
+          newFileMetadata = metadata.copy(size = size),
+          insertChildRows = { it: FileService.StoredFile -> storedFile = it },
+      )
+
+      assertEquals(FileType.Jpeg, storedFile?.fileType, "File type passed to insertChildRows")
+    }
+
+    @Test
+    fun `deletes file if database insert fails`() {
+      assertThrows(DuplicateKeyException::class.java) {
+        fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {
+          throw DuplicateKeyException("something failed, oh no")
+        }
+      }
+
+      assertFalse(Files.exists(photoPath), "File should not exist")
+    }
+
+    @Test
+    fun `deletes file if contents can't be read from input stream`() {
+      val badStream =
+          object : InputStream() {
+            override fun read(): Int {
+              throw SocketTimeoutException()
+            }
+          }
+
+      assertThrows<IOException> { fileService.storeFile("category", badStream, metadata) {} }
+
+      assertFalse(Files.exists(photoPath), "File should not exist")
+    }
+
+    @Test
+    fun `throws exception if directory cannot be created`() {
+      // Directory creation will fail if a path element already exists and is not a directory.
+      Files.createDirectories(photoPath.parent.parent)
+      Files.createFile(photoPath.parent)
+
+      assertThrows(IOException::class.java) {
+        fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {}
+      }
     }
   }
 

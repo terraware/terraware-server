@@ -1,5 +1,9 @@
 package com.terraformation.backend.file
 
+import com.drew.imaging.FileType
+import com.drew.imaging.FileTypeDetector
+import com.drew.imaging.ImageMetadataReader
+import com.drew.metadata.Metadata
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DefaultCatalog
@@ -16,7 +20,9 @@ import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.InputStreamCopier
 import jakarta.inject.Named
+import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
@@ -56,11 +62,19 @@ class FileService(
       )
 
   /**
-   * Stores a file on the file store and records its information in the database.
+   * Stores a file on the file store and records its information in the database. If optional
+   * metadata such as geolocation isn't supplied by the caller but can be extracted from the file,
+   * records that information as well.
+   *
+   * The order of precedence for optional metadata (lower numbers are preferred):
+   * 1. The values supplied by the [populateMetadata] callback, if any.
+   * 2. The values supplied by the caller in the [newFileMetadata] argument, if any.
+   * 3. The values extracted from the file, if any.
    *
    * @param populateMetadata Function to populate any metadata properties whose values aren't known
-   *   initially. Called after the file has been written to the file store but before the file's
-   *   information has been inserted into the database.
+   *   initially, or to override values that are extracted from the file. Called after the file has
+   *   been written to the file store but before the file's information has been inserted into the
+   *   database.
    * @param insertChildRows Function to write any additional use-case-specific data about the file.
    *   Called after the file's basic information has been inserted into the files table, and called
    *   in the same transaction that inserts into the files table. If this throws an exception, the
@@ -70,48 +84,102 @@ class FileService(
   fun storeFile(
       category: String,
       data: InputStream,
-      metadata: NewFileMetadata,
+      newFileMetadata: NewFileMetadata,
       populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
       insertChildRows: (StoredFile) -> Unit,
   ): FileId {
-    val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
+    val copier = InputStreamCopier(data)
+    val fileTypeStream = copier.getCopy()
+    val exifStream = copier.getCopy()
+    val storageStream = copier.getCopy()
 
-    try {
-      fileStore.write(storageUrl, data)
-    } catch (e: FileAlreadyExistsException) {
-      // Don't delete the existing file
-      throw e
-    } catch (e: Exception) {
-      deleteIfExists(storageUrl)
-      throw e
-    }
+    // Use a child thread to transfer data to the copy streams and the current thread to save the
+    // file to the file store, rather than the other way around, so that the call to
+    // fileService.storeFile() will use this thread's active database transaction.
+    val currentThreadName = Thread.currentThread().name
+    Thread.ofVirtual().name("$currentThreadName-transfer").start { copier.transfer() }
 
-    try {
-      val fullMetadata = populateMetadata?.invoke(metadata) ?: metadata
+    var fileType: FileType? = null
+    var exifMetadata: Metadata? = null
 
-      val filesRow =
-          FilesRow(
-              capturedLocalTime = fullMetadata.capturedLocalTime,
-              contentType = fullMetadata.contentType,
-              createdTime = clock.instant(),
-              createdBy = currentUser().userId,
-              fileName = fullMetadata.filename,
-              geolocation = fullMetadata.geolocation,
-              modifiedBy = currentUser().userId,
-              modifiedTime = clock.instant(),
-              size = metadata.size,
-              storageUrl = storageUrl,
-          )
+    val exifThread =
+        Thread.ofVirtual().name("$currentThreadName-exif").start {
+          exifStream.use {
+            try {
+              // Wrap the input in a BufferedInputStream because detectFileType calls mark/reset on
+              // it. But that's only done to read a small amount of header data at the beginning of
+              // the file to determine the file type. (That's also why we can safely read both
+              // fileTypeStream and exifStream in the same thread.) After that, we throw the
+              // buffered wrapper away and close the copy stream; another copy stream is used to
+              // read the actual EXIF metadata to avoid BufferedInputStream copying bytes around
+              // needlessly.
+              fileType =
+                  fileTypeStream.use { FileTypeDetector.detectFileType(BufferedInputStream(it)) }
 
-      dslContext.transaction { _ ->
-        filesDao.insert(filesRow)
-        insertChildRows(StoredFile(filesRow.id!!))
+              if (fileType != FileType.Unknown) {
+                exifMetadata = ImageMetadataReader.readMetadata(exifStream, -1, fileType)
+              }
+            } catch (e: Exception) {
+              log.error("Failed to extract EXIF data from uploaded file", e)
+            }
+          }
+        }
+
+    return storageStream.use {
+      val storageUrl = fileStore.newUrl(clock.instant(), category, newFileMetadata.contentType)
+
+      try {
+        fileStore.write(storageUrl, storageStream)
+      } catch (e: FileAlreadyExistsException) {
+        // Don't delete the existing file
+        throw e
+      } catch (e: Exception) {
+        deleteIfExists(storageUrl)
+        throw e
       }
 
-      return filesRow.id!!
-    } catch (e: Exception) {
-      deleteIfExists(storageUrl)
-      throw e
+      try {
+        // Make sure we've finished extracting EXIF metadata from the stream before trying to pull
+        // values from it. At this point, storageStream has been completely consumed because the
+        // file has been copied to the file store.
+        exifThread.join()
+
+        val fileMetadataWithExifValues =
+            newFileMetadata.copy(
+                // TODO: Extract time of day from EXIF, not just date
+                capturedLocalTime =
+                    newFileMetadata.capturedLocalTime
+                        ?: exifMetadata?.extractCapturedDate()?.atStartOfDay(),
+                geolocation = newFileMetadata.geolocation ?: exifMetadata?.extractGeolocation(),
+            )
+
+        val fullMetadata =
+            populateMetadata?.invoke(fileMetadataWithExifValues) ?: fileMetadataWithExifValues
+
+        val filesRow =
+            FilesRow(
+                capturedLocalTime = fullMetadata.capturedLocalTime,
+                contentType = fullMetadata.contentType,
+                createdTime = clock.instant(),
+                createdBy = currentUser().userId,
+                fileName = fullMetadata.filename,
+                geolocation = fullMetadata.geolocation,
+                modifiedBy = currentUser().userId,
+                modifiedTime = clock.instant(),
+                size = fullMetadata.size,
+                storageUrl = storageUrl,
+            )
+
+        dslContext.transaction { _ ->
+          filesDao.insert(filesRow)
+          insertChildRows(StoredFile(filesRow.id!!, fileType, exifMetadata))
+        }
+
+        filesRow.id!!
+      } catch (e: Exception) {
+        deleteIfExists(storageUrl)
+        throw e
+      }
     }
   }
 
@@ -237,9 +305,11 @@ class FileService(
 
   /**
    * Information about a file that has just been stored in the file store. This is passed to the
-   * `insertChildRows` callback of [FileService.storeFile].
+   * `insertChildRows` function passed to [FileService.storeFile].
    */
   data class StoredFile(
       val fileId: FileId, // This should be first so it's easily accessible via destructuring
+      val fileType: FileType? = null,
+      val imageMetadata: Metadata? = null,
   )
 }
