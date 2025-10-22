@@ -21,7 +21,6 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.onePixelPng
-import com.terraformation.backend.util.ImageUtils
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -47,7 +46,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     FileService(
         dslContext,
         Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-        mockk(),
         eventPublisher,
         filesDao,
         fileStore,
@@ -61,7 +59,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
         dslContext,
         eventPublisher,
         fileService,
-        ImageUtils(fileStore),
         thumbnailService,
     )
   }

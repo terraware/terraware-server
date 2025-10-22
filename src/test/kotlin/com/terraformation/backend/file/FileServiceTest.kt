@@ -50,7 +50,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
 class FileServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
@@ -78,7 +77,6 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
     clock.instant = uploadedTime
     every { config.photoDir } returns tempDir
-    every { config.keepInvalidUploads } returns false
 
     every { random.nextLong() } returns 0x0123456789abcdef
     pathGenerator = PathGenerator(random)
@@ -89,7 +87,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     photoPath = tempDir.resolve(relativePath)
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
-    fileService = FileService(dslContext, clock, config, eventPublisher, filesDao, fileStore)
+    fileService = FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
 
   @AfterEach
@@ -161,36 +159,6 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
-  }
-
-  @Test
-  fun `storeFile deletes file if validation fails`() {
-    assertThrows<UnsupportedMediaTypeException> {
-      fileService.storeFile(
-          "category",
-          ByteArray(0).inputStream(),
-          metadata,
-          { throw UnsupportedMediaTypeException("validation failed") },
-      ) {}
-    }
-
-    assertFalse(Files.exists(photoPath), "File should not exist")
-  }
-
-  @Test
-  fun `storeFile keeps file if validation fails and keepInvalidUploads config is set`() {
-    every { config.keepInvalidUploads } returns true
-
-    assertThrows<UnsupportedMediaTypeException> {
-      fileService.storeFile(
-          "category",
-          ByteArray(0).inputStream(),
-          metadata,
-          { throw UnsupportedMediaTypeException("validation failed") },
-      ) {}
-    }
-
-    assertTrue(Files.exists(photoPath), "File should still exist")
   }
 
   @Test

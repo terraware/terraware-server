@@ -50,7 +50,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   private val fileStore: FileStore = mockk()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
+    FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val seedFundReportStore: SeedFundReportStore by lazy {
     SeedFundReportStore(

@@ -15,7 +15,6 @@ import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.Condition
@@ -28,7 +27,6 @@ class WithdrawalPhotoService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
-    private val imageUtils: ImageUtils,
     private val thumbnailService: ThumbnailService,
     private val withdrawalPhotosDao: WithdrawalPhotosDao,
 ) {
@@ -38,7 +36,7 @@ class WithdrawalPhotoService(
     requirePermissions { createWithdrawalPhoto(withdrawalId) }
 
     val fileId =
-        fileService.storeFile("withdrawal", data, metadata, imageUtils::read) { fileId ->
+        fileService.storeFile("withdrawal", data, metadata) { fileId ->
           withdrawalPhotosDao.insert(
               WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId)
           )

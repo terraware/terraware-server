@@ -17,7 +17,6 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
-import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
@@ -34,7 +33,6 @@ class BatchPhotoService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
-    private val imageUtils: ImageUtils,
     private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
@@ -43,7 +41,7 @@ class BatchPhotoService(
     requirePermissions { updateBatch(batchId) }
 
     val fileId =
-        fileService.storeFile("batch", data, metadata, imageUtils::read) { fileId ->
+        fileService.storeFile("batch", data, metadata) { fileId ->
           batchPhotosDao.insert(
               BatchPhotosRow(
                   batchId = batchId,
