@@ -75,9 +75,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPublishedReport()
 
     every { reportStore.publishReport(any()) } returns Unit
-    every { fileService.storeFile(any(), any(), any(), any(), any()) } answers
+    every { fileService.storeFile(any(), any(), any(), any(), any(), any()) } answers
         {
-          val func = arg<((fileId: FileId) -> Unit)?>(4)
+          val func = arg<((fileId: FileId) -> Unit)?>(5)
           val fileId = insertFile()
           func?.let { it(fileId) }
           fileId
@@ -270,7 +270,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               metadata = metadata,
               reportId = reportId,
           )
-      verify(exactly = 1) { fileService.storeFile(any(), inputStream, metadata, any(), any()) }
+      verify(exactly = 1) {
+        fileService.storeFile(any(), inputStream, metadata, any(), any(), any())
+      }
 
       assertTableEquals(
           listOf(

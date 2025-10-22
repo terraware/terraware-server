@@ -263,19 +263,21 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ActivityMediaFilesRow(
               activityId = activityId,
               activityMediaTypeId = type,
-              capturedDate = capturedDate,
               fileId = fileId,
               isCoverPhoto = false,
               isHiddenOnMap = false,
               listPosition = 1,
           ),
-          row.copy(geolocation = null),
+          row,
       )
 
+      val filesRow = filesDao.fetchOneById(fileId)!!
+      assertEquals(filesRow.capturedLocalTime?.toLocalDate(), capturedDate, "Captured date")
+
       if (geolocation != null) {
-        assertGeometryEquals(geolocation, row.geolocation)
+        assertGeometryEquals(geolocation, filesRow.geolocation)
       } else {
-        assertNull(row.geolocation, "Geolocation")
+        assertNull(filesRow.geolocation, "Geolocation")
       }
     }
   }

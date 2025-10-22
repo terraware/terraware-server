@@ -146,8 +146,6 @@ class ActivityMediaStore(
             .set(ACTIVITY_MEDIA_TYPE_ID, row.activityMediaTypeId)
             .set(IS_COVER_PHOTO, row.isCoverPhoto)
             .set(IS_HIDDEN_ON_MAP, row.isHiddenOnMap)
-            .set(CAPTURED_DATE, row.capturedDate)
-            .set(GEOLOCATION, row.geolocation)
             .set(LIST_POSITION, 0) // We'll overwrite this with the real position
             .execute()
       }
@@ -207,7 +205,13 @@ class ActivityMediaStore(
 
   private fun fetchByCondition(condition: Condition): List<ActivityMediaModel> {
     return dslContext
-        .select(ACTIVITY_MEDIA_FILES.asterisk(), FILES.CREATED_BY, FILES.CREATED_TIME)
+        .select(
+            ACTIVITY_MEDIA_FILES.asterisk(),
+            FILES.CAPTURED_LOCAL_TIME,
+            FILES.CREATED_BY,
+            FILES.CREATED_TIME,
+            FILES.GEOLOCATION,
+        )
         .from(ACTIVITY_MEDIA_FILES)
         .join(FILES)
         .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))

@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -48,7 +49,8 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class UpdateMedia {
     @Test
     fun `updates writable fields`() {
-      val fileId = insertFile(createdBy = createdBy)
+      val fileId =
+          insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay(), createdBy = createdBy)
       insertActivityMediaFile()
 
       val activitiesBefore = dslContext.fetchSingle(ACTIVITIES)
@@ -84,13 +86,13 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `moves file earlier in list if requested`() {
-      val fileId1 = insertFile()
+      val fileId1 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 1)
-      val fileId2 = insertFile()
+      val fileId2 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 2)
-      val fileId3 = insertFile()
+      val fileId3 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 3)
-      val fileId4 = insertFile()
+      val fileId4 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 4)
 
       store.updateMedia(activityId, fileId3) { it.copy(listPosition = 2) }
@@ -100,11 +102,11 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `maintains existing list position if requested`() {
-      val fileId1 = insertFile()
+      val fileId1 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 1)
-      val fileId2 = insertFile()
+      val fileId2 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 2)
-      val fileId3 = insertFile()
+      val fileId3 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 3)
 
       store.updateMedia(activityId, fileId2) { it.copy(caption = "New caption") }
@@ -114,13 +116,13 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `moves file later in list if requested`() {
-      val fileId1 = insertFile()
+      val fileId1 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 1)
-      val fileId2 = insertFile()
+      val fileId2 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 2)
-      val fileId3 = insertFile()
+      val fileId3 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 3)
-      val fileId4 = insertFile()
+      val fileId4 = insertFileForActivity()
       insertActivityMediaFile(listPosition = 4)
 
       store.updateMedia(activityId, fileId2) { it.copy(listPosition = 3) }
@@ -134,9 +136,9 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `clears isCoverPhoto on existing cover photo if it is set on updated file`() {
-      val fileId1 = insertFile()
+      val fileId1 = insertFileForActivity()
       insertActivityMediaFile(isCoverPhoto = true)
-      val fileId2 = insertFile()
+      val fileId2 = insertFileForActivity()
       insertActivityMediaFile(isCoverPhoto = false)
 
       store.updateMedia(activityId, fileId2) { it.copy(isCoverPhoto = true) }
@@ -150,9 +152,9 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `leaves isCoverPhoto alone on existing cover photo if it is not set on updated file`() {
-      val fileId1 = insertFile()
+      val fileId1 = insertFileForActivity()
       insertActivityMediaFile(isCoverPhoto = true)
-      val fileId2 = insertFile()
+      val fileId2 = insertFileForActivity()
       insertActivityMediaFile(isCoverPhoto = false)
 
       store.updateMedia(activityId, fileId2) { it.copy(caption = "Edited") }
@@ -166,7 +168,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if video is selected as cover photo`() {
-      val fileId = insertFile()
+      val fileId = insertFileForActivity()
       insertActivityMediaFile(type = ActivityMediaType.Video)
 
       assertThrows<IllegalArgumentException> {
@@ -176,7 +178,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if no permission to update activity`() {
-      val fileId = insertFile()
+      val fileId = insertFileForActivity()
       insertActivityMediaFile()
 
       deleteOrganizationUser()
@@ -184,6 +186,9 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<ActivityNotFoundException> { store.updateMedia(activityId, fileId) { it } }
     }
   }
+
+  private fun insertFileForActivity(): FileId =
+      insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
 
   private fun assertListPositions(expected: List<FileId>, message: String? = null) {
     assertEquals(

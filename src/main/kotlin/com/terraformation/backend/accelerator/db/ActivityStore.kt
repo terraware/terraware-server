@@ -158,7 +158,7 @@ class ActivityStore(
     return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId), includeMedia)
   }
 
-  private val geolocationField = ACTIVITY_MEDIA_FILES.GEOLOCATION.forMultiset()
+  private val geolocationField = FILES.GEOLOCATION.forMultiset()
 
   private val mediaMultiset =
       DSL.multiset(
@@ -166,11 +166,11 @@ class ActivityStore(
                       ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID,
                       ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
                       ACTIVITY_MEDIA_FILES.CAPTION,
-                      ACTIVITY_MEDIA_FILES.CAPTURED_DATE,
                       ACTIVITY_MEDIA_FILES.FILE_ID,
                       ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO,
                       ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP,
                       ACTIVITY_MEDIA_FILES.LIST_POSITION,
+                      FILES.CAPTURED_LOCAL_TIME,
                       FILES.CREATED_BY,
                       FILES.CREATED_TIME,
                       geolocationField,

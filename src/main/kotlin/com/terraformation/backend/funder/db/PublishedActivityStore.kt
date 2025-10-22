@@ -12,6 +12,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
@@ -100,7 +101,7 @@ class PublishedActivityStore(
         .execute()
   }
 
-  private val geolocationField = PUBLISHED_ACTIVITY_MEDIA_FILES.GEOLOCATION.forMultiset()
+  private val geolocationField = FILES.GEOLOCATION.forMultiset()
 
   private val mediaMultiset =
       with(PUBLISHED_ACTIVITY_MEDIA_FILES) {
@@ -109,14 +110,16 @@ class PublishedActivityStore(
                         ACTIVITY_MEDIA_TYPE_ID,
                         ACTIVITY_ID,
                         CAPTION,
-                        CAPTURED_DATE,
                         FILE_ID,
                         IS_COVER_PHOTO,
                         IS_HIDDEN_ON_MAP,
                         LIST_POSITION,
                         geolocationField,
+                        FILES.CAPTURED_LOCAL_TIME,
                     )
                     .from(PUBLISHED_ACTIVITY_MEDIA_FILES)
+                    .join(FILES)
+                    .on(PUBLISHED_ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
                     .where(ACTIVITY_ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
                     .orderBy(LIST_POSITION)
             )
@@ -211,9 +214,7 @@ class PublishedActivityStore(
               ACTIVITY_ID,
               ACTIVITY_MEDIA_TYPE_ID,
               CAPTION,
-              CAPTURED_DATE,
               FILE_ID,
-              GEOLOCATION,
               IS_COVER_PHOTO,
               IS_HIDDEN_ON_MAP,
               LIST_POSITION,
@@ -223,9 +224,7 @@ class PublishedActivityStore(
                       ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
                       ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID,
                       ACTIVITY_MEDIA_FILES.CAPTION,
-                      ACTIVITY_MEDIA_FILES.CAPTURED_DATE,
                       ACTIVITY_MEDIA_FILES.FILE_ID,
-                      ACTIVITY_MEDIA_FILES.GEOLOCATION,
                       ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO,
                       ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP,
                       ACTIVITY_MEDIA_FILES.LIST_POSITION,
@@ -237,8 +236,6 @@ class PublishedActivityStore(
           .doUpdate()
           .set(ACTIVITY_MEDIA_TYPE_ID, DSL.excluded(ACTIVITY_MEDIA_TYPE_ID))
           .set(CAPTION, DSL.excluded(CAPTION))
-          .set(CAPTURED_DATE, DSL.excluded(CAPTURED_DATE))
-          .set(GEOLOCATION, DSL.excluded(GEOLOCATION))
           .set(IS_COVER_PHOTO, DSL.excluded(IS_COVER_PHOTO))
           .set(IS_HIDDEN_ON_MAP, DSL.excluded(IS_HIDDEN_ON_MAP))
           .set(LIST_POSITION, DSL.excluded(LIST_POSITION))

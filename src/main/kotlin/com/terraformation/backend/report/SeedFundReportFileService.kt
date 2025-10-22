@@ -179,7 +179,7 @@ class SeedFundReportFileService(
   ): FileId {
     requirePermissions { updateSeedFundReport(reportId) }
 
-    val fileId = fileService.storeFile("report", data, metadata, null, insertChildRow)
+    val fileId = fileService.storeFile("report", data, metadata, insertChildRows = insertChildRow)
 
     log.info("Stored ${metadata.contentType} file $fileId for report $reportId")
 

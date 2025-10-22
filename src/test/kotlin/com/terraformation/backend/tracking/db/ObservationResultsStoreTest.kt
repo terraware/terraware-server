@@ -110,8 +110,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
-      insertFile()
-      insertObservationPhoto(gpsCoordinates = gpsCoordinates, position = position)
+      insertFile(geolocation = gpsCoordinates)
+      insertObservationPhoto(position = position)
 
       val results = resultsStore.fetchByOrganizationId(organizationId)
 

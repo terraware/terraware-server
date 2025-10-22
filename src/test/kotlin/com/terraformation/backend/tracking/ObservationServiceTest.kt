@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -608,7 +609,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     private lateinit var observationId: ObservationId
     private lateinit var plotId: MonitoringPlotId
 
-    private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 1L)
+    private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 1L, point(1))
 
     @BeforeEach
     fun setUp() {
@@ -631,7 +632,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1),
                 ObservationPlotPosition.NortheastCorner,
                 content.inputStream(),
                 metadata,
@@ -698,7 +698,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1),
                 ObservationPlotPosition.NortheastCorner,
                 byteArrayOf(1).inputStream(),
                 metadata,
@@ -708,7 +707,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1),
                 null,
                 byteArrayOf(1).inputStream(),
                 metadata,
@@ -725,7 +723,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     observationId,
                     plotId,
                     ObservationPlotPosition.NortheastCorner,
-                    point(1),
                     ObservationPhotoType.Plot,
                 ),
                 ObservationPhotosRecord(
@@ -733,10 +730,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     observationId,
                     plotId,
                     null,
-                    point(1),
                     ObservationPhotoType.Soil,
                 ),
             )
+        )
+
+        val filesRecords = dslContext.fetch(FILES)
+        assertGeometryEquals(
+            point(1),
+            filesRecords.single { it.id == fileId1 }.geolocation,
+            "File 1",
+        )
+        assertGeometryEquals(
+            point(1),
+            filesRecords.single { it.id == fileId2 }.geolocation,
+            "File 2",
         )
       }
 
@@ -746,7 +754,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service.storePhoto(
               observationId,
               plotId,
-              point(1),
               null,
               byteArrayOf(1).inputStream(),
               metadata,
@@ -761,7 +768,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service.storePhoto(
               observationId,
               plotId,
-              point(1),
               ObservationPlotPosition.SoutheastCorner,
               byteArrayOf(1).inputStream(),
               metadata,
@@ -778,7 +784,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service.storePhoto(
               observationId,
               plotId,
-              point(1),
               ObservationPlotPosition.NortheastCorner,
               byteArrayOf(1).inputStream(),
               metadata,
@@ -795,7 +800,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             service.storePhoto(
                 observationId,
                 plotId,
-                point(1),
                 ObservationPlotPosition.NortheastCorner,
                 onePixelPng.inputStream(),
                 metadata,
@@ -812,7 +816,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             service.storePhoto(
                 inserted.observationId,
                 inserted.monitoringPlotId,
-                point(1),
                 ObservationPlotPosition.SouthwestCorner,
                 onePixelPng.inputStream(),
                 metadata,

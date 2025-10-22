@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -202,17 +203,19 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityType = ActivityType.Monitoring,
               description = "Test monitoring activity",
           )
-      val fileId1 = insertFile()
+      val fileId1 = insertFile(capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay())
       insertActivityMediaFile(
           caption = "Caption 1",
-          capturedDate = LocalDate.of(2024, 2, 19),
           isCoverPhoto = true,
       )
-      val fileId2 = insertFile(createdTime = Instant.ofEpochSecond(1))
+      val fileId2 =
+          insertFile(
+              capturedLocalTime = LocalDate.of(2024, 2, 20).atStartOfDay(),
+              createdTime = Instant.ofEpochSecond(1),
+              geolocation = point(1),
+          )
       insertActivityMediaFile(
           caption = "Caption 2",
-          capturedDate = LocalDate.of(2024, 2, 20),
-          geolocation = point(1),
           isHiddenOnMap = true,
           type = ActivityMediaType.Video,
       )
@@ -236,9 +239,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ActivityMediaModel(
                           activityId = activityId,
                           caption = "Caption 1",
+                          capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
                           createdBy = user.userId,
                           createdTime = Instant.EPOCH,
-                          capturedDate = LocalDate.of(2024, 2, 19),
                           fileId = fileId1,
                           geolocation = null,
                           isCoverPhoto = true,
@@ -249,9 +252,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ActivityMediaModel(
                           activityId = activityId,
                           caption = "Caption 2",
+                          capturedLocalTime = LocalDate.of(2024, 2, 20).atStartOfDay(),
                           createdBy = user.userId,
                           createdTime = Instant.ofEpochSecond(1),
-                          capturedDate = LocalDate.of(2024, 2, 20),
                           fileId = fileId2,
                           geolocation = point(1),
                           isCoverPhoto = false,
@@ -296,7 +299,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test monitoring activity",
           )
 
-      val fileId1 = insertFile()
+      val fileId1 = insertFile(capturedLocalTime = LocalDateTime.of(2025, 5, 4, 3, 2, 1))
       insertActivityMediaFile(caption = "Caption", isHiddenOnMap = true)
 
       val activityId2 =
@@ -311,7 +314,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val publishedTime = Instant.ofEpochSecond(5858)
       insertPublishedActivity(publishedTime = publishedTime)
 
-      val fileId2 = insertFile()
+      val fileId2 = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile(isCoverPhoto = true)
 
       // Activities for other projects shouldn't be included
@@ -334,9 +337,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ActivityMediaModel(
                               activityId = activityId1,
                               caption = "Caption",
+                              capturedLocalTime = LocalDateTime.of(2025, 5, 4, 3, 2, 1),
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
-                              capturedDate = LocalDate.EPOCH,
                               fileId = fileId1,
                               geolocation = null,
                               isCoverPhoto = false,
@@ -363,9 +366,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ActivityMediaModel(
                               activityId = activityId2,
                               caption = null,
+                              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
-                              capturedDate = LocalDate.EPOCH,
                               fileId = fileId2,
                               geolocation = null,
                               isCoverPhoto = true,

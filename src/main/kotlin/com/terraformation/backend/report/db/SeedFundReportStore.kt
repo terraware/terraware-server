@@ -486,8 +486,10 @@ class SeedFundReportStore(
 
     return dslContext
         .select(
+            FILES.CAPTURED_LOCAL_TIME,
             FILES.CONTENT_TYPE,
             FILES.FILE_NAME,
+            FILES.GEOLOCATION,
             FILES.ID,
             FILES.SIZE,
             FILES.STORAGE_URL,
@@ -510,8 +512,10 @@ class SeedFundReportStore(
 
     return dslContext
         .select(
+            FILES.CAPTURED_LOCAL_TIME,
             FILES.CONTENT_TYPE,
             FILES.FILE_NAME,
+            FILES.GEOLOCATION,
             FILES.ID,
             FILES.SIZE,
             FILES.STORAGE_URL,
@@ -536,8 +540,10 @@ class SeedFundReportStore(
 
     return dslContext
         .select(
+            FILES.CAPTURED_LOCAL_TIME,
             FILES.CONTENT_TYPE,
             FILES.FILE_NAME,
+            FILES.GEOLOCATION,
             FILES.ID,
             FILES.SIZE,
             FILES.STORAGE_URL,
