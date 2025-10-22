@@ -1,3 +1,4 @@
+07427ffae2a SW-7569 Move geolocation, capture time to files table (#3530)
 308b2045615 SW-7483 Add Ready to Plant column to batch import CSV (#3528)
 9e7872457e1 SW-7565 Fix site survival rate showing when no t0 data has been set (#3529)
 d006b405546 Fix withdrawal python script, add to readme (#3527)
