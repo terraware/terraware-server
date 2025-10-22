@@ -10,12 +10,15 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
@@ -34,7 +37,10 @@ import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.IllegalArgumentException
 import kotlin.lazy
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -52,6 +58,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var plantingZoneId: PlantingZoneId
   private lateinit var monitoringPlotId: MonitoringPlotId
+  private lateinit var tempPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
@@ -63,12 +70,27 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val gridOrigin = point(1)
     val siteBoundary = multiPolygon(200)
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-    insertPlantingSiteHistory()
     plantingZoneId = insertPlantingZone(name = "Zone 2")
     insertPlantingSubzone()
+    observationId = insertObservation(completedTime = clock.instant())
+
+    tempPlotId = insertMonitoringPlot(plotNumber = 10)
+    insertObservationPlot(
+        claimedTime = clock.instant(),
+        claimedBy = user.userId,
+        completedTime = clock.instant(),
+        completedBy = user.userId,
+        isPermanent = false,
+    )
+
     monitoringPlotId = insertMonitoringPlot(plotNumber = 2, permanentIndex = 2)
-    observationId = insertObservation()
-    insertObservationPlot()
+    insertObservationPlot(
+        claimedTime = clock.instant(),
+        claimedBy = user.userId,
+        completedTime = clock.instant(),
+        completedBy = user.userId,
+        isPermanent = true,
+    )
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
   }
@@ -163,6 +185,86 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       assertEquals(expected, store.fetchT0SiteData(plantingSiteId))
+    }
+  }
+
+  @Nested
+  inner class FetchAllT0SiteDataSet {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> { store.fetchAllT0SiteDataSet(plantingSiteId) }
+    }
+
+    @Test
+    fun `plots have no completed observations`() {
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.COMPLETED_TIME, DSL.castNull(OBSERVATIONS.COMPLETED_TIME))
+          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+      dslContext
+          .update(OBSERVATION_PLOTS)
+          .set(OBSERVATION_PLOTS.COMPLETED_TIME, DSL.castNull(OBSERVATION_PLOTS.COMPLETED_TIME))
+          .set(OBSERVATION_PLOTS.COMPLETED_BY, DSL.castNull(OBSERVATION_PLOTS.COMPLETED_BY))
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all plots to have completed observations",
+      )
+    }
+
+    @Test
+    fun `permanent plot has no t0 density set`() {
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all permanent plots to have t0 data set",
+      )
+    }
+
+    @Test
+    fun `temp plot has no zone t0 density set`() {
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertPlotT0Density(speciesId = speciesId1)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all temp plots to have t0 data set",
+      )
+    }
+
+    @Test
+    fun `withdrawal data has other species than t0`() {
+      insertPlantingZoneT0TempDensity(speciesId = speciesId2)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlantingSubzonePopulation(speciesId = speciesId2)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all withdrawn species to have t0 data",
+      )
+    }
+
+    @Test
+    fun `correctly checks all data`() {
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertPlantingZoneT0TempDensity(speciesId = speciesId2)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertPlantingSubzonePopulation(speciesId = speciesId2)
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "All site data set",
+      )
     }
   }
 

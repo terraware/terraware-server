@@ -39,6 +39,16 @@ class T0Controller(
     return GetSiteT0DataResponsePayload(data = SiteT0DataResponsePayload(siteData))
   }
 
+  @Operation(summary = "Get whether or not all T0 Data has been set for a planting site")
+  @GetMapping("/site/{plantingSiteId}/allSet")
+  fun getAllT0SiteDataSet(
+      @PathVariable plantingSiteId: PlantingSiteId
+  ): GetAllSiteT0DataSetResponsePayload {
+    val allSet = t0Store.fetchAllT0SiteDataSet(plantingSiteId)
+
+    return GetAllSiteT0DataSetResponsePayload(allSet = allSet)
+  }
+
   @Operation(
       summary = "Assign T0 Data for a planting site",
       description =
@@ -138,6 +148,8 @@ data class SiteT0DataResponsePayload(
 
 data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
     SuccessResponsePayload
+
+data class GetAllSiteT0DataSetResponsePayload(val allSet: Boolean) : SuccessResponsePayload
 
 data class AssignSiteT0DataRequestPayload(
     val plantingSiteId: PlantingSiteId,
