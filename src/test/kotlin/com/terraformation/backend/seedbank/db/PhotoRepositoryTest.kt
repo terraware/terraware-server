@@ -23,7 +23,6 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
-import com.terraformation.backend.util.ImageUtils
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -102,7 +101,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns true
     every { user.canUploadPhoto(any()) } returns true
 
-    fileService = FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
+    fileService = FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
     thumbnailService = ThumbnailService(dslContext, fileService, mockk(), thumbnailStore)
     repository =
         PhotoRepository(
@@ -110,7 +109,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             fileService,
-            ImageUtils(fileStore),
             thumbnailService,
         )
 

@@ -128,7 +128,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     FileService(
         dslContext,
         Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-        mockk(),
         eventPublisher,
         filesDao,
         fileStore,

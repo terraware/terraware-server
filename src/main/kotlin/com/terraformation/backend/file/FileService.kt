@@ -1,7 +1,6 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DefaultCatalog
 import com.terraformation.backend.db.FileNotFoundException
@@ -37,7 +36,6 @@ import org.springframework.context.event.EventListener
 class FileService(
     private val dslContext: DSLContext,
     private val clock: Clock,
-    private val config: TerrawareServerConfig,
     private val eventPublisher: ApplicationEventPublisher,
     private val filesDao: FilesDao,
     private val fileStore: FileStore,
@@ -63,8 +61,6 @@ class FileService(
    * @param populateMetadata Function to populate any metadata properties whose values aren't known
    *   initially. Called after the file has been written to the file store but before the file's
    *   information has been inserted into the database.
-   * @param validateFile Function to check that the file's contents are valid. If not, this should
-   *   throw an exception.
    * @param insertChildRows Function to write any additional use-case-specific data about the file.
    *   Called after the file's basic information has been inserted into the files table, and called
    *   in the same transaction that inserts into the files table. If this throws an exception, the
@@ -75,7 +71,6 @@ class FileService(
       category: String,
       data: InputStream,
       metadata: NewFileMetadata,
-      validateFile: ((URI) -> Unit)? = null,
       populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
       insertChildRows: (FileId) -> Unit,
   ): FileId {
@@ -88,18 +83,6 @@ class FileService(
       throw e
     } catch (e: Exception) {
       deleteIfExists(storageUrl)
-      throw e
-    }
-
-    try {
-      validateFile?.invoke(storageUrl)
-    } catch (e: Exception) {
-      if (!config.keepInvalidUploads) {
-        deleteIfExists(storageUrl)
-      } else {
-        log.warn("File $storageUrl failed validation; keeping it for examination", e)
-      }
-
       throw e
     }
 

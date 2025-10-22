@@ -24,7 +24,6 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.net.URI
@@ -44,7 +43,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   private val fileStore = InMemoryFileStore()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, mockk(), eventPublisher, filesDao, fileStore)
+    FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
 
   private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {

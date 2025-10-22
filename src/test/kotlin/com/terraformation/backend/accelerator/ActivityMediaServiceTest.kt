@@ -9,7 +9,6 @@ import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
@@ -57,7 +56,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
-  private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
@@ -66,7 +64,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     FileService(
         dslContext,
         clock,
-        config,
         eventPublisher,
         filesDao,
         fileStore,
@@ -104,8 +101,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     activityId = insertActivity(createdBy = createdBy, projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
-
-    every { config.keepInvalidUploads } returns false
   }
 
   @Nested

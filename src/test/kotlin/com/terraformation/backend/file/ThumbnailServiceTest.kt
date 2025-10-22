@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
@@ -31,14 +30,13 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
-  private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val converter1: JpegConverter = mockk()
   private val converter2: JpegConverter = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
   private val fileService: FileService by lazy {
-    FileService(dslContext, clock, config, eventPublisher, filesDao, fileStore)
+    FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val service: ThumbnailService by lazy {
     ThumbnailService(dslContext, fileService, listOf(converter1, converter2), thumbnailStore)
