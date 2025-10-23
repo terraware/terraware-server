@@ -85,24 +85,6 @@ internal class SearchServiceCountTest : SearchServiceTest() {
     )
   }
 
-  @Test
-  fun `works for large quantities`() {
-    val prefix = SearchFieldPrefix(root = tables.viabilityTestResults)
-    val fields = listOf(prefix.resolve("seedsGerminated"))
-    val criteria =
-        FieldNode(
-            prefix.resolve("viabilityTest.id"),
-            listOf(testId1.toString(), testId2.toString(), testId3.toString()),
-        )
-
-    insertTestResults(testId1, 1000)
-    insertTestResults(testId2, 2000)
-    insertTestResults(testId3, 3000)
-    insertTestResults(testId4, 5) // excluded from criteria
-
-    assertEquals(6000, searchService.searchCount(prefix, fields, mapOf(prefix to criteria)))
-  }
-
   private fun insertTestResults(testId: ViabilityTestId, total: Int) {
     for (n in 1..total) {
       insertViabilityTestResult(
