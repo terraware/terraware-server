@@ -196,16 +196,15 @@ class SearchService(private val dslContext: DSLContext) {
       }
     }
 
-    return runQueryCount(rootPrefix, fields, criteria)
+    return runQueryCount(rootPrefix, criteria)
   }
 
   private fun runQueryCount(
       rootPrefix: SearchFieldPrefix,
-      fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
   ): Long {
-    val queryBuilder = buildQuery(rootPrefix, fields, criteria, emptyList())
-    val query = queryBuilder.toSelectQuery()
+    val queryBuilder = buildQuery(rootPrefix, emptyList(), criteria, emptyList())
+    val query = queryBuilder.toSelectCountQuery()
 
     val count =
         log.debugWithTiming("Retrieved count for search query") {

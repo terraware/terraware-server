@@ -9,6 +9,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
+import org.jooq.Record1
 import org.jooq.RecordMapper
 import org.jooq.Select
 import org.jooq.SelectJoinStep
@@ -690,6 +691,23 @@ class NestedQueryBuilder(
 
       selectWithVisibility.orderBy(getOrderBy(!distinct))
     }
+  }
+
+  /** Returns a jOOQ count query object for the currently-configured query */
+  fun toSelectCountQuery(): SelectSeekStepN<Record1<Int>> {
+    val select = dslContext.selectOne()
+
+    val selectFrom = select.from(prefix.searchTable.fromTable)
+    val selectWithConditions = selectFrom.where(conditions)
+    val conditionForVisibility = prefix.searchTable.conditionForVisibility()
+    val selectWithVisibility =
+        if (conditionForVisibility != null) {
+          selectWithConditions.and(conditionForVisibility)
+        } else {
+          selectWithConditions
+        }
+
+    return selectWithVisibility.orderBy(getOrderBy(true))
   }
 
   /**
