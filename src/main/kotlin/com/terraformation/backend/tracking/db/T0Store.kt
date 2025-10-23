@@ -70,11 +70,8 @@ class T0Store(
   fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val (isAllPermT0DataSet, survivalRateIncludesTempPlots) =
-        getAllPermPlotSpeciesT0Data(plantingSiteId)
-
-    return isAllPermT0DataSet &&
-        (!survivalRateIncludesTempPlots || isAllTempT0DataSet(plantingSiteId))
+    return isAllPermT0DataSet(plantingSiteId) &&
+        (!survivalRateIncludesTempPlots(plantingSiteId) || isAllTempT0DataSet(plantingSiteId))
   }
 
   fun assignT0PlotObservation(
@@ -457,22 +454,15 @@ class T0Store(
     }
   }
 
-  private fun getAllPermPlotSpeciesT0Data(plantingSiteId: PlantingSiteId): Pair<Boolean, Boolean> {
+  private fun isAllPermT0DataSet(plantingSiteId: PlantingSiteId): Boolean {
 
-    data class T0SitePermPlotData(
-        val monitoringPlotId: MonitoringPlotId,
-        val survivalRateIncludesTempPlots: Boolean,
-        val speciesId: SpeciesId?,
-        val plotDensity: BigDecimal? = null,
-    )
-
-    with(MONITORING_PLOTS) {
-      val permanentPlotSpecies =
+    val permanentPlotSpecies =
+        with(MONITORING_PLOTS) {
           DSL.select(
                   ID.`as`("plot_id"),
                   PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
               )
-              .from(this)
+              .from(MONITORING_PLOTS)
               .join(PLANTING_SUBZONE_POPULATIONS)
               .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
@@ -481,25 +471,21 @@ class T0Store(
                           ID.`as`("plot_id"),
                           PLOT_T0_DENSITIES.SPECIES_ID.`as`("species_id"),
                       )
-                      .from(this)
+                      .from(MONITORING_PLOTS)
                       .join(PLOT_T0_DENSITIES)
                       .on(ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
                       .where(PLANTING_SITE_ID.eq(plantingSiteId))
               )
               .asTable("permanent_plot_species")
+        }
 
-      val permPlotIdField = permanentPlotSpecies.field("plot_id", ID.dataType)
-      val permSpeciesIdField = permanentPlotSpecies.field("species_id", SpeciesId::class.java)!!
+    val permPlotIdField = permanentPlotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)
+    val permSpeciesIdField = permanentPlotSpecies.field("species_id", SpeciesId::class.java)!!
 
-      val permPlotData =
-          dslContext
-              .select(
-                  ID,
-                  plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
-                  permSpeciesIdField,
-                  PLOT_T0_DENSITIES.PLOT_DENSITY,
-              )
-              .from(this)
+    return !with(MONITORING_PLOTS) {
+      dslContext.fetchExists(
+          DSL.selectOne()
+              .from(MONITORING_PLOTS)
               .leftJoin(permanentPlotSpecies)
               .on(ID.eq(permPlotIdField))
               .leftJoin(PLOT_T0_DENSITIES)
@@ -517,48 +503,19 @@ class T0Store(
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNotNull)
-              .fetch { record ->
-                T0SitePermPlotData(
-                    monitoringPlotId = record[ID.asNonNullable()],
-                    survivalRateIncludesTempPlots =
-                        record[plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()],
-                    speciesId = record[permSpeciesIdField],
-                    plotDensity = record[PLOT_T0_DENSITIES.PLOT_DENSITY],
-                )
-              }
-
-      val isAllPermT0DataSet = permPlotData.all { it.plotDensity != null }
-
-      val survivalRateIncludesTempPlots =
-          if (permPlotData.isEmpty()) {
-            dslContext
-                .select(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS)
-                .from(PLANTING_SITES)
-                .where(PLANTING_SITES.ID.eq(plantingSiteId))
-                .fetchOne(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable())!!
-          } else {
-            permPlotData.first().survivalRateIncludesTempPlots
-          }
-
-      return isAllPermT0DataSet to survivalRateIncludesTempPlots
+              .and(PLOT_T0_DENSITIES.PLOT_DENSITY.isNull)
+      )
     }
   }
 
   private fun isAllTempT0DataSet(plantingSiteId: PlantingSiteId): Boolean {
-
-    data class T0SiteTempPlotData(
-        val plantingZoneId: PlantingZoneId,
-        val speciesId: SpeciesId?,
-        val zoneDensity: BigDecimal? = null,
-    )
-
-    with(MONITORING_PLOTS) {
-      val tempPlotSpecies =
+    val tempPlotSpecies =
+        with(MONITORING_PLOTS) {
           DSL.select(
                   ID.`as`("plot_id"),
                   PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
               )
-              .from(this)
+              .from(MONITORING_PLOTS)
               .join(PLANTING_SUBZONE_POPULATIONS)
               .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
@@ -567,7 +524,7 @@ class T0Store(
                           ID.`as`("plot_id"),
                           PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.`as`("species_id"),
                       )
-                      .from(this)
+                      .from(MONITORING_PLOTS)
                       .join(plantingSubzones)
                       .on(PLANTING_SUBZONE_ID.eq(plantingSubzones.ID))
                       .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
@@ -579,18 +536,15 @@ class T0Store(
                       .where(PLANTING_SITE_ID.eq(plantingSiteId))
               )
               .asTable("plot_species")
+        }
 
-      val tempPlotIdField = tempPlotSpecies.field("plot_id", ID.dataType)
-      val tempSpeciesIdField = tempPlotSpecies.field("species_id", SpeciesId::class.java)!!
+    val tempPlotIdField = tempPlotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)
+    val tempSpeciesIdField = tempPlotSpecies.field("species_id", SpeciesId::class.java)!!
 
-      val tempPlotData =
-          dslContext
-              .selectDistinct(
-                  plantingSubzones.PLANTING_ZONE_ID,
-                  tempSpeciesIdField,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY,
-              )
-              .from(this)
+    return !with(MONITORING_PLOTS) {
+      dslContext.fetchExists(
+          DSL.selectOne()
+              .from(MONITORING_PLOTS)
               .leftJoin(tempPlotSpecies)
               .on(ID.eq(tempPlotIdField))
               .leftJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
@@ -610,15 +564,15 @@ class T0Store(
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNull)
-              .fetch { record ->
-                T0SiteTempPlotData(
-                    plantingZoneId = record[plantingSubzones.PLANTING_ZONE_ID.asNonNullable()],
-                    speciesId = record[tempSpeciesIdField],
-                    zoneDensity = record[PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY],
-                )
-              }
-
-      return tempPlotData.all { it.zoneDensity != null }
+              .and(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY.isNull)
+      )
     }
   }
+
+  private fun survivalRateIncludesTempPlots(plantingSiteId: PlantingSiteId): Boolean =
+      dslContext
+          .select(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS)
+          .from(PLANTING_SITES)
+          .where(PLANTING_SITES.ID.eq(plantingSiteId))
+          .fetchOne(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable())!!
 }
