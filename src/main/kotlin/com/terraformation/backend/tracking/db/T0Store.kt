@@ -432,7 +432,7 @@ class T0Store(
                   .leftJoin(PLOT_T0_OBSERVATIONS)
                   .on(MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID))
                   .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .orderBy(monitoringPlots.PLOT_NUMBER)
+                  .orderBy(monitoringPlots.PLOT_NUMBER, SPECIES_ID)
           )
           .convertFrom { records ->
             records
@@ -460,7 +460,7 @@ class T0Store(
               DSL.select(PLANTING_ZONE_ID, SPECIES_ID, ZONE_DENSITY)
                   .from(this)
                   .where(plantingZones.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .orderBy(plantingZones.NAME)
+                  .orderBy(plantingZones.NAME, SPECIES_ID)
           )
           .convertFrom { records ->
             records
