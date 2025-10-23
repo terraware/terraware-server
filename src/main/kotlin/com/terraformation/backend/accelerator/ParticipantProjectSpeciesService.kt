@@ -212,7 +212,7 @@ class ParticipantProjectSpeciesService(
       metadata: NewFileMetadata,
       submissionId: SubmissionId,
   ) =
-      fileService.storeFile("species-list-deliverable", inputStream, metadata) { fileId ->
+      fileService.storeFile("species-list-deliverable", inputStream, metadata) { (fileId) ->
         with(SUBMISSION_SNAPSHOTS) {
           dslContext
               .insertInto(SUBMISSION_SNAPSHOTS)

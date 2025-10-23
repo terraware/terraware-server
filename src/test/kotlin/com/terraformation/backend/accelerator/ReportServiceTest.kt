@@ -11,7 +11,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.tables.records.ReportPhotosRecord
-import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -77,9 +76,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     every { reportStore.publishReport(any()) } returns Unit
     every { fileService.storeFile(any(), any(), any(), any(), any()) } answers
         {
-          val func = arg<((fileId: FileId) -> Unit)?>(4)
+          val func = arg<((storedFile: FileService.StoredFile) -> Unit)?>(4)
           val fileId = insertFile()
-          func?.let { it(fileId) }
+          func?.let { it(FileService.StoredFile(fileId)) }
           fileId
         }
 

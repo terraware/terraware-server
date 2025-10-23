@@ -214,7 +214,7 @@ class ObservationService(
     }
 
     val fileId =
-        fileService.storeFile("observation", data, metadata) { fileId ->
+        fileService.storeFile("observation", data, metadata) { (fileId) ->
           observationPhotosDao.insert(
               ObservationPhotosRow(
                   fileId = fileId,

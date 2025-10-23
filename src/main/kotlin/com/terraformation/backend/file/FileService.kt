@@ -72,7 +72,7 @@ class FileService(
       data: InputStream,
       metadata: NewFileMetadata,
       populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
-      insertChildRows: (FileId) -> Unit,
+      insertChildRows: (StoredFile) -> Unit,
   ): FileId {
     val storageUrl = fileStore.newUrl(clock.instant(), category, metadata.contentType)
 
@@ -105,7 +105,7 @@ class FileService(
 
       dslContext.transaction { _ ->
         filesDao.insert(filesRow)
-        insertChildRows(filesRow.id!!)
+        insertChildRows(StoredFile(filesRow.id!!))
       }
 
       return filesRow.id!!
@@ -234,4 +234,12 @@ class FileService(
       }
     }
   }
+
+  /**
+   * Information about a file that has just been stored in the file store. This is passed to the
+   * `insertChildRows` callback of [FileService.storeFile].
+   */
+  data class StoredFile(
+      val fileId: FileId, // This should be first so it's easily accessible via destructuring
+  )
 }

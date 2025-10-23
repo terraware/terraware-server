@@ -90,7 +90,7 @@ class ReportService(
     requirePermissions { updateReport(reportId) }
 
     val fileId =
-        fileService.storeFile("report", data, metadata) { fileId ->
+        fileService.storeFile("report", data, metadata) { (fileId) ->
           reportPhotosDao.insert(
               ReportPhotosRow(
                   fileId = fileId,

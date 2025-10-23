@@ -51,7 +51,7 @@ class VariableFileService(
   ): VariableValueId {
     lateinit var valueId: VariableValueId
 
-    fileService.storeFile("imageValue", data, metadata) { fileId ->
+    fileService.storeFile("imageValue", data, metadata) { (fileId) ->
       val effectiveBase =
           if (isAppend) {
             base.copy(

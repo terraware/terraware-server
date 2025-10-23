@@ -110,7 +110,7 @@ class ActivityMediaService(
                     geolocation = exifMetadata?.extractGeolocation(),
                 )
               },
-          ) { fileId ->
+          ) { (fileId) ->
             val mimeType =
                 fileType?.mimeType
                     ?: throw UnsupportedMediaTypeException("Cannot determine file type")

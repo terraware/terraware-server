@@ -42,7 +42,7 @@ class PhotoRepository(
     requirePermissions { uploadPhoto(accessionId) }
 
     val fileId =
-        fileService.storeFile("accession", data, metadata) { fileId ->
+        fileService.storeFile("accession", data, metadata) { (fileId) ->
           accessionPhotosDao.insert(AccessionPhotosRow(accessionId = accessionId, fileId = fileId))
         }
 

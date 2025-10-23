@@ -231,7 +231,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
       insertActivity()
       val fileId =
           fileService.storeFile("category", Random.nextBytes(1).inputStream(), metadata) {
-            insertActivityMediaFile(fileId = it)
+            insertActivityMediaFile(fileId = it.fileId)
           }
       val filesTableBefore = dslContext.fetch(FILES)
       val storageUrl = filesTableBefore.first().storageUrl!!
