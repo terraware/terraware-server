@@ -41,7 +41,7 @@ class BatchPhotoService(
     requirePermissions { updateBatch(batchId) }
 
     val fileId =
-        fileService.storeFile("batch", data, metadata) { fileId ->
+        fileService.storeFile("batch", data, metadata) { (fileId) ->
           batchPhotosDao.insert(
               BatchPhotosRow(
                   batchId = batchId,

@@ -36,7 +36,7 @@ class WithdrawalPhotoService(
     requirePermissions { createWithdrawalPhoto(withdrawalId) }
 
     val fileId =
-        fileService.storeFile("withdrawal", data, metadata) { fileId ->
+        fileService.storeFile("withdrawal", data, metadata) { (fileId) ->
           withdrawalPhotosDao.insert(
               WithdrawalPhotosRow(fileId = fileId, withdrawalId = withdrawalId)
           )
