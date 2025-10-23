@@ -1319,8 +1319,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       }
                     }
                     .calculateWeightedStandardDeviation()
+            val survivalRateSubzones =
+                subzones.filter { subzone ->
+                  subzone.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
+                }
             val survivalRate =
-                if (subzones.isNotEmpty() && subzones.all { it.survivalRate != null }) {
+                if (
+                    survivalRateSubzones.isNotEmpty() &&
+                        survivalRateSubzones.all { it.survivalRate != null }
+                ) {
                   species.calculateSurvivalRate(survivalRateIncludesTempPlots)
                 } else {
                   null
