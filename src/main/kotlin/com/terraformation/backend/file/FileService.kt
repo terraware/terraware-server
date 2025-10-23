@@ -146,10 +146,8 @@ class FileService(
 
         val fileMetadataWithExifValues =
             newFileMetadata.copy(
-                // TODO: Extract time of day from EXIF, not just date
                 capturedLocalTime =
-                    newFileMetadata.capturedLocalTime
-                        ?: exifMetadata?.extractCapturedDate()?.atStartOfDay(),
+                    newFileMetadata.capturedLocalTime ?: exifMetadata?.extractCapturedTime(),
                 geolocation = newFileMetadata.geolocation ?: exifMetadata?.extractGeolocation(),
             )
 

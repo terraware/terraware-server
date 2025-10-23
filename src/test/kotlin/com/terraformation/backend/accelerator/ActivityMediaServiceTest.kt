@@ -41,6 +41,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -124,7 +125,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores photo and extracts date and GPS metadata`() {
       assertMediaFileEquals(
           storeMedia("photoWithDateAndGps.jpg"),
-          capturedDate = LocalDate.of(2023, 5, 15),
+          capturedLocalTime = LocalDateTime.of(2023, 5, 15, 14, 30, 25),
           geolocation = point(-122.4194, 37.7749),
       )
     }
@@ -133,7 +134,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores iPhone video and extracts date and GPS metadata`() {
       assertMediaFileEquals(
           storeMedia("videoIphone.mov"),
-          capturedDate = LocalDate.of(2024, 6, 15),
+          capturedLocalTime = LocalDateTime.of(2024, 6, 15, 12, 34, 56),
           geolocation = point(-122.4194, 37.7749),
           type = ActivityMediaType.Video,
       )
@@ -143,7 +144,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores Android video and extracts date and GPS metadata`() {
       assertMediaFileEquals(
           storeMedia("videoAndroid.mp4"),
-          capturedDate = LocalDate.of(2024, 6, 15),
+          capturedLocalTime = LocalDateTime.of(2024, 6, 15, 12, 34, 56),
           geolocation = point(-122.4194, 37.7749),
           type = ActivityMediaType.Video,
       )
@@ -153,7 +154,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores photo and extracts date only when no GPS present`() {
       assertMediaFileEquals(
           storeMedia("photoWithDate.jpg"),
-          capturedDate = LocalDate.of(2022, 12, 25),
+          capturedLocalTime = LocalDateTime.of(2022, 12, 25, 9, 15, 0),
           geolocation = null,
       )
     }
@@ -162,7 +163,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores photo and extracts GPS only when no date present`() {
       assertMediaFileEquals(
           storeMedia("photoWithGps.jpg"),
-          capturedDate = LocalDate.EPOCH,
+          capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
           geolocation = point(-74.006, 40.7128),
       )
     }
@@ -171,7 +172,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores photo with no metadata using defaults`() {
       assertMediaFileEquals(
           storeMedia("pixel.png", pngMetadata),
-          capturedDate = LocalDate.EPOCH,
+          capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
           geolocation = null,
       )
     }
@@ -180,7 +181,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `stores video with no metadata using defaults`() {
       assertMediaFileEquals(
           storeMedia("videoHeaderOnly.mp4", mp4Metadata),
-          capturedDate = LocalDate.EPOCH,
+          capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
           geolocation = null,
           type = ActivityMediaType.Video,
       )
@@ -218,7 +219,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertMediaFileEquals(
           storeMediaBytes(corruptedData),
-          capturedDate = LocalDate.EPOCH,
+          capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
           geolocation = null,
       )
     }
@@ -247,7 +248,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     private fun assertMediaFileEquals(
         fileId: FileId,
-        capturedDate: LocalDate,
+        capturedLocalTime: LocalDateTime,
         geolocation: Point? = null,
         type: ActivityMediaType = ActivityMediaType.Photo,
     ) {
@@ -267,7 +268,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       val filesRow = filesDao.fetchOneById(fileId)!!
-      assertEquals(filesRow.capturedLocalTime?.toLocalDate(), capturedDate, "Captured date")
+      assertEquals(filesRow.capturedLocalTime, capturedLocalTime, "Captured date")
 
       if (geolocation != null) {
         assertGeometryEquals(geolocation, filesRow.geolocation)
