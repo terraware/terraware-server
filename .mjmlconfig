@@ -1,8 +1,5 @@
 {
   "beautify": false,
   "minify": true,
-  "packages": [
-    "mjml-bullet-list/lib/MjList",
-    "mjml-bullet-list/lib/MjLi"
-  ]
+  "packages": []
 }
