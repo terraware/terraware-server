@@ -94,11 +94,7 @@ class SearchController(
     val rootPrefix = resolvePrefix(payload.prefix)
 
     return SearchCountResponsePayload(
-        searchService.searchCount(
-            rootPrefix,
-            payload.fields.map { rootPrefix.resolve(it) },
-            payload.toSearchCriteria(rootPrefix),
-        )
+        searchService.searchCount(rootPrefix, payload.toSearchCriteria(rootPrefix))
     )
   }
 

@@ -185,12 +185,11 @@ class SearchService(private val dslContext: DSLContext) {
 
   fun searchCount(
       rootPrefix: SearchFieldPrefix,
-      fields: Collection<SearchFieldPath>,
       criteria: Map<SearchFieldPrefix, SearchNode>,
   ): Long {
     val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
     if (exactCriteria != criteria) {
-      val exactResults = searchCount(rootPrefix, fields, exactCriteria)
+      val exactResults = searchCount(rootPrefix, exactCriteria)
       if (exactResults > 0) {
         return exactResults
       }

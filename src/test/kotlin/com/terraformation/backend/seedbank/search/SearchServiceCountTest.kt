@@ -43,27 +43,22 @@ internal class SearchServiceCountTest : SearchServiceTest() {
 
   @Test
   fun `basic count`() {
-    val fields = listOf(bagNumberSublistField)
-
     assertEquals(
         2,
-        searchService.searchCount(rootPrefix, fields, mapOf(rootPrefix to NoConditionNode())),
+        searchService.searchCount(rootPrefix, mapOf(rootPrefix to NoConditionNode())),
     )
   }
 
   @Test
   fun `respects criteria`() {
-    val fields = listOf(bagNumberSublistField)
     val criteria = FieldNode(bagNumberSublistField, listOf("101"))
 
-    assertEquals(1, searchService.searchCount(rootPrefix, fields, mapOf(rootPrefix to criteria)))
+    assertEquals(1, searchService.searchCount(rootPrefix, mapOf(rootPrefix to criteria)))
   }
 
   @Test
   fun `sublist criteria doesn't affect count`() {
     val prefix = SearchFieldPrefix(root = tables.viabilityTests)
-    val fields =
-        listOf(prefix.resolve("id"), prefix.resolve("viabilityTestResults.seedsGerminated"))
     val germinatedPrefix = prefix.relativeSublistPrefix("viabilityTestResults")!!
     val sublistCriteria =
         FieldNode(
@@ -79,7 +74,6 @@ internal class SearchServiceCountTest : SearchServiceTest() {
         4,
         searchService.searchCount(
             prefix,
-            fields,
             mapOf(prefix to NoConditionNode(), germinatedPrefix to sublistCriteria),
         ),
     )
