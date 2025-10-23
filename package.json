@@ -13,7 +13,7 @@
     "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
-    "mjml": "node scripts/mjml-with-plugins.js",
+    "mjml": "node scripts/render-mjml.js",
     "translate": "autotranslate",
     "translate:start": "autotranslate --watch"
   },

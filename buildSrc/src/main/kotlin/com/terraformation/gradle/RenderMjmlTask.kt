@@ -7,7 +7,6 @@ import com.github.gradle.node.variant.VariantComputer
 import com.github.gradle.node.yarn.exec.YarnExecRunner
 import com.github.gradle.node.yarn.task.YarnInstallTask
 import java.io.File
-import java.nio.file.Files
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -22,7 +21,6 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.ChangeType
-import org.gradle.work.FileChange
 import org.gradle.work.InputChanges
 
 /** Renders MJML email bodies to FreeMarker templates that can be evaluated at runtime. */
@@ -36,6 +34,7 @@ constructor(
   private val nodeExtension = NodeExtension[project]
   private val resourcesSourceDir =
       sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).resources.srcDirs.first()
+  private val templatesSourceDir = resourcesSourceDir.resolve("templates/email")
   private val resourcesBuildDir = layout.buildDirectory.dir("resources/main").get().asFile
 
   @get:IgnoreEmptyDirectories
@@ -44,12 +43,7 @@ constructor(
   val mjmlFiles: ConfigurableFileCollection =
       objectFactory
           .fileCollection()
-          .from(
-              objectFactory
-                  .fileTree()
-                  .from(resourcesSourceDir.resolve("templates/email"))
-                  .include("**/body.ftlh.mjml")
-          )
+          .from(objectFactory.fileTree().from(templatesSourceDir).include("**/body.ftlh.mjml"))
 
   @get:OutputDirectory val outputDir = resourcesBuildDir.resolve("templates/email")
 
@@ -62,37 +56,36 @@ constructor(
 
   @TaskAction
   fun exec(changes: InputChanges) {
-    changes.getFileChanges(mjmlFiles).forEach { change ->
-      if (change.fileType != FileType.DIRECTORY) {
-        val targetFile = getTargetFile(change)
+    val fileChanges = changes.getFileChanges(mjmlFiles).toList()
 
-        if (change.changeType == ChangeType.REMOVED) {
-          targetFile.delete()
+    fileChanges
+        .filter { it.fileType != FileType.DIRECTORY && it.changeType == ChangeType.REMOVED }
+        .forEach { getTargetFile(it.file).delete() }
+
+    val filesToRender =
+        if (!changes.isIncremental) {
+          mjmlFiles.filter { it.isFile }.map { it to getTargetFile(it) }
         } else {
-          renderMjmlFile(change.file, targetFile)
+          fileChanges
+              .filter { it.fileType != FileType.DIRECTORY && it.changeType != ChangeType.REMOVED }
+              .map { it.file to getTargetFile(it.file) }
         }
-      }
+
+    if (filesToRender.isNotEmpty()) {
+      renderMjmlFiles(filesToRender)
     }
   }
 
-  /** Runs Yarn to format a single MJML file. */
-  private fun renderMjmlFile(mjmlFile: File, targetFile: File) {
-    Files.createDirectories(targetFile.toPath().parent)
-    val runner = objectFactory.newInstance(YarnExecRunner::class.java)
+  /** Runs Yarn to render one or more MJML files in a single Node process. */
+  private fun renderMjmlFiles(files: List<Pair<File, File>>) {
+    val command = mutableListOf("mjml", templatesSourceDir.absolutePath, outputDir.absolutePath)
+    files.forEach { (source) -> command.add(source.relativeTo(templatesSourceDir).path) }
 
+    val runner = objectFactory.newInstance(YarnExecRunner::class.java)
     runner.executeYarnCommand(
         objectFactory.newInstance(DefaultProjectApiHelper::class.java),
         nodeExtension,
-        NodeExecConfiguration(
-            listOf(
-                "mjml",
-                "--config.useMjmlConfigOptions",
-                "true",
-                "-o",
-                "$targetFile",
-                "$mjmlFile",
-            )
-        ),
+        NodeExecConfiguration(command),
         VariantComputer(),
     )
   }
@@ -104,15 +97,15 @@ constructor(
    * `src/main/resources/templates/email/a/b.ftlh.mjml` ->
    * `build/resources/main/templates/email/a/b.ftlh`
    */
-  private fun getTargetFile(change: FileChange): File {
+  private fun getTargetFile(sourceFile: File): File {
     val mjmlExtension = ".mjml"
 
-    if (!change.file.name.endsWith(mjmlExtension)) {
-      throw IllegalArgumentException("File ${change.file} is not an MJML file")
+    if (!sourceFile.name.endsWith(mjmlExtension)) {
+      throw IllegalArgumentException("File $sourceFile is not an MJML file")
     }
 
     val targetRelativeToResourcesDir =
-        File(change.file.path.substring(0, change.file.path.length - mjmlExtension.length))
+        File(sourceFile.path.substring(0, sourceFile.path.length - mjmlExtension.length))
             .relativeTo(resourcesSourceDir)
 
     return resourcesBuildDir.resolve(targetRelativeToResourcesDir)
