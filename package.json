@@ -8,12 +8,13 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
+    "html-minifier-next": "^3.0.0",
     "llm-autotranslate": "^1.0.0",
     "mjml": "4.16.1",
     "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
-    "mjml": "node scripts/mjml-with-plugins.js",
+    "mjml": "node scripts/render-mjml.mjs",
     "translate": "autotranslate",
     "translate:start": "autotranslate --watch"
   },

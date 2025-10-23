@@ -10,9 +10,9 @@
                 <mj-text mj-class="text-headline06-bold">
                     ${strings("notification.seedBank.unknownAutomationTriggered.email.body.1", automation.name, facility.name)}
 
-                    <!-- htmlmin:ignore --><#if message?has_content><!-- htmlmin:ignore -->
+                    <#if message?has_content>
                         <p>${strings("notification.seedBank.unknownAutomationTriggered.email.body.2", message)}</p>
-                    <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                    </#if>
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
