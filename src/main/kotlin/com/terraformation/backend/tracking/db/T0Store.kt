@@ -9,7 +9,6 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -31,11 +30,9 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import kotlin.collections.Map
-import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
-import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -73,90 +70,165 @@ class T0Store(
   fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    data class T0SiteData(
+    data class T0SitePermPlotData(
         val monitoringPlotId: MonitoringPlotId,
-        val plantingZoneId: PlantingZoneId,
-        val isPermanent: Boolean,
-        val speciesId: SpeciesId,
-        val plotDensity: BigDecimal?,
-        val zoneDensity: BigDecimal?,
-        val subzoneWithdrawalDensity: BigDecimal?,
-        val plotHasCompletedObservations: Boolean,
+        val survivalRateIncludesTempPlots: Boolean,
+        val speciesId: SpeciesId?,
+        val plotDensity: BigDecimal? = null,
     )
 
-    val siteData =
-        with(MONITORING_PLOTS) {
-          val subzoneDensity =
-              DSL.round(
-                  PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) /
-                      PLANTING_SUBZONES.AREA_HA
+    with(MONITORING_PLOTS) {
+      val permanentPlotSpecies =
+          DSL.select(
+                  ID.`as`("plot_id"),
+                  PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
               )
+              .from(this)
+              .join(PLANTING_SUBZONE_POPULATIONS)
+              .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .unionAll(
+                  DSL.select(
+                          ID.`as`("plot_id"),
+                          PLOT_T0_DENSITIES.SPECIES_ID.`as`("species_id"),
+                      )
+                      .from(this)
+                      .join(PLOT_T0_DENSITIES)
+                      .on(ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
+                      .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              )
+              .asTable("permanent_plot_species")
 
-          val completedObservationsField =
-              plotHasCompletedObservations(ID, PERMANENT_INDEX.isNotNull)
+      val permPlotIdField = permanentPlotSpecies.field("plot_id", ID.dataType)
+      val permSpeciesIdField = permanentPlotSpecies.field("species_id", SpeciesId::class.java)!!
 
-          val allSpecies =
-              DSL.selectDistinct(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)
-                  .from(PLANTING_SUBZONE_POPULATIONS)
-                  .leftJoin(PLANTING_SUBZONES)
-                  .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                  .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .asTable()
-
-          val speciesField = allSpecies.field(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID)!!
-
+      val permPlotData =
           dslContext
               .select(
                   ID,
-                  plantingSubzones.PLANTING_ZONE_ID,
-                  PERMANENT_INDEX.isNotNull,
-                  speciesField,
+                  plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
+                  permSpeciesIdField,
                   PLOT_T0_DENSITIES.PLOT_DENSITY,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY,
-                  subzoneDensity,
-                  completedObservationsField,
               )
               .from(this)
-              .crossJoin(allSpecies)
+              .leftJoin(permanentPlotSpecies)
+              .on(ID.eq(permPlotIdField))
               .leftJoin(PLOT_T0_DENSITIES)
               .on(
                   ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID)
-                      .and(speciesField.eq(PLOT_T0_DENSITIES.SPECIES_ID))
+                      .and(permSpeciesIdField.eq(PLOT_T0_DENSITIES.SPECIES_ID))
               )
+              .leftJoin(PLANTING_SUBZONE_POPULATIONS)
+              .on(
+                  PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
+                      .and(permSpeciesIdField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
+              )
+              .leftJoin(PLANTING_SUBZONES)
+              .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(IS_AD_HOC.eq(false))
+              .and(PERMANENT_INDEX.isNotNull)
+              .fetch { record ->
+                T0SitePermPlotData(
+                    monitoringPlotId = record[ID.asNonNullable()],
+                    survivalRateIncludesTempPlots =
+                        record[plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()],
+                    speciesId = record[permSpeciesIdField],
+                    plotDensity = record[PLOT_T0_DENSITIES.PLOT_DENSITY],
+                )
+              }
+
+      if (!permPlotData.all { it.plotDensity != null }) {
+        return false
+      }
+
+      val survivalRateIncludesTempPlots =
+          if (permPlotData.isEmpty()) {
+            dslContext
+                .select(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS)
+                .from(PLANTING_SITES)
+                .where(PLANTING_SITES.ID.eq(plantingSiteId))
+                .fetchOne(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable())!!
+          } else {
+            permPlotData.first().survivalRateIncludesTempPlots
+          }
+
+      if (!survivalRateIncludesTempPlots) {
+        return true
+      }
+
+      data class T0SiteTempPlotData(
+          val plantingZoneId: PlantingZoneId,
+          val speciesId: SpeciesId?,
+          val zoneDensity: BigDecimal? = null,
+      )
+
+      val tempPlotSpecies =
+          DSL.select(
+                  ID.`as`("plot_id"),
+                  PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
+              )
+              .from(this)
+              .join(PLANTING_SUBZONE_POPULATIONS)
+              .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .unionAll(
+                  DSL.select(
+                          ID.`as`("plot_id"),
+                          PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.`as`("species_id"),
+                      )
+                      .from(this)
+                      .join(plantingSubzones)
+                      .on(PLANTING_SUBZONE_ID.eq(plantingSubzones.ID))
+                      .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
+                      .on(
+                          plantingSubzones.PLANTING_ZONE_ID.eq(
+                              PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
+                          )
+                      )
+                      .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              )
+              .asTable("plot_species")
+
+      val tempPlotIdField = tempPlotSpecies.field("plot_id", ID.dataType)
+      val tempSpeciesIdField = tempPlotSpecies.field("species_id", SpeciesId::class.java)!!
+
+      val tempPlotData =
+          dslContext
+              .selectDistinct(
+                  plantingSubzones.PLANTING_ZONE_ID,
+                  tempSpeciesIdField,
+                  PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY,
+              )
+              .from(this)
+              .leftJoin(tempPlotSpecies)
+              .on(ID.eq(tempPlotIdField))
               .leftJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
               .on(
                   plantingSubzones.PLANTING_ZONE_ID.eq(
                           PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
                       )
-                      .and(speciesField.eq(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID))
+                      .and(tempSpeciesIdField.eq(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID))
               )
               .leftJoin(PLANTING_SUBZONE_POPULATIONS)
               .on(
                   PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
-                      .and(speciesField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
+                      .and(tempSpeciesIdField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
               )
               .leftJoin(PLANTING_SUBZONES)
               .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(IS_AD_HOC.eq(false))
+              .and(PERMANENT_INDEX.isNull)
               .fetch { record ->
-                T0SiteData(
-                    monitoringPlotId = record[ID.asNonNullable()],
+                T0SiteTempPlotData(
                     plantingZoneId = record[plantingSubzones.PLANTING_ZONE_ID.asNonNullable()],
-                    isPermanent = record[PERMANENT_INDEX.isNotNull],
-                    speciesId = record[speciesField.asNonNullable()],
-                    plotDensity = record[PLOT_T0_DENSITIES.PLOT_DENSITY],
+                    speciesId = record[tempSpeciesIdField],
                     zoneDensity = record[PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY],
-                    subzoneWithdrawalDensity = record[subzoneDensity],
-                    plotHasCompletedObservations = record[completedObservationsField],
                 )
               }
-        }
 
-    return siteData.all { datum ->
-      datum.plotHasCompletedObservations &&
-          datum.subzoneWithdrawalDensity != null &&
-          ((datum.isPermanent && datum.plotDensity != null) ||
-              (!datum.isPermanent && datum.zoneDensity != null))
+      return tempPlotData.all { it.zoneDensity != null }
     }
   }
 
@@ -539,23 +611,4 @@ class T0Store(
       )
     }
   }
-
-  private fun plotHasCompletedObservations(
-      monitoringPlotIdField: Field<MonitoringPlotId?>,
-      isPermanent: Field<Boolean?>,
-  ): Condition =
-      DSL.exists(
-          DSL.selectOne()
-              .from(OBSERVATION_PLOTS)
-              .where(
-                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
-                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
-                      .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
-              )
-              .orderBy(
-                  OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
-                  OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
-              )
-              .limit(1)
-      )
 }

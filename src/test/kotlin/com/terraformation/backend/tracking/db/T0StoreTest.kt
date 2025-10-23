@@ -10,15 +10,15 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
@@ -37,7 +37,6 @@ import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.IllegalArgumentException
 import kotlin.lazy
-import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -198,28 +197,6 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `plots have no completed observations`() {
-      dslContext
-          .update(OBSERVATIONS)
-          .set(OBSERVATIONS.COMPLETED_TIME, DSL.castNull(OBSERVATIONS.COMPLETED_TIME))
-          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
-          .where(OBSERVATIONS.ID.eq(observationId))
-          .execute()
-      dslContext
-          .update(OBSERVATION_PLOTS)
-          .set(OBSERVATION_PLOTS.COMPLETED_TIME, DSL.castNull(OBSERVATION_PLOTS.COMPLETED_TIME))
-          .set(OBSERVATION_PLOTS.COMPLETED_BY, DSL.castNull(OBSERVATION_PLOTS.COMPLETED_BY))
-          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-          .execute()
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
-
-      assertFalse(
-          store.fetchAllT0SiteDataSet(plantingSiteId),
-          "Requires all plots to have completed observations",
-      )
-    }
-
-    @Test
     fun `permanent plot has no t0 density set`() {
       insertPlantingSubzonePopulation(speciesId = speciesId1)
 
@@ -231,6 +208,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `temp plot has no zone t0 density set`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlantingSubzonePopulation(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId1)
 
@@ -242,6 +220,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `withdrawal data has other species than t0`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlantingZoneT0TempDensity(speciesId = speciesId2)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlantingSubzonePopulation(speciesId = speciesId2)
@@ -253,7 +232,82 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `no withdrawal data and no t0 densities for permanent`() {
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all permanent plots to have t0 data even if no withdrawn data",
+      )
+    }
+
+    @Test
+    fun `no withdrawal data and no t0 densities for temp`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires all temporary plots to have t0 data even if no withdrawn data",
+      )
+    }
+
+    @Test
+    fun `no withdrawal data is still all set if plots have t0 data (excludes temp)`() {
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "No withdrawn data is ok if all plots/zones have t0 data",
+      )
+    }
+
+    @Test
+    fun `no withdrawal data is still all set if plots have t0 data (includes temp)`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "No withdrawn data is ok if all plots/zones have t0 data including temp",
+      )
+    }
+
+    @Test
+    fun `no permanent plots and temp missing t0 data`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      deletePermanentPlots()
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "No permanent plots doesn't affect temp t0 check missing data",
+      )
+    }
+
+    @Test
+    fun `no permanent plots and temp has t0 data`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      deletePermanentPlots()
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "No permanent plots doesn't affect temp t0 check with data",
+      )
+    }
+
+    @Test
     fun `correctly checks all data`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      // ad-hoc plots are excluded
+      insertMonitoringPlot(isAdHoc = true, plotNumber = 100, plantingSubzoneId = null)
+      insertObservationPlot(
+          claimedTime = clock.instant(),
+          claimedBy = user.userId,
+          completedTime = clock.instant(),
+          completedBy = user.userId,
+          isPermanent = false,
+      )
+
       insertPlantingZoneT0TempDensity(speciesId = speciesId1)
       insertPlantingZoneT0TempDensity(speciesId = speciesId2)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
@@ -996,6 +1050,27 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           createdTime = clock.instant(),
           modifiedTime = clock.instant(),
       )
+
+  private fun includeTempPlotsInSurvivalRates(
+      plantingSiteId: PlantingSiteId,
+      newSetting: Boolean = true,
+  ) =
+      dslContext
+          .update(PLANTING_SITES)
+          .set(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, newSetting)
+          .where(PLANTING_SITES.ID.eq(plantingSiteId))
+          .execute()
+
+  private fun deletePermanentPlots() {
+    dslContext
+        .deleteFrom(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
+        .execute()
+    dslContext
+        .deleteFrom(MONITORING_PLOTS)
+        .where(MONITORING_PLOTS.PERMANENT_INDEX.isNotNull)
+        .execute()
+  }
 
   private fun plotDensityToHectare(density: Int): BigDecimal =
       density.toBigDecimal().toPlantsPerHectare()
