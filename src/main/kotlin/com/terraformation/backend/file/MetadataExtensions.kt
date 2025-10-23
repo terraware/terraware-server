@@ -11,6 +11,7 @@ import com.drew.metadata.mov.QuickTimeDirectory
 import com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory
 import com.drew.metadata.mp4.Mp4Directory
 import com.terraformation.backend.db.SRID
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,7 +32,7 @@ fun Metadata.extractCapturedTime(): LocalDateTime? {
   return try {
     extractExifCapturedTime() ?: extractVideoCapturedTime()
   } catch (e: Exception) {
-    log.warn("Failed to extract captured date from media metadata", e)
+    log.warn("Failed to extract captured timestamp from media metadata", e)
     null
   }
 }
@@ -58,9 +59,27 @@ private val exifDateTimeFormatters =
             "yyyy-MM-dd",
             "yyyy-MM",
             "yyyyMMdd", // as used in IPTC data
-            "yyyy",
         )
         .map { DateTimeFormatter.ofPattern(it) }
+
+private fun parseExifDateTimeString(str: String): LocalDateTime? {
+  return if (str.length < 8) {
+    log.warn("EXIF datetime string is too short: $str")
+    null
+  } else {
+    exifDateTimeFormatters.firstNotNullOfOrNull { formatter ->
+      try {
+        when (val result = formatter.parseBest(str, LocalDateTime::from, LocalDate::from)) {
+          is LocalDateTime -> result
+          is LocalDate -> result.atStartOfDay()
+          else -> throw IllegalStateException("Unexpected parse result: $result")
+        }
+      } catch (_: DateTimeParseException) {
+        null
+      }
+    }
+  }
+}
 
 /** Extracts the captured date and time, if any, from EXIF metadata. */
 private fun Metadata.extractExifCapturedTime(): LocalDateTime? {
@@ -73,20 +92,7 @@ private fun Metadata.extractExifCapturedTime(): LocalDateTime? {
           ?: getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_DIGITIZED)
           ?: getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME)
 
-  return if (dateStr == null) {
-    null
-  } else if (dateStr.length < 8) {
-    log.warn("EXIF date string is too short: $dateStr")
-    null
-  } else {
-    exifDateTimeFormatters.firstNotNullOfOrNull { formatter ->
-      try {
-        LocalDateTime.parse(dateStr, formatter)
-      } catch (_: DateTimeParseException) {
-        null
-      }
-    }
-  }
+  return dateStr?.let { parseExifDateTimeString(it) }
 }
 
 private fun Metadata.extractVideoCapturedTime(): LocalDateTime? {
