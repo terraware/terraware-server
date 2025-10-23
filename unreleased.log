@@ -1,1 +1,2 @@
+ea3217ef6cb SW-7569 Move EXIF logic to extension functions (#3540)
 f85a6d7be18 SW-7566 Only include subzones with at least one permanent plot in zone check (#3539)
