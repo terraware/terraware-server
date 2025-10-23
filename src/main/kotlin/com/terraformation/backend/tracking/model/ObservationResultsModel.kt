@@ -362,8 +362,15 @@ data class ObservationPlantingZoneRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
+      val survivalRateSubzones =
+          nonNullSubzoneResults.filter { subzone ->
+            subzone.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
+          }
       val survivalRate =
-          if (nonNullSubzoneResults.all { it.survivalRate != null })
+          if (
+              survivalRateSubzones.isNotEmpty() &&
+                  survivalRateSubzones.all { it.survivalRate != null }
+          )
               species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           else null
       val survivalRateStdDev =
