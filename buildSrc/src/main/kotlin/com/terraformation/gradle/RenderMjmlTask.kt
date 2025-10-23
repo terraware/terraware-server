@@ -64,11 +64,11 @@ constructor(
 
     val filesToRender =
         if (!changes.isIncremental) {
-          mjmlFiles.filter { it.isFile }.map { it to getTargetFile(it) }
+          mjmlFiles.filter { it.isFile }.toList()
         } else {
           fileChanges
               .filter { it.fileType != FileType.DIRECTORY && it.changeType != ChangeType.REMOVED }
-              .map { it.file to getTargetFile(it.file) }
+              .map { it.file }
         }
 
     if (filesToRender.isNotEmpty()) {
@@ -77,9 +77,9 @@ constructor(
   }
 
   /** Runs Yarn to render one or more MJML files in a single Node process. */
-  private fun renderMjmlFiles(files: List<Pair<File, File>>) {
+  private fun renderMjmlFiles(files: List<File>) {
     val command = mutableListOf("mjml", templatesSourceDir.absolutePath, outputDir.absolutePath)
-    files.forEach { (source) -> command.add(source.relativeTo(templatesSourceDir).path) }
+    files.forEach { source -> command.add(source.relativeTo(templatesSourceDir).path) }
 
     val runner = objectFactory.newInstance(YarnExecRunner::class.java)
     runner.executeYarnCommand(
