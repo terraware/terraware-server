@@ -417,6 +417,7 @@ class ObservationsController(
             position = payload.position,
             data = file.inputStream,
             metadata = FileMetadata.of(contentType, filename, file.size, payload.gpsCoordinates),
+            caption = payload.caption,
             type = payload.type ?: ObservationPhotoType.Plot,
         )
 
@@ -767,6 +768,7 @@ data class RecordedPlantPayload(
 }
 
 data class ObservationMonitoringPlotPhotoPayload(
+    val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition?,
@@ -774,7 +776,7 @@ data class ObservationMonitoringPlotPhotoPayload(
 ) {
   constructor(
       model: ObservationMonitoringPlotPhotoModel
-  ) : this(model.fileId, model.gpsCoordinates, model.position, model.type)
+  ) : this(model.caption, model.fileId, model.gpsCoordinates, model.position, model.type)
 }
 
 data class ObservationMonitoringPlotCoordinatesPayload(
@@ -1497,6 +1499,7 @@ data class UpdatePlotObservationRequestPayload(
 )
 
 data class UploadPlotPhotoRequestPayload(
+    val caption: String?,
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition?,
     @Schema(

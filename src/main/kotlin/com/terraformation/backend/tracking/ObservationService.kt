@@ -198,6 +198,7 @@ class ObservationService(
       position: ObservationPlotPosition?,
       data: InputStream,
       metadata: NewFileMetadata,
+      caption: String?,
       type: ObservationPhotoType = ObservationPhotoType.Plot,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
@@ -217,6 +218,7 @@ class ObservationService(
         fileService.storeFile("observation", data, metadata) { (fileId) ->
           observationPhotosDao.insert(
               ObservationPhotosRow(
+                  caption = caption,
                   fileId = fileId,
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
