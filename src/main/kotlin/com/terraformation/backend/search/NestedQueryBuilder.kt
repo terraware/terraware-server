@@ -12,6 +12,7 @@ import org.jooq.Record
 import org.jooq.Record1
 import org.jooq.RecordMapper
 import org.jooq.Select
+import org.jooq.SelectConditionStep
 import org.jooq.SelectJoinStep
 import org.jooq.SelectSeekStepN
 import org.jooq.SortField
@@ -694,7 +695,7 @@ class NestedQueryBuilder(
   }
 
   /** Returns a jOOQ count query object for the currently-configured query */
-  fun toSelectCountQuery(): SelectSeekStepN<Record1<Int>> {
+  fun toSelectCountQuery(): SelectConditionStep<Record1<Int>> {
     val select = dslContext.selectOne()
 
     val selectFrom = select.from(prefix.searchTable.fromTable)
@@ -707,7 +708,7 @@ class NestedQueryBuilder(
           selectWithConditions
         }
 
-    return selectWithVisibility.orderBy(getOrderBy(true))
+    return selectWithVisibility
   }
 
   /**
