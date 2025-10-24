@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
 import jakarta.inject.Named
@@ -180,5 +181,34 @@ class SearchService(private val dslContext: DSLContext) {
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
     return searchResults.map { it?.get(fieldPathName)?.toString() }.distinct()
+  }
+
+  fun searchCount(
+      rootPrefix: SearchFieldPrefix,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
+  ): Long {
+    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
+    if (exactCriteria != criteria) {
+      val exactResults = searchCount(rootPrefix, exactCriteria)
+      if (exactResults > 0) {
+        return exactResults
+      }
+    }
+
+    return runQueryCount(rootPrefix, criteria)
+  }
+
+  private fun runQueryCount(
+      rootPrefix: SearchFieldPrefix,
+      criteria: Map<SearchFieldPrefix, SearchNode>,
+  ): Long {
+    val queryBuilder = buildQuery(rootPrefix, emptyList(), criteria, emptyList())
+    val query = queryBuilder.toSelectCountQuery()
+
+    val count =
+        log.debugWithTiming("Retrieved count for search query") {
+          dslContext.selectCount().from(query).fetchOne(0, Long::class.java) ?: 0L
+        }
+    return count
   }
 }
