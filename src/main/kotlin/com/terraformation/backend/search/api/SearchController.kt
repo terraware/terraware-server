@@ -88,7 +88,11 @@ class SearchController(
     )
   }
 
-  @Operation(summary = "Get the total count of values matching a set of search criteria.")
+  @Operation(
+      summary = "Get the total count of values matching a set of search criteria.",
+      description =
+          "Note that fields, sortOrder, cursor, and count in the payload are unused in the count query and thus can be included or left out.",
+  )
   @PostMapping("/count")
   fun searchCount(@RequestBody payload: SearchRequestPayload): SearchCountResponsePayload {
     val rootPrefix = resolvePrefix(payload.prefix)
