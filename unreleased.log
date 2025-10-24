@@ -1,3 +1,4 @@
+4a450139f97 SW-7599 Add captions to observation photos (#3548)
 d051a539d40 SW-7581 Add HEIC to upload endpoint OpenAPI schemas (#3547)
 3506811456e SW-7584 Add test for visibility conditions and update count api description (#3546)
 f7744c7048d SW-7571 Return filenames for activity media files (#3545)
