@@ -32,7 +32,6 @@ import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.VideoStreamNotFoundException
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
-import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
@@ -77,7 +76,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ActivityMediaService(
         ActivityMediaStore(clock, dslContext, eventPublisher),
         clock,
-        eventPublisher,
         fileService,
         muxService,
         ParentStore(dslContext),
@@ -222,20 +220,6 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
           geolocation = null,
       )
-    }
-
-    @Test
-    fun `publishes event when video is uploaded`() {
-      val fileId = storeMedia("videoAndroid.mp4", mp4Metadata)
-
-      eventPublisher.assertEventPublished(VideoFileUploadedEvent(fileId))
-    }
-
-    @Test
-    fun `does not publish video uploaded event when photo is uploaded`() {
-      storeMedia("pixel.png", pngMetadata)
-
-      eventPublisher.assertEventNotPublished<VideoFileUploadedEvent>()
     }
 
     @Test

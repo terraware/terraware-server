@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
+import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.InputStreamCopier
@@ -170,6 +171,14 @@ class FileService(
 
         dslContext.transaction { _ ->
           filesDao.insert(filesRow)
+
+          if (fileType?.mimeType?.startsWith("video/") == true) {
+            // This will cause a JobRunr job to be queued to send the file to Mux; if
+            // insertChildRows throws an exception, the queued job will be rolled back and the file
+            // will never be sent to Mux.
+            eventPublisher.publishEvent(VideoFileUploadedEvent(filesRow.id!!))
+          }
+
           insertChildRows(StoredFile(filesRow.id!!, fileType, exifMetadata))
         }
 
