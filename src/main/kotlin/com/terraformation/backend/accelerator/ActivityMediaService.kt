@@ -22,7 +22,7 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
-import java.time.LocalDate
+import java.time.LocalDateTime
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
@@ -58,7 +58,7 @@ class ActivityMediaService(
               if (metadata.capturedLocalTime != null) {
                 metadata
               } else {
-                metadata.copy(capturedLocalTime = getCurrentDate(activityId).atStartOfDay())
+                metadata.copy(capturedLocalTime = getCurrentTime(activityId))
               }
             },
         ) { storedFile ->
@@ -156,6 +156,6 @@ class ActivityMediaService(
   }
 
   /** Returns the current date in the time zone of the organization associated with an activity. */
-  private fun getCurrentDate(activityId: ActivityId): LocalDate =
-      LocalDate.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(activityId))
+  private fun getCurrentTime(activityId: ActivityId): LocalDateTime =
+      LocalDateTime.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(activityId))
 }

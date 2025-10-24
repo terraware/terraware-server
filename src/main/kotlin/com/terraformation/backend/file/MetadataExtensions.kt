@@ -12,8 +12,10 @@ import com.drew.metadata.mov.metadata.QuickTimeMetadataDirectory
 import com.drew.metadata.mp4.Mp4Directory
 import com.terraformation.backend.db.SRID
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.Date
 import kotlin.math.withSign
 import org.locationtech.jts.geom.Coordinate
@@ -26,11 +28,11 @@ private val log = LoggerFactory.getLogger(Metadata::class.java)
 private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
 
 /** Returns the date the file was originally captured, if available. */
-fun Metadata.extractCapturedDate(): LocalDate? {
+fun Metadata.extractCapturedTime(): LocalDateTime? {
   return try {
-    extractExifCapturedDate() ?: extractVideoCapturedDate()
+    extractExifCapturedTime() ?: extractVideoCapturedTime()
   } catch (e: Exception) {
-    log.warn("Failed to extract captured date from media metadata", e)
+    log.warn("Failed to extract captured timestamp from media metadata", e)
     null
   }
 }
@@ -40,9 +42,47 @@ fun Metadata.extractGeolocation(): Point? {
   return extractExifGeolocation() ?: extractQuickTimeGeolocation() ?: extractMp4Geolocation()
 }
 
-/** Extracts the captured date, if any, from EXIF metadata. */
-@Suppress("ReplaceSubstringWithIndexingOperation") // Hide bogus IntelliJ suggestion
-private fun Metadata.extractExifCapturedDate(): LocalDate? {
+/**
+ * All the known EXIF date/time formats in actual use. This is from [Directory.getDate] but that
+ * function has different behavior than we want.
+ */
+private val exifDateTimeFormatters =
+    listOf(
+            "yyyy:MM:dd HH:mm:ss",
+            "yyyy:MM:dd HH:mm",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm",
+            "yyyy.MM.dd HH:mm:ss",
+            "yyyy.MM.dd HH:mm",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm",
+            "yyyy-MM-dd",
+            "yyyy-MM",
+            "yyyyMMdd", // as used in IPTC data
+        )
+        .map { DateTimeFormatter.ofPattern(it) }
+
+private fun parseExifDateTimeString(str: String): LocalDateTime? {
+  return if (str.length < 8) {
+    log.warn("EXIF datetime string is too short: $str")
+    null
+  } else {
+    exifDateTimeFormatters.firstNotNullOfOrNull { formatter ->
+      try {
+        when (val result = formatter.parseBest(str, LocalDateTime::from, LocalDate::from)) {
+          is LocalDateTime -> result
+          is LocalDate -> result.atStartOfDay()
+          else -> throw IllegalStateException("Unexpected parse result: $result")
+        }
+      } catch (_: DateTimeParseException) {
+        null
+      }
+    }
+  }
+}
+
+/** Extracts the captured date and time, if any, from EXIF metadata. */
+private fun Metadata.extractExifCapturedTime(): LocalDateTime? {
   // Try the original (capture) date first, then digitization date, then modification date.
   val dateStr =
       getString<ExifSubIFDDirectory>(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL)
@@ -52,22 +92,10 @@ private fun Metadata.extractExifCapturedDate(): LocalDate? {
           ?: getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME_DIGITIZED)
           ?: getString<ExifIFD0Directory>(ExifIFD0Directory.TAG_DATETIME)
 
-  return if (dateStr == null) {
-    null
-  } else if (dateStr.length < 8) {
-    log.warn("EXIF date string is too short: $dateStr")
-    null
-  } else {
-    // EXIF date/time strings always start with a 4-digit year, but after that there can be a
-    // variety of separators (2025:11:22, 2025-11-22, 2025.11-22) or no separator (20251122).
-    // And there can be a time of day after the date, or not.
-    val separator = if (dateStr[4].isDigit()) "" else dateStr.substring(4, 5)
-    val formatter = DateTimeFormatter.ofPattern("yyyy${separator}MM${separator}dd")
-    LocalDate.parse(dateStr.take(8 + separator.length * 2), formatter)
-  }
+  return dateStr?.let { parseExifDateTimeString(it) }
 }
 
-private fun Metadata.extractVideoCapturedDate(): LocalDate? {
+private fun Metadata.extractVideoCapturedTime(): LocalDateTime? {
   val date =
       getDate<QuickTimeDirectory>(QuickTimeDirectory.TAG_CREATION_TIME)
           ?: getDate<Mp4Directory>(Mp4Directory.TAG_CREATION_TIME)
@@ -79,7 +107,7 @@ private fun Metadata.extractVideoCapturedDate(): LocalDate? {
     return null
   }
 
-  return LocalDate.ofInstant(date.toInstant(), ZoneOffset.UTC)
+  return LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC)
 }
 
 /** Extracts GPS coordinates, if any, from EXIF metadata. */

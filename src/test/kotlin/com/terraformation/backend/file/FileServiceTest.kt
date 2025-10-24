@@ -216,7 +216,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
       val filesRecord = dslContext.fetchSingle(FILES)
       assertEquals(
-          LocalDateTime.of(2023, 5, 15, 0, 0, 0),
+          LocalDateTime.of(2023, 5, 15, 14, 30, 25),
           filesRecord.capturedLocalTime,
           "Should have used captured time from file",
       )
