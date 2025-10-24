@@ -1,3 +1,4 @@
+218bd20f41b SW-7599 Add endpoint to edit observation photo captions (#3549)
 4a450139f97 SW-7599 Add captions to observation photos (#3548)
 d051a539d40 SW-7581 Add HEIC to upload endpoint OpenAPI schemas (#3547)
 3506811456e SW-7584 Add test for visibility conditions and update count api description (#3546)
