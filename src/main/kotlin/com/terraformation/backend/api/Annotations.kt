@@ -196,7 +196,9 @@ annotation class ApiResponse200Photo
                         Encoding(
                             name = "file",
                             contentType =
-                                "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}",
+                                "${MediaType.IMAGE_JPEG_VALUE}, " +
+                                    "${MediaType.IMAGE_PNG_VALUE}, " +
+                                    "image/heic",
                         )
                     ]
             )
