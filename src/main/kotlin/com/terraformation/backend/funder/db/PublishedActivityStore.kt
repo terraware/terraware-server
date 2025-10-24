@@ -114,8 +114,9 @@ class PublishedActivityStore(
                         IS_COVER_PHOTO,
                         IS_HIDDEN_ON_MAP,
                         LIST_POSITION,
-                        geolocationField,
                         FILES.CAPTURED_LOCAL_TIME,
+                        FILES.STORAGE_URL,
+                        geolocationField,
                     )
                     .from(PUBLISHED_ACTIVITY_MEDIA_FILES)
                     .join(FILES)

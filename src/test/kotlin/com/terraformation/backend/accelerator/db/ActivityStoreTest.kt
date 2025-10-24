@@ -203,7 +203,11 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityType = ActivityType.Monitoring,
               description = "Test monitoring activity",
           )
-      val fileId1 = insertFile(capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay())
+      val fileId1 =
+          insertFile(
+              capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
+              storageUrl = "s3://x/y/my-file.jpg",
+          )
       insertActivityMediaFile(
           caption = "Caption 1",
           isCoverPhoto = true,
@@ -243,6 +247,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           createdBy = user.userId,
                           createdTime = Instant.EPOCH,
                           fileId = fileId1,
+                          fileName = "my-file.jpg",
                           geolocation = null,
                           isCoverPhoto = true,
                           isHiddenOnMap = false,
@@ -256,6 +261,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           createdBy = user.userId,
                           createdTime = Instant.ofEpochSecond(1),
                           fileId = fileId2,
+                          fileName = "1",
                           geolocation = point(1),
                           isCoverPhoto = false,
                           isHiddenOnMap = true,
@@ -341,6 +347,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
                               fileId = fileId1,
+                              fileName = "1",
                               geolocation = null,
                               isCoverPhoto = false,
                               isHiddenOnMap = true,
@@ -370,6 +377,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               createdBy = user.userId,
                               createdTime = Instant.EPOCH,
                               fileId = fileId2,
+                              fileName = "2",
                               geolocation = null,
                               isCoverPhoto = true,
                               isHiddenOnMap = false,

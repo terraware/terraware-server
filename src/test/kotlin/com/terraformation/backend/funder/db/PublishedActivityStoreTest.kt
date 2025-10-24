@@ -79,7 +79,11 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           isHighlight = true,
       )
       val activity1FileId1 =
-          insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay(), geolocation = point(0))
+          insertFile(
+              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
+              geolocation = point(0),
+              storageUrl = "s3://x/y/my-file.jpg",
+          )
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
       val activity1FileId2 = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
@@ -116,6 +120,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               caption = null,
                               capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity1FileId1,
+                              fileName = "my-file.jpg",
                               geolocation = point(0),
                               isCoverPhoto = false,
                               isHiddenOnMap = false,
@@ -127,6 +132,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               caption = null,
                               capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity1FileId2,
+                              fileName = "1",
                               geolocation = null,
                               isCoverPhoto = false,
                               isHiddenOnMap = false,
@@ -151,6 +157,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               caption = null,
                               capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
                               fileId = activity2FileId,
+                              fileName = "2",
                               geolocation = null,
                               isCoverPhoto = false,
                               isHiddenOnMap = false,

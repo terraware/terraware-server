@@ -211,6 +211,7 @@ class ActivityMediaStore(
             FILES.CREATED_BY,
             FILES.CREATED_TIME,
             FILES.GEOLOCATION,
+            FILES.STORAGE_URL,
         )
         .from(ACTIVITY_MEDIA_FILES)
         .join(FILES)

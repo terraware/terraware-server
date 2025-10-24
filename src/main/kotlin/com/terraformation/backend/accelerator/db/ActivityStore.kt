@@ -173,6 +173,7 @@ class ActivityStore(
                       FILES.CAPTURED_LOCAL_TIME,
                       FILES.CREATED_BY,
                       FILES.CREATED_TIME,
+                      FILES.STORAGE_URL,
                       geolocationField,
                   )
                   .from(ACTIVITY_MEDIA_FILES)
