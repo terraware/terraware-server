@@ -1,10 +1,12 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
+import io.mockk.every
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -77,6 +79,20 @@ internal class SearchServiceCountTest : SearchServiceTest() {
             mapOf(prefix to NoConditionNode(), germinatedPrefix to sublistCriteria),
         ),
     )
+  }
+
+  @Test
+  fun `conditionForVisibility is respected by searchCount`() {
+    insertProject(organizationId = organizationId)
+    val otherOrg = insertOrganization()
+    insertProject(organizationId = otherOrg)
+
+    val prefix = SearchFieldPrefix(root = tables.projects)
+    assertEquals(1, searchService.searchCount(prefix, mapOf(prefix to NoConditionNode())))
+
+    every { user.organizationRoles } returns
+        mapOf(organizationId to Role.Manager, otherOrg to Role.Contributor)
+    assertEquals(2, searchService.searchCount(prefix, mapOf(prefix to NoConditionNode())))
   }
 
   private fun insertTestResults(testId: ViabilityTestId, total: Int) {
