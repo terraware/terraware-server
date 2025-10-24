@@ -219,6 +219,26 @@ class FileService(
     return readFile(fileId)
   }
 
+  /**
+   * Updates the modified-by and modified-time values of a file. This will typically be called after
+   * updating file information in child tables.
+   */
+  fun touchFile(fileId: FileId) {
+    with(FILES) {
+      val rowsUpdated =
+          dslContext
+              .update(FILES)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(ID.eq(fileId))
+              .execute()
+
+      if (rowsUpdated != 1) {
+        throw FileNotFoundException(fileId)
+      }
+    }
+  }
+
   @EventListener
   fun on(event: FileReferenceDeletedEvent) {
     val fileId = event.fileId

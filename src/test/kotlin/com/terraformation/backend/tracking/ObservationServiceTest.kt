@@ -95,10 +95,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -125,13 +123,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val fileStore = InMemoryFileStore()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
-    FileService(
-        dslContext,
-        Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-        eventPublisher,
-        filesDao,
-        fileStore,
-    )
+    FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val thumbnailService: ThumbnailService = mockk()
   private val observationStore: ObservationStore by lazy {
@@ -794,6 +786,69 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               metadata = metadata,
               caption = null,
           )
+        }
+      }
+    }
+
+    @Nested
+    inner class UpdatePhoto {
+      @Test
+      fun `updates editable properties`() {
+        val fileId =
+            service.storePhoto(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
+                type = ObservationPhotoType.Quadrat,
+            )
+
+        clock.instant = Instant.ofEpochSecond(30)
+
+        val expectedFilesRecord = dslContext.fetchSingle(FILES)
+        expectedFilesRecord.modifiedTime = clock.instant
+
+        service.updatePhoto(observationId, plotId, fileId) {
+          it.copy(
+              caption = "new caption",
+              positionId = ObservationPlotPosition.SouthwestCorner,
+              typeId = ObservationPhotoType.Plot,
+          )
+        }
+
+        assertTableEquals(
+            ObservationPhotosRecord(
+                fileId,
+                observationId,
+                plotId,
+                ObservationPlotPosition.NortheastCorner,
+                ObservationPhotoType.Quadrat,
+                "new caption",
+            )
+        )
+
+        assertTableEquals(expectedFilesRecord)
+      }
+
+      @Test
+      fun `throws exception if no permission to update observation`() {
+        val fileId =
+            service.storePhoto(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
+                type = ObservationPhotoType.Quadrat,
+            )
+
+        deleteOrganizationUser()
+
+        assertThrows<ObservationNotFoundException> {
+          service.updatePhoto(observationId, plotId, fileId) { it }
         }
       }
     }
