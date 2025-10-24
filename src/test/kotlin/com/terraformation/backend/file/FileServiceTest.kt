@@ -475,6 +475,35 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     }
   }
 
+  @Nested
+  inner class TouchFile {
+    @Test
+    fun `updates modification timestamp and user ID`() {
+      val otherUserId = insertUser()
+      val fileId = insertFile(createdBy = otherUserId)
+      insertFile(createdBy = otherUserId)
+
+      clock.instant = clock.instant.plusSeconds(30)
+
+      val expectedFiles = dslContext.fetch(FILES)
+      expectedFiles
+          .single { it.id == fileId }
+          .apply {
+            modifiedBy = user.userId
+            modifiedTime = clock.instant
+          }
+
+      fileService.touchFile(fileId)
+
+      assertTableEquals(expectedFiles)
+    }
+
+    @Test
+    fun `throws exception if file does not exist`() {
+      assertThrows<FileNotFoundException> { fileService.touchFile(FileId(-1)) }
+    }
+  }
+
   @Test
   fun `handler for DailyTaskTimeArrivedEvent prunes expired tokens`() {
     val fileId = insertFile()

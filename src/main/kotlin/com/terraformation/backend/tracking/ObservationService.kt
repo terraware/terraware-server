@@ -181,13 +181,8 @@ class ObservationService(
   ): SizedInputStream {
     requirePermissions { readObservation(observationId) }
 
-    val photosRow =
-        observationPhotosDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
-    if (
-        photosRow.observationId != observationId || photosRow.monitoringPlotId != monitoringPlotId
-    ) {
-      throw FileNotFoundException(fileId)
-    }
+    // Make sure the file is for the right plot and observation.
+    fetchPhotosRow(observationId, monitoringPlotId, fileId)
 
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
@@ -233,6 +228,39 @@ class ObservationService(
     )
 
     return fileId
+  }
+
+  fun updatePhoto(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+      updateFunc: (ObservationPhotosRow) -> ObservationPhotosRow,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val initialRow = fetchPhotosRow(observationId, monitoringPlotId, fileId)
+    val updatedRow = updateFunc(initialRow)
+
+    if (initialRow != updatedRow) {
+      observationPhotosDao.update(initialRow.copy(caption = updatedRow.caption))
+      fileService.touchFile(fileId)
+    }
+  }
+
+  private fun fetchPhotosRow(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+  ): ObservationPhotosRow {
+    val photosRow =
+        observationPhotosDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
+    if (
+        photosRow.observationId != observationId || photosRow.monitoringPlotId != monitoringPlotId
+    ) {
+      throw FileNotFoundException(fileId)
+    }
+
+    return photosRow
   }
 
   fun scheduleObservation(observation: NewObservationModel): ObservationId {

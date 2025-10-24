@@ -36,6 +36,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -393,6 +394,26 @@ class ObservationsController(
     return observationService
         .readPhoto(observationId, plotId, fileId, maxWidth, maxHeight)
         .toResponseEntity()
+  }
+
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a photo with the requested ID."
+  )
+  @ApiResponseSimpleSuccess
+  @PutMapping("/{observationId}/plots/{plotId}/photos/{fileId}")
+  @Operation(
+      summary =
+          "Updates information about a specific photo from an observation of a monitoring plot."
+  )
+  fun updatePlotPhoto(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: UpdatePlotPhotoRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    observationService.updatePhoto(observationId, plotId, fileId, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Uploads a photo of a monitoring plot.")
@@ -1497,6 +1518,12 @@ data class UpdatePlotObservationRequestPayload(
     )
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
 )
+
+data class UpdatePlotPhotoRequestPayload(
+    val caption: String?,
+) {
+  fun applyTo(row: ObservationPhotosRow) = row.copy(caption = caption)
+}
 
 data class UploadPlotPhotoRequestPayload(
     val caption: String?,
