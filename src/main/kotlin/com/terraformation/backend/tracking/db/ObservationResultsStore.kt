@@ -431,6 +431,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private val photosMultiset =
       DSL.multiset(
               DSL.select(
+                      OBSERVATION_PHOTOS.CAPTION,
                       OBSERVATION_PHOTOS.FILE_ID,
                       photosGpsField,
                       OBSERVATION_PHOTOS.POSITION_ID,
@@ -446,6 +447,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           .convertFrom { result ->
             result.map { record ->
               ObservationMonitoringPlotPhotoModel(
+                  caption = record[OBSERVATION_PHOTOS.CAPTION],
                   fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[photosGpsField.asNonNullable()] as Point,
                   position = record[OBSERVATION_PHOTOS.POSITION_ID],

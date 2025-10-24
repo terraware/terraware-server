@@ -111,17 +111,18 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertFile(geolocation = gpsCoordinates)
-      insertObservationPhoto(position = position)
+      insertObservationPhoto(caption = "selfie", position = position)
 
       val results = resultsStore.fetchByOrganizationId(organizationId)
 
       assertEquals(
           listOf(
               ObservationMonitoringPlotPhotoModel(
-                  inserted.fileId,
-                  gpsCoordinates,
-                  position,
-                  ObservationPhotoType.Plot,
+                  caption = "selfie",
+                  fileId = inserted.fileId,
+                  gpsCoordinates = gpsCoordinates,
+                  position = position,
+                  type = ObservationPhotoType.Plot,
               )
           ),
           results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos,

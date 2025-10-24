@@ -629,11 +629,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       fun setUp() {
         fileId =
             service.storePhoto(
-                observationId,
-                plotId,
-                ObservationPlotPosition.NortheastCorner,
-                content.inputStream(),
-                metadata,
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = content.inputStream(),
+                metadata = metadata,
+                caption = null,
             )
       }
 
@@ -695,21 +696,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `associates photo with observation and plot`() {
         val fileId1 =
             service.storePhoto(
-                observationId,
-                plotId,
-                ObservationPlotPosition.NortheastCorner,
-                byteArrayOf(1).inputStream(),
-                metadata,
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
             )
 
         val fileId2 =
             service.storePhoto(
-                observationId,
-                plotId,
-                null,
-                byteArrayOf(1).inputStream(),
-                metadata,
-                ObservationPhotoType.Soil,
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = null,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = null,
+                type = ObservationPhotoType.Soil,
             )
 
         fileStore.assertFileExists(filesDao.fetchOneById(fileId1)!!.storageUrl!!)
@@ -723,6 +726,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     plotId,
                     ObservationPlotPosition.NortheastCorner,
                     ObservationPhotoType.Plot,
+                    "caption",
                 ),
                 ObservationPhotosRecord(
                     fileId2,
@@ -751,12 +755,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
           service.storePhoto(
-              observationId,
-              plotId,
-              null,
-              byteArrayOf(1).inputStream(),
-              metadata,
-              ObservationPhotoType.Quadrat,
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              position = null,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = null,
+              type = ObservationPhotoType.Quadrat,
           )
         }
       }
@@ -765,12 +770,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws exception for providing photo position for Soil photos`() {
         assertThrows<IllegalArgumentException> {
           service.storePhoto(
-              observationId,
-              plotId,
-              ObservationPlotPosition.SoutheastCorner,
-              byteArrayOf(1).inputStream(),
-              metadata,
-              ObservationPhotoType.Soil,
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              position = ObservationPlotPosition.SoutheastCorner,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = null,
+              type = ObservationPhotoType.Soil,
           )
         }
       }
@@ -781,11 +787,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertThrows<ObservationNotFoundException> {
           service.storePhoto(
-              observationId,
-              plotId,
-              ObservationPlotPosition.NortheastCorner,
-              byteArrayOf(1).inputStream(),
-              metadata,
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              position = ObservationPlotPosition.NortheastCorner,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = null,
           )
         }
       }
@@ -797,11 +804,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `only deletes photos for planting site that is being deleted`() {
         val fileId =
             service.storePhoto(
-                observationId,
-                plotId,
-                ObservationPlotPosition.NortheastCorner,
-                onePixelPng.inputStream(),
-                metadata,
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = onePixelPng.inputStream(),
+                metadata = metadata,
+                caption = null,
             )
 
         insertPlantingSite()
@@ -813,11 +821,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val otherSiteFileId =
             service.storePhoto(
-                inserted.observationId,
-                inserted.monitoringPlotId,
-                ObservationPlotPosition.SouthwestCorner,
-                onePixelPng.inputStream(),
-                metadata,
+                observationId = inserted.observationId,
+                monitoringPlotId = inserted.monitoringPlotId,
+                position = ObservationPlotPosition.SouthwestCorner,
+                data = onePixelPng.inputStream(),
+                metadata = metadata,
+                caption = null,
             )
 
         service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))

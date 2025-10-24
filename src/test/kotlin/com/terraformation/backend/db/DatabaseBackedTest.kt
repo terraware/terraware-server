@@ -3073,6 +3073,7 @@ abstract class DatabaseBackedTest {
 
   fun insertObservationPhoto(
       row: ObservationPhotosRow = ObservationPhotosRow(),
+      caption: String? = row.caption,
       fileId: FileId = row.fileId ?: inserted.fileId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
@@ -3081,6 +3082,7 @@ abstract class DatabaseBackedTest {
   ) {
     val rowWithDefaults =
         row.copy(
+            caption = caption,
             fileId = fileId,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
