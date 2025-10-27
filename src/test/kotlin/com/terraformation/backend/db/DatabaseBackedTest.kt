@@ -3075,6 +3075,7 @@ abstract class DatabaseBackedTest {
       row: ObservationPhotosRow = ObservationPhotosRow(),
       caption: String? = row.caption,
       fileId: FileId = row.fileId ?: inserted.fileId,
+      isOriginal: Boolean = row.isOriginal ?: true,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
@@ -3084,6 +3085,7 @@ abstract class DatabaseBackedTest {
         row.copy(
             caption = caption,
             fileId = fileId,
+            isOriginal = isOriginal,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             positionId = position,

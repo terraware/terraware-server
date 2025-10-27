@@ -434,6 +434,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       OBSERVATION_PHOTOS.CAPTION,
                       OBSERVATION_PHOTOS.FILE_ID,
                       photosGpsField,
+                      OBSERVATION_PHOTOS.IS_ORIGINAL,
                       OBSERVATION_PHOTOS.POSITION_ID,
                       OBSERVATION_PHOTOS.TYPE_ID,
                   )
@@ -450,6 +451,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   caption = record[OBSERVATION_PHOTOS.CAPTION],
                   fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[photosGpsField.asNonNullable()] as Point,
+                  isOriginal = record[OBSERVATION_PHOTOS.IS_ORIGINAL.asNonNullable()],
                   position = record[OBSERVATION_PHOTOS.POSITION_ID],
                   type = record[OBSERVATION_PHOTOS.TYPE_ID.asNonNullable()],
               )
