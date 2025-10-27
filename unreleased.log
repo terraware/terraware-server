@@ -1,3 +1,8 @@
+2e59c9b53a0 Update amazoncorretto Docker tag to v25.0.1-al2023-headless (#3552)
+b6691b67213 Update dependency com.google.apis:google-api-services-drive to v3-rev20251019-2.0.0 (#3553)
+60acb74d94b Update plugin dev.monosoul.jooq-docker to v8 (#3550)
+6f0694cdfa0 Update plugin org.springframework.boot to v3.5.7 (#3554)
+9fd775ec13e Update database dependencies to v11.15.0 (#3555)
 218bd20f41b SW-7599 Add endpoint to edit observation photo captions (#3549)
 4a450139f97 SW-7599 Add captions to observation photos (#3548)
 d051a539d40 SW-7581 Add HEIC to upload endpoint OpenAPI schemas (#3547)
