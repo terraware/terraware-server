@@ -704,7 +704,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 monitoringPlotId = plotId,
                 position = null,
                 data = byteArrayOf(1).inputStream(),
-                metadata = metadata,
+                metadata = metadata.copy(geolocation = null),
                 caption = null,
                 isOriginal = false,
                 type = ObservationPhotoType.Soil,
@@ -740,11 +740,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             filesRecords.single { it.id == fileId1 }.geolocation,
             "File 1",
         )
-        assertGeometryEquals(
-            point(1),
-            filesRecords.single { it.id == fileId2 }.geolocation,
-            "File 2",
-        )
+        assertNull(filesRecords.single { it.id == fileId2 }.geolocation, "File 2 geolocation")
       }
 
       @Test
