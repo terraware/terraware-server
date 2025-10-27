@@ -14,7 +14,6 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
-import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
@@ -23,7 +22,6 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
 import java.time.LocalDateTime
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
@@ -31,7 +29,6 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class ActivityMediaService(
     private val activityMediaStore: ActivityMediaStore,
     private val clock: InstantSource,
-    private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val muxService: MuxService,
     private val parentStore: ParentStore,
@@ -46,8 +43,6 @@ class ActivityMediaService(
       listPosition: Int? = null,
   ): FileId {
     requirePermissions { updateActivity(activityId) }
-
-    var mediaType: ActivityMediaType? = null
 
     val fileId =
         fileService.storeFile(
@@ -66,7 +61,7 @@ class ActivityMediaService(
               storedFile.fileType?.mimeType
                   ?: throw UnsupportedMediaTypeException("Cannot determine file type")
 
-          mediaType =
+          val mediaType =
               when {
                 mimeType.startsWith("image/") -> ActivityMediaType.Photo
                 mimeType.startsWith("video/") -> ActivityMediaType.Video
@@ -90,10 +85,6 @@ class ActivityMediaService(
         }
 
     log.info("Stored file $fileId for activity $activityId")
-
-    if (mediaType == ActivityMediaType.Video) {
-      eventPublisher.publishEvent(VideoFileUploadedEvent(fileId))
-    }
 
     return fileId
   }

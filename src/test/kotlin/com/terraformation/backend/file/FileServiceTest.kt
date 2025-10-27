@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
+import com.terraformation.backend.file.event.VideoFileUploadedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.mockUser
@@ -133,6 +134,8 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
       val actualPhoto = filesDao.fetchOneById(fileId)!!
       assertEquals(expectedPhoto, actualPhoto)
+
+      eventPublisher.assertEventNotPublished<VideoFileUploadedEvent>()
     }
 
     @Test
@@ -271,10 +274,26 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
           category = "category",
           data = data.inputStream(),
           newFileMetadata = metadata.copy(size = size),
-          insertChildRows = { it: FileService.StoredFile -> storedFile = it },
+          insertChildRows = { storedFile = it },
       )
 
       assertEquals(FileType.Jpeg, storedFile?.fileType, "File type passed to insertChildRows")
+    }
+
+    @Test
+    fun `publishes VideoFileUploadedEvent if file is a video`() {
+      val data = javaClass.getResourceAsStream("/file/videoAndroid.mp4")!!.use { it.readAllBytes() }
+      val size = data.size.toLong()
+
+      val fileId =
+          fileService.storeFile(
+              category = "category",
+              data = data.inputStream(),
+              newFileMetadata = metadata.copy(contentType = "video/mp4", size = size),
+              insertChildRows = {},
+          )
+
+      eventPublisher.assertEventPublished(VideoFileUploadedEvent(fileId))
     }
 
     @Test
