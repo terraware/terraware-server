@@ -825,7 +825,7 @@ data class RecordedPlantPayload(
 data class ObservationMonitoringPlotPhotoPayload(
     val caption: String?,
     val fileId: FileId,
-    val gpsCoordinates: Point,
+    val gpsCoordinates: Point?,
     @Schema(
         description =
             "If true, this photo was uploaded as part of the original observation. If false, it " +
