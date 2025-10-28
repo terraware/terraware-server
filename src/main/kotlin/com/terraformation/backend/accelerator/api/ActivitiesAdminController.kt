@@ -174,17 +174,17 @@ data class AdminCreateActivityRequestPayload(
     val date: LocalDate,
     val description: String,
     val isHighlight: Boolean,
-    val isVerified: Boolean,
     val projectId: ProjectId,
+    val status: ActivityStatus,
     val type: ActivityType,
 ) {
   fun toModel(): NewActivityModel {
     return NewActivityModel(
         activityDate = date,
+        activityStatus = status,
         activityType = type,
         description = description,
         isHighlight = isHighlight,
-        isVerified = isVerified,
         projectId = projectId,
     )
   }
