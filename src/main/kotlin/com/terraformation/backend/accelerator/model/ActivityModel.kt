@@ -61,9 +61,9 @@ data class ExistingActivityModel(
 
 data class NewActivityModel(
     val projectId: ProjectId,
+    val activityStatus: ActivityStatus = ActivityStatus.NotVerified,
     val activityType: ActivityType,
     val activityDate: LocalDate,
     val description: String,
     val isHighlight: Boolean = false,
-    val isVerified: Boolean = false,
 )

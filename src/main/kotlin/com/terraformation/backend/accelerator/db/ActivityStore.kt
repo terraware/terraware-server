@@ -39,15 +39,14 @@ class ActivityStore(
 
     val now = clock.instant()
     val userId = currentUser().userId
-    val verifiedBy = if (model.isVerified) userId else null
-    val verifiedTime = if (model.isVerified) now else null
-    val status = if (model.isVerified) ActivityStatus.Verified else ActivityStatus.NotVerified
+    val verifiedBy = if (model.activityStatus == ActivityStatus.Verified) userId else null
+    val verifiedTime = if (model.activityStatus == ActivityStatus.Verified) now else null
 
     val activityId =
         dslContext
             .insertInto(ACTIVITIES)
             .set(ACTIVITIES.ACTIVITY_DATE, model.activityDate)
-            .set(ACTIVITIES.ACTIVITY_STATUS_ID, status)
+            .set(ACTIVITIES.ACTIVITY_STATUS_ID, model.activityStatus)
             .set(ACTIVITIES.ACTIVITY_TYPE_ID, model.activityType)
             .set(ACTIVITIES.CREATED_BY, userId)
             .set(ACTIVITIES.CREATED_TIME, now)
@@ -65,7 +64,7 @@ class ActivityStore(
 
     return ExistingActivityModel(
         activityDate = model.activityDate,
-        activityStatus = status,
+        activityStatus = model.activityStatus,
         activityType = model.activityType,
         createdBy = userId,
         createdTime = now,

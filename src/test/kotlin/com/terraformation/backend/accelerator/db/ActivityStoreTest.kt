@@ -99,9 +99,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewActivityModel(
                   activityDate = LocalDate.of(2024, 1, 15),
+                  activityStatus = ActivityStatus.Verified,
                   activityType = ActivityType.SeedCollection,
                   description = "Test activity description",
-                  isVerified = true,
                   projectId = projectId,
               )
           )
