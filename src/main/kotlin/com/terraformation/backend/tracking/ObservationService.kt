@@ -185,8 +185,7 @@ class ObservationService(
   ): SizedInputStream {
     requirePermissions { readObservation(observationId) }
 
-    // Make sure the file is for the right plot and observation.
-    fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
+    ensureMediaFileExists(observationId, monitoringPlotId, fileId)
 
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
@@ -198,7 +197,7 @@ class ObservationService(
   ): MuxStreamModel {
     requirePermissions { readObservation(observationId) }
 
-    fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
+    ensureMediaFileExists(observationId, monitoringPlotId, fileId)
 
     return muxService.getMuxStream(fileId)
   }
@@ -279,6 +278,14 @@ class ObservationService(
     }
 
     deleteMediaWhere(OBSERVATION_MEDIA_FILES.FILE_ID.eq(fileId))
+  }
+
+  private fun ensureMediaFileExists(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+  ) {
+    fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
   }
 
   private fun fetchMediaFilesRow(
