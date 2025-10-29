@@ -78,7 +78,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         {
           val func = arg<((storedFile: FileService.StoredFile) -> Unit)?>(4)
           val fileId = insertFile()
-          func?.let { it(FileService.StoredFile(fileId)) }
+          func?.let { it(FileService.StoredFile(fileId, arg(2))) }
           fileId
         }
 

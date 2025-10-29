@@ -34,6 +34,24 @@ com.terraformation.backend.eventlog.PersistentEventTest$TestChildFieldEventV1/ch
 com.terraformation.backend.eventlog.PersistentEventTest$TestNonPrimaryConstructorPropertyEventV1/x: Int
 com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV1/x: Int
 com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV2/x: Int
+com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/fileId: FileId
+com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventV1/fileId: FileId
+com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/contentType: String
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/fileId: FileId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/isOriginal: Boolean
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/type: ObservationMediaType
 
 #
 # Please add new entries in alphabetical (case-sensitive ASCII) order.

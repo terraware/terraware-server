@@ -1,12 +1,16 @@
 package com.terraformation.backend.tracking.event
 
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -18,6 +22,7 @@ import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import java.time.Duration
 import java.time.LocalDate
+import org.locationtech.jts.geom.Point
 
 /** Published when an organization requests that a monitoring plot be replaced in an observation. */
 data class ObservationPlotReplacedEvent(
@@ -225,3 +230,55 @@ data class RateLimitedT0DataAssignedEvent(
     )
   }
 }
+
+sealed interface ObservationMediaFileEvent : PersistentEvent {
+  val fileId: FileId
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+}
+
+data class ObservationMediaFileDeletedEventV1(
+    override val fileId: FileId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+) : ObservationMediaFileEvent
+
+typealias ObservationMediaFileDeletedEvent = ObservationMediaFileDeletedEventV1
+
+data class ObservationMediaFileEditedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val fileId: FileId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+) : ObservationMediaFileEvent {
+  data class Values(
+      val caption: String?,
+  )
+}
+
+typealias ObservationMediaFileEditedEvent = ObservationMediaFileEditedEventV1
+
+typealias ObservationMediaFileEditedEventValues = ObservationMediaFileEditedEventV1.Values
+
+data class ObservationMediaFileUploadedEventV1(
+    val caption: String?,
+    val contentType: String,
+    override val fileId: FileId,
+    val geolocation: Point?,
+    val isOriginal: Boolean,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val position: ObservationPlotPosition?,
+    val type: ObservationMediaType,
+) : ObservationMediaFileEvent
+
+typealias ObservationMediaFileUploadedEvent = ObservationMediaFileUploadedEventV1
