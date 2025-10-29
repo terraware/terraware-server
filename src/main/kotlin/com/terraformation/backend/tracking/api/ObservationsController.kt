@@ -41,6 +41,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
+import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
@@ -860,16 +861,17 @@ data class RecordedPlantPayload(
   }
 }
 
-data class ObservationMonitoringPlotPhotoPayload(
+data class ObservationMonitoringPlotMediaPayload(
     val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point?,
     @Schema(
         description =
-            "If true, this photo was uploaded as part of the original observation. If false, it " +
+            "If true, this file was uploaded as part of the original observation. If false, it " +
                 "was uploaded later."
     )
     val isOriginal: Boolean,
+    val mediaKind: MediaKind,
     val position: ObservationPlotPosition?,
     val type: ObservationMediaType,
 ) {
@@ -880,6 +882,7 @@ data class ObservationMonitoringPlotPhotoPayload(
       model.fileId,
       model.gpsCoordinates,
       model.isOriginal,
+      MediaKind.forMimeType(model.contentType),
       model.position,
       model.type,
   )
@@ -985,6 +988,7 @@ data class ObservationMonitoringPlotResultsPayload(
                 "time based on observation results."
     )
     val isPermanent: Boolean,
+    val media: List<ObservationMonitoringPlotMediaPayload>,
     val monitoringPlotId: MonitoringPlotId,
     @Schema(description = "Full name of this monitoring plot, including zone and subzone prefixes.")
     val monitoringPlotName: String,
@@ -1001,7 +1005,7 @@ data class ObservationMonitoringPlotResultsPayload(
     val overlappedByPlotIds: Set<MonitoringPlotId>,
     @Schema(description = "IDs of any older monitoring plots this one overlaps with.")
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
-    val photos: List<ObservationMonitoringPlotPhotoPayload>,
+    val photos: List<ObservationMonitoringPlotMediaPayload>,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
     val plants: List<RecordedPlantPayload>?,
@@ -1043,6 +1047,7 @@ data class ObservationMonitoringPlotResultsPayload(
       elevationMeters = model.elevationMeters,
       isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,
+      media = model.media.map { ObservationMonitoringPlotMediaPayload(it) },
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = "${model.monitoringPlotNumber}",
       monitoringPlotNumber = model.monitoringPlotNumber,
@@ -1050,7 +1055,8 @@ data class ObservationMonitoringPlotResultsPayload(
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,
       overlapsWithPlotIds = model.overlapsWithPlotIds,
-      photos = model.media.map { ObservationMonitoringPlotPhotoPayload(it) },
+      // TODO: Remove this once frontend is updated to read the "media" property
+      photos = model.media.map { ObservationMonitoringPlotMediaPayload(it) },
       plantingDensity = model.plantingDensity,
       plants = model.plants?.map { RecordedPlantPayload(it) },
       sizeMeters = model.sizeMeters,

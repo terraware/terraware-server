@@ -32,6 +32,7 @@ import org.locationtech.jts.geom.Polygon
 
 data class ObservationMonitoringPlotMediaModel(
     val caption: String?,
+    val contentType: String,
     val fileId: FileId,
     val gpsCoordinates: Point?,
     val isOriginal: Boolean,
