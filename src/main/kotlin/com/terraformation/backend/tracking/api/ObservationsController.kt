@@ -1005,7 +1005,6 @@ data class ObservationMonitoringPlotResultsPayload(
     val overlappedByPlotIds: Set<MonitoringPlotId>,
     @Schema(description = "IDs of any older monitoring plots this one overlaps with.")
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
-    val photos: List<ObservationMonitoringPlotMediaPayload>,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
     val plants: List<RecordedPlantPayload>?,
@@ -1055,8 +1054,6 @@ data class ObservationMonitoringPlotResultsPayload(
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,
       overlapsWithPlotIds = model.overlapsWithPlotIds,
-      // TODO: Remove this once frontend is updated to read the "media" property
-      photos = model.media.map { ObservationMonitoringPlotMediaPayload(it) },
       plantingDensity = model.plantingDensity,
       plants = model.plants?.map { RecordedPlantPayload(it) },
       sizeMeters = model.sizeMeters,
@@ -1073,6 +1070,10 @@ data class ObservationMonitoringPlotResultsPayload(
               .firstOrNull { it.certainty == RecordedSpeciesCertainty.Unknown }
               ?.let { ObservationSpeciesResultsPayload(it) },
   )
+
+  // TODO: Remove this once frontend is updated to read the "media" property
+  val photos: List<ObservationMonitoringPlotMediaPayload>
+    get() = media
 }
 
 data class ObservationPlantingSubzoneResultsPayload(
