@@ -805,51 +805,51 @@
 <g id="node18" class="node">
 <title>nursery.batch_sub_locations</title>
 <g id="a_node18"><a xlink:href="../../../nursery/tables/batch_sub_locations.html" xlink:title="nursery.batch_sub_locations" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="905,-4598 905,-4704 1119,-4704 1119,-4598 905,-4598"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="905,-4682 905,-4704 1119,-4704 1119,-4682 905,-4682"/>
-<polygon fill="none" stroke="black" points="905,-4682 905,-4704 1119,-4704 1119,-4682 905,-4682"/>
-<text text-anchor="start" x="910" y="-4691.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batch_sub_locations</text>
-<text text-anchor="start" x="1080" y="-4690.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="905,-4660 905,-4682 1119,-4682 1119,-4660 905,-4660"/>
-<text text-anchor="start" x="962" y="-4668.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
-<polygon fill="none" stroke="black" points="905,-4638 905,-4660 1119,-4660 1119,-4638 905,-4638"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="910" y="-4655"/>
-<text text-anchor="start" x="962" y="-4646.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
-<polygon fill="none" stroke="black" points="905,-4616 905,-4638 1119,-4638 1119,-4616 905,-4616"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="910" y="-4633"/>
-<text text-anchor="start" x="962" y="-4624.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="905,-4598 905,-4616 996,-4616 996,-4598 905,-4598"/>
-<polygon fill="none" stroke="black" points="905,-4598 905,-4616 996,-4616 996,-4598 905,-4598"/>
-<text text-anchor="start" x="908" y="-4604.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="996,-4598 996,-4616 1071,-4616 1071,-4598 996,-4598"/>
-<polygon fill="none" stroke="black" points="996,-4598 996,-4616 1071,-4616 1071,-4598 996,-4598"/>
-<text text-anchor="start" x="1034" y="-4604.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1071,-4598 1071,-4616 1119,-4616 1119,-4598 1071,-4598"/>
-<polygon fill="none" stroke="black" points="1071,-4598 1071,-4616 1119,-4616 1119,-4598 1071,-4598"/>
-<text text-anchor="start" x="1109" y="-4604.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="905,-4587 905,-4693 1119,-4693 1119,-4587 905,-4587"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="905,-4671 905,-4693 1119,-4693 1119,-4671 905,-4671"/>
+<polygon fill="none" stroke="black" points="905,-4671 905,-4693 1119,-4693 1119,-4671 905,-4671"/>
+<text text-anchor="start" x="910" y="-4680.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batch_sub_locations</text>
+<text text-anchor="start" x="1080" y="-4679.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="905,-4649 905,-4671 1119,-4671 1119,-4649 905,-4649"/>
+<text text-anchor="start" x="962" y="-4657.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_id</text>
+<polygon fill="none" stroke="black" points="905,-4627 905,-4649 1119,-4649 1119,-4627 905,-4627"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="910" y="-4644"/>
+<text text-anchor="start" x="962" y="-4635.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
+<polygon fill="none" stroke="black" points="905,-4605 905,-4627 1119,-4627 1119,-4605 905,-4605"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="910" y="-4622"/>
+<text text-anchor="start" x="962" y="-4613.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="905,-4587 905,-4605 996,-4605 996,-4587 905,-4587"/>
+<polygon fill="none" stroke="black" points="905,-4587 905,-4605 996,-4605 996,-4587 905,-4587"/>
+<text text-anchor="start" x="908" y="-4593.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="996,-4587 996,-4605 1071,-4605 1071,-4587 996,-4587"/>
+<polygon fill="none" stroke="black" points="996,-4587 996,-4605 1071,-4605 1071,-4587 996,-4587"/>
+<text text-anchor="start" x="1034" y="-4593.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1071,-4587 1071,-4605 1119,-4605 1119,-4587 1071,-4587"/>
+<polygon fill="none" stroke="black" points="1071,-4587 1071,-4605 1119,-4605 1119,-4587 1071,-4587"/>
+<text text-anchor="start" x="1109" y="-4593.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- nursery.batch_sub_locations&#45;&gt;sub_locations -->
 <g id="edge12" class="edge">
 <title>nursery.batch_sub_locations:w&#45;&gt;sub_locations:e</title>
-<path fill="none" stroke="black" d="M889.53,-4627.69C818.57,-4634.63 805.43,-4692 726.5,-4692"/>
-<polygon fill="black" stroke="black" points="896.01,-4627.38 904.17,-4630.6 900,-4627.19 904,-4627 904,-4627 904,-4627 900,-4627.19 903.83,-4623.4 896.01,-4627.38 896.01,-4627.38"/>
-<ellipse fill="none" stroke="black" cx="892.81" cy="-4627.53" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M889.26,-4616.8C817.18,-4624.92 807.12,-4692 726.5,-4692"/>
+<polygon fill="black" stroke="black" points="896.01,-4616.43 904.2,-4619.59 900.01,-4616.22 904,-4616 904,-4616 904,-4616 900.01,-4616.22 903.8,-4612.41 896.01,-4616.43 896.01,-4616.43"/>
+<ellipse fill="none" stroke="black" cx="892.82" cy="-4616.61" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batch_sub_locations&#45;&gt;sub_locations -->
 <g id="edge13" class="edge">
 <title>nursery.batch_sub_locations:w&#45;&gt;sub_locations:e</title>
-<path fill="none" stroke="black" d="M889.53,-4649.69C818.57,-4656.63 805.43,-4714 726.5,-4714"/>
-<polygon fill="black" stroke="black" points="896.01,-4649.38 904.17,-4652.6 900,-4649.19 904,-4649 904,-4649 904,-4649 900,-4649.19 903.83,-4645.4 896.01,-4649.38 896.01,-4649.38"/>
-<ellipse fill="none" stroke="black" cx="892.81" cy="-4649.53" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M889.26,-4638.8C817.18,-4646.92 807.12,-4714 726.5,-4714"/>
+<polygon fill="black" stroke="black" points="896.01,-4638.43 904.2,-4641.59 900.01,-4638.22 904,-4638 904,-4638 904,-4638 900.01,-4638.22 903.8,-4634.41 896.01,-4638.43 896.01,-4638.43"/>
+<ellipse fill="none" stroke="black" cx="892.82" cy="-4638.61" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batch_sub_locations&#45;&gt;facilities -->
 <g id="edge11" class="edge">
 <title>nursery.batch_sub_locations:w&#45;&gt;facilities:e</title>
-<path fill="none" stroke="black" d="M889.66,-4625.17C852.94,-4614.73 861.83,-4562.26 818,-4542 755.03,-4512.89 564.49,-4553.83 507,-4515 448.36,-4475.39 505.76,-4373 435,-4373"/>
-<polygon fill="black" stroke="black" points="896.06,-4625.99 903.55,-4630.57 900.03,-4626.5 904,-4627 904,-4627 904,-4627 900.03,-4626.5 904.45,-4623.43 896.06,-4625.99 896.06,-4625.99"/>
-<ellipse fill="none" stroke="black" cx="892.89" cy="-4625.59" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M889.5,-4614.16C855.27,-4604.51 859.39,-4559.43 818,-4542 754.07,-4515.08 564.49,-4553.83 507,-4515 448.36,-4475.39 505.76,-4373 435,-4373"/>
+<polygon fill="black" stroke="black" points="896.06,-4614.99 903.55,-4619.57 900.03,-4615.5 904,-4616 904,-4616 904,-4616 900.03,-4615.5 904.45,-4612.43 896.06,-4614.99 896.06,-4614.99"/>
+<ellipse fill="none" stroke="black" cx="892.89" cy="-4614.59" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.planting_zone_t0_temp_densities -->
 <g id="node19" class="node">
@@ -2073,42 +2073,42 @@
 <g id="node41" class="node">
 <title>nursery.batch_details_history_sub_locations</title>
 <g id="a_node41"><a xlink:href="../../../nursery/tables/batch_details_history_sub_locations.html" xlink:title="nursery.batch_details_history_sub_locations" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="859,-4725 859,-4831 1165,-4831 1165,-4725 859,-4725"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="859,-4809 859,-4831 1165,-4831 1165,-4809 859,-4809"/>
-<polygon fill="none" stroke="black" points="859,-4809 859,-4831 1165,-4831 1165,-4809 859,-4809"/>
-<text text-anchor="start" x="864" y="-4818.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batch_details_history_sub_locations</text>
-<text text-anchor="start" x="1126" y="-4817.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="859,-4787 859,-4809 1165,-4809 1165,-4787 859,-4787"/>
-<text text-anchor="start" x="916" y="-4795.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_details_history_id</text>
-<polygon fill="none" stroke="black" points="859,-4765 859,-4787 1165,-4787 1165,-4765 859,-4765"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="864" y="-4782"/>
-<text text-anchor="start" x="916" y="-4773.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
-<polygon fill="none" stroke="black" points="859,-4743 859,-4765 1165,-4765 1165,-4743 859,-4743"/>
-<text text-anchor="start" x="916" y="-4751.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_name</text>
-<polygon fill="#ffffff" stroke="transparent" points="859,-4725 859,-4743 996,-4743 996,-4725 859,-4725"/>
-<polygon fill="none" stroke="black" points="859,-4725 859,-4743 996,-4743 996,-4725 859,-4725"/>
-<text text-anchor="start" x="862" y="-4731.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="996,-4725 996,-4743 1094,-4743 1094,-4725 996,-4725"/>
-<polygon fill="none" stroke="black" points="996,-4725 996,-4743 1094,-4743 1094,-4725 996,-4725"/>
-<text text-anchor="start" x="1057" y="-4731.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1094,-4725 1094,-4743 1165,-4743 1165,-4725 1094,-4725"/>
-<polygon fill="none" stroke="black" points="1094,-4725 1094,-4743 1165,-4743 1165,-4725 1094,-4725"/>
-<text text-anchor="start" x="1155" y="-4731.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="859,-4714 859,-4820 1165,-4820 1165,-4714 859,-4714"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="859,-4798 859,-4820 1165,-4820 1165,-4798 859,-4798"/>
+<polygon fill="none" stroke="black" points="859,-4798 859,-4820 1165,-4820 1165,-4798 859,-4798"/>
+<text text-anchor="start" x="864" y="-4807.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.batch_details_history_sub_locations</text>
+<text text-anchor="start" x="1126" y="-4806.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="859,-4776 859,-4798 1165,-4798 1165,-4776 859,-4776"/>
+<text text-anchor="start" x="916" y="-4784.2" font-family="Helvetica,sans-Serif" font-size="11.00">batch_details_history_id</text>
+<polygon fill="none" stroke="black" points="859,-4754 859,-4776 1165,-4776 1165,-4754 859,-4754"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="864" y="-4771"/>
+<text text-anchor="start" x="916" y="-4762.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_id</text>
+<polygon fill="none" stroke="black" points="859,-4732 859,-4754 1165,-4754 1165,-4732 859,-4732"/>
+<text text-anchor="start" x="916" y="-4740.2" font-family="Helvetica,sans-Serif" font-size="11.00">sub_location_name</text>
+<polygon fill="#ffffff" stroke="transparent" points="859,-4714 859,-4732 996,-4732 996,-4714 859,-4714"/>
+<polygon fill="none" stroke="black" points="859,-4714 859,-4732 996,-4732 996,-4714 859,-4714"/>
+<text text-anchor="start" x="862" y="-4720.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="996,-4714 996,-4732 1094,-4732 1094,-4714 996,-4714"/>
+<polygon fill="none" stroke="black" points="996,-4714 996,-4732 1094,-4732 1094,-4714 996,-4714"/>
+<text text-anchor="start" x="1057" y="-4720.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1094,-4714 1094,-4732 1165,-4732 1165,-4714 1094,-4714"/>
+<polygon fill="none" stroke="black" points="1094,-4714 1094,-4732 1165,-4732 1165,-4714 1094,-4714"/>
+<text text-anchor="start" x="1155" y="-4720.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- nursery.batch_details_history_sub_locations&#45;&gt;sub_locations -->
 <g id="edge9" class="edge">
 <title>nursery.batch_details_history_sub_locations:w&#45;&gt;sub_locations:e</title>
-<path fill="none" stroke="black" d="M843.59,-4773.29C835.25,-4769.59 830.23,-4762.78 818,-4757 777.37,-4737.8 771.43,-4714 726.5,-4714"/>
-<polygon fill="black" stroke="black" points="850.14,-4774.52 857.33,-4779.54 854.07,-4775.26 858,-4776 858,-4776 858,-4776 854.07,-4775.26 858.67,-4772.46 850.14,-4774.52 850.14,-4774.52"/>
-<ellipse fill="none" stroke="black" cx="846.99" cy="-4773.93" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M843.34,-4763.98C793.89,-4756.79 783.92,-4714 726.5,-4714"/>
+<polygon fill="black" stroke="black" points="850.02,-4764.45 857.75,-4768.59 854.01,-4764.72 858,-4765 858,-4765 858,-4765 854.01,-4764.72 858.25,-4761.41 850.02,-4764.45 850.02,-4764.45"/>
+<ellipse fill="none" stroke="black" cx="846.83" cy="-4764.22" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.observation_photos -->
 <g id="node42" class="node">
 <title>tracking.observation_photos</title>
 <g id="a_node42"><a xlink:href="../../../tracking/tables/observation_photos.html" xlink:title="tracking.observation_photos" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="904.5,-4915 904.5,-5087 1119.5,-5087 1119.5,-4915 904.5,-4915"/>
+<polygon fill="#ffffff" stroke="transparent" points="904.5,-4893 904.5,-5087 1119.5,-5087 1119.5,-4893 904.5,-4893"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="905,-5065 905,-5087 1120,-5087 1120,-5065 905,-5065"/>
 <polygon fill="none" stroke="black" points="905,-5065 905,-5087 1120,-5087 1120,-5065 905,-5065"/>
 <text text-anchor="start" x="910" y="-5074.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.observation_photos</text>
@@ -2126,15 +2126,17 @@
 <text text-anchor="start" x="963" y="-4963.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
 <polygon fill="none" stroke="black" points="905,-4933 905,-4955 1120,-4955 1120,-4933 905,-4933"/>
 <text text-anchor="start" x="963" y="-4941.2" font-family="Helvetica,sans-Serif" font-size="11.00">caption</text>
-<polygon fill="#ffffff" stroke="transparent" points="905,-4915 905,-4933 997,-4933 997,-4915 905,-4915"/>
-<polygon fill="none" stroke="black" points="905,-4915 905,-4933 997,-4933 997,-4915 905,-4915"/>
-<text text-anchor="start" x="908" y="-4921.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="997,-4915 997,-4933 1072,-4933 1072,-4915 997,-4915"/>
-<polygon fill="none" stroke="black" points="997,-4915 997,-4933 1072,-4933 1072,-4915 997,-4915"/>
-<text text-anchor="start" x="1035" y="-4921.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1072,-4915 1072,-4933 1120,-4933 1120,-4915 1072,-4915"/>
-<polygon fill="none" stroke="black" points="1072,-4915 1072,-4933 1120,-4933 1120,-4915 1072,-4915"/>
-<text text-anchor="start" x="1110" y="-4921.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="none" stroke="black" points="905,-4911 905,-4933 1120,-4933 1120,-4911 905,-4911"/>
+<text text-anchor="start" x="963" y="-4919.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_original</text>
+<polygon fill="#ffffff" stroke="transparent" points="905,-4893 905,-4911 997,-4911 997,-4893 905,-4893"/>
+<polygon fill="none" stroke="black" points="905,-4893 905,-4911 997,-4911 997,-4893 905,-4893"/>
+<text text-anchor="start" x="908" y="-4899.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="997,-4893 997,-4911 1072,-4911 1072,-4893 997,-4893"/>
+<polygon fill="none" stroke="black" points="997,-4893 997,-4911 1072,-4911 1072,-4893 997,-4893"/>
+<text text-anchor="start" x="1035" y="-4899.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1072,-4893 1072,-4911 1120,-4911 1120,-4893 1072,-4893"/>
+<polygon fill="none" stroke="black" points="1072,-4893 1072,-4911 1120,-4911 1120,-4893 1072,-4893"/>
+<text text-anchor="start" x="1110" y="-4899.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

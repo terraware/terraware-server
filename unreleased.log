@@ -1,3 +1,5 @@
+2b12aa56779 SW-7606 Support uploading other observation photos (#3559)
+b4aae9002e0 SW-7606 Differentiate photos from original observation (#3558)
 ff3e4ec4799 Add funder users to logging filter (#3556)
 ac0af7dc30d SW-7541 Replaced verified flag with status in create activity (#3557)
 94cfe6e9ef7 SW-7600 Send non-activity videos to Mux (#3551)
