@@ -1,6 +1,5 @@
 package com.terraformation.backend.funder.api
 
-import com.terraformation.backend.accelerator.api.GetActivityStreamResponsePayload
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
@@ -12,6 +11,7 @@ import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.funder.PublishedActivityService
 import com.terraformation.backend.funder.db.PublishedActivityStore
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
@@ -80,10 +80,10 @@ class FunderActivitiesController(
   fun getActivityMediaStream(
       @PathVariable activityId: ActivityId,
       @PathVariable fileId: FileId,
-  ): GetActivityStreamResponsePayload {
+  ): GetMuxStreamResponsePayload {
     val stream = publishedActivityService.getMuxStreamInfo(activityId, fileId)
 
-    return GetActivityStreamResponsePayload(stream)
+    return GetMuxStreamResponsePayload(stream)
   }
 }
 

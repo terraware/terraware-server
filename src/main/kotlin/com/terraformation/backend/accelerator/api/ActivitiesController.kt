@@ -22,10 +22,9 @@ import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
-import com.terraformation.backend.file.SUPPORTED_VIDEO_TYPES
+import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
+import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
-import com.terraformation.backend.file.mux.MuxStreamModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -58,8 +57,6 @@ class ActivitiesController(
     private val activityMediaStore: ActivityMediaStore,
     private val activityStore: ActivityStore,
 ) {
-  private val supportedMediaTypes = SUPPORTED_PHOTO_TYPES + SUPPORTED_VIDEO_TYPES
-
   @Operation(summary = "Lists all of a project's activities.")
   @GetMapping
   fun listActivities(
@@ -123,7 +120,7 @@ class ActivitiesController(
       listPositionStr: String?,
       @RequestPart("file") file: MultipartFile,
   ): UploadActivityMediaResponsePayload {
-    val contentType = file.getPlainContentType(supportedMediaTypes)
+    val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
     val filename = file.getFilename("media")
     val listPosition: Int? =
         try {
@@ -183,10 +180,10 @@ class ActivitiesController(
   fun getActivityMediaStream(
       @PathVariable activityId: ActivityId,
       @PathVariable fileId: FileId,
-  ): GetActivityStreamResponsePayload {
+  ): GetMuxStreamResponsePayload {
     val stream = activityMediaService.getMuxStreamInfo(activityId, fileId)
 
-    return GetActivityStreamResponsePayload(stream)
+    return GetMuxStreamResponsePayload(stream)
   }
 
   @Operation(summary = "Updates information about a media file for an activity.")
@@ -312,15 +309,6 @@ data class UpdateActivityRequestPayload(
 }
 
 data class GetActivityResponsePayload(val activity: ActivityPayload) : SuccessResponsePayload
-
-data class GetActivityStreamResponsePayload(
-    val playbackId: String,
-    val playbackToken: String,
-) : SuccessResponsePayload {
-  constructor(
-      model: MuxStreamModel
-  ) : this(playbackId = model.playbackId, playbackToken = model.playbackToken)
-}
 
 data class ListActivitiesResponsePayload(val activities: List<ActivityPayload>) :
     SuccessResponsePayload
