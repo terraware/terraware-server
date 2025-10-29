@@ -1,6 +1,7 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.log.perClassLogger
 import io.ktor.http.ContentType
@@ -68,7 +69,7 @@ class RequestResponseLoggingFilter(
       mdcPut("requestId", requestId)
       request.setAttribute("terrawareRequestId", requestId)
 
-      if (user is IndividualUser) {
+      if (user is IndividualUser || user is FunderUser) {
         mdcPut("email", user.email)
         request.setAttribute("terrawareEmail", user.email)
 
