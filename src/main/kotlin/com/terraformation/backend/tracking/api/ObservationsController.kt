@@ -38,7 +38,9 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
@@ -397,6 +399,22 @@ class ObservationsController(
         .toResponseEntity()
   }
 
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a video with the requested ID."
+  )
+  @GetMapping("/{observationId}/plots/{plotId}/media/{fileId}/stream")
+  @Operation(summary = "Gets streaming details for a video for an observation.")
+  fun getObservationMediaStream(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @PathVariable fileId: FileId,
+  ): GetMuxStreamResponsePayload {
+    val streamModel = observationService.getMuxStreamInfo(observationId, plotId, fileId)
+
+    return GetMuxStreamResponsePayload(streamModel)
+  }
+
   @ApiResponse404(
       "The plot observation does not exist, or does not have a photo with the requested ID."
   )
@@ -482,7 +500,7 @@ class ObservationsController(
       @RequestPart("file") file: MultipartFile,
       @RequestPart("payload") payload: UploadPlotMediaRequestPayload,
   ): UploadPlotPhotoResponsePayload {
-    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
     val filename = file.getFilename("photo")
 
     val fileId =

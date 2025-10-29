@@ -24,6 +24,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
+import com.terraformation.backend.file.mux.MuxService
+import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
@@ -77,6 +79,7 @@ class ObservationService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val monitoringPlotsDao: MonitoringPlotsDao,
+    private val muxService: MuxService,
     private val observationMediaFilesDao: ObservationMediaFilesDao,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -186,6 +189,18 @@ class ObservationService(
     fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
 
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
+  }
+
+  fun getMuxStreamInfo(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+  ): MuxStreamModel {
+    requirePermissions { readObservation(observationId) }
+
+    fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
+
+    return muxService.getMuxStream(fileId)
   }
 
   fun storeMediaFile(
