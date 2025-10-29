@@ -30,7 +30,7 @@ import kotlin.math.sqrt
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
-data class ObservationMonitoringPlotPhotoModel(
+data class ObservationMonitoringPlotMediaModel(
     val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point?,
@@ -122,7 +122,7 @@ data class ObservationMonitoringPlotResultsModel(
     val overlappedByPlotIds: Set<MonitoringPlotId>,
     /** IDs of older monitoring plots that this one overlaps with. */
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
-    val photos: List<ObservationMonitoringPlotPhotoModel>,
+    val media: List<ObservationMonitoringPlotMediaModel>,
     /**
      * Number of live plants per hectare. This is calculated by dividing the number of live plants
      * observed by the number of hectares in the monitoring plot. Existing plants are not counted

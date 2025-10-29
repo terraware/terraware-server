@@ -25,7 +25,7 @@ import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -117,7 +117,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
       assertEquals(
           listOf(
-              ObservationMonitoringPlotPhotoModel(
+              ObservationMonitoringPlotMediaModel(
                   caption = "selfie",
                   fileId = inserted.fileId,
                   gpsCoordinates = gpsCoordinates,
@@ -126,7 +126,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                   type = ObservationMediaType.Plot,
               )
           ),
-          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos,
+          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].media,
       )
     }
 

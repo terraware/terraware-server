@@ -50,7 +50,7 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
@@ -856,7 +856,7 @@ data class ObservationMonitoringPlotPhotoPayload(
     val type: ObservationMediaType,
 ) {
   constructor(
-      model: ObservationMonitoringPlotPhotoModel
+      model: ObservationMonitoringPlotMediaModel
   ) : this(
       model.caption,
       model.fileId,
@@ -1032,7 +1032,7 @@ data class ObservationMonitoringPlotResultsPayload(
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,
       overlapsWithPlotIds = model.overlapsWithPlotIds,
-      photos = model.photos.map { ObservationMonitoringPlotPhotoPayload(it) },
+      photos = model.media.map { ObservationMonitoringPlotPhotoPayload(it) },
       plantingDensity = model.plantingDensity,
       plants = model.plants?.map { RecordedPlantPayload(it) },
       sizeMeters = model.sizeMeters,

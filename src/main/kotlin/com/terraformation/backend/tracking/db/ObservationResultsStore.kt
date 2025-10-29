@@ -49,7 +49,7 @@ import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
@@ -426,14 +426,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
-  private val photosGpsField = FILES.GEOLOCATION.forMultiset()
+  private val filesGeolocationField = FILES.GEOLOCATION.forMultiset()
 
-  private val photosMultiset =
+  private val mediaMultiset =
       DSL.multiset(
               DSL.select(
                       OBSERVATION_MEDIA_FILES.CAPTION,
                       OBSERVATION_MEDIA_FILES.FILE_ID,
-                      photosGpsField,
+                      filesGeolocationField,
                       OBSERVATION_MEDIA_FILES.IS_ORIGINAL,
                       OBSERVATION_MEDIA_FILES.POSITION_ID,
                       OBSERVATION_MEDIA_FILES.TYPE_ID,
@@ -447,10 +447,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           )
           .convertFrom { result ->
             result.map { record ->
-              ObservationMonitoringPlotPhotoModel(
+              ObservationMonitoringPlotMediaModel(
                   caption = record[OBSERVATION_MEDIA_FILES.CAPTION],
                   fileId = record[OBSERVATION_MEDIA_FILES.FILE_ID.asNonNullable()],
-                  gpsCoordinates = record[photosGpsField]?.centroid,
+                  gpsCoordinates = record[filesGeolocationField]?.centroid,
                   isOriginal = record[OBSERVATION_MEDIA_FILES.IS_ORIGINAL.asNonNullable()],
                   position = record[OBSERVATION_MEDIA_FILES.POSITION_ID],
                   type = record[OBSERVATION_MEDIA_FILES.TYPE_ID.asNonNullable()],
@@ -733,7 +733,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     monitoringPlotOverlapsMultiset,
                     monitoringPlotSpeciesMultiset,
                     coordinatesMultiset,
-                    photosMultiset,
+                    mediaMultiset,
                     recordedPlantsField,
                     MONITORING_PLOTS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
                 )
@@ -801,7 +801,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 notes = record[OBSERVATION_PLOTS.NOTES],
                 overlappedByPlotIds = record[monitoringPlotOverlappedByMultiset],
                 overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
-                photos = record[photosMultiset],
+                media = record[mediaMultiset],
                 plantingDensity = plantingDensity,
                 plants = recordedPlantsField?.let { record[it] },
                 sizeMeters = sizeMeters,
