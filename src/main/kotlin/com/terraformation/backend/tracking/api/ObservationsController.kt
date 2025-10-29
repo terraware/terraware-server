@@ -447,7 +447,35 @@ class ObservationsController(
             isOriginal = true,
             type = payload.type ?: ObservationPhotoType.Plot,
         )
+    return UploadPlotPhotoResponsePayload(fileId)
+  }
 
+  @Operation(summary = "Adds a photo of a monitoring plot after an observation is complete.")
+  @PostMapping(
+      "/{observationId}/plots/{plotId}/otherMedia",
+      consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+  )
+  @RequestBodyPhotoFile
+  fun uploadOtherPlotMedia(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @RequestPart("file") file: MultipartFile,
+      @RequestPart("payload") payload: UploadPlotMediaRequestPayload,
+  ): UploadPlotPhotoResponsePayload {
+    val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
+    val filename = file.getFilename("photo")
+
+    val fileId =
+        observationService.storePhoto(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            position = payload.position,
+            data = file.inputStream,
+            metadata = FileMetadata.of(contentType, filename, file.size),
+            caption = payload.caption,
+            isOriginal = false,
+            type = payload.type ?: ObservationPhotoType.Plot,
+        )
     return UploadPlotPhotoResponsePayload(fileId)
   }
 
@@ -797,7 +825,7 @@ data class RecordedPlantPayload(
 data class ObservationMonitoringPlotPhotoPayload(
     val caption: String?,
     val fileId: FileId,
-    val gpsCoordinates: Point,
+    val gpsCoordinates: Point?,
     @Schema(
         description =
             "If true, this photo was uploaded as part of the original observation. If false, it " +
@@ -1543,6 +1571,13 @@ data class UpdatePlotPhotoRequestPayload(
 ) {
   fun applyTo(row: ObservationPhotosRow) = row.copy(caption = caption)
 }
+
+data class UploadPlotMediaRequestPayload(
+    val caption: String?,
+    val position: ObservationPlotPosition?,
+    @Schema(description = "Type of subject the uploaded file depicts.", defaultValue = "Plot")
+    val type: ObservationPhotoType?,
+)
 
 data class UploadPlotPhotoRequestPayload(
     val caption: String?,

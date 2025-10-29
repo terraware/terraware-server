@@ -199,8 +199,8 @@ class ObservationService(
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
-    if (metadata.geolocation == null) {
-      throw IllegalArgumentException("Geolocation is required for observation photos")
+    if (metadata.geolocation == null && isOriginal) {
+      throw IllegalArgumentException("Geolocation is required for original observation photos")
     }
     if (type == ObservationPhotoType.Quadrat && position == null) {
       throw IllegalArgumentException("Position is required for a quadrat photo")
