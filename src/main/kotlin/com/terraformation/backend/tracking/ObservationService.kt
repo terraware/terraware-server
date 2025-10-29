@@ -65,6 +65,7 @@ import org.jooq.DSLContext
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
+import org.springframework.security.access.AccessDeniedException
 
 /** Number of seconds of tolerance when checking if observation time is before server clock time */
 const val CLOCK_TOLERANCE_SECONDS: Long = 3600
@@ -247,6 +248,22 @@ class ObservationService(
       observationPhotosDao.update(initialRow.copy(caption = updatedRow.caption))
       fileService.touchFile(fileId)
     }
+  }
+
+  fun deletePhoto(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val photosRow = fetchPhotosRow(observationId, monitoringPlotId, fileId)
+
+    if (photosRow.isOriginal == true) {
+      throw AccessDeniedException("Cannot delete photos from the original observation")
+    }
+
+    deletePhotosWhere(OBSERVATION_PHOTOS.FILE_ID.eq(fileId))
   }
 
   private fun fetchPhotosRow(

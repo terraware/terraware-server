@@ -45,6 +45,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRe
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -790,6 +791,59 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               isOriginal = true,
           )
         }
+      }
+    }
+
+    @Nested
+    inner class DeletePhoto {
+      @Test
+      fun `deletes non-original photo`() {
+        val fileId = storePhoto(ObservationPhotoType.Soil, isOriginal = false)
+
+        service.deletePhoto(observationId, plotId, fileId)
+
+        assertTableEmpty(OBSERVATION_PHOTOS)
+        eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
+      }
+
+      @Test
+      fun `throws exception if deleting original photo`() {
+        val fileId =
+            storePhoto(
+                ObservationPhotoType.Plot,
+                ObservationPlotPosition.NorthwestCorner,
+                isOriginal = true,
+            )
+
+        assertThrows<AccessDeniedException> { service.deletePhoto(observationId, plotId, fileId) }
+      }
+
+      @Test
+      fun `throws exception if no permission to update observation`() {
+        val fileId = storePhoto(ObservationPhotoType.Plot)
+
+        deleteOrganizationUser()
+
+        assertThrows<ObservationNotFoundException> {
+          service.deletePhoto(observationId, plotId, fileId)
+        }
+      }
+
+      private fun storePhoto(
+          type: ObservationPhotoType,
+          position: ObservationPlotPosition? = null,
+          isOriginal: Boolean = false,
+      ): FileId {
+        return service.storePhoto(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            position = position,
+            data = byteArrayOf(1).inputStream(),
+            metadata = metadata,
+            caption = "caption",
+            isOriginal = isOriginal,
+            type = type,
+        )
       }
     }
 

@@ -84,6 +84,7 @@ import org.locationtech.jts.geom.Polygon
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -412,6 +413,25 @@ class ObservationsController(
       @RequestBody payload: UpdatePlotPhotoRequestPayload,
   ): SimpleSuccessResponsePayload {
     observationService.updatePhoto(observationId, plotId, fileId, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a photo with the requested ID."
+  )
+  @ApiResponseSimpleSuccess
+  @DeleteMapping("/{observationId}/plots/{plotId}/photos/{fileId}")
+  @Operation(
+      summary = "Deletes a photo from an observation of a monitoring plot.",
+      description = "Only photos that were not part of the original observation may be deleted.",
+  )
+  fun deletePlotPhoto(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    observationService.deletePhoto(observationId, plotId, fileId)
 
     return SimpleSuccessResponsePayload()
   }
