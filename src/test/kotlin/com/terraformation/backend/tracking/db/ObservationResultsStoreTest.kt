@@ -5,7 +5,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -25,7 +25,7 @@ import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -111,22 +111,22 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertFile(geolocation = gpsCoordinates)
-      insertObservationPhoto(caption = "selfie", position = position)
+      insertObservationMediaFile(caption = "selfie", position = position)
 
       val results = resultsStore.fetchByOrganizationId(organizationId)
 
       assertEquals(
           listOf(
-              ObservationMonitoringPlotPhotoModel(
+              ObservationMonitoringPlotMediaModel(
                   caption = "selfie",
                   fileId = inserted.fileId,
                   gpsCoordinates = gpsCoordinates,
                   isOriginal = true,
                   position = position,
-                  type = ObservationPhotoType.Plot,
+                  type = ObservationMediaType.Plot,
               )
           ),
-          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos,
+          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].media,
       )
     }
 

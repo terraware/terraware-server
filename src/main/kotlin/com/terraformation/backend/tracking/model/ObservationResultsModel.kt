@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -30,13 +30,13 @@ import kotlin.math.sqrt
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
-data class ObservationMonitoringPlotPhotoModel(
+data class ObservationMonitoringPlotMediaModel(
     val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point?,
     val isOriginal: Boolean,
     val position: ObservationPlotPosition?,
-    val type: ObservationPhotoType,
+    val type: ObservationMediaType,
 )
 
 data class ObservedPlotCoordinatesModel(
@@ -122,7 +122,7 @@ data class ObservationMonitoringPlotResultsModel(
     val overlappedByPlotIds: Set<MonitoringPlotId>,
     /** IDs of older monitoring plots that this one overlaps with. */
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
-    val photos: List<ObservationMonitoringPlotPhotoModel>,
+    val media: List<ObservationMonitoringPlotMediaModel>,
     /**
      * Number of live plants per hectare. This is calculated by dividing the number of live plants
      * observed by the number of hectares in the monitoring plot. Existing plants are not counted

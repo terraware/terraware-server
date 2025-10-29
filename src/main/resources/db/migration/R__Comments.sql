@@ -415,10 +415,10 @@ COMMENT ON COLUMN tracking.monitoring_plots.size_meters IS 'Length in meters of 
 
 COMMENT ON TABLE tracking.observable_conditions IS '(Enum) Conditions that can be observed in a monitoring plot.';
 
-COMMENT ON TABLE tracking.observation_photos IS 'Observation-specific details about a photo of a monitoring plot. Generic metadata is in the `files` table.';
-COMMENT ON COLUMN tracking.observation_photos.is_original IS 'If true, this photo was uploaded as part of the original observation data. If false, this photo was added after the observation.';
+COMMENT ON TABLE tracking.observation_media_files IS 'Observation-specific details about a photo or video of a monitoring plot. Generic metadata is in the `files` table.';
+COMMENT ON COLUMN tracking.observation_media_files.is_original IS 'If true, this photo was uploaded as part of the original observation data. If false, this photo was added after the observation.';
 
-COMMENT ON TABLE tracking.observation_photo_types IS '(Enum) Types of observation plot photo.';
+COMMENT ON TABLE tracking.observation_media_types IS '(Enum) Types of observation plot media. This refers to the type of thing that''s being depicted, not the content type of the media file.';
 
 COMMENT ON TABLE tracking.observation_plot_conditions IS 'List of conditions observed in each monitoring plot.';
 

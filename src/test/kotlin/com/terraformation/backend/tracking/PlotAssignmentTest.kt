@@ -69,7 +69,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         mockk(),
         monitoringPlotsDao,
-        observationPhotosDao,
+        observationMediaFilesDao,
         observationStore,
         plantingSiteStore,
         parentStore,

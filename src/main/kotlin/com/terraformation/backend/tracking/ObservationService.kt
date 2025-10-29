@@ -9,16 +9,16 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
-import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
@@ -77,7 +77,7 @@ class ObservationService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val monitoringPlotsDao: MonitoringPlotsDao,
-    private val observationPhotosDao: ObservationPhotosDao,
+    private val observationMediaFilesDao: ObservationMediaFilesDao,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
@@ -183,12 +183,12 @@ class ObservationService(
     requirePermissions { readObservation(observationId) }
 
     // Make sure the file is for the right plot and observation.
-    fetchPhotosRow(observationId, monitoringPlotId, fileId)
+    fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
 
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
-  fun storePhoto(
+  fun storeMediaFile(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       position: ObservationPlotPosition?,
@@ -196,25 +196,25 @@ class ObservationService(
       metadata: NewFileMetadata,
       caption: String?,
       isOriginal: Boolean,
-      type: ObservationPhotoType = ObservationPhotoType.Plot,
+      type: ObservationMediaType = ObservationMediaType.Plot,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
     if (metadata.geolocation == null && isOriginal) {
       throw IllegalArgumentException("Geolocation is required for original observation photos")
     }
-    if (type == ObservationPhotoType.Quadrat && position == null) {
-      throw IllegalArgumentException("Position is required for a quadrat photo")
+    if (type == ObservationMediaType.Quadrat && position == null) {
+      throw IllegalArgumentException("Position is required for quadrat media file")
     }
 
-    if (type == ObservationPhotoType.Soil && position != null) {
-      throw IllegalArgumentException("Position must be null for a soil photo")
+    if (type == ObservationMediaType.Soil && position != null) {
+      throw IllegalArgumentException("Position must be null for a soil media file")
     }
 
     val fileId =
         fileService.storeFile("observation", data, metadata) { (fileId) ->
-          observationPhotosDao.insert(
-              ObservationPhotosRow(
+          observationMediaFilesDao.insert(
+              ObservationMediaFilesRow(
                   caption = caption,
                   fileId = fileId,
                   isOriginal = isOriginal,
@@ -227,59 +227,57 @@ class ObservationService(
         }
 
     log.info(
-        "Stored photo $fileId of type $type for observation $observationId of plot $monitoringPlotId"
+        "Stored media file $fileId of type $type for observation $observationId of plot $monitoringPlotId"
     )
 
     return fileId
   }
 
-  fun updatePhoto(
+  fun updateMediaFile(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       fileId: FileId,
-      updateFunc: (ObservationPhotosRow) -> ObservationPhotosRow,
+      updateFunc: (ObservationMediaFilesRow) -> ObservationMediaFilesRow,
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    val initialRow = fetchPhotosRow(observationId, monitoringPlotId, fileId)
+    val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
     val updatedRow = updateFunc(initialRow)
 
     if (initialRow != updatedRow) {
-      observationPhotosDao.update(initialRow.copy(caption = updatedRow.caption))
+      observationMediaFilesDao.update(initialRow.copy(caption = updatedRow.caption))
       fileService.touchFile(fileId)
     }
   }
 
-  fun deletePhoto(
+  fun deleteMediaFile(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       fileId: FileId,
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    val photosRow = fetchPhotosRow(observationId, monitoringPlotId, fileId)
+    val row = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
 
-    if (photosRow.isOriginal == true) {
-      throw AccessDeniedException("Cannot delete photos from the original observation")
+    if (row.isOriginal == true) {
+      throw AccessDeniedException("Cannot delete media from the original observation")
     }
 
-    deletePhotosWhere(OBSERVATION_PHOTOS.FILE_ID.eq(fileId))
+    deleteMediaWhere(OBSERVATION_MEDIA_FILES.FILE_ID.eq(fileId))
   }
 
-  private fun fetchPhotosRow(
+  private fun fetchMediaFilesRow(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       fileId: FileId,
-  ): ObservationPhotosRow {
-    val photosRow =
-        observationPhotosDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
-    if (
-        photosRow.observationId != observationId || photosRow.monitoringPlotId != monitoringPlotId
-    ) {
+  ): ObservationMediaFilesRow {
+    val row =
+        observationMediaFilesDao.fetchOneByFileId(fileId) ?: throw FileNotFoundException(fileId)
+    if (row.observationId != observationId || row.monitoringPlotId != monitoringPlotId) {
       throw FileNotFoundException(fileId)
     }
 
-    return photosRow
+    return row
   }
 
   fun scheduleObservation(observation: NewObservationModel): ObservationId {
@@ -600,8 +598,8 @@ class ObservationService(
 
   @EventListener
   fun on(event: PlantingSiteDeletionStartedEvent) {
-    deletePhotosWhere(
-        OBSERVATION_PHOTOS.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
+    deleteMediaWhere(
+        OBSERVATION_MEDIA_FILES.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
             event.plantingSiteId
         )
     )
@@ -669,15 +667,15 @@ class ObservationService(
     }
   }
 
-  private fun deletePhotosWhere(condition: Condition) {
-    with(OBSERVATION_PHOTOS) {
+  private fun deleteMediaWhere(condition: Condition) {
+    with(OBSERVATION_MEDIA_FILES) {
       dslContext
           .select(FILE_ID)
-          .from(OBSERVATION_PHOTOS)
+          .from(OBSERVATION_MEDIA_FILES)
           .where(condition)
           .fetch(FILE_ID.asNonNullable())
           .forEach { fileId ->
-            observationPhotosDao.deleteById(fileId)
+            observationMediaFilesDao.deleteById(fileId)
             eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
           }
     }
