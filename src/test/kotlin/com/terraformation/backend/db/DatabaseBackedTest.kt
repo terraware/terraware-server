@@ -382,7 +382,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -412,7 +412,7 @@ import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassDetailsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassQuadratDetailsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassSpeciesDao
-import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
@@ -441,7 +441,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDet
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
@@ -653,7 +653,7 @@ abstract class DatabaseBackedTest {
   protected val observationBiomassSpeciesDao: ObservationBiomassSpeciesDao by lazyDao()
   protected val observationBiomassQuadratDetailsDao: ObservationBiomassQuadratDetailsDao by
       lazyDao()
-  protected val observationPhotosDao: ObservationPhotosDao by lazyDao()
+  protected val observationMediaFilesDao: ObservationMediaFilesDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao by lazyDao()
@@ -3071,15 +3071,15 @@ abstract class DatabaseBackedTest {
     }
   }
 
-  fun insertObservationPhoto(
-      row: ObservationPhotosRow = ObservationPhotosRow(),
+  fun insertObservationMediaFile(
+      row: ObservationMediaFilesRow = ObservationMediaFilesRow(),
       caption: String? = row.caption,
       fileId: FileId = row.fileId ?: inserted.fileId,
       isOriginal: Boolean = row.isOriginal ?: true,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      type: ObservationPhotoType = row.typeId ?: ObservationPhotoType.Plot,
+      type: ObservationMediaType = row.typeId ?: ObservationMediaType.Plot,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3092,7 +3092,7 @@ abstract class DatabaseBackedTest {
             typeId = type,
         )
 
-    observationPhotosDao.insert(rowWithDefaults)
+    observationMediaFilesDao.insert(rowWithDefaults)
   }
 
   fun insertObservationPlot(

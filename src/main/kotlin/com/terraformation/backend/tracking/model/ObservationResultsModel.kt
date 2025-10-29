@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -36,7 +36,7 @@ data class ObservationMonitoringPlotPhotoModel(
     val gpsCoordinates: Point?,
     val isOriginal: Boolean,
     val position: ObservationPlotPosition?,
-    val type: ObservationPhotoType,
+    val type: ObservationMediaType,
 )
 
 data class ObservedPlotCoordinatesModel(

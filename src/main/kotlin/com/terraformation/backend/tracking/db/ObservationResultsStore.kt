@@ -27,7 +27,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
@@ -431,29 +431,29 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private val photosMultiset =
       DSL.multiset(
               DSL.select(
-                      OBSERVATION_PHOTOS.CAPTION,
-                      OBSERVATION_PHOTOS.FILE_ID,
+                      OBSERVATION_MEDIA_FILES.CAPTION,
+                      OBSERVATION_MEDIA_FILES.FILE_ID,
                       photosGpsField,
-                      OBSERVATION_PHOTOS.IS_ORIGINAL,
-                      OBSERVATION_PHOTOS.POSITION_ID,
-                      OBSERVATION_PHOTOS.TYPE_ID,
+                      OBSERVATION_MEDIA_FILES.IS_ORIGINAL,
+                      OBSERVATION_MEDIA_FILES.POSITION_ID,
+                      OBSERVATION_MEDIA_FILES.TYPE_ID,
                   )
-                  .from(OBSERVATION_PHOTOS)
+                  .from(OBSERVATION_MEDIA_FILES)
                   .join(FILES)
-                  .on(OBSERVATION_PHOTOS.FILE_ID.eq(FILES.ID))
-                  .where(OBSERVATION_PHOTOS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                  .orderBy(OBSERVATION_PHOTOS.FILE_ID)
+                  .on(OBSERVATION_MEDIA_FILES.FILE_ID.eq(FILES.ID))
+                  .where(OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                  .and(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(OBSERVATION_MEDIA_FILES.FILE_ID)
           )
           .convertFrom { result ->
             result.map { record ->
               ObservationMonitoringPlotPhotoModel(
-                  caption = record[OBSERVATION_PHOTOS.CAPTION],
-                  fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
+                  caption = record[OBSERVATION_MEDIA_FILES.CAPTION],
+                  fileId = record[OBSERVATION_MEDIA_FILES.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[photosGpsField]?.centroid,
-                  isOriginal = record[OBSERVATION_PHOTOS.IS_ORIGINAL.asNonNullable()],
-                  position = record[OBSERVATION_PHOTOS.POSITION_ID],
-                  type = record[OBSERVATION_PHOTOS.TYPE_ID.asNonNullable()],
+                  isOriginal = record[OBSERVATION_MEDIA_FILES.IS_ORIGINAL.asNonNullable()],
+                  position = record[OBSERVATION_MEDIA_FILES.POSITION_ID],
+                  type = record[OBSERVATION_MEDIA_FILES.TYPE_ID.asNonNullable()],
               )
             }
           }

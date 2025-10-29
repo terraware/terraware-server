@@ -371,7 +371,7 @@ VALUES (1, 'AnimalDamage'),
        (7, 'UnfavorableWeather')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO tracking.observation_photo_types (id, name)
+INSERT INTO tracking.observation_media_types (id, name)
 VALUES (1, 'Plot'),
        (2, 'Quadrat'),
        (3, 'Soil')

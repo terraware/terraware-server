@@ -23,7 +23,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -41,11 +41,11 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFilesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -162,7 +162,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         eventPublisher,
         fileService,
         monitoringPlotsDao,
-        observationPhotosDao,
+        observationMediaFilesDao,
         observationStore,
         plantingSiteStore,
         parentStore,
@@ -597,7 +597,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class Photos {
+  inner class MediaFiles {
     private lateinit var observationId: ObservationId
     private lateinit var plotId: MonitoringPlotId
 
@@ -621,7 +621,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       @BeforeEach
       fun setUp() {
         fileId =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = ObservationPlotPosition.NortheastCorner,
@@ -685,11 +685,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class StorePhoto {
+    inner class StoreMediaFile {
       @Test
-      fun `associates photo with observation and plot`() {
+      fun `associates media with observation and plot`() {
         val fileId1 =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = ObservationPlotPosition.NortheastCorner,
@@ -700,7 +700,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         val fileId2 =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = null,
@@ -708,7 +708,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 metadata = metadata.copy(geolocation = null),
                 caption = null,
                 isOriginal = false,
-                type = ObservationPhotoType.Soil,
+                type = ObservationMediaType.Soil,
             )
 
         fileStore.assertFileExists(filesDao.fetchOneById(fileId1)!!.storageUrl!!)
@@ -716,20 +716,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertTableEquals(
             listOf(
-                ObservationPhotosRecord(
+                ObservationMediaFilesRecord(
                     fileId = fileId1,
                     observationId = observationId,
                     monitoringPlotId = plotId,
                     positionId = ObservationPlotPosition.NortheastCorner,
-                    typeId = ObservationPhotoType.Plot,
+                    typeId = ObservationMediaType.Plot,
                     caption = "caption",
                     isOriginal = true,
                 ),
-                ObservationPhotosRecord(
+                ObservationMediaFilesRecord(
                     fileId = fileId2,
                     observationId = observationId,
                     monitoringPlotId = plotId,
-                    typeId = ObservationPhotoType.Soil,
+                    typeId = ObservationMediaType.Soil,
                     isOriginal = false,
                 ),
             )
@@ -747,7 +747,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
-          service.storePhoto(
+          service.storeMediaFile(
               observationId = observationId,
               monitoringPlotId = plotId,
               position = null,
@@ -755,7 +755,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               metadata = metadata,
               caption = null,
               isOriginal = true,
-              type = ObservationPhotoType.Quadrat,
+              type = ObservationMediaType.Quadrat,
           )
         }
       }
@@ -763,7 +763,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws exception for providing photo position for Soil photos`() {
         assertThrows<IllegalArgumentException> {
-          service.storePhoto(
+          service.storeMediaFile(
               observationId = observationId,
               monitoringPlotId = plotId,
               position = ObservationPlotPosition.SoutheastCorner,
@@ -771,7 +771,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               metadata = metadata,
               caption = null,
               isOriginal = true,
-              type = ObservationPhotoType.Soil,
+              type = ObservationMediaType.Soil,
           )
         }
       }
@@ -781,7 +781,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         deleteOrganizationUser()
 
         assertThrows<ObservationNotFoundException> {
-          service.storePhoto(
+          service.storeMediaFile(
               observationId = observationId,
               monitoringPlotId = plotId,
               position = ObservationPlotPosition.NortheastCorner,
@@ -795,46 +795,48 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class DeletePhoto {
+    inner class DeleteMediaFile {
       @Test
       fun `deletes non-original photo`() {
-        val fileId = storePhoto(ObservationPhotoType.Soil, isOriginal = false)
+        val fileId = storeMedia(ObservationMediaType.Soil, isOriginal = false)
 
-        service.deletePhoto(observationId, plotId, fileId)
+        service.deleteMediaFile(observationId, plotId, fileId)
 
-        assertTableEmpty(OBSERVATION_PHOTOS)
+        assertTableEmpty(OBSERVATION_MEDIA_FILES)
         eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
       }
 
       @Test
       fun `throws exception if deleting original photo`() {
         val fileId =
-            storePhoto(
-                ObservationPhotoType.Plot,
+            storeMedia(
+                ObservationMediaType.Plot,
                 ObservationPlotPosition.NorthwestCorner,
                 isOriginal = true,
             )
 
-        assertThrows<AccessDeniedException> { service.deletePhoto(observationId, plotId, fileId) }
+        assertThrows<AccessDeniedException> {
+          service.deleteMediaFile(observationId, plotId, fileId)
+        }
       }
 
       @Test
       fun `throws exception if no permission to update observation`() {
-        val fileId = storePhoto(ObservationPhotoType.Plot)
+        val fileId = storeMedia(ObservationMediaType.Plot)
 
         deleteOrganizationUser()
 
         assertThrows<ObservationNotFoundException> {
-          service.deletePhoto(observationId, plotId, fileId)
+          service.deleteMediaFile(observationId, plotId, fileId)
         }
       }
 
-      private fun storePhoto(
-          type: ObservationPhotoType,
+      private fun storeMedia(
+          type: ObservationMediaType,
           position: ObservationPlotPosition? = null,
           isOriginal: Boolean = false,
       ): FileId {
-        return service.storePhoto(
+        return service.storeMediaFile(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = position,
@@ -848,11 +850,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class UpdatePhoto {
+    inner class UpdateMediaFile {
       @Test
       fun `updates editable properties`() {
         val fileId =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = ObservationPlotPosition.NortheastCorner,
@@ -860,7 +862,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 metadata = metadata,
                 caption = "caption",
                 isOriginal = true,
-                type = ObservationPhotoType.Quadrat,
+                type = ObservationMediaType.Quadrat,
             )
 
         clock.instant = Instant.ofEpochSecond(30)
@@ -868,21 +870,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         val expectedFilesRecord = dslContext.fetchSingle(FILES)
         expectedFilesRecord.modifiedTime = clock.instant
 
-        service.updatePhoto(observationId, plotId, fileId) {
+        service.updateMediaFile(observationId, plotId, fileId) {
           it.copy(
               caption = "new caption",
               positionId = ObservationPlotPosition.SouthwestCorner,
-              typeId = ObservationPhotoType.Plot,
+              typeId = ObservationMediaType.Plot,
           )
         }
 
         assertTableEquals(
-            ObservationPhotosRecord(
+            ObservationMediaFilesRecord(
                 fileId,
                 observationId,
                 plotId,
                 ObservationPlotPosition.NortheastCorner,
-                ObservationPhotoType.Quadrat,
+                ObservationMediaType.Quadrat,
                 "new caption",
                 true,
             )
@@ -894,7 +896,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws exception if no permission to update observation`() {
         val fileId =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = ObservationPlotPosition.NortheastCorner,
@@ -902,13 +904,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 metadata = metadata,
                 caption = "caption",
                 isOriginal = true,
-                type = ObservationPhotoType.Quadrat,
+                type = ObservationMediaType.Quadrat,
             )
 
         deleteOrganizationUser()
 
         assertThrows<ObservationNotFoundException> {
-          service.updatePhoto(observationId, plotId, fileId) { it }
+          service.updateMediaFile(observationId, plotId, fileId) { it }
         }
       }
     }
@@ -916,9 +918,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Nested
     inner class OnPlantingSiteDeletion {
       @Test
-      fun `only deletes photos for planting site that is being deleted`() {
+      fun `only deletes media for planting site that is being deleted`() {
         val fileId =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 position = ObservationPlotPosition.NortheastCorner,
@@ -936,7 +938,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         insertObservationPlot()
 
         val otherSiteFileId =
-            service.storePhoto(
+            service.storeMediaFile(
                 observationId = inserted.observationId,
                 monitoringPlotId = inserted.monitoringPlotId,
                 position = ObservationPlotPosition.SouthwestCorner,
@@ -951,8 +953,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(fileId)))
         assertEquals(
             listOf(otherSiteFileId),
-            observationPhotosDao.findAll().map { it.fileId },
-            "Observation photos table should only have file from other observation",
+            observationMediaFilesDao.findAll().map { it.fileId },
+            "Observation media table should only have file from other observation",
         )
       }
     }

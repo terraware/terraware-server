@@ -24,7 +24,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPhotoType
+import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -36,7 +36,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -412,7 +412,7 @@ class ObservationsController(
       @PathVariable fileId: FileId,
       @RequestBody payload: UpdatePlotPhotoRequestPayload,
   ): SimpleSuccessResponsePayload {
-    observationService.updatePhoto(observationId, plotId, fileId, payload::applyTo)
+    observationService.updateMediaFile(observationId, plotId, fileId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }
@@ -431,7 +431,7 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @PathVariable fileId: FileId,
   ): SimpleSuccessResponsePayload {
-    observationService.deletePhoto(observationId, plotId, fileId)
+    observationService.deleteMediaFile(observationId, plotId, fileId)
 
     return SimpleSuccessResponsePayload()
   }
@@ -457,7 +457,7 @@ class ObservationsController(
     val filename = file.getFilename("photo")
 
     val fileId =
-        observationService.storePhoto(
+        observationService.storeMediaFile(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = payload.position,
@@ -465,7 +465,7 @@ class ObservationsController(
             metadata = FileMetadata.of(contentType, filename, file.size, payload.gpsCoordinates),
             caption = payload.caption,
             isOriginal = true,
-            type = payload.type ?: ObservationPhotoType.Plot,
+            type = payload.type ?: ObservationMediaType.Plot,
         )
     return UploadPlotPhotoResponsePayload(fileId)
   }
@@ -486,7 +486,7 @@ class ObservationsController(
     val filename = file.getFilename("photo")
 
     val fileId =
-        observationService.storePhoto(
+        observationService.storeMediaFile(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = payload.position,
@@ -494,7 +494,7 @@ class ObservationsController(
             metadata = FileMetadata.of(contentType, filename, file.size),
             caption = payload.caption,
             isOriginal = false,
-            type = payload.type ?: ObservationPhotoType.Plot,
+            type = payload.type ?: ObservationMediaType.Plot,
         )
     return UploadPlotPhotoResponsePayload(fileId)
   }
@@ -853,7 +853,7 @@ data class ObservationMonitoringPlotPhotoPayload(
     )
     val isOriginal: Boolean,
     val position: ObservationPlotPosition?,
-    val type: ObservationPhotoType,
+    val type: ObservationMediaType,
 ) {
   constructor(
       model: ObservationMonitoringPlotPhotoModel
@@ -1589,14 +1589,14 @@ data class UpdatePlotObservationRequestPayload(
 data class UpdatePlotPhotoRequestPayload(
     val caption: String?,
 ) {
-  fun applyTo(row: ObservationPhotosRow) = row.copy(caption = caption)
+  fun applyTo(row: ObservationMediaFilesRow) = row.copy(caption = caption)
 }
 
 data class UploadPlotMediaRequestPayload(
     val caption: String?,
     val position: ObservationPlotPosition?,
     @Schema(description = "Type of subject the uploaded file depicts.", defaultValue = "Plot")
-    val type: ObservationPhotoType?,
+    val type: ObservationMediaType?,
 )
 
 data class UploadPlotPhotoRequestPayload(
@@ -1607,7 +1607,7 @@ data class UploadPlotPhotoRequestPayload(
         description = "Type of observation plot photo.",
         defaultValue = "Plot",
     )
-    val type: ObservationPhotoType?,
+    val type: ObservationMediaType?,
 )
 
 data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload

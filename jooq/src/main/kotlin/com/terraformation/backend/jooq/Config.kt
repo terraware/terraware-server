@@ -237,8 +237,8 @@ val ENUM_TABLES =
                     listOf("observation_plot_conditions\\.condition_id"),
                 ),
                 EnumTable(
-                    "observation_photo_types",
-                    listOf("observation_photos\\.type_id"),
+                    "observation_media_types",
+                    listOf("observation_media_files\\.type_id"),
                     isLocalizable = false,
                 ),
                 EnumTable("observation_plot_positions", listOf("tracking\\..*\\.position_id")),
