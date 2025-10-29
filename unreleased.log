@@ -1,3 +1,4 @@
+ff3e4ec4799 Add funder users to logging filter (#3556)
 ac0af7dc30d SW-7541 Replaced verified flag with status in create activity (#3557)
 94cfe6e9ef7 SW-7600 Send non-activity videos to Mux (#3551)
 2e59c9b53a0 Update amazoncorretto Docker tag to v25.0.1-al2023-headless (#3552)
