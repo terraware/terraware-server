@@ -416,7 +416,12 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
-  @Operation(summary = "Uploads a photo of a monitoring plot.")
+  @Operation(
+      summary = "Uploads a photo of a monitoring plot as part of the observation.",
+      description =
+          "Photos uploaded via this endpoint are considered to be part of the original " +
+              "observation and cannot be deleted later.",
+  )
   @PostMapping(
       "/{observationId}/plots/{plotId}/photos",
       consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -439,6 +444,7 @@ class ObservationsController(
             data = file.inputStream,
             metadata = FileMetadata.of(contentType, filename, file.size, payload.gpsCoordinates),
             caption = payload.caption,
+            isOriginal = true,
             type = payload.type ?: ObservationPhotoType.Plot,
         )
 
@@ -792,12 +798,25 @@ data class ObservationMonitoringPlotPhotoPayload(
     val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point,
+    @Schema(
+        description =
+            "If true, this photo was uploaded as part of the original observation. If false, it " +
+                "was uploaded later."
+    )
+    val isOriginal: Boolean,
     val position: ObservationPlotPosition?,
     val type: ObservationPhotoType,
 ) {
   constructor(
       model: ObservationMonitoringPlotPhotoModel
-  ) : this(model.caption, model.fileId, model.gpsCoordinates, model.position, model.type)
+  ) : this(
+      model.caption,
+      model.fileId,
+      model.gpsCoordinates,
+      model.isOriginal,
+      model.position,
+      model.type,
+  )
 }
 
 data class ObservationMonitoringPlotCoordinatesPayload(

@@ -34,6 +34,7 @@ data class ObservationMonitoringPlotPhotoModel(
     val caption: String?,
     val fileId: FileId,
     val gpsCoordinates: Point,
+    val isOriginal: Boolean,
     val position: ObservationPlotPosition?,
     val type: ObservationPhotoType,
 )

@@ -194,6 +194,7 @@ class ObservationService(
       data: InputStream,
       metadata: NewFileMetadata,
       caption: String?,
+      isOriginal: Boolean,
       type: ObservationPhotoType = ObservationPhotoType.Plot,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
@@ -215,6 +216,7 @@ class ObservationService(
               ObservationPhotosRow(
                   caption = caption,
                   fileId = fileId,
+                  isOriginal = isOriginal,
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
                   positionId = position,

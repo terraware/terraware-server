@@ -121,6 +121,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                   caption = "selfie",
                   fileId = inserted.fileId,
                   gpsCoordinates = gpsCoordinates,
+                  isOriginal = true,
                   position = position,
                   type = ObservationPhotoType.Plot,
               )

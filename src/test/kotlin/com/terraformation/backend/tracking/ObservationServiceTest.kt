@@ -627,6 +627,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = content.inputStream(),
                 metadata = metadata,
                 caption = null,
+                isOriginal = true,
             )
       }
 
@@ -694,6 +695,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = byteArrayOf(1).inputStream(),
                 metadata = metadata,
                 caption = "caption",
+                isOriginal = true,
             )
 
         val fileId2 =
@@ -704,6 +706,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = byteArrayOf(1).inputStream(),
                 metadata = metadata,
                 caption = null,
+                isOriginal = false,
                 type = ObservationPhotoType.Soil,
             )
 
@@ -713,19 +716,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         assertTableEquals(
             listOf(
                 ObservationPhotosRecord(
-                    fileId1,
-                    observationId,
-                    plotId,
-                    ObservationPlotPosition.NortheastCorner,
-                    ObservationPhotoType.Plot,
-                    "caption",
+                    fileId = fileId1,
+                    observationId = observationId,
+                    monitoringPlotId = plotId,
+                    positionId = ObservationPlotPosition.NortheastCorner,
+                    typeId = ObservationPhotoType.Plot,
+                    caption = "caption",
+                    isOriginal = true,
                 ),
                 ObservationPhotosRecord(
-                    fileId2,
-                    observationId,
-                    plotId,
-                    null,
-                    ObservationPhotoType.Soil,
+                    fileId = fileId2,
+                    observationId = observationId,
+                    monitoringPlotId = plotId,
+                    typeId = ObservationPhotoType.Soil,
+                    isOriginal = false,
                 ),
             )
         )
@@ -753,6 +757,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               data = byteArrayOf(1).inputStream(),
               metadata = metadata,
               caption = null,
+              isOriginal = true,
               type = ObservationPhotoType.Quadrat,
           )
         }
@@ -768,6 +773,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               data = byteArrayOf(1).inputStream(),
               metadata = metadata,
               caption = null,
+              isOriginal = true,
               type = ObservationPhotoType.Soil,
           )
         }
@@ -785,6 +791,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               data = byteArrayOf(1).inputStream(),
               metadata = metadata,
               caption = null,
+              isOriginal = true,
           )
         }
       }
@@ -802,6 +809,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = byteArrayOf(1).inputStream(),
                 metadata = metadata,
                 caption = "caption",
+                isOriginal = true,
                 type = ObservationPhotoType.Quadrat,
             )
 
@@ -826,6 +834,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 ObservationPlotPosition.NortheastCorner,
                 ObservationPhotoType.Quadrat,
                 "new caption",
+                true,
             )
         )
 
@@ -842,6 +851,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = byteArrayOf(1).inputStream(),
                 metadata = metadata,
                 caption = "caption",
+                isOriginal = true,
                 type = ObservationPhotoType.Quadrat,
             )
 
@@ -865,6 +875,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = onePixelPng.inputStream(),
                 metadata = metadata,
                 caption = null,
+                isOriginal = true,
             )
 
         insertPlantingSite()
@@ -882,6 +893,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 data = onePixelPng.inputStream(),
                 metadata = metadata,
                 caption = null,
+                isOriginal = true,
             )
 
         service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
