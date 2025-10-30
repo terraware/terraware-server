@@ -53,6 +53,8 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.mux.MuxService
+import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
@@ -122,6 +124,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
+  private val muxService: MuxService = mockk()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
@@ -162,6 +165,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         eventPublisher,
         fileService,
         monitoringPlotsDao,
+        muxService,
         observationMediaFilesDao,
         observationStore,
         plantingSiteStore,
@@ -680,6 +684,43 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertThrows<ObservationNotFoundException> {
           service.readPhoto(observationId, plotId, fileId)
+        }
+      }
+    }
+
+    @Nested
+    inner class GetMuxStreamInfo {
+      @Test
+      fun `returns stream info`() {
+        val fileId = insertFile()
+        insertObservationMediaFile()
+
+        val streamModel = MuxStreamModel(fileId, "playback", "token")
+        every { muxService.getMuxStream(fileId) } returns streamModel
+
+        assertEquals(streamModel, service.getMuxStreamInfo(observationId, plotId, fileId))
+      }
+
+      @Test
+      fun `throws exception if file does not exist on observation`() {
+        val fileId = insertFile()
+        insertObservationMediaFile()
+        val otherObservationId = insertObservation()
+
+        assertThrows<FileNotFoundException> {
+          service.getMuxStreamInfo(otherObservationId, plotId, fileId)
+        }
+      }
+
+      @Test
+      fun `throws exception if no permission to read observation`() {
+        val fileId = insertFile()
+        insertObservationMediaFile()
+
+        deleteOrganizationUser()
+
+        assertThrows<ObservationNotFoundException> {
+          service.getMuxStreamInfo(observationId, plotId, fileId)
         }
       }
     }
