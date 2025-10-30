@@ -119,6 +119,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           listOf(
               ObservationMonitoringPlotMediaModel(
                   caption = "selfie",
+                  contentType = "image/jpeg",
                   fileId = inserted.fileId,
                   gpsCoordinates = gpsCoordinates,
                   isOriginal = true,

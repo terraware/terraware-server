@@ -431,9 +431,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private val mediaMultiset =
       DSL.multiset(
               DSL.select(
+                      FILES.CONTENT_TYPE,
+                      filesGeolocationField,
                       OBSERVATION_MEDIA_FILES.CAPTION,
                       OBSERVATION_MEDIA_FILES.FILE_ID,
-                      filesGeolocationField,
                       OBSERVATION_MEDIA_FILES.IS_ORIGINAL,
                       OBSERVATION_MEDIA_FILES.POSITION_ID,
                       OBSERVATION_MEDIA_FILES.TYPE_ID,
@@ -449,6 +450,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             result.map { record ->
               ObservationMonitoringPlotMediaModel(
                   caption = record[OBSERVATION_MEDIA_FILES.CAPTION],
+                  contentType = record[FILES.CONTENT_TYPE.asNonNullable()],
                   fileId = record[OBSERVATION_MEDIA_FILES.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[filesGeolocationField]?.centroid,
                   isOriginal = record[OBSERVATION_MEDIA_FILES.IS_ORIGINAL.asNonNullable()],
