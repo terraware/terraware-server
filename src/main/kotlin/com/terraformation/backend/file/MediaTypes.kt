@@ -9,4 +9,8 @@ import org.springframework.http.MediaType
 val SUPPORTED_PHOTO_TYPES =
     setOf(MediaType.valueOf("image/heic"), MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
 
-val SUPPORTED_VIDEO_TYPES = setOf(MediaType.valueOf("video/*"))
+/**
+ * List of supported audiovisual media content types. We delegate video handling to Mux, which
+ * supports all the widely-used video formats.
+ */
+val SUPPORTED_MEDIA_TYPES = SUPPORTED_PHOTO_TYPES + setOf(MediaType.valueOf("video/*"))
