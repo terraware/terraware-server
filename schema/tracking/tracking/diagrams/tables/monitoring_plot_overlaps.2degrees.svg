@@ -427,49 +427,49 @@
 <polygon fill="black" stroke="black" points="1331.18,-125.16 1339.77,-126.98 1335.09,-124.31 1339,-123.46 1339,-123.46 1339,-123.46 1335.09,-124.31 1338.23,-119.94 1331.18,-125.16 1331.18,-125.16"/>
 <ellipse fill="none" stroke="black" cx="1328.06" cy="-125.84" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos -->
+<!-- observation_media_files -->
 <g id="node11" class="node">
-<title>observation_photos</title>
-<g id="a_node11"><a xlink:href="../../tables/observation_photos.html" xlink:title="observation_photos" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1077.5,-606.46 1077.5,-664.46 1239.5,-664.46 1239.5,-606.46 1077.5,-606.46"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1077.5,-642.46 1077.5,-664.46 1239.5,-664.46 1239.5,-642.46 1077.5,-642.46"/>
-<polygon fill="none" stroke="black" points="1077.5,-642.46 1077.5,-664.46 1239.5,-664.46 1239.5,-642.46 1077.5,-642.46"/>
-<text text-anchor="start" x="1082.5" y="-651.66" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_photos</text>
-<text text-anchor="start" x="1200.5" y="-650.66" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1077.5,-624.46 1077.5,-642.46 1239.5,-642.46 1239.5,-624.46 1077.5,-624.46"/>
-<text text-anchor="start" x="1080.5" y="-630.66" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1077.5,-606.46 1077.5,-624.46 1156.5,-624.46 1156.5,-606.46 1077.5,-606.46"/>
-<polygon fill="none" stroke="black" points="1077.5,-606.46 1077.5,-624.46 1156.5,-624.46 1156.5,-606.46 1077.5,-606.46"/>
-<text text-anchor="start" x="1080.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="transparent" points="1156.5,-606.46 1156.5,-624.46 1197.5,-624.46 1197.5,-606.46 1156.5,-606.46"/>
-<polygon fill="none" stroke="black" points="1156.5,-606.46 1156.5,-624.46 1197.5,-624.46 1197.5,-606.46 1156.5,-606.46"/>
-<text text-anchor="start" x="1187.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1197.5,-606.46 1197.5,-624.46 1239.5,-624.46 1239.5,-606.46 1197.5,-606.46"/>
-<polygon fill="none" stroke="black" points="1197.5,-606.46 1197.5,-624.46 1239.5,-624.46 1239.5,-606.46 1197.5,-606.46"/>
-<text text-anchor="start" x="1229.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<title>observation_media_files</title>
+<g id="a_node11"><a xlink:href="../../tables/observation_media_files.html" xlink:title="observation_media_files" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1064.5,-606.46 1064.5,-664.46 1252.5,-664.46 1252.5,-606.46 1064.5,-606.46"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1064.5,-642.46 1064.5,-664.46 1252.5,-664.46 1252.5,-642.46 1064.5,-642.46"/>
+<polygon fill="none" stroke="black" points="1064.5,-642.46 1064.5,-664.46 1252.5,-664.46 1252.5,-642.46 1064.5,-642.46"/>
+<text text-anchor="start" x="1069.5" y="-651.66" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_media_files</text>
+<text text-anchor="start" x="1213.5" y="-650.66" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1064.5,-624.46 1064.5,-642.46 1252.5,-642.46 1252.5,-624.46 1064.5,-624.46"/>
+<text text-anchor="start" x="1067.5" y="-630.66" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1064.5,-606.46 1064.5,-624.46 1156.5,-624.46 1156.5,-606.46 1064.5,-606.46"/>
+<polygon fill="none" stroke="black" points="1064.5,-606.46 1064.5,-624.46 1156.5,-624.46 1156.5,-606.46 1064.5,-606.46"/>
+<text text-anchor="start" x="1067.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<polygon fill="#ffffff" stroke="transparent" points="1156.5,-606.46 1156.5,-624.46 1204.5,-624.46 1204.5,-606.46 1156.5,-606.46"/>
+<polygon fill="none" stroke="black" points="1156.5,-606.46 1156.5,-624.46 1204.5,-624.46 1204.5,-606.46 1156.5,-606.46"/>
+<text text-anchor="start" x="1194.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1204.5,-606.46 1204.5,-624.46 1252.5,-624.46 1252.5,-606.46 1204.5,-606.46"/>
+<polygon fill="none" stroke="black" points="1204.5,-606.46 1204.5,-624.46 1252.5,-624.46 1252.5,-606.46 1204.5,-606.46"/>
+<text text-anchor="start" x="1242.5" y="-612.66" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
-<!-- observation_photos&#45;&gt;monitoring_plots -->
+<!-- observation_media_files&#45;&gt;monitoring_plots -->
 <g id="edge21" class="edge">
-<title>observation_photos:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M1061.77,-633.82C939.82,-639.27 656.95,-704.37 572,-638.46 516.17,-595.14 603.16,-484.46 532.5,-484.46"/>
-<polygon fill="black" stroke="black" points="1068.5,-633.65 1076.59,-637.06 1072.5,-633.56 1076.5,-633.46 1076.5,-633.46 1076.5,-633.46 1072.5,-633.56 1076.41,-629.86 1068.5,-633.65 1068.5,-633.65"/>
-<ellipse fill="none" stroke="black" cx="1065.3" cy="-633.73" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;monitoring_plots:e</title>
+<path fill="none" stroke="black" d="M1048.78,-633.82C929.78,-639.26 654.67,-702.6 572,-638.46 516.17,-595.14 603.16,-484.46 532.5,-484.46"/>
+<polygon fill="black" stroke="black" points="1055.5,-633.66 1063.59,-637.06 1059.5,-633.56 1063.5,-633.46 1063.5,-633.46 1063.5,-633.46 1059.5,-633.56 1063.41,-629.86 1055.5,-633.66 1055.5,-633.66"/>
+<ellipse fill="none" stroke="black" cx="1052.3" cy="-633.74" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos&#45;&gt;observation_plots -->
+<!-- observation_media_files&#45;&gt;observation_plots -->
 <g id="edge22" class="edge">
-<title>observation_photos:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M1062.43,-629.19C1024.82,-607.67 1056.62,-517.02 1003,-522.46"/>
-<polygon fill="black" stroke="black" points="1068.85,-631.13 1075.45,-636.9 1072.67,-632.3 1076.5,-633.46 1076.5,-633.46 1076.5,-633.46 1072.67,-632.3 1077.55,-630.01 1068.85,-631.13 1068.85,-631.13"/>
-<ellipse fill="none" stroke="black" cx="1065.78" cy="-630.2" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M1049.5,-628.61C1016.74,-606.12 1053.48,-517.07 1003,-522.46"/>
+<polygon fill="black" stroke="black" points="1055.94,-630.84 1062.32,-636.86 1059.72,-632.15 1063.5,-633.46 1063.5,-633.46 1063.5,-633.46 1059.72,-632.15 1064.68,-630.06 1055.94,-630.84 1055.94,-630.84"/>
+<ellipse fill="none" stroke="black" cx="1052.92" cy="-629.8" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos&#45;&gt;observation_plots -->
+<!-- observation_media_files&#45;&gt;observation_plots -->
 <g id="edge23" class="edge">
-<title>observation_photos:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M1061.95,-632.34C1025.1,-619.77 1056.39,-528.78 1003,-522.46"/>
-<polygon fill="black" stroke="black" points="1068.52,-632.85 1076.22,-637.05 1072.51,-633.15 1076.5,-633.46 1076.5,-633.46 1076.5,-633.46 1072.51,-633.15 1076.78,-629.87 1068.52,-632.85 1068.52,-632.85"/>
-<ellipse fill="none" stroke="black" cx="1065.33" cy="-632.6" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M1049.08,-632C1017.05,-618.2 1053.26,-528.72 1003,-522.46"/>
+<polygon fill="black" stroke="black" points="1055.54,-632.65 1063.14,-637.04 1059.52,-633.06 1063.5,-633.46 1063.5,-633.46 1063.5,-633.46 1059.52,-633.06 1063.86,-629.88 1055.54,-632.65 1055.54,-632.65"/>
+<ellipse fill="none" stroke="black" cx="1052.36" cy="-632.33" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_plot_conditions -->
 <g id="node12" class="node">

@@ -151,7 +151,7 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observation_photos.observation_id references observations.id via observation_photos_observation_id_fkey"><a href='observation_photos.html'>observation_photos</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td title="observation_media_files.observation_id references observations.id via observation_photos_observation_id_fkey"><a href='observation_media_files.html'>observation_media_files</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_photos_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -485,12 +485,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>history_id_required_at_start</td>
-                                    <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>end_after_start</td>
                                     <td>(start_date &lt;&#61; end_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>history_id_required_at_start</td>
+                                    <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>completed_time_and_state</td>

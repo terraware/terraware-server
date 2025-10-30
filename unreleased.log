@@ -1,3 +1,5 @@
+6e2c7e4c325 SW-7600 Centralize video-related API structures (#3562)
+3d198210cd1 SW-7600 Rename observation photos to media files (#3561)
 51b2c2cf76b SW-7606 Support deleting observation photos (#3560)
 2b12aa56779 SW-7606 Support uploading other observation photos (#3559)
 b4aae9002e0 SW-7606 Differentiate photos from original observation (#3558)

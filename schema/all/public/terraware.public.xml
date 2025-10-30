@@ -469,7 +469,7 @@
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
-            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_photos"/>
+            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_media_files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

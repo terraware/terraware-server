@@ -51,8 +51,8 @@
       <table name="draft_planting_sites" remarks="Details of planting sites that are in the process of being defined." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <parent column="id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+            <parent column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
@@ -170,7 +170,7 @@
             <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="monitoring_plot_id" foreignKey="observation_biomass_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
-            <child column="monitoring_plot_id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
+            <child column="monitoring_plot_id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="monitoring_plot_id" foreignKey="observation_plot_conditions_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
             <child column="monitoring_plot_id" foreignKey="observation_plots_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_coordinates"/>
@@ -236,8 +236,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="observation_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <child column="observation_id" foreignKey="observation_biomass_species_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
-            <parent column="id" foreignKey="observation_biomass_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <parent column="observation_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_biomass_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
@@ -279,8 +279,8 @@
       </table>
       <table name="observation_biomass_quadrat_details" remarks="Details of a biomass observation at each quadrat of a monitoring plot." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="observation_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
             <parent column="id" foreignKey="observation_biomass_quadrat_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_biomass_quadrat_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -341,8 +341,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="observation_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="observation_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
-            <parent column="observation_id" foreignKey="observation_biomass_species_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
             <parent column="id" foreignKey="observation_biomass_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="observation_biomass_species_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
@@ -384,26 +384,13 @@
          </index>
          <checkConstraint constraint="(((species_id IS NOT NULL) AND (scientific_name IS NULL)) OR ((species_id IS NULL) AND (scientific_name IS NOT NULL)))" name="species_identifier"/>
       </table>
-      <table name="observation_photo_types" remarks="(Enum) Types of observation plot photo." schema="tracking" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="type_id" foreignKey="observation_photos_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="observation_photo_types_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="observation_photo_types_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="observation_photos" remarks="Observation-specific details about a photo of a monitoring plot. Generic metadata is in the `files` table." schema="tracking" type="TABLE">
+      <table name="observation_media_files" remarks="Observation-specific details about a photo or video of a monitoring plot. Generic metadata is in the `files` table." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
             <parent column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
@@ -413,7 +400,7 @@
             <parent column="id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="observation_photos_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photo_types"/>
+            <parent column="id" foreignKey="observation_photos_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_original" nullable="false" remarks="If true, this photo was uploaded as part of the original observation data. If false, this photo was added after the observation." size="1" type="bool" typeCode="-7"/>
@@ -426,6 +413,19 @@
          </index>
          <index name="observation_photos_monitoring_plot_id_idx" unique="false">
             <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+      </table>
+      <table name="observation_media_types" remarks="(Enum) Types of observation plot media. This refers to the type of thing that's being depicted, not the content type of the media file." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="observation_photos_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="observation_photo_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="observation_photo_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="observation_plot_conditions" remarks="List of conditions observed in each monitoring plot." schema="tracking" type="TABLE">
@@ -454,7 +454,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="position_id" foreignKey="observation_biomass_quadrat_details_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_quadrat_details"/>
             <child column="position_id" foreignKey="observation_biomass_quadrat_species_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_quadrat_species"/>
-            <child column="position_id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
+            <child column="position_id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="position_id" foreignKey="observed_plot_coordinates_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -482,7 +482,7 @@
       <table name="observation_plots" remarks="Information about monitoring plots that are required to be surveyed as part of observations. This is not populated until the scheduled start time of the observation." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="observation_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
-            <child column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
+            <child column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="observation_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_observations"/>
             <child column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
@@ -490,7 +490,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
-            <child column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
+            <child column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="monitoring_plot_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_observations"/>
             <child column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
@@ -584,7 +584,7 @@
             <child column="observation_id" foreignKey="observation_biomass_quadrat_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <child column="observation_id" foreignKey="observation_biomass_quadrat_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="observation_id" foreignKey="observation_biomass_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
-            <child column="observation_id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
+            <child column="observation_id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="observation_id" foreignKey="observation_plot_conditions_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
             <child column="observation_id" foreignKey="observation_plots_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <child column="observation_id" foreignKey="observation_requested_subzones_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_requested_subzones"/>
@@ -632,8 +632,8 @@
       <table name="observed_plot_coordinates" remarks="Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observed_plot_coordinates_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <parent column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observed_plot_coordinates_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -1217,9 +1217,9 @@
             <parent column="id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
-            <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="plantings_planting_subzone_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzones"/>
@@ -1283,8 +1283,8 @@
             <parent column="monitoring_plot_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plot_t0_observations_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <parent column="observation_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="plot_t0_observations_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="now()" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="now()" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
@@ -1315,8 +1315,8 @@
       <table name="recorded_plants" remarks="Information about individual plants observed in monitoring plots." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <parent column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>

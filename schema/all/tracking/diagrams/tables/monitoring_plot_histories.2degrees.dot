@@ -40,10 +40,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_biomass_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"elipses":w -> "observations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_photos":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_photos":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_photos":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_photos":"elipses":w -> "observations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "observations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"elipses":w -> "observations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"claimed_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -281,16 +281,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observation_biomass_species"
   ];
-  "observation_photos" [
+  "observation_media_files" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="118" HEIGHT="16"><B>observation_photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="144" HEIGHT="16"><B>observation_media_files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/observation_photos.html"
+    URL="../../tables/observation_media_files.html"
     target="_top"
-    tooltip="observation_photos"
+    tooltip="observation_media_files"
   ];
   "observation_plot_conditions" [
    label=<

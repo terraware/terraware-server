@@ -351,72 +351,72 @@
 <polygon fill="black" stroke="black" points="462.11,-308.29 470.58,-310.55 466.05,-307.65 470,-307 470,-307 470,-307 466.05,-307.65 469.42,-303.45 462.11,-308.29 462.11,-308.29"/>
 <ellipse fill="none" stroke="black" cx="458.95" cy="-308.81" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos -->
+<!-- observation_media_files -->
 <g id="node6" class="node">
-<title>observation_photos</title>
-<g id="a_node6"><a xlink:href="../../tables/observation_photos.html" xlink:title="observation_photos" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="828.5,-415 828.5,-583 990.5,-583 990.5,-415 828.5,-415"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="828.5,-561 828.5,-583 990.5,-583 990.5,-561 828.5,-561"/>
-<polygon fill="none" stroke="black" points="828.5,-561 828.5,-583 990.5,-583 990.5,-561 828.5,-561"/>
-<text text-anchor="start" x="833.5" y="-570.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_photos</text>
-<text text-anchor="start" x="951.5" y="-569.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="828.5,-539 828.5,-561 990.5,-561 990.5,-539 828.5,-539"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="833.5" y="-556"/>
-<text text-anchor="start" x="860.5" y="-547.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
-<polygon fill="none" stroke="black" points="828.5,-517 828.5,-539 990.5,-539 990.5,-517 828.5,-517"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="833.5" y="-534"/>
-<text text-anchor="start" x="860.5" y="-525.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="828.5,-495 828.5,-517 990.5,-517 990.5,-495 828.5,-495"/>
-<polygon fill="none" stroke="black" points="828.5,-495 828.5,-517 990.5,-517 990.5,-495 828.5,-495"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="833.5" y="-512"/>
-<text text-anchor="start" x="860.5" y="-503.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
-<polygon fill="none" stroke="black" points="828.5,-473 828.5,-495 990.5,-495 990.5,-473 828.5,-473"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="833.5" y="-490"/>
-<text text-anchor="start" x="860.5" y="-481.2" font-family="Helvetica,sans-Serif" font-size="11.00">position_id</text>
-<polygon fill="none" stroke="black" points="828.5,-451 828.5,-473 990.5,-473 990.5,-451 828.5,-451"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="833.5" y="-468"/>
-<text text-anchor="start" x="860.5" y="-459.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
-<polygon fill="none" stroke="black" points="828.5,-433 828.5,-451 990.5,-451 990.5,-433 828.5,-433"/>
-<text text-anchor="start" x="831.5" y="-439.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="828.5,-415 828.5,-433 907.5,-433 907.5,-415 828.5,-415"/>
-<polygon fill="none" stroke="black" points="828.5,-415 828.5,-433 907.5,-433 907.5,-415 828.5,-415"/>
-<text text-anchor="start" x="831.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="transparent" points="907.5,-415 907.5,-433 948.5,-433 948.5,-415 907.5,-415"/>
-<polygon fill="none" stroke="black" points="907.5,-415 907.5,-433 948.5,-433 948.5,-415 907.5,-415"/>
-<text text-anchor="start" x="938.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="948.5,-415 948.5,-433 990.5,-433 990.5,-415 948.5,-415"/>
-<polygon fill="none" stroke="black" points="948.5,-415 948.5,-433 990.5,-433 990.5,-415 948.5,-415"/>
-<text text-anchor="start" x="980.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<title>observation_media_files</title>
+<g id="a_node6"><a xlink:href="../../tables/observation_media_files.html" xlink:title="observation_media_files" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="815.5,-415 815.5,-583 1003.5,-583 1003.5,-415 815.5,-415"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="815.5,-561 815.5,-583 1003.5,-583 1003.5,-561 815.5,-561"/>
+<polygon fill="none" stroke="black" points="815.5,-561 815.5,-583 1003.5,-583 1003.5,-561 815.5,-561"/>
+<text text-anchor="start" x="820.5" y="-570.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_media_files</text>
+<text text-anchor="start" x="964.5" y="-569.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="815.5,-539 815.5,-561 1003.5,-561 1003.5,-539 815.5,-539"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="820.5" y="-556"/>
+<text text-anchor="start" x="847.5" y="-547.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
+<polygon fill="none" stroke="black" points="815.5,-517 815.5,-539 1003.5,-539 1003.5,-517 815.5,-517"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="820.5" y="-534"/>
+<text text-anchor="start" x="847.5" y="-525.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="815.5,-495 815.5,-517 1003.5,-517 1003.5,-495 815.5,-495"/>
+<polygon fill="none" stroke="black" points="815.5,-495 815.5,-517 1003.5,-517 1003.5,-495 815.5,-495"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="820.5" y="-512"/>
+<text text-anchor="start" x="847.5" y="-503.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
+<polygon fill="none" stroke="black" points="815.5,-473 815.5,-495 1003.5,-495 1003.5,-473 815.5,-473"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="820.5" y="-490"/>
+<text text-anchor="start" x="847.5" y="-481.2" font-family="Helvetica,sans-Serif" font-size="11.00">position_id</text>
+<polygon fill="none" stroke="black" points="815.5,-451 815.5,-473 1003.5,-473 1003.5,-451 815.5,-451"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="820.5" y="-468"/>
+<text text-anchor="start" x="847.5" y="-459.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
+<polygon fill="none" stroke="black" points="815.5,-433 815.5,-451 1003.5,-451 1003.5,-433 815.5,-433"/>
+<text text-anchor="start" x="818.5" y="-439.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="815.5,-415 815.5,-433 907.5,-433 907.5,-415 815.5,-415"/>
+<polygon fill="none" stroke="black" points="815.5,-415 815.5,-433 907.5,-433 907.5,-415 815.5,-415"/>
+<text text-anchor="start" x="818.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<polygon fill="#ffffff" stroke="transparent" points="907.5,-415 907.5,-433 955.5,-433 955.5,-415 907.5,-415"/>
+<polygon fill="none" stroke="black" points="907.5,-415 907.5,-433 955.5,-433 955.5,-415 907.5,-415"/>
+<text text-anchor="start" x="945.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="955.5,-415 955.5,-433 1003.5,-433 1003.5,-415 955.5,-415"/>
+<polygon fill="none" stroke="black" points="955.5,-415 955.5,-433 1003.5,-433 1003.5,-415 955.5,-415"/>
+<text text-anchor="start" x="993.5" y="-421.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
-<!-- observation_photos&#45;&gt;monitoring_plots -->
+<!-- observation_media_files&#45;&gt;monitoring_plots -->
 <g id="edge6" class="edge">
-<title>observation_photos:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M813.13,-504.99C719.23,-490.5 843.53,-323.88 761,-244 715.5,-199.96 243.66,-147.72 194,-187 134.18,-234.32 230.77,-354 154.5,-354"/>
-<polygon fill="black" stroke="black" points="819.52,-505.44 827.25,-509.59 823.51,-505.72 827.5,-506 827.5,-506 827.5,-506 823.51,-505.72 827.75,-502.41 819.52,-505.44 819.52,-505.44"/>
-<ellipse fill="none" stroke="black" cx="816.33" cy="-505.21" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;monitoring_plots:e</title>
+<path fill="none" stroke="black" d="M800.07,-504.94C708.72,-490.08 842.53,-322.97 761,-244 715.52,-199.95 243.66,-147.72 194,-187 134.18,-234.32 230.77,-354 154.5,-354"/>
+<polygon fill="black" stroke="black" points="806.52,-505.41 814.24,-509.59 810.51,-505.71 814.5,-506 814.5,-506 814.5,-506 810.51,-505.71 814.76,-502.41 806.52,-505.41 806.52,-505.41"/>
+<ellipse fill="none" stroke="black" cx="803.33" cy="-505.18" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos&#45;&gt;observation_plots -->
+<!-- observation_media_files&#45;&gt;observation_plots -->
 <g id="edge7" class="edge">
-<title>observation_photos:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M813.36,-508.79C785.59,-521.23 790.74,-571 752,-571"/>
-<polygon fill="black" stroke="black" points="819.65,-507.55 828.2,-509.53 823.58,-506.78 827.5,-506 827.5,-506 827.5,-506 823.58,-506.78 826.8,-502.47 819.65,-507.55 819.65,-507.55"/>
-<ellipse fill="none" stroke="black" cx="816.51" cy="-508.17" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M800.39,-509.68C778.32,-523.43 786.28,-571 752,-571"/>
+<polygon fill="black" stroke="black" points="806.76,-508.02 815.41,-509.48 810.63,-507.01 814.5,-506 814.5,-506 814.5,-506 810.63,-507.01 813.59,-502.52 806.76,-508.02 806.76,-508.02"/>
+<ellipse fill="none" stroke="black" cx="803.66" cy="-508.83" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos&#45;&gt;observation_plots -->
+<!-- observation_media_files&#45;&gt;observation_plots -->
 <g id="edge8" class="edge">
-<title>observation_photos:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M813.36,-530.79C785.59,-543.23 790.74,-593 752,-593"/>
-<polygon fill="black" stroke="black" points="819.65,-529.55 828.2,-531.53 823.58,-528.78 827.5,-528 827.5,-528 827.5,-528 823.58,-528.78 826.8,-524.47 819.65,-529.55 819.65,-529.55"/>
-<ellipse fill="none" stroke="black" cx="816.51" cy="-530.17" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M800.39,-531.68C778.32,-545.43 786.28,-593 752,-593"/>
+<polygon fill="black" stroke="black" points="806.76,-530.02 815.41,-531.48 810.63,-529.01 814.5,-528 814.5,-528 814.5,-528 810.63,-529.01 813.59,-524.52 806.76,-530.02 806.76,-530.02"/>
+<ellipse fill="none" stroke="black" cx="803.66" cy="-530.83" rx="3.2" ry="3.2"/>
 </g>
-<!-- observation_photos&#45;&gt;observations -->
+<!-- observation_media_files&#45;&gt;observations -->
 <g id="edge9" class="edge">
-<title>observation_photos:w&#45;&gt;observations:e</title>
-<path fill="none" stroke="black" d="M813.26,-530.18C776.89,-543.21 804.86,-611.27 761,-639 647.77,-710.57 586.28,-620.58 461,-668 440.46,-675.77 442.96,-697 421,-697"/>
-<polygon fill="black" stroke="black" points="819.59,-529.21 828.04,-531.56 823.55,-528.6 827.5,-528 827.5,-528 827.5,-528 823.55,-528.6 826.96,-524.44 819.59,-529.21 819.59,-529.21"/>
-<ellipse fill="none" stroke="black" cx="816.43" cy="-529.69" rx="3.2" ry="3.2"/>
+<title>observation_media_files:w&#45;&gt;observations:e</title>
+<path fill="none" stroke="black" d="M800.32,-530.51C768.46,-544.27 801.18,-610.98 761,-639 706.06,-677.32 523.64,-644.29 461,-668 440.46,-675.77 442.96,-697 421,-697"/>
+<polygon fill="black" stroke="black" points="806.62,-529.39 815.13,-531.54 810.56,-528.7 814.5,-528 814.5,-528 814.5,-528 810.56,-528.7 813.87,-524.46 806.62,-529.39 806.62,-529.39"/>
+<ellipse fill="none" stroke="black" cx="803.47" cy="-529.95" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_plot_coordinates -->
 <g id="node8" class="node">

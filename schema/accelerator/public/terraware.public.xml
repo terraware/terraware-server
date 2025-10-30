@@ -54,7 +54,7 @@
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
-            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_photos"/>
+            <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_media_files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

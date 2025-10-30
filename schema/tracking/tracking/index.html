@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.tracking</h4>
-                                <p>Generated on Wed Oct 29 16:32 GMT 2025</p>
+                                <p>Generated on Thu Oct 30 00:17 GMT 2025</p>
                             </div>
                         </div>
                     </div>
@@ -242,15 +242,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observation_photo_types.html">observation_photo_types</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of observation plot photo.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_types.html">planting_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -359,6 +350,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Start and end dates of planting seasons for planting sites.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observation_media_files.html">observation_media_files</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Observation-specific details about a photo or video of a monitoring plot. Generic metadata is in the <code>files</code> table.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_biomass_details.html">observation_biomass_details</a></td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">6</td>
@@ -440,15 +440,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about individual plants observed in monitoring plots.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observations.html">observations</a></td>
                                         <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">4</td>
@@ -456,6 +447,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_plant_statuses.html">recorded_plant_statuses</a></td>
@@ -501,6 +501,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Conditions that can be observed in a monitoring plot.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observation_media_types.html">observation_media_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of observation plot media. This refers to the type of thing that&rsquo;s being depicted, not the content type of the media file.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_types.html">observation_types</a></td>
@@ -555,15 +564,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observation_photos.html">observation_photos</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Observation-specific details about a photo of a monitoring plot. Generic metadata is in the <code>files</code> table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_zone_populations.html">planting_zone_populations</a></td>

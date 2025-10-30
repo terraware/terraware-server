@@ -3,7 +3,7 @@ plantings
 recorded_trees
 observation_biomass_quadrat_species
 recorded_plants
-observation_photos
+observation_media_files
 observed_plot_coordinates
 observation_biomass_quadrat_details
 plot_t0_observations
@@ -39,7 +39,7 @@ planting_types
 observation_types
 observation_states
 observation_plot_statuses
-observation_photo_types
+observation_media_types
 observable_conditions
 mangrove_tides
 biomass_forest_types

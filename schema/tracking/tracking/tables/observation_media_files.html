@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>observation_photos - terraware.tracking</title>
+        <title>observation_media_files - terraware.tracking</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>observation_photos</h1><p><span id="recordNumber">-1</span> rows</p><br />
+                    <h1>observation_media_files</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Observation-specific details about a photo of a monitoring plot. Generic metadata is in the <code>files</code> table.</p>
+                            <p>Observation-specific details about a photo or video of a monitoring plot. Generic metadata is in the <code>files</code> table.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -152,12 +152,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_photos.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td title="observation_media_files.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_photos_observation_id_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observation_photos.observation_id references observations.id via observation_photos_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td title="observation_media_files.observation_id references observations.id via observation_photos_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_photos_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -179,13 +179,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_photos.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">observation_photos_observation_id_monitoring_plot_id_fkey</td>
+                                                <td title="observation_media_files.monitoring_plot_id references monitoring_plots.id via observation_photos_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_photos_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observation_photos.monitoring_plot_id references monitoring_plots.id via observation_photos_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_photos_monitoring_plot_id_fkey</td>
+                                                <td title="observation_media_files.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">observation_photos_observation_id_monitoring_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -206,7 +206,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_photos.position_id references observation_plot_positions.id via observation_photos_position_id_fkey"><a href='observation_plot_positions.html'>observation_plot_positions</a><span class='relatedKey'>.id</span></td>
+                                                <td title="observation_media_files.position_id references observation_plot_positions.id via observation_photos_position_id_fkey"><a href='observation_plot_positions.html'>observation_plot_positions</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_photos_position_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -228,7 +228,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_photos.type_id references observation_photo_types.id via observation_photos_type_id_fkey"><a href='observation_photo_types.html'>observation_photo_types</a><span class='relatedKey'>.id</span></td>
+                                                <td title="observation_media_files.type_id references observation_media_types.id via observation_photos_type_id_fkey"><a href='observation_media_types.html'>observation_media_types</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_photos_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -341,11 +341,11 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observation_photos.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observation_media_files.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/observation_photos.2degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/observation_media_files.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
                             </div>
