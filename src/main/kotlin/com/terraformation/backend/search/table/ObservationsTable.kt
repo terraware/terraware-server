@@ -47,6 +47,7 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
             PlantingSiteHistoryId(it)
           },
           dateField("startDate", OBSERVATIONS.START_DATE),
+          nonLocalizableEnumField("state", OBSERVATIONS.STATE_ID),
           enumField("type", OBSERVATIONS.OBSERVATION_TYPE_ID),
       )
 
