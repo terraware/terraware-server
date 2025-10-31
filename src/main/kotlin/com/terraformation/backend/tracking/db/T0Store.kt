@@ -104,8 +104,8 @@ class T0Store(
               .fetchMap(SPECIES_ID.asNonNullable(), TOTAL_LIVE.plus(TOTAL_DEAD).asNonNullable())
         }
 
-    // Get species withdrawn to this monitoring plot's subzone
-    val subzoneSpecies: Set<SpeciesId> =
+    // Get species withdrawn to this monitoring plot's subzone that weren't in the observation
+    val withdrawnSpeciesNotInObservation: Set<SpeciesId> =
         with(PLANTING_SUBZONE_POPULATIONS) {
           dslContext
               .select(SPECIES_ID)
@@ -114,6 +114,7 @@ class T0Store(
               .on(PLANTING_SUBZONE_ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .and(TOTAL_PLANTS.gt(0))
+              .and(SPECIES_ID.notIn(observationDensities.keys))
               .fetchSet(SPECIES_ID.asNonNullable())
         }
 
@@ -176,20 +177,18 @@ class T0Store(
         }
 
         // Any species withdrawn to the subzone that aren't in the observation need a density of 0
-        subzoneSpecies
-            .filter { it !in observationDensities.keys }
-            .forEach { speciesId ->
-              insertQuery =
-                  insertQuery.values(
-                      monitoringPlotId,
-                      speciesId,
-                      BigDecimal.ZERO,
-                      currentUserId,
-                      now,
-                      currentUserId,
-                      now,
-                  )
-            }
+        withdrawnSpeciesNotInObservation.forEach { speciesId ->
+          insertQuery =
+              insertQuery.values(
+                  monitoringPlotId,
+                  speciesId,
+                  BigDecimal.ZERO,
+                  currentUserId,
+                  now,
+                  currentUserId,
+                  now,
+              )
+        }
 
         insertQuery
             .onDuplicateKeyUpdate()
@@ -209,9 +208,7 @@ class T0Store(
 
     val newDensities =
         observationDensities.mapValues { it.value.toBigDecimal().toPlantsPerHectare() } +
-            subzoneSpecies
-                .filter { it !in observationDensities.keys }
-                .associateWith { BigDecimal.ZERO }
+            withdrawnSpeciesNotInObservation.associateWith { BigDecimal.ZERO }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
