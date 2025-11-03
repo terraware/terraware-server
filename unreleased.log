@@ -1,3 +1,4 @@
+f938aefe84e SW-7660 Exclude small densities in withdrawn species (#3575)
 55a6ad8543f SW-7650 Use a density of 0 for species that were withdrawn but not in observation (#3569)
 9b77a433375 SW-7571 Add fileName to admin activity media files (#3568)
 a39f00fe8a3 Update dependency html-minifier-next to v3.2.2 (#3566)
