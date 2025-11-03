@@ -283,9 +283,9 @@ commander@^11.1.0:
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
 commander@^14.0.1:
-  version "14.0.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.1.tgz#2f9225c19e6ebd0dc4404dd45821b2caa17ea09b"
-  integrity sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==
+  version "14.0.2"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.2.tgz#b71fd37fe4069e4c3c7c13925252ada4eba14e8e"
+  integrity sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==
 
 commander@^2.19.0, commander@^2.20.0:
   version "2.20.3"
@@ -577,9 +577,9 @@ header-case@^2.0.4:
     tslib "^2.0.3"
 
 html-minifier-next@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-3.0.0.tgz#ccff4529f9b3d57683a4d1b7f6f1ba65a67a6d48"
-  integrity sha512-838dAlQkNM3HKy6ucAKQIu+mCUgyOJoIeezKpy+aAMvhRYr96Cbup1F37GgaaOdDjghuPcq4s9Vnd2Ioyx3Cjg==
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-3.2.2.tgz#6360f29da031b58001c38b1d8c7c04bd184614e3"
+  integrity sha512-/SotSfGwjL2bCkwxrl4B5T48PPLQyZG7qsY2cOxfZt8djPLWK7XvFiPeGURqcV01JWI8OpFgClfSBLj/7vOHjQ==
   dependencies:
     change-case "^4.1.2"
     clean-css "~5.3.3"
@@ -1612,7 +1612,7 @@ regenerator-runtime@^0.14.0:
 relateurl@^0.2.7:
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/relateurl/-/relateurl-0.2.7.tgz#54dbf377e51440aca90a4cd274600d3ff2d888a9"
-  integrity sha1-VNvzd+UUQKypCkzSdGANP/LYiKk=
+  integrity sha512-G08Dxvm4iDN3MLM0EsP62EDV9IuhXPR6blNz6Utcp7zyV3tr4HVNINt6MpaRWbxoOHT3Q7YN2P+jaHX8vUbgog==
 
 require-directory@^2.1.1:
   version "2.1.1"
