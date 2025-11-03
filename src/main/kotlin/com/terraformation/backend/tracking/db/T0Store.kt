@@ -6,9 +6,12 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -487,14 +490,7 @@ class T0Store(
 
     val permanentPlotSpecies =
         with(MONITORING_PLOTS) {
-          DSL.select(
-                  ID.`as`("plot_id"),
-                  PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
-              )
-              .from(MONITORING_PLOTS)
-              .join(PLANTING_SUBZONE_POPULATIONS)
-              .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
-              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          plotSpeciesWithObservations(plantingSiteId)
               .unionAll(
                   DSL.select(
                           ID.`as`("plot_id"),
@@ -529,10 +525,19 @@ class T0Store(
               )
               .leftJoin(PLANTING_SUBZONES)
               .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .join(OBSERVATION_PLOTS)
+              .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+              .join(OBSERVATIONS)
+              .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNotNull)
               .and(PLOT_T0_DENSITIES.PLOT_DENSITY.isNull)
+              .and(
+                  OBSERVATIONS.STATE_ID.`in`(
+                      listOf(ObservationState.Completed, ObservationState.Abandoned)
+                  )
+              )
       )
     }
   }
@@ -540,14 +545,7 @@ class T0Store(
   private fun isAllTempT0DataSet(plantingSiteId: PlantingSiteId): Boolean {
     val tempPlotSpecies =
         with(MONITORING_PLOTS) {
-          DSL.select(
-                  ID.`as`("plot_id"),
-                  PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
-              )
-              .from(MONITORING_PLOTS)
-              .join(PLANTING_SUBZONE_POPULATIONS)
-              .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
-              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          plotSpeciesWithObservations(plantingSiteId)
               .unionAll(
                   DSL.select(
                           ID.`as`("plot_id"),
@@ -562,7 +560,16 @@ class T0Store(
                               PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
                           )
                       )
+                      .join(OBSERVATION_PLOTS)
+                      .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+                      .join(OBSERVATIONS)
+                      .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
                       .where(PLANTING_SITE_ID.eq(plantingSiteId))
+                      .and(
+                          OBSERVATIONS.STATE_ID.`in`(
+                              listOf(ObservationState.Completed, ObservationState.Abandoned)
+                          )
+                      )
               )
               .asTable("plot_species")
         }
@@ -590,13 +597,43 @@ class T0Store(
               )
               .leftJoin(PLANTING_SUBZONES)
               .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .leftJoin(OBSERVATION_PLOTS)
+              .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+              .leftJoin(OBSERVATIONS)
+              .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNull)
               .and(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY.isNull)
+              .and(
+                  OBSERVATIONS.STATE_ID.`in`(
+                      listOf(ObservationState.Completed, ObservationState.Abandoned)
+                  )
+              )
       )
     }
   }
+
+  private fun plotSpeciesWithObservations(plantingSiteId: PlantingSiteId) =
+      with(MONITORING_PLOTS) {
+        DSL.select(
+                ID.`as`("plot_id"),
+                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
+            )
+            .from(MONITORING_PLOTS)
+            .join(PLANTING_SUBZONE_POPULATIONS)
+            .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+            .join(OBSERVATION_PLOTS)
+            .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+            .join(OBSERVATIONS)
+            .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+            .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(
+                OBSERVATIONS.STATE_ID.`in`(
+                    listOf(ObservationState.Completed, ObservationState.Abandoned)
+                )
+            )
+      }
 
   private fun survivalRateIncludesTempPlots(plantingSiteId: PlantingSiteId): Boolean =
       dslContext
