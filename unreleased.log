@@ -1,3 +1,5 @@
+55a6ad8543f SW-7650 Use a density of 0 for species that were withdrawn but not in observation (#3569)
+9b77a433375 SW-7571 Add fileName to admin activity media files (#3568)
 a39f00fe8a3 Update dependency html-minifier-next to v3.2.2 (#3566)
 5f5dc92764f Update plugin dev.monosoul.jooq-docker to v8.0.1 (#3572)
 498f20b1f81 Update Gradle to v9.2.0 (#3574)
