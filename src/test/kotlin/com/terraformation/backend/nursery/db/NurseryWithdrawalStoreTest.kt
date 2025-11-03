@@ -54,12 +54,17 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingZone()
       val subzone3 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(5))
       val plot5 = insertMonitoringPlot()
+      val subzone4 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(2174.6))
+      val plot6 = insertMonitoringPlot()
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = species1, 100)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = species2, 200)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species1, 300)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species2, 395)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = species3, 500)
       insertPlantingSubzonePopulation(plantingSubzoneId = subzone3, speciesId = species3, 600)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = species1, 500)
+      // should be excluded because <0.05 density
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = species2, 108)
 
       val expected =
           setOf(
@@ -67,42 +72,43 @@ internal class NurseryWithdrawalStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   monitoringPlotId = plot1,
                   species =
                       createSpeciesDensityList(
-                          species1 to BigDecimal.valueOf(100),
-                          species2 to BigDecimal.valueOf(200),
+                          species1 to BigDecimal.valueOf(100.0),
+                          species2 to BigDecimal.valueOf(200.0),
                       ),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot2,
                   species =
                       createSpeciesDensityList(
-                          species1 to BigDecimal.valueOf(100),
-                          species2 to BigDecimal.valueOf(200),
+                          species1 to BigDecimal.valueOf(100.0),
+                          species2 to BigDecimal.valueOf(200.0),
                       ),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot3,
                   species =
                       createSpeciesDensityList(
-                          species1 to BigDecimal.valueOf(30),
-                          species2 to BigDecimal.valueOf(40), // this confirms correct rounding
-                          species3 to BigDecimal.valueOf(50),
+                          species1 to BigDecimal.valueOf(30.0),
+                          species2 to BigDecimal.valueOf(39.5), // this confirms correct rounding
+                          species3 to BigDecimal.valueOf(50.0),
                       ),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot4,
                   species =
                       createSpeciesDensityList(
-                          species1 to BigDecimal.valueOf(30),
-                          species2 to BigDecimal.valueOf(40),
-                          species3 to BigDecimal.valueOf(50),
+                          species1 to BigDecimal.valueOf(30.0),
+                          species2 to BigDecimal.valueOf(39.5),
+                          species3 to BigDecimal.valueOf(50.0),
                       ),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot5,
-                  species =
-                      createSpeciesDensityList(
-                          species3 to BigDecimal.valueOf(120),
-                      ),
+                  species = createSpeciesDensityList(species3 to BigDecimal.valueOf(120.0)),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot6,
+                  species = createSpeciesDensityList(species1 to BigDecimal.valueOf(0.2)),
               ),
           )
 
