@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
@@ -56,6 +57,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var plantingZoneId: PlantingZoneId
+  private lateinit var plantingSubzoneId: PlantingSubzoneId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var tempPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
@@ -70,7 +72,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val siteBoundary = multiPolygon(200)
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     plantingZoneId = insertPlantingZone(name = "Zone 2")
-    insertPlantingSubzone()
+    plantingSubzoneId = insertPlantingSubzone()
     observationId = insertObservation(completedTime = clock.instant())
 
     tempPlotId = insertMonitoringPlot(plotNumber = 10)
@@ -405,6 +407,49 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               monitoringPlotId = monitoringPlotId,
               observationId = observationId,
           )
+      )
+    }
+
+    @Test
+    fun `stores observation densities and adds 0 for all withdrawn species not in observation`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
+      val speciesId3 = insertSpecies()
+      val speciesId4 = insertSpecies()
+      insertPlantingSubzonePopulation(
+          plantingSubzoneId = plantingSubzoneId,
+          speciesId = speciesId3,
+          totalPlants = 1,
+      )
+      // should be excluded because no plants:
+      insertPlantingSubzonePopulation(
+          plantingSubzoneId = plantingSubzoneId,
+          speciesId = speciesId4,
+          totalPlants = 0,
+      )
+
+      val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertEquals(
+          PlotT0DensityChangedModel(
+              monitoringPlotId = monitoringPlotId,
+              speciesDensityChanges =
+                  setOf(
+                      SpeciesDensityChangedModel(speciesId1, newDensity = plotDensityToHectare(3)),
+                      SpeciesDensityChangedModel(speciesId2, newDensity = plotDensityToHectare(7)),
+                      SpeciesDensityChangedModel(speciesId3, newDensity = BigDecimal.ZERO),
+                  ),
+          ),
+          changedModel,
+          "Changed model should contain withdrawn species as 0",
+      )
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(3)),
+              plotDensityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(7)),
+              plotDensityRecord(monitoringPlotId, speciesId3, BigDecimal.ZERO),
+          ),
+          "Should insert species densities including 0",
       )
     }
 
