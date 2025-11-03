@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -309,6 +310,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedBy = user.userId,
           isPermanent = false,
       )
+      // plots without completed or abandoned observations are excluded
+      insertObservation(state = ObservationState.InProgress)
+      insertMonitoringPlot(plotNumber = 101, permanentIndex = 101)
+      insertObservationPlot(isPermanent = true)
+      insertMonitoringPlot(plotNumber = 102, permanentIndex = null)
+      insertObservationPlot()
 
       insertPlantingZoneT0TempDensity(speciesId = speciesId1)
       insertPlantingZoneT0TempDensity(speciesId = speciesId2)
