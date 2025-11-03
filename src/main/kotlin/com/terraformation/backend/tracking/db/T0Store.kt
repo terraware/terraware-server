@@ -623,14 +623,20 @@ class T0Store(
             .from(MONITORING_PLOTS)
             .join(PLANTING_SUBZONE_POPULATIONS)
             .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
-            .join(OBSERVATION_PLOTS)
-            .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
-            .join(OBSERVATIONS)
-            .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
             .and(
-                OBSERVATIONS.STATE_ID.`in`(
-                    listOf(ObservationState.Completed, ObservationState.Abandoned)
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(MONITORING_PLOTS)
+                        .join(OBSERVATION_PLOTS)
+                        .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
+                        .join(OBSERVATIONS)
+                        .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                        .where(
+                            OBSERVATIONS.STATE_ID.`in`(
+                                listOf(ObservationState.Completed, ObservationState.Abandoned)
+                            )
+                        )
                 )
             )
       }
