@@ -1,5 +1,5 @@
 Observation ->,,1,1,1,2,2,2,3,3,3
-Plot,Species,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate
+Plot,Species,# Total Plants,Mortality Rate,Survival Rate,# Total Plants,Mortality Rate,Survival Rate,# Total Plants,Mortality Rate,Survival Rate
 111,Known 1,2,50%,50%,1,50%,50%,1,50%,50%
 112,Known 1,1,100%,0%,0,100%,0%,0,100%,0%
 112,Known 2,1,100%,0%,1,50%,100%,1,50%,100%
