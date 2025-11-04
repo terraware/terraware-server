@@ -1,4 +1,4 @@
 Observation ->,,1,1,1,2,2,2,3,3,3
 Subzone,Species,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate,# Live Plants,Mortality Rate,Survival Rate
-Alpha-1,Known 1,2,33%,67%,,,,3,25%,100%
-Alpha-2,Known 1,,,,1,67%,,,,
+Alpha-1,Known 1,3,33%,67%,,,,3,25%,100%
+Alpha-2,Known 1,,,,3,67%,,,,
