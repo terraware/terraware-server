@@ -549,7 +549,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             totalDead = totalDead,
             totalExisting = totalExisting,
             totalLive = totalLive,
-            totalPlants = totalLive + totalExisting,
+            totalPlants = totalLive + totalExisting + totalDead,
         )
       }
     }
