@@ -9,8 +9,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
 import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
 import com.terraformation.backend.report.model.SeedFundReportModel
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
-import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 
 /**
@@ -59,12 +57,6 @@ interface ReportMetadataFields {
     JsonSubTypes.Type(GetReportPayloadV1::class),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "version")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(value = "1", schema = GetReportPayloadV1::class),
-        ]
-)
 sealed interface GetReportPayload : ReportMetadataFields {
   companion object {
     fun of(model: SeedFundReportModel, getFullName: (UserId) -> String?): GetReportPayload {
@@ -89,12 +81,6 @@ sealed interface GetReportPayload : ReportMetadataFields {
     JsonSubTypes.Type(name = "1", value = PutReportPayloadV1::class),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "version")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(value = "1", schema = PutReportPayloadV1::class),
-        ]
-)
 sealed interface PutReportPayload : EditableReportFields {
   /**
    * Overwrites the fields in a report body with the values from this payload. Note that

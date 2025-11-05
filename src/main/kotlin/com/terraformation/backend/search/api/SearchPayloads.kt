@@ -17,7 +17,6 @@ import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
 
@@ -93,15 +92,8 @@ data class SearchSortOrderElement(
             NotNodePayload::class,
             OrNodePayload::class,
         ],
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
-            DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
-            DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
-            DiscriminatorMapping(value = "or", schema = OrNodePayload::class),
-        ],
 )
-interface SearchNodePayload {
+sealed interface SearchNodePayload {
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
 }
 

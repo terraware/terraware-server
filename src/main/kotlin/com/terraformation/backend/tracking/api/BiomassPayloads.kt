@@ -16,7 +16,6 @@ import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
@@ -161,13 +160,6 @@ data class ExistingTreePayload(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,
     property = "growthForm",
-)
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(value = "shrub", schema = NewShrubPayload::class),
-            DiscriminatorMapping(value = "tree", schema = NewTreeWithTrunksPayload::class),
-        ]
 )
 sealed interface NewTreePayload {
   @get:Schema(description = "GPS coordinates where plant was observed.") //

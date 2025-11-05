@@ -12,7 +12,6 @@ import com.terraformation.backend.documentproducer.model.DeleteValueOperation
 import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
 import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 
 enum class ValueOperationType {
@@ -32,15 +31,7 @@ enum class ValueOperationType {
 @Schema(
     description =
         "Supertype of the payloads that describe which operations to perform on a variable's " +
-            "value(s). See the descriptions of the individual operations for details.",
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(schema = AppendValueOperationPayload::class, value = "Append"),
-            DiscriminatorMapping(schema = DeleteValueOperationPayload::class, value = "Delete"),
-            DiscriminatorMapping(schema = ReplaceValuesOperationPayload::class, value = "Replace"),
-            DiscriminatorMapping(schema = UpdateValueOperationPayload::class, value = "Update"),
-        ],
-    discriminatorProperty = "operation",
+            "value(s). See the descriptions of the individual operations for details."
 )
 sealed interface ValueOperationPayload {
   // Dummy property so the OpenAPI schema will include the enum values

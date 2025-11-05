@@ -9,8 +9,6 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
-import io.swagger.v3.oas.annotations.media.Schema
 
 data class ReportMetricTargetPayload(
     val reportId: ReportId,
@@ -23,23 +21,6 @@ data class ReportMetricTargetPayload(
     JsonSubTypes.Type(name = "system", value = UpdateSystemMetricTargetsPayload::class),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(
-                value = "project",
-                schema = UpdateProjectMetricTargetsPayload::class,
-            ),
-            DiscriminatorMapping(
-                value = "standard",
-                schema = UpdateStandardMetricTargetsPayload::class,
-            ),
-            DiscriminatorMapping(
-                value = "system",
-                schema = UpdateSystemMetricTargetsPayload::class,
-            ),
-        ]
-)
 sealed interface UpdateMetricTargetsPayload {
   val targets: List<ReportMetricTargetPayload>
 
