@@ -19,7 +19,7 @@ class EnumsTest : DatabaseTest() {
 
     val keys =
         scanner
-            .findCandidateComponents("com.terraformation.backend.db")
+            .findCandidateComponents("com.terraformation.backend")
             .map { Class.forName(it.beanClassName) as Class<LocalizableEnum<*>> }
             .flatMap { enumClass ->
               val enumName = enumClass.simpleName
