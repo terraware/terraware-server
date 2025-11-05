@@ -32,6 +32,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
+import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
@@ -41,6 +42,10 @@ import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
+import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -214,6 +219,13 @@ class ObservationService(
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw ObservationNotFoundException(observationId)
+
     if (metadata.geolocation == null && isOriginal) {
       throw IllegalArgumentException("Geolocation is required for original observation photos")
     }
@@ -226,7 +238,7 @@ class ObservationService(
     }
 
     val fileId =
-        fileService.storeFile("observation", data, metadata) { (fileId) ->
+        fileService.storeFile("observation", data, metadata) { (fileId, fullMetadata) ->
           observationMediaFilesDao.insert(
               ObservationMediaFilesRow(
                   caption = caption,
@@ -236,6 +248,22 @@ class ObservationService(
                   observationId = observationId,
                   positionId = position,
                   typeId = type,
+              )
+          )
+
+          eventPublisher.publishEvent(
+              ObservationMediaFileUploadedEvent(
+                  caption = caption,
+                  contentType = fullMetadata.contentType,
+                  geolocation = fullMetadata.geolocation,
+                  fileId = fileId,
+                  isOriginal = isOriginal,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+                  position = position,
+                  monitoringPlotId = monitoringPlotId,
+                  type = type,
               )
           )
         }
@@ -255,12 +283,30 @@ class ObservationService(
   ) {
     requirePermissions { updateObservation(observationId) }
 
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw ObservationNotFoundException(observationId)
+
     val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
     val updatedRow = updateFunc(initialRow)
 
     if (initialRow != updatedRow) {
       observationMediaFilesDao.update(initialRow.copy(caption = updatedRow.caption))
       fileService.touchFile(fileId)
+      eventPublisher.publishEvent(
+          ObservationMediaFileEditedEvent(
+              changedFrom = ObservationMediaFileEditedEventValues(initialRow.caption),
+              changedTo = ObservationMediaFileEditedEventValues(updatedRow.caption),
+              fileId = fileId,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+          )
+      )
     }
   }
 
@@ -692,12 +738,27 @@ class ObservationService(
   private fun deleteMediaWhere(condition: Condition) {
     with(OBSERVATION_MEDIA_FILES) {
       dslContext
-          .select(FILE_ID)
+          .select(
+              FILE_ID.asNonNullable(),
+              MONITORING_PLOT_ID.asNonNullable(),
+              OBSERVATION_ID.asNonNullable(),
+              observations.plantingSites.ORGANIZATION_ID.asNonNullable(),
+              observations.plantingSites.ID.asNonNullable(),
+          )
           .from(OBSERVATION_MEDIA_FILES)
           .where(condition)
-          .fetch(FILE_ID.asNonNullable())
-          .forEach { fileId ->
+          .fetch()
+          .forEach { (fileId, monitoringPlotId, observationId, organizationId, plantingSiteId) ->
             observationMediaFilesDao.deleteById(fileId)
+            eventPublisher.publishEvent(
+                ObservationMediaFileDeletedEvent(
+                    fileId,
+                    monitoringPlotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                )
+            )
             eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
           }
     }

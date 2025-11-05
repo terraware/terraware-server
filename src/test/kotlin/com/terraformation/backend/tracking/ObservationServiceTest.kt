@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -76,6 +77,10 @@ import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
+import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -178,11 +183,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ObservationTestHelper(this, observationStore, user.userId)
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
     plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
   }
@@ -786,6 +792,36 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `publishes upload event`() {
+        val fileId =
+            service.storeMediaFile(
+                caption = "caption",
+                data = byteArrayOf(1).inputStream(),
+                isOriginal = true,
+                metadata = metadata,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                position = ObservationPlotPosition.NortheastCorner,
+            )
+
+        eventPublisher.assertEventPublished(
+            ObservationMediaFileUploadedEvent(
+                caption = "caption",
+                contentType = metadata.contentType,
+                geolocation = metadata.geolocation,
+                fileId = fileId,
+                isOriginal = true,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                position = ObservationPlotPosition.NortheastCorner,
+                monitoringPlotId = plotId,
+                type = ObservationMediaType.Plot,
+            )
+        )
+      }
+
+      @Test
       fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
           service.storeMediaFile(
@@ -844,7 +880,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         service.deleteMediaFile(observationId, plotId, fileId)
 
         assertTableEmpty(OBSERVATION_MEDIA_FILES)
-        eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
+        eventPublisher.assertEventsPublished(
+            setOf(
+                ObservationMediaFileDeletedEvent(
+                    fileId,
+                    plotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                ),
+                FileReferenceDeletedEvent(fileId),
+            )
+        )
       }
 
       @Test
@@ -901,7 +948,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 position = ObservationPlotPosition.NortheastCorner,
                 data = byteArrayOf(1).inputStream(),
                 metadata = metadata,
-                caption = "caption",
+                caption = "old caption",
                 isOriginal = true,
                 type = ObservationMediaType.Quadrat,
             )
@@ -932,6 +979,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
         assertTableEquals(expectedFilesRecord)
+
+        eventPublisher.assertEventPublished(
+            ObservationMediaFileEditedEvent(
+                changedFrom = ObservationMediaFileEditedEventValues("old caption"),
+                changedTo = ObservationMediaFileEditedEventValues("new caption"),
+                fileId = fileId,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+            )
+        )
       }
 
       @Test
@@ -989,9 +1048,23 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 isOriginal = true,
             )
 
+        eventPublisher.clear()
+
         service.on(PlantingSiteDeletionStartedEvent(plantingSiteId))
 
-        eventPublisher.assertExactEventsPublished(setOf(FileReferenceDeletedEvent(fileId)))
+        eventPublisher.assertExactEventsPublished(
+            setOf(
+                FileReferenceDeletedEvent(fileId),
+                ObservationMediaFileDeletedEvent(
+                    fileId,
+                    plotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                ),
+            )
+        )
+
         assertEquals(
             listOf(otherSiteFileId),
             observationMediaFilesDao.findAll().map { it.fileId },

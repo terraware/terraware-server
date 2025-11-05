@@ -179,7 +179,9 @@ class FileService(
             eventPublisher.publishEvent(VideoFileUploadedEvent(filesRow.id!!))
           }
 
-          insertChildRows(StoredFile(filesRow.id!!, fileType, exifMetadata))
+          val storedFile = StoredFile(filesRow.id!!, fullMetadata, fileType, exifMetadata)
+
+          insertChildRows(storedFile)
         }
 
         filesRow.id!!
@@ -336,7 +338,13 @@ class FileService(
    */
   data class StoredFile(
       val fileId: FileId, // This should be first so it's easily accessible via destructuring
+      /**
+       * Terraware file metadata, populated with values from EXIF and/or the metadata population
+       * callback.
+       */
+      val metadata: NewFileMetadata,
       val fileType: FileType? = null,
-      val imageMetadata: Metadata? = null,
+      /** Raw EXIF (or equivalent) metadata if the file has any. */
+      val exifMetadata: Metadata? = null,
   )
 }
