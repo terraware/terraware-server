@@ -330,6 +330,12 @@
          <index name="event_log_facilityid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
+         <index name="event_log_fileid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_monitoringplotid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
          <index name="event_log_observationid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
