@@ -460,7 +460,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `stores observation densities and adds 0 for all withdrawn species not in observation`() {
+    fun `stores observation densities and adds 0 for all withdrawn or recorded species not in observation`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
       val speciesId3 = insertSpecies()
@@ -476,6 +476,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           speciesId = speciesId4,
           totalPlants = 0,
       )
+      val speciesId5 = insertSpecies()
+      val speciesId6 = insertSpecies()
+      insertObservation(completedTime = clock.instant())
+      insertObservedPlotSpeciesTotals(speciesId = speciesId5, totalLive = 1)
+      // should be excluded because no plants
+      insertObservedPlotSpeciesTotals(speciesId = speciesId6, totalLive = 0)
+      // should be excluded because incomplete observation
+      insertObservation(state = ObservationState.InProgress)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId6, totalLive = 1)
 
       val changedModel = store.assignT0PlotObservation(monitoringPlotId, observationId)
 
@@ -487,6 +496,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       SpeciesDensityChangedModel(speciesId1, newDensity = plotDensityToHectare(3)),
                       SpeciesDensityChangedModel(speciesId2, newDensity = plotDensityToHectare(7)),
                       SpeciesDensityChangedModel(speciesId3, newDensity = BigDecimal.ZERO),
+                      SpeciesDensityChangedModel(speciesId5, newDensity = BigDecimal.ZERO),
                   ),
           ),
           changedModel,
@@ -497,6 +507,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               plotDensityRecord(monitoringPlotId, speciesId1, plotDensityToHectare(3)),
               plotDensityRecord(monitoringPlotId, speciesId2, plotDensityToHectare(7)),
               plotDensityRecord(monitoringPlotId, speciesId3, BigDecimal.ZERO),
+              plotDensityRecord(monitoringPlotId, speciesId5, BigDecimal.ZERO),
           ),
           "Should insert species densities including 0",
       )
