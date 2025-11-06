@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.event.OrganizationCreatedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEventValues
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
@@ -203,7 +204,9 @@ class OrganizationStore(
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
-    val existingRow = organizationsDao.fetchOneById(organizationId)
+    val existingRow =
+        organizationsDao.fetchOneById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
 
     with(ORGANIZATIONS) {
       dslContext
@@ -222,15 +225,19 @@ class OrganizationStore(
           .execute()
     }
 
-    if (existingRow?.timeZone != row.timeZone) {
+    if (existingRow.timeZone != row.timeZone) {
       publisher.publishEvent(
-          OrganizationTimeZoneChangedEvent(organizationId, existingRow?.timeZone, row.timeZone)
+          OrganizationTimeZoneChangedEvent(organizationId, existingRow.timeZone, row.timeZone)
       )
     }
 
-    if (existingRow?.name != row.name) {
+    if (existingRow.name != row.name) {
       publisher.publishEvent(
-          OrganizationRenamedEvent(name = row.name!!, organizationId = organizationId)
+          OrganizationRenamedEvent(
+              changedFrom = OrganizationRenamedEventValues(name = existingRow.name),
+              changedTo = OrganizationRenamedEventValues(name = row.name),
+              organizationId = organizationId,
+          )
       )
     }
   }

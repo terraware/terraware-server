@@ -2,7 +2,6 @@ package com.terraformation.backend.eventlog
 
 import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.event.OrganizationPersistentEvent
-import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
@@ -88,14 +87,6 @@ class EventLogPayloadTransformer(
       context: EventLogPayloadContext,
   ): List<EventActionPayload> {
     return when (event) {
-      is OrganizationRenamedEvent ->
-          listOf(
-              FieldUpdatedActionPayload(
-                  fieldName = "name",
-                  changedFrom = listOf(OrganizationSubjectPayload.getPreviousName(event, context)),
-                  changedTo = listOf(event.name),
-              )
-          )
       is ProjectRenamedEvent ->
           listOf(
               FieldUpdatedActionPayload(

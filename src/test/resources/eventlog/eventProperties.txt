@@ -16,6 +16,7 @@ com.terraformation.backend.customer.event.OrganizationCreatedEventV1/organizatio
 com.terraformation.backend.customer.event.OrganizationDeletedEventV1/organizationId: OrganizationId
 com.terraformation.backend.customer.event.OrganizationRenamedEventV1/name: String
 com.terraformation.backend.customer.event.OrganizationRenamedEventV1/organizationId: OrganizationId
+com.terraformation.backend.customer.event.OrganizationRenamedEventV2/organizationId: OrganizationId
 com.terraformation.backend.customer.event.ProjectCreatedEventV1/name: String
 com.terraformation.backend.customer.event.ProjectCreatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.customer.event.ProjectCreatedEventV1/projectId: ProjectId
