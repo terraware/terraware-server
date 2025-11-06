@@ -338,6 +338,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedBy = user.userId,
           isPermanent = false,
       )
+
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = monitoringPlotId,
+          speciesId = speciesId2,
+          totalLive = 1,
+      )
+
       // plots without completed or abandoned observations are excluded
       insertObservation(state = ObservationState.InProgress)
       insertMonitoringPlot(plotNumber = 101, permanentIndex = 101)
@@ -345,12 +352,19 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot(plotNumber = 102, permanentIndex = null)
       insertObservationPlot()
 
+      // species from observations that are not complete are excluded
+      val speciesId3 = insertSpecies()
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = monitoringPlotId,
+          speciesId = speciesId3,
+          totalLive = 1,
+      )
+
       insertPlantingZoneT0TempDensity(speciesId = speciesId1)
       insertPlantingZoneT0TempDensity(speciesId = speciesId2)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
       insertPlantingSubzonePopulation(speciesId = speciesId1)
-      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),

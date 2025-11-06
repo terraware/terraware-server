@@ -652,7 +652,14 @@ class T0Store(
             .from(MONITORING_PLOTS)
             .join(OBSERVED_PLOT_SPECIES_TOTALS)
             .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(ID))
+            .join(OBSERVATIONS)
+            .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(
+                OBSERVATIONS.STATE_ID.`in`(
+                    listOf(ObservationState.Completed, ObservationState.Abandoned)
+                )
+            )
             .and(
                 DSL.or(
                     OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
