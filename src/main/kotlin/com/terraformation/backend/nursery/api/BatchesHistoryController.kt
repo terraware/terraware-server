@@ -1,6 +1,8 @@
 package com.terraformation.backend.nursery.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NurseryEndpoint
@@ -30,7 +32,6 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
@@ -166,40 +167,13 @@ sealed interface BatchHistoryPayloadCommonProps {
   val version: Int?
 }
 
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(
-                schema = BatchHistoryDetailsEditedPayload::class,
-                value = "DetailsEdited",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryIncomingWithdrawalPayload::class,
-                value = "IncomingWithdrawal",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryOutgoingWithdrawalPayload::class,
-                value = "OutgoingWithdrawal",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryPhotoCreatedPayload::class,
-                value = "PhotoCreated",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryPhotoDeletedPayload::class,
-                value = "PhotoDeleted",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryQuantityEditedPayload::class,
-                value = "QuantityEdited",
-            ),
-            DiscriminatorMapping(
-                schema = BatchHistoryStatusChangedPayload::class,
-                value = "StatusChanged",
-            ),
-        ],
-    discriminatorProperty = "type",
     oneOf =
         [
             BatchHistoryDetailsEditedPayload::class,
@@ -233,6 +207,7 @@ data class BatchHistorySubLocationPayload(
   ) : this(row.subLocationId, row.subLocationName!!)
 }
 
+@JsonTypeName("DetailsEdited")
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description = "A change to the non-quantity-related details of a batch.",
@@ -287,6 +262,7 @@ data class BatchHistoryDetailsEditedPayload(
     @Schema(allowableValues = ["DetailsEdited"]) get() = "DetailsEdited"
 }
 
+@JsonTypeName("QuantityEdited")
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description = "A manual edit of a batch's remaining quantities.",
@@ -319,6 +295,7 @@ data class BatchHistoryQuantityEditedPayload(
     @Schema(allowableValues = ["QuantityEdited"]) get() = "QuantityEdited"
 }
 
+@JsonTypeName("StatusChanged")
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description =
@@ -354,6 +331,7 @@ data class BatchHistoryStatusChangedPayload(
     @Schema(allowableValues = ["StatusChanged"]) get() = "StatusChanged"
 }
 
+@JsonTypeName("IncomingWithdrawal")
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description =
@@ -395,6 +373,7 @@ data class BatchHistoryIncomingWithdrawalPayload(
     @Schema(allowableValues = ["IncomingWithdrawal"]) get() = "IncomingWithdrawal"
 }
 
+@JsonTypeName("OutgoingWithdrawal")
 @Schema(
     allOf = [BatchHistoryPayloadCommonProps::class],
     description =
@@ -437,6 +416,7 @@ data class BatchHistoryOutgoingWithdrawalPayload(
     @Schema(allowableValues = ["OutgoingWithdrawal"]) get() = "OutgoingWithdrawal"
 }
 
+@JsonTypeName("PhotoCreated")
 @Schema(allOf = [BatchHistoryPayloadCommonProps::class])
 data class BatchHistoryPhotoCreatedPayload(
     override val createdBy: UserId,
@@ -452,6 +432,7 @@ data class BatchHistoryPhotoCreatedPayload(
     @JsonIgnore get() = null
 }
 
+@JsonTypeName("PhotoDeleted")
 @Schema(allOf = [BatchHistoryPayloadCommonProps::class])
 data class BatchHistoryPhotoDeletedPayload(
     override val createdBy: UserId,

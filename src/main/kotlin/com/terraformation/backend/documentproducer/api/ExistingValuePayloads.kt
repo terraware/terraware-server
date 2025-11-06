@@ -33,7 +33,6 @@ import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.TableValue
 import com.terraformation.backend.documentproducer.model.TextValue
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.net.URI
@@ -67,29 +66,6 @@ enum class ExistingValuePayloadType {
     JsonSubTypes.Type(value = ExistingTextValuePayload::class, name = "Text"),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(schema = ExistingDateValuePayload::class, value = "Date"),
-            DiscriminatorMapping(schema = ExistingDeletedValuePayload::class, value = "Deleted"),
-            DiscriminatorMapping(schema = ExistingEmailValuePayload::class, value = "Email"),
-            DiscriminatorMapping(schema = ExistingImageValuePayload::class, value = "Image"),
-            DiscriminatorMapping(schema = ExistingLinkValuePayload::class, value = "Link"),
-            DiscriminatorMapping(schema = ExistingNumberValuePayload::class, value = "Number"),
-            DiscriminatorMapping(
-                schema = ExistingSectionTextValuePayload::class,
-                value = "SectionText",
-            ),
-            DiscriminatorMapping(
-                schema = ExistingSectionVariableValuePayload::class,
-                value = "SectionVariable",
-            ),
-            DiscriminatorMapping(schema = ExistingSelectValuePayload::class, value = "Select"),
-            DiscriminatorMapping(schema = ExistingTableValuePayload::class, value = "Table"),
-            DiscriminatorMapping(schema = ExistingTextValuePayload::class, value = "Text"),
-        ],
-    discriminatorProperty = "type",
-)
 sealed interface ExistingValuePayload {
   val id: VariableValueId
   val listPosition: Int

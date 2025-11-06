@@ -9,7 +9,6 @@ import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.documentproducer.model.EditHistoryModel
 import com.terraformation.backend.documentproducer.model.ExistingSavedVersionModel
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 
@@ -25,15 +24,6 @@ enum class DocumentHistoryPayloadType {
     JsonSubTypes.Type(value = DocumentHistorySavedPayload::class, name = "Saved"),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(schema = DocumentHistoryCreatedPayload::class, value = "Created"),
-            DiscriminatorMapping(schema = DocumentHistoryEditedPayload::class, value = "Edited"),
-            DiscriminatorMapping(schema = DocumentHistorySavedPayload::class, value = "Saved"),
-        ],
-    discriminatorProperty = "type",
-)
 sealed interface DocumentHistoryPayload {
   val createdBy: UserId
   val createdTime: Instant

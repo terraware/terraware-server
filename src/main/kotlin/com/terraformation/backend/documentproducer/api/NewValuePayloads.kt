@@ -25,7 +25,6 @@ import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.TableValue
 import com.terraformation.backend.documentproducer.model.TextValue
 import com.terraformation.backend.documentproducer.model.VariableValue
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.net.URI
@@ -47,24 +46,7 @@ import java.time.LocalDate
 @Schema(
     description =
         "Supertype for payloads that represent new variable values. See the descriptions of " +
-            "individual payload types for more details.",
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(schema = NewDateValuePayload::class, value = "Date"),
-            DiscriminatorMapping(schema = NewEmailValuePayload::class, value = "Email"),
-            DiscriminatorMapping(schema = NewImageValuePayload::class, value = "Image"),
-            DiscriminatorMapping(schema = NewLinkValuePayload::class, value = "Link"),
-            DiscriminatorMapping(schema = NewNumberValuePayload::class, value = "Number"),
-            DiscriminatorMapping(schema = NewSectionTextValuePayload::class, value = "SectionText"),
-            DiscriminatorMapping(
-                schema = NewSectionVariableValuePayload::class,
-                value = "SectionVariable",
-            ),
-            DiscriminatorMapping(schema = NewSelectValuePayload::class, value = "Select"),
-            DiscriminatorMapping(schema = NewTableValuePayload::class, value = "Table"),
-            DiscriminatorMapping(schema = NewTextValuePayload::class, value = "Text"),
-        ],
-    discriminatorProperty = "type",
+            "individual payload types for more details."
 )
 sealed interface NewValuePayload {
   @get:JsonIgnore val citation: String?

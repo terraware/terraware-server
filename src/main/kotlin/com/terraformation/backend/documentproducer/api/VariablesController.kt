@@ -28,7 +28,6 @@ import com.terraformation.backend.documentproducer.model.Variable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import org.springframework.web.bind.annotation.GetMapping
@@ -103,21 +102,7 @@ class VariablesController(
     Type(value = TextVariablePayload::class, name = "Text"),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@Schema(
-    discriminatorMapping =
-        [
-            DiscriminatorMapping(schema = DateVariablePayload::class, value = "Date"),
-            DiscriminatorMapping(schema = EmailVariablePayload::class, value = "Email"),
-            DiscriminatorMapping(schema = ImageVariablePayload::class, value = "Image"),
-            DiscriminatorMapping(schema = LinkVariablePayload::class, value = "Link"),
-            DiscriminatorMapping(schema = NumberVariablePayload::class, value = "Number"),
-            DiscriminatorMapping(schema = SectionVariablePayload::class, value = "Section"),
-            DiscriminatorMapping(schema = SelectVariablePayload::class, value = "Select"),
-            DiscriminatorMapping(schema = TableVariablePayload::class, value = "Table"),
-            DiscriminatorMapping(schema = TextVariablePayload::class, value = "Text"),
-        ]
-)
-interface VariablePayload {
+sealed interface VariablePayload {
   @get:JsonIgnore val model: Variable
 
   val deliverableId: DeliverableId?

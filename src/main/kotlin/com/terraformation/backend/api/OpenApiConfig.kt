@@ -1,10 +1,15 @@
 package com.terraformation.backend.api
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.auth.KeycloakInfo
+import io.swagger.v3.core.util.RefUtils
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.Discriminator
 import io.swagger.v3.oas.models.media.MapSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.StringSchema
@@ -16,6 +21,7 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
@@ -52,6 +58,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
     useRefForGeometry(openApi)
     fixFieldSchemas(openApi)
     addSecurityScheme(openApi)
+    addDiscriminatorsForSealedInterfaces(openApi)
   }
 
   private fun addSecurityScheme(openApi: OpenAPI) {
@@ -84,9 +91,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
    * have descriptions.
    */
   private fun fixFieldSchemas(openApi: OpenAPI) {
-    val payloadClasses = findAllPayloadClasses()
-
-    payloadClasses.forEach { payloadClass ->
+    allPayloadClasses.forEach { payloadClass ->
       val schemaName = payloadClass.swaggerSchemaName
       val classSchema = openApi.components.schemas[schemaName]
 
@@ -154,14 +159,70 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
   }
 
   /**
-   * Finds all the API payload classes. A "payload class" is defined here as a data class in the
+   * Adds discriminator mappings for polymorphic payload classes that are subclasses of a sealed
+   * interface. The mappings are based on the Jackson annotations ([JsonTypeInfo], [JsonTypeName],
+   * [JsonSubTypes]) that control actual serialization of payloads.
+   */
+  private fun addDiscriminatorsForSealedInterfaces(openApi: OpenAPI) {
+    allPayloadClasses
+        .flatMap { payloadClass -> payloadClass.superclasses.filter { it.isSealed } }
+        .forEach { sealedInterface ->
+          val jsonTypeInfo = sealedInterface.findAnnotation<JsonTypeInfo>()
+          if (jsonTypeInfo?.use == JsonTypeInfo.Id.NAME) {
+            val classSchema = openApi.components.schemas[sealedInterface.swaggerSchemaName]
+
+            if (classSchema != null) {
+              val discriminator =
+                  classSchema.discriminator
+                      ?: Discriminator().also { classSchema.discriminator = it }
+
+              if (discriminator.propertyName == null) {
+                discriminator.propertyName = jsonTypeInfo.property
+              }
+
+              if (discriminator.mapping == null || discriminator.mapping.isEmpty()) {
+                sealedInterface.sealedSubclasses.forEach { subclass ->
+                  discriminator.mapping(
+                      getDiscriminatorValue(sealedInterface, subclass),
+                      RefUtils.constructRef(subclass.swaggerSchemaName),
+                  )
+                }
+              }
+            }
+          }
+        }
+  }
+
+  /**
+   * Returns the value that Jackson will use in the discriminator property for a given subclass of a
+   * superclass. Discriminator values can be specified either on the subclass with [JsonTypeName] or
+   * on the superclass with [JsonSubTypes].
+   */
+  private fun getDiscriminatorValue(superclass: KClass<*>, subclass: KClass<*>): String {
+    val jsonTypeName = subclass.findAnnotation<JsonTypeName>()
+    if (jsonTypeName != null) {
+      return jsonTypeName.value
+    }
+
+    val jsonSubTypes = superclass.findAnnotation<JsonSubTypes>()
+    if (jsonSubTypes != null) {
+      return jsonSubTypes.value.first { it.value == subclass }.name
+    }
+
+    throw IllegalStateException(
+        "Unable to determine discriminator value for subclass ${subclass.qualifiedName} of ${superclass.qualifiedName}"
+    )
+  }
+
+  /**
+   * All the API payload classes. A "payload class" is defined here as a data class in the
    * `com.terraformation` package whose name contains the word "Payload". Classes whose names
    * contain dollar signs are excluded; the Kotlin compiler generates helper classes that we don't
    * want to treat as payload classes.
    *
    * This uses Spring's classpath scanning utilities.
    */
-  private fun findAllPayloadClasses(): List<KClass<out Any>> {
+  private val allPayloadClasses: List<KClass<out Any>> by lazy {
     val provider = ClassPathScanningCandidateComponentProvider(false)
 
     provider.addIncludeFilter { metadataReader, _ ->
@@ -169,7 +230,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
       "Payload" in className && '$' !in className
     }
 
-    return provider
+    provider
         .findCandidateComponents("com.terraformation")
         .map { beanDefinition -> beanDefinition.beanClassName }
         .map { Class.forName(it).kotlin }
