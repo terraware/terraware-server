@@ -1,3 +1,4 @@
+6632cf19b88 SW-7607 Reduce boilerplate for polymorphic payloads (#3582)
 82cfa575cac SW-7607 Log persistent events for observation media (#3580)
 44b93629e91 SW-7607 Make MediaKind enum localizable (#3581)
 cd4cf0963ae Update plugin com.github.jk1.dependency-license-report to v3 (#3579)
