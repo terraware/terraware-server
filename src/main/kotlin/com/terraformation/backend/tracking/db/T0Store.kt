@@ -491,8 +491,9 @@ class T0Store(
     val permanentPlotSpecies =
         with(MONITORING_PLOTS) {
           plotSpeciesWithObservations(plantingSiteId)
+              .unionAll(recordedObservationSpecies(plantingSiteId))
               .unionAll(
-                  DSL.select(
+                  DSL.selectDistinct(
                           ID.`as`("plot_id"),
                           PLOT_T0_DENSITIES.SPECIES_ID.`as`("species_id"),
                       )
@@ -546,8 +547,9 @@ class T0Store(
     val tempPlotSpecies =
         with(MONITORING_PLOTS) {
           plotSpeciesWithObservations(plantingSiteId)
+              .unionAll(recordedObservationSpecies(plantingSiteId))
               .unionAll(
-                  DSL.select(
+                  DSL.selectDistinct(
                           ID.`as`("plot_id"),
                           PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.`as`("species_id"),
                       )
@@ -616,7 +618,7 @@ class T0Store(
 
   private fun plotSpeciesWithObservations(plantingSiteId: PlantingSiteId) =
       with(MONITORING_PLOTS) {
-        DSL.select(
+        DSL.selectDistinct(
                 ID.`as`("plot_id"),
                 PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
             )
@@ -637,6 +639,24 @@ class T0Store(
                                 listOf(ObservationState.Completed, ObservationState.Abandoned)
                             )
                         )
+                )
+            )
+      }
+
+  private fun recordedObservationSpecies(plantingSiteId: PlantingSiteId) =
+      with(MONITORING_PLOTS) {
+        DSL.selectDistinct(
+                ID.`as`("plot_id"),
+                OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.`as`("species_id"),
+            )
+            .from(MONITORING_PLOTS)
+            .join(OBSERVED_PLOT_SPECIES_TOTALS)
+            .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(ID))
+            .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(
+                DSL.or(
+                    OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
+                    OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.gt(0),
                 )
             )
       }

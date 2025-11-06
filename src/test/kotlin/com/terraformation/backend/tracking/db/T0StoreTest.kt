@@ -235,6 +235,32 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `observations have recorded species not in withdrawals or t0 (permanent)`() {
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires species only in observations to have t0 data",
+      )
+    }
+
+    @Test
+    fun `observations have recorded species not in withdrawals or t0 (temporary)`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
+
+      assertFalse(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Requires species only in observations to have t0 data",
+      )
+    }
+
+    @Test
     fun `no withdrawal data and no t0 densities for permanent`() {
       assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -268,6 +294,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
+      insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -322,7 +350,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
       insertPlantingSubzonePopulation(speciesId = speciesId1)
-      insertPlantingSubzonePopulation(speciesId = speciesId2)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
