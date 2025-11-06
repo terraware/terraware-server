@@ -3,7 +3,11 @@ package com.terraformation.backend.jooq
 import org.jooq.codegen.JavaWriter
 import org.jooq.meta.jaxb.ForcedType
 
-class IdWrapper(private val className: String, includeExpressions: List<String>) {
+class IdWrapper(
+    private val className: String,
+    includeExpressions: List<String>,
+    private val eventLogPropertyName: String = className.replaceFirstChar { it.lowercase() },
+) {
   private val converterName = "${className}Converter"
   private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
 
@@ -20,9 +24,9 @@ class IdWrapper(private val className: String, includeExpressions: List<String>)
   fun render(out: JavaWriter) {
     out.println(
         """
-      class $className @JsonCreator constructor(@get:JsonValue val value: Long) : Comparable<$className> {
+      class $className @JsonCreator constructor(@get:JsonValue override val value: Long) : LongIdWrapper<$className> {
         constructor(value: String) : this(value.toLong())
-        override fun compareTo(other: $className) = value.compareTo(other.value)
+        override val eventLogPropertyName: String get() = "$eventLogPropertyName"
         override fun equals(other: Any?): Boolean = other is $className && other.value == value
         override fun hashCode(): Int = value.hashCode()
         override fun toString(): String = value.toString()
