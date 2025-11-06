@@ -1,7 +1,1 @@
-32fa6599658 Update dependency commons-codec:commons-codec to v1.20.0 (#3583)
-6632cf19b88 SW-7607 Reduce boilerplate for polymorphic payloads (#3582)
-82cfa575cac SW-7607 Log persistent events for observation media (#3580)
-44b93629e91 SW-7607 Make MediaKind enum localizable (#3581)
-cd4cf0963ae Update plugin com.github.jk1.dependency-license-report to v3 (#3579)
-2ac7c336aa0 SW-7250 Add dead plants to totalPlants per species in observation results (#3578)
-3e899e18da6 Move agent instructions to AGENTS.md (#3577)
+5f9eb4cadbc SW-7683 Add observation recorded species to allSet check (#3585)

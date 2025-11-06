@@ -630,10 +630,36 @@
 <polygon fill="black" stroke="black" points="604.5,-584.26 612.62,-587.6 608.5,-584.13 612.5,-584 612.5,-584 612.5,-584 608.5,-584.13 612.38,-580.4 604.5,-584.26 604.5,-584.26"/>
 <ellipse fill="none" stroke="black" cx="601.31" cy="-584.36" rx="3.2" ry="3.2"/>
 </g>
-<!-- species_plant_material_sourcing_methods -->
+<!-- plant_material_sourcing_methods -->
 <g id="node15" class="node">
+<title>plant_material_sourcing_methods</title>
+<g id="a_node15"><a xlink:href="../../tables/plant_material_sourcing_methods.html" xlink:title="plant_material_sourcing_methods" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="246,-353 246,-437 491,-437 491,-353 246,-353"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="246.5,-415 246.5,-437 491.5,-437 491.5,-415 246.5,-415"/>
+<polygon fill="none" stroke="black" points="246.5,-415 246.5,-437 491.5,-437 491.5,-415 246.5,-415"/>
+<text text-anchor="start" x="251.5" y="-424.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plant_material_sourcing_methods</text>
+<text text-anchor="start" x="452.5" y="-423.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="246.5,-393 246.5,-415 491.5,-415 491.5,-393 246.5,-393"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="251.5" y="-410"/>
+<text text-anchor="start" x="278.5" y="-401.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="246.5,-371 246.5,-393 491.5,-393 491.5,-371 246.5,-371"/>
+<text text-anchor="start" x="278.5" y="-379.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="246.5,-353 246.5,-371 357.5,-371 357.5,-353 246.5,-353"/>
+<polygon fill="none" stroke="black" points="246.5,-353 246.5,-371 357.5,-371 357.5,-353 246.5,-353"/>
+<text text-anchor="start" x="249.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="357.5,-353 357.5,-371 419.5,-371 419.5,-353 357.5,-353"/>
+<polygon fill="none" stroke="black" points="357.5,-353 357.5,-371 419.5,-371 419.5,-353 357.5,-353"/>
+<text text-anchor="start" x="409.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="419.5,-353 419.5,-371 491.5,-371 491.5,-353 419.5,-353"/>
+<polygon fill="none" stroke="black" points="419.5,-353 419.5,-371 491.5,-371 491.5,-353 419.5,-353"/>
+<text text-anchor="start" x="472.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- species_plant_material_sourcing_methods -->
+<g id="node16" class="node">
 <title>species_plant_material_sourcing_methods</title>
-<g id="a_node15"><a xlink:href="../../tables/species_plant_material_sourcing_methods.html" xlink:title="species_plant_material_sourcing_methods" target="_top">
+<g id="a_node16"><a xlink:href="../../tables/species_plant_material_sourcing_methods.html" xlink:title="species_plant_material_sourcing_methods" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="540.5,-384 540.5,-468 834.5,-468 834.5,-384 540.5,-384"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="540.5,-446 540.5,-468 834.5,-468 834.5,-446 540.5,-446"/>
 <polygon fill="none" stroke="black" points="540.5,-446 540.5,-468 834.5,-468 834.5,-446 540.5,-446"/>
@@ -663,32 +689,6 @@
 <path fill="none" stroke="black" d="M528.98,-445.19C528.8,-453.87 533.07,-466.68 532,-478 486.95,-955.94 518.71,-2158.35 499,-2638 493.61,-2769.29 590.9,-3228 459.5,-3228"/>
 <polygon fill="black" stroke="black" points="533.75,-440.57 542.01,-437.59 536.63,-437.78 539.5,-435 539.5,-435 539.5,-435 536.63,-437.78 536.99,-432.41 533.75,-440.57 533.75,-440.57"/>
 <ellipse fill="none" stroke="black" cx="531.46" cy="-442.79" rx="3.2" ry="3.2"/>
-</g>
-<!-- plant_material_sourcing_methods -->
-<g id="node16" class="node">
-<title>plant_material_sourcing_methods</title>
-<g id="a_node16"><a xlink:href="../../tables/plant_material_sourcing_methods.html" xlink:title="plant_material_sourcing_methods" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="246,-353 246,-437 491,-437 491,-353 246,-353"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="246.5,-415 246.5,-437 491.5,-437 491.5,-415 246.5,-415"/>
-<polygon fill="none" stroke="black" points="246.5,-415 246.5,-437 491.5,-437 491.5,-415 246.5,-415"/>
-<text text-anchor="start" x="251.5" y="-424.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plant_material_sourcing_methods</text>
-<text text-anchor="start" x="452.5" y="-423.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="246.5,-393 246.5,-415 491.5,-415 491.5,-393 246.5,-393"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="251.5" y="-410"/>
-<text text-anchor="start" x="278.5" y="-401.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="246.5,-371 246.5,-393 491.5,-393 491.5,-371 246.5,-371"/>
-<text text-anchor="start" x="278.5" y="-379.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="246.5,-353 246.5,-371 357.5,-371 357.5,-353 246.5,-353"/>
-<polygon fill="none" stroke="black" points="246.5,-353 246.5,-371 357.5,-371 357.5,-353 246.5,-353"/>
-<text text-anchor="start" x="249.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="357.5,-353 357.5,-371 419.5,-371 419.5,-353 357.5,-353"/>
-<polygon fill="none" stroke="black" points="357.5,-353 357.5,-371 419.5,-371 419.5,-353 357.5,-353"/>
-<text text-anchor="start" x="409.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="419.5,-353 419.5,-371 491.5,-371 491.5,-353 419.5,-353"/>
-<polygon fill="none" stroke="black" points="419.5,-353 419.5,-371 491.5,-371 491.5,-353 419.5,-353"/>
-<text text-anchor="start" x="472.5" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
 </g>
 <!-- species_plant_material_sourcing_methods&#45;&gt;plant_material_sourcing_methods -->
 <g id="edge13" class="edge">
