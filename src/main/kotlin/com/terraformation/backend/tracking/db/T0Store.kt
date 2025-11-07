@@ -220,6 +220,29 @@ class T0Store(
               .and(SPECIES_ID.notIn(observationDensities.keys))
               .fetchSet(SPECIES_ID.asNonNullable())
         }
+    // Get species from later observation that were not included in the first observation
+    val observedSpeciesNotInObservation: Set<SpeciesId> =
+        with(OBSERVED_PLOT_SPECIES_TOTALS) {
+          dslContext
+              .select(SPECIES_ID)
+              .from(this)
+              .join(MONITORING_PLOTS)
+              .on(MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+              .join(OBSERVATIONS)
+              .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
+              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+              .and(OBSERVATION_ID.ne(observationId))
+              .and(
+                  OBSERVATIONS.STATE_ID.`in`(
+                      listOf(ObservationState.Completed, ObservationState.Abandoned)
+                  )
+              )
+              .and(SPECIES_ID.notIn(observationDensities.keys))
+              .and(DSL.or(TOTAL_LIVE.gt(0), TOTAL_DEAD.gt(0)))
+              .fetchSet(SPECIES_ID.asNonNullable())
+        }
+    val speciesNotInObservation =
+        withdrawnSpeciesNotInObservation.plus(observedSpeciesNotInObservation)
 
     dslContext.transaction { _ ->
       with(PLOT_T0_OBSERVATIONS) {
@@ -280,7 +303,7 @@ class T0Store(
         }
 
         // Any species withdrawn to the subzone that aren't in the observation need a density of 0
-        withdrawnSpeciesNotInObservation.forEach { speciesId ->
+        speciesNotInObservation.forEach { speciesId ->
           insertQuery =
               insertQuery.values(
                   monitoringPlotId,
@@ -311,7 +334,7 @@ class T0Store(
 
     val newDensities =
         observationDensities.mapValues { it.value.toBigDecimal().toPlantsPerHectare() } +
-            withdrawnSpeciesNotInObservation.associateWith { BigDecimal.ZERO }
+            speciesNotInObservation.associateWith { BigDecimal.ZERO }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
     return PlotT0DensityChangedModel(
