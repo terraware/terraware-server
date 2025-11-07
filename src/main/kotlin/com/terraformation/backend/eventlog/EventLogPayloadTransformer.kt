@@ -1,6 +1,12 @@
 package com.terraformation.backend.eventlog
 
 import com.terraformation.backend.customer.db.SimpleUserStore
+import com.terraformation.backend.customer.event.OrganizationCreatedEvent
+import com.terraformation.backend.customer.event.OrganizationPersistentEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEvent
+import com.terraformation.backend.customer.event.ProjectCreatedEvent
+import com.terraformation.backend.customer.event.ProjectPersistentEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventActionPayload
@@ -9,6 +15,8 @@ import com.terraformation.backend.eventlog.api.EventSubjectName
 import com.terraformation.backend.eventlog.api.EventSubjectPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
+import com.terraformation.backend.eventlog.api.OrganizationSubjectPayload
+import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
@@ -43,7 +51,7 @@ class EventLogPayloadTransformer(
     val users = simpleUserStore.fetchSimpleUsersById(entries.map { it.createdBy }.distinct())
 
     return entries.flatMap { entry ->
-      val actions = getActions(entry.event)
+      val actions = getActions(entry.event, context)
       val subject = getSubject(entry.event, context)
 
       if (actions.isNotEmpty() && subject != null) {
@@ -69,6 +77,8 @@ class EventLogPayloadTransformer(
     return when (event) {
       is ObservationMediaFilePersistentEvent ->
           ObservationPlotMediaSubjectPayload.forEvent(event, context)
+      is OrganizationPersistentEvent -> OrganizationSubjectPayload.forEvent(event, context)
+      is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       else -> {
         log.error("Cannot construct subject for event ${event.javaClass.name}")
         null
@@ -76,7 +86,10 @@ class EventLogPayloadTransformer(
     }
   }
 
-  private fun getActions(event: PersistentEvent): List<EventActionPayload> {
+  private fun getActions(
+      event: PersistentEvent,
+      context: EventLogPayloadContext,
+  ): List<EventActionPayload> {
     return when (event) {
       is ObservationMediaFileEditedEvent ->
           listOf(
@@ -84,6 +97,22 @@ class EventLogPayloadTransformer(
                   "caption", // TODO: i18n
                   listOfNotNull(event.changedFrom.caption),
                   listOfNotNull(event.changedTo.caption),
+              )
+          )
+      is OrganizationRenamedEvent ->
+          listOf(
+              FieldUpdatedActionPayload(
+                  fieldName = "name", // TODO: i18n,
+                  changedFrom = listOf(getPreviousOrganizationName(event, context)),
+                  changedTo = listOf(event.name),
+              )
+          )
+      is ProjectRenamedEvent ->
+          listOf(
+              FieldUpdatedActionPayload(
+                  fieldName = "name", // TODO: i18n,
+                  changedFrom = listOf(getPreviousProjectName(event, context)),
+                  changedTo = listOf(event.name),
               )
           )
 
@@ -97,5 +126,29 @@ class EventLogPayloadTransformer(
         emptyList()
       }
     }
+  }
+
+  private fun getPreviousOrganizationName(
+      event: OrganizationPersistentEvent,
+      context: EventLogPayloadContext,
+  ): String {
+    val lastRename =
+        context.lastEventBefore<OrganizationRenamedEvent>(event) {
+          it.organizationId == event.organizationId
+        }
+    return lastRename?.name
+        ?: context
+            .first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
+            .name
+  }
+
+  private fun getPreviousProjectName(
+      event: ProjectPersistentEvent,
+      context: EventLogPayloadContext,
+  ): String {
+    val lastRename =
+        context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
+    return lastRename?.name
+        ?: context.first<ProjectCreatedEvent> { it.projectId == event.projectId }.name
   }
 }
