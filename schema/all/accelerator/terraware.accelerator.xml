@@ -364,8 +364,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -1141,8 +1141,8 @@
             <parent column="id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_statuses"/>
@@ -1165,8 +1165,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_frequency_id" nullable="false" remarks="Frequency of the report, that can determine report data. Must match with frequency of the configuration." size="10" type="int4" typeCode="4">
-            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
+            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>
