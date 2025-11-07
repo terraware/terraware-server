@@ -5,7 +5,9 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.EventLogRecord
 import com.terraformation.backend.db.default_schema.tables.references.EVENT_LOG
 import com.terraformation.backend.eventlog.CircularEventUpgradePathDetectedException
@@ -16,6 +18,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import java.time.Instant
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,6 +31,116 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val objectMapper = jacksonObjectMapper()
   private val store: EventLogStore by lazy {
     EventLogStore(clock, dslContext, EventUpgradeUtils(dslContext), objectMapper)
+  }
+
+  @Nested
+  inner class FetchByIds {
+    val org1CreatedEvent = TestOrganizationCreatedEventV1(OrganizationId(1), "Org 1")
+    val org2CreatedEvent = TestOrganizationCreatedEventV1(OrganizationId(2), "Org 2")
+    val org1Project1CreatedEvent =
+        TestProjectCreatedEventV1(OrganizationId(1), ProjectId(1), "Project 1")
+    val org2Project1CreatedEvent =
+        TestProjectCreatedEventV1(OrganizationId(2), ProjectId(1), "Project 1")
+    val org2Project2CreatedEvent =
+        TestProjectCreatedEventV1(OrganizationId(2), ProjectId(2), "Project 1")
+
+    lateinit var org1CreatedEventId: EventLogId
+    lateinit var org2CreatedEventId: EventLogId
+    lateinit var org1Project1CreatedEventId: EventLogId
+    lateinit var org2Project1CreatedEventId: EventLogId
+    lateinit var org2Project2CreatedEventId: EventLogId
+
+    @BeforeEach
+    fun setUp() {
+      org1CreatedEventId = store.insertEvent(org1CreatedEvent)
+      org2CreatedEventId = store.insertEvent(org2CreatedEvent)
+      org1Project1CreatedEventId = store.insertEvent(org1Project1CreatedEvent)
+      org2Project1CreatedEventId = store.insertEvent(org2Project1CreatedEvent)
+      org2Project2CreatedEventId = store.insertEvent(org2Project2CreatedEvent)
+    }
+
+    @Test
+    fun `returns events of all types when no list of classes is specified`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org1CreatedEvent,
+                  org1CreatedEventId,
+              ),
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org1Project1CreatedEvent,
+                  org1Project1CreatedEventId,
+              ),
+          ),
+          store.fetchByIds<PersistentEvent>(listOf(OrganizationId(1))),
+      )
+    }
+
+    @Test
+    fun `can specify multiple classes`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org1CreatedEvent,
+                  org1CreatedEventId,
+              ),
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org1Project1CreatedEvent,
+                  org1Project1CreatedEventId,
+              ),
+          ),
+          store.fetchByIds(
+              listOf(OrganizationId(1)),
+              listOf(TestOrganizationEvent::class, TestProjectEvent::class),
+          ),
+      )
+    }
+
+    @Test
+    fun `only returns events of requested classes`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org1Project1CreatedEvent,
+                  org1Project1CreatedEventId,
+              ),
+          ),
+          store.fetchByIds(listOf(OrganizationId(1)), listOf(TestProjectEvent::class)),
+      )
+    }
+
+    @Test
+    fun `requires matches on all requested IDs`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(
+                  user.userId,
+                  Instant.EPOCH,
+                  org2Project1CreatedEvent,
+                  org2Project1CreatedEventId,
+              ),
+          ),
+          store.fetchByIds(
+              listOf(OrganizationId(2), ProjectId(1)),
+              listOf(TestProjectEvent::class),
+          ),
+      )
+    }
+
+    @Test
+    fun `throws exception when no IDs specified`() {
+      assertThrows<IllegalArgumentException> { store.fetchByIds<PersistentEvent>(emptyList()) }
+    }
   }
 
   @Nested
@@ -262,6 +375,15 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val organizationId: OrganizationId,
       val dummy3: Int = 3,
   ) : TestOrganizationEvent
+
+  sealed interface TestProjectEvent : PersistentEvent
+
+  @SkipPersistentEventTest
+  data class TestProjectCreatedEventV1(
+      val organizationId: OrganizationId,
+      val projectId: ProjectId,
+      val name: String,
+  ) : TestProjectEvent
 
   @SkipPersistentEventTest
   data class TestCircularEventV1(val organizationId: OrganizationId) : UpgradableEvent {

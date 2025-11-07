@@ -2,6 +2,7 @@ package com.terraformation.backend.eventlog.db
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.LongIdWrapper
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -79,6 +80,28 @@ class EventLogStore(
     return fetchByIdField(fieldValue, fieldName, SQLDataType.BIGINT, eventClasses)
   }
 
+  fun <T : PersistentEvent> fetchByIds(
+      ids: Collection<LongIdWrapper<*>>,
+      requestedClasses: Collection<KClass<out T>>? = null,
+  ): List<EventLogEntry<T>> {
+    require(ids.isNotEmpty()) { "No IDs specified" }
+
+    val requestedConcreteClasses = requestedClasses?.let { getConcreteClasses(it) }
+    val classConditions = requestedConcreteClasses?.let { getLikeConditions(it) } ?: emptyList()
+    val idConditions =
+        ids.map { payloadField(it.eventLogPropertyName, SQLDataType.BIGINT).eq(it.value) }
+
+    val condition =
+        DSL.and(
+            listOfNotNull(
+                DSL.and(idConditions),
+                if (classConditions.isNotEmpty()) DSL.or(classConditions) else null,
+            )
+        )
+
+    return fetchByCondition(condition, requestedConcreteClasses)
+  }
+
   private fun <I : Any, T : PersistentEvent> fetchByIdField(
       id: I,
       idFieldName: String,
@@ -86,18 +109,8 @@ class EventLogStore(
       requestedClasses: Collection<KClass<out T>>,
   ): List<EventLogEntry<T>> {
     return with(EVENT_LOG) {
-      val requestedConcreteClasses =
-          requestedClasses.flatMap { requestedClass ->
-            if (requestedClass.isSealed) {
-              requestedClass.sealedSubclasses.filterNot { it.isSubclassOf(UpgradableEvent::class) }
-            } else {
-              listOf(requestedClass)
-            }
-          }
-      val likeConditions =
-          requestedConcreteClasses.map {
-            EVENT_CLASS.like(it.java.name.substringBeforeLast('V') + "V%")
-          }
+      val requestedConcreteClasses = getConcreteClasses(requestedClasses)
+      val likeConditions = getLikeConditions(requestedConcreteClasses)
       val condition =
           DSL.and(
               payloadField(idFieldName, idDataType).eq(id),
@@ -108,11 +121,32 @@ class EventLogStore(
     }
   }
 
+  private fun getLikeConditions(
+      requestedConcreteClasses: List<KClass<out PersistentEvent>>
+  ): List<Condition> =
+      requestedConcreteClasses.map {
+        EVENT_LOG.EVENT_CLASS.like(it.java.name.substringBeforeLast('V') + "V%")
+      }
+
+  private fun <T : PersistentEvent> getConcreteClasses(
+      requestedClasses: Collection<KClass<out T>>
+  ): List<KClass<out T>> {
+    val requestedConcreteClasses =
+        requestedClasses.flatMap { requestedClass ->
+          if (requestedClass.isSealed) {
+            requestedClass.sealedSubclasses.filterNot { it.isSubclassOf(UpgradableEvent::class) }
+          } else {
+            listOf(requestedClass)
+          }
+        }
+    return requestedConcreteClasses
+  }
+
   private fun <T : PersistentEvent> fetchByCondition(
       condition: Condition,
-      requestedClasses: Collection<KClass<out T>>,
+      requestedClasses: Collection<KClass<out T>>?,
   ): List<EventLogEntry<T>> {
-    requestedClasses.forEach { requestedClass ->
+    requestedClasses?.forEach { requestedClass ->
       if (requestedClass.isSubclassOf(UpgradableEvent::class)) {
         throw IllegalArgumentException(
             "${requestedClass.java.name} is upgradable; only the latest version may be queried"
@@ -140,7 +174,7 @@ class EventLogStore(
    */
   private fun <T : PersistentEvent> eventLogEntryFromRecord(
       record: Record,
-      requestedClasses: Collection<KClass<out T>>,
+      requestedClasses: Collection<KClass<out T>>?,
   ): EventLogEntry<T> {
     val className = record[EVENT_LOG.EVENT_CLASS]!!
     val rawEventObject =
@@ -151,7 +185,7 @@ class EventLogStore(
 
     val eventObject = upgradeToLatest(rawEventObject)
 
-    if (requestedClasses.none { it.isInstance(eventObject) }) {
+    if (requestedClasses != null && requestedClasses.none { it.isInstance(eventObject) }) {
       val requestedClassNames = requestedClasses.joinToString()
       throw IllegalStateException(
           "Event class $className is not on requested list: $requestedClassNames"
