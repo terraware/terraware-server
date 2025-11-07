@@ -1,3 +1,4 @@
+989f82c3d17 SW-7685 Publish ObservationStateUpdatedEvent when state is updated (#3588)
 e9656e8e77f SW-7685 Add later-observed species to t0 densities when assigning observation (#3587)
 4e4f92ccde8 SW-7684 Add endpoint for species required for t0 data (#3590)
 de1ddd24aba SW-7607 Add subject and action event interfaces (#3591)
