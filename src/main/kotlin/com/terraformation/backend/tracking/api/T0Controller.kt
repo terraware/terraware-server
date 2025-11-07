@@ -60,7 +60,7 @@ class T0Controller(
           "Species with densities are species that were withdrawn, species with null densities are " +
               "species that were recorded in observations but not withdrawn to the plot's subzone.",
   )
-  fun getSpeciesWithdrawnToPlantingSite(
+  fun getT0SpeciesForPlantingSite(
       @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
   ): GetSitePlotSpeciesResponsePayload {
     val plots = t0Store.fetchSiteSpeciesByPlot(plantingSiteId)

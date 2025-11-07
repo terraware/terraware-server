@@ -112,9 +112,11 @@ class T0Store(
         DSL.select(
                 MONITORING_PLOTS.ID,
                 OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.`as`("species_id"),
-                DSL.inline(null, BigDecimal::class.java).`as`("density"),
+                DSL.castNull(SQLDataType.NUMERIC).`as`("density"),
             )
             .from(MONITORING_PLOTS)
+            .join(PLANTING_SUBZONES)
+            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
             .join(OBSERVED_PLOT_SPECIES_TOTALS)
             .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
             .join(OBSERVATIONS)
@@ -142,6 +144,15 @@ class T0Store(
                                 PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(
                                     OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID
                                 )
+                            )
+                            .and(
+                                DSL.round(
+                                        PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(
+                                            SQLDataType.NUMERIC
+                                        ) / PLANTING_SUBZONES.AREA_HA,
+                                        1,
+                                    )
+                                    .ge(BigDecimal.valueOf(0.05))
                             )
                     )
             )
