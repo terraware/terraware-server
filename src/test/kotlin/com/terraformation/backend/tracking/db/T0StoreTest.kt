@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVAT
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.toBigDecimal
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
@@ -1279,7 +1280,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 5,
       )
 
-      store.assignNewObservationSpeciesZero(observationId)
+      store.on(ObservationStateUpdatedEvent(observationId, ObservationState.Completed))
 
       assertTableEquals(
           listOf(
@@ -1308,12 +1309,41 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 5,
       )
 
-      store.assignNewObservationSpeciesZero(observationId)
+      store.on(ObservationStateUpdatedEvent(observationId, ObservationState.Abandoned))
 
       assertTableEquals(
           listOf(
               plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.TEN.toPlantsPerHectare()),
               plotDensityRecord(monitoringPlotId, speciesId2, BigDecimal.ZERO),
+          )
+      )
+    }
+
+    @Test
+    fun `t0 densities are not added when new observation state is not Completed or Abandoned`() {
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      val t0ObservationId = insertObservation()
+      insertObservationPlot()
+      insertObservedPlotSpeciesTotals(
+          observationId = t0ObservationId,
+          speciesId = speciesId1,
+          totalLive = 10,
+      )
+      store.assignT0PlotObservation(monitoringPlotId, t0ObservationId)
+
+      insertObservedPlotSpeciesTotals(
+          observationId = observationId,
+          speciesId = speciesId2,
+          totalLive = 5,
+      )
+
+      store.on(ObservationStateUpdatedEvent(observationId, ObservationState.InProgress))
+
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.TEN.toPlantsPerHectare())
           )
       )
     }

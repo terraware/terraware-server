@@ -497,8 +497,7 @@ class T0Store(
     }
   }
 
-  // only public for testability
-  fun assignNewObservationSpeciesZero(observationId: ObservationId) {
+  private fun assignNewObservationSpeciesZero(observationId: ObservationId) {
     val currentUserId = currentUser().userId
     val now = clock.instant()
 
