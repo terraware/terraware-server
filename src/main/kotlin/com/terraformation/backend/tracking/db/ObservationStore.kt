@@ -66,6 +66,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -97,12 +98,14 @@ import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
 class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
@@ -621,6 +624,8 @@ class ObservationStore(
           .set(OBSERVATIONS.STATE_ID, newState)
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
+
+      eventPublisher.publishEvent(ObservationStateUpdatedEvent(observationId, newState))
     }
   }
 

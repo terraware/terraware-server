@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -17,10 +18,12 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   protected val clock = TestClock()
+  protected val eventPublisher = TestEventPublisher()
   protected val store: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
+        eventPublisher,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

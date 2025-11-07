@@ -36,6 +36,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     ObservationStore(
         clock,
         dslContext,
+        eventPublisher,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

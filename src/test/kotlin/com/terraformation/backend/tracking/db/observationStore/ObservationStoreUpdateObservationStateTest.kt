@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db.observationStore
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,6 +39,9 @@ class ObservationStoreUpdateObservationStateTest : BaseObservationStoreTest() {
             state = ObservationState.Completed,
         ),
         store.fetchObservationById(observationId),
+    )
+    eventPublisher.assertEventPublished(
+        ObservationStateUpdatedEvent(observationId, ObservationState.Completed)
     )
   }
 
