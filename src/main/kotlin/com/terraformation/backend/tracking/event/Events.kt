@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -81,6 +82,11 @@ data class ObservationNotStartedEvent(
     val observationId: ObservationId,
     val plantingSiteId: PlantingSiteId,
 ) : ObservationSchedulingNotificationEvent
+
+data class ObservationStateUpdatedEvent(
+    val observationId: ObservationId,
+    val newState: ObservationState,
+)
 
 data class PlantingSiteDeletionStartedEvent(val plantingSiteId: PlantingSiteId)
 

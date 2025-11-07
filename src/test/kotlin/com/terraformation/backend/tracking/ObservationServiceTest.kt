@@ -139,6 +139,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ObservationStore(
         clock,
         dslContext,
+        eventPublisher,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
