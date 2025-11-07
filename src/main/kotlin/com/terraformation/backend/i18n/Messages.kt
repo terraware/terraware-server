@@ -534,6 +534,8 @@ class Messages {
 
   fun terraformationTeam() = getMessage("terraformationTeam")
 
+  fun inaccessibleUser() = getMessage("inaccessibleUser")
+
   fun timeZoneWithCity(timeZoneName: String, cityName: String) =
       getMessage("timeZoneWithCity", timeZoneName, cityName)
 

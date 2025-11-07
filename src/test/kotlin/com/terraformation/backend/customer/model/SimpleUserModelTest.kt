@@ -30,7 +30,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(systemUser.userId, "Terraformation Team"),
           SimpleUserModel.create(
               userId = systemUser.userId,
-              fullName = "Terraware System",
+              firstName = "Terraware",
+              lastName = "System",
               email = SystemUser.USERNAME,
               userIsInSameOrg = false,
               userIsDeleted = false,
@@ -48,7 +49,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(userId, "Terraformation Team"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "Some Name",
+              firstName = "Some",
+              lastName = "Name",
               email = "test@terraformation.com",
               userIsInSameOrg = false,
               userIsDeleted = false,
@@ -66,7 +68,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(userId, "Terraformation Team"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "Some Name",
+              firstName = "Some",
+              lastName = "Name",
               email = "test@terraformation.com",
               userIsInSameOrg = false,
               userIsDeleted = true,
@@ -85,7 +88,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(userId, "Former User"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "Some Name",
+              firstName = "Some",
+              lastName = "Name",
               email = "test@other.com",
               userIsInSameOrg = false,
               userIsDeleted = true,
@@ -102,7 +106,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(userId, "First Last"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "First Last",
+              firstName = "First",
+              lastName = "Last",
               email = "test@terraformation.com",
               userIsInSameOrg = true,
               userIsDeleted = false,
@@ -121,7 +126,8 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
           SimpleUserModel(userId, "First2 Last"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "First2 Last",
+              firstName = "First2",
+              lastName = "Last",
               email = "test@terraformation.com",
               userIsInSameOrg = false,
               userIsDeleted = false,
@@ -136,10 +142,11 @@ class SimpleUserModelTest : DatabaseTest(), RunsAsUser {
       val userId = UserId(1003)
 
       assertEquals(
-          SimpleUserModel(userId, ""),
+          SimpleUserModel(userId, "Terraware User"),
           SimpleUserModel.create(
               userId = userId,
-              fullName = "First3 Last",
+              firstName = "First3",
+              lastName = "Last",
               email = "test@other.com",
               userIsInSameOrg = false,
               userIsDeleted = false,

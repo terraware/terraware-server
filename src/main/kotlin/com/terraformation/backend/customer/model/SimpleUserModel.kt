@@ -7,7 +7,7 @@ import com.terraformation.backend.log.perClassLogger
 
 data class SimpleUserModel(
     val userId: UserId,
-    val fullName: String = "",
+    val fullName: String,
 ) {
   companion object {
     private val log = perClassLogger()
@@ -18,7 +18,8 @@ data class SimpleUserModel(
 
     fun create(
         userId: UserId,
-        fullName: String,
+        firstName: String?,
+        lastName: String?,
         email: String,
         userIsInSameOrg: Boolean,
         userIsDeleted: Boolean,
@@ -26,12 +27,15 @@ data class SimpleUserModel(
     ): SimpleUserModel {
       return when {
         !userIsDeleted && (userIsInSameOrg || currentUser().canReadUser(userId)) ->
-            SimpleUserModel(userId, fullName)
+            SimpleUserModel(
+                userId,
+                TerrawareUser.makeFullName(firstName, lastName) ?: messages.inaccessibleUser(),
+            )
         emailIsTf(email) -> SimpleUserModel(userId, messages.terraformationTeam())
         userIsDeleted -> SimpleUserModel(userId, messages.formerUser())
         else -> {
           log.error("User {} cannot read name of user {}", currentUser().userId, userId)
-          return SimpleUserModel(userId)
+          return SimpleUserModel(userId, messages.inaccessibleUser())
         }
       }
     }

@@ -1380,7 +1380,8 @@ class ReportStore(
                 .map {
                   SimpleUserModel.create(
                       it[ID.asNonNullable()],
-                      "${it[FIRST_NAME]} ${it[LAST_NAME]}",
+                      it[FIRST_NAME],
+                      it[LAST_NAME],
                       it[EMAIL.asNonNullable()],
                       it[sameOrgField],
                       it[DELETED_TIME] != null,
