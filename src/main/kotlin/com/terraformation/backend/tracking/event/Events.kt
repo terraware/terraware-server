@@ -10,6 +10,9 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.EntityUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -231,7 +234,7 @@ data class RateLimitedT0DataAssignedEvent(
   }
 }
 
-sealed interface ObservationMediaFileEvent : PersistentEvent {
+sealed interface ObservationMediaFilePersistentEvent : PersistentEvent {
   val fileId: FileId
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId
@@ -245,7 +248,7 @@ data class ObservationMediaFileDeletedEventV1(
     override val observationId: ObservationId,
     override val organizationId: OrganizationId,
     override val plantingSiteId: PlantingSiteId,
-) : ObservationMediaFileEvent
+) : EntityDeletedPersistentEvent, ObservationMediaFilePersistentEvent
 
 typealias ObservationMediaFileDeletedEvent = ObservationMediaFileDeletedEventV1
 
@@ -257,7 +260,7 @@ data class ObservationMediaFileEditedEventV1(
     override val observationId: ObservationId,
     override val organizationId: OrganizationId,
     override val plantingSiteId: PlantingSiteId,
-) : ObservationMediaFileEvent {
+) : EntityUpdatedPersistentEvent, ObservationMediaFilePersistentEvent {
   data class Values(
       val caption: String?,
   )
@@ -279,6 +282,6 @@ data class ObservationMediaFileUploadedEventV1(
     override val plantingSiteId: PlantingSiteId,
     val position: ObservationPlotPosition?,
     val type: ObservationMediaType,
-) : ObservationMediaFileEvent
+) : EntityCreatedPersistentEvent, ObservationMediaFilePersistentEvent
 
 typealias ObservationMediaFileUploadedEvent = ObservationMediaFileUploadedEventV1

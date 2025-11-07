@@ -2,11 +2,11 @@ package com.terraformation.backend.customer.event
 
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 
 data class ProjectDeletedEventV1(
-    val organizationId: OrganizationId,
-    val projectId: ProjectId,
-) : PersistentEvent
+    override val organizationId: OrganizationId,
+    override val projectId: ProjectId,
+) : EntityDeletedPersistentEvent, ProjectPersistentEvent
 
 typealias ProjectDeletedEvent = ProjectDeletedEventV1
