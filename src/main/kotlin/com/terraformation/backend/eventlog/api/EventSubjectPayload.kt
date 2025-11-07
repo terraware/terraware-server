@@ -3,7 +3,15 @@ package com.terraformation.backend.eventlog.api
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.OrganizationCreatedEvent
+import com.terraformation.backend.customer.event.OrganizationPersistentEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEvent
+import com.terraformation.backend.customer.event.ProjectCreatedEvent
+import com.terraformation.backend.customer.event.ProjectPersistentEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -90,6 +98,59 @@ data class ObservationPlotMediaSubjectPayload(
   }
 }
 
+@JsonTypeName("Organization")
+data class OrganizationSubjectPayload(
+    override val fullText: String,
+    val organizationId: OrganizationId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: OrganizationPersistentEvent,
+        context: EventLogPayloadContext,
+    ): OrganizationSubjectPayload {
+      val lastRename =
+          context.lastEventBefore<OrganizationRenamedEvent>(event) {
+            it.organizationId == event.organizationId
+          }
+      val createEvent =
+          context.first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
+      val name = lastRename?.name ?: createEvent.name
+
+      return OrganizationSubjectPayload(
+          fullText = context.subjectFullText<OrganizationSubjectPayload>(name),
+          organizationId = event.organizationId,
+          shortText = context.subjectShortText<OrganizationSubjectPayload>(),
+      )
+    }
+  }
+}
+
+@JsonTypeName("Project")
+data class ProjectSubjectPayload(
+    override val fullText: String,
+    val projectId: ProjectId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: ProjectPersistentEvent,
+        context: EventLogPayloadContext,
+    ): ProjectSubjectPayload {
+      val lastRename =
+          context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
+      val createEvent = context.first<ProjectCreatedEvent> { it.projectId == event.projectId }
+      val name = lastRename?.name ?: createEvent.name
+
+      return ProjectSubjectPayload(
+          fullText = context.subjectFullText<ProjectSubjectPayload>(name),
+          projectId = event.projectId,
+          shortText = context.subjectShortText<ProjectSubjectPayload>(),
+      )
+    }
+  }
+}
+
 /**
  * Types of subjects that can be returned by the event log query API. Each subject maps to an
  * interface that's implemented by events related to that subject.
@@ -99,4 +160,6 @@ data class ObservationPlotMediaSubjectPayload(
  */
 enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
+  Organization(OrganizationPersistentEvent::class),
+  Project(ProjectPersistentEvent::class),
 }
