@@ -1258,6 +1258,67 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
   }
 
+  @Nested
+  inner class AssignNewObservationSpeciesZero {
+    @Test
+    fun `t0 densities are not changed when no new species in observation`() {
+      val speciesId1 = insertSpecies()
+
+      val t0ObservationId = insertObservation()
+      insertObservationPlot()
+      insertObservedPlotSpeciesTotals(
+          observationId = t0ObservationId,
+          speciesId = speciesId1,
+          totalLive = 1,
+      )
+      store.assignT0PlotObservation(monitoringPlotId, t0ObservationId)
+
+      insertObservedPlotSpeciesTotals(
+          observationId = observationId,
+          speciesId = speciesId1,
+          totalLive = 5,
+      )
+
+      store.assignNewObservationSpeciesZero(observationId)
+
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.ONE.toPlantsPerHectare())
+          )
+      )
+    }
+
+    @Test
+    fun `t0 densities are added with zeros when new species in observation`() {
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      val t0ObservationId = insertObservation()
+      insertObservationPlot()
+      insertObservedPlotSpeciesTotals(
+          observationId = t0ObservationId,
+          speciesId = speciesId1,
+          totalLive = 10,
+      )
+      store.assignT0PlotObservation(monitoringPlotId, t0ObservationId)
+
+      insertObservedPlotSpeciesTotals(
+          observationId = observationId,
+          speciesId = speciesId2,
+          totalLive = 5,
+      )
+
+      store.assignNewObservationSpeciesZero(observationId)
+
+      assertTableEquals(
+          listOf(
+              plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.TEN.toPlantsPerHectare()),
+              plotDensityRecord(monitoringPlotId, speciesId2, BigDecimal.ZERO),
+          )
+      )
+    }
+  }
+
   private fun plotDensityRecord(
       plotId: MonitoringPlotId,
       speciesId: SpeciesId,

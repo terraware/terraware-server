@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
@@ -40,6 +41,7 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class T0Store(
@@ -486,6 +488,72 @@ class T0Store(
         plantingZoneId = plantingZoneId,
         speciesDensityChanges = speciesDensityChanges,
     )
+  }
+
+  @EventListener
+  fun on(event: ObservationStateUpdatedEvent) {
+    if (event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned)) {
+      assignNewObservationSpeciesZero(event.observationId)
+    }
+  }
+
+  // only public for testability
+  fun assignNewObservationSpeciesZero(observationId: ObservationId) {
+    val plantingSiteId =
+        with(OBSERVATIONS) {
+          dslContext
+              .select(PLANTING_SITE_ID)
+              .from(this)
+              .where(ID.eq(observationId))
+              .fetchOne(PLANTING_SITE_ID.asNonNullable())
+        }
+    val plotsWithT0Observations =
+        with(PLOT_T0_OBSERVATIONS) {
+          dslContext
+              .select(MONITORING_PLOT_ID)
+              .from(this)
+              .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
+              .fetchSet(MONITORING_PLOT_ID.asNonNullable())
+        }
+
+    // TODO fix this n+1
+    plotsWithT0Observations.forEach { monitoringPlotId ->
+      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        dslContext
+            .insertInto(
+                PLOT_T0_DENSITIES,
+                PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                PLOT_T0_DENSITIES.SPECIES_ID,
+                PLOT_T0_DENSITIES.PLOT_DENSITY,
+                PLOT_T0_DENSITIES.CREATED_BY,
+                PLOT_T0_DENSITIES.CREATED_TIME,
+                PLOT_T0_DENSITIES.MODIFIED_BY,
+                PLOT_T0_DENSITIES.MODIFIED_TIME,
+            )
+            .select(
+                DSL.select(
+                        DSL.value(monitoringPlotId),
+                        SPECIES_ID,
+                        DSL.value(BigDecimal.ZERO),
+                        DSL.value(currentUser().userId),
+                        DSL.value(clock.instant()),
+                        DSL.value(currentUser().userId),
+                        DSL.value(clock.instant()),
+                    )
+                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                    .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                    .and(OBSERVATION_ID.eq(observationId))
+                    .and(
+                        SPECIES_ID.notIn(
+                            DSL.select(PLOT_T0_DENSITIES.SPECIES_ID)
+                                .from(PLOT_T0_DENSITIES)
+                                .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                        )
+                    )
+            )
+            .execute()
+      }
+    }
   }
 
   private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {
