@@ -1,3 +1,4 @@
+7d752cb8dd0 Add SimpleUserStore (#3593)
 809b3b96f25 Move full name calculation to SimpleUserModel.create (#3592)
 cb98a202845 SW-7685 Add new observation species to t0 for plots with t0 observations (#3589)
 989f82c3d17 SW-7685 Publish ObservationStateUpdatedEvent when state is updated (#3588)
