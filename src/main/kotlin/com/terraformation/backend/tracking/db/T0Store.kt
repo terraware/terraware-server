@@ -21,6 +21,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIE
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
+import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
@@ -36,6 +38,7 @@ import kotlin.collections.Map
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -75,6 +78,92 @@ class T0Store(
 
     return isAllPermT0DataSet(plantingSiteId) &&
         (!survivalRateIncludesTempPlots(plantingSiteId) || isAllTempT0DataSet(plantingSiteId))
+  }
+
+  fun fetchSiteSpeciesByPlot(plantingSiteId: PlantingSiteId): List<PlotSpeciesModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val densityField =
+        DSL.round(
+            PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) /
+                PLANTING_SUBZONES.AREA_HA,
+            1,
+        )
+
+    val withdrawnSpecies =
+        DSL.select(
+                MONITORING_PLOTS.ID,
+                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
+                densityField.`as`("density"),
+            )
+            .from(MONITORING_PLOTS)
+            .join(PLANTING_SUBZONE_POPULATIONS)
+            .on(
+                MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(
+                    PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
+                )
+            )
+            .join(PLANTING_SUBZONES)
+            .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(densityField.ge(BigDecimal.valueOf(0.05)))
+
+    val observedNotWithdrawnSpecies =
+        DSL.select(
+                MONITORING_PLOTS.ID,
+                OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.`as`("species_id"),
+                DSL.inline(null, BigDecimal::class.java).`as`("density"),
+            )
+            .from(MONITORING_PLOTS)
+            .join(OBSERVED_PLOT_SPECIES_TOTALS)
+            .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+            .join(OBSERVATIONS)
+            .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
+            .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(
+                OBSERVATIONS.STATE_ID.`in`(
+                    listOf(ObservationState.Completed, ObservationState.Abandoned)
+                )
+            )
+            .and(
+                DSL.or(
+                    OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
+                    OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.gt(0),
+                )
+            )
+            .andNotExists(
+                DSL.selectOne()
+                    .from(PLANTING_SUBZONE_POPULATIONS)
+                    .where(
+                        PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(
+                                MONITORING_PLOTS.PLANTING_SUBZONE_ID
+                            )
+                            .and(
+                                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(
+                                    OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID
+                                )
+                            )
+                    )
+            )
+
+    val combined = withdrawnSpecies.unionAll(observedNotWithdrawnSpecies).asTable("combined")
+
+    val plotIdField = combined.field(MONITORING_PLOTS.ID)
+    val speciesIdField = combined.field("species_id")!!
+    val densityResultField = combined.field("density")
+
+    return dslContext.selectFrom(combined).fetchGroups(plotIdField).map { (plotId, records) ->
+      PlotSpeciesModel(
+          monitoringPlotId = plotId as MonitoringPlotId,
+          species =
+              records.map { record ->
+                OptionalSpeciesDensityModel(
+                    speciesId = record[speciesIdField] as SpeciesId,
+                    density = record[densityResultField] as BigDecimal?,
+                )
+              },
+      )
+    }
   }
 
   fun assignT0PlotObservation(

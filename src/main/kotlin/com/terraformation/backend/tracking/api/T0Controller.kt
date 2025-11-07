@@ -11,6 +11,8 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.T0Service
 import com.terraformation.backend.tracking.db.T0Store
+import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
@@ -47,6 +49,16 @@ class T0Controller(
     val allSet = t0Store.fetchAllT0SiteDataSet(plantingSiteId)
 
     return GetAllSiteT0DataSetResponsePayload(allSet = allSet)
+  }
+
+  @GetMapping("/plantingSite/{plantingSiteId}/species")
+  @Operation(summary = "Lists all the species that have been withdrawn to a planting site.")
+  fun getSpeciesWithdrawnToPlantingSite(
+      @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
+  ): GetSitePlotSpeciesResponsePayload {
+    val plots = t0Store.fetchSiteSpeciesByPlot(plantingSiteId)
+
+    return GetSitePlotSpeciesResponsePayload(plots.map { PlotSpeciesDensitiesPayload(it) })
   }
 
   @Operation(
@@ -145,6 +157,33 @@ data class SiteT0DataResponsePayload(
       zones = model.zones.map { ZoneT0DataPayload(it) },
   )
 }
+
+data class OptionalSpeciesDensityPayload(
+    val speciesId: SpeciesId,
+    val density: BigDecimal?,
+) {
+  constructor(
+      model: OptionalSpeciesDensityModel
+  ) : this(
+      speciesId = model.speciesId,
+      density = model.density,
+  )
+}
+
+data class PlotSpeciesDensitiesPayload(
+    val monitoringPlotId: MonitoringPlotId,
+    val species: List<OptionalSpeciesDensityPayload>,
+) {
+  constructor(
+      model: PlotSpeciesModel
+  ) : this(
+      monitoringPlotId = model.monitoringPlotId,
+      species = model.species.map { OptionalSpeciesDensityPayload(it) },
+  )
+}
+
+data class GetSitePlotSpeciesResponsePayload(val plots: List<PlotSpeciesDensitiesPayload>) :
+    SuccessResponsePayload
 
 data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
     SuccessResponsePayload
