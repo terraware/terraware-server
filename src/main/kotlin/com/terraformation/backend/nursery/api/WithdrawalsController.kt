@@ -94,6 +94,7 @@ class WithdrawalsController(
 
   @GetMapping("/plantingSite/{plantingSiteId}/species")
   @Operation(summary = "Lists all the species that have been withdrawn to a planting site.")
+  @Deprecated("Prefer /api/v1/tracking/t0/site/{plantingSiteId}/species")
   fun getSpeciesWithdrawnToPlantingSite(
       @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
   ): GetSitePlotSpeciesResponsePayload {
