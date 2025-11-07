@@ -1,2 +1,3 @@
+08c6761c575 Add interface for generated ID wrappers (#3584)
 4a216df3734 SW-7683 Only include completed/abandoned observations in all set species check (#3586)
 5f9eb4cadbc SW-7683 Add observation recorded species to allSet check (#3585)
