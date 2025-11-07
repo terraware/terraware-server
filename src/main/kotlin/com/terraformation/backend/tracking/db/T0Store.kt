@@ -115,8 +115,6 @@ class T0Store(
                 DSL.castNull(SQLDataType.NUMERIC).`as`("density"),
             )
             .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONES)
-            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
             .join(OBSERVED_PLOT_SPECIES_TOTALS)
             .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
             .join(OBSERVATIONS)
@@ -136,6 +134,8 @@ class T0Store(
             .andNotExists(
                 DSL.selectOne()
                     .from(PLANTING_SUBZONE_POPULATIONS)
+                    .join(PLANTING_SUBZONES)
+                    .on(PLANTING_SUBZONES.ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
                     .where(
                         PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(
                                 MONITORING_PLOTS.PLANTING_SUBZONE_ID
