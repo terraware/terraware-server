@@ -12,11 +12,21 @@ data class SpeciesDensityModel(
     val density: BigDecimal,
 )
 
+data class OptionalSpeciesDensityModel(
+    val speciesId: SpeciesId,
+    val density: BigDecimal?,
+)
+
 data class SiteT0DataModel(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean,
     val plots: List<PlotT0DataModel> = emptyList(),
     val zones: List<ZoneT0TempDataModel> = emptyList(),
+)
+
+data class PlotSpeciesModel(
+    val monitoringPlotId: MonitoringPlotId,
+    val species: List<OptionalSpeciesDensityModel> = emptyList(),
 )
 
 data class PlotT0DataModel(

@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.asNonNullable
@@ -28,6 +29,8 @@ import com.terraformation.backend.point
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
+import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
@@ -370,6 +373,135 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "All site data set",
       )
+    }
+  }
+
+  @Nested
+  inner class FetchSiteSpeciesByPlot {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> { store.fetchSiteSpeciesByPlot(plantingSiteId) }
+    }
+
+    @Test
+    fun `fetches site species from observations with no withdrawn data`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = tempPlotId,
+          speciesId = speciesId1,
+          totalLive = 1,
+      )
+
+      val expected =
+          setOf(
+              PlotSpeciesModel(
+                  monitoringPlotId = monitoringPlotId,
+                  species = createSpeciesDensityList(speciesId1 to null, speciesId2 to null),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = tempPlotId,
+                  species = createSpeciesDensityList(speciesId1 to null),
+              ),
+          )
+
+      assertSetEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
+    }
+
+    @Test
+    fun `fetches site species by plot with densities`() {
+      val speciesId3 = insertSpecies()
+      val speciesId4 = insertSpecies()
+      insertPlantingZone()
+      val subzone1 = insertPlantingSubzone(areaHa = BigDecimal.ONE)
+      val plot1 = insertMonitoringPlot(plotNumber = 3)
+      val plot2 = insertMonitoringPlot(plotNumber = 4)
+      val subzone2 = insertPlantingSubzone(areaHa = BigDecimal.TEN)
+      val plot3 = insertMonitoringPlot(plotNumber = 5)
+      val plot4 = insertMonitoringPlot(plotNumber = 6)
+      insertPlantingZone()
+      val subzone3 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(5))
+      val plot5 = insertMonitoringPlot(plotNumber = 7)
+      val subzone4 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(2174.6))
+      val plot6 = insertMonitoringPlot(plotNumber = 8)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = speciesId1, 100)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = speciesId2, 200)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId1, 300)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId2, 395)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId3, 500)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone3, speciesId = speciesId3, 600)
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = speciesId1, 500)
+      // should be excluded because <0.05 density
+      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = speciesId2, 108)
+
+      // ignored because already in withdrawn
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = plot1,
+          speciesId = speciesId1,
+          totalLive = 1,
+      )
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = plot1,
+          speciesId = speciesId4,
+          totalDead = 1,
+      )
+      insertObservedPlotSpeciesTotals(
+          monitoringPlotId = plot2,
+          speciesId = speciesId4,
+          totalDead = 1,
+      )
+
+      val expected =
+          setOf(
+              PlotSpeciesModel(
+                  monitoringPlotId = plot1,
+                  species =
+                      createSpeciesDensityList(
+                          speciesId1 to BigDecimal.valueOf(100.0),
+                          speciesId2 to BigDecimal.valueOf(200.0),
+                          speciesId4 to null,
+                      ),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot2,
+                  species =
+                      createSpeciesDensityList(
+                          speciesId1 to BigDecimal.valueOf(100.0),
+                          speciesId2 to BigDecimal.valueOf(200.0),
+                          speciesId4 to null,
+                      ),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot3,
+                  species =
+                      createSpeciesDensityList(
+                          speciesId1 to BigDecimal.valueOf(30.0),
+                          speciesId2 to BigDecimal.valueOf(39.5), // this confirms correct rounding
+                          speciesId3 to BigDecimal.valueOf(50.0),
+                      ),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot4,
+                  species =
+                      createSpeciesDensityList(
+                          speciesId1 to BigDecimal.valueOf(30.0),
+                          speciesId2 to BigDecimal.valueOf(39.5),
+                          speciesId3 to BigDecimal.valueOf(50.0),
+                      ),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot5,
+                  species = createSpeciesDensityList(speciesId3 to BigDecimal.valueOf(120.0)),
+              ),
+              PlotSpeciesModel(
+                  monitoringPlotId = plot6,
+                  species = createSpeciesDensityList(speciesId1 to BigDecimal.valueOf(0.2)),
+              ),
+          )
+
+      assertSetEquals(expected, store.fetchSiteSpeciesByPlot(plantingSiteId).toSet())
     }
   }
 
@@ -1168,4 +1300,10 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private fun plotDensityToHectare(density: Int): BigDecimal =
       density.toBigDecimal().toPlantsPerHectare()
+
+  private fun createSpeciesDensityList(
+      vararg densities: Pair<SpeciesId, BigDecimal?>
+  ): List<OptionalSpeciesDensityModel> {
+    return densities.map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
+  }
 }
