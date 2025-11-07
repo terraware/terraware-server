@@ -499,61 +499,55 @@ class T0Store(
 
   // only public for testability
   fun assignNewObservationSpeciesZero(observationId: ObservationId) {
-    val plantingSiteId =
-        with(OBSERVATIONS) {
-          dslContext
-              .select(PLANTING_SITE_ID)
-              .from(this)
-              .where(ID.eq(observationId))
-              .fetchOne(PLANTING_SITE_ID.asNonNullable())
-        }
-    val plotsWithT0Observations =
-        with(PLOT_T0_OBSERVATIONS) {
-          dslContext
-              .select(MONITORING_PLOT_ID)
-              .from(this)
-              .where(monitoringPlots.PLANTING_SITE_ID.eq(plantingSiteId))
-              .fetchSet(MONITORING_PLOT_ID.asNonNullable())
-        }
+    val currentUserId = currentUser().userId
+    val now = clock.instant()
 
-    // TODO fix this n+1
-    plotsWithT0Observations.forEach { monitoringPlotId ->
-      with(OBSERVED_PLOT_SPECIES_TOTALS) {
-        dslContext
-            .insertInto(
-                PLOT_T0_DENSITIES,
-                PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                PLOT_T0_DENSITIES.SPECIES_ID,
-                PLOT_T0_DENSITIES.PLOT_DENSITY,
-                PLOT_T0_DENSITIES.CREATED_BY,
-                PLOT_T0_DENSITIES.CREATED_TIME,
-                PLOT_T0_DENSITIES.MODIFIED_BY,
-                PLOT_T0_DENSITIES.MODIFIED_TIME,
-            )
-            .select(
-                DSL.select(
-                        DSL.value(monitoringPlotId),
-                        SPECIES_ID,
-                        DSL.value(BigDecimal.ZERO),
-                        DSL.value(currentUser().userId),
-                        DSL.value(clock.instant()),
-                        DSL.value(currentUser().userId),
-                        DSL.value(clock.instant()),
+    dslContext
+        .insertInto(
+            PLOT_T0_DENSITIES,
+            PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+            PLOT_T0_DENSITIES.SPECIES_ID,
+            PLOT_T0_DENSITIES.PLOT_DENSITY,
+            PLOT_T0_DENSITIES.CREATED_BY,
+            PLOT_T0_DENSITIES.CREATED_TIME,
+            PLOT_T0_DENSITIES.MODIFIED_BY,
+            PLOT_T0_DENSITIES.MODIFIED_TIME,
+        )
+        .select(
+            DSL.select(
+                    PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID,
+                    OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                    DSL.value(BigDecimal.ZERO),
+                    DSL.value(currentUserId),
+                    DSL.value(now),
+                    DSL.value(currentUserId),
+                    DSL.value(now),
+                )
+                .from(PLOT_T0_OBSERVATIONS)
+                .join(OBSERVED_PLOT_SPECIES_TOTALS)
+                .on(
+                    OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(
+                        PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID
                     )
-                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                    .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
-                    .and(OBSERVATION_ID.eq(observationId))
-                    .and(
-                        SPECIES_ID.notIn(
-                            DSL.select(PLOT_T0_DENSITIES.SPECIES_ID)
-                                .from(PLOT_T0_DENSITIES)
-                                .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                )
+                .leftJoin(PLOT_T0_DENSITIES)
+                .on(
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID)
+                        .and(
+                            PLOT_T0_DENSITIES.SPECIES_ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID)
                         )
+                )
+                .where(
+                    PLOT_T0_OBSERVATIONS.monitoringPlots.PLANTING_SITE_ID.eq(
+                        DSL.select(OBSERVATIONS.PLANTING_SITE_ID)
+                            .from(OBSERVATIONS)
+                            .where(OBSERVATIONS.ID.eq(observationId))
                     )
-            )
-            .execute()
-      }
-    }
+                )
+                .and(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                .and(PLOT_T0_DENSITIES.SPECIES_ID.isNull)
+        )
+        .execute()
   }
 
   private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {
