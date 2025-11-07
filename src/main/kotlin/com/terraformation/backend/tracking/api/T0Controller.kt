@@ -52,7 +52,14 @@ class T0Controller(
   }
 
   @GetMapping("/plantingSite/{plantingSiteId}/species")
-  @Operation(summary = "Lists all the species that have been withdrawn to a planting site.")
+  @Operation(
+      summary =
+          "Lists all the species that have been withdrawn to a planting site or recorded in " +
+              "observations (if not withdrawn).",
+      description =
+          "Species with densities are species that were withdrawn, species with null densities are " +
+              "species that were recorded in observations but not withdrawn to the plot's subzone.",
+  )
   fun getSpeciesWithdrawnToPlantingSite(
       @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
   ): GetSitePlotSpeciesResponsePayload {
