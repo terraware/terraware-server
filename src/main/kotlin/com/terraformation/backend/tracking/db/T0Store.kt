@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
@@ -40,6 +41,7 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class T0Store(
@@ -486,6 +488,65 @@ class T0Store(
         plantingZoneId = plantingZoneId,
         speciesDensityChanges = speciesDensityChanges,
     )
+  }
+
+  @EventListener
+  fun on(event: ObservationStateUpdatedEvent) {
+    if (event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned)) {
+      assignNewObservationSpeciesZero(event.observationId)
+    }
+  }
+
+  private fun assignNewObservationSpeciesZero(observationId: ObservationId) {
+    val currentUserId = currentUser().userId
+    val now = clock.instant()
+
+    dslContext
+        .insertInto(
+            PLOT_T0_DENSITIES,
+            PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+            PLOT_T0_DENSITIES.SPECIES_ID,
+            PLOT_T0_DENSITIES.PLOT_DENSITY,
+            PLOT_T0_DENSITIES.CREATED_BY,
+            PLOT_T0_DENSITIES.CREATED_TIME,
+            PLOT_T0_DENSITIES.MODIFIED_BY,
+            PLOT_T0_DENSITIES.MODIFIED_TIME,
+        )
+        .select(
+            DSL.select(
+                    PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID,
+                    OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                    DSL.value(BigDecimal.ZERO),
+                    DSL.value(currentUserId),
+                    DSL.value(now),
+                    DSL.value(currentUserId),
+                    DSL.value(now),
+                )
+                .from(PLOT_T0_OBSERVATIONS)
+                .join(OBSERVED_PLOT_SPECIES_TOTALS)
+                .on(
+                    OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(
+                        PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID
+                    )
+                )
+                .leftJoin(PLOT_T0_DENSITIES)
+                .on(
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID)
+                        .and(
+                            PLOT_T0_DENSITIES.SPECIES_ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID)
+                        )
+                )
+                .where(
+                    PLOT_T0_OBSERVATIONS.monitoringPlots.PLANTING_SITE_ID.eq(
+                        DSL.select(OBSERVATIONS.PLANTING_SITE_ID)
+                            .from(OBSERVATIONS)
+                            .where(OBSERVATIONS.ID.eq(observationId))
+                    )
+                )
+                .and(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                .and(PLOT_T0_DENSITIES.SPECIES_ID.isNull)
+        )
+        .execute()
   }
 
   private fun plotT0Multiset(plantingSiteId: PlantingSiteId): Field<List<PlotT0DataModel>> {
