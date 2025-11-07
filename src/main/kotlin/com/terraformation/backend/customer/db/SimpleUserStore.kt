@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
@@ -15,6 +16,22 @@ import org.jooq.impl.DSL
 class SimpleUserStore(private val dslContext: DSLContext, private val messages: Messages) {
   fun fetchSimpleUsersById(userIds: Collection<UserId>): Map<UserId, SimpleUserModel> {
     return with(USERS) {
+      val userInSameOrgCondition =
+          if (currentUser() is SystemUser) {
+            DSL.trueCondition()
+          } else {
+            DSL.exists(
+                DSL.selectOne()
+                    .from(ORGANIZATION_USERS)
+                    .where(ORGANIZATION_USERS.USER_ID.eq(ID))
+                    .and(
+                        ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
+                            currentUser().organizationRoles.keys
+                        )
+                    )
+            )
+          }
+
       val existingUsers =
           dslContext
               .select(
@@ -22,16 +39,7 @@ class SimpleUserStore(private val dslContext: DSLContext, private val messages: 
                   EMAIL.asNonNullable(),
                   FIRST_NAME,
                   LAST_NAME,
-                  DSL.exists(
-                      DSL.selectOne()
-                          .from(ORGANIZATION_USERS)
-                          .where(ORGANIZATION_USERS.USER_ID.eq(ID))
-                          .and(
-                              ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
-                                  currentUser().organizationRoles.keys
-                              )
-                          )
-                  ),
+                  userInSameOrgCondition,
               )
               .from(USERS)
               .where(ID.`in`(userIds))
