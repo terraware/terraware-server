@@ -1,3 +1,5 @@
+8480c6b8d3b Update JamesIves/github-pages-deploy-action action to v4.7.4 (#3599)
+0139adf174a Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.6 (#3598)
 6d6bc579e49 Update database dependencies (#3602)
 d9244ec2d20 Update ktor monorepo to v3.3.2 (#3600)
 0a85e026e68 SW-7607 Query EventLogStore by arbitrary IDs (#3594)
