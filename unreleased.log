@@ -1,3 +1,5 @@
+6d6bc579e49 Update database dependencies (#3602)
+d9244ec2d20 Update ktor monorepo to v3.3.2 (#3600)
 0a85e026e68 SW-7607 Query EventLogStore by arbitrary IDs (#3594)
 7d752cb8dd0 Add SimpleUserStore (#3593)
 809b3b96f25 Move full name calculation to SimpleUserModel.create (#3592)
