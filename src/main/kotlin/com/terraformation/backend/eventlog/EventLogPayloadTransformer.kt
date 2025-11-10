@@ -19,7 +19,6 @@ import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import jakarta.inject.Named
 
@@ -89,14 +88,6 @@ class EventLogPayloadTransformer(
       context: EventLogPayloadContext,
   ): List<EventActionPayload> {
     return when (event) {
-      is ObservationMediaFileEditedEvent ->
-          listOf(
-              FieldUpdatedActionPayload(
-                  "caption", // TODO: i18n
-                  listOfNotNull(event.changedFrom.caption),
-                  listOfNotNull(event.changedTo.caption),
-              )
-          )
       is OrganizationRenamedEvent ->
           listOf(
               FieldUpdatedActionPayload(
@@ -113,6 +104,12 @@ class EventLogPayloadTransformer(
                   changedTo = listOf(event.name),
               )
           )
+
+      // Events that can self-describe which fields were updated can be transformed generically.
+      is FieldsUpdatedEvent ->
+          event.listUpdatedFields().map {
+            FieldUpdatedActionPayload(it.fieldName, it.changedFrom, it.changedTo)
+          }
 
       // Create and delete actions don't need any event-type-specific arguments because the details
       // are already in the subject.
