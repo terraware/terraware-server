@@ -133,7 +133,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.1.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.2.0")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
