@@ -20,7 +20,9 @@ import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
@@ -109,6 +111,43 @@ class EventLogPayloadTransformerTest : RunsAsUser {
     val actual = transformer.eventsToPayloads(listOf(uploadEntry, editEntry))
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `localizes field names of FieldUpdated actions`() {
+    val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
+    val editEntry =
+        eventLogEntry(
+            unknownUserId,
+            ObservationMediaFileEditedEvent(
+                changedFrom = ObservationMediaFileEditedEventValues(caption = "a"),
+                changedTo = ObservationMediaFileEditedEventValues(caption = "b"),
+                fileId = fileId,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+            ),
+        )
+
+    val payloads =
+        Locales.SPANISH.use { transformer.eventsToPayloads(listOf(uploadEntry, editEntry)) }
+
+    assertEquals(2, payloads.size, "Number of payloads")
+    assertEquals(
+        "leyenda",
+        (payloads[1].action as FieldUpdatedActionPayload).fieldName,
+        "Field name",
+    )
+  }
+
+  @Test
+  fun `localizes special usernames of FieldUpdated actions`() {
+    val uploadEntry = eventLogEntry(unknownUserId, uploadedEvent())
+
+    val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(uploadEntry)) }
+
+    assertEquals("Usuario anterior", payloads[0].userName, "Username of nonexistent user")
   }
 
   @Test
