@@ -1,3 +1,6 @@
+b1960efe91b Update dependency html-minifier-next to v4 (#3601)
+37440214d77 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.14 (#3597)
+69ecbe94958 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.2.0 (#3603)
 8480c6b8d3b Update JamesIves/github-pages-deploy-action action to v4.7.4 (#3599)
 0139adf174a Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.6 (#3598)
 6d6bc579e49 Update database dependencies (#3602)
