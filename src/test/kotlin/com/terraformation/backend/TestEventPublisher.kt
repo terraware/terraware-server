@@ -56,7 +56,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
   fun assertEventsPublished(events: Set<Any>, message: String = "Expected events not published") {
     val publishedEventsFromExpectedSet = publishedEvents.filter { it in events }.toSet()
 
-    assertEquals(events, publishedEventsFromExpectedSet, message)
+    assertSetEquals(events, publishedEventsFromExpectedSet, message)
   }
 
   /**
