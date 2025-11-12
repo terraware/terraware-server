@@ -389,6 +389,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `fetches site species from observations with no withdrawn data`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      // Unknown species are excluded:
+      insertObservedPlotSpeciesTotals(certainty = RecordedSpeciesCertainty.Unknown, totalLive = 2)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
       insertObservedPlotSpeciesTotals(
           monitoringPlotId = tempPlotId,
