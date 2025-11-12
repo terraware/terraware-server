@@ -1,3 +1,7 @@
+004b6aaee1d Specify Spanish translation for "quadrat" (#3607)
+246fb06f5f0 Improve TestEventPublisher assertion failure message (#3608)
+6ac2e107af3 Move observation results payloads to separate file (#3606)
+51ba2e7d6e7 Fix 500 when unknown/other species in observed totals (#3610)
 b1960efe91b Update dependency html-minifier-next to v4 (#3601)
 37440214d77 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.14 (#3597)
 69ecbe94958 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.2.0 (#3603)
