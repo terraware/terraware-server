@@ -51,7 +51,7 @@ class T0Controller(
     return GetAllSiteT0DataSetResponsePayload(allSet = allSet)
   }
 
-  @GetMapping("/plantingSite/{plantingSiteId}/species")
+  @GetMapping("/site/{plantingSiteId}/species")
   @Operation(
       summary =
           "Lists all the species that have been withdrawn to a planting site or recorded in " +

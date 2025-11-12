@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -133,6 +134,7 @@ class T0Store(
                     OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.gt(0),
                 )
             )
+            .and(OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.eq(RecordedSpeciesCertainty.Known))
             .andNotExists(
                 DSL.selectOne()
                     .from(PLANTING_SUBZONE_POPULATIONS)
