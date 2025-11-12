@@ -21,20 +21,25 @@
 </table>
 
 <form method="POST" action="/admin/document-producer/createDocumentTemplate">
-    <label for="newDocumentTemplateName">Name</label>
-    <input type="text" id="newDocumentTemplateName" name="name" minlength="1"/>
+    <label>
+        Name
+        <input type="text" name="name" minlength="1"/>
+    </label>
     <input type="submit" value="Create Document Template"/>
 </form>
 
 <h2>Import Variable Manifest CSV</h2>
 
 <form method="POST" action="/admin/document-producer/uploadManifest" enctype="multipart/form-data">
-    <label for="uploadManifestCsv">CSV</label>
-    <input type="file" id="uploadManifestCsv" name="file" minlength="1"/>
+    <label>
+        CSV
+        <input type="file" name="file" minlength="1"/>
+    </label>
     <br>
-    <label for="uploadManifestDocumentTemplateName">Document Template ID</label>
-    <select id="uploadManifestDocumentTemplateName" name="documentTemplateId">
-        <option th:each="documentTemplate: ${documentTemplates}" th:value="${documentTemplate.id}"
+    <label>
+        Document Template ID
+        <select name="documentTemplateId">
+            <option th:each="documentTemplate: ${documentTemplates}" th:value="${documentTemplate.id}"
                 th:text="${documentTemplate.name}"/>
     </select>
     <br>
@@ -44,8 +49,10 @@
 <h2>Import All Variable CSV</h2>
 
 <form method="POST" action="/admin/document-producer/uploadAllVariables" enctype="multipart/form-data">
-    <label for="uploadManifestCsv">CSV</label>
-    <input type="file" id="uploadAllVariableCsv" name="file" minlength="1"/>
+    <label>
+        CSV
+        <input type="file" name="file" minlength="1"/>
+    </label>
     <br>
     <input type="submit" value="Import"/>
 </form>

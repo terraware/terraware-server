@@ -80,8 +80,10 @@
         </p>
 
         <form method="POST" enctype="multipart/form-data" action="importGbif">
-            <label for="gbifUrl">URL of backbone.zip</label>
-            <input id="gbifUrl" type="url" name="url" required/>
+            <label>
+                URL of backbone.zip
+                <input type="url" name="url" required/>
+            </label>
             <input type="submit" value="Import"/>
             (can take several minutes)
         </form>
@@ -136,18 +138,22 @@
         </p>
 
         <form method="POST" action="/admin/addOrganizationUser">
-            <label for="addUserEmail">Email (user must already exist)</label>
-            <input id="addUserEmail" type="email" name="email" required/>
-            <label for="addUserOrganizationId">Organization</label>
-            <select id="addUserOrganizationId" name="organizationId">
-                <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
+            <label>
+                Email (user must already exist)
+                <input type="email" name="email" required/>
+            </label>
+            <label>
+                Organization
+                <select name="organizationId">
+                    <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
                         th:text="|${organization.name} (${organization.id})|">
                     My Org (123)
                 </option>
             </select>
-            <label for="addUserRole">Role</label>
-            <select id="addUserRole" name="role">
-                <option th:each="role : ${roles}"
+            <label>
+                Role
+                <select name="role">
+                    <option th:each="role : ${roles}"
                         th:value="${role.first}"
                         th:text="${role.second}"
                         th:selected="${role.second} == 'Admin'">
@@ -162,11 +168,14 @@
         <h2>Remove Organization User</h2>
 
         <form method="POST" action="/admin/removeOrganizationUser">
-            <label for="removeOrgUserEmail">Email (user must already exist)</label>
-            <input id="removeOrgUserEmail" type="email" name="email" required/>
-            <label for="removeOrgUserOrganizationId">Organization</label>
-            <select id="removeOrgUserOrganizationId" name="organizationId">
-                <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
+            <label>
+                Email (user must already exist)
+                <input type="email" name="email" required/>
+            </label>
+            <label>
+                Organization
+                <select name="organizationId">
+                    <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
                         th:text="|${organization.name} (${organization.id})|">
                     My Org (123)
                 </option>
@@ -179,10 +188,14 @@
         <h2>Delete User</h2>
 
         <form method="POST" action="/admin/users/delete">
-            <label for="deleteUserEmail">Email (user must already exist)</label>
-            <input id="deleteUserEmail" type="email" name="email" required/>
-            <label for="deleteUserConfirm">Confirm for deleting user (This is irreversible)</label>
-            <input id="deleteUserConfirm" type="checkbox" name="confirm"/>
+            <label>
+                Email (user must already exist)
+                <input type="email" name="email" required/>
+            </label>
+            <label>
+                Confirm for deleting user (This is irreversible)
+                <input type="checkbox" name="confirm"/>
+            </label>
             <input type="submit" value="Delete User"/>
         </form>
     </th:block>

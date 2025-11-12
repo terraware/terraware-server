@@ -28,62 +28,85 @@
 
 <form th:action="|/admin/deviceManagers/${manager.id}|" method="POST">
 
-    <label for="sensorKitId">Sensor Kit ID</label>
-    <input type="text" name="sensorKitId" id="sensorKitId" th:value="${manager.sensorKitId}"/>
+    <label>
+        Sensor Kit ID
+        <input type="text" name="sensorKitId" th:value="${manager.sensorKitId}"/>
+    </label>
     <br/>
 
-    <label for="facilityId">Facility ID</label>
-    <input type="text" name="facilityId" id="facilityId" th:value="${manager.facilityId}"/>
+    <label>
+        Facility ID
+        <input type="text" name="facilityId" th:value="${manager.facilityId}"/>
+    </label>
     If this isn't set, the device manager is not connected yet.
     <br/>
 
-    <label for="isOnline">Online?</label>
-    <select name="isOnline" id="isOnline">
-        <option value="true" th:selected="${manager.isOnline()}">Yes</option>
-        <option value="false" th:selected="!${manager.isOnline()}">No</option>
+    <label>
+        Online?
+        <select name="isOnline">
+            <option value="true" th:selected="${manager.isOnline()}">Yes</option>
+            <option value="false" th:selected="!${manager.isOnline()}">No</option>
     </select>
     <br/>
 
-    <label for="updateProgress">Update Progress</label>
-    <input type="number" name="updateProgress" id="updateProgress" min="0" max="100"
+    <label>
+        Update Progress
+        <input type="number" name="updateProgress" min="0" max="100"
            th:value="${manager.updateProgress}"/>
+    </label>
     Progress percentage of software update. Null if no update in progress.
     <br/>
 
     <span id="advanced" style="display: none;">
 
-    <label for="userId">User ID</label>
-    <input type="text" name="userId" id="userId" th:value="${manager.userId}"/>
+    <label>
+        User ID
+        <input type="text" name="userId" th:value="${manager.userId}"/>
+    </label>
     <br/>
 
-    <label for="balenaId">Balena ID</label>
-    <input type="number" name="balenaId" id="balenaId" th:value="${manager.balenaId}"/>
+    <label>
+        Balena ID
+        <input type="number" name="balenaId" th:value="${manager.balenaId}"/>
+    </label>
     <br/>
 
-    <label for="balenaUuid">Balena UUID</label>
-    <input type="text" name="balenaUuid" id="balenaUuid" th:value="${manager.balenaUuid}"/>
+    <label>
+        Balena UUID
+        <input type="text" name="balenaUuid" th:value="${manager.balenaUuid}"/>
+    </label>
     <br/>
 
-    <label for="balenaModifiedTime">Balena Modified Time</label>
-    <input type="text" name="balenaModifiedTime" id="balenaModifiedTime"
+    <label>
+        Balena Modified Time
+        <input type="text" name="balenaModifiedTime"
            th:value="${manager.balenaModifiedTime}"/>
+    </label>
     <br/>
 
-    <label for="deviceName">Balena Name</label>
-    <input type="text" name="deviceName" id="deviceName" th:value="${manager.deviceName}"/>
+    <label>
+        Balena Name
+        <input type="text" name="deviceName" th:value="${manager.deviceName}"/>
+    </label>
     <br/>
 
-    <label for="lastConnectivityEvent">Last Connectivity</label>
-    <input type="text" name="lastConnectivityEvent" id="lastConnectivityEvent"
+    <label>
+        Last Connectivity
+        <input type="text" name="lastConnectivityEvent"
            th:value="${manager.lastConnectivityEvent}"/>
+    </label>
     <br/>
 
-    <label for="createdTime">Created Time</label>
-    <input type="text" name="createdTime" id="createdTime" th:value="${manager.createdTime}"/>
+    <label>
+        Created Time
+        <input type="text" name="createdTime" th:value="${manager.createdTime}"/>
+    </label>
     <br/>
 
-    <label for="refreshedTime">Refreshed Time</label>
-    <input type="text" name="refreshedTime" id="refreshedTime" th:value="${manager.refreshedTime}"/>
+    <label>
+        Refreshed Time
+        <input type="text" name="refreshedTime" th:value="${manager.refreshedTime}"/>
+    </label>
     <br/>
 
     </span>

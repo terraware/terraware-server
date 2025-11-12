@@ -210,11 +210,14 @@
     <h4>Create Facility</h4>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <label for="facilityName">Name</label>
-    <input type="text" name="name" id="facilityName" required/>
-    <label for="facilityType">Type</label>
-    <select name="type" id="facilityType">
-        <option th:each="type : ${facilityTypes}" th:value="${type.id}"
+    <label>
+        Name
+        <input type="text" name="name" required/>
+    </label>
+    <label>
+        Type
+        <select name="type">
+            <option th:each="type : ${facilityTypes}" th:value="${type.id}"
                 th:text="${type.jsonValue}">Type
         </option>
     </select>
@@ -236,17 +239,25 @@
     <h4>Create Planting Site from Shapefiles</h4>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <label for="siteName">Name</label>
-    <input type="text" name="siteName" id="siteName" required/>
+    <label>
+        Name
+        <input type="text" name="siteName" required/>
+    </label>
     <br/>
     Grid Origin (optional). To specify grid origin for generating monitoring plots.
-    <label for="gridOriginLat">Latitude</label>
-    <input type="text" name="gridOriginLat" id="gridOriginLat"/>
-    <label for="gridOriginLong">Longitude</label>
-    <input type="text" name="gridOriginLong" id="gridOriginLong"/>
+    <label>
+        Latitude
+        <input type="text" name="gridOriginLat"/>
+    </label>
+    <label>
+        Longitude
+        <input type="text" name="gridOriginLong"/>
+    </label>
     <br/>
-    <label for="zipfile">Zipfile</label>
-    <input type="file" name="zipfile" id="zipfile" required/>
+    <label>
+        Zipfile
+        <input type="file" name="zipfile" required/>
+    </label>
     Must contain either one or two shapefiles (exclusions shapefile is optional) and their
     associated supplementary datafiles.
     <br/>
@@ -264,11 +275,14 @@
     </p>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <label for="siteName">Name</label>
-    <input type="text" name="siteName" id="siteName" required/>
+    <label>
+        Name
+        <input type="text" name="siteName" required/>
+    </label>
     <br/>
-    <label for="boundary">Boundary (GeoJSON polygon)</label>
-    <textarea name="boundary" id="boundary" rows="2" cols="40"></textarea>
+    <label>
+        Boundary (GeoJSON polygon)
+        <textarea name="boundary" id="boundary" rows="2" cols="40"></textarea>
     <button type="button" id="showMap">Draw Boundary on Map</button>
 
     <span id="mapInstructions">
@@ -289,10 +303,11 @@
     <span id="map"></span>
     <br/>
 
-    <label for="siteType">Site Type</label>
-    <select name="siteType" id="siteType">
-        <option value="detailed" selected>Detailed (with zones and subzones)</option>
-        <option value="simple">Simple (site boundary only)</option>
+    <label>
+        Site Type
+        <select name="siteType">
+            <option value="detailed" selected>Detailed (with zones and subzones)</option>
+            <option value="simple">Simple (site boundary only)</option>
     </select>
     <br/>
     <input id="mapSubmit" type="submit" disabled value=" Create Planting Site "/>

@@ -69,36 +69,46 @@
 
 <form method="POST" action="/admin/updateFacility" th:if="${canUpdateFacility}">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-    <label for="name">Name</label>
-    <input type="text" name="name" id="name" required th:value="${facility.name}"/>
+    <label>
+        Name
+        <input type="text" name="name" required th:value="${facility.name}"/>
+    </label>
     <br/>
-    <label for="description">Description</label>
-    <input type="text" name="description" id="description" th:value="${facility.description}"/>
+    <label>
+        Description
+        <input type="text" name="description" th:value="${facility.description}"/>
+    </label>
     <br/>
-    <label for="type">Type</label>
-    <select name="type" id="type">
-        <option th:each="type : ${facilityTypes}"
-                th:selected="${facility.type} == ${type}"
-                th:text="${type.jsonValue}"
-                th:value="${type.id}">
-            Type
-        </option>
-    </select>
+    <label>
+        Type
+        <select name="type">
+            <option th:each="type : ${facilityTypes}"
+                    th:selected="${facility.type} == ${type}"
+                    th:text="${type.jsonValue}"
+                    th:value="${type.id}">
+                Type
+            </option>
+        </select>
+    </label>
     <br/>
-    <label for="maxIdleMinutes">Max Idle</label>
-    <input type="number" name="maxIdleMinutes" id="maxIdleMinutes" maxlength="4" size="4" min="1"
-           required th:value="${facility.maxIdleMinutes}"/>
+    <label>
+        Max Idle
+        <input type="number" name="maxIdleMinutes" maxlength="4" size="4" min="1"
+               required th:value="${facility.maxIdleMinutes}"/>
+    </label>
     minutes (for updates from device manager)
     <br/>
-    <label for="connectionState">Connection</label>
-    <select name="connectionState" id="connectionState">
-        <option th:each="state: ${connectionStates}"
-                th:selected="${facility.connectionState} == ${state}"
-                th:text="${state.jsonValue}"
-                th:value="${state}">
-            State
-        </option>
-    </select>
+    <label>
+        Connection
+        <select name="connectionState">
+            <option th:each="state: ${connectionStates}"
+                    th:selected="${facility.connectionState} == ${state}"
+                    th:text="${state.jsonValue}"
+                    th:value="${state}">
+                State
+            </option>
+        </select>
+    </label>
     <br/>
     <input type="submit" value=" Update Facility "/>
 </form>
@@ -156,46 +166,62 @@
     </div>
 
     <div>
-        <label for="deviceType">Type</label>
-        <input type="text" id="deviceType" name="type" required/>
+        <label>
+            Type
+            <input type="text" id="deviceType" name="type" required/>
+        </label>
     </div>
 
     <div>
-        <label for="make">Make</label>
-        <input type="text" id="make" name="make" required/>
+        <label>
+            Make
+            <input type="text" id="make" name="make" required/>
+        </label>
     </div>
 
     <div>
-        <label for="model">Model</label>
-        <input type="text" id="model" name="model" required/>
+        <label>
+            Model
+            <input type="text" id="model" name="model" required/>
+        </label>
     </div>
 
     <div>
-        <label for="model">Protocol</label>
-        <input type="text" id="protocol" name="protocol"/>
+        <label>
+            Protocol
+            <input type="text" id="protocol" name="protocol"/>
+        </label>
     </div>
 
     <div>
-        <label for="deviceName">Name</label>
-        <input type="text" id="deviceName" name="name"/>
+        <label>
+            Name
+            <input type="text" id="deviceName" name="name"/>
+        </label>
         Leave blank for a random hex code.
     </div>
 
     <div>
-        <label for="address">Address</label>
-        <input type="text" id="address" name="address"/>
+        <label>
+            Address
+            <input type="text" id="address" name="address"/>
+        </label>
         Leave blank to use the device name.
     </div>
 
     <div>
-        <label for="address">Parent ID</label>
-        <input type="text" id="parentId" name="parentId"/>
+        <label>
+            Parent ID
+            <input type="text" name="parentId"/>
+        </label>
         Optional. Use this if you are adding a sensor that sits behind a hub. Put the hub's ID here.
     </div>
 
     <div>
-        <label for="count">Count</label>
-        <input type="number" id="count" name="count" value="1" min="1" max="50"/>
+        <label>
+            Count
+            <input type="number" name="count" value="1" min="1" max="50"/>
+        </label>
         Increase this to create multiple devices at once.
     </div>
 
@@ -230,8 +256,10 @@
 
 <form method="POST" action="/admin/createSubLocation" th:if="${canUpdateFacility}">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-    <label for="subLocationName">Name</label>
-    <input type="text" name="name" id="subLocationName" required/>
+    <label>
+        Name
+        <input type="text" name="name" required/>
+    </label>
     <br/>
     <input type="submit" value=" Create Sub-Location "/>
 </form>
@@ -251,12 +279,15 @@
 
 <form method="POST" action="/admin/sendAlert">
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-    <label for="subject">Subject</label>
-    <input type="text" name="subject" id="subject" value="Testing Alert Email"/>
+    <label>
+        Subject
+        <input type="text" name="subject" value="Testing Alert Email"/>
+    </label>
     <br/>
-    <label for="body">Body</label>
-    <textarea rows="5" cols="40" name="body"
-              id="body">This is a test of facility alert email.</textarea>
+    <label>
+        Body
+        <textarea rows="5" cols="40" name="body">This is a test of facility alert email.</textarea>
+    </label>
     <br/>
     <input type="submit" value=" Send Alert "/>
 </form>

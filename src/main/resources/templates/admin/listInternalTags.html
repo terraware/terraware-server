@@ -26,10 +26,14 @@
 </ul>
 
 <form method="POST" action="/admin/createInternalTag">
-    <label for="name">Name</label>
-    <input type="text" id="name" name="name" size="15" required/>
-    <label for="description">Description</label>
-    <input type="text" id="description" name="description" size="50"/>
+    <label>
+        Name
+        <input type="text" name="name" size="15" required/>
+    </label>
+    <label>
+        Description
+        <input type="text" name="description" size="50"/>
+    </label>
     <input type="submit" value="Create Tag"/>
 </form>
 

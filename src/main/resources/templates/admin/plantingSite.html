@@ -152,11 +152,15 @@
 
 <form method="POST" action="/admin/updatePlantingSite" th:if="${canUpdatePlantingSite}">
     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-    <label for="siteName">Name</label>
-    <input type="text" id="siteName" name="siteName" th:value="${site.name}" minlength="1"
+    <label>
+        Name
+        <input type="text" name="siteName" th:value="${site.name}" minlength="1"
            required/>
-    <label for="description">Description</label>
-    <input type="text" id="description" name="description" th:value="${site.description}"/>
+    </label>
+    <label>
+        Description
+        <input type="text" name="description" th:value="${site.description}"/>
+    </label>
     <br/>
     <input type="submit" value="Update"/>
 </form>
@@ -206,9 +210,10 @@
     </p>
 
     <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-    <label for="organizationId">Organization</label>
-    <select id="organizationId" name="organizationId">
-        <option th:each="org : ${allOrganizations}" th:value="${org.id}"
+    <label>
+        Organization
+        <select id="organizationId" name="organizationId">
+            <option th:each="org : ${allOrganizations}" th:value="${org.id}"
                 th:text="|${org.name} (${org.id})|"
                 th:selected="${org.id == organization.id}">
             My Org (123)

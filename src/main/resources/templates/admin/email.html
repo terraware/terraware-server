@@ -18,22 +18,30 @@
 <h2>Send Test Email</h2>
 
 <form method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
-    <label for="recipient">Recipient</label>
-    <input type="email" name="recipient" id="recipient" required/>
-    <input type="checkbox" id="sendToAll" name="sendToAll">
-    <label for="sendToAll"> Send to all users</label>
+    <label>
+        Recipient
+        <input type="email" name="recipient" id="recipient" required/>
+    </label>
+    <label>
+        <input type="checkbox" id="sendToAll" name="sendToAll">
+        Send to all users
+    </label>
     <br/>
-    <label for="emailName">Email to Send</label>
-    <select name="emailName" id="emailName">
-        <option th:value="DocumentsUpdate">Documents Update (EULA, TOS, Privacy update)</option>
-        <option th:value="GenericEmail">Generic Email</option>
-    </select>
+    <label>
+        Email to Send
+        <select name="emailName" id="emailName">
+            <option th:value="DocumentsUpdate">Documents Update (EULA, TOS, Privacy update)</option>
+            <option th:value="GenericEmail">Generic Email</option>
+        </select>
+    </label>
     <br/>
     <div id="genericEmailFields" style="display: none;">
-        <label for="subject">Subject</label>
-        <input type="text" name="subject" id="subject"/>
+        <label>
+            Subject
+            <input type="text" name="subject"/>
+        </label>
         <br/>
-        <label for="emailBody">Email Body</label>
+        <label>Email Body</label>
         <div id="quill-editor"></div>
         <!-- Hidden textarea to store Quill content -->
         <textarea name="emailBody" id="emailBody" style="display: none;"></textarea>
