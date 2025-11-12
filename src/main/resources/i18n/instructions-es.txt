@@ -9,5 +9,6 @@ check in: ingresar
 family: familia
 outplant (n): plantas en campo
 outplant (v): transplantar
+quadrat: cuadrícula
 scientific name: nombre científico
 seed bank: banco de semillas
