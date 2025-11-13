@@ -1,10 +1,8 @@
 package com.terraformation.backend.eventlog
 
 import com.terraformation.backend.customer.db.SimpleUserStore
-import com.terraformation.backend.customer.event.OrganizationCreatedEvent
 import com.terraformation.backend.customer.event.OrganizationPersistentEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEvent
-import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
@@ -103,7 +101,7 @@ class EventLogPayloadTransformer(
           listOf(
               FieldUpdatedActionPayload(
                   fieldName = "name", // TODO: i18n,
-                  changedFrom = listOf(getPreviousOrganizationName(event, context)),
+                  changedFrom = listOf(OrganizationSubjectPayload.getPreviousName(event, context)),
                   changedTo = listOf(event.name),
               )
           )
@@ -111,7 +109,7 @@ class EventLogPayloadTransformer(
           listOf(
               FieldUpdatedActionPayload(
                   fieldName = "name", // TODO: i18n,
-                  changedFrom = listOf(getPreviousProjectName(event, context)),
+                  changedFrom = listOf(ProjectSubjectPayload.getPreviousName(event, context)),
                   changedTo = listOf(event.name),
               )
           )
@@ -126,29 +124,5 @@ class EventLogPayloadTransformer(
         emptyList()
       }
     }
-  }
-
-  private fun getPreviousOrganizationName(
-      event: OrganizationPersistentEvent,
-      context: EventLogPayloadContext,
-  ): String {
-    val lastRename =
-        context.lastEventBefore<OrganizationRenamedEvent>(event) {
-          it.organizationId == event.organizationId
-        }
-    return lastRename?.name
-        ?: context
-            .first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
-            .name
-  }
-
-  private fun getPreviousProjectName(
-      event: ProjectPersistentEvent,
-      context: EventLogPayloadContext,
-  ): String {
-    val lastRename =
-        context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
-    return lastRename?.name
-        ?: context.first<ProjectCreatedEvent> { it.projectId == event.projectId }.name
   }
 }
