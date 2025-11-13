@@ -148,7 +148,7 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
           {
             if (stillImageStored) SizedInputStream(thumbnailData.inputStream(), 10) else null
           }
-      every { thumbnailStore.storeThumbnail(fileId, any(), 1, 1) } answers
+      every { thumbnailStore.storeThumbnail(fileId, any(), 1, 1, true) } answers
           {
             stillImageStored = true
           }
@@ -158,7 +158,7 @@ class ThumbnailServiceTest : DatabaseTest(), RunsAsUser {
       verify { converter1.canConvertToJpeg(videoMetadata.contentType) }
       verify { converter2.canConvertToJpeg(videoMetadata.contentType) }
       verify { converter2.convertToJpeg(fileId) }
-      verify { thumbnailStore.storeThumbnail(fileId, any(), 1, 1) }
+      verify { thumbnailStore.storeThumbnail(fileId, any(), 1, 1, true) }
 
       assertArrayEquals(thumbnailData, stream.readAllBytes())
     }
