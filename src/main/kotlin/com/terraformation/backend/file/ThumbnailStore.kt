@@ -28,6 +28,7 @@ import net.coobird.thumbnailator.Thumbnails
 import net.coobird.thumbnailator.resizers.configurations.ScalingMode
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
 @Named
@@ -157,9 +158,9 @@ class ThumbnailStore(
   }
 
   /**
-   * Uses the largest existing thumbnail for a file to generate a new thumbnail of a particular
-   * size. This can be used in cases where it's expensive to extract a thumbnail from the original
-   * file; a large "thumbnail" can be extracted once, and then smaller ones can be generated
+   * Uses the full-sized thumbnail for a file to generate a new thumbnail of a particular size. This
+   * can be used in cases where it's expensive to extract a thumbnail from the original file; a
+   * full-sized "thumbnail" can be extracted once, and then smaller ones can be generated
    * inexpensively as needed.
    */
   fun generateThumbnailFromExistingThumbnail(
@@ -173,8 +174,7 @@ class ThumbnailStore(
               .select(STORAGE_URL)
               .from(THUMBNAILS)
               .where(FILE_ID.eq(fileId))
-              .orderBy(WIDTH.desc(), HEIGHT.desc())
-              .limit(1)
+              .and(IS_FULL_SIZE.eq(true))
               .fetchOne(STORAGE_URL)
         } ?: return null
 
@@ -187,6 +187,7 @@ class ThumbnailStore(
       content: ByteArray,
       width: Int,
       height: Int,
+      isFullSize: Boolean,
       contentType: MediaType = MediaType.IMAGE_JPEG,
   ) {
     val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
@@ -203,25 +204,43 @@ class ThumbnailStore(
       // We will still attempt to insert the database row in this case, though, to recover from
       // situations where we'd previously written the file to the file store but failed to insert
       // a row for it in the thumbnails table.
+      //
+      // We also backfill the is_full_size value here for full-sized thumbnails that were generated
+      // before that column was added.
       log.warn("File $fileId thumbnail $thumbUrl already exists; keeping existing file")
       size = fileStore.size(thumbUrl).toInt()
     }
     val thumbnailId =
         with(THUMBNAILS) {
-          dslContext
-              .insertInto(THUMBNAILS)
-              .set(CONTENT_TYPE, contentType.toString())
-              .set(CREATED_TIME, clock.instant())
-              .set(HEIGHT, height)
-              .set(FILE_ID, fileId)
-              .set(SIZE, size)
-              .set(STORAGE_URL, thumbUrl)
-              .set(WIDTH, width)
-              .onConflictDoNothing()
-              .returning(ID)
-              .fetchOne()
-              ?.id
+          try {
+            dslContext.transactionResult { _ ->
+              dslContext
+                  .insertInto(THUMBNAILS)
+                  .set(CONTENT_TYPE, contentType.toString())
+                  .set(CREATED_TIME, clock.instant())
+                  .set(HEIGHT, height)
+                  .set(FILE_ID, fileId)
+                  .set(IS_FULL_SIZE, isFullSize)
+                  .set(SIZE, size)
+                  .set(STORAGE_URL, thumbUrl)
+                  .set(WIDTH, width)
+                  .returning(ID)
+                  .fetchOne()
+                  ?.id
+            }
+          } catch (_: DuplicateKeyException) {
+            // Can't use "ON CONFLICT" here because there are multiple unique constraints on the
+            // thumbnails table and the database doesn't guarantee which one is checked first.
+            dslContext
+                .update(THUMBNAILS)
+                .set(IS_FULL_SIZE, isFullSize)
+                .where(STORAGE_URL.eq(thumbUrl))
+                .returning(ID)
+                .fetchOne()
+                ?.id
+          }
         }
+
     log.info("Created file $fileId thumbnail $thumbnailId dimensions $width x $height bytes $size")
   }
 
@@ -245,12 +264,16 @@ class ThumbnailStore(
         }
       }
 
-      val resizedImage = scalePhoto(photoUrl, maxWidth, maxHeight)
-      val width = resizedImage.width
-      val height = resizedImage.height
+      val originalImage =
+          log.debugWithTiming("Loaded $photoUrl into image buffer") { imageUtils.read(photoUrl) }
+      val resizedImage = scalePhoto(originalImage, maxWidth, maxHeight)
       val buffer = encodeAsJpeg(resizedImage)
 
-      storeThumbnail(fileId, buffer, width, height)
+      val width = resizedImage.width
+      val height = resizedImage.height
+      val isFullSize = width == originalImage.width && height == originalImage.height
+
+      storeThumbnail(fileId, buffer, width, height, isFullSize)
 
       return SizedInputStream(
           ByteArrayInputStream(buffer),
@@ -270,10 +293,11 @@ class ThumbnailStore(
   }
 
   /** Scales an existing photo to a new set of maximum dimensions. */
-  private fun scalePhoto(photoUrl: URI, maxWidth: Int?, maxHeight: Int?): BufferedImage {
-    val originalImage =
-        log.debugWithTiming("Loaded $photoUrl into image buffer") { imageUtils.read(photoUrl) }
-
+  private fun scalePhoto(
+      originalImage: BufferedImage,
+      maxWidth: Int?,
+      maxHeight: Int?,
+  ): BufferedImage {
     // Draw image onto a background that has been filled white. This ensures that transparent areas
     // are rendered white.
     val newImage =
@@ -344,15 +368,14 @@ class ThumbnailStore(
           }
           width != null -> THUMBNAILS.WIDTH.eq(width)
           height != null -> THUMBNAILS.HEIGHT.eq(height)
-          // Return the largest available thumbnail.
-          else -> null
+          // Return a full-sized thumbnail.
+          else -> THUMBNAILS.IS_FULL_SIZE.eq(true)
         }
-
-    val conditions = listOfNotNull(THUMBNAILS.FILE_ID.eq(fileId), sizeCondition)
 
     return dslContext
         .selectFrom(THUMBNAILS)
-        .where(conditions)
+        .where(THUMBNAILS.FILE_ID.eq(fileId))
+        .and(sizeCondition)
         .orderBy(THUMBNAILS.WIDTH.desc(), THUMBNAILS.HEIGHT.desc())
         .limit(1)
         .fetchOneInto(ThumbnailsRow::class.java)
