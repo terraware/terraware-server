@@ -109,19 +109,27 @@ data class OrganizationSubjectPayload(
         event: OrganizationPersistentEvent,
         context: EventLogPayloadContext,
     ): OrganizationSubjectPayload {
-      val lastRename =
-          context.lastEventBefore<OrganizationRenamedEvent>(event) {
-            it.organizationId == event.organizationId
-          }
-      val createEvent =
-          context.first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
-      val name = lastRename?.name ?: createEvent.name
+      val name = getPreviousName(event, context)
 
       return OrganizationSubjectPayload(
           fullText = context.subjectFullText<OrganizationSubjectPayload>(name),
           organizationId = event.organizationId,
           shortText = context.subjectShortText<OrganizationSubjectPayload>(),
       )
+    }
+
+    fun getPreviousName(
+        event: OrganizationPersistentEvent,
+        context: EventLogPayloadContext,
+    ): String {
+      val lastRename =
+          context.lastEventBefore<OrganizationRenamedEvent>(event) {
+            it.organizationId == event.organizationId
+          }
+      return lastRename?.name
+          ?: context
+              .first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
+              .name
     }
   }
 }
@@ -137,16 +145,20 @@ data class ProjectSubjectPayload(
         event: ProjectPersistentEvent,
         context: EventLogPayloadContext,
     ): ProjectSubjectPayload {
-      val lastRename =
-          context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
-      val createEvent = context.first<ProjectCreatedEvent> { it.projectId == event.projectId }
-      val name = lastRename?.name ?: createEvent.name
+      val name = getPreviousName(event, context)
 
       return ProjectSubjectPayload(
           fullText = context.subjectFullText<ProjectSubjectPayload>(name),
           projectId = event.projectId,
           shortText = context.subjectShortText<ProjectSubjectPayload>(),
       )
+    }
+
+    fun getPreviousName(event: ProjectPersistentEvent, context: EventLogPayloadContext): String {
+      val lastRename =
+          context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
+      return lastRename?.name
+          ?: context.first<ProjectCreatedEvent> { it.projectId == event.projectId }.name
     }
   }
 }
