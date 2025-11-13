@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.EntityUpdatedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsUpdatedEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -266,10 +267,13 @@ data class ObservationMediaFileEditedEventV1(
     override val observationId: ObservationId,
     override val organizationId: OrganizationId,
     override val plantingSiteId: PlantingSiteId,
-) : EntityUpdatedPersistentEvent, ObservationMediaFilePersistentEvent {
+) : EntityUpdatedPersistentEvent, FieldsUpdatedEvent, ObservationMediaFilePersistentEvent {
   data class Values(
       val caption: String?,
   )
+
+  override fun listUpdatedFields() =
+      listOf(FieldsUpdatedEvent.UpdatedField("caption", changedFrom.caption, changedTo.caption))
 }
 
 typealias ObservationMediaFileEditedEvent = ObservationMediaFileEditedEventV1
