@@ -408,13 +408,16 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class GenerateThumbnailFromExistingThumbnail {
     @Test
-    fun `returns null if there is no existing thumbnail`() {
+    fun `returns null if there is no full-size thumbnail`() {
+      insertThumbnail(64, 48, getJpegData(64, 48), isFullSize = false)
+
       assertNull(store.generateThumbnailFromExistingThumbnail(fileId, 50, 50))
     }
 
     @Test
     fun `stores new thumbnail in thumb subdirectory of original file`() {
-      val existingThumbnailUrl = insertThumbnail(64, 48, getJpegData(64, 48)).storageUrl!!
+      val existingThumbnailUrl =
+          insertThumbnail(64, 48, getJpegData(64, 48), isFullSize = true).storageUrl!!
 
       val thumbnailStream = store.generateThumbnailFromExistingThumbnail(fileId, 32, null)
       assertNotNull(thumbnailStream)

@@ -158,9 +158,9 @@ class ThumbnailStore(
   }
 
   /**
-   * Uses the largest existing thumbnail for a file to generate a new thumbnail of a particular
-   * size. This can be used in cases where it's expensive to extract a thumbnail from the original
-   * file; a large "thumbnail" can be extracted once, and then smaller ones can be generated
+   * Uses the full-sized thumbnail for a file to generate a new thumbnail of a particular size. This
+   * can be used in cases where it's expensive to extract a thumbnail from the original file; a
+   * full-sized "thumbnail" can be extracted once, and then smaller ones can be generated
    * inexpensively as needed.
    */
   fun generateThumbnailFromExistingThumbnail(
@@ -174,8 +174,7 @@ class ThumbnailStore(
               .select(STORAGE_URL)
               .from(THUMBNAILS)
               .where(FILE_ID.eq(fileId))
-              .orderBy(WIDTH.desc(), HEIGHT.desc())
-              .limit(1)
+              .and(IS_FULL_SIZE.eq(true))
               .fetchOne(STORAGE_URL)
         } ?: return null
 
