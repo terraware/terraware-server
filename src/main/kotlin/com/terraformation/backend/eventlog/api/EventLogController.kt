@@ -5,6 +5,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -39,6 +40,7 @@ class EventLogController(
                 payload.observationId,
                 payload.organizationId,
                 payload.plantingSiteId,
+                payload.projectId,
             ),
             requestedClasses = payload.subjects?.map { it.eventInterface }?.ifEmpty { null },
         )
@@ -64,6 +66,7 @@ data class ListEventLogEntriesRequestPayload(
     val observationId: ObservationId? = null,
     val organizationId: OrganizationId,
     val plantingSiteId: PlantingSiteId? = null,
+    val projectId: ProjectId? = null,
     @Schema(
         description =
             "If specified, only return event log entries for specific subject types. This can be " +
