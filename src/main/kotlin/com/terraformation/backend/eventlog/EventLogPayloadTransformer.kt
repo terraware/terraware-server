@@ -54,7 +54,7 @@ class EventLogPayloadTransformer(
       if (actions.isNotEmpty() && subject != null) {
         actions.map { action ->
           EventLogEntryPayload(
-              action = action,
+              action = localizeFieldName(subject, action),
               subject = subject,
               timestamp = entry.createdTime,
               userId = entry.createdBy,
@@ -91,7 +91,7 @@ class EventLogPayloadTransformer(
       is OrganizationRenamedEvent ->
           listOf(
               FieldUpdatedActionPayload(
-                  fieldName = "name", // TODO: i18n,
+                  fieldName = "name",
                   changedFrom = listOf(OrganizationSubjectPayload.getPreviousName(event, context)),
                   changedTo = listOf(event.name),
               )
@@ -99,7 +99,7 @@ class EventLogPayloadTransformer(
       is ProjectRenamedEvent ->
           listOf(
               FieldUpdatedActionPayload(
-                  fieldName = "name", // TODO: i18n,
+                  fieldName = "name",
                   changedFrom = listOf(ProjectSubjectPayload.getPreviousName(event, context)),
                   changedTo = listOf(event.name),
               )
@@ -122,4 +122,14 @@ class EventLogPayloadTransformer(
       }
     }
   }
+
+  private fun localizeFieldName(
+      subject: EventSubjectPayload,
+      action: EventActionPayload,
+  ): EventActionPayload =
+      if (action is FieldUpdatedActionPayload) {
+        action.copy(fieldName = messages.eventSubjectFieldName(subject::class, action.fieldName))
+      } else {
+        action
+      }
 }

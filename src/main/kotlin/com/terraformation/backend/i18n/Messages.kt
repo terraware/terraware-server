@@ -227,6 +227,9 @@ class Messages {
 
   fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
 
+  fun eventSubjectFieldName(subjectClass: KClass<*>, fieldName: String) =
+      getMessage("${eventSubjectPrefix(subjectClass)}.field.$fieldName")
+
   fun eventSubjectFullText(subjectClass: KClass<*>, vararg args: Any) =
       getMessage("${eventSubjectPrefix(subjectClass)}.full", *args)
 
