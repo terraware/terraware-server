@@ -460,32 +460,32 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>recorded_trees_trunk_number_check</td>
-                                    <td>(trunk_number &gt;&#61; 1)</td>
-                                </tr>
-                                <tr>
-                                    <td>recorded_trees_shrub_diameter_cm_check</td>
-                                    <td>(shrub_diameter_cm &gt;&#61; 0)</td>
-                                </tr>
-                                <tr>
-                                    <td>recorded_trees_diameter_at_breast_height_cm_check</td>
-                                    <td>(diameter_at_breast_height_cm &gt;&#61; (0)::numeric)</td>
-                                </tr>
-                                <tr>
-                                    <td>recorded_trees_height_m_check</td>
-                                    <td>(height_m &gt;&#61; (0)::numeric)</td>
+                                    <td>growth_form_specific_data</td>
+                                    <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>recorded_trees_tree_number_check</td>
                                     <td>(tree_number &gt;&#61; 1)</td>
                                 </tr>
                                 <tr>
+                                    <td>recorded_trees_trunk_number_check</td>
+                                    <td>(trunk_number &gt;&#61; 1)</td>
+                                </tr>
+                                <tr>
+                                    <td>recorded_trees_diameter_at_breast_height_cm_check</td>
+                                    <td>(diameter_at_breast_height_cm &gt;&#61; (0)::numeric)</td>
+                                </tr>
+                                <tr>
+                                    <td>recorded_trees_shrub_diameter_cm_check</td>
+                                    <td>(shrub_diameter_cm &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
                                     <td>recorded_trees_point_of_measurement_m_check</td>
                                     <td>(point_of_measurement_m &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 <tr>
-                                    <td>growth_form_specific_data</td>
-                                    <td>(((tree_growth_form_id &#61; 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number &#61; 1)) OR ((tree_growth_form_id &#61; 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)))</td>
+                                    <td>recorded_trees_height_m_check</td>
+                                    <td>(height_m &gt;&#61; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>
