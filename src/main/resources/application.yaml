@@ -131,6 +131,7 @@ springdoc:
     - "com.terraformation.backend.documentproducer.api"
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
+    - "com.terraformation.backend.eventlog.api"
     - "com.terraformation.backend.file.api"
     - "com.terraformation.backend.funder.api"
     - "com.terraformation.backend.gis.api"
