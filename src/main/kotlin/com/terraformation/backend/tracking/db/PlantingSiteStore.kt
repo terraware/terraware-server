@@ -368,6 +368,11 @@ class PlantingSiteStore(
     return fetchReportedPlants(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
   }
 
+  fun countReportedPlantsForProject(projectId: ProjectId): List<PlantingSiteReportedPlantTotals> {
+    requirePermissions { readProject(projectId) }
+    return fetchReportedPlants(PLANTING_SITES.PROJECT_ID.eq(projectId))
+  }
+
   fun createPlantingSite(
       newModel: NewPlantingSiteModel,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),

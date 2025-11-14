@@ -140,9 +140,18 @@ class PlantingSitesController(
   )
   fun listPlantingSiteReportedPlants(
       @RequestParam //
-      organizationId: OrganizationId,
+      organizationId: OrganizationId?,
+      @RequestParam //
+      projectId: ProjectId?,
   ): ListPlantingSiteReportedPlantsResponsePayload {
-    val totals = plantingSiteStore.countReportedPlantsForOrganization(organizationId)
+    val totals =
+        if (organizationId != null) {
+          plantingSiteStore.countReportedPlantsForOrganization(organizationId)
+        } else if (projectId != null) {
+          plantingSiteStore.countReportedPlantsForProject(projectId)
+        } else {
+          throw IllegalArgumentException("One of organizationId or projectId must be provided.")
+        }
 
     return ListPlantingSiteReportedPlantsResponsePayload(
         totals.map { PlantingSiteReportedPlantsPayload(it) }

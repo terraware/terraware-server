@@ -270,7 +270,7 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
   }
 
   @Nested
-  inner class CountReportedPlantsForSite {
+  inner class CountReportedPlantsForOrganization {
     @Test
     fun `returns correct zone-level and subzone-level totals`() {
       val plantingSiteId = insertPlantingSite()
@@ -466,6 +466,209 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
           )
 
       val actual = store.countReportedPlantsForOrganization(organizationId)
+
+      assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class CountReportedPlantsForProject {
+    @Test
+    fun `returns correct zone-level and subzone-level totals`() {
+      val projectId = insertProject()
+      val plantingSiteId = insertPlantingSite(projectId = projectId)
+
+      val plantingZoneId1 =
+          insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1a = insertPlantingSubzone()
+      val speciesId1 = insertSpecies()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 5)
+      insertPlantingZonePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      val plantingSubzoneId1b = insertPlantingSubzone()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      val speciesId2 = insertSpecies()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+
+      val plantingZoneId2 =
+          insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      val plantingSubzoneId2 = insertPlantingSubzone()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 4, totalPlants = 50)
+      insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
+      val speciesId3 = insertSpecies()
+      insertPlantingSubzonePopulation(plantsSinceLastObservation = 8, totalPlants = 55)
+      insertPlantingZonePopulation(plantsSinceLastObservation = 7, totalPlants = 70)
+      insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+
+      val emptyPlantingZoneId =
+          insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+      val emptyPlantingSubzoneId = insertPlantingSubzone()
+
+      // planting site in the same project with no plantings
+      val otherPlantingSiteId = insertPlantingSite(projectId = projectId)
+
+      // planting site in another project
+      val otherProjectId = insertProject()
+      insertPlantingSite(projectId = otherProjectId)
+
+      val expected =
+          listOf(
+              PlantingSiteReportedPlantTotals(
+                  id = plantingSiteId,
+                  plantingZones =
+                      listOf(
+                          PlantingSiteReportedPlantTotals.PlantingZone(
+                              id = plantingZoneId1,
+                              plantsSinceLastObservation = 5,
+                              species =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.Species(
+                                          id = speciesId1,
+                                          plantsSinceLastObservation = 3,
+                                          totalPlants = 10,
+                                      ),
+                                      PlantingSiteReportedPlantTotals.Species(
+                                          id = speciesId2,
+                                          plantsSinceLastObservation = 2,
+                                          totalPlants = 20,
+                                      ),
+                                  ),
+                              targetPlants = 20,
+                              totalPlants = 30,
+                              totalSpecies = 2,
+                              plantingSubzones =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                          id = plantingSubzoneId1a,
+                                          plantsSinceLastObservation = 2,
+                                          species =
+                                              listOf(
+                                                  PlantingSiteReportedPlantTotals.Species(
+                                                      id = speciesId1,
+                                                      plantsSinceLastObservation = 2,
+                                                      totalPlants = 5,
+                                                  )
+                                              ),
+                                          totalPlants = 5,
+                                          totalSpecies = 1,
+                                      ),
+                                      PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                          id = plantingSubzoneId1b,
+                                          plantsSinceLastObservation = 3,
+                                          species =
+                                              listOf(
+                                                  PlantingSiteReportedPlantTotals.Species(
+                                                      id = speciesId1,
+                                                      plantsSinceLastObservation = 1,
+                                                      totalPlants = 5,
+                                                  ),
+                                                  PlantingSiteReportedPlantTotals.Species(
+                                                      id = speciesId2,
+                                                      plantsSinceLastObservation = 2,
+                                                      totalPlants = 20,
+                                                  ),
+                                              ),
+                                          totalPlants = 25,
+                                          totalSpecies = 2,
+                                      ),
+                                  ),
+                          ),
+                          PlantingSiteReportedPlantTotals.PlantingZone(
+                              id = plantingZoneId2,
+                              plantsSinceLastObservation = 11,
+                              species =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.Species(
+                                          id = speciesId2,
+                                          plantsSinceLastObservation = 4,
+                                          totalPlants = 40,
+                                      ),
+                                      PlantingSiteReportedPlantTotals.Species(
+                                          id = speciesId3,
+                                          plantsSinceLastObservation = 7,
+                                          totalPlants = 70,
+                                      ),
+                                  ),
+                              targetPlants = 404,
+                              totalPlants = 110,
+                              totalSpecies = 2,
+                              plantingSubzones =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                          id = plantingSubzoneId2,
+                                          plantsSinceLastObservation = 12,
+                                          species =
+                                              listOf(
+                                                  PlantingSiteReportedPlantTotals.Species(
+                                                      id = speciesId2,
+                                                      plantsSinceLastObservation = 4,
+                                                      totalPlants = 50,
+                                                  ),
+                                                  PlantingSiteReportedPlantTotals.Species(
+                                                      id = speciesId3,
+                                                      plantsSinceLastObservation = 8,
+                                                      totalPlants = 55,
+                                                  ),
+                                              ),
+                                          totalPlants = 105,
+                                          totalSpecies = 2,
+                                      )
+                                  ),
+                          ),
+                          PlantingSiteReportedPlantTotals.PlantingZone(
+                              id = emptyPlantingZoneId,
+                              plantsSinceLastObservation = 0,
+                              plantingSubzones =
+                                  listOf(
+                                      PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                          id = emptyPlantingSubzoneId,
+                                          plantsSinceLastObservation = 0,
+                                          species = emptyList(),
+                                          totalSpecies = 0,
+                                          totalPlants = 0,
+                                      )
+                                  ),
+                              species = emptyList(),
+                              targetPlants = 250,
+                              totalSpecies = 0,
+                              totalPlants = 0,
+                          ),
+                      ),
+                  plantsSinceLastObservation = 17,
+                  species =
+                      listOf(
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId1,
+                              plantsSinceLastObservation = 3,
+                              totalPlants = 10,
+                          ),
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId2,
+                              plantsSinceLastObservation = 6,
+                              totalPlants = 60,
+                          ),
+                          PlantingSiteReportedPlantTotals.Species(
+                              id = speciesId3,
+                              plantsSinceLastObservation = 8,
+                              totalPlants = 80,
+                          ),
+                      ),
+                  totalPlants = 150,
+                  totalSpecies = 3,
+              ),
+              PlantingSiteReportedPlantTotals(
+                  id = otherPlantingSiteId,
+                  plantingZones = emptyList(),
+                  plantsSinceLastObservation = 0,
+                  species = emptyList(),
+                  totalPlants = 0,
+                  totalSpecies = 0,
+              ),
+          )
+
+      val actual = store.countReportedPlantsForProject(projectId)
 
       assertEquals(expected, actual)
     }
