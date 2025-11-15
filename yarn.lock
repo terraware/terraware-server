@@ -580,9 +580,9 @@ header-case@^2.0.4:
     tslib "^2.0.3"
 
 html-minifier-next@^4.0.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.1.0.tgz#578ecb1f98b47769b43b09725712f143fdf65fe7"
-  integrity sha512-TB3vSjnFnbsr/so+ORiXCuf8E9U56UPaZgLpI8SlBTtDov2U6OJ/BWD3LTjQefiyXN6Bw/wjqLtpJB+1ztAryQ==
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.1.1.tgz#a8be1bb83b00226c090d6810842cc1dda54356b1"
+  integrity sha512-Oc49HBmUYFO/1Vcr8m+mZLINV9d4XBQ1WSubGmy9+AYjO28p8BNrMDBTdVF6W1fVc/pQZqGpaufoOKKApPUn4g==
   dependencies:
     "@types/relateurl" "^0.2.33"
     change-case "^4.1.2"
@@ -1808,9 +1808,9 @@ strip-ansi@^7.0.1:
     ansi-regex "^6.0.1"
 
 terser@^5.44.0:
-  version "5.44.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.44.0.tgz#ebefb8e5b8579d93111bfdfc39d2cf63879f4a82"
-  integrity sha512-nIVck8DK+GM/0Frwd+nIhZ84pR/BX7rmXMfYwyg+Sri5oGVE99/E3KvXqpC2xHFxyqXyGHTKBSioxxplrO4I4w==
+  version "5.44.1"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.44.1.tgz#e391e92175c299b8c284ad6ded609e37303b0a9c"
+  integrity sha512-t/R3R/n0MSwnnazuPpPNVO60LX0SKL45pyl9YlvxIdkH0Of7D5qM2EVe+yASRIlY5pZ73nclYJfNANGWPwFDZw==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.15.0"
