@@ -4,12 +4,14 @@ import com.terraformation.backend.BeanTestDouble
 import jakarta.annotation.Priority
 import jakarta.inject.Named
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.io.path.relativeTo
 import org.junit.jupiter.api.fail
 import org.springframework.http.MediaType
 
@@ -27,6 +29,9 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
 
   private val deletedFiles
     get() = threadState.get().deletedFiles
+
+  val errorFiles
+    get() = threadState.get().errorFiles
 
   val files
     get() = threadState.get().files
@@ -56,12 +61,20 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
     }
   }
 
+  fun throwOnFile(url: URI) {
+    errorFiles.add(url)
+  }
+
   override fun delete(url: URI) {
+    throwIfRequested(url)
+
     files.remove(url) ?: throw NoSuchFileException("$url")
     deletedFiles.add(url)
   }
 
   override fun read(url: URI): SizedInputStream {
+    throwIfRequested(url)
+
     val bytes = getFile(url)
     return SizedInputStream(
         ByteArrayInputStream(bytes),
@@ -71,10 +84,13 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
   }
 
   override fun size(url: URI): Long {
+    throwIfRequested(url)
     return getFile(url).size.toLong()
   }
 
   override fun write(url: URI, contents: InputStream) {
+    throwIfRequested(url)
+
     if (url in files) {
       throw FileAlreadyExistsException("$url")
     }
@@ -84,7 +100,10 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
 
   override fun canAccept(url: URI): Boolean = true
 
-  override fun getUrl(path: Path): URI = URI("file:///$path")
+  override fun getUrl(path: Path): URI {
+    val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
+    return URI("file:///$relativePath")
+  }
 
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
     return if (pathGenerator != null) {
@@ -96,6 +115,12 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
 
   private fun getFile(url: URI) = files[url] ?: throw NoSuchFileException("$url")
 
+  private fun throwIfRequested(url: URI) {
+    if (url in errorFiles) {
+      throw IOException("Simulated error")
+    }
+  }
+
   /**
    * Per-thread state of the file store. A test running in one thread shouldn't interact with
    * another test running in another thread.
@@ -103,6 +128,7 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
   private class State {
     var counter = 0
     val deletedFiles = mutableSetOf<URI>()
+    val errorFiles = mutableSetOf<URI>()
     val files = mutableMapOf<URI, ByteArray>()
   }
 }

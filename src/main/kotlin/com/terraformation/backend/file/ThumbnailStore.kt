@@ -190,7 +190,7 @@ class ThumbnailStore(
       contentType: MediaType = MediaType.IMAGE_JPEG,
   ) {
     val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
-    val size = content.size
+    var size: Int = content.size
     val thumbUrl = getThumbnailUrl(filesRow.storageUrl!!, width, height)
     try {
       fileStore.write(thumbUrl, ByteArrayInputStream(content))
@@ -204,6 +204,7 @@ class ThumbnailStore(
       // situations where we'd previously written the file to the file store but failed to insert
       // a row for it in the thumbnails table.
       log.warn("File $fileId thumbnail $thumbUrl already exists; keeping existing file")
+      size = fileStore.size(thumbUrl).toInt()
     }
     val thumbnailId =
         with(THUMBNAILS) {
