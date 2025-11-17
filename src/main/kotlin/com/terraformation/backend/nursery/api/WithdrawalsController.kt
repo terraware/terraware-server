@@ -22,25 +22,20 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.nursery.BatchService
 import com.terraformation.backend.nursery.db.BatchStore
-import com.terraformation.backend.nursery.db.NurseryWithdrawalStore
 import com.terraformation.backend.nursery.db.WithdrawalPhotoService
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
-import com.terraformation.backend.nursery.model.NurserySpeciesModel
-import com.terraformation.backend.nursery.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.api.DeliveryPayload
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -50,7 +45,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Min
 import jakarta.ws.rs.QueryParam
-import java.math.BigDecimal
 import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
@@ -72,7 +66,6 @@ class WithdrawalsController(
     val batchService: BatchService,
     val batchStore: BatchStore,
     val deliveryStore: DeliveryStore,
-    val nurseryWithdrawalStore: NurseryWithdrawalStore,
     val withdrawalPhotoService: WithdrawalPhotoService,
 ) {
   @GetMapping("/{withdrawalId}")
@@ -90,17 +83,6 @@ class WithdrawalsController(
         }
 
     return GetNurseryWithdrawalResponsePayload(batches, deliveryModel, withdrawal)
-  }
-
-  @GetMapping("/plantingSite/{plantingSiteId}/species")
-  @Operation(summary = "Lists all the species that have been withdrawn to a planting site.")
-  @Deprecated("Prefer /api/v1/tracking/t0/site/{plantingSiteId}/species")
-  fun getSpeciesWithdrawnToPlantingSite(
-      @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
-  ): GetSitePlotSpeciesResponsePayload {
-    val plots = nurseryWithdrawalStore.fetchSiteSpeciesByPlot(plantingSiteId)
-
-    return GetSitePlotSpeciesResponsePayload(plots.map { PlotSpeciesDensitiesPayload(it) })
   }
 
   @Operation(summary = "Withdraws seedlings from one or more seedling batches at a nursery.")
@@ -358,33 +340,6 @@ data class GetNurseryWithdrawalResponsePayload(
       NurseryWithdrawalPayload(withdrawal),
   )
 }
-
-data class SpeciesDensityPayload(
-    val speciesId: SpeciesId,
-    @Schema(description = "Species density in plants per hectare.") val density: BigDecimal,
-) {
-  constructor(
-      model: NurserySpeciesModel
-  ) : this(
-      speciesId = model.speciesId,
-      density = model.density,
-  )
-}
-
-data class PlotSpeciesDensitiesPayload(
-    val monitoringPlotId: MonitoringPlotId,
-    val species: List<SpeciesDensityPayload>,
-) {
-  constructor(
-      model: PlotSpeciesModel
-  ) : this(
-      monitoringPlotId = model.monitoringPlotId,
-      species = model.species.map { SpeciesDensityPayload(it) },
-  )
-}
-
-data class GetSitePlotSpeciesResponsePayload(val plots: List<PlotSpeciesDensitiesPayload>) :
-    SuccessResponsePayload
 
 data class CreateNurseryWithdrawalPhotoResponsePayload(val id: FileId) : SuccessResponsePayload
 
