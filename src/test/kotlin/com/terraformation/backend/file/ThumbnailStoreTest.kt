@@ -6,27 +6,18 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.default_schema.tables.records.ThumbnailsRecord
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.ImageUtils
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.net.URI
-import java.nio.file.FileAlreadyExistsException
-import java.nio.file.NoSuchFileException
-import java.nio.file.Path
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -47,7 +38,7 @@ import org.springframework.http.MediaType
 internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
-  private val fileStore: FileStore = mockk()
+  private val fileStore = InMemoryFileStore()
   private val imageUtils: ImageUtils = spyk(ImageUtils(fileStore))
 
   private lateinit var store: ThumbnailStore
@@ -74,13 +65,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     filesDao.insert(filesRow)
     fileId = filesRow.id!!
 
-    every { fileStore.delete(any()) } throws NoSuchFileException("Not found")
-    every { fileStore.getUrl(any()) } answers { URI("file://${firstArg<Path>()}") }
-    every { fileStore.read(any()) } throws NoSuchFileException("Not found")
-    every { fileStore.read(photoStorageUrl) } answers
-        {
-          SizedInputStream(ByteArrayInputStream(photoJpegData), photoJpegData.size.toLong())
-        }
+    fileStore.write(photoStorageUrl, photoJpegData.inputStream())
+
     every { imageUtils.getOrientation(any()) } returns 1
   }
 
@@ -102,11 +88,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
         )
     thumbnailsDao.insert(thumbnailsRow)
 
-    every { fileStore.delete(storageUrl) } just Runs
-    every { fileStore.read(storageUrl) } answers
-        {
-          SizedInputStream(ByteArrayInputStream(imageData), imageData.size.toLong())
-        }
+    fileStore.write(storageUrl, imageData.inputStream())
 
     return thumbnailsRow
   }
@@ -236,22 +218,14 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       insertThumbnail(width + 1, height)
       insertThumbnail(width - 1, height - 1)
 
-      val thumbUrlSlot: CapturingSlot<URI> = slot()
-      val streamSlot: CapturingSlot<InputStream> = slot()
-      justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot)) }
-
       val actual = store.getThumbnailData(fileId, width, height)
 
-      verify(exactly = 1) { fileStore.write(any(), any()) }
+      val expectedThumbnailUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg")
 
-      assertEquals(
-          URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
-          thumbUrlSlot.captured,
-          "Should have derived thumbnail URL from original photo URL",
-      )
+      fileStore.assertFileExists(expectedThumbnailUrl)
       assertArrayEquals(
           actual.readAllBytes(),
-          streamSlot.captured.readAllBytes(),
+          fileStore.read(expectedThumbnailUrl).readAllBytes(),
           "Should have written same image to file store that was returned to caller",
       )
     }
@@ -261,23 +235,15 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       val width = photoWidth + 1
       val height = photoHeight + 1
 
-      val thumbUrlSlot: CapturingSlot<URI> = slot()
-      val streamSlot: CapturingSlot<InputStream> = slot()
-      justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot)) }
-
       val actual = store.getThumbnailData(fileId, width, height)
       val actualBytes = actual.readAllBytes()
 
-      verify(exactly = 1) { fileStore.write(any(), any()) }
+      val expectedThumbnailUrl = URI("file:///a/b/c/thumb/original-${photoWidth}x$photoHeight.jpg")
 
-      assertEquals(
-          URI("file:///a/b/c/thumb/original-${photoWidth}x$photoHeight.jpg"),
-          thumbUrlSlot.captured,
-          "Should have derived thumbnail URL from original photo URL",
-      )
+      fileStore.assertFileExists(expectedThumbnailUrl)
       assertArrayEquals(
           actualBytes,
-          streamSlot.captured.readAllBytes(),
+          fileStore.read(expectedThumbnailUrl).readAllBytes(),
           "Should have written same image to file store that was returned to caller",
       )
 
@@ -289,8 +255,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     fun `generates thumbnails as valid JPEG files`() {
       val width = photoWidth / 10
       val height = photoHeight / 10
-
-      justRun { fileStore.write(any(), any()) }
 
       val actual = store.getThumbnailData(fileId, width, height)
       val actualData = actual.readAllBytes()
@@ -308,11 +272,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       val width = photoWidth / 10
       val height = photoHeight / 10
 
-      every { fileStore.read(photoStorageUrl) } answers
-          {
-            SizedInputStream(ByteArrayInputStream(photoPngData), photoPngData.size.toLong())
-          }
-      justRun { fileStore.write(any(), any()) }
+      fileStore.delete(photoStorageUrl)
+      fileStore.write(photoStorageUrl, photoPngData.inputStream())
 
       filesDao.update(filesDao.fetchOneById(fileId)!!.copy(contentType = MediaType.IMAGE_PNG_VALUE))
 
@@ -329,8 +290,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generates thumbnails above minimum high-quality dimensions`() {
-      justRun { fileStore.write(any(), any()) }
-
       val actual =
           store.getThumbnailData(fileId, store.minSizeForHighQuality, store.minSizeForHighQuality)
       val actualData = actual.readAllBytes()
@@ -346,24 +305,22 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     fun `inserts database row for existing thumbnail if file already exists`() {
       val width = photoWidth / 10
       val height = photoHeight / 10
+      val storageUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg")
 
-      every { fileStore.write(any(), any()) } throws FileAlreadyExistsException("Exists")
+      fileStore.write(storageUrl, photoJpegData.inputStream())
 
-      val actual = store.getThumbnailData(fileId, width, height)
+      store.getThumbnailData(fileId, width, height)
 
-      assertEquals(
-          listOf(
-              ThumbnailsRow(
-                  fileId = fileId,
-                  width = width,
-                  height = height,
-                  contentType = MediaType.IMAGE_JPEG_VALUE,
-                  createdTime = Instant.EPOCH,
-                  size = actual.size.toInt(),
-                  storageUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
-              )
-          ),
-          thumbnailsDao.findAll().map { it.copy(id = null) },
+      assertTableEquals(
+          ThumbnailsRecord(
+              fileId = fileId,
+              width = width,
+              height = height,
+              contentType = MediaType.IMAGE_JPEG_VALUE,
+              createdTime = Instant.EPOCH,
+              size = photoJpegData.size,
+              storageUrl = storageUrl,
+          )
       )
     }
 
@@ -374,26 +331,22 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
       val existingRow = insertThumbnail(width, height)
 
-      every { fileStore.read(existingRow.storageUrl!!) } throws NoSuchFileException("Nope")
-      justRun { fileStore.write(any(), any()) }
+      fileStore.delete(existingRow.storageUrl!!)
 
       val actual = store.getThumbnailData(fileId, width, height)
 
-      verify { fileStore.write(existingRow.storageUrl!!, any()) }
+      fileStore.assertFileExists(existingRow.storageUrl!!)
 
-      assertEquals(
-          listOf(
-              ThumbnailsRow(
-                  fileId = fileId,
-                  width = width,
-                  height = height,
-                  contentType = MediaType.IMAGE_JPEG_VALUE,
-                  createdTime = Instant.EPOCH,
-                  size = actual.size.toInt(),
-                  storageUrl = existingRow.storageUrl!!,
-              )
-          ),
-          thumbnailsDao.findAll().map { it.copy(id = null) },
+      assertTableEquals(
+          ThumbnailsRecord(
+              fileId = fileId,
+              width = width,
+              height = height,
+              contentType = MediaType.IMAGE_JPEG_VALUE,
+              createdTime = Instant.EPOCH,
+              size = actual.size.toInt(),
+              storageUrl = existingRow.storageUrl!!,
+          )
       )
     }
   }
@@ -432,8 +385,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     fun `stores new thumbnail in thumb subdirectory of original file`() {
       val existingThumbnailUrl = insertThumbnail(64, 48, getJpegData(64, 48)).storageUrl!!
 
-      justRun { fileStore.write(any(), any()) }
-
       val thumbnailStream = store.generateThumbnailFromExistingThumbnail(fileId, 32, null)
       assertNotNull(thumbnailStream)
       thumbnailStream.close()
@@ -453,8 +404,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
       store.deleteThumbnails(fileId)
 
-      verify { fileStore.delete(rows[0].storageUrl!!) }
-      verify { fileStore.delete(rows[1].storageUrl!!) }
+      fileStore.assertFileWasDeleted(rows[0].storageUrl!!)
+      fileStore.assertFileWasDeleted(rows[1].storageUrl!!)
 
       assertTableEmpty(THUMBNAILS)
     }
@@ -463,12 +414,11 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     fun `leaves database row in place if deletion from file store fails`() {
       val rows = listOf(insertThumbnail(10, 10), insertThumbnail(20, 20))
 
-      every { fileStore.delete(rows[1].storageUrl!!) } throws IOException("Nope")
+      fileStore.throwOnFile(rows[1].storageUrl!!)
 
       assertThrows<IOException> { store.deleteThumbnails(fileId) }
 
-      verify { fileStore.delete(rows[0].storageUrl!!) }
-      verify { fileStore.delete(rows[1].storageUrl!!) }
+      fileStore.assertFileWasDeleted(rows[0].storageUrl!!)
 
       assertEquals(listOf(rows[1]), thumbnailsDao.findAll())
     }
@@ -477,11 +427,9 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     fun `does not treat nonexistent thumbnail file as an error`() {
       val row = insertThumbnail(10, 10)
 
-      every { fileStore.delete(row.storageUrl!!) } throws NoSuchFileException("Missing")
+      fileStore.delete(row.storageUrl!!)
 
       store.deleteThumbnails(fileId)
-
-      verify { fileStore.delete(row.storageUrl!!) }
 
       assertTableEmpty(THUMBNAILS)
     }
@@ -491,8 +439,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   fun `service uses image utils to read photo urls`() {
     val width = photoWidth / 10
     val height = photoHeight / 10
-
-    justRun { fileStore.write(any(), any()) }
 
     store.getThumbnailData(fileId, width, height)
 
