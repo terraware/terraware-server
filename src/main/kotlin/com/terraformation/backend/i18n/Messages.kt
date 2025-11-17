@@ -1,5 +1,6 @@
 package com.terraformation.backend.i18n
 
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.ActivityType
@@ -25,6 +26,8 @@ import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import kotlin.reflect.KClass
+import kotlin.reflect.full.findAnnotation
 import org.springframework.context.support.ResourceBundleMessageSource
 
 /** Helper class to encapsulate notification message semantics */
@@ -223,6 +226,12 @@ class Messages {
   fun batchCsvColumnName(position: Int) = getMessage("batchCsvColumnName.$position")
 
   fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
+
+  fun eventSubjectFullText(subjectClass: KClass<*>, vararg args: Any) =
+      getMessage("${eventSubjectPrefix(subjectClass)}.full", *args)
+
+  fun eventSubjectShortText(subjectClass: KClass<*>, vararg args: Any) =
+      getMessage("${eventSubjectPrefix(subjectClass)}.short", *args)
 
   fun monitoringPlotNortheastCorner(plotNumber: Long) =
       getMessage("monitoringPlotNortheastCorner", plotNumber)
@@ -648,6 +657,9 @@ class Messages {
       getMessage("variablesCsvVariableParentDoesNotExist")
 
   fun variablesCsvWrongDataTypeForChild() = getMessage("variablesCsvWrongDataTypeForChild")
+
+  private fun eventSubjectPrefix(kClass: KClass<*>) =
+      "eventSubject.${kClass.findAnnotation<JsonTypeName>()!!.value}"
 
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })
