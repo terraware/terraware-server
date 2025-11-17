@@ -719,6 +719,7 @@ class T0Store(
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNotNull)
+              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
               .and(PLOT_T0_DENSITIES.PLOT_DENSITY.isNull)
               .and(
                   OBSERVATIONS.STATE_ID.`in`(
@@ -792,6 +793,7 @@ class T0Store(
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNull)
+              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
               .and(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY.isNull)
               .and(
                   OBSERVATIONS.STATE_ID.`in`(
