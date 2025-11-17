@@ -82,7 +82,7 @@ class ThumbnailService(
 
     val jpegImage = converter.convertToJpeg(fileId)
     val image = ImageIO.read(ByteArrayInputStream(jpegImage))
-    thumbnailStore.storeThumbnail(fileId, jpegImage, image.width, image.height)
+    thumbnailStore.storeThumbnail(fileId, jpegImage, image.width, image.height, isFullSize = true)
 
     if (maxWidth == null && maxHeight == null) {
       // Return the full-sized JPEG we just created.

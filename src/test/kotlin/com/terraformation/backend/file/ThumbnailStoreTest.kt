@@ -75,6 +75,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       height: Int,
       imageData: ByteArray = Random.nextBytes(10),
       storageUrl: URI = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
+      isFullSize: Boolean = false,
   ): ThumbnailsRow {
     val thumbnailsRow =
         ThumbnailsRow(
@@ -83,6 +84,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             height = height,
             contentType = MediaType.IMAGE_JPEG_VALUE,
             createdTime = clock.instant(),
+            isFullSize = isFullSize,
             size = imageData.size,
             storageUrl = storageUrl,
         )
@@ -157,7 +159,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
       val expected = Random.nextBytes(10)
 
       insertThumbnail(photoWidth - 1, photoHeight - 1)
-      insertThumbnail(photoWidth, photoHeight, expected)
+      insertThumbnail(photoWidth, photoHeight, expected, isFullSize = true)
 
       val actual = store.getThumbnailData(fileId, null, null)
 
@@ -316,10 +318,31 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
               fileId = fileId,
               width = width,
               height = height,
+              isFullSize = false,
               contentType = MediaType.IMAGE_JPEG_VALUE,
               createdTime = Instant.EPOCH,
               size = photoJpegData.size,
               storageUrl = storageUrl,
+          )
+      )
+    }
+
+    @Test
+    fun `updates full-size flag for existing full-size thumbnail`() {
+      val row = insertThumbnail(photoWidth, photoHeight, photoJpegData, isFullSize = false)
+
+      store.getThumbnailData(fileId, null, null)
+
+      assertTableEquals(
+          ThumbnailsRecord(
+              fileId = fileId,
+              width = photoWidth,
+              height = photoHeight,
+              isFullSize = true,
+              contentType = MediaType.IMAGE_JPEG_VALUE,
+              createdTime = Instant.EPOCH,
+              size = photoJpegData.size,
+              storageUrl = row.storageUrl,
           )
       )
     }
@@ -342,6 +365,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
               fileId = fileId,
               width = width,
               height = height,
+              isFullSize = false,
               contentType = MediaType.IMAGE_JPEG_VALUE,
               createdTime = Instant.EPOCH,
               size = actual.size.toInt(),
@@ -372,18 +396,28 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
       assertNull(store.getExistingThumbnailData(fileId, 33, 22))
     }
+
+    @Test
+    fun `returns null if no size is requested and there is no full-size thumbnail`() {
+      insertThumbnail(30, 20, Random.nextBytes(10))
+
+      assertNull(store.getExistingThumbnailData(fileId, null, null))
+    }
   }
 
   @Nested
   inner class GenerateThumbnailFromExistingThumbnail {
     @Test
-    fun `returns null if there is no existing thumbnail`() {
+    fun `returns null if there is no full-size thumbnail`() {
+      insertThumbnail(64, 48, getJpegData(64, 48), isFullSize = false)
+
       assertNull(store.generateThumbnailFromExistingThumbnail(fileId, 50, 50))
     }
 
     @Test
     fun `stores new thumbnail in thumb subdirectory of original file`() {
-      val existingThumbnailUrl = insertThumbnail(64, 48, getJpegData(64, 48)).storageUrl!!
+      val existingThumbnailUrl =
+          insertThumbnail(64, 48, getJpegData(64, 48), isFullSize = true).storageUrl!!
 
       val thumbnailStream = store.generateThumbnailFromExistingThumbnail(fileId, 32, null)
       assertNotNull(thumbnailStream)
