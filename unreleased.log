@@ -1,3 +1,4 @@
+71893bfa44b Gitignore Claude Code non-skill files (#3621)
 f292d9c1c30 SW-7720 Return full-sized published activity JPEGs (#3615)
 ae4fcb9afa8 SW-7720 Use InMemoryFileStore in ThumbnailStoreTest (#3614)
 37f8a42f12f Update Spring dependencies (#3619)
