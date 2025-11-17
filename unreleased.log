@@ -1,3 +1,4 @@
+30f04839d07 SW-7607 Interface for "field(s) updated" events (#3604)
 24f62481614 Support organization and project event querying (#3596)
 ea1b07caa80 SW-7607 Add event log query endpoint (#3595)
 52885703b85 SW-7694 All Set check should check all definitions of plot permanence (#3620)
