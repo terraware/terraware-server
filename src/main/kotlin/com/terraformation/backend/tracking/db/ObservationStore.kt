@@ -1653,9 +1653,17 @@ class ObservationStore(
               )
           val survivalRate =
               if (liveAndDeadForZone.first().survivalRateIncludesTempPlots) {
-                DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+                DSL.if_(
+                    survivalRateDenominator.eq(BigDecimal.ZERO),
+                    DSL.zero(),
+                    DSL.value(totalLive).mul(100).div(survivalRateDenominator),
+                )
               } else {
-                DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator)
+                DSL.if_(
+                    survivalRateDenominator.eq(BigDecimal.ZERO),
+                    DSL.zero(),
+                    DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator),
+                )
               }
 
           val rowsInserted =
@@ -1719,9 +1727,17 @@ class ObservationStore(
             )
         val survivalRate =
             if (zoneToLiveAndDead.flatMap { it.value }.first().survivalRateIncludesTempPlots) {
-              DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+              DSL.if_(
+                  survivalRateDenominator.eq(BigDecimal.ZERO),
+                  DSL.zero(),
+                  DSL.value(totalLive).mul(100).div(survivalRateDenominator),
+              )
             } else {
-              DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator)
+              DSL.if_(
+                  survivalRateDenominator.eq(BigDecimal.ZERO),
+                  DSL.zero(),
+                  DSL.value(totalPermanentLive).mul(100).div(survivalRateDenominator),
+              )
             }
 
         val rowsInserted =
@@ -2303,9 +2319,17 @@ class ObservationStore(
             )
         val survivalRate =
             if (plantingSite.survivalRateIncludesTempPlots!! && speciesKey.id != null) {
-              DSL.value(totalLive).mul(100).div(survivalRateDenominator)
+              DSL.if_(
+                  survivalRateDenominator.eq(BigDecimal.ZERO),
+                  DSL.zero(),
+                  DSL.value(totalLive).mul(100).div(survivalRateDenominator),
+              )
             } else if (isPermanent && speciesKey.id != null) {
-              DSL.value(permanentLive).mul(100).div(survivalRateDenominator)
+              DSL.if_(
+                  survivalRateDenominator.eq(BigDecimal.ZERO),
+                  DSL.zero(),
+                  DSL.value(permanentLive).mul(100).div(survivalRateDenominator),
+              )
             } else {
               DSL.castNull(SQLDataType.INTEGER)
             }
@@ -2379,12 +2403,20 @@ class ObservationStore(
 
           val survivalRate =
               if (plantingSite.survivalRateIncludesTempPlots!! && speciesKey.id != null) {
-                totalLiveField.plus(totalLive).mul(100).div(survivalRateDenominator)
+                DSL.if_(
+                    survivalRateDenominator.eq(BigDecimal.ZERO),
+                    DSL.zero(),
+                    totalLiveField.plus(totalLive).mul(100).div(survivalRateDenominator),
+                )
               } else if (isPermanent && speciesKey.id != null) {
-                permanentLiveField
-                    .plus(permanentLive)
-                    .mul(100)
-                    .div(survivalRatePermanentDenominator)
+                DSL.if_(
+                    survivalRatePermanentDenominator.eq(BigDecimal.ZERO),
+                    DSL.zero(),
+                    permanentLiveField
+                        .plus(permanentLive)
+                        .mul(100)
+                        .div(survivalRatePermanentDenominator),
+                )
               } else {
                 survivalRateField
               }
