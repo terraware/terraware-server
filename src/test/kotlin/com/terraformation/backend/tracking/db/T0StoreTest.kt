@@ -299,6 +299,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlantingZoneT0TempDensity(speciesId = speciesId1)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
+      // Unknown species are excluded in the check:
+      insertObservedPlotSpeciesTotals(certainty = RecordedSpeciesCertainty.Unknown, totalLive = 2)
       insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
 
       assertTrue(

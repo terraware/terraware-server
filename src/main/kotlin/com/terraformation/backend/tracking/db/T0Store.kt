@@ -843,6 +843,7 @@ class T0Store(
             .join(OBSERVATIONS)
             .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.eq(RecordedSpeciesCertainty.Known))
             .and(
                 OBSERVATIONS.STATE_ID.`in`(
                     listOf(ObservationState.Completed, ObservationState.Abandoned)
