@@ -1,2 +1,6 @@
+ae4fcb9afa8 SW-7720 Use InMemoryFileStore in ThumbnailStoreTest (#3614)
+37f8a42f12f Update Spring dependencies (#3619)
+853e6778821 Update Node dependencies (#3618)
+074a1a8eb4b Update database dependencies (#3617)
 989774aff1a SW-7688 Remove withdrawn species endpoint (#3612)
 31a3adf864b Added endpoint to fetch reported plants by projects (#3616)
