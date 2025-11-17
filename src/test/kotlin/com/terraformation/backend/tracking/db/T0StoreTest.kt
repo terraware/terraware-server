@@ -375,6 +375,52 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           "All site data set",
       )
     }
+
+    @Test
+    fun `geometry changes plot temporary to permanent`() {
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+
+      // plots that are permanent now and have completed observations but were temporary during the
+      // observations are excluded
+      insertMonitoringPlot(plotNumber = 103, permanentIndex = 103)
+      insertObservationPlot(
+          claimedTime = clock.instant(),
+          claimedBy = user.userId,
+          completedTime = clock.instant(),
+          completedBy = user.userId,
+          isPermanent = false,
+      )
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Ignore observed plots that weren't permanent at observation",
+      )
+    }
+
+    @Test
+    fun `geometry changes plot permanent to temporary`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+
+      // plots that are temporary now and have completed observations but were permanent during the
+      // observations are excluded
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot(plotNumber = 104, permanentIndex = null)
+      insertObservationPlot(
+          claimedTime = clock.instant(),
+          claimedBy = user.userId,
+          completedTime = clock.instant(),
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Ignore observed plots that weren't temporary at observation",
+      )
+    }
   }
 
   @Nested
