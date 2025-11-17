@@ -1,5 +1,26 @@
 # Events
 
+Contents:
+
+- [Overview](#overview)
+- [Persistent events overview](#persistent-events-overview)
+  - [Subjects and Actions](#subjects-and-actions)
+- [Persistent event class requirements and conventions](#persistent-event-class-requirements-and-conventions)
+  - [Naming and Packaging](#naming-and-packaging)
+  - [Interfaces](#interfaces)
+  - [Properties](#properties)
+  - [Representation of updates to existing entities](#representation-of-updates-to-existing-entities)
+- [Versioning](#versioning)
+  - [When to create new versions](#when-to-create-new-versions)
+  - [Versioning implementation](#versioning-implementation)
+- [Subjects](#subjects)
+  - [Subject payload classes](#subject-payload-classes)
+  - [Subject payload creation](#subject-payload-creation)
+- [Action payloads](#action-payloads)
+- [How events are stored in the database](#how-events-are-stored-in-the-database)
+  - [Indexing](#indexing)
+- [Historical events and backfilling](#historical-events-and-backfilling)
+
 ## Overview
 
 We use Spring's `ApplicationEventPublisher` to trigger actions when various operations are performed. Spring automatically calls any method that is annotated with `@EventListener` and whose parameter type matches the type of the published event. Event listeners are called synchronously and run in the same database transaction, if any, as the call to `ApplicationEventPublisher.publishEvent`.
@@ -183,11 +204,36 @@ Some typical uses of the context:
 * Finding the entity's name from the "created" event or the most recent "name updated" event, so the subject's `fullText` and/or `shortText` can include it.
 * Finding the entity's type from the "created" event so the `fullText` and `shortText` can use more specific wording to describe it.
 
+### Subject payload localization
+
+The `fullText` and `shortText` values in subjects MUST be rendered in the current user's locale.
+
+The context has two helper functions `subjectShortText` and `subjectFullText` to look up strings from the `Messages_*.properties` files. They can optionally take values to use to replace any placeholders like `{0}` in the properties.
+
+Typically, you will want to add two lines to `Messages_en.properties`, one for each form of the subject text, with placeholders as appropriate. For example, for `Project` subjects:
+
+```properties
+eventSubject.Project.full=Project {0}
+eventSubject.Project.short=Project
+```
+
+Run `yarn translate` to translate the English strings to other supported languages.
+
 ## Action payloads
 
 If an event implements `EntityCreatedPersistentEvent`, `EntityDeletedPersistentEvent`, or `FieldsUpdatedPersistentEvent`, you don't need to add any code to generate action payloads for it.
 
 Otherwise, add a case to `EventLogPayloadTransformer.getActions` for your new event.
+
+### Field name localization
+
+For `FieldsUpdated` actions, we need localized names for each of the possible fields. This is done automatically by `EventLogPayloadTransformer` but the field names need to be included in `Messages_en.properties`. For example, for the `name` field of the `Project` subject, the property is:
+
+```properties
+eventSubject.Project.field.name=name
+```
+
+Run `yarn translate` to translate the English strings to other supported languages.
 
 ## How events are stored in the database
 
@@ -221,7 +267,7 @@ Version number suffixes are replaced with a wildcard when querying the event log
 
 Note that the event log isn't the only way we keep track of history. There are other history mechanisms that predate it.  The event log can eventually replace some of them, but that will happen gradually over time.
 
-## Indexing
+### Indexing
 
 Since we’ll be searching for values that are embedded in JSON objects, it's critical to make sure we have the right indexes in place to support our searches.
 
