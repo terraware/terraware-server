@@ -1,3 +1,4 @@
+e07a6439781 SW-7650 Fix division by zero error when calculating survival rate (#3625)
 8ef4a77b813 Add Claude skill for persistent event creation (#3626)
 48beb471af8 Streamline "fields updated" events (#3624)
 153c9aab1d1 Document persistent events (#3622)
