@@ -26,3 +26,7 @@ Format the code when you're done working. There's no need to rerun tests after c
 If the Jetbrains MCP service is available, don't use it to run Gradle or other shell commands; run those using Bash instead. But use the Jetbrains MCP service for everything other than running commands.
 
 If the Context7 MCP service is available, use it to look up documentation for any libraries you aren't sure how to use correctly.
+
+## Skill Use
+
+If you are able to use Claude-style skills, do so when appropriate instead of figuring tasks out from scratch.
