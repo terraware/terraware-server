@@ -37,6 +37,16 @@ com.terraformation.backend.eventlog.PersistentEventTest$TestChildFieldEventV1/ch
 com.terraformation.backend.eventlog.PersistentEventTest$TestNonPrimaryConstructorPropertyEventV1/x: Int
 com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV1/x: Int
 com.terraformation.backend.eventlog.PersistentEventTest$TestUpgradableEventV2/x: Int
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/biomassSpeciesId: BiomassSpeciesId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/isDead: Boolean
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/recordedTreeId: RecordedTreeId
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/treeGrowthForm: TreeGrowthForm
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/treeNumber: Int
+com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/trunkNumber: Int
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/fileId: FileId
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/monitoringPlotId: MonitoringPlotId
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/observationId: ObservationId

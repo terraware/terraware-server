@@ -13,8 +13,10 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
@@ -42,7 +44,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
   }
 
   @Test
-  fun `inserts required biomass detail, quadrant species and details, trees and branches`() {
+  fun `inserts required biomass detail, quadrat species and details, trees and branches`() {
     val herbaceousSpeciesId1 = insertSpecies()
     val herbaceousSpeciesId2 = insertSpecies()
 
@@ -230,11 +232,11 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
         biomassSpeciesIdsBySpeciesKey[
             BiomassSpeciesKey(scientificName = "Other herbaceous species")]
     val biomassTreeSpeciesId1 =
-        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = treeSpeciesId1)]
+        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = treeSpeciesId1)]!!
     val biomassTreeSpeciesId2 =
-        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = treeSpeciesId2)]
+        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = treeSpeciesId2)]!!
     val biomassTreeSpeciesId3 =
-        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(scientificName = "Other tree species")]
+        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(scientificName = "Other tree species")]!!
 
     assertTableEquals(
         setOf(
@@ -408,6 +410,78 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
             ),
         ),
         "Recorded trees table",
+    )
+
+    val recordedTreeIdsByTreeAndTrunk =
+        dslContext.fetch(RECORDED_TREES).associate { (it.treeNumber to it.trunkNumber) to it.id }
+
+    eventPublisher.assertEventsPublished(
+        setOf(
+            RecordedTreeCreatedEvent(
+                biomassSpeciesId = biomassTreeSpeciesId1,
+                gpsCoordinates = point(1),
+                isDead = false,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                recordedTreeId = recordedTreeIdsByTreeAndTrunk[1 to 1]!!,
+                shrubDiameterCm = 25,
+                speciesId = treeSpeciesId1,
+                treeGrowthForm = TreeGrowthForm.Shrub,
+                treeNumber = 1,
+                trunkNumber = 1,
+            ),
+            RecordedTreeCreatedEvent(
+                biomassSpeciesId = biomassTreeSpeciesId3,
+                diameterAtBreastHeightCm = BigDecimal.TWO,
+                heightM = BigDecimal.TEN,
+                isDead = true,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                recordedTreeId = recordedTreeIdsByTreeAndTrunk[2 to 1]!!,
+                speciesName = "Other tree species",
+                treeGrowthForm = TreeGrowthForm.Tree,
+                treeNumber = 2,
+                trunkNumber = 1,
+            ),
+            RecordedTreeCreatedEvent(
+                biomassSpeciesId = biomassTreeSpeciesId2,
+                diameterAtBreastHeightCm = BigDecimal.TEN,
+                gpsCoordinates = point(2),
+                heightM = BigDecimal.TEN,
+                isDead = false,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                pointOfMeasurementM = BigDecimal.valueOf(1.5),
+                recordedTreeId = recordedTreeIdsByTreeAndTrunk[3 to 1]!!,
+                speciesId = treeSpeciesId2,
+                treeGrowthForm = TreeGrowthForm.Trunk,
+                treeNumber = 3,
+                trunkNumber = 1,
+            ),
+            RecordedTreeCreatedEvent(
+                biomassSpeciesId = biomassTreeSpeciesId2,
+                diameterAtBreastHeightCm = BigDecimal.TWO,
+                gpsCoordinates = point(2),
+                isDead = false,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                pointOfMeasurementM = BigDecimal.valueOf(1.1),
+                recordedTreeId = recordedTreeIdsByTreeAndTrunk[3 to 2]!!,
+                speciesId = treeSpeciesId2,
+                treeGrowthForm = TreeGrowthForm.Trunk,
+                treeNumber = 3,
+                trunkNumber = 2,
+            ),
+        )
     )
   }
 

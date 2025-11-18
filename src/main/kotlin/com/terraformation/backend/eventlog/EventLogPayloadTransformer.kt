@@ -13,11 +13,13 @@ import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.OrganizationSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
+import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
+import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import jakarta.inject.Named
 
 @Named
@@ -74,6 +76,7 @@ class EventLogPayloadTransformer(
           ObservationPlotMediaSubjectPayload.forEvent(event, context)
       is OrganizationPersistentEvent -> OrganizationSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
+      is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)
       else -> {
         log.error("Cannot construct subject for event ${event.javaClass.name}")
         null
