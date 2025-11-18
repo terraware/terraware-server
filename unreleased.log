@@ -1,3 +1,4 @@
+8ef4a77b813 Add Claude skill for persistent event creation (#3626)
 48beb471af8 Streamline "fields updated" events (#3624)
 153c9aab1d1 Document persistent events (#3622)
 96505e4b847 SW-7650 Only check Known species in all-set check (#3623)
