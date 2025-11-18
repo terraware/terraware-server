@@ -532,6 +532,94 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `sets to Not Verified for an update by non-accelerator-admins to Verified activity`() {
+      insertOrganizationUser(role = Role.Admin)
+      val otherUserId = insertUser()
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatus = ActivityStatus.Verified,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { existing ->
+        existing.copy(
+            activityType = ActivityType.Planting,
+            activityDate = LocalDate.of(2024, 2, 1),
+            description = "Updated description",
+        )
+      }
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.NotVerified,
+              activityTypeId = ActivityType.Planting,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              description = "Updated description",
+              id = activityId,
+              isHighlight = false,
+              modifiedBy = user.userId,
+              modifiedTime = updateTime,
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+      )
+    }
+
+    @Test
+    fun `does not update status, modifiedBy or modifiedTime if unchanged`() {
+      insertOrganizationUser(role = Role.Admin)
+      val otherUserId = insertUser()
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatus = ActivityStatus.Verified,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { it }
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatusId = ActivityStatus.Verified,
+              activityTypeId = ActivityType.SeedCollection,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              description = "Original description",
+              id = activityId,
+              isHighlight = false,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+      )
+    }
+
+    @Test
     fun `accelerator admin can update additional fields even if activity is published`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
@@ -668,7 +756,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { it }
+      store.update(activityId) { it.copy(description = "New Description") }
 
       record.modifiedTime = updateTime
 

@@ -109,35 +109,45 @@ class ActivityStore(
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
-    val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
+    if (existingModel != updatedModel) {
+      val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
 
-    with(activitiesRecord) {
-      activityDate = updatedModel.activityDate
-      activityTypeId = updatedModel.activityType
-      description = updatedModel.description
-      modifiedBy = currentUser().userId
-      modifiedTime = now
+      with(activitiesRecord) {
+        activityDate = updatedModel.activityDate
+        activityTypeId = updatedModel.activityType
+        description = updatedModel.description
+        modifiedBy = currentUser().userId
+        modifiedTime = now
 
-      if (currentUser().canManageActivity(activityId)) {
-        isHighlight = updatedModel.isHighlight
-        activityStatusId = updatedModel.activityStatus
+        if (currentUser().canManageActivity(activityId)) {
+          isHighlight = updatedModel.isHighlight
+          activityStatusId = updatedModel.activityStatus
 
-        if (existingModel.activityStatus != updatedModel.activityStatus) {
-          when (updatedModel.activityStatus) {
-            ActivityStatus.DoNotUse,
-            ActivityStatus.NotVerified -> {
-              verifiedBy = null
-              verifiedTime = null
-            }
-            ActivityStatus.Verified -> {
-              verifiedBy = currentUser().userId
-              verifiedTime = now
+          if (existingModel.activityStatus != updatedModel.activityStatus) {
+            when (updatedModel.activityStatus) {
+              ActivityStatus.DoNotUse,
+              ActivityStatus.NotVerified -> {
+                verifiedBy = null
+                verifiedTime = null
+              }
+
+              ActivityStatus.Verified -> {
+                verifiedBy = currentUser().userId
+                verifiedTime = now
+              }
             }
           }
+        } else {
+          // If a non-admin user updates a Verified activity, set to Not Verified
+          // Keep previous verifiedBy and verifiedTime for the "previously verified but updated
+          // by project" state.
+          if (existingModel.activityStatus == ActivityStatus.Verified) {
+            activityStatusId = ActivityStatus.NotVerified
+          }
         }
-      }
 
-      update()
+        update()
+      }
     }
   }
 
