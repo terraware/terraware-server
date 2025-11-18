@@ -157,7 +157,7 @@ data class ProjectSubjectPayload(
     fun getPreviousName(event: ProjectPersistentEvent, context: EventLogPayloadContext): String {
       val lastRename =
           context.lastEventBefore<ProjectRenamedEvent>(event) { it.projectId == event.projectId }
-      return lastRename?.changedFrom?.name
+      return lastRename?.changedTo?.name
           ?: context.first<ProjectCreatedEvent> { it.projectId == event.projectId }.name
     }
   }
