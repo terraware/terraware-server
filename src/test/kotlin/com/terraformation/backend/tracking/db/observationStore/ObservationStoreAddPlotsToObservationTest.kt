@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -13,7 +14,9 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
     insertPlantingZone()
     insertPlantingSubzone()
     val permanentPlotId = insertMonitoringPlot(permanentIndex = 1)
+    val permanentPlotHistoryId = inserted.monitoringPlotHistoryId
     val temporaryPlotId = insertMonitoringPlot(permanentIndex = 2)
+    val temporaryPlotHistoryId = inserted.monitoringPlotHistoryId
     val observationId = insertObservation()
 
     store.addPlotsToObservation(observationId, listOf(permanentPlotId), isPermanent = true)
@@ -22,6 +25,29 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
     assertEquals(
         mapOf(permanentPlotId to true, temporaryPlotId to false),
         observationPlotsDao.findAll().associate { it.monitoringPlotId to it.isPermanent },
+    )
+
+    eventPublisher.assertEventsPublished(
+        setOf(
+            ObservationPlotCreatedEvent(
+                isPermanent = true,
+                monitoringPlotHistoryId = permanentPlotHistoryId,
+                monitoringPlotId = permanentPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                plotNumber = 1,
+            ),
+            ObservationPlotCreatedEvent(
+                isPermanent = false,
+                monitoringPlotHistoryId = temporaryPlotHistoryId,
+                monitoringPlotId = temporaryPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                plotNumber = 2,
+            ),
+        )
     )
   }
 

@@ -14,6 +14,7 @@ import com.terraformation.backend.eventlog.api.EventSubjectName
 import com.terraformation.backend.eventlog.api.EventSubjectPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
+import com.terraformation.backend.eventlog.api.ObservationPlotSubjectPayload
 import com.terraformation.backend.eventlog.api.OrganizationSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
@@ -25,6 +26,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
+import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import jakarta.inject.Named
 
@@ -83,6 +85,7 @@ class EventLogPayloadTransformer(
       is BiomassSpeciesPersistentEvent -> BiomassSpeciesSubjectPayload.forEvent(event, context)
       is ObservationMediaFilePersistentEvent ->
           ObservationPlotMediaSubjectPayload.forEvent(event, context)
+      is ObservationPlotPersistentEvent -> ObservationPlotSubjectPayload.forEvent(event, context)
       is OrganizationPersistentEvent -> OrganizationSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)

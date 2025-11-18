@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
@@ -54,6 +55,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIE
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
@@ -97,6 +99,7 @@ class ObservationStore(
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
+    private val parentStore: ParentStore,
 ) {
   companion object {
     val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
@@ -1755,6 +1758,30 @@ class ObservationStore(
     val createdBy = currentUser().userId
     val createdTime = clock.instant()
 
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val historyIds =
+        with(MONITORING_PLOT_HISTORIES) {
+          dslContext
+              .select(MONITORING_PLOT_ID, DSL.max(ID))
+              .from(MONITORING_PLOT_HISTORIES)
+              .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.`in`(plotIds))
+              .groupBy(MONITORING_PLOT_ID)
+              .fetchMap(MONITORING_PLOT_ID.asNonNullable(), DSL.max(ID).asNonNullable())
+        }
+    val plotNumbers =
+        with(MONITORING_PLOTS) {
+          dslContext
+              .select(ID, PLOT_NUMBER)
+              .from(MONITORING_PLOTS)
+              .where(ID.`in`(plotIds))
+              .fetchMap(ID.asNonNullable(), PLOT_NUMBER.asNonNullable())
+        }
+
     plotIds.forEach { plotId ->
       with(OBSERVATION_PLOTS) {
         dslContext
@@ -1764,17 +1791,24 @@ class ObservationStore(
             .set(IS_PERMANENT, isPermanent)
             .set(MODIFIED_BY, createdBy)
             .set(MODIFIED_TIME, createdTime)
-            .set(
-                MONITORING_PLOT_HISTORY_ID,
-                DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
-                    .from(MONITORING_PLOT_HISTORIES)
-                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)),
-            )
+            .set(MONITORING_PLOT_HISTORY_ID, historyIds[plotId])
             .set(MONITORING_PLOT_ID, plotId)
             .set(OBSERVATION_ID, observationId)
             .set(STATUS_ID, ObservationPlotStatus.Unclaimed)
             .execute()
       }
+
+      eventPublisher.publishEvent(
+          ObservationPlotCreatedEvent(
+              isPermanent = isPermanent,
+              monitoringPlotHistoryId = historyIds.getValue(plotId),
+              monitoringPlotId = plotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+              plotNumber = plotNumbers.getValue(plotId),
+          )
+      )
     }
   }
 

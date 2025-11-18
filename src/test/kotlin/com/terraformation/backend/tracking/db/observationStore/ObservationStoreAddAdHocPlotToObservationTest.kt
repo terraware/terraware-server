@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db.observationStore
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
+import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -35,6 +36,18 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
             .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
             .single(),
         "Observation plot row",
+    )
+
+    eventPublisher.assertEventPublished(
+        ObservationPlotCreatedEvent(
+            isPermanent = false,
+            monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
+            monitoringPlotId = plotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            plantingSiteId = plantingSiteId,
+            plotNumber = 1,
+        ),
     )
   }
 
