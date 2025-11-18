@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEventValues
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
@@ -134,7 +135,8 @@ class ProjectStore(
       if (existing.name != updated.name) {
         eventPublisher.publishEvent(
             ProjectRenamedEvent(
-                name = updated.name,
+                changedFrom = ProjectRenamedEventValues(name = existing.name),
+                changedTo = ProjectRenamedEventValues(name = updated.name),
                 organizationId = existing.organizationId,
                 projectId = projectId,
             )

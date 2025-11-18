@@ -3,7 +3,6 @@ package com.terraformation.backend.eventlog
 import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.event.OrganizationPersistentEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
-import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventActionPayload
@@ -87,14 +86,10 @@ class EventLogPayloadTransformer(
       context: EventLogPayloadContext,
   ): List<EventActionPayload> {
     return when (event) {
-      is ProjectRenamedEvent ->
-          listOf(
-              FieldUpdatedActionPayload(
-                  fieldName = "name",
-                  changedFrom = listOf(ProjectSubjectPayload.getPreviousName(event, context)),
-                  changedTo = listOf(event.name),
-              )
-          )
+      // Any fields-updated events that don't implement FieldsUpdatedPersistentEvent should be
+      // handled here.
+
+      // (Currently there aren't any.)
 
       // Events that can self-describe which fields were updated can be transformed generically.
       is FieldsUpdatedPersistentEvent ->

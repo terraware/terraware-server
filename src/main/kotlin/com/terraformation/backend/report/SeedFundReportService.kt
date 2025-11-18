@@ -143,7 +143,9 @@ class SeedFundReportService(
 
   @EventListener
   fun on(event: ProjectRenamedEvent) {
-    seedFundReportStore.updateProjectName(event.projectId, event.name)
+    event.changedTo.name?.let { name ->
+      seedFundReportStore.updateProjectName(event.projectId, name)
+    }
   }
 
   @EventListener

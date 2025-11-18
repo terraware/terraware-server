@@ -2,9 +2,13 @@ package com.terraformation.backend.eventlog.db
 
 import com.terraformation.backend.customer.event.OrganizationCreatedEvent
 import com.terraformation.backend.customer.event.OrganizationRenamedEvent
+import com.terraformation.backend.customer.event.ProjectCreatedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.UpgradableEvent
 import org.jooq.DSLContext
 
@@ -29,5 +33,18 @@ class EventUpgradeUtils(
             ?.event
             ?.name
         ?: throw OrganizationNotFoundException(organizationId)
+  }
+
+  fun getPreviousProjectNameFromV1Events(
+      projectId: ProjectId,
+      beforeEventLogId: EventLogId,
+  ): String {
+    val lastRename = eventLogStore.fetchLastById<ProjectRenamedEvent>(projectId, beforeEventLogId)
+    return lastRename?.event?.changedTo?.name
+        ?: eventLogStore
+            .fetchLastById<ProjectCreatedEvent>(projectId, beforeEventLogId)
+            ?.event
+            ?.name
+        ?: throw ProjectNotFoundException(projectId)
   }
 }
