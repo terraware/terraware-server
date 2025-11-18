@@ -104,6 +104,7 @@ class ProjectReportsController(
   @GetMapping("/{reportId}")
   @Operation(summary = "Get one report.")
   fun getAcceleratorReport(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestParam includeMetrics: Boolean? = null,
   ): GetAcceleratorReportResponsePayload {
@@ -121,6 +122,7 @@ class ProjectReportsController(
   @PostMapping("/{reportId}")
   @Operation(summary = "Update metric data and qualitative data for a report")
   fun updateAcceleratorReportValues(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestBody payload: UpdateAcceleratorReportValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
@@ -239,6 +241,7 @@ class ProjectReportsController(
   @DeleteMapping("/{reportId}/photos/{fileId}")
   @RequestBodyPhotoFile
   fun deleteAcceleratorReportPhoto(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @PathVariable fileId: FileId,
   ): SimpleSuccessResponsePayload {
@@ -262,6 +265,7 @@ class ProjectReportsController(
   )
   @ResponseBody
   fun getAcceleratorReportPhoto(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @PathVariable fileId: FileId,
       @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
@@ -274,6 +278,7 @@ class ProjectReportsController(
   @PutMapping("/{reportId}/photos/{fileId}")
   @RequestBodyPhotoFile
   fun updateAcceleratorReportPhoto(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @PathVariable fileId: FileId,
       @RequestBody payload: UpdateAcceleratorReportPhotoRequestPayload,
@@ -294,6 +299,7 @@ class ProjectReportsController(
   )
   @RequestBodyPhotoFile
   fun uploadAcceleratorReportPhoto(
+      @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestPart file: MultipartFile,
       @RequestPart(required = false) caption: String?,
@@ -372,6 +378,7 @@ class ProjectReportsController(
   @PostMapping("/configs/{configId}")
   @Operation(summary = "Update accelerator report configuration.")
   fun updateAcceleratorReportConfig(
+      @PathVariable projectId: ProjectId,
       @PathVariable configId: ProjectReportConfigId,
       @RequestBody payload: UpdateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
