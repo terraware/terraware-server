@@ -77,6 +77,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValue
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -1092,19 +1093,36 @@ class ObservationStore(
           )
       )
 
-      val biomassSpeciesRecords =
-          model.species.map {
+      model.species.forEach { speciesModel ->
+        val record =
             ObservationBiomassSpeciesRecord(
-                observationId = observationId,
+                    observationId = observationId,
+                    monitoringPlotId = plotId,
+                    commonName = speciesModel.commonName,
+                    isInvasive = speciesModel.isInvasive,
+                    isThreatened = speciesModel.isThreatened,
+                    scientificName = speciesModel.scientificName,
+                    speciesId = speciesModel.speciesId,
+                )
+                .attach(dslContext)
+
+        record.insert()
+
+        eventPublisher.publishEvent(
+            BiomassSpeciesCreatedEvent(
+                biomassSpeciesId = record.id!!,
+                commonName = speciesModel.commonName,
+                isInvasive = speciesModel.isInvasive,
+                isThreatened = speciesModel.isThreatened,
                 monitoringPlotId = plotId,
-                commonName = it.commonName,
-                isInvasive = it.isInvasive,
-                isThreatened = it.isThreatened,
-                scientificName = it.scientificName,
-                speciesId = it.speciesId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                scientificName = speciesModel.scientificName,
+                speciesId = speciesModel.speciesId,
             )
-          }
-      dslContext.batchInsert(biomassSpeciesRecords).execute()
+        )
+      }
 
       val biomassSpeciesIdsBySpeciesIdentifiers =
           with(OBSERVATION_BIOMASS_SPECIES) {

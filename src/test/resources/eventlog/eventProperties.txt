@@ -60,6 +60,13 @@ com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventV1/ob
 com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventV1/position: ObservationPlotPosition
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/biomassSpeciesId: BiomassSpeciesId
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/isInvasive: Boolean
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/isThreatened: Boolean
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/biomassSpeciesId: BiomassSpeciesId
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/isDead: Boolean
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/monitoringPlotId: MonitoringPlotId
