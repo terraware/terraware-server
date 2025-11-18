@@ -88,6 +88,79 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate is 0 if plot density is 0`() {
+    val speciesId = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.ZERO)
+    val plotId2 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+    insertPlotT0Density(plotDensity = BigDecimal.ZERO)
+    val recordedPlants =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Unknown,
+                gpsCoordinates = point(2),
+                statusId = RecordedPlantStatus.Dead,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Other,
+                gpsCoordinates = point(3),
+                speciesName = "Who knows",
+                statusId = RecordedPlantStatus.Existing,
+            ),
+        )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        recordedPlants,
+    )
+
+    assertSurvivalRates(
+        listOf(
+            mapOf(
+                plotId to mapOf(speciesId to BigDecimal.ZERO),
+                plotId2 to mapOf(speciesId to BigDecimal.ZERO),
+            ),
+            mapOf(subzoneId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(zoneId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO)),
+        ),
+        "All survival rates should be 0",
+    )
+
+    // ensure that updating rates also works correctly with 0 for density
+    observationStore.completePlot(
+        observationId,
+        plotId2,
+        emptySet(),
+        "Notes",
+        observedTime,
+        recordedPlants,
+    )
+
+    assertSurvivalRates(
+        listOf(
+            mapOf(
+                plotId to mapOf(speciesId to BigDecimal.ZERO),
+                plotId2 to mapOf(speciesId to BigDecimal.ZERO),
+            ),
+            mapOf(subzoneId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(zoneId to mapOf(speciesId to BigDecimal.ZERO)),
+            mapOf(plantingSiteId to mapOf(speciesId to BigDecimal.ZERO)),
+        ),
+        "Updated rates should be 0",
+    )
+  }
+
+  @Test
   fun `survival rate is 0 if plot is no longer permanent`() {
     val observation2 = insertObservation()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
