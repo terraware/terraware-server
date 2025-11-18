@@ -239,6 +239,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         treeNumber = 1,
         trunkNumber = 2,
     )
+    insertObservationBiomassQuadratDetails(
+        position = ObservationPlotPosition.NorthwestCorner,
+    )
     insertObservationBiomassQuadratSpecies(
         abundancePercent = 33,
         biomassSpeciesId = inserted.biomassSpeciesId,
