@@ -97,15 +97,22 @@ class ActivityStore(
 
   fun update(
       activityId: ActivityId,
+      isAdmin: Boolean = false,
       applyFunc: (ExistingActivityModel) -> ExistingActivityModel,
   ) {
-    requirePermissions { updateActivity(activityId) }
+    requirePermissions {
+      if (isAdmin) {
+        manageActivity(activityId)
+      } else {
+        updateActivity(activityId)
+      }
+    }
 
     val existingModel = fetchOneById(activityId)
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
 
-    if (isPublished(activityId) && !currentUser().canManageActivity(activityId)) {
+    if (isPublished(activityId) && !isAdmin) {
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
@@ -119,7 +126,7 @@ class ActivityStore(
         modifiedBy = currentUser().userId
         modifiedTime = now
 
-        if (currentUser().canManageActivity(activityId)) {
+        if (isAdmin) {
           isHighlight = updatedModel.isHighlight
           activityStatusId = updatedModel.activityStatus
 

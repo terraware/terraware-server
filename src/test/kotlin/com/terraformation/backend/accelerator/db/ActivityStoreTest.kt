@@ -635,7 +635,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { existing ->
+      store.update(activityId, true) { existing ->
         existing.copy(
             activityStatus = ActivityStatus.Verified,
             activityType = ActivityType.Planting,
@@ -674,7 +674,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+      store.update(activityId, true) { model ->
+        model.copy(activityStatus = ActivityStatus.Verified)
+      }
 
       record.activityStatusId = ActivityStatus.Verified
       record.modifiedTime = updateTime
@@ -694,7 +696,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+      store.update(activityId, true) { model ->
+        model.copy(activityStatus = ActivityStatus.Verified)
+      }
 
       record.activityStatusId = ActivityStatus.Verified
       record.modifiedTime = updateTime
@@ -714,7 +718,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.NotVerified) }
+      store.update(activityId, true) { model ->
+        model.copy(activityStatus = ActivityStatus.NotVerified)
+      }
 
       record.activityStatusId = ActivityStatus.NotVerified
       record.modifiedTime = updateTime
@@ -734,7 +740,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.DoNotUse) }
+      store.update(activityId, true) { model ->
+        model.copy(activityStatus = ActivityStatus.DoNotUse)
+      }
 
       record.activityStatusId = ActivityStatus.DoNotUse
       record.modifiedTime = updateTime
@@ -756,11 +764,11 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { it.copy(description = "New Description") }
+      store.update(activityId, true) { it.copy(description = "New Description") }
 
       record.modifiedTime = updateTime
 
-      assertTableEquals(record)
+      assertTableEquals(record.copy(description = "New Description"))
     }
 
     @Test
@@ -781,6 +789,17 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<AccessDeniedException> {
         store.update(activityId) { it.copy(description = "Updated") }
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to perform admin update activity`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId = insertActivity(projectId = projectId)
+
+      assertThrows<AccessDeniedException> {
+        store.update(activityId, true) { it.copy(description = "Updated") }
       }
     }
 
