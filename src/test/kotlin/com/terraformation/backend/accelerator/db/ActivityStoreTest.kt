@@ -767,8 +767,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.update(activityId, true) { it.copy(description = "New Description") }
 
       record.modifiedTime = updateTime
+      record.description = "New Description"
 
-      assertTableEquals(record.copy(description = "New Description"))
+      assertTableEquals(record)
     }
 
     @Test
