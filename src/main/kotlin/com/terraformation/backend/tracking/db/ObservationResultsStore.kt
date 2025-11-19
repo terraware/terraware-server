@@ -48,7 +48,6 @@ import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
-import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
@@ -60,6 +59,7 @@ import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
+import com.terraformation.backend.tracking.model.RecordedTreeModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
@@ -307,38 +307,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         IS_DEAD,
                         POINT_OF_MEASUREMENT_M,
                         SHRUB_DIAMETER_CM,
-                        OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
-                        OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+                        recordedTreesBiomassSpeciesIdFkey.SPECIES_ID,
+                        recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME,
                         TREE_GROWTH_FORM_ID,
                         TREE_NUMBER,
                         TRUNK_NUMBER,
                         recordedTreesGpsCoordinatesField,
                     )
                     .from(this)
-                    .join(OBSERVATION_BIOMASS_SPECIES)
-                    .on(BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
                     .orderBy(TREE_NUMBER, TRUNK_NUMBER)
             )
             .convertFrom { result ->
-              result.map {
-                ExistingRecordedTreeModel(
-                    id = it[ID]!!,
-                    description = it[DESCRIPTION],
-                    diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM],
-                    gpsCoordinates = it[recordedTreesGpsCoordinatesField] as? Point,
-                    heightM = it[HEIGHT_M],
-                    isDead = it[IS_DEAD]!!,
-                    pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M],
-                    shrubDiameterCm = it[SHRUB_DIAMETER_CM],
-                    speciesId = it[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
-                    speciesName = it[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
-                    treeGrowthForm = it[TREE_GROWTH_FORM_ID]!!,
-                    treeNumber = it[TREE_NUMBER]!!,
-                    trunkNumber = it[TRUNK_NUMBER]!!,
-                )
-              }
+              result.map { RecordedTreeModel.of(it, recordedTreesGpsCoordinatesField) }
             }
       }
 

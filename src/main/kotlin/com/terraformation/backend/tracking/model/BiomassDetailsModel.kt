@@ -8,8 +8,12 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import java.math.BigDecimal
 import java.time.Instant
+import org.jooq.Field
+import org.jooq.Record
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 
 data class BiomassSpeciesKey(
@@ -85,6 +89,31 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
         if (pointOfMeasurementM == null) {
           throw IllegalStateException("Tree $treeNumber: pointOfMeasurement missing for Trunk")
         }
+      }
+    }
+  }
+
+  companion object {
+    fun of(
+        record: Record,
+        gpsCoordinatesField: Field<Geometry?> = RECORDED_TREES.GPS_COORDINATES,
+    ): ExistingRecordedTreeModel {
+      return with(RECORDED_TREES) {
+        ExistingRecordedTreeModel(
+            description = record[DESCRIPTION],
+            diameterAtBreastHeightCm = record[DIAMETER_AT_BREAST_HEIGHT_CM],
+            gpsCoordinates = record[gpsCoordinatesField] as? Point,
+            heightM = record[HEIGHT_M],
+            id = record[ID]!!,
+            isDead = record[IS_DEAD]!!,
+            pointOfMeasurementM = record[POINT_OF_MEASUREMENT_M],
+            shrubDiameterCm = record[SHRUB_DIAMETER_CM],
+            speciesId = record[recordedTreesBiomassSpeciesIdFkey.SPECIES_ID],
+            speciesName = record[recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME],
+            treeGrowthForm = record[TREE_GROWTH_FORM_ID]!!,
+            treeNumber = record[TREE_NUMBER]!!,
+            trunkNumber = record[TRUNK_NUMBER]!!,
+        )
       }
     }
   }
