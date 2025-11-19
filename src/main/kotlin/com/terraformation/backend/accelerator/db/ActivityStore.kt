@@ -105,20 +105,49 @@ class ActivityStore(
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
 
-    if (isPublished(activityId) && !currentUser().canManageActivity(activityId)) {
+    if (isPublished(activityId)) {
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
-    val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
+    if (existingModel != updatedModel) {
+      val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
 
-    with(activitiesRecord) {
-      activityDate = updatedModel.activityDate
-      activityTypeId = updatedModel.activityType
-      description = updatedModel.description
-      modifiedBy = currentUser().userId
-      modifiedTime = now
+      with(activitiesRecord) {
+        activityDate = updatedModel.activityDate
+        activityTypeId = updatedModel.activityType
+        description = updatedModel.description
+        modifiedBy = currentUser().userId
+        modifiedTime = now
 
-      if (currentUser().canManageActivity(activityId)) {
+        if (existingModel.activityStatus == ActivityStatus.Verified) {
+          activityStatusId = ActivityStatus.NotVerified
+        }
+
+        update()
+      }
+    }
+  }
+
+  fun updateForAdmin(
+      activityId: ActivityId,
+      applyFunc: (ExistingActivityModel) -> ExistingActivityModel,
+  ) {
+    requirePermissions { manageActivity(activityId) }
+
+    val existingModel = fetchOneById(activityId)
+    val updatedModel = applyFunc(existingModel)
+    val now = clock.instant()
+
+    if (existingModel != updatedModel) {
+      val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
+
+      with(activitiesRecord) {
+        activityDate = updatedModel.activityDate
+        activityTypeId = updatedModel.activityType
+        description = updatedModel.description
+        modifiedBy = currentUser().userId
+        modifiedTime = now
+
         isHighlight = updatedModel.isHighlight
         activityStatusId = updatedModel.activityStatus
 
@@ -129,15 +158,16 @@ class ActivityStore(
               verifiedBy = null
               verifiedTime = null
             }
+
             ActivityStatus.Verified -> {
               verifiedBy = currentUser().userId
               verifiedTime = now
             }
           }
         }
-      }
 
-      update()
+        update()
+      }
     }
   }
 

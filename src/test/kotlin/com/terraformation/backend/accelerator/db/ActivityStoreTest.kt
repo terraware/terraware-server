@@ -532,6 +532,94 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `sets to Not Verified for an update by non-accelerator-admins to Verified activity`() {
+      insertOrganizationUser(role = Role.Admin)
+      val otherUserId = insertUser()
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatus = ActivityStatus.Verified,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { existing ->
+        existing.copy(
+            activityType = ActivityType.Planting,
+            activityDate = LocalDate.of(2024, 2, 1),
+            description = "Updated description",
+        )
+      }
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 2, 1),
+              activityStatusId = ActivityStatus.NotVerified,
+              activityTypeId = ActivityType.Planting,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              description = "Updated description",
+              id = activityId,
+              isHighlight = false,
+              modifiedBy = user.userId,
+              modifiedTime = updateTime,
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+      )
+    }
+
+    @Test
+    fun `does not update status, modifiedBy or modifiedTime if unchanged`() {
+      insertOrganizationUser(role = Role.Admin)
+      val otherUserId = insertUser()
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatus = ActivityStatus.Verified,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+
+      val updateTime = Instant.ofEpochSecond(100)
+      clock.instant = updateTime
+
+      store.update(activityId) { it }
+
+      assertTableEquals(
+          ActivitiesRecord(
+              activityDate = LocalDate.of(2024, 1, 1),
+              activityStatusId = ActivityStatus.Verified,
+              activityTypeId = ActivityType.SeedCollection,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              description = "Original description",
+              id = activityId,
+              isHighlight = false,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(50),
+              projectId = projectId,
+              verifiedBy = otherUserId,
+              verifiedTime = Instant.ofEpochSecond(50),
+          )
+      )
+    }
+
+    @Test
     fun `accelerator admin can update additional fields even if activity is published`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
@@ -547,7 +635,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { existing ->
+      store.updateForAdmin(activityId) { existing ->
         existing.copy(
             activityStatus = ActivityStatus.Verified,
             activityType = ActivityType.Planting,
@@ -586,7 +674,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+      store.updateForAdmin(activityId) { model ->
+        model.copy(activityStatus = ActivityStatus.Verified)
+      }
 
       record.activityStatusId = ActivityStatus.Verified
       record.modifiedTime = updateTime
@@ -606,7 +696,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.Verified) }
+      store.updateForAdmin(activityId) { model ->
+        model.copy(activityStatus = ActivityStatus.Verified)
+      }
 
       record.activityStatusId = ActivityStatus.Verified
       record.modifiedTime = updateTime
@@ -626,7 +718,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.NotVerified) }
+      store.updateForAdmin(activityId) { model ->
+        model.copy(activityStatus = ActivityStatus.NotVerified)
+      }
 
       record.activityStatusId = ActivityStatus.NotVerified
       record.modifiedTime = updateTime
@@ -646,7 +740,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { model -> model.copy(activityStatus = ActivityStatus.DoNotUse) }
+      store.updateForAdmin(activityId) { model ->
+        model.copy(activityStatus = ActivityStatus.DoNotUse)
+      }
 
       record.activityStatusId = ActivityStatus.DoNotUse
       record.modifiedTime = updateTime
@@ -668,9 +764,10 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId) { it }
+      store.updateForAdmin(activityId) { it.copy(description = "New Description") }
 
       record.modifiedTime = updateTime
+      record.description = "New Description"
 
       assertTableEquals(record)
     }
@@ -693,6 +790,17 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<AccessDeniedException> {
         store.update(activityId) { it.copy(description = "Updated") }
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to perform admin update activity`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId = insertActivity(projectId = projectId)
+
+      assertThrows<AccessDeniedException> {
+        store.updateForAdmin(activityId) { it.copy(description = "Updated") }
       }
     }
 
