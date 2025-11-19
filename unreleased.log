@@ -1,3 +1,4 @@
+4774af21011 Use fields-updated format in ProjectRenamedEvent (#3630)
 df3ac9f31f6 Use fields-updated format in OrganizationRenamedEvent (#3628)
 175c12c2160 SW-7677 Switch to Not Verified if updated by project (#3629)
 d35831d92bc Specify types of unused path variables (#3627)
