@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -40,6 +41,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "exteriorPlots",
               PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
                   .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull),
+          ),
+          plantingSiteHistories.asMultiValueSublist(
+              "histories",
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID),
           ),
           monitoringPlots.asMultiValueSublist(
               "monitoringPlots",
