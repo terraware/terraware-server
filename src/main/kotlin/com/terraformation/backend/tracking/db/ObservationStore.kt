@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
@@ -69,17 +70,21 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
+import com.terraformation.backend.tracking.model.RecordedTreeModel
 import com.terraformation.backend.tracking.util.ObservationSpeciesPlot
 import com.terraformation.backend.tracking.util.ObservationSpeciesScope
 import com.terraformation.backend.tracking.util.ObservationSpeciesSite
@@ -87,6 +92,7 @@ import com.terraformation.backend.tracking.util.ObservationSpeciesSubzone
 import com.terraformation.backend.tracking.util.ObservationSpeciesZone
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.eqOrIsNull
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -395,6 +401,37 @@ class ObservationStore(
           )
           .orderBy(ID)
           .fetch(ID.asNonNullable())
+    }
+  }
+
+  fun fetchRecordedTree(
+      observationId: ObservationId,
+      recordedTreeId: RecordedTreeId,
+  ): ExistingRecordedTreeModel {
+    requirePermissions { readObservation(observationId) }
+
+    return with(RECORDED_TREES) {
+      dslContext
+          .select(
+              ID,
+              DESCRIPTION,
+              DIAMETER_AT_BREAST_HEIGHT_CM,
+              GPS_COORDINATES,
+              HEIGHT_M,
+              IS_DEAD,
+              POINT_OF_MEASUREMENT_M,
+              SHRUB_DIAMETER_CM,
+              recordedTreesBiomassSpeciesIdFkey.SPECIES_ID,
+              recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME,
+              TREE_GROWTH_FORM_ID,
+              TREE_NUMBER,
+              TRUNK_NUMBER,
+          )
+          .from(RECORDED_TREES)
+          .where(ID.eq(recordedTreeId))
+          .and(OBSERVATION_ID.eq(observationId))
+          .fetchOne { RecordedTreeModel.of(it) }
+          ?: throw RecordedTreeNotFoundException(recordedTreeId)
     }
   }
 
@@ -1145,6 +1182,60 @@ class ObservationStore(
                 trunkNumber = treeModel.trunkNumber,
             )
         )
+      }
+    }
+  }
+
+  fun updateRecordedTree(
+      observationId: ObservationId,
+      recordedTreeId: RecordedTreeId,
+      updateFunc: (ExistingRecordedTreeModel) -> ExistingRecordedTreeModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    withLockedObservation(observationId) { observation ->
+      val existing = fetchRecordedTree(observationId, recordedTreeId)
+      val updated = updateFunc(existing)
+
+      val changedFrom =
+          RecordedTreeUpdatedEventValues(
+              description = existing.description.nullIfEquals(updated.description),
+          )
+      val changedTo =
+          RecordedTreeUpdatedEventValues(
+              description = updated.description.nullIfEquals(existing.description),
+          )
+
+      if (changedFrom != changedTo) {
+        with(RECORDED_TREES) {
+          dslContext
+              .update(RECORDED_TREES)
+              .set(DESCRIPTION, updated.description)
+              .where(ID.eq(recordedTreeId))
+              .execute()
+
+          val (monitoringPlotId, organizationId) =
+              dslContext
+                  .select(
+                      MONITORING_PLOT_ID.asNonNullable(),
+                      monitoringPlots.plantingSites.ORGANIZATION_ID.asNonNullable(),
+                  )
+                  .from(RECORDED_TREES)
+                  .where(ID.eq(recordedTreeId))
+                  .fetchSingle()
+
+          eventPublisher.publishEvent(
+              RecordedTreeUpdatedEvent(
+                  changedFrom = changedFrom,
+                  changedTo = changedTo,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = observation.plantingSiteId,
+                  recordedTreeId = recordedTreeId,
+              )
+          )
+        }
       }
     }
   }

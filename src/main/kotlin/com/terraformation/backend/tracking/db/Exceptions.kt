@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import java.time.LocalDate
 
@@ -150,6 +151,9 @@ class ReassignmentTooLargeException(val plantingId: PlantingId) :
 
 class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
     IllegalArgumentException("Cannot reassign from planting $plantingId to its original plot")
+
+class RecordedTreeNotFoundException(val recordedTreeId: RecordedTreeId) :
+    EntityNotFoundException("Recorded tree $recordedTreeId not found")
 
 class ObservationRescheduleStateException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId cannot be rescheduled")

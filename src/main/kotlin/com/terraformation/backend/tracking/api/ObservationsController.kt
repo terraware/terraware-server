@@ -34,6 +34,7 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
@@ -48,6 +49,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
@@ -330,6 +332,19 @@ class ObservationsController(
     val coordinateModels = payload.coordinates.map { it.toModel() }
 
     observationStore.updatePlotObservation(observationId, plotId, coordinateModels)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Updates information about a recorded tree from a biomass observation.")
+  @PutMapping("/{observationId}/trees/{treeId}")
+  fun updateRecordedTree(
+      @PathVariable observationId: ObservationId,
+      @PathVariable treeId: RecordedTreeId,
+      @RequestBody payload: UpdateRecordedTreeRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    observationStore.updateRecordedTree(observationId, treeId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }
@@ -1024,6 +1039,14 @@ data class UpdatePlotPhotoRequestPayload(
     val caption: String?,
 ) {
   fun applyTo(row: ObservationMediaFilesRow) = row.copy(caption = caption)
+}
+
+data class UpdateRecordedTreeRequestPayload(
+    val description: String?,
+) {
+  fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
+    return model.copy(description = description)
+  }
 }
 
 data class UploadPlotMediaRequestPayload(
