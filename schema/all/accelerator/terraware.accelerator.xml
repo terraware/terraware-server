@@ -36,7 +36,7 @@
          <index name="activities_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="&#10;CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END" name="activity_status_verified"/>
+         <checkConstraint constraint="((activity_status_id &lt;&gt; 2) OR (verified_by IS NOT NULL))" name="activity_status_verified"/>
          <checkConstraint constraint="((verified_by IS NULL) = (verified_time IS NULL))" name="verified_by_requires_time"/>
       </table>
       <table name="activity_media_files" remarks="Information about activity-related media such as photos and videos." schema="accelerator" type="TABLE">
@@ -364,8 +364,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>

@@ -2553,7 +2553,7 @@
                                     <tr>
                                         <td><a href='tables/activities.html'>activities</a></td>
                                         <td>activity_status_verified</td>
-                                        <td>CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END</td>
+                                        <td>((activity_status_id &lt;&gt; 2) OR (verified_by IS NOT NULL))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/activities.html'>activities</a></td>

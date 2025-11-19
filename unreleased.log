@@ -1,3 +1,5 @@
+df3ac9f31f6 Use fields-updated format in OrganizationRenamedEvent (#3628)
+175c12c2160 SW-7677 Switch to Not Verified if updated by project (#3629)
 d35831d92bc Specify types of unused path variables (#3627)
 e07a6439781 SW-7650 Fix division by zero error when calculating survival rate (#3625)
 8ef4a77b813 Add Claude skill for persistent event creation (#3626)

@@ -453,12 +453,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>verified_by_requires_time</td>
-                                    <td>((verified_by IS NULL) &#61; (verified_time IS NULL))</td>
+                                    <td>activity_status_verified</td>
+                                    <td>((activity_status_id &lt;&gt; 2) OR (verified_by IS NOT NULL))</td>
                                 </tr>
                                 <tr>
-                                    <td>activity_status_verified</td>
-                                    <td>&#10;CASE activity_status_id&#10;    WHEN 2 THEN (verified_by IS NOT NULL)&#10;    ELSE (verified_by IS NULL)&#10;END</td>
+                                    <td>verified_by_requires_time</td>
+                                    <td>((verified_by IS NULL) &#61; (verified_time IS NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>
