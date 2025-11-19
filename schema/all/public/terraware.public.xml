@@ -348,6 +348,9 @@
          <index name="event_log_projectid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
+         <index name="event_log_recordedtreeid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
          <index name="event_log_withdrawalid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
