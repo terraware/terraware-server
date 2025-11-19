@@ -35,7 +35,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
@@ -828,21 +827,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       )
 
   private fun plantingSubzoneSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
-    listOf(
-            PLOT_T0_DENSITIES,
-            MONITORING_PLOTS,
-            MONITORING_PLOT_HISTORIES,
-            PLANTING_SUBZONES,
-            PLANTING_SUBZONE_HISTORIES,
-            PLANTING_ZONES,
-            PLANTING_ZONE_HISTORIES,
-            PLANTING_SITES,
-            PLANTING_SITE_HISTORIES,
-            OBSERVATION_PLOTS,
-            OBSERVATIONS,
-        )
-        .forEach { println("${it.name}\n${dslContext.fetch(it)}") }
-
     val permanentSubzoneT0 =
         with(PLOT_T0_DENSITIES) {
           DSL.select(
