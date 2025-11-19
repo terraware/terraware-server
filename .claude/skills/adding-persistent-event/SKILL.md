@@ -23,9 +23,16 @@ Task Progress:
 - [ ] Add test(s) or modify existing tests to verify code that publishes the new event.
 - [ ] Generate translations of localized strings with `yarn translate`.
 - [ ] Format code with `./gradlew spotlessApply`.
-- [ ] Run all tests with `./gradlew test`.
+- [ ] Run the full test suite with `./gradlew test`.
 ```
 
 ## Reference
 
 See [EVENTS.md](../../../docs/EVENTS.md) for detailed documentation including best practices.
+
+## Additional guidelines
+
+When implementing `FieldsUpdatedPersistentEvent.listUpdatedFields`, prefer expression syntax over block syntax for the method body, and omit the return type. For example,
+
+    override fun listUpdatedFields() =
+        listOfNotNull(createUpdatedField("example", changedFrom.example, changedTo.example))
