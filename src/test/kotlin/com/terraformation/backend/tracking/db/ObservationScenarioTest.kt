@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -74,6 +75,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
 
   protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
+  protected val plotHistoryIds = mutableMapOf<MonitoringPlotId, MonitoringPlotHistoryId>()
   protected lateinit var subzoneHistoryIds: Map<PlantingSubzoneId, PlantingSubzoneHistoryId>
   protected lateinit var subzoneIds: Map<String, PlantingSubzoneId>
   protected lateinit var zoneHistoryIds: Map<PlantingZoneId, PlantingZoneHistoryId>
@@ -798,10 +800,11 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               sizeMeters = sizeMeters,
               permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
-      insertMonitoringPlotHistory(
-          plantingSubzoneId = subzoneId,
-          plantingSubzoneHistoryId = subzoneHistoryId,
-      )
+      plotHistoryIds[plotId] =
+          insertMonitoringPlotHistory(
+              plantingSubzoneId = subzoneId,
+              plantingSubzoneHistoryId = subzoneHistoryId,
+          )
 
       if (isPermanent) {
         permanentPlotNumbers.add(plotNumber)
@@ -1134,6 +1137,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     isPermanent = plotName in permanentPlotNumbers,
                     observationId = observationId,
                     monitoringPlotId = plotId,
+                    monitoringPlotHistoryId = plotHistoryIds[plotId]!!,
                 )
 
                 observedPlotNames.add(plotName)

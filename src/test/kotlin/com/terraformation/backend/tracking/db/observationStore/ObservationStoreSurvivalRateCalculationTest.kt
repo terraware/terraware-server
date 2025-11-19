@@ -667,6 +667,121 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
 
+  @Test
+  fun `survival rate with geometry change between observations, includes temp`() {
+    val newPlantingSiteId =
+        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+    every { user.canReadPlantingSite(newPlantingSiteId) } returns true
+
+    fun updatePlantingSite() {
+      // change plot 112 to permanent and adds plot 312 to site (also temp)
+      // adds all history objects that would occur with this edit
+      insertPlantingSiteHistory()
+      val zone1 = zoneIds["Zone1"]!!
+      val zone2 = zoneIds["Zone2"]!!
+      val newZone1History = insertPlantingZoneHistory(plantingZoneId = zone1)
+      val newZone2History = insertPlantingZoneHistory(plantingZoneId = zone2)
+      val subzone1 = subzoneIds["Subzone1"]!!
+      val subzone2 = subzoneIds["Subzone2"]!!
+      val subzone3 = subzoneIds["Subzone3"]!!
+      val newSubzone1History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone1,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone2History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone2,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone3History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone3,
+              plantingZoneHistoryId = newZone2History,
+          )
+      plotHistoryIds[plotIds["111"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["111"]!!,
+              plantingSubzoneId = subzone1,
+              plantingSubzoneHistoryId = newSubzone1History,
+          )
+      val plot2 = plotIds["112"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_INDEX, 112)
+          .where(MONITORING_PLOTS.ID.eq(plot2))
+          .execute()
+      plotHistoryIds[plot2] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot2,
+              plantingSubzoneId = subzone1,
+              plantingSubzoneHistoryId = newSubzone1History,
+          )
+      permanentPlotNumbers.add("112")
+      permanentPlotIds.add(plot2)
+      val species1 = speciesIds["Species 0"]!!
+      val species2 = speciesIds["Species 1"]!!
+      insertPlotT0Density(
+          monitoringPlotId = plot2,
+          speciesId = species1,
+          plotDensity = BigDecimal.valueOf(30).toPlantsPerHectare(),
+      )
+      insertPlotT0Density(
+          monitoringPlotId = plot2,
+          speciesId = species2,
+          plotDensity = BigDecimal.valueOf(40).toPlantsPerHectare(),
+      )
+      plotHistoryIds[plotIds["211"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["211"]!!,
+              plantingSubzoneId = subzone2,
+              plantingSubzoneHistoryId = newSubzone2History,
+          )
+      plotHistoryIds[plotIds["311"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["311"]!!,
+              plantingSubzoneId = subzone3,
+              plantingSubzoneHistoryId = newSubzone3History,
+          )
+
+      val newPlotId =
+          insertMonitoringPlot(
+              insertHistory = false,
+              plantingSubzoneId = subzone3,
+              plotNumber = 312,
+              sizeMeters = 30,
+              permanentIndex = null,
+          )
+      plotHistoryIds[newPlotId] =
+          insertMonitoringPlotHistory(
+              plantingSubzoneId = subzone3,
+              plantingSubzoneHistoryId = newSubzone3History,
+          )
+      plotIds["312"] = newPlotId
+    }
+
+    val prefix = "/tracking/observation/SurvivalRateSiteGeometryChangeTemp"
+    val numSpecies = 2
+
+    runSurvivalRateScenario(
+        prefix,
+        numSpecies,
+    ) {
+      updatePlantingSite()
+
+      importObservationsCsv(prefix, numSpecies, 1, Instant.EPOCH.plusSeconds(10), false)
+    }
+
+    // ensure that observation1 didn't change
+    val observation1Expected = loadExpectedSurvivalRates(prefix, numSpecies)
+    val observation1Actual =
+        ratesObjectFromResults(
+            resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
+            inserted.plantingSiteId,
+        )
+    assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
+  }
+
   private var lastCoord: Int = 1
 
   private fun runSurvivalRateScenario(
