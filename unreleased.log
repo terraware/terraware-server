@@ -1,3 +1,4 @@
+91ebc82c39c Add Claude skill for localizable strings (#3636)
 fcb1755fb3d SW-7695 Return IDs of recorded trees (#3631)
 4774af21011 Use fields-updated format in ProjectRenamedEvent (#3630)
 df3ac9f31f6 Use fields-updated format in OrganizationRenamedEvent (#3628)
