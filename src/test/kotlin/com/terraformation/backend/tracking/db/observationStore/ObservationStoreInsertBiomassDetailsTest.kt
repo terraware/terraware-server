@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -217,6 +218,26 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
             waterDepthCm = 2,
         ),
         "Biomass details table",
+    )
+
+    eventPublisher.assertEventPublished(
+        BiomassDetailsCreatedEvent(
+            description = "description",
+            forestType = BiomassForestType.Mangrove,
+            herbaceousCoverPercent = 10,
+            monitoringPlotId = plotId,
+            observationId = observationId,
+            organizationId = organizationId,
+            ph = BigDecimal.valueOf(6.5),
+            plantingSiteId = plantingSiteId,
+            salinityPpt = BigDecimal.valueOf(20),
+            smallTreesCountHigh = 10,
+            smallTreesCountLow = 0,
+            soilAssessment = "soil",
+            tide = MangroveTide.High,
+            tideTime = Instant.ofEpochSecond(123),
+            waterDepthCm = 2,
+        )
     )
 
     val biomassSpeciesIdsBySpeciesKey =
