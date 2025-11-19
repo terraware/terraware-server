@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.event
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -11,6 +12,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
@@ -24,6 +27,7 @@ import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
+import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
 import org.locationtech.jts.geom.Point
@@ -294,3 +298,34 @@ data class ObservationMediaFileUploadedEventV1(
 ) : EntityCreatedPersistentEvent, ObservationMediaFilePersistentEvent
 
 typealias ObservationMediaFileUploadedEvent = ObservationMediaFileUploadedEventV1
+
+sealed interface RecordedTreePersistentEvent : PersistentEvent {
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+  val recordedTreeId: RecordedTreeId
+}
+
+data class RecordedTreeCreatedEventV1(
+    val biomassSpeciesId: BiomassSpeciesId,
+    val description: String? = null,
+    val diameterAtBreastHeightCm: BigDecimal? = null,
+    val gpsCoordinates: Point? = null,
+    val heightM: BigDecimal? = null,
+    val isDead: Boolean,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val pointOfMeasurementM: BigDecimal? = null,
+    override val recordedTreeId: RecordedTreeId,
+    val shrubDiameterCm: Int? = null,
+    val speciesId: SpeciesId? = null,
+    val speciesName: String? = null,
+    val treeGrowthForm: TreeGrowthForm,
+    val treeNumber: Int,
+    val trunkNumber: Int,
+) : EntityCreatedPersistentEvent, RecordedTreePersistentEvent
+
+typealias RecordedTreeCreatedEvent = RecordedTreeCreatedEventV1

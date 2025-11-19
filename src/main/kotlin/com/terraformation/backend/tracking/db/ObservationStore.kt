@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesIdConverter
@@ -67,6 +68,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -965,6 +967,11 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(plotId) ?: throw PlotNotFoundException(plotId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId) ?: throw PlotNotFoundException(plotId)
+
     val (observationType, observationState) =
         with(OBSERVATION_PLOTS) {
           dslContext
@@ -1069,49 +1076,76 @@ class ObservationStore(
           }
       dslContext.batchInsert(quadratSpeciesRecords).execute()
 
-      val recordedTreesRecords =
-          model.trees.map {
+      model.trees.forEach { treeModel ->
+        val record =
             RecordedTreesRecord(
-                observationId = observationId,
+                    observationId = observationId,
+                    monitoringPlotId = plotId,
+                    biomassSpeciesId =
+                        biomassSpeciesIdsBySpeciesIdentifiers[
+                            BiomassSpeciesKey(treeModel.speciesId, treeModel.speciesName)]
+                            ?: throw IllegalArgumentException(
+                                "Biomass species ${treeModel.speciesName ?: "#${treeModel.speciesId}"} not found."
+                            ),
+                    treeNumber = treeModel.treeNumber,
+                    trunkNumber = treeModel.trunkNumber,
+                    treeGrowthFormId = treeModel.treeGrowthForm,
+                    gpsCoordinates = treeModel.gpsCoordinates,
+                    isDead = treeModel.isDead,
+                    diameterAtBreastHeightCm =
+                        if (
+                            treeModel.treeGrowthForm == TreeGrowthForm.Tree ||
+                                treeModel.treeGrowthForm == TreeGrowthForm.Trunk
+                        )
+                            treeModel.diameterAtBreastHeightCm
+                        else null,
+                    pointOfMeasurementM =
+                        if (
+                            treeModel.treeGrowthForm == TreeGrowthForm.Tree ||
+                                treeModel.treeGrowthForm == TreeGrowthForm.Trunk
+                        )
+                            treeModel.pointOfMeasurementM
+                        else null,
+                    heightM =
+                        if (
+                            treeModel.treeGrowthForm == TreeGrowthForm.Tree ||
+                                treeModel.treeGrowthForm == TreeGrowthForm.Trunk
+                        )
+                            treeModel.heightM
+                        else null,
+                    shrubDiameterCm =
+                        if (treeModel.treeGrowthForm == TreeGrowthForm.Shrub)
+                            treeModel.shrubDiameterCm
+                        else null,
+                    description = treeModel.description,
+                )
+                .attach(dslContext)
+
+        record.insert()
+
+        eventPublisher.publishEvent(
+            RecordedTreeCreatedEvent(
+                biomassSpeciesId = record.biomassSpeciesId!!,
+                description = treeModel.description,
+                diameterAtBreastHeightCm = record.diameterAtBreastHeightCm,
+                gpsCoordinates = treeModel.gpsCoordinates,
+                heightM = record.heightM,
+                isDead = treeModel.isDead,
                 monitoringPlotId = plotId,
-                biomassSpeciesId =
-                    biomassSpeciesIdsBySpeciesIdentifiers[
-                        BiomassSpeciesKey(it.speciesId, it.speciesName)]
-                        ?: throw IllegalArgumentException(
-                            "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."
-                        ),
-                treeNumber = it.treeNumber,
-                trunkNumber = it.trunkNumber,
-                treeGrowthFormId = it.treeGrowthForm,
-                gpsCoordinates = it.gpsCoordinates,
-                isDead = it.isDead,
-                diameterAtBreastHeightCm =
-                    if (
-                        it.treeGrowthForm == TreeGrowthForm.Tree ||
-                            it.treeGrowthForm == TreeGrowthForm.Trunk
-                    )
-                        it.diameterAtBreastHeightCm
-                    else null,
-                pointOfMeasurementM =
-                    if (
-                        it.treeGrowthForm == TreeGrowthForm.Tree ||
-                            it.treeGrowthForm == TreeGrowthForm.Trunk
-                    )
-                        it.pointOfMeasurementM
-                    else null,
-                heightM =
-                    if (
-                        it.treeGrowthForm == TreeGrowthForm.Tree ||
-                            it.treeGrowthForm == TreeGrowthForm.Trunk
-                    )
-                        it.heightM
-                    else null,
-                shrubDiameterCm =
-                    if (it.treeGrowthForm == TreeGrowthForm.Shrub) it.shrubDiameterCm else null,
-                description = it.description,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                pointOfMeasurementM = record.pointOfMeasurementM,
+                recordedTreeId = record.id!!,
+                shrubDiameterCm = record.shrubDiameterCm,
+                speciesId = treeModel.speciesId,
+                speciesName = treeModel.speciesName,
+                treeGrowthForm = treeModel.treeGrowthForm,
+                treeNumber = treeModel.treeNumber,
+                trunkNumber = treeModel.trunkNumber,
             )
-          }
-      dslContext.batchInsert(recordedTreesRecords).execute()
+        )
+      }
     }
   }
 

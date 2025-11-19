@@ -15,12 +15,16 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
 import kotlin.reflect.KClass
 
@@ -163,6 +167,52 @@ data class ProjectSubjectPayload(
   }
 }
 
+@JsonTypeName("RecordedTree")
+data class RecordedTreeSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    val recordedTreeId: RecordedTreeId,
+    val treeGrowthForm: TreeGrowthForm,
+    val treeNumber: Int,
+    val trunkNumber: Int,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: RecordedTreePersistentEvent,
+        context: EventLogPayloadContext,
+    ): RecordedTreeSubjectPayload {
+      val createEvent =
+          context.first<RecordedTreeCreatedEvent> { it.recordedTreeId == event.recordedTreeId }
+      val growthFormName: String
+      val treeIdentifier: String
+
+      if (createEvent.treeGrowthForm == TreeGrowthForm.Trunk) {
+        growthFormName = TreeGrowthForm.Tree.getDisplayName(currentUser().locale)
+        treeIdentifier = "${createEvent.treeNumber}_${createEvent.trunkNumber}"
+      } else {
+        growthFormName = createEvent.treeGrowthForm.getDisplayName(currentUser().locale)
+        treeIdentifier = "${createEvent.treeNumber}"
+      }
+
+      return RecordedTreeSubjectPayload(
+          fullText =
+              context.subjectFullText<RecordedTreeSubjectPayload>(growthFormName, treeIdentifier),
+          monitoringPlotId = event.monitoringPlotId,
+          observationId = event.observationId,
+          plantingSiteId = event.plantingSiteId,
+          recordedTreeId = event.recordedTreeId,
+          treeGrowthForm = createEvent.treeGrowthForm,
+          treeNumber = createEvent.treeNumber,
+          trunkNumber = createEvent.trunkNumber,
+          shortText = context.subjectShortText<RecordedTreeSubjectPayload>(growthFormName),
+      )
+    }
+  }
+}
+
 /**
  * Types of subjects that can be returned by the event log query API. Each subject maps to an
  * interface that's implemented by events related to that subject.
@@ -174,4 +224,5 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
+  RecordedTree(RecordedTreePersistentEvent::class),
 }
