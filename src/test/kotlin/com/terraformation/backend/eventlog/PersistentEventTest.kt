@@ -1,8 +1,12 @@
 package com.terraformation.backend.eventlog
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.eventlog.api.EventSubjectName
 import com.terraformation.backend.eventlog.db.EventUpgradeUtils
+import com.terraformation.backend.i18n.Locales
+import java.util.ResourceBundle
 import java.util.TreeSet
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
@@ -12,6 +16,7 @@ import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
+import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -106,6 +111,24 @@ class PersistentEventTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("getFieldsUpdatedEventClasses")
+  fun `fields-updated events have localizable names for all their fields`(kClass: KClass<*>) {
+    val subjectName =
+        EventSubjectName.entries.firstOrNull { kClass.isSubclassOf(it.eventInterface) }
+    assumeNotNull(subjectName)
+
+    val valuesClass =
+        kClass.memberProperties.firstOrNull { it.name == "changedFrom" }?.returnType?.jvmErasure
+    assumeNotNull(valuesClass)
+
+    val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
+    val expected = valuesClass!!.memberProperties.map { "$stringKeyPrefix.${it.name}" }.toSet()
+    val actual = eventSubjectFieldNames.filter { it.startsWith(stringKeyPrefix) }.toSet()
+
+    assertSetEquals(expected, actual)
+  }
+
   private fun getRequiredProperties(
       kClass: KClass<*>,
       prefix: String = "${kClass.java.name}/",
@@ -159,11 +182,24 @@ class PersistentEventTest {
       eventClasses.filter { it.isSubclassOf(UpgradableEvent::class) }
     }
 
+    @JvmStatic
+    val fieldsUpdatedEventClasses: List<KClass<out PersistentEvent>> by lazy {
+      eventClasses.filter { it.isSubclassOf(FieldsUpdatedPersistentEvent::class) }
+    }
+
     @Suppress("JAVA_CLASS_ON_COMPANION")
     val propertyManifest: TreeSet<String> by lazy {
       javaClass.getResourceAsStream("/eventlog/eventProperties.txt").use { stream ->
         TreeSet(stream.bufferedReader().readLines().filter { it.startsWith("com") })
       }
+    }
+
+    val eventSubjectFieldNames: Set<String> by lazy {
+      ResourceBundle.getBundle("i18n.Messages", Locales.ENGLISH)
+          .keys
+          .asSequence()
+          .filter { it.startsWith("eventSubject.") && it.contains(".field.") }
+          .toSet()
     }
 
     private val shouldEnumeratePropertiesMap = ConcurrentHashMap<KClass<*>, Boolean>()
