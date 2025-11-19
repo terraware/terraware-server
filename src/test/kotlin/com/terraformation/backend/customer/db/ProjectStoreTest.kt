@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEventValues
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
@@ -289,7 +290,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ProjectRenamedEvent(
-              name = "New name",
+              changedFrom = ProjectRenamedEventValues(name = "Project 1"),
+              changedTo = ProjectRenamedEventValues(name = "New name"),
               organizationId = organizationId,
               projectId = projectId,
           )

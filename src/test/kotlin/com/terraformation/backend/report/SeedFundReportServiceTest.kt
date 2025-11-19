@@ -16,6 +16,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
+import com.terraformation.backend.customer.event.ProjectRenamedEventValues
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -1010,7 +1011,14 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
           )
       val orgReportId = insertSeedFundReport(status = SeedFundReportStatus.New, year = 1994)
 
-      service.on(ProjectRenamedEvent("New Name", organizationId, projectId))
+      service.on(
+          ProjectRenamedEvent(
+              changedFrom = ProjectRenamedEventValues(name = "Project 1"),
+              changedTo = ProjectRenamedEventValues(name = "New Name"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
 
       assertEquals(
           mapOf(
