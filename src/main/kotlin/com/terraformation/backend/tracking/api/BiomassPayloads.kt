@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -119,6 +120,7 @@ data class ExistingTreePayload(
     val gpsCoordinates: Point?,
     @Schema(description = "Measured in meters.") //
     val height: BigDecimal?,
+    val id: RecordedTreeId,
     val isDead: Boolean,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
@@ -139,6 +141,7 @@ data class ExistingTreePayload(
       diameterAtBreastHeight = model.diameterAtBreastHeightCm,
       gpsCoordinates = model.gpsCoordinates,
       height = model.heightM,
+      id = model.id,
       isDead = model.isDead,
       isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
       isThreatened = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isThreatened,
