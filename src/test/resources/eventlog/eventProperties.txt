@@ -47,6 +47,11 @@ com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/recordedTre
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/treeGrowthForm: TreeGrowthForm
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/treeNumber: Int
 com.terraformation.backend.tracking.event.RecordedTreeCreatedEventV1/trunkNumber: Int
+com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventV1/recordedTreeId: RecordedTreeId
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/fileId: FileId
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/monitoringPlotId: MonitoringPlotId
 com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEventV1/observationId: ObservationId

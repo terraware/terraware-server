@@ -329,3 +329,27 @@ data class RecordedTreeCreatedEventV1(
 ) : EntityCreatedPersistentEvent, RecordedTreePersistentEvent
 
 typealias RecordedTreeCreatedEvent = RecordedTreeCreatedEventV1
+
+data class RecordedTreeUpdatedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val recordedTreeId: RecordedTreeId,
+) : FieldsUpdatedPersistentEvent, RecordedTreePersistentEvent {
+  data class Values(
+      val description: String?,
+  )
+
+  override fun listUpdatedFields(): List<FieldsUpdatedPersistentEvent.UpdatedField> {
+    return listOfNotNull(
+        createUpdatedField("description", changedFrom.description, changedTo.description)
+    )
+  }
+}
+
+typealias RecordedTreeUpdatedEvent = RecordedTreeUpdatedEventV1
+
+typealias RecordedTreeUpdatedEventValues = RecordedTreeUpdatedEventV1.Values

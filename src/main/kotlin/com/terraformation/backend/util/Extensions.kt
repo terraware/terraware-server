@@ -36,6 +36,9 @@ import org.locationtech.jts.geom.util.GeometryFixer
 /** Transforms a Collection to null if it is empty. */
 fun <T : Collection<*>> T.orNull(): T? = ifEmpty { null }
 
+/** Returns null if this value is equal to another value, or this value if they differ. */
+fun <T : Any?> T.nullIfEquals(other: T): T? = if (this == other) null else this
+
 /** Tests two nullable BigDecimal values for equality ignoring their scale. */
 fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
     this == null && other == null || this != null && other != null && compareTo(other) == 0
