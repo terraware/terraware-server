@@ -29,9 +29,7 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val objectMapper = jacksonObjectMapper()
-  private val store: EventLogStore by lazy {
-    EventLogStore(clock, dslContext, EventUpgradeUtils(dslContext), objectMapper)
-  }
+  private val store: EventLogStore by lazy { EventLogStore(clock, dslContext, objectMapper) }
 
   @Nested
   inner class FetchByIds {
@@ -359,7 +357,7 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val organizationId: OrganizationId,
       val dummy1: Int = 1,
   ) : TestOrganizationEvent, UpgradableEvent {
-    override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
+    override fun toNextVersion(eventLogId: EventLogId, eventUpgradeUtils: EventUpgradeUtils) =
         TestOrganizationDeletedEventV2(organizationId)
   }
 
@@ -367,7 +365,7 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val organizationId: OrganizationId,
       val dummy2: Int = 2,
   ) : TestOrganizationEvent, UpgradableEvent {
-    override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
+    override fun toNextVersion(eventLogId: EventLogId, eventUpgradeUtils: EventUpgradeUtils) =
         TestOrganizationDeletedEventV3(organizationId)
   }
 
@@ -387,13 +385,13 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @SkipPersistentEventTest
   data class TestCircularEventV1(val organizationId: OrganizationId) : UpgradableEvent {
-    override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
+    override fun toNextVersion(eventLogId: EventLogId, eventUpgradeUtils: EventUpgradeUtils) =
         TestCircularEventV2(organizationId)
   }
 
   @SkipPersistentEventTest
   data class TestCircularEventV2(val organizationId: OrganizationId) : UpgradableEvent {
-    override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) =
+    override fun toNextVersion(eventLogId: EventLogId, eventUpgradeUtils: EventUpgradeUtils) =
         TestCircularEventV1(organizationId)
   }
 

@@ -5,6 +5,8 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEvent
+import com.terraformation.backend.customer.event.OrganizationRenamedEventValues
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.InternalTagIds
@@ -405,6 +407,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val actual = organizationsDao.fetchOneById(organizationId)!!
 
     assertEquals(expected, actual)
+
+    publisher.assertEventPublished(
+        OrganizationRenamedEvent(
+            changedFrom = OrganizationRenamedEventValues(name = "Organization 1"),
+            changedTo = OrganizationRenamedEventValues(name = "New Name"),
+            organizationId = organizationId,
+        )
+    )
   }
 
   @Test

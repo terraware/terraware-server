@@ -30,9 +30,10 @@ import org.jooq.impl.SQLDataType
 class EventLogStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val eventUpgradeUtils: EventUpgradeUtils,
     private val objectMapper: ObjectMapper,
 ) {
+  private val eventUpgradeUtils = EventUpgradeUtils(dslContext, this)
+
   fun insertEvent(event: PersistentEvent): EventLogId {
     return with(EVENT_LOG) {
       dslContext
@@ -84,22 +85,54 @@ class EventLogStore(
       ids: Collection<LongIdWrapper<*>>,
       requestedClasses: Collection<KClass<out T>>? = null,
   ): List<EventLogEntry<T>> {
-    require(ids.isNotEmpty()) { "No IDs specified" }
-
     val requestedConcreteClasses = requestedClasses?.let { getConcreteClasses(it) }
     val classConditions = requestedConcreteClasses?.let { getLikeConditions(it) } ?: emptyList()
-    val idConditions =
-        ids.map { payloadField(it.eventLogPropertyName, SQLDataType.BIGINT).eq(it.value) }
+    val idCondition = getConditionForIds(ids)
 
     val condition =
         DSL.and(
             listOfNotNull(
-                DSL.and(idConditions),
+                idCondition,
                 if (classConditions.isNotEmpty()) DSL.or(classConditions) else null,
             )
         )
 
     return fetchByCondition(condition, requestedConcreteClasses)
+  }
+
+  fun <T : PersistentEvent> fetchLastByIds(
+      ids: Collection<LongIdWrapper<*>>,
+      requestedClasses: Collection<KClass<out T>>? = null,
+      beforeEventLogId: EventLogId? = null,
+  ): EventLogEntry<T>? {
+    val requestedConcreteClasses = requestedClasses?.let { getConcreteClasses(it) }
+    val classConditions = requestedConcreteClasses?.let { getLikeConditions(it) } ?: emptyList()
+    val idCondition = getConditionForIds(ids)
+
+    val condition =
+        DSL.and(
+            listOfNotNull(
+                idCondition,
+                if (classConditions.isNotEmpty()) DSL.or(classConditions) else null,
+                beforeEventLogId?.let { EVENT_LOG.ID.lt(it) },
+            )
+        )
+
+    return fetchLastByCondition(condition, requestedConcreteClasses)
+  }
+
+  inline fun <reified T : PersistentEvent> fetchLastByIds(
+      ids: Collection<LongIdWrapper<*>>,
+      beforeEventLogId: EventLogId? = null,
+  ): EventLogEntry<T>? {
+    return fetchLastByIds(ids, listOf(T::class), beforeEventLogId)
+  }
+
+  inline fun <reified T : PersistentEvent> fetchLastById(
+      id: LongIdWrapper<*>,
+      beforeEventLogId: EventLogId? = null,
+  ): EventLogEntry<T>? {
+    return fetchLastByIds(listOf(id), beforeEventLogId)
   }
 
   private fun <I : Any, T : PersistentEvent> fetchByIdField(
@@ -146,16 +179,7 @@ class EventLogStore(
       condition: Condition,
       requestedClasses: Collection<KClass<out T>>?,
   ): List<EventLogEntry<T>> {
-    requestedClasses?.forEach { requestedClass ->
-      if (requestedClass.isSubclassOf(UpgradableEvent::class)) {
-        throw IllegalArgumentException(
-            "${requestedClass.java.name} is upgradable; only the latest version may be queried"
-        )
-      }
-      if (requestedClass.isAbstract || requestedClass.java.isInterface) {
-        throw IllegalArgumentException("${requestedClass.java.name} is not a concrete class")
-      }
-    }
+    validateRequestedClasses(requestedClasses)
 
     return with(EVENT_LOG) {
       dslContext
@@ -164,6 +188,36 @@ class EventLogStore(
           .where(condition)
           .orderBy(CREATED_TIME, ID)
           .fetch { eventLogEntryFromRecord(it, requestedClasses) }
+    }
+  }
+
+  private fun <T : PersistentEvent> fetchLastByCondition(
+      condition: Condition,
+      requestedClasses: Collection<KClass<out T>>?,
+  ): EventLogEntry<T>? {
+    validateRequestedClasses(requestedClasses)
+
+    return with(EVENT_LOG) {
+      dslContext
+          .select(CREATED_BY, CREATED_TIME, EVENT_CLASS, ID, PAYLOAD)
+          .from(EVENT_LOG)
+          .where(condition)
+          .orderBy(CREATED_TIME.desc(), ID.desc())
+          .limit(1)
+          .fetchOne { eventLogEntryFromRecord(it, requestedClasses) }
+    }
+  }
+
+  private fun validateRequestedClasses(requestedClasses: Collection<KClass<out PersistentEvent>>?) {
+    requestedClasses?.forEach { requestedClass ->
+      if (requestedClass.isSubclassOf(UpgradableEvent::class)) {
+        throw IllegalArgumentException(
+            "${requestedClass.java.name} is upgradable; only the latest version may be queried",
+        )
+      }
+      if (requestedClass.isAbstract || requestedClass.java.isInterface) {
+        throw IllegalArgumentException("${requestedClass.java.name} is not a concrete class")
+      }
     }
   }
 
@@ -176,6 +230,7 @@ class EventLogStore(
       record: Record,
       requestedClasses: Collection<KClass<out T>>?,
   ): EventLogEntry<T> {
+    val eventLogId = record[EVENT_LOG.ID]!!
     val className = record[EVENT_LOG.EVENT_CLASS]!!
     val rawEventObject =
         objectMapper.readValue(record[EVENT_LOG.PAYLOAD]!!.data(), Class.forName(className))
@@ -183,7 +238,7 @@ class EventLogStore(
       throw IllegalStateException("Event class $className does not implement PersistentEvent")
     }
 
-    val eventObject = upgradeToLatest(rawEventObject)
+    val eventObject = upgradeToLatest(eventLogId, rawEventObject)
 
     if (requestedClasses != null && requestedClasses.none { it.isInstance(eventObject) }) {
       val requestedClassNames = requestedClasses.joinToString()
@@ -201,7 +256,7 @@ class EventLogStore(
         createdBy = record[EVENT_LOG.CREATED_BY]!!,
         createdTime = record[EVENT_LOG.CREATED_TIME]!!,
         event = eventObject as T,
-        id = record[EVENT_LOG.ID]!!,
+        id = eventLogId,
     )
   }
 
@@ -231,7 +286,7 @@ class EventLogStore(
    * unmodified. If not, calls [UpgradableEvent.toNextVersion] repeatedly until there are no more
    * upgrades available.
    */
-  private fun upgradeToLatest(event: PersistentEvent): PersistentEvent {
+  private fun upgradeToLatest(eventLogId: EventLogId, event: PersistentEvent): PersistentEvent {
     val seenClasses = mutableSetOf<Class<out PersistentEvent>>()
     var upgradedEvent: PersistentEvent = event
 
@@ -243,10 +298,18 @@ class EventLogStore(
 
       seenClasses.add(eventClass)
 
-      upgradedEvent = upgradedEvent.toNextVersion(eventUpgradeUtils)
+      upgradedEvent = upgradedEvent.toNextVersion(eventLogId, eventUpgradeUtils)
     }
 
     return upgradedEvent
+  }
+
+  private fun getConditionForIds(ids: Collection<LongIdWrapper<*>>): Condition {
+    require(ids.isNotEmpty()) { "No IDs specified" }
+
+    return DSL.and(
+        ids.map { payloadField(it.eventLogPropertyName, SQLDataType.BIGINT).eq(it.value) }
+    )
   }
 
   private fun <T : Any?> payloadField(fieldName: String, dataType: DataType<T>): Field<T> {

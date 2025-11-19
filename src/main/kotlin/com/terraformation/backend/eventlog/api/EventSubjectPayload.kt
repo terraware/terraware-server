@@ -126,7 +126,7 @@ data class OrganizationSubjectPayload(
           context.lastEventBefore<OrganizationRenamedEvent>(event) {
             it.organizationId == event.organizationId
           }
-      return lastRename?.name
+      return lastRename?.changedTo?.name
           ?: context
               .first<OrganizationCreatedEvent> { it.organizationId == event.organizationId }
               .name

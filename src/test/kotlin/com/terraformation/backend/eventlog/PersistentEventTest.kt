@@ -1,6 +1,7 @@
 package com.terraformation.backend.eventlog
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.eventlog.db.EventUpgradeUtils
 import java.util.TreeSet
 import java.util.concurrent.ConcurrentHashMap
@@ -126,8 +127,9 @@ class PersistentEventTest {
     return kClass.memberFunctions
         .first { func ->
           func.name == "toNextVersion" &&
-              func.parameters.size == 2 && // First parameter is the receiver
-              func.parameters[1].type.jvmErasure == EventUpgradeUtils::class
+              func.parameters.size == 3 && // First parameter is the receiver
+              func.parameters[1].type.jvmErasure == EventLogId::class &&
+              func.parameters[2].type.jvmErasure == EventUpgradeUtils::class
         }
         .returnType
         .jvmErasure
@@ -208,7 +210,8 @@ class PersistentEventTest {
   /** Happy-path upgradable event. */
   @Suppress("unused")
   class TestUpgradableEventV1(val x: Int) : UpgradableEvent {
-    override fun toNextVersion(eventUpgradeUtils: EventUpgradeUtils) = TestUpgradableEventV2(x)
+    override fun toNextVersion(eventLogId: EventLogId, eventUpgradeUtils: EventUpgradeUtils) =
+        TestUpgradableEventV2(x)
   }
 
   class TestUpgradableEventV2(val x: Int) : PersistentEvent
