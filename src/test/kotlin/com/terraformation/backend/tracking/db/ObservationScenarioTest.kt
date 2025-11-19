@@ -798,7 +798,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               sizeMeters = sizeMeters,
               permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
-      insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId)
+      insertMonitoringPlotHistory(
+          plantingSubzoneId = subzoneId,
+          plantingSubzoneHistoryId = subzoneHistoryId,
+      )
 
       if (isPermanent) {
         permanentPlotNumbers.add(plotNumber)
@@ -1123,6 +1126,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   }
 
               if (plotName !in observedPlotNames) {
+                // technically this needs plot history id also. Leaving this comment in case someone
+                // else runs into this
                 insertObservationPlot(
                     claimedBy = user.userId,
                     claimedTime = Instant.EPOCH,

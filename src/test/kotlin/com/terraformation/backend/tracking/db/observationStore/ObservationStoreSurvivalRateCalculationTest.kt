@@ -562,7 +562,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate with geometry change between observations`() {
     val newPlantingSiteId =
-        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = false)
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
     val prefix = "/tracking/observation/SurvivalRateSiteGeometryChange"
@@ -572,8 +572,57 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         prefix,
         numSpecies,
     ) {
+      // todo see if this can be replaced with `plantingSiteStore.applyPlantingSiteEdit` to simplify
+      insertPlantingSiteHistory()
+      val zone1 = zoneIds["Zone1"]!!
+      val zone2 = zoneIds["Zone2"]!!
+      val newZone1History = insertPlantingZoneHistory(plantingZoneId = zone1)
+      val newZone2History = insertPlantingZoneHistory(plantingZoneId = zone2)
+      val subzone1 = subzoneIds["Subzone1"]!!
+      val subzone2 = subzoneIds["Subzone2"]!!
       val subzone3 = subzoneIds["Subzone3"]!!
-      val subzoneHistoryId3 = subzoneHistoryIds[subzone3]!!
+      val newSubzone1History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone1,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone2History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone2,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone3History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone3,
+              plantingZoneHistoryId = newZone2History,
+          )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["111"]!!,
+          plantingSubzoneId = subzone1,
+          plantingSubzoneHistoryId = newSubzone1History,
+      )
+      val plot2 = plotIds["112"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
+          .where(MONITORING_PLOTS.ID.eq(plot2))
+          .execute()
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plot2,
+          plantingSubzoneId = subzone2,
+          plantingSubzoneHistoryId = newSubzone2History,
+      )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["211"]!!,
+          plantingSubzoneId = subzone2,
+          plantingSubzoneHistoryId = newSubzone2History,
+      )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["311"]!!,
+          plantingSubzoneId = subzone3,
+          plantingSubzoneHistoryId = newSubzone3History,
+      )
+
       val newPlotId =
           insertMonitoringPlot(
               insertHistory = false,
@@ -582,7 +631,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               sizeMeters = 30,
               permanentIndex = 312,
           )
-      insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId3)
+      insertMonitoringPlotHistory(
+          plantingSubzoneId = subzone3,
+          plantingSubzoneHistoryId = newSubzone3History,
+      )
       permanentPlotNumbers.add("312")
       permanentPlotIds.add(newPlotId)
       plotIds["312"] = newPlotId
@@ -597,17 +649,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           plotDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
       )
 
-      val plot2 = plotIds["112"]!!
-      val subzone2 = subzoneIds["Subzone2"]!!
-      dslContext
-          .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
-          .where(MONITORING_PLOTS.ID.eq(plot2))
-          .execute()
-
       importObservationsCsv(prefix, numSpecies, 1, Instant.EPOCH.plusSeconds(10), false)
-      //      observationStore.recalculateSurvivalRates(plot2)
-      //      observationStore.recalculateSurvivalRates(newPlotId)
     }
 
     // ensure that observation1 didn't change
@@ -617,7 +659,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
             inserted.plantingSiteId,
         )
-    assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 didn't change")
+    assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
 
   private var lastCoord: Int = 1
