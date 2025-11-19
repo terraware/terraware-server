@@ -86,7 +86,7 @@ class ActivitiesAdminController(
       @PathVariable("id") id: ActivityId,
       @RequestBody payload: AdminUpdateActivityRequestPayload,
   ): SimpleSuccessResponsePayload {
-    activityStore.update(id, true, payload::applyTo)
+    activityStore.updateForAdmin(id, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }

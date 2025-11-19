@@ -635,7 +635,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { existing ->
+      store.updateForAdmin(activityId) { existing ->
         existing.copy(
             activityStatus = ActivityStatus.Verified,
             activityType = ActivityType.Planting,
@@ -674,7 +674,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { model ->
+      store.updateForAdmin(activityId) { model ->
         model.copy(activityStatus = ActivityStatus.Verified)
       }
 
@@ -696,7 +696,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { model ->
+      store.updateForAdmin(activityId) { model ->
         model.copy(activityStatus = ActivityStatus.Verified)
       }
 
@@ -718,7 +718,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { model ->
+      store.updateForAdmin(activityId) { model ->
         model.copy(activityStatus = ActivityStatus.NotVerified)
       }
 
@@ -740,7 +740,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { model ->
+      store.updateForAdmin(activityId) { model ->
         model.copy(activityStatus = ActivityStatus.DoNotUse)
       }
 
@@ -764,7 +764,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updateTime = Instant.ofEpochSecond(100)
       clock.instant = updateTime
 
-      store.update(activityId, true) { it.copy(description = "New Description") }
+      store.updateForAdmin(activityId) { it.copy(description = "New Description") }
 
       record.modifiedTime = updateTime
       record.description = "New Description"
@@ -800,7 +800,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activityId = insertActivity(projectId = projectId)
 
       assertThrows<AccessDeniedException> {
-        store.update(activityId, true) { it.copy(description = "Updated") }
+        store.updateForAdmin(activityId) { it.copy(description = "Updated") }
       }
     }
 

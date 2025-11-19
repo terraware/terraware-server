@@ -97,22 +97,15 @@ class ActivityStore(
 
   fun update(
       activityId: ActivityId,
-      isAdmin: Boolean = false,
       applyFunc: (ExistingActivityModel) -> ExistingActivityModel,
   ) {
-    requirePermissions {
-      if (isAdmin) {
-        manageActivity(activityId)
-      } else {
-        updateActivity(activityId)
-      }
-    }
+    requirePermissions { updateActivity(activityId) }
 
     val existingModel = fetchOneById(activityId)
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
 
-    if (isPublished(activityId) && !isAdmin) {
+    if (isPublished(activityId)) {
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
@@ -126,30 +119,50 @@ class ActivityStore(
         modifiedBy = currentUser().userId
         modifiedTime = now
 
-        if (isAdmin) {
-          isHighlight = updatedModel.isHighlight
-          activityStatusId = updatedModel.activityStatus
+        if (existingModel.activityStatus == ActivityStatus.Verified) {
+          activityStatusId = ActivityStatus.NotVerified
+        }
 
-          if (existingModel.activityStatus != updatedModel.activityStatus) {
-            when (updatedModel.activityStatus) {
-              ActivityStatus.DoNotUse,
-              ActivityStatus.NotVerified -> {
-                verifiedBy = null
-                verifiedTime = null
-              }
+        update()
+      }
+    }
+  }
 
-              ActivityStatus.Verified -> {
-                verifiedBy = currentUser().userId
-                verifiedTime = now
-              }
+  fun updateForAdmin(
+      activityId: ActivityId,
+      applyFunc: (ExistingActivityModel) -> ExistingActivityModel,
+  ) {
+    requirePermissions { manageActivity(activityId) }
+
+    val existingModel = fetchOneById(activityId)
+    val updatedModel = applyFunc(existingModel)
+    val now = clock.instant()
+
+    if (existingModel != updatedModel) {
+      val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
+
+      with(activitiesRecord) {
+        activityDate = updatedModel.activityDate
+        activityTypeId = updatedModel.activityType
+        description = updatedModel.description
+        modifiedBy = currentUser().userId
+        modifiedTime = now
+
+        isHighlight = updatedModel.isHighlight
+        activityStatusId = updatedModel.activityStatus
+
+        if (existingModel.activityStatus != updatedModel.activityStatus) {
+          when (updatedModel.activityStatus) {
+            ActivityStatus.DoNotUse,
+            ActivityStatus.NotVerified -> {
+              verifiedBy = null
+              verifiedTime = null
             }
-          }
-        } else {
-          // If a non-admin user updates a Verified activity, set to Not Verified
-          // Keep previous verifiedBy and verifiedTime for the "previously verified but updated
-          // by project" state.
-          if (existingModel.activityStatus == ActivityStatus.Verified) {
-            activityStatusId = ActivityStatus.NotVerified
+
+            ActivityStatus.Verified -> {
+              verifiedBy = currentUser().userId
+              verifiedTime = now
+            }
           }
         }
 

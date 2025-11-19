@@ -105,7 +105,7 @@ class ActivitiesController(
       @PathVariable activityId: ActivityId,
       @RequestBody payload: UpdateActivityRequestPayload,
   ): SimpleSuccessResponsePayload {
-    activityStore.update(activityId, false, payload::applyTo)
+    activityStore.update(activityId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }
