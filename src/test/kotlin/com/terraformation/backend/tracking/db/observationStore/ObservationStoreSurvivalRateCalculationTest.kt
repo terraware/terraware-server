@@ -565,14 +565,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = false)
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
-    val prefix = "/tracking/observation/SurvivalRateSiteGeometryChange"
-    val numSpecies = 2
-
-    runSurvivalRateScenario(
-        prefix,
-        numSpecies,
-    ) {
-      // todo see if this can be replaced with `plantingSiteStore.applyPlantingSiteEdit` to simplify
+    fun updatePlantingSite() {
+      // moves plot 112 to subzone2 (from subzone1) and adds plot 312 to site
+      // adds all history objects that would occur with this edit
       insertPlantingSiteHistory()
       val zone1 = zoneIds["Zone1"]!!
       val zone2 = zoneIds["Zone2"]!!
@@ -648,6 +643,16 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           speciesId = species2,
           plotDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
       )
+    }
+
+    val prefix = "/tracking/observation/SurvivalRateSiteGeometryChange"
+    val numSpecies = 2
+
+    runSurvivalRateScenario(
+        prefix,
+        numSpecies,
+    ) {
+      updatePlantingSite()
 
       importObservationsCsv(prefix, numSpecies, 1, Instant.EPOCH.plusSeconds(10), false)
     }
