@@ -96,8 +96,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-request-size: 200MB
-      max-file-size: 200MB
+      max-request-size: 5GB
+      max-file-size: 5GB
 
   threads:
     virtual:
@@ -105,7 +105,7 @@ spring:
 
 server:
   tomcat:
-    max-http-form-post-size: 200MB
+    max-http-form-post-size: 5GB
 
 management:
   health:
