@@ -40,7 +40,8 @@ class DeliveriesTable(private val tables: SearchTables) : SearchTable() {
     )
   }
 
-  override val inheritsVisibilityFrom: SearchTable = tables.plantingSites
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.plantingSites
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query

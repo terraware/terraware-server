@@ -10,7 +10,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class CohortModulesTable(tables: SearchTables) : SearchTable() {
+class CohortModulesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = COHORT_MODULES.COHORT_MODULE_ID
 
@@ -30,7 +30,8 @@ class CohortModulesTable(tables: SearchTables) : SearchTable() {
           dateField("endDate", COHORT_MODULES.END_DATE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.cohorts
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.cohorts
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> =
       query.join(COHORTS).on(COHORT_MODULES.COHORT_ID.eq(COHORTS.ID))

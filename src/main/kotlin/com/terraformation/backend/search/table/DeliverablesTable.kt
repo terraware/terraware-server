@@ -11,7 +11,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class DeliverablesTable(tables: SearchTables) : SearchTable() {
+class DeliverablesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = DELIVERABLES.ID
 
@@ -41,7 +41,8 @@ class DeliverablesTable(tables: SearchTables) : SearchTable() {
 
   override val defaultOrderFields = listOf(DELIVERABLES.ID)
 
-  override val inheritsVisibilityFrom: SearchTable = tables.modules
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.modules
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(MODULES).on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
