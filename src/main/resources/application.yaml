@@ -105,7 +105,8 @@ spring:
 
 server:
   tomcat:
-    max-http-form-post-size: 5GB
+    # Tomcat only allows limits up to 2GB, so disable Tomcat's limit and rely on Spring's.
+    max-http-form-post-size: -1
 
 management:
   health:
