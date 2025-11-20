@@ -56,7 +56,7 @@ class SearchController(
                                   // This value is parsed by the schema generator and rendered
                                   // as JSON or YAML, so its formatting is irrelevant.
                                   value =
-                                      """{ "prefix": "facilities.accessions",
+                                      """{ "prefix": "accessions",
                                            "fields": ["accessionNumber", "remainingQuantity", "remainingUnits"],
                                            "search": {
                                              "operation": "and", "children": [
@@ -194,11 +194,10 @@ data class SearchRequestPayload(
         description =
             "Prefix for field names. This determines how field names are interpreted, and also " +
                 "how results are structured. Each element in the \"results\" array in the " +
-                "response will be an instance of whatever entity the prefix points to. This may " +
-                "be a dotted sublist name starting from the \"organizations\" level, or the name " +
-                "of a search table. If not present, the search will return a list of " +
-                "organizations.",
-        example = "facilities.accessions",
+                "response will be an instance of whatever entity the prefix points to. This is " +
+                "the name of a search table.",
+        defaultValue = "organizations",
+        example = "accessions",
     )
     val prefix: String? = null,
     @NotEmpty
@@ -252,7 +251,7 @@ data class SearchRequestPayload(
             // formatting is irrelevant.
             """[
                   { "prefix": "species", "search": { "operation": "field", "field": "name", "values": ["Species Name"] } },
-                  { "prefix": "viabilityTests.viabilityTestResults", "search": { "operation": "field", "field": "seedsGerminated", "type": "Range", "values": ["30", "40"] } } ]""",
+                  { "prefix": "viabilityTestResults", "search": { "operation": "field", "field": "seedsGerminated", "type": "Range", "values": ["30", "40"] } } ]""",
     )
     override val filters: List<PrefixedSearch>? = null,
     @Schema(
