@@ -1,3 +1,4 @@
+49243f3eaf2 Used getter to ensure inheritVisibilityFrom is intialized when referenced (#3640)
 3ced37287a1 Include search table names in OpenAPI schema (#3638)
 d4944beed51 Add test for localizable update event field names (#3639)
 2e4e1711c19 SW-7695 Add endpoint to edit recorded tree (#3634)
