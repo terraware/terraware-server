@@ -54,7 +54,8 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
     )
   }
 
-  override val inheritsVisibilityFrom: SearchTable = tables.batches
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.batches
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(BATCHES).on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))

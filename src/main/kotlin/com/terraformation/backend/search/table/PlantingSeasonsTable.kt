@@ -10,7 +10,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class PlantingSeasonsTable(tables: SearchTables) : SearchTable() {
+class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = PLANTING_SEASONS.ID
 
@@ -33,7 +33,8 @@ class PlantingSeasonsTable(tables: SearchTables) : SearchTable() {
           dateField("startDate", PLANTING_SEASONS.START_DATE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.plantingSites
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.plantingSites
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query

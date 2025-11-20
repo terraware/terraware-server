@@ -29,7 +29,8 @@ class BatchSubLocationsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields = emptyList<SearchField>()
 
-  override val inheritsVisibilityFrom: SearchTable = tables.batches
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.batches
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(BATCHES).on(BATCH_SUB_LOCATIONS.BATCH_ID.eq(BATCHES.ID))

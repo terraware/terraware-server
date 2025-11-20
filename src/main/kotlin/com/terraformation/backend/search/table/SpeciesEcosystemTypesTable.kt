@@ -9,7 +9,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class SpeciesEcosystemTypesTable(tables: SearchTables) : SearchTable() {
+class SpeciesEcosystemTypesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SPECIES_ECOSYSTEM_TYPES.SPECIES_ECOSYSTEM_ID
 
@@ -29,7 +29,8 @@ class SpeciesEcosystemTypesTable(tables: SearchTables) : SearchTable() {
           enumField("ecosystemType", SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.species
+  override val inheritsVisibilityFrom: SearchTable
+    get() = tables.species
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(SPECIES).on(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(SPECIES.ID))
