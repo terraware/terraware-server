@@ -38,7 +38,6 @@ class PlantingZoneHistoriesTable(private val tables: SearchTables) : SearchTable
 
   override val fields: List<SearchField> =
       listOf(
-          bigDecimalField("areaHa", PLANTING_ZONE_HISTORIES.AREA_HA),
           geometryField("boundary", PLANTING_ZONE_HISTORIES.BOUNDARY),
           idWrapperField("id", PLANTING_ZONE_HISTORIES.ID) { PlantingZoneHistoryId(it) },
           textField("name", PLANTING_ZONE_HISTORIES.NAME),

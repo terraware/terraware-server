@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
@@ -19,6 +20,12 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          monitoringPlotHistories.asMultiValueSublist(
+              "monitoringPlotHistories",
+              PLANTING_SUBZONE_HISTORIES.ID.eq(
+                  MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
+              ),
+          ),
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone",
               PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
@@ -33,12 +40,11 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
 
   override val fields: List<SearchField> =
       listOf(
-          bigDecimalField("areaHa", PLANTING_SUBZONE_HISTORIES.AREA_HA),
           geometryField("boundary", PLANTING_SUBZONE_HISTORIES.BOUNDARY),
           textField("fullName", PLANTING_SUBZONE_HISTORIES.FULL_NAME),
           idWrapperField("id", PLANTING_SUBZONE_HISTORIES.ID) { PlantingSubzoneHistoryId(it) },
-          stableIdField("stableId", PLANTING_SUBZONE_HISTORIES.STABLE_ID),
           textField("name", PLANTING_SUBZONE_HISTORIES.NAME),
+          stableIdField("stableId", PLANTING_SUBZONE_HISTORIES.STABLE_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable

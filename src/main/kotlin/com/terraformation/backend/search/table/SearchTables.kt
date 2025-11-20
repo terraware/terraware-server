@@ -48,6 +48,7 @@ class SearchTables(clock: Clock) {
   val internalTags = InternalTagsTable(this)
   val inventories = InventoriesTable(this)
   val modules = ModulesTable(this)
+  val monitoringPlotHistories = MonitoringPlotHistoriesTable(this)
   val monitoringPlots = MonitoringPlotsTable(this)
   val nurserySpeciesProjects = NurserySpeciesProjectsTable(this)
   val nurseryWithdrawals = NurseryWithdrawalsTable(this)
