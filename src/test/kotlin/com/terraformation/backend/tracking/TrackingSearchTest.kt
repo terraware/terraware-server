@@ -82,28 +82,41 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         )
 
     val plantingZoneId2 = insertPlantingZone(boundary = plantingZoneGeometry, name = "Z2")
+    val plantingZoneHistoryId2 = inserted.plantingZoneHistoryId
 
     val plantingSubzoneId3 =
         insertPlantingSubzone(
             boundary = plantingSubzoneGeometry3,
             name = "3",
             observedTime = Instant.ofEpochSecond(1),
+            stableId = "3",
         )
+    val plantingSubzoneHistoryId3 = inserted.plantingSubzoneHistoryId
+
     val monitoringPlotId5 = insertMonitoringPlot(boundary = monitoringPlotGeometry5)
+    val monitoringPlotHistoryId5 = inserted.monitoringPlotHistoryId
+
     val monitoringPlotId6 = insertMonitoringPlot(boundary = monitoringPlotGeometry6)
+    val monitoringPlotHistoryId6 = inserted.monitoringPlotHistoryId
 
     val plantingSubzoneId4 =
         insertPlantingSubzone(
             boundary = plantingSubzoneGeometry4,
             plantingCompletedTime = Instant.ofEpochSecond(1),
             name = "4",
+            stableId = "4",
         )
+    val plantingSubzoneHistoryId4 = inserted.plantingSubzoneHistoryId
+
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
+    val monitoringPlotHistoryId7 = inserted.monitoringPlotHistoryId
     val monitoringPlotId8 =
         insertMonitoringPlot(boundary = monitoringPlotGeometry8, sizeMeters = 25)
+    val monitoringPlotHistoryId8 = inserted.monitoringPlotHistoryId
 
     val exteriorPlotId9 =
         insertMonitoringPlot(boundary = exteriorPlotGeometry9, plantingSubzoneId = null)
+    val exteriorPlotHistoryId9 = inserted.monitoringPlotHistoryId
 
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
@@ -299,16 +312,40 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "exclusion" to postgisRenderGeoJson(exclusionGeometry),
                     "exteriorPlots" to
                         listOf(
-                            mapOf("id" to "$exteriorPlotId9"),
+                            mapOf(
+                                "histories" to listOf(mapOf("id" to "$exteriorPlotHistoryId9")),
+                                "id" to "$exteriorPlotId9",
+                            ),
+                        ),
+                    "histories" to
+                        listOf(
+                            mapOf(
+                                "boundary" to postgisRenderGeoJson(plantingSiteGeometry),
+                                "exclusion" to postgisRenderGeoJson(exclusionGeometry),
+                                "createdTime" to "1970-01-01T00:00:00Z",
+                                "id" to "$plantingSiteHistoryId",
+                            ),
                         ),
                     "id" to "$plantingSiteId",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "monitoringPlots" to
                         listOf(
-                            mapOf("id" to "$monitoringPlotId5"),
-                            mapOf("id" to "$monitoringPlotId6"),
-                            mapOf("id" to "$monitoringPlotId7"),
-                            mapOf("id" to "$monitoringPlotId8"),
+                            mapOf(
+                                "id" to "$monitoringPlotId5",
+                                "histories" to listOf(mapOf("id" to "$monitoringPlotHistoryId5")),
+                            ),
+                            mapOf(
+                                "id" to "$monitoringPlotId6",
+                                "histories" to listOf(mapOf("id" to "$monitoringPlotHistoryId6")),
+                            ),
+                            mapOf(
+                                "id" to "$monitoringPlotId7",
+                                "histories" to listOf(mapOf("id" to "$monitoringPlotHistoryId7")),
+                            ),
+                            mapOf(
+                                "id" to "$monitoringPlotId8",
+                                "histories" to listOf(mapOf("id" to "$monitoringPlotHistoryId8")),
+                            ),
                         ),
                     "name" to "Site 1",
                     "numPlantingZones" to "1",
@@ -461,6 +498,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "boundary" to postgisRenderGeoJson(plantingZoneGeometry),
                                 "boundaryModifiedTime" to "1970-01-01T00:00:00Z",
                                 "createdTime" to "1970-01-01T00:00:00Z",
+                                "histories" to
+                                    listOf(
+                                        mapOf(
+                                            "boundary" to
+                                                postgisRenderGeoJson(plantingZoneGeometry),
+                                            "id" to "$plantingZoneHistoryId2",
+                                            "name" to "Z2",
+                                        ),
+                                    ),
                                 "id" to "$plantingZoneId2",
                                 "modifiedTime" to "1970-01-01T00:00:00Z",
                                 "name" to "Z2",
@@ -471,6 +517,19 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 postgisRenderGeoJson(plantingSubzoneGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "Z2-3",
+                                            "histories" to
+                                                listOf(
+                                                    mapOf(
+                                                        "boundary" to
+                                                            postgisRenderGeoJson(
+                                                                plantingSubzoneGeometry3,
+                                                            ),
+                                                        "fullName" to "Z2-3",
+                                                        "id" to "$plantingSubzoneHistoryId3",
+                                                        "name" to "3",
+                                                        "stableId" to "3",
+                                                    ),
+                                                ),
                                             "id" to "$plantingSubzoneId3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
@@ -482,11 +541,20 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "plantsSinceLastObservation" to "9",
                                                         "species_id" to "$speciesId1",
                                                         "totalPlants" to "10",
-                                                    )
+                                                    ),
                                                 ),
                                             "monitoringPlots" to
                                                 listOf(
                                                     mapOf(
+                                                        "histories" to
+                                                            listOf(
+                                                                mapOf(
+                                                                    "createdTime" to
+                                                                        "1970-01-01T00:00:00Z",
+                                                                    "id" to
+                                                                        "$monitoringPlotHistoryId5",
+                                                                )
+                                                            ),
                                                         "id" to "$monitoringPlotId5",
                                                         "northeastLatitude" to "8",
                                                         "northeastLongitude" to "7",
@@ -500,6 +568,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "southwestLongitude" to "5",
                                                     ),
                                                     mapOf(
+                                                        "histories" to
+                                                            listOf(
+                                                                mapOf(
+                                                                    "createdTime" to
+                                                                        "1970-01-01T00:00:00Z",
+                                                                    "id" to
+                                                                        "$monitoringPlotHistoryId6",
+                                                                )
+                                                            ),
                                                         "id" to "$monitoringPlotId6",
                                                         "northeastLatitude" to "9",
                                                         "northeastLongitude" to "8",
@@ -519,6 +596,19 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "Z2-4",
+                                            "histories" to
+                                                listOf(
+                                                    mapOf(
+                                                        "boundary" to
+                                                            postgisRenderGeoJson(
+                                                                plantingSubzoneGeometry4,
+                                                            ),
+                                                        "fullName" to "Z2-4",
+                                                        "id" to "$plantingSubzoneHistoryId4",
+                                                        "name" to "4",
+                                                        "stableId" to "4",
+                                                    ),
+                                                ),
                                             "id" to "$plantingSubzoneId4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "4",
@@ -540,6 +630,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "monitoringPlots" to
                                                 listOf(
                                                     mapOf(
+                                                        "histories" to
+                                                            listOf(
+                                                                mapOf(
+                                                                    "createdTime" to
+                                                                        "1970-01-01T00:00:00Z",
+                                                                    "id" to
+                                                                        "$monitoringPlotHistoryId7",
+                                                                )
+                                                            ),
                                                         "id" to "$monitoringPlotId7",
                                                         "northeastLatitude" to "10",
                                                         "northeastLongitude" to "9",
@@ -553,6 +652,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "southwestLongitude" to "7",
                                                     ),
                                                     mapOf(
+                                                        "histories" to
+                                                            listOf(
+                                                                mapOf(
+                                                                    "createdTime" to
+                                                                        "1970-01-01T00:00:00Z",
+                                                                    "id" to
+                                                                        "$monitoringPlotHistoryId8",
+                                                                )
+                                                            ),
                                                         "id" to "$monitoringPlotId8",
                                                         "northeastLatitude" to "11.01234568",
                                                         "northeastLongitude" to "10",
@@ -581,7 +689,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "totalPlants" to "8",
                                         ),
                                     ),
-                            )
+                            ),
                         ),
                     "populations" to
                         listOf(
@@ -605,8 +713,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             "name" to "Project 1",
                         ),
                     "totalPlants" to "6",
-                )
-            )
+                ),
+            ),
         )
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
@@ -628,9 +736,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "deliveries.withdrawal_facility_name",
                 "exclusion",
                 "exteriorPlots.id",
+                "exteriorPlots.histories.id",
+                "histories.boundary",
+                "histories.exclusion",
+                "histories.createdTime",
+                "histories.id",
                 "id",
                 "modifiedTime",
                 "monitoringPlots.id",
+                "monitoringPlots.histories.id",
                 "name",
                 "numPlantingZones",
                 "numPlantingSubzones",
@@ -680,12 +794,20 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.boundary",
                 "plantingZones.boundaryModifiedTime",
                 "plantingZones.createdTime",
+                "plantingZones.histories.boundary",
+                "plantingZones.histories.id",
+                "plantingZones.histories.name",
                 "plantingZones.id",
                 "plantingZones.modifiedTime",
                 "plantingZones.name",
                 "plantingZones.plantingSubzones.boundary",
                 "plantingZones.plantingSubzones.createdTime",
                 "plantingZones.plantingSubzones.fullName",
+                "plantingZones.plantingSubzones.histories.boundary",
+                "plantingZones.plantingSubzones.histories.fullName",
+                "plantingZones.plantingSubzones.histories.id",
+                "plantingZones.plantingSubzones.histories.name",
+                "plantingZones.plantingSubzones.histories.stableId",
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",
                 "plantingZones.plantingSubzones.name",
@@ -694,6 +816,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plantingSubzones.populations.plantsSinceLastObservation",
                 "plantingZones.plantingSubzones.populations.species_id",
                 "plantingZones.plantingSubzones.populations.totalPlants",
+                "plantingZones.plantingSubzones.monitoringPlots.histories.createdTime",
+                "plantingZones.plantingSubzones.monitoringPlots.histories.id",
                 "plantingZones.plantingSubzones.monitoringPlots.id",
                 "plantingZones.plantingSubzones.monitoringPlots.northeastLatitude",
                 "plantingZones.plantingSubzones.monitoringPlots.northeastLongitude",

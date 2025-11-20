@@ -4,6 +4,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -19,6 +20,10 @@ class PlantingZonesTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          plantingZoneHistories.asMultiValueSublist(
+              "histories",
+              PLANTING_ZONES.ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID),
+          ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
               PLANTING_ZONES.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),

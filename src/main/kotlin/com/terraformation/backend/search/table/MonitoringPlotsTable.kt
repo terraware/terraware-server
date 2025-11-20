@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -22,6 +23,10 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          monitoringPlotHistories.asMultiValueSublist(
+              "histories",
+              MONITORING_PLOTS.ID.eq(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID),
+          ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
               MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
