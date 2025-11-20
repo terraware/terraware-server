@@ -1,3 +1,5 @@
+3ced37287a1 Include search table names in OpenAPI schema (#3638)
+d4944beed51 Add test for localizable update event field names (#3639)
 2e4e1711c19 SW-7695 Add endpoint to edit recorded tree (#3634)
 16822c5eba9 SW-7695 Add RecordedTreeCreatedEvent (#3633)
 5f710b25341 Move ExistingRecordedTreeModel creation to helper (#3632)
