@@ -1,3 +1,4 @@
+e4fbbffb608 SW-7695 Support updating biomass details (#3645)
 cca67d557e1 SW-7695 Add generic wrapper for observation updates (#3644)
 40e1da65604 SW-7695 Add BiomassDetailsCreatedEvent (#3643)
 060554e9521 SW-7725 Only use t0 data from zones that were part of the observation initially (#3642)
