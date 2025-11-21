@@ -2830,8 +2830,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if no permission to update observation`() {
-      setUpPlot()
-
       deleteOrganizationUser()
 
       assertThrows<ObservationNotFoundException> {
