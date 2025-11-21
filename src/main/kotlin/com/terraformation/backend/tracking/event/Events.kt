@@ -329,6 +329,34 @@ data class BiomassDetailsCreatedEventV1(
 
 typealias BiomassDetailsCreatedEvent = BiomassDetailsCreatedEventV1
 
+data class BiomassDetailsUpdatedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+) : FieldsUpdatedPersistentEvent, BiomassDetailsPersistentEvent {
+  data class Values(
+      val description: String?,
+      val soilAssessment: String?,
+  )
+
+  override fun listUpdatedFields() =
+      listOfNotNull(
+          createUpdatedField("description", changedFrom.description, changedTo.description),
+          createUpdatedField(
+              "soilAssessment",
+              changedFrom.soilAssessment,
+              changedTo.soilAssessment,
+          ),
+      )
+}
+
+typealias BiomassDetailsUpdatedEvent = BiomassDetailsUpdatedEventV1
+
+typealias BiomassDetailsUpdatedEventValues = BiomassDetailsUpdatedEventV1.Values
+
 sealed interface RecordedTreePersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId

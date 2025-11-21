@@ -46,6 +46,7 @@ import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -69,6 +70,8 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -77,6 +80,7 @@ import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
+import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
@@ -1207,6 +1211,74 @@ class ObservationStore(
                 trunkNumber = treeModel.trunkNumber,
             )
         )
+      }
+    }
+  }
+
+  fun updateBiomassDetails(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+      updateFunc: (EditableBiomassDetailsModel) -> EditableBiomassDetailsModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    withLockedObservation(observationId) { _ ->
+      val existing =
+          with(OBSERVATION_BIOMASS_DETAILS) {
+            dslContext
+                .select(DESCRIPTION, SOIL_ASSESSMENT)
+                .from(OBSERVATION_BIOMASS_DETAILS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(plotId))
+                .fetchOne { EditableBiomassDetailsModel.of(it) }
+                ?: throw ObservationPlotNotFoundException(observationId, plotId)
+          }
+
+      val updated = updateFunc(existing)
+
+      val changedFrom =
+          BiomassDetailsUpdatedEventValues(
+              description = existing.description.nullIfEquals(updated.description),
+              soilAssessment = existing.soilAssessment.nullIfEquals(updated.soilAssessment),
+          )
+      val changedTo =
+          BiomassDetailsUpdatedEventValues(
+              description = updated.description.nullIfEquals(existing.description),
+              soilAssessment = updated.soilAssessment.nullIfEquals(existing.soilAssessment),
+          )
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_DETAILS) {
+          dslContext
+              .update(OBSERVATION_BIOMASS_DETAILS)
+              .set(DESCRIPTION, updated.description)
+              .set(SOIL_ASSESSMENT, updated.soilAssessment)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(plotId))
+              .execute()
+
+          val (plantingSiteId, organizationId) =
+              dslContext
+                  .select(
+                      monitoringPlots.plantingSites.ID.asNonNullable(),
+                      monitoringPlots.plantingSites.ORGANIZATION_ID.asNonNullable(),
+                  )
+                  .from(OBSERVATION_BIOMASS_DETAILS)
+                  .where(OBSERVATION_ID.eq(observationId))
+                  .and(MONITORING_PLOT_ID.eq(plotId))
+                  .fetchSingle()
+
+          eventPublisher.publishEvent(
+              BiomassDetailsUpdatedEvent(
+                  changedFrom = changedFrom,
+                  changedTo = changedTo,
+                  monitoringPlotId = plotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+              )
+          )
+        }
       }
     }
   }
