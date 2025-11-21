@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -19,6 +20,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesD
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
@@ -33,11 +35,13 @@ import com.terraformation.backend.tracking.db.InvalidObservationStartDateExcepti
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
+import com.terraformation.backend.tracking.db.PlotNotCompletedException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
@@ -662,6 +666,33 @@ class ObservationService(
 
       observationId to plotId
     }
+  }
+
+  /**
+   * Performs update operations on a completed monitoring plot in an observation. The actual updates
+   * are done by [func]; this is a wrapper that checks permissions and observation status and runs
+   * the updates in a transaction with the observation locked to avoid problems with concurrent
+   * updates.
+   */
+  fun <T> updateCompletedPlot(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      func: () -> T,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val plotStatus =
+        dslContext.fetchValue(
+            OBSERVATION_PLOTS.STATUS_ID,
+            OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId)
+                .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)),
+        ) ?: throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+
+    if (plotStatus != ObservationPlotStatus.Completed) {
+      throw PlotNotCompletedException(monitoringPlotId)
+    }
+
+    return observationStore.withLockedObservation(observationId) { _ -> func() }
   }
 
   @EventListener
