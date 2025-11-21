@@ -1,3 +1,4 @@
+e86932d63ba SW-7695 Add endpoint to edit observation details (#3647)
 4f2a96f1da6 Support distinct null and absent payload properties (#3646)
 e4fbbffb608 SW-7695 Support updating biomass details (#3645)
 cca67d557e1 SW-7695 Add generic wrapper for observation updates (#3644)

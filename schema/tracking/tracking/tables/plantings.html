@@ -196,11 +196,6 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">plantings_planting_site_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="plantings.[planting_site_id, planting_subzone_id] references planting_subzones.[planting_site_id, id] via plantings_planting_site_id_plot_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_plot_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -209,6 +204,11 @@
                                                 <td title="plantings.[planting_site_id, delivery_id] references deliveries.[planting_site_id, id] via plantings_planting_site_id_delivery_id_fkey"><a href='deliveries.html'>deliveries</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_delivery_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">plantings_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -410,12 +410,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>num_plants_sign_consistent_with_type</td>
-                                    <td>(((planting_type_id &#61; ANY (ARRAY[2, 4])) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; ALL (ARRAY[2, 4])) AND (num_plants &gt; 0)))</td>
-                                </tr>
-                                <tr>
                                     <td>plantings_notes_check</td>
                                     <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>num_plants_sign_consistent_with_type</td>
+                                    <td>(((planting_type_id &#61; ANY (ARRAY[2, 4])) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; ALL (ARRAY[2, 4])) AND (num_plants &gt; 0)))</td>
                                 </tr>
                                 </tbody>
                             </table>
