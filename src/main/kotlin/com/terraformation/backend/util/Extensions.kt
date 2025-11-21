@@ -257,9 +257,6 @@ fun Geometry.differenceNullable(other: Geometry?): Geometry =
  * example, say an entity has a property `notes` of type `String?`. We'd want to handle a `PATCH`
  * request as follows:
  *
- * In the context of a PATCH endpoint where a property represents a possible change to an existing
- * value, we'd want to handle it as follows, respectively:
- *
  * | JSON               | Desired end result      |
  * |--------------------|-------------------------|
  * | `{}`               | Keep the original notes |
