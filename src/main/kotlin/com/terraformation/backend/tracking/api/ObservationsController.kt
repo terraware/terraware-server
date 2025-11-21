@@ -79,6 +79,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -320,6 +321,30 @@ class ObservationsController(
     val details = observationStore.fetchOneObservationPlotDetails(observationId, plotId)
 
     return GetOneAssignedPlotResponsePayload(AssignedPlotPayload(details))
+  }
+
+  @ApiResponse404(
+      "The plot or observation can't be found, or the plot isn't part of the observation."
+  )
+  @ApiResponse409("The plot's observation has not been completed yet.")
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Updates information about a completed plot in an observation.")
+  @PatchMapping("/{observationId}/plots/{plotId}")
+  fun updateCompletedObservationPlot(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @RequestBody payload: UpdateObservationRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    observationService.updateCompletedPlot(observationId, plotId) {
+      payload.updates.forEach { element ->
+        when (element) {
+          is BiomassUpdateOperationPayload ->
+              observationStore.updateBiomassDetails(observationId, plotId, element::applyTo)
+        }
+      }
+    }
+
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Updates information about the observation of a plot.")
@@ -1033,6 +1058,18 @@ data class UpdatePlotObservationRequestPayload(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position.")
     )
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
+)
+
+data class UpdateObservationRequestPayload(
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "List of changes to make to different parts of the observation. " +
+                        "Changes are all-or-nothing; if any of them fails, none of them is applied."
+            )
+    )
+    val updates: List<ObservationUpdateOperationPayload>,
 )
 
 data class UpdatePlotPhotoRequestPayload(
