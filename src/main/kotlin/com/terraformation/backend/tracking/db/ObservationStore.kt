@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
@@ -47,6 +48,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -73,6 +75,8 @@ import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -82,6 +86,7 @@ import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
@@ -1292,6 +1297,92 @@ class ObservationStore(
                   plantingSiteId = plantingSiteId,
               )
           )
+        }
+      }
+    }
+  }
+
+  fun updateBiomassQuadratDetails(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      position: ObservationPlotPosition,
+      updateFunc: (EditableBiomassQuadratDetailsModel) -> EditableBiomassQuadratDetailsModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    withLockedObservation(observationId) { _ ->
+      val existing =
+          with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
+            dslContext
+                .select(DESCRIPTION)
+                .from(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(POSITION_ID.eq(position))
+                .fetchOne { EditableBiomassQuadratDetailsModel.of(it) }
+          }
+
+      val editable = existing ?: EditableBiomassQuadratDetailsModel()
+      val updated = updateFunc(editable)
+
+      val changedFrom =
+          BiomassQuadratDetailsUpdatedEventValues(
+              description = editable.description.nullIfEquals(updated.description),
+          )
+      val changedTo =
+          BiomassQuadratDetailsUpdatedEventValues(
+              description = updated.description.nullIfEquals(editable.description),
+          )
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
+          if (existing == null) {
+            dslContext
+                .insertInto(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .set(DESCRIPTION, updated.description)
+                .set(MONITORING_PLOT_ID, monitoringPlotId)
+                .set(OBSERVATION_ID, observationId)
+                .set(POSITION_ID, position)
+                .execute()
+
+            eventPublisher.publishEvent(
+                BiomassQuadratCreatedEvent(
+                    updated.description,
+                    monitoringPlotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                    position,
+                )
+            )
+          } else {
+            dslContext
+                .update(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .set(DESCRIPTION, updated.description)
+                .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(OBSERVATION_ID.eq(observationId))
+                .and(POSITION_ID.eq(position))
+                .execute()
+
+            eventPublisher.publishEvent(
+                BiomassQuadratDetailsUpdatedEvent(
+                    changedFrom,
+                    changedTo,
+                    monitoringPlotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                    position,
+                )
+            )
+          }
         }
       }
     }
