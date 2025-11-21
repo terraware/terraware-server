@@ -73,7 +73,6 @@ data class BiomassDetailsSubjectPayload(
         event: BiomassDetailsPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassDetailsSubjectPayload {
-      // TODO: Do we want something other than observation ID in the full text? Date or plot number?
       return BiomassDetailsSubjectPayload(
           fullText = context.subjectFullText<BiomassDetailsSubjectPayload>(event.observationId),
           monitoringPlotId = event.monitoringPlotId,
