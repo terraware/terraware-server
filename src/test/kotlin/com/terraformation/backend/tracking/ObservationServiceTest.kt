@@ -65,6 +65,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationStartDateExcepti
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
+import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
@@ -72,6 +73,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
+import com.terraformation.backend.tracking.db.PlotNotCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
@@ -2763,6 +2765,76 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           observationsDao.findAll().associate { it.id!! to it.stateId!! },
           "Observation states",
       )
+    }
+  }
+
+  @Nested
+  inner class UpdateCompletedPlot {
+    private lateinit var monitoringPlotId: MonitoringPlotId
+    private lateinit var observationId: ObservationId
+
+    @BeforeEach
+    fun setUpPlot() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      monitoringPlotId = insertMonitoringPlot()
+      observationId = insertObservation()
+      insertObservationPlot(completedBy = user.userId)
+    }
+
+    @Test
+    fun `calls function to perform updates`() {
+      val initial = dslContext.fetchSingle(OBSERVATION_PLOTS)
+
+      service.updateCompletedPlot(observationId, monitoringPlotId) {
+        dslContext.update(OBSERVATION_PLOTS).set(OBSERVATION_PLOTS.NOTES, "new notes").execute()
+      }
+
+      val expected = initial.copy().apply { notes = "new notes" }
+
+      assertTableEquals(expected)
+    }
+
+    @Test
+    fun `rolls back changes if function throws exception`() {
+      val expected = dslContext.fetch(OBSERVATION_PLOTS)
+
+      assertThrows<IllegalStateException> {
+        service.updateCompletedPlot(observationId, monitoringPlotId) {
+          dslContext.update(OBSERVATION_PLOTS).set(OBSERVATION_PLOTS.NOTES, "new notes").execute()
+          throw IllegalStateException("oops")
+        }
+      }
+
+      assertTableEquals(expected)
+    }
+
+    @Test
+    fun `throws exception if plot is not in specified observation`() {
+      val otherObservationId = insertObservation()
+
+      assertThrows<ObservationPlotNotFoundException> {
+        service.updateCompletedPlot(otherObservationId, monitoringPlotId) {}
+      }
+    }
+
+    @Test
+    fun `throws exception if plot is not completed yet`() {
+      val otherPlotId = insertMonitoringPlot()
+      insertObservationPlot()
+
+      assertThrows<PlotNotCompletedException> {
+        service.updateCompletedPlot(observationId, otherPlotId) {}
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      deleteOrganizationUser()
+
+      assertThrows<ObservationNotFoundException> {
+        service.updateCompletedPlot(observationId, monitoringPlotId) {}
+      }
     }
   }
 

@@ -105,6 +105,9 @@ class PlotAlreadyCompletedException(val monitoringPlotId: MonitoringPlotId) :
 class PlotNotClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException("Monitoring plot $monitoringPlotId is not claimed by the current user")
 
+class PlotNotCompletedException(val monitoringPlotId: MonitoringPlotId) :
+    MismatchedStateException("Monitoring plot $monitoringPlotId observation is not completed")
+
 class PlotNotFoundException(val monitoringPlotId: MonitoringPlotId) :
     EntityNotFoundException("Monitoring plot $monitoringPlotId not found")
 
