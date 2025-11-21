@@ -642,23 +642,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .where(
                     MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
                         .or(
-                            MONITORING_PLOT_ID.isNull.and(
-                                OBSERVATION_PLOTS.IS_PERMANENT.eq(true)
-                                    .and(
-                                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
-                                    )
+                            OBSERVATION_PLOTS.IS_PERMANENT.eq(true)
+                                .and(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                        )
+                )
+                .or(
+                    MONITORING_PLOT_ID.isNull
+                        .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                        .and(
+                            PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
+                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID
                             )
                         )
-                        .or(
-                            MONITORING_PLOT_ID.isNull
-                                .and(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.isNull)
-                                .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
-                                .and(
-                                    PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                                        MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID
-                                    )
-                                )
-                        )
+                    //                        )
                 )
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
                 .orderBy(SPECIES_ID, SPECIES_NAME)
