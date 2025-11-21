@@ -3,7 +3,9 @@ package com.terraformation.backend.tracking.event
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -29,6 +31,7 @@ import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import java.math.BigDecimal
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import org.locationtech.jts.geom.Point
 
@@ -298,6 +301,33 @@ data class ObservationMediaFileUploadedEventV1(
 ) : EntityCreatedPersistentEvent, ObservationMediaFilePersistentEvent
 
 typealias ObservationMediaFileUploadedEvent = ObservationMediaFileUploadedEventV1
+
+sealed interface BiomassDetailsPersistentEvent : PersistentEvent {
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+}
+
+data class BiomassDetailsCreatedEventV1(
+    val description: String? = null,
+    val forestType: BiomassForestType,
+    val herbaceousCoverPercent: Int,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    val ph: BigDecimal? = null,
+    override val plantingSiteId: PlantingSiteId,
+    val salinityPpt: BigDecimal? = null,
+    val smallTreesCountHigh: Int,
+    val smallTreesCountLow: Int,
+    val soilAssessment: String,
+    val tide: MangroveTide? = null,
+    val tideTime: Instant? = null,
+    val waterDepthCm: Int? = null,
+) : EntityCreatedPersistentEvent, BiomassDetailsPersistentEvent
+
+typealias BiomassDetailsCreatedEvent = BiomassDetailsCreatedEventV1
 
 sealed interface RecordedTreePersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId

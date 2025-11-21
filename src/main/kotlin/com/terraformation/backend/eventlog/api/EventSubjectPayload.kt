@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
@@ -57,6 +58,30 @@ sealed interface EventSubjectPayload {
       example = "Project",
   )
   val shortText: String
+}
+
+@JsonTypeName("BiomassDetails")
+data class BiomassDetailsSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: BiomassDetailsPersistentEvent,
+        context: EventLogPayloadContext,
+    ): BiomassDetailsSubjectPayload {
+      return BiomassDetailsSubjectPayload(
+          fullText = context.subjectFullText<BiomassDetailsSubjectPayload>(event.observationId),
+          monitoringPlotId = event.monitoringPlotId,
+          observationId = event.observationId,
+          plantingSiteId = event.plantingSiteId,
+          shortText = context.subjectShortText<BiomassDetailsSubjectPayload>(),
+      )
+    }
+  }
 }
 
 @JsonTypeName("ObservationPlotMedia")
@@ -221,6 +246,7 @@ data class RecordedTreeSubjectPayload(
  * classes.
  */
 enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
+  BiomassDetails(BiomassDetailsPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),

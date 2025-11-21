@@ -68,6 +68,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -1038,24 +1039,48 @@ class ObservationStore(
     dslContext.transaction { _ ->
       val observationBiomassDetailsRecord =
           ObservationBiomassDetailsRecord(
-              observationId = observationId,
-              monitoringPlotId = plotId,
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  description = model.description,
+                  forestTypeId = model.forestType,
+                  smallTreesCountLow = model.smallTreeCountRange.first,
+                  smallTreesCountHigh = model.smallTreeCountRange.second,
+                  herbaceousCoverPercent = model.herbaceousCoverPercent,
+                  soilAssessment = model.soilAssessment,
+                  waterDepthCm =
+                      if (model.forestType == BiomassForestType.Mangrove) model.waterDepthCm
+                      else null,
+                  salinityPpt =
+                      if (model.forestType == BiomassForestType.Mangrove) model.salinityPpt
+                      else null,
+                  ph = if (model.forestType == BiomassForestType.Mangrove) model.ph else null,
+                  tideId = if (model.forestType == BiomassForestType.Mangrove) model.tide else null,
+                  tideTime =
+                      if (model.forestType == BiomassForestType.Mangrove) model.tideTime else null,
+              )
+              .attach(dslContext)
+
+      observationBiomassDetailsRecord.insert()
+
+      eventPublisher.publishEvent(
+          BiomassDetailsCreatedEvent(
               description = model.description,
-              forestTypeId = model.forestType,
-              smallTreesCountLow = model.smallTreeCountRange.first,
-              smallTreesCountHigh = model.smallTreeCountRange.second,
+              forestType = model.forestType,
               herbaceousCoverPercent = model.herbaceousCoverPercent,
+              monitoringPlotId = plotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              ph = observationBiomassDetailsRecord.ph,
+              plantingSiteId = plantingSiteId,
+              salinityPpt = observationBiomassDetailsRecord.salinityPpt,
+              smallTreesCountHigh = model.smallTreeCountRange.second,
+              smallTreesCountLow = model.smallTreeCountRange.first,
               soilAssessment = model.soilAssessment,
-              waterDepthCm =
-                  if (model.forestType == BiomassForestType.Mangrove) model.waterDepthCm else null,
-              salinityPpt =
-                  if (model.forestType == BiomassForestType.Mangrove) model.salinityPpt else null,
-              ph = if (model.forestType == BiomassForestType.Mangrove) model.ph else null,
-              tideId = if (model.forestType == BiomassForestType.Mangrove) model.tide else null,
-              tideTime =
-                  if (model.forestType == BiomassForestType.Mangrove) model.tideTime else null,
+              tide = observationBiomassDetailsRecord.tideId,
+              tideTime = observationBiomassDetailsRecord.tideTime,
+              waterDepthCm = observationBiomassDetailsRecord.waterDepthCm,
           )
-      dslContext.batchInsert(observationBiomassDetailsRecord).execute()
+      )
 
       val biomassSpeciesRecords =
           model.species.map {
