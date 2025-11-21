@@ -1,3 +1,5 @@
+cca67d557e1 SW-7695 Add generic wrapper for observation updates (#3644)
+40e1da65604 SW-7695 Add BiomassDetailsCreatedEvent (#3643)
 060554e9521 SW-7725 Only use t0 data from zones that were part of the observation initially (#3642)
 70c2c76c500 SW-7725 Only use t0 data from plots that were in the area at the time of the observation (#3637)
 94af7ba0e93 SW-7673 Added planting site histories to search (#3635)
