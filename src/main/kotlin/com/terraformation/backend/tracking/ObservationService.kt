@@ -678,7 +678,7 @@ class ObservationService(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       func: () -> T,
-  ) {
+  ): T {
     requirePermissions { updateObservation(observationId) }
 
     val plotStatus =
