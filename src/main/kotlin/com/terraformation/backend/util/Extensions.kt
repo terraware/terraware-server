@@ -13,6 +13,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Optional
 import org.geotools.api.referencing.FactoryException
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
@@ -248,3 +249,42 @@ fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.99
  */
 fun Geometry.differenceNullable(other: Geometry?): Geometry =
     if (other != null) difference(other) else this
+
+/**
+ * Applies this `Optional` as a replacement for an existing value.
+ *
+ * This is primarily used with payloads for `PATCH` endpoints that can update nullable values. For
+ * example, say an entity has a property `notes` of type `String?`. We'd want to handle a `PATCH`
+ * request as follows:
+ *
+ * In the context of a PATCH endpoint where a property represents a possible change to an existing
+ * value, we'd want to handle it as follows, respectively:
+ *
+ * | JSON               | Desired end result      |
+ * |--------------------|-------------------------|
+ * | `{}`               | Keep the original notes |
+ * | `{"notes": null}`  | Set notes to null       |
+ * | `{"notes": "bar"}` | Set notes to "bar"      |
+ *
+ * If a payload class includes `notes: Optional<String>?`, Jackson (with the JDK8 module enabled)
+ * deserializes it as follows:
+ *
+ * | JSON               | Deserializes to              |
+ * |--------------------|------------------------------|
+ * | `{}`               | `notes = null`               |
+ * | `{"notes": null}`  | `notes = Optional.empty()`   |
+ * | `{"notes": "bar"}` | `notes = Optional.of("bar")` |
+ *
+ * This method implements the patch semantics from the first table. Use it like this:
+ * ```kotlin
+ * val updatedModel = model.copy(
+ *     notes = payload.notes.patchNullable(model.notes),
+ * )
+ * ```
+ *
+ * Updates to non-nullable values can be handled by making the PATCH request payload fields nullable
+ * and using `payloadField ?: originalValue`; Jackson will set the payload field to null if it's
+ * absent. This will have the effect of silently ignoring attempts to set non-nullable values to
+ * null, which should be acceptable in most cases.
+ */
+fun <T> Optional<T>?.patchNullable(original: T?): T? = if (this == null) original else orElse(null)

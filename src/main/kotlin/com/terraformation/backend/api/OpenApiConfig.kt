@@ -18,14 +18,17 @@ import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.security.SecurityScheme
 import jakarta.inject.Named
 import java.time.ZoneId
+import java.util.Optional
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
 import org.springdoc.core.customizers.OpenApiCustomizer
@@ -156,6 +159,13 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
           // objects, which is wrong; values could be other JSON types too.
           if (propertySchema is ArraySchema && propertySchema.items is MapSchema) {
             propertySchema.items.additionalProperties = true
+          }
+
+          // Optional<*> properties should be marked as nullable in the schema.
+          if (
+              propertySchema != null && property.returnType.jvmErasure.isSubclassOf(Optional::class)
+          ) {
+            propertySchema.nullable = true
           }
         }
       }
