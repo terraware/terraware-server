@@ -73,7 +73,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   }
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
 
-  protected lateinit var plotIds: Map<String, MonitoringPlotId>
+  protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
   protected lateinit var subzoneHistoryIds: Map<PlantingSubzoneId, PlantingSubzoneHistoryId>
   protected lateinit var subzoneIds: Map<String, PlantingSubzoneId>
   protected lateinit var zoneHistoryIds: Map<PlantingZoneId, PlantingZoneHistoryId>
@@ -779,7 +779,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     subzoneHistoryIds = newSubzoneHistoryIds
   }
 
-  protected fun importPlotsCsv(prefix: String, sizeMeters: Int): Map<String, MonitoringPlotId> {
+  protected fun importPlotsCsv(
+      prefix: String,
+      sizeMeters: Int,
+  ): MutableMap<String, MonitoringPlotId> {
     return associateCsv("$prefix/Plots.csv") { cols ->
       val subzoneName = cols[0]
       val plotNumber = cols[1]
@@ -795,7 +798,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               sizeMeters = sizeMeters,
               permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
-      insertMonitoringPlotHistory(plantingSubzoneHistoryId = subzoneHistoryId)
+      insertMonitoringPlotHistory(
+          plantingSubzoneId = subzoneId,
+          plantingSubzoneHistoryId = subzoneHistoryId,
+      )
 
       if (isPermanent) {
         permanentPlotNumbers.add(plotNumber)
@@ -1120,6 +1126,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   }
 
               if (plotName !in observedPlotNames) {
+                // technically this needs plot history id also. Leaving this comment in case someone
+                // else runs into this
                 insertObservationPlot(
                     claimedBy = user.userId,
                     claimedTime = Instant.EPOCH,
@@ -1211,8 +1219,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       path: String,
       skipRows: Int = 1,
       func: (Array<String>) -> Pair<String, T>,
-  ): Map<String, T> {
-    return mapCsv(path, skipRows, func).toMap()
+  ): MutableMap<String, T> {
+    return mapCsv(path, skipRows, func).toMap().toMutableMap()
   }
 
   /**

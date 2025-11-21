@@ -9,11 +9,13 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
+import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
@@ -77,7 +79,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(plotId to mapOf(speciesId to null)),
             mapOf(subzoneId to mapOf(speciesId to null)),
             mapOf(zoneId to mapOf(speciesId to null)),
@@ -124,7 +126,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(
                 plotId to mapOf(speciesId to BigDecimal.ZERO),
                 plotId2 to mapOf(speciesId to BigDecimal.ZERO),
@@ -147,7 +149,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(
                 plotId to mapOf(speciesId to BigDecimal.ZERO),
                 plotId2 to mapOf(speciesId to BigDecimal.ZERO),
@@ -194,7 +196,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(plotId to mapOf(speciesId to 0)),
             mapOf(subzoneId to mapOf(speciesId to null)),
             mapOf(zoneId to mapOf(speciesId to null)),
@@ -234,7 +236,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     val allSurvivalRate = (100.0 * 1 / 11)
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(plotId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
             mapOf(subzoneId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
             mapOf(zoneId to mapOf(speciesId1 to allSurvivalRate, null to allSurvivalRate)),
@@ -324,7 +326,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         )
 
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             plot1SurvivalRates + mapOf(plot2 to mapOf(speciesId1 to 0, speciesId2 to 0, null to 0)),
             mapOf(subzoneId to survivalRates1),
             mapOf(zoneId to survivalRates1),
@@ -377,7 +379,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             null to 100.0 * (9 + 10 + 17 + 18 + 27 + 25) / (15 + 9 + 23 + 19 + 31),
         )
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             plot1SurvivalRates + plot2SurvivalRates,
             mapOf(subzoneId to survivalRates1And2),
             mapOf(zoneId to survivalRates1And2),
@@ -437,7 +439,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             null to 100.0 * (10 + 15) / (15 + 30),
         )
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             mapOf(tempPlot1 to plot1SurvivalRates),
             mapOf(subzone1 to plot1SurvivalRates),
             mapOf(zoneId to plot1SurvivalRates),
@@ -470,7 +472,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             null to 100.0 * (10 + 4 + 15 + 9) / (15 + 15 + 30 + 30),
         )
     assertSurvivalRates(
-        listOf(
+        SurvivalRates(
             // excludes plot1 because it's in a different observation
             mapOf(tempPlot2 to plot2SurvivalRates),
             mapOf(subzone2 to plot2SurvivalRates),
@@ -509,30 +511,23 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate is updated when t0 density changes`() {
-    runSurvivalRateScenario("/tracking/observation/SurvivalRateT0DensityChange", numSpecies = 2)
+    runSurvivalRateScenario("/tracking/observation/SurvivalRateT0DensityChange", numSpecies = 2) {
+      val species1 = speciesIds["Species 0"]!!
+      val plot1 = plotIds["111"]!!
 
-    val species1 = speciesIds["Species 0"]!!
-    val plot1 = plotIds["111"]!!
-
-    with(PLOT_T0_DENSITIES) {
-      dslContext
-          .update(this)
-          .set(
-              PLOT_DENSITY,
-              BigDecimal.valueOf(20).toPlantsPerHectare(),
-          )
-          .where(MONITORING_PLOT_ID.eq(plot1))
-          .and(SPECIES_ID.eq(species1))
-          .execute()
+      with(PLOT_T0_DENSITIES) {
+        dslContext
+            .update(this)
+            .set(
+                PLOT_DENSITY,
+                BigDecimal.valueOf(20).toPlantsPerHectare(),
+            )
+            .where(MONITORING_PLOT_ID.eq(plot1))
+            .and(SPECIES_ID.eq(species1))
+            .execute()
+      }
+      observationStore.recalculateSurvivalRates(plot1)
     }
-    observationStore.recalculateSurvivalRates(plot1)
-
-    val ratesAfterUpdate =
-        loadExpectedSurvivalRates(
-            "/tracking/observation/SurvivalRateT0DensityChange/AfterUpdate",
-            2,
-        )
-    assertSurvivalRates(ratesAfterUpdate, "Rates After Update")
   }
 
   @Test
@@ -542,35 +537,143 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
-    runSurvivalRateScenario("/tracking/observation/SurvivalRateT0ZoneDensityChange", numSpecies = 2)
+    runSurvivalRateScenario(
+        "/tracking/observation/SurvivalRateT0ZoneDensityChange",
+        numSpecies = 2,
+    ) {
+      val species1 = speciesIds["Species 0"]!!
+      val zone1 = zoneIds["Zone1"]!!
 
-    val species1 = speciesIds["Species 0"]!!
-    val zone1 = zoneIds["Zone1"]!!
-
-    with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
-      dslContext
-          .update(this)
-          .set(
-              ZONE_DENSITY,
-              BigDecimal.valueOf(20).toPlantsPerHectare(),
-          )
-          .where(PLANTING_ZONE_ID.eq(zone1))
-          .and(SPECIES_ID.eq(species1))
-          .execute()
+      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+        dslContext
+            .update(this)
+            .set(
+                ZONE_DENSITY,
+                BigDecimal.valueOf(20).toPlantsPerHectare(),
+            )
+            .where(PLANTING_ZONE_ID.eq(zone1))
+            .and(SPECIES_ID.eq(species1))
+            .execute()
+      }
+      observationStore.recalculateSurvivalRates(zone1)
     }
-    observationStore.recalculateSurvivalRates(zone1)
+  }
 
-    val ratesAfterUpdate =
-        loadExpectedSurvivalRates(
-            "/tracking/observation/SurvivalRateT0ZoneDensityChange/AfterUpdate",
-            2,
+  @Test
+  fun `survival rate with geometry change between observations`() {
+    val newPlantingSiteId =
+        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = false)
+    every { user.canReadPlantingSite(newPlantingSiteId) } returns true
+
+    fun updatePlantingSite() {
+      // moves plot 112 to subzone2 (from subzone1) and adds plot 312 to site
+      // adds all history objects that would occur with this edit
+      insertPlantingSiteHistory()
+      val zone1 = zoneIds["Zone1"]!!
+      val zone2 = zoneIds["Zone2"]!!
+      val newZone1History = insertPlantingZoneHistory(plantingZoneId = zone1)
+      val newZone2History = insertPlantingZoneHistory(plantingZoneId = zone2)
+      val subzone1 = subzoneIds["Subzone1"]!!
+      val subzone2 = subzoneIds["Subzone2"]!!
+      val subzone3 = subzoneIds["Subzone3"]!!
+      val newSubzone1History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone1,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone2History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone2,
+              plantingZoneHistoryId = newZone1History,
+          )
+      val newSubzone3History =
+          insertPlantingSubzoneHistory(
+              plantingSubzoneId = subzone3,
+              plantingZoneHistoryId = newZone2History,
+          )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["111"]!!,
+          plantingSubzoneId = subzone1,
+          plantingSubzoneHistoryId = newSubzone1History,
+      )
+      val plot2 = plotIds["112"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
+          .where(MONITORING_PLOTS.ID.eq(plot2))
+          .execute()
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plot2,
+          plantingSubzoneId = subzone2,
+          plantingSubzoneHistoryId = newSubzone2History,
+      )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["211"]!!,
+          plantingSubzoneId = subzone2,
+          plantingSubzoneHistoryId = newSubzone2History,
+      )
+      insertMonitoringPlotHistory(
+          monitoringPlotId = plotIds["311"]!!,
+          plantingSubzoneId = subzone3,
+          plantingSubzoneHistoryId = newSubzone3History,
+      )
+
+      val newPlotId =
+          insertMonitoringPlot(
+              insertHistory = false,
+              plantingSubzoneId = subzone3,
+              plotNumber = 312,
+              sizeMeters = 30,
+              permanentIndex = 312,
+          )
+      insertMonitoringPlotHistory(
+          plantingSubzoneId = subzone3,
+          plantingSubzoneHistoryId = newSubzone3History,
+      )
+      permanentPlotNumbers.add("312")
+      permanentPlotIds.add(newPlotId)
+      plotIds["312"] = newPlotId
+      val species1 = speciesIds["Species 0"]!!
+      val species2 = speciesIds["Species 1"]!!
+      insertPlotT0Density(
+          speciesId = species1,
+          plotDensity = BigDecimal.valueOf(90).toPlantsPerHectare(),
+      )
+      insertPlotT0Density(
+          speciesId = species2,
+          plotDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
+      )
+    }
+
+    val prefix = "/tracking/observation/SurvivalRateSiteGeometryChange"
+    val numSpecies = 2
+
+    runSurvivalRateScenario(
+        prefix,
+        numSpecies,
+    ) {
+      updatePlantingSite()
+
+      importObservationsCsv(prefix, numSpecies, 1, Instant.EPOCH.plusSeconds(10), false)
+    }
+
+    // ensure that observation1 didn't change
+    val observation1Expected = loadExpectedSurvivalRates(prefix, numSpecies)
+    val observation1Actual =
+        ratesObjectFromResults(
+            resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
+            inserted.plantingSiteId,
         )
-    assertSurvivalRates(ratesAfterUpdate, "Rates After Update")
+    assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
 
   private var lastCoord: Int = 1
 
-  private fun runSurvivalRateScenario(prefix: String, numSpecies: Int) {
+  private fun runSurvivalRateScenario(
+      prefix: String,
+      numSpecies: Int,
+      changeFunction: (() -> Unit)? = null,
+  ) {
     importSiteFromCsvFile(prefix, 30)
     observationId = insertObservation()
     importT0DensitiesCsv(prefix)
@@ -579,18 +682,25 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)
     assertSurvivalRates(expectedRates, "$prefix - Survival Rate")
+
+    if (changeFunction == null) return
+
+    changeFunction()
+
+    val ratesAfterChange = loadExpectedSurvivalRates("$prefix/AfterUpdate", numSpecies)
+    assertSurvivalRates(ratesAfterChange, "$prefix - Survival Rate After Change")
   }
 
   private fun loadExpectedSurvivalRates(
       prefix: String,
       numSpecies: Int,
-  ): List<Map<Any, Map<SpeciesId?, Number?>>> {
+  ): SurvivalRates {
     val speciesIds = (0 until numSpecies).map { "Species $it" to this.speciesIds["Species $it"]!! }
 
     val plotRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/PlotRates.csv", 1) { cols ->
       val plotName = cols[0]
-      val plotId = plotIds[plotName]!!
+      val plotId = plotIds[plotName] ?: throw IllegalArgumentException("Plot $plotName not found")
       val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
@@ -609,7 +719,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val subzoneRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/SubzoneRates.csv", 1) { cols ->
       val subzoneName = cols[0]
-      val subzoneId = subzoneIds[subzoneName]!!
+      val subzoneId =
+          subzoneIds[subzoneName]
+              ?: throw IllegalArgumentException("Subzone $subzoneName not found")
       val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
@@ -628,7 +740,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val zoneRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
     mapCsv("$prefix/ZoneRates.csv", 1) { cols ->
       val zoneName = cols[0]
-      val zoneId = zoneIds[zoneName]!!
+      val zoneId = zoneIds[zoneName] ?: throw IllegalArgumentException("Zone $zoneName not found")
       val ratesMap = mutableMapOf<SpeciesId?, Number?>()
 
       for ((index, speciesPair) in speciesIds.withIndex()) {
@@ -661,7 +773,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       siteRates[inserted.plantingSiteId] = ratesMap
     }
 
-    return listOf(plotRates, subzoneRates, zoneRates, siteRates)
+    return SurvivalRates(plotRates, subzoneRates, zoneRates, siteRates)
   }
 
   private fun createPlantsRows(
@@ -688,57 +800,70 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
    * survival rate for that area, e.g. the Plot Survival Rate, across all species in that plot.
    */
   private fun assertSurvivalRates(
-      expected: List<Map<Any, Map<SpeciesId?, Number?>>>,
+      expected: SurvivalRates,
       message: String,
   ) {
-    val idFields = listOf("Plot", "Subzone", "Zone", "Site")
-    val actualList = fetchSurvivalRates(inserted.plantingSiteId)
+    val actual = fetchSurvivalRates(inserted.plantingSiteId)
+    assertSurvivalRates(expected, actual, message)
+  }
 
+  private fun assertSurvivalRates(
+      expected: SurvivalRates,
+      actual: SurvivalRates,
+      message: String,
+  ) {
     assertAll(
-        expected.mapIndexed { index, expectedByIdMap ->
-          {
-            val level = idFields[index]
-            val actualByIdMap = actualList[index]
-
-            val allIdsMatch =
-                actualByIdMap.all { (id, actualSpeciesMap) ->
-                  val expectedSpeciesMap = expectedByIdMap[id] ?: return@all false
-
-                  actualSpeciesMap.all { (speciesId, actualRate) ->
-                    val expectedRate = expectedSpeciesMap[speciesId]
-                    when {
-                      expectedRate == null -> actualRate == null
-                      actualRate == null -> false
-                      expectedRate is Double -> expectedRate.roundToInt() == actualRate
-                      else -> expectedRate == actualRate
-                    }
-                  } &&
-                      expectedSpeciesMap.all { (speciesId, _) ->
-                        actualSpeciesMap.containsKey(speciesId)
-                      }
-                } && expectedByIdMap.all { (id, _) -> actualByIdMap.containsKey(id) }
-
-            if (!allIdsMatch) {
-              val expectedString =
-                  expectedByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-                    "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
-                  }
-              val actualString =
-                  actualByIdMap.entries.joinToString("\n") { (id, speciesMap) ->
-                    "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
-                  }
-              assertEquals(expectedString, actualString, "$message - $level")
-            }
-          }
-        }
+        assertSurvivalRates(expected.plotRates, actual.plotRates, "Plot", message),
+        assertSurvivalRates(expected.subzoneRates, actual.subzoneRates, "Subzone", message),
+        assertSurvivalRates(expected.zoneRates, actual.zoneRates, "Zone", message),
+        assertSurvivalRates(expected.siteRates, actual.siteRates, "Site", message),
     )
   }
 
-  private fun fetchSurvivalRates(
-      plantingSiteId: PlantingSiteId
-  ): List<Map<Any, Map<SpeciesId?, Int?>>> {
+  private fun assertSurvivalRates(
+      expected: Map<Any, Map<SpeciesId?, Number?>>,
+      actual: Map<Any, Map<SpeciesId?, Number?>>,
+      level: String,
+      message: String,
+  ): () -> Unit = {
+    val allIdsMatch =
+        actual.all { (id, actualSpeciesMap) ->
+          val expectedSpeciesMap = expected[id] ?: return@all false
+
+          actualSpeciesMap.all { (speciesId, actualRate) ->
+            val expectedRate = expectedSpeciesMap[speciesId]
+            when {
+              expectedRate == null -> actualRate == null
+              actualRate == null -> false
+              expectedRate is Double -> expectedRate.roundToInt() == actualRate
+              else -> expectedRate == actualRate
+            }
+          } && expectedSpeciesMap.all { (speciesId, _) -> actualSpeciesMap.containsKey(speciesId) }
+        } && expected.all { (id, _) -> actual.containsKey(id) }
+
+    if (!allIdsMatch) {
+      val expectedString =
+          expected.entries.joinToString("\n") { (id, speciesMap) ->
+            "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
+          }
+      val actualString =
+          actual.entries.joinToString("\n") { (id, speciesMap) ->
+            "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
+          }
+      assertEquals(expectedString, actualString, "$message - $level")
+    }
+  }
+
+  private fun fetchSurvivalRates(plantingSiteId: PlantingSiteId): SurvivalRates {
     val siteResults = resultsStore.fetchByPlantingSiteId(plantingSiteId, limit = 1)[0]
 
+    return ratesObjectFromResults(siteResults, plantingSiteId)
+  }
+
+  private fun ratesObjectFromResults(
+      siteResults: ObservationResultsModel,
+      plantingSiteId: PlantingSiteId,
+  ): SurvivalRates {
     val siteMap = mutableMapOf<SpeciesId?, Int?>()
     val allZonesMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
     val allSubzonesMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
@@ -784,6 +909,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       }
     }
 
-    return listOf(allPlotsMap, allSubzonesMap, allZonesMap, mapOf(plantingSiteId to siteMap))
+    return SurvivalRates(allPlotsMap, allSubzonesMap, allZonesMap, mapOf(plantingSiteId to siteMap))
   }
+
+  data class SurvivalRates(
+      val plotRates: Map<Any, Map<SpeciesId?, Number?>>,
+      val subzoneRates: Map<Any, Map<SpeciesId?, Number?>>,
+      val zoneRates: Map<Any, Map<SpeciesId?, Number?>>,
+      val siteRates: Map<Any, Map<SpeciesId?, Number?>>,
+  )
 }
