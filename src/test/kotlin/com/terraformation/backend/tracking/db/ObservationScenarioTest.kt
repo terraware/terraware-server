@@ -1129,8 +1129,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   }
 
               if (plotName !in observedPlotNames) {
-                // technically this needs plot history id also. Leaving this comment in case someone
-                // else runs into this
                 insertObservationPlot(
                     claimedBy = user.userId,
                     claimedTime = Instant.EPOCH,

@@ -163,7 +163,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
-  fun `survival rate is 0 if plot is no longer permanent`() {
+  fun `survival rate is null if plot is no longer permanent`() {
     val observation2 = insertObservation()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
 
@@ -197,12 +197,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     assertSurvivalRates(
         SurvivalRates(
-            mapOf(plotId to mapOf(speciesId to 0)),
+            mapOf(plotId to mapOf(speciesId to null)),
             mapOf(subzoneId to mapOf(speciesId to null)),
             mapOf(zoneId to mapOf(speciesId to null)),
             mapOf(plantingSiteId to mapOf(speciesId to null)),
         ),
-        "All survival rates should be 0",
+        "All survival rates should be null",
     )
   }
 
@@ -322,7 +322,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             speciesId1 to 100.0 * 9 / 15,
             speciesId2 to 100.0 * 18 / 23,
             speciesId3 to 100.0 * 27 / 31,
-            null to 100.0 * (9 + 18 + 27) / (15 + 23 + 31),
         )
 
     assertSurvivalRates(
@@ -591,32 +590,36 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               plantingSubzoneId = subzone3,
               plantingZoneHistoryId = newZone2History,
           )
-      insertMonitoringPlotHistory(
-          monitoringPlotId = plotIds["111"]!!,
-          plantingSubzoneId = subzone1,
-          plantingSubzoneHistoryId = newSubzone1History,
-      )
+      plotHistoryIds[plotIds["111"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["111"]!!,
+              plantingSubzoneId = subzone1,
+              plantingSubzoneHistoryId = newSubzone1History,
+          )
       val plot2 = plotIds["112"]!!
       dslContext
           .update(MONITORING_PLOTS)
           .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
           .where(MONITORING_PLOTS.ID.eq(plot2))
           .execute()
-      insertMonitoringPlotHistory(
-          monitoringPlotId = plot2,
-          plantingSubzoneId = subzone2,
-          plantingSubzoneHistoryId = newSubzone2History,
-      )
-      insertMonitoringPlotHistory(
-          monitoringPlotId = plotIds["211"]!!,
-          plantingSubzoneId = subzone2,
-          plantingSubzoneHistoryId = newSubzone2History,
-      )
-      insertMonitoringPlotHistory(
-          monitoringPlotId = plotIds["311"]!!,
-          plantingSubzoneId = subzone3,
-          plantingSubzoneHistoryId = newSubzone3History,
-      )
+      plotHistoryIds[plot2] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot2,
+              plantingSubzoneId = subzone2,
+              plantingSubzoneHistoryId = newSubzone2History,
+          )
+      plotHistoryIds[plotIds["211"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["211"]!!,
+              plantingSubzoneId = subzone2,
+              plantingSubzoneHistoryId = newSubzone2History,
+          )
+      plotHistoryIds[plotIds["311"]!!] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plotIds["311"]!!,
+              plantingSubzoneId = subzone3,
+              plantingSubzoneHistoryId = newSubzone3History,
+          )
 
       val newPlotId =
           insertMonitoringPlot(
@@ -626,10 +629,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               sizeMeters = 30,
               permanentIndex = 312,
           )
-      insertMonitoringPlotHistory(
-          plantingSubzoneId = subzone3,
-          plantingSubzoneHistoryId = newSubzone3History,
-      )
+      plotHistoryIds[newPlotId] =
+          insertMonitoringPlotHistory(
+              plantingSubzoneId = subzone3,
+              plantingSubzoneHistoryId = newSubzone3History,
+          )
       permanentPlotNumbers.add("312")
       permanentPlotIds.add(newPlotId)
       plotIds["312"] = newPlotId
