@@ -110,7 +110,7 @@ dependencies {
   implementation("com.pgvector:pgvector:0.1.6")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
   implementation("commons-codec:commons-codec:1.20.0")
-  implementation("commons-validator:commons-validator:1.10.0")
+  implementation("commons-validator:commons-validator:1.10.1")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.0")
   implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
