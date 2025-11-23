@@ -10,7 +10,7 @@
   "devDependencies": {
     "html-minifier-next": "^4.0.0",
     "llm-autotranslate": "^1.0.0",
-    "mjml": "4.17.0",
+    "mjml": "4.17.1",
     "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
