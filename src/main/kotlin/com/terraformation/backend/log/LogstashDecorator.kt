@@ -1,29 +1,27 @@
 package com.terraformation.backend.log
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.terraformation.backend.db.GeometryModule
-import net.logstash.logback.decorate.JsonFactoryDecorator
+import net.logstash.logback.decorate.MapperBuilderDecorator
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.cfg.MapperBuilder
+import tools.jackson.module.kotlin.KotlinModule
 
 /**
  * Configures the Logstash encoder to serialize objects to JSON the same way the application does.
  * This allows objects in the key/value list of a log message to be inspected in Datadog.
  */
-class LogstashDecorator : JsonFactoryDecorator {
-  override fun decorate(factory: JsonFactory): JsonFactory {
-    val objectMapper = factory.codec as ObjectMapper
-
+class LogstashDecorator<B : MapperBuilder<ObjectMapper, B>> :
+    MapperBuilderDecorator<ObjectMapper, B> {
+  override fun decorate(builder: B): B {
     // Configure the ObjectMapper the same as the one that's used by the application, including
     // default Spring Boot modules and serialization features.
 
-    objectMapper.registerModule(GeometryModule())
-    objectMapper.registerModule(KotlinModule.Builder().build())
+    builder.addModule(GeometryModule())
+    builder.addModule(KotlinModule.Builder().build())
 
-    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    objectMapper.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
+    builder.disable(DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
 
-    return factory
+    return builder
   }
 }

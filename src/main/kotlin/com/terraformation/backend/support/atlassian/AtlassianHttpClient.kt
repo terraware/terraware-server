@@ -33,7 +33,7 @@ import io.ktor.client.request.request
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import jakarta.inject.Named
 import kotlinx.coroutines.runBlocking
 

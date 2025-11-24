@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.db
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.AutomationModel
@@ -11,6 +10,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()

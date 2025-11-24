@@ -1,7 +1,5 @@
 package com.terraformation.backend.i18n
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.assertSetEquals
 import java.time.ZoneId
 import java.util.Locale
@@ -11,6 +9,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.util.StringUtils
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 internal class TimeZonesTest {
   private val objectMapper = jacksonObjectMapper()

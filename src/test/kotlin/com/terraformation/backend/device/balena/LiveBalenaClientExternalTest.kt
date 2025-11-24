@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.balena
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 /**
  * End-to-end tests for the Balena client. This talks to the actual Balena API. To run it, you will

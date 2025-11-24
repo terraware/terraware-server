@@ -101,7 +101,6 @@ dependencies {
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.12")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.8.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.42.1")
   implementation("com.google.apis:google-api-services-drive:v3-rev20251210-2.0.0")
@@ -115,7 +114,7 @@ dependencies {
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
-  implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.42")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
@@ -136,7 +135,7 @@ dependencies {
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
-  implementation("net.logstash.logback:logstash-logback-encoder:8.1")
+  implementation("net.logstash.logback:logstash-logback-encoder:9.0")
   implementation(kotlin("reflect"))
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
@@ -145,6 +144,7 @@ dependencies {
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:3.2.0")
+  implementation("tools.jackson.dataformat:jackson-dataformat-xml")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 

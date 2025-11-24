@@ -1,9 +1,6 @@
 package com.terraformation.backend
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
@@ -22,18 +19,22 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 /**
  * ObjectMapper configured to pretty print. This is lazily instantiated since ObjectMappers aren't
  * terribly lightweight.
  */
 private val prettyPrintingObjectMapper: ObjectMapper by lazy {
-  jacksonObjectMapper()
-      .registerModule(GeometryModule())
+  jacksonMapperBuilder()
+      .addModule(GeometryModule())
       .enable(SerializationFeature.INDENT_OUTPUT)
       .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-      .setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
+      .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_EMPTY) }
+      .changeDefaultPropertyInclusion { it.withContentInclusion(JsonInclude.Include.NON_EMPTY) }
+      .build()
 }
 
 /**

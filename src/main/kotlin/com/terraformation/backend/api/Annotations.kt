@@ -225,5 +225,5 @@ annotation class RequestBodyPhotoFile
 
 /** Allows payload fields to have blank strings during deserialization */
 @Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FIELD)
+@Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class AllowBlankString
