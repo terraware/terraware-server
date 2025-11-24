@@ -1,6 +1,5 @@
 package com.terraformation.backend.report
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
@@ -73,7 +72,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val messages = Messages()
-  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val objectMapper = jacksonObjectMapper()
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
   private val seedFundReportRenderer: SeedFundReportRenderer = mockk()

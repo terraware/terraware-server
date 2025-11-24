@@ -1,7 +1,6 @@
 package com.terraformation.backend.device.balena
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
@@ -80,7 +79,7 @@ internal class LiveBalenaClientExternalTest {
 
     val clientConfig = HttpClientConfig()
     val engine = clientConfig.ktorEngine()
-    val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+    val objectMapper = jacksonObjectMapper()
 
     client = LiveBalenaClient(config, clientConfig.httpClient(engine, objectMapper))
 

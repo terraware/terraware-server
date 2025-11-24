@@ -28,9 +28,9 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.opentest4j.TestAbortedException
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
 /**

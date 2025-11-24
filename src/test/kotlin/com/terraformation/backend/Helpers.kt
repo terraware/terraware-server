@@ -3,7 +3,6 @@ package com.terraformation.backend
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.GeometryModule
@@ -13,8 +12,8 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
-import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.Geometry
@@ -31,11 +30,10 @@ import org.locationtech.jts.geom.PrecisionModel
 private val prettyPrintingObjectMapper: ObjectMapper by lazy {
   jacksonObjectMapper()
       .registerModule(GeometryModule())
-      .registerModule(JavaTimeModule())
       .enable(SerializationFeature.INDENT_OUTPUT)
       .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+      .setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
 }
 
 /**
@@ -235,7 +233,7 @@ fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
  */
 fun getEnvOrSkipTest(name: String): String {
   val value = System.getenv(name)
-  assumeNotNull(value, "$name not set; skipping test")
+  assumeTrue(value != null, "$name not set; skipping test")
   return value
 }
 

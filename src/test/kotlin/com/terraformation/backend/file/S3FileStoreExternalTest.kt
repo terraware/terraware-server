@@ -9,8 +9,8 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import kotlin.random.Random
 import kotlin.random.nextUInt
-import org.junit.Assume.assumeNoException
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions.abort
 import org.junit.jupiter.api.BeforeEach
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.core.sync.ResponseTransformer
@@ -47,8 +47,8 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
   fun setUp() {
     try {
       s3Client = S3Client.create()
-    } catch (e: Exception) {
-      assumeNoException(e)
+    } catch (_: Exception) {
+      abort()
     }
 
     every { config.s3BucketName } returns bucketName

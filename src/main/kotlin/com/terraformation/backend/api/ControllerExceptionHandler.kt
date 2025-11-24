@@ -136,16 +136,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
 
-    val exceptionMessage = ex.message
-    val statusCode = ex.statusCode
-    val message =
-        when {
-          exceptionMessage != null -> exceptionMessage
-          statusCode is HttpStatus -> statusCode.reasonPhrase
-          else -> "$statusCode"
-        }
-
-    return simpleErrorResponse(message, ex.statusCode, request)
+    return simpleErrorResponse(ex.message, ex.statusCode, request)
   }
 
   /**
