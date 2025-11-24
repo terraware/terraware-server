@@ -13,10 +13,12 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -343,6 +345,22 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
             ),
         ),
         "Biomass quadrat details table",
+    )
+
+    eventPublisher.assertEventsPublished(
+        dslContext
+            .fetch(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+            .map { record ->
+              BiomassQuadratCreatedEvent(
+                  record.description,
+                  plotId,
+                  observationId,
+                  organizationId,
+                  plantingSiteId,
+                  record.positionId!!,
+              )
+            }
+            .toSet()
     )
 
     assertTableEquals(

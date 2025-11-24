@@ -72,6 +72,7 @@ import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
+import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -1112,16 +1113,29 @@ class ObservationStore(
                 }
           }
 
-      val quadratDetailsRecords =
-          model.quadrats.map { (position, details) ->
+      model.quadrats.forEach { (position, details) ->
+        val record =
             ObservationBiomassQuadratDetailsRecord(
-                observationId = observationId,
-                monitoringPlotId = plotId,
-                positionId = position,
+                    observationId = observationId,
+                    monitoringPlotId = plotId,
+                    positionId = position,
+                    description = details.description,
+                )
+                .attach(dslContext)
+
+        record.insert()
+
+        eventPublisher.publishEvent(
+            BiomassQuadratCreatedEvent(
                 description = details.description,
+                monitoringPlotId = plotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+                position = position,
             )
-          }
-      dslContext.batchInsert(quadratDetailsRecords).execute()
+        )
+      }
 
       val quadratSpeciesRecords =
           model.quadrats.flatMap { (position, details) ->

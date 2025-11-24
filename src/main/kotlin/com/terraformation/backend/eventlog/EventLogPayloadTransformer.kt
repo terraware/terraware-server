@@ -4,6 +4,7 @@ import com.terraformation.backend.customer.db.SimpleUserStore
 import com.terraformation.backend.customer.event.OrganizationPersistentEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
 import com.terraformation.backend.eventlog.api.BiomassDetailsSubjectPayload
+import com.terraformation.backend.eventlog.api.BiomassQuadratSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventActionPayload
@@ -20,6 +21,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import jakarta.inject.Named
@@ -75,6 +77,7 @@ class EventLogPayloadTransformer(
   ): EventSubjectPayload? {
     return when (event) {
       is BiomassDetailsPersistentEvent -> BiomassDetailsSubjectPayload.forEvent(event, context)
+      is BiomassQuadratPersistentEvent -> BiomassQuadratSubjectPayload.forEvent(event, context)
       is ObservationMediaFilePersistentEvent ->
           ObservationPlotMediaSubjectPayload.forEvent(event, context)
       is OrganizationPersistentEvent -> OrganizationSubjectPayload.forEvent(event, context)
