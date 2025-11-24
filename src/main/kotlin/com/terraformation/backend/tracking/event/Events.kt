@@ -20,6 +20,7 @@ import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -278,7 +279,7 @@ data class ObservationMediaFileEditedEventV1(
       val caption: String?,
   )
 
-  override fun listUpdatedFields() =
+  override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(createUpdatedField("caption", changedFrom.caption, changedTo.caption))
 }
 
@@ -342,7 +343,7 @@ data class BiomassDetailsUpdatedEventV1(
       val soilAssessment: String?,
   )
 
-  override fun listUpdatedFields() =
+  override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("description", changedFrom.description, changedTo.description),
           createUpdatedField(
@@ -389,7 +390,7 @@ data class BiomassQuadratDetailsUpdatedEventV1(
       val description: String?,
   )
 
-  override fun listUpdatedFields() =
+  override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("description", changedFrom.description, changedTo.description),
       )
@@ -443,11 +444,10 @@ data class RecordedTreeUpdatedEventV1(
       val description: String?,
   )
 
-  override fun listUpdatedFields(): List<FieldsUpdatedPersistentEvent.UpdatedField> {
-    return listOfNotNull(
-        createUpdatedField("description", changedFrom.description, changedTo.description)
-    )
-  }
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField("description", changedFrom.description, changedTo.description)
+      )
 }
 
 typealias RecordedTreeUpdatedEvent = RecordedTreeUpdatedEventV1

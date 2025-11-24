@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.UpgradableEvent
 import com.terraformation.backend.eventlog.db.EventUpgradeUtils
+import com.terraformation.backend.i18n.Messages
 
 data class ProjectRenamedEventV1(
     val name: String,
@@ -36,7 +37,7 @@ data class ProjectRenamedEventV2(
 ) : FieldsUpdatedPersistentEvent, ProjectPersistentEvent {
   data class Values(val name: String?)
 
-  override fun listUpdatedFields() =
+  override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(createUpdatedField("name", changedFrom.name, changedTo.name))
 }
 
