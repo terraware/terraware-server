@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingSubzoneIdConverter
 import com.terraformation.backend.db.tracking.PlantingZoneIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -30,6 +31,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -107,6 +109,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       isAdHoc: Boolean = false,
   ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
+
+    listOf(
+            PLOT_T0_DENSITIES,
+            PLANTING_ZONE_T0_TEMP_DENSITIES,
+            OBSERVATION_PLOTS,
+            OBSERVATION_REQUESTED_SUBZONES,
+            MONITORING_PLOTS,
+            MONITORING_PLOT_HISTORIES,
+            OBSERVED_SUBZONE_SPECIES_TOTALS,
+        )
+        .forEach { println("${it.name}:\n${dslContext.fetch(it)}") }
 
     return fetchByCondition(
         DSL.and(
@@ -449,7 +462,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       DSL.exists(
           DSL.selectOne()
               .from(
-                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
+                  DSL.select(
+                          //                          OBSERVATION_PLOTS.OBSERVATION_ID,
+                          //                          OBSERVATION_PLOTS.MONITORING_PLOT_ID,
+                          OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                              .PLANTING_SUBZONE_ID,
+                          OBSERVATION_PLOTS.IS_PERMANENT,
+                      )
                       .from(OBSERVATION_PLOTS)
                       .where(
                           OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
@@ -464,6 +483,26 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .asTable("most_recent")
               )
               .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
+              .and(
+                  DSL.notExists(
+                      DSL.selectOne()
+                          .from(OBSERVATION_REQUESTED_SUBZONES)
+                          .where(
+                              OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(
+                                  DSL.field(
+                                      "most_recent.PLANTING_SUBZONE_ID",
+                                      PlantingSubzoneId::class.java,
+                                  )
+                              )
+                          )
+                          .and(
+                              OBSERVATION_REQUESTED_SUBZONES.observations.COMPLETED_TIME.ge(
+                                  OBSERVATIONS.COMPLETED_TIME
+                              )
+                          )
+                          .and(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.ne(OBSERVATIONS.ID))
+                  )
+              )
       )
 
   /**
@@ -850,9 +889,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(PLANTING_SUBZONE_ID, PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID)
               .asTable()
@@ -1116,11 +1153,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               )
               .from(this)
               .join(PLANTING_SUBZONE_HISTORIES)
-              .on(
-                  PLANTING_SUBZONE_HISTORIES.ID.eq(
-                      MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-                  )
-              )
+              .on(PLANTING_SUBZONE_HISTORIES.ID.eq(PLANTING_SUBZONE_HISTORY_ID))
               .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
               .on(
                   PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
@@ -1128,9 +1161,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
                   plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID,
@@ -1443,9 +1474,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
                   plantingSiteHistories.plantingSites.ID,

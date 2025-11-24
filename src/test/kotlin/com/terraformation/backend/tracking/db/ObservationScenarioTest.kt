@@ -925,6 +925,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   isPermanent = plotName in permanentPlotNumbers,
                   observationId = observationId,
                   monitoringPlotId = plotId,
+                  monitoringPlotHistoryId = plotHistoryIds[plotId]!!,
               )
 
               observedPlotNames.add(plotName)
