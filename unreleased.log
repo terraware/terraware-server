@@ -1,3 +1,4 @@
+758ef06676a SW-7695 Support editing biomass quadrat details (#3649)
 ce9969ad750 SW-7697 Add BiomassQuadratCreatedEvent (#3648)
 c3572970573 Update plugin com.diffplug.spotless to v8.1.0 (#3656)
 019ecf80fe0 Update actions/checkout action to v6 (#3657)
