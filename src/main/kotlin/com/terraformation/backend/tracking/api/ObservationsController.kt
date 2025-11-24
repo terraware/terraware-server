@@ -340,6 +340,14 @@ class ObservationsController(
         when (element) {
           is BiomassUpdateOperationPayload ->
               observationStore.updateBiomassDetails(observationId, plotId, element::applyTo)
+          is QuadratUpdateOperationPayload -> {
+            observationStore.updateBiomassQuadratDetails(
+                observationId,
+                plotId,
+                element.position,
+                element::applyTo,
+            )
+          }
         }
       }
     }
