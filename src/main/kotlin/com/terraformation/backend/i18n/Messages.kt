@@ -104,6 +104,8 @@ class Messages {
           getMessage("notification.application.submitted.app.body", organizationName),
       )
 
+  fun booleanOrNull(value: Boolean?): String? = value?.let { getMessage("boolean.$it") }
+
   fun csvBadHeader() = getMessage("csvBadHeader")
 
   fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")

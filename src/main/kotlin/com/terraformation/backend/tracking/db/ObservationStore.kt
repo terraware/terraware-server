@@ -78,6 +78,8 @@ import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
@@ -88,6 +90,7 @@ import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
@@ -1316,6 +1319,81 @@ class ObservationStore(
               )
           )
         }
+      }
+    }
+  }
+
+  fun updateBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId? = null,
+      scientificName: String? = null,
+      updateFunc: (EditableBiomassSpeciesModel) -> EditableBiomassSpeciesModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    if (
+        speciesId == null && scientificName == null || speciesId != null && scientificName != null
+    ) {
+      throw IllegalArgumentException("One of species ID or scientific name must be specified")
+    }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    withLockedObservation(observationId) { _ ->
+      val biomassSpeciesRecord =
+          with(OBSERVATION_BIOMASS_SPECIES) {
+            val idOrNameCondition =
+                speciesId?.let { SPECIES_ID.eq(it) } ?: SCIENTIFIC_NAME.eq(scientificName)
+            dslContext
+                .select(ID, IS_INVASIVE, IS_THREATENED)
+                .from(OBSERVATION_BIOMASS_SPECIES)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(idOrNameCondition)
+                .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
+          }
+
+      val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
+
+      val existing = EditableBiomassSpeciesModel.of(biomassSpeciesRecord)
+      val updated = updateFunc(existing)
+
+      fun eventValues(ours: EditableBiomassSpeciesModel, theirs: EditableBiomassSpeciesModel) =
+          BiomassSpeciesUpdatedEventValues(
+              isInvasive = ours.isInvasive.nullIfEquals(theirs.isInvasive),
+              isThreatened = ours.isThreatened.nullIfEquals(theirs.isThreatened),
+          )
+
+      val changedFrom = eventValues(existing, updated)
+      val changedTo = eventValues(updated, existing)
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          dslContext
+              .update(OBSERVATION_BIOMASS_SPECIES)
+              .set(IS_INVASIVE, updated.isInvasive)
+              .set(IS_THREATENED, updated.isThreatened)
+              .where(ID.eq(biomassSpeciesId))
+              .execute()
+        }
+
+        eventPublisher.publishEvent(
+            BiomassSpeciesUpdatedEvent(
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+            )
+        )
       }
     }
   }

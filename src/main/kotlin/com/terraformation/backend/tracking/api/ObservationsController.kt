@@ -338,6 +338,14 @@ class ObservationsController(
     observationService.updateCompletedPlot(observationId, plotId) {
       payload.updates.forEach { element ->
         when (element) {
+          is BiomassSpeciesUpdateOperationPayload ->
+              observationStore.updateBiomassSpecies(
+                  observationId,
+                  plotId,
+                  element.speciesId,
+                  element.scientificName,
+                  element::applyTo,
+              )
           is BiomassUpdateOperationPayload ->
               observationStore.updateBiomassDetails(observationId, plotId, element::applyTo)
           is QuadratUpdateOperationPayload -> {
