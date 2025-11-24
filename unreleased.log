@@ -1,3 +1,4 @@
+ce9969ad750 SW-7697 Add BiomassQuadratCreatedEvent (#3648)
 c3572970573 Update plugin com.diffplug.spotless to v8.1.0 (#3656)
 019ecf80fe0 Update actions/checkout action to v6 (#3657)
 f53ba7c010b Update dependency commons-validator:commons-validator to v1.10.1 (#3652)

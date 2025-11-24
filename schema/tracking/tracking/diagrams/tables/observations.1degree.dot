@@ -7,9 +7,12 @@ digraph "oneDegreeRelationshipsDiagram" {
   "observation_biomass_quadrat_details":"observation_id":w -> "observation_biomass_details":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_details":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"biomass_species_id":w -> "observation_biomass_species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_quadrat_species":"monitoring_plot_id":w -> "observation_biomass_quadrat_details":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"monitoring_plot_id":w -> "observation_biomass_species":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_quadrat_species":"observation_id":w -> "observation_biomass_quadrat_details":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"observation_id":w -> "observation_biomass_species":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_species":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_quadrat_species":"position_id":w -> "observation_biomass_quadrat_details":"position_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"monitoring_plot_id":w -> "observation_biomass_details":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"observation_id":w -> "observation_biomass_details":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -65,7 +68,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="monitoring_plot_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="224" HEIGHT="16">monitoring_plot_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="position_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="224" HEIGHT="16">position_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_biomass_quadrat_details.html"
     target="_top"
@@ -80,7 +83,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="position_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="228" HEIGHT="16">position_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="biomass_species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="228" HEIGHT="16">biomass_species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 9</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observation_biomass_quadrat_species.html"
     target="_top"

@@ -1,12 +1,11 @@
 plantings
+observation_biomass_quadrat_species
 recorded_trees
 recorded_plants
 observation_media_files
-observation_biomass_quadrat_species
 draft_planting_sites
 plot_t0_observations
 observed_plot_coordinates
-observation_biomass_quadrat_details
 plot_t0_densities
 planting_zone_t0_temp_densities
 observed_zone_species_totals
@@ -21,6 +20,7 @@ planting_site_notifications
 observation_requested_subzones
 monitoring_plot_overlaps
 planting_seasons
+observation_biomass_quadrat_details
 deliveries
 observation_biomass_species
 observation_biomass_details

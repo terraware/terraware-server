@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">96 Foreign Key Constraints</h3>
+                            <h3 class="box-title">97 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -1040,6 +1040,36 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>quadrat_species_requires_quadrat_details</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span>.observation_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a><span>.position_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_details.html'>observation_biomass_quadrat_details</a><span>.observation_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_details.html'>observation_biomass_quadrat_details</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/observation_biomass_quadrat_details.html'>observation_biomass_quadrat_details</a><span>.position_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
