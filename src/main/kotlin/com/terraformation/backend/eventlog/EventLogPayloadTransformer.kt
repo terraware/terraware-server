@@ -102,7 +102,7 @@ class EventLogPayloadTransformer(
 
       // Events that can self-describe which fields were updated can be transformed generically.
       is FieldsUpdatedPersistentEvent ->
-          event.listUpdatedFields().map {
+          event.listUpdatedFields(messages).map {
             FieldUpdatedActionPayload(it.fieldName, it.changedFrom, it.changedTo)
           }
 

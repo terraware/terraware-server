@@ -1,5 +1,7 @@
 package com.terraformation.backend.eventlog
 
+import com.terraformation.backend.i18n.Messages
+
 /**
  * Common interface for events that represent one or more fields of an entity being updated. This is
  * used to render [PersistentEvent]s into API payloads for event log queries. Update events should
@@ -48,7 +50,7 @@ interface FieldsUpdatedPersistentEvent : EntityUpdatedPersistentEvent {
    * Fields that weren't modified shouldn't be included in the list. If the event represents a
    * single field change, this should return a list of length 1.
    */
-  fun listUpdatedFields(): List<UpdatedField>
+  fun listUpdatedFields(messages: Messages): List<UpdatedField>
 
   /** Represents a change to a single field. */
   data class UpdatedField(
