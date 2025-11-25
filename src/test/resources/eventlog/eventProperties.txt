@@ -113,6 +113,10 @@ com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/observed
 com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/plotNumber: Long
+com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.ObservationPlotEditedEventV1/plantingSiteId: PlantingSiteId
 
 #
 # Please add new entries in alphabetical (case-sensitive ASCII) order.

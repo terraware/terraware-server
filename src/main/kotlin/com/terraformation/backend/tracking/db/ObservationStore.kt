@@ -56,10 +56,12 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
+import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
@@ -1090,6 +1092,65 @@ class ObservationStore(
                 )
         )
         .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+  }
+
+  fun updateObservationPlotDetails(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      updateFunc: (EditableObservationPlotDetailsModel) -> EditableObservationPlotDetailsModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    observationLocker.withLockedObservation(observationId) { observation ->
+      val existing =
+          with(OBSERVATION_PLOTS) {
+            val record =
+                dslContext
+                    .select(NOTES, STATUS_ID)
+                    .from(OBSERVATION_PLOTS)
+                    .where(OBSERVATION_ID.eq(observationId))
+                    .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                    .fetchOne()
+                    ?: throw ObservationPlotNotFoundException(observationId, monitoringPlotId)
+
+            if (record[STATUS_ID] != ObservationPlotStatus.Completed) {
+              throw PlotNotCompletedException(monitoringPlotId)
+            }
+
+            EditableObservationPlotDetailsModel.of(record)
+          }
+
+      val updated = updateFunc(existing)
+
+      val changedFrom = existing.toEventValues(updated)
+      val changedTo = updated.toEventValues(existing)
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_PLOTS) {
+          dslContext
+              .update(OBSERVATION_PLOTS)
+              .set(NOTES, updated.notes)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .execute()
+        }
+
+        eventPublisher.publishEvent(
+            ObservationPlotEditedEvent(
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = observation.plantingSiteId,
+            )
+        )
+      }
+    }
   }
 
   fun updateObservedPlotCoordinates(

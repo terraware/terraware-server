@@ -323,6 +323,28 @@ data class ObservationPlotCreatedEventV1(
 
 typealias ObservationPlotCreatedEvent = ObservationPlotCreatedEventV1
 
+data class ObservationPlotEditedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+) : FieldsUpdatedPersistentEvent, ObservationPlotPersistentEvent {
+  data class Values(
+      val notes: String?,
+  )
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField("notes", changedFrom.notes, changedTo.notes),
+      )
+}
+
+typealias ObservationPlotEditedEvent = ObservationPlotEditedEventV1
+
+typealias ObservationPlotEditedEventValues = ObservationPlotEditedEventV1.Values
+
 sealed interface BiomassDetailsPersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId
