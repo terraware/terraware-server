@@ -1,3 +1,5 @@
+3d7a13a1363 Move biomass species merge code to BiomassStore (#3667)
+a39f11cf862 Add BiomassStore for biomass observation code (#3666)
 bc698e50c7f SW-7695 Support editing biomass species (#3664)
 7b3c1215322 SW-7697 Add BiomassSpeciesCreatedEvent (#3663)
 2e1e3666d72 Let fields-updated events localize their values (#3662)
