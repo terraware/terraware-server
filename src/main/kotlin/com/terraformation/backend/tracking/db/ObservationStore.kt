@@ -1092,7 +1092,7 @@ class ObservationStore(
         .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
   }
 
-  fun updatePlotObservation(
+  fun updateObservedPlotCoordinates(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       coordinates: List<NewObservedPlotCoordinatesModel>,
