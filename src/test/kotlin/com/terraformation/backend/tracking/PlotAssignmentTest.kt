@@ -11,6 +11,7 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -32,11 +33,13 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
@@ -73,6 +76,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         monitoringPlotsDao,
         mockk(),
         observationMediaFilesDao,
+        observationLocker,
         observationStore,
         plantingSiteStore,
         parentStore,

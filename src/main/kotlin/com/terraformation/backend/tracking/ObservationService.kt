@@ -36,6 +36,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
+import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
@@ -94,6 +95,7 @@ class ObservationService(
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val muxService: MuxService,
     private val observationMediaFilesDao: ObservationMediaFilesDao,
+    private val observationLocker: ObservationLocker,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
@@ -106,7 +108,7 @@ class ObservationService(
     requirePermissions { manageObservation(observationId) }
 
     log.withMDC("observationId" to observationId) {
-      observationStore.withLockedObservation(observationId) { observation ->
+      observationLocker.withLockedObservation(observationId) { observation ->
         if (observation.state != ObservationState.Upcoming) {
           throw ObservationAlreadyStartedException(observationId)
         }
@@ -456,7 +458,7 @@ class ObservationService(
       throw SpeciesInWrongOrganizationException(speciesId)
     }
 
-    observationStore.withLockedObservation(observationId) { observation ->
+    observationLocker.withLockedObservation(observationId) { observation ->
       @Suppress("DEPRECATION")
       when (observation.observationType) {
         ObservationType.BiomassMeasurements ->
@@ -483,7 +485,7 @@ class ObservationService(
   ): ReplacementResult {
     requirePermissions { replaceObservationPlot(observationId) }
 
-    return observationStore.withLockedObservation(observationId) { observation ->
+    return observationLocker.withLockedObservation(observationId) { observation ->
       if (observation.isAdHoc) {
         throw IllegalStateException("Ad-hoc observation plot cannot be replaced.")
       }
@@ -733,7 +735,7 @@ class ObservationService(
       throw PlotNotCompletedException(monitoringPlotId)
     }
 
-    return observationStore.withLockedObservation(observationId) { _ -> func() }
+    return observationLocker.withLockedObservation(observationId) { _ -> func() }
   }
 
   @EventListener

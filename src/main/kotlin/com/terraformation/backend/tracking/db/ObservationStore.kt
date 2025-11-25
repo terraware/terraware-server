@@ -114,23 +114,26 @@ class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val observationLocker: ObservationLocker,
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
     private val parentStore: ParentStore,
 ) {
-  private val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
-      with(OBSERVATION_REQUESTED_SUBZONES) {
-        DSL.multiset(
-                DSL.select(PLANTING_SUBZONE_ID)
-                    .from(OBSERVATION_REQUESTED_SUBZONES)
-                    .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
-            )
-            .convertFrom { result -> result.map { it[PLANTING_SUBZONE_ID]!! }.toSet() }
-      }
+  companion object {
+    val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
+        with(OBSERVATION_REQUESTED_SUBZONES) {
+          DSL.multiset(
+                  DSL.select(PLANTING_SUBZONE_ID)
+                      .from(OBSERVATION_REQUESTED_SUBZONES)
+                      .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
+              .convertFrom { result -> result.map { it[PLANTING_SUBZONE_ID]!! }.toSet() }
+        }
 
-  private val log = perClassLogger()
+    private val log = perClassLogger()
+  }
 
   fun fetchObservationById(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { readObservation(observationId) }
@@ -509,31 +512,6 @@ class ObservationStore(
         }
   }
 
-  /**
-   * Locks an observation and calls a function. Starts a database transaction; the function is
-   * called with the transaction open, such that the lock is held while the function runs.
-   */
-  fun <T> withLockedObservation(
-      observationId: ObservationId,
-      func: (ExistingObservationModel) -> T,
-  ): T {
-    requirePermissions { updateObservation(observationId) }
-
-    return dslContext.transactionResult { _ ->
-      val model =
-          dslContext
-              .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
-              .from(OBSERVATIONS)
-              .where(OBSERVATIONS.ID.eq(observationId))
-              .forUpdate()
-              .of(OBSERVATIONS)
-              .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
-              ?: throw ObservationNotFoundException(observationId)
-
-      func(model)
-    }
-  }
-
   fun hasPlots(observationId: ObservationId): Boolean {
     fetchObservationById(observationId)
 
@@ -602,7 +580,7 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    withLockedObservation(observationId) { _ ->
+    observationLocker.withLockedObservation(observationId) { _ ->
       dslContext
           .update(OBSERVATIONS)
           .setNull(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
@@ -641,7 +619,7 @@ class ObservationStore(
       }
     }
 
-    withLockedObservation(observationId) { observation ->
+    observationLocker.withLockedObservation(observationId) { observation ->
       observation.validateStateTransition(newState)
 
       val maxCompletedTime =
@@ -671,7 +649,7 @@ class ObservationStore(
   fun recordObservationStart(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { manageObservation(observationId) }
 
-    return withLockedObservation(observationId) { observation ->
+    return observationLocker.withLockedObservation(observationId) { observation ->
       val plantingSiteHistoryId =
           dslContext
               .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
@@ -1004,7 +982,7 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    withLockedObservation(observationId) { _ ->
+    observationLocker.withLockedObservation(observationId) { _ ->
       val existing =
           with(OBSERVATION_BIOMASS_DETAILS) {
             dslContext
@@ -1087,7 +1065,7 @@ class ObservationStore(
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    withLockedObservation(observationId) { _ ->
+    observationLocker.withLockedObservation(observationId) { _ ->
       val biomassSpeciesRecord =
           with(OBSERVATION_BIOMASS_SPECIES) {
             val idOrNameCondition =
@@ -1155,7 +1133,7 @@ class ObservationStore(
         parentStore.getPlantingSiteId(observationId)
             ?: throw ObservationNotFoundException(observationId)
 
-    withLockedObservation(observationId) { _ ->
+    observationLocker.withLockedObservation(observationId) { _ ->
       val existing =
           with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
             dslContext
@@ -1233,7 +1211,7 @@ class ObservationStore(
   ) {
     requirePermissions { updateObservation(observationId) }
 
-    withLockedObservation(observationId) { observation ->
+    observationLocker.withLockedObservation(observationId) { observation ->
       val existing = fetchRecordedTree(observationId, recordedTreeId)
       val updated = updateFunc(existing)
 
