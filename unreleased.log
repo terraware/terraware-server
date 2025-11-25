@@ -1,3 +1,4 @@
+e0e991669e3 Move withLockedObservation to separate class (#3668)
 3d7a13a1363 Move biomass species merge code to BiomassStore (#3667)
 a39f11cf862 Add BiomassStore for biomass observation code (#3666)
 bc698e50c7f SW-7695 Support editing biomass species (#3664)
