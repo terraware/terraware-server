@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import io.mockk.every
@@ -24,6 +25,7 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         eventPublisher,
+        ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

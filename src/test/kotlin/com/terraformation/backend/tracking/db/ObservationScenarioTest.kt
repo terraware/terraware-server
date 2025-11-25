@@ -65,6 +65,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         clock,
         dslContext,
         eventPublisher,
+        ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,

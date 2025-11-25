@@ -67,6 +67,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
+import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
@@ -136,19 +137,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val eventPublisher = TestEventPublisher()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
+  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val thumbnailService: ThumbnailService = mockk()
   private val biomassStore: BiomassStore by lazy {
-    BiomassStore(dslContext, eventPublisher, parentStore)
+    BiomassStore(dslContext, eventPublisher, observationLocker, parentStore)
   }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
@@ -183,6 +186,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         monitoringPlotsDao,
         muxService,
         observationMediaFilesDao,
+        observationLocker,
         observationStore,
         plantingSiteStore,
         parentStore,

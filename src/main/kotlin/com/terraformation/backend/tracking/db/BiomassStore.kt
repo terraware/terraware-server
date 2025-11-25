@@ -36,6 +36,7 @@ import org.springframework.context.ApplicationEventPublisher
 class BiomassStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val observationLocker: ObservationLocker,
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
