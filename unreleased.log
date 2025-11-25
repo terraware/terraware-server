@@ -1,3 +1,5 @@
+55942f73296 SW-6718 Add new observable plot conditions (#3665)
+ea859a3c20e Move biomass update functions to BiomassStore (#3669)
 e0e991669e3 Move withLockedObservation to separate class (#3668)
 3d7a13a1363 Move biomass species merge code to BiomassStore (#3667)
 a39f11cf862 Add BiomassStore for biomass observation code (#3666)
