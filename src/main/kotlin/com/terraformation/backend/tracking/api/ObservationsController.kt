@@ -43,6 +43,7 @@ import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -95,6 +96,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @TrackingEndpoint
 class ObservationsController(
+    private val biomassStore: BiomassStore,
     private val messages: Messages,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
@@ -339,7 +341,7 @@ class ObservationsController(
       payload.updates.forEach { element ->
         when (element) {
           is BiomassSpeciesUpdateOperationPayload ->
-              observationStore.updateBiomassSpecies(
+              biomassStore.updateBiomassSpecies(
                   observationId,
                   plotId,
                   element.speciesId,
@@ -347,9 +349,9 @@ class ObservationsController(
                   element::applyTo,
               )
           is BiomassUpdateOperationPayload ->
-              observationStore.updateBiomassDetails(observationId, plotId, element::applyTo)
+              biomassStore.updateBiomassDetails(observationId, plotId, element::applyTo)
           is QuadratUpdateOperationPayload -> {
-            observationStore.updateBiomassQuadratDetails(
+            biomassStore.updateBiomassQuadratDetails(
                 observationId,
                 plotId,
                 element.position,
@@ -385,7 +387,7 @@ class ObservationsController(
       @PathVariable treeId: RecordedTreeId,
       @RequestBody payload: UpdateRecordedTreeRequestPayload,
   ): SimpleSuccessResponsePayload {
-    observationStore.updateRecordedTree(observationId, treeId, payload::applyTo)
+    biomassStore.updateRecordedTree(observationId, treeId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }

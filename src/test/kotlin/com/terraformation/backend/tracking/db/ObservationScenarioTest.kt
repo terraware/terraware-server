@@ -4,7 +4,6 @@ import com.opencsv.CSVReader
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -70,7 +69,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubzonesDao,
-        ParentStore(dslContext),
     )
   }
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
