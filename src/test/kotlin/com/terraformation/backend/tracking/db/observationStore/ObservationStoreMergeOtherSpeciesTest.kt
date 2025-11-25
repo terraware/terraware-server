@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
@@ -28,6 +29,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -367,7 +369,9 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
 
-    store.insertBiomassDetails(
+    // Temporary during ObservationStore split
+    val biomassStore = BiomassStore(dslContext, eventPublisher, ParentStore(dslContext))
+    biomassStore.insertBiomassDetails(
         observationId,
         monitoringPlotId,
         NewBiomassDetailsModel(
@@ -592,7 +596,9 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val speciesId = insertSpecies()
 
-    store.insertBiomassDetails(
+    // Temporary during ObservationStore split
+    val biomassStore = BiomassStore(dslContext, eventPublisher, ParentStore(dslContext))
+    biomassStore.insertBiomassDetails(
         observationId,
         monitoringPlotId,
         NewBiomassDetailsModel(

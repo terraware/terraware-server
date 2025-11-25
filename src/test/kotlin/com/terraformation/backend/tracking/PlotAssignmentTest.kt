@@ -65,6 +65,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   }
   private val observationService: ObservationService by lazy {
     ObservationService(
+        mockk(),
         clock,
         dslContext,
         eventPublisher,

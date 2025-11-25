@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.BiomassForestType
@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
+class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
   private lateinit var observationId: ObservationId
   private lateinit var plotId: MonitoringPlotId
 
@@ -45,7 +45,7 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
     plotId = insertMonitoringPlot(isAdHoc = true)
     observationId =
         insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    insertObservationPlot(claimedBy = currentUser().userId, claimedTime = clock.instant)
+    insertObservationPlot(claimedBy = currentUser().userId, claimedTime = Instant.EPOCH)
   }
 
   @Test

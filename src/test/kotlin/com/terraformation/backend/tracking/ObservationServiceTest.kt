@@ -60,6 +60,7 @@ import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
@@ -137,6 +138,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val thumbnailService: ThumbnailService = mockk()
+  private val biomassStore: BiomassStore by lazy {
+    BiomassStore(dslContext, eventPublisher, parentStore)
+  }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -168,6 +172,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val service: ObservationService by lazy {
     ObservationService(
+        biomassStore,
         clock,
         dslContext,
         eventPublisher,
