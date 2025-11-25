@@ -14,11 +14,13 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQ
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -248,12 +250,12 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
         }
 
     val biomassHerbaceousSpeciesId1 =
-        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = herbaceousSpeciesId1)]
+        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = herbaceousSpeciesId1)]!!
     val biomassHerbaceousSpeciesId2 =
-        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = herbaceousSpeciesId2)]
+        biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = herbaceousSpeciesId2)]!!
     val biomassHerbaceousSpeciesId3 =
         biomassSpeciesIdsBySpeciesKey[
-            BiomassSpeciesKey(scientificName = "Other herbaceous species")]
+            BiomassSpeciesKey(scientificName = "Other herbaceous species")]!!
     val biomassTreeSpeciesId1 =
         biomassSpeciesIdsBySpeciesKey[BiomassSpeciesKey(speciesId = treeSpeciesId1)]!!
     val biomassTreeSpeciesId2 =
@@ -315,6 +317,26 @@ class ObservationStoreInsertBiomassDetailsTest : BaseObservationStoreTest() {
             ),
         ),
         "Biomass species table",
+    )
+
+    eventPublisher.assertEventsPublished(
+        dslContext
+            .fetch(OBSERVATION_BIOMASS_SPECIES)
+            .map { record ->
+              BiomassSpeciesCreatedEvent(
+                  biomassSpeciesId = record.id!!,
+                  commonName = record.commonName,
+                  isInvasive = record.isInvasive!!,
+                  isThreatened = record.isThreatened!!,
+                  monitoringPlotId = plotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+                  scientificName = record.scientificName,
+                  speciesId = record.speciesId,
+              )
+            }
+            .toSet()
     )
 
     assertTableEquals(

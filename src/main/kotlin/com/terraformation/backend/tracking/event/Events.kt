@@ -400,6 +400,29 @@ typealias BiomassQuadratDetailsUpdatedEvent = BiomassQuadratDetailsUpdatedEventV
 
 typealias BiomassQuadratDetailsUpdatedEventValues = BiomassQuadratDetailsUpdatedEventV1.Values
 
+sealed interface BiomassSpeciesPersistentEvent : PersistentEvent {
+  val biomassSpeciesId: BiomassSpeciesId
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+}
+
+data class BiomassSpeciesCreatedEventV1(
+    override val biomassSpeciesId: BiomassSpeciesId,
+    val commonName: String?,
+    val isInvasive: Boolean,
+    val isThreatened: Boolean,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    val speciesId: SpeciesId?,
+) : BiomassSpeciesPersistentEvent, EntityCreatedPersistentEvent
+
+typealias BiomassSpeciesCreatedEvent = BiomassSpeciesCreatedEventV1
+
 sealed interface RecordedTreePersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
   val observationId: ObservationId
