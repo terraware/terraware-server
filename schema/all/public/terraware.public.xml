@@ -318,6 +318,9 @@
          <index name="event_log_batchid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
+         <index name="event_log_biomassspeciesid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
          <index name="event_log_created_by_idx" unique="false">
             <column ascending="true" name="created_by"/>
          </index>
@@ -349,6 +352,9 @@
             <column ascending="true" name="event_class"/>
          </index>
          <index name="event_log_recordedtreeid_idx" unique="false">
+            <column ascending="true" name="event_class"/>
+         </index>
+         <index name="event_log_speciesid_idx" unique="false">
             <column ascending="true" name="event_class"/>
          </index>
          <index name="event_log_withdrawalid_idx" unique="false">
