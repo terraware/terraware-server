@@ -13,6 +13,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -21,6 +22,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -78,6 +80,7 @@ import com.terraformation.backend.tracking.db.PlotNotCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -1078,6 +1081,52 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationMediaFilesDao.findAll().map { it.fileId },
             "Observation media table should only have file from other observation",
         )
+      }
+    }
+  }
+
+  @Nested
+  inner class MergeOtherSpecies {
+    // Tests for the monitoring and biomass logic are in the ObservationStore and BiomassStore test
+    // suites.
+
+    @Test
+    fun `throws exception if not in organization`() {
+      val observationId = insertObservation()
+      val speciesId = insertSpecies()
+
+      deleteOrganizationUser()
+
+      assertThrows<SpeciesNotFoundException> {
+        service.mergeOtherSpecies(observationId, "Other", speciesId)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update species`() {
+      val observationId = insertObservation()
+      val speciesId = insertSpecies()
+
+      dslContext
+          .update(ORGANIZATION_USERS)
+          .set(ORGANIZATION_USERS.ROLE_ID, Role.Contributor)
+          .where(ORGANIZATION_USERS.USER_ID.eq(user.userId))
+          .execute()
+
+      assertThrows<AccessDeniedException> {
+        service.mergeOtherSpecies(observationId, "Other", speciesId)
+      }
+    }
+
+    @Test
+    fun `throws exception if species is from a different organization`() {
+      val observationId = insertObservation()
+      insertOrganization()
+      insertOrganizationUser(role = Role.Admin)
+      val speciesId = insertSpecies()
+
+      assertThrows<SpeciesInWrongOrganizationException> {
+        service.mergeOtherSpecies(observationId, "Other", speciesId)
       }
     }
   }

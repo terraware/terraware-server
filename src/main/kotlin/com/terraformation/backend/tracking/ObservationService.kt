@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
@@ -47,6 +48,7 @@ import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -432,6 +434,43 @@ class ObservationService(
         criteria.notificationType,
         criteria.notificationNumber,
     )
+  }
+
+  /**
+   * Merges observation data for a species with a user-entered name into the data for one of the
+   * organization's species. This causes the observation to appear as if the users in the field had
+   * recorded seeing the target species instead of selecting "Other" and entering a species name
+   * manually.
+   */
+  fun mergeOtherSpecies(
+      observationId: ObservationId,
+      otherSpeciesName: String,
+      speciesId: SpeciesId,
+  ) {
+    requirePermissions {
+      updateSpecies(speciesId)
+      updateObservation(observationId)
+    }
+
+    if (parentStore.getOrganizationId(observationId) != parentStore.getOrganizationId(speciesId)) {
+      throw SpeciesInWrongOrganizationException(speciesId)
+    }
+
+    observationStore.withLockedObservation(observationId) { observation ->
+      @Suppress("DEPRECATION")
+      when (observation.observationType) {
+        ObservationType.BiomassMeasurements ->
+            biomassStore.mergeOtherSpecies(observationId, otherSpeciesName, speciesId)
+        ObservationType.Monitoring ->
+            observationStore.mergeOtherSpeciesForMonitoring(
+                observationId,
+                observation.plantingSiteId,
+                observation.isAdHoc,
+                otherSpeciesName,
+                speciesId,
+            )
+      }
+    }
   }
 
   /** Replaces a monitoring plot in an observation with a different one if possible. */

@@ -16,7 +16,6 @@ import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
-import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -41,7 +40,6 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
@@ -1282,163 +1280,14 @@ class ObservationStore(
     }
   }
 
-  /**
-   * Merges observation data for a species with a user-entered name into the data for one of the
-   * organization's species. This causes the observation to appear as if the users in the field had
-   * recorded seeing the target species instead of selecting "Other" and entering a species name
-   * manually.
-   */
-  fun mergeOtherSpecies(
+  @Deprecated("Call ObservationService.mergeOtherSpecies instead.")
+  fun mergeOtherSpeciesForMonitoring(
       observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+      isAdHoc: Boolean,
       otherSpeciesName: String,
       speciesId: SpeciesId,
   ) {
-    requirePermissions {
-      updateObservation(observationId)
-      updateSpecies(speciesId)
-    }
-
-    if (parentStore.getOrganizationId(observationId) != parentStore.getOrganizationId(speciesId)) {
-      throw SpeciesInWrongOrganizationException(speciesId)
-    }
-
-    withLockedObservation(observationId) { observation ->
-      when (observation.observationType) {
-        ObservationType.BiomassMeasurements ->
-            mergeOtherSpeciesForBiomass(observation, speciesId, otherSpeciesName)
-        ObservationType.Monitoring ->
-            mergeOtherSpeciesForMonitoring(observation, speciesId, otherSpeciesName)
-      }
-    }
-  }
-
-  private fun mergeOtherSpeciesForBiomass(
-      observation: ExistingObservationModel,
-      speciesId: SpeciesId,
-      otherSpeciesName: String,
-  ) {
-    val observationId = observation.id
-
-    val otherBiomassSpeciesId =
-        with(OBSERVATION_BIOMASS_SPECIES) {
-          dslContext.fetchValue(
-              ID,
-              SCIENTIFIC_NAME.eq(otherSpeciesName).and(OBSERVATION_ID.eq(observationId)),
-          )
-        }
-
-    if (otherBiomassSpeciesId == null) {
-      log.warn(
-          "Biomass observation $observationId does not contain species name $otherSpeciesName; " +
-              "merge is a no-op"
-      )
-      return
-    }
-
-    val targetBiomassSpeciesId =
-        with(OBSERVATION_BIOMASS_SPECIES) {
-          dslContext.fetchValue(ID, SPECIES_ID.eq(speciesId).and(OBSERVATION_ID.eq(observationId)))
-        }
-
-    if (targetBiomassSpeciesId == null) {
-      // The target species wasn't present at all in the observation, so there's no need to merge
-      // anything: we can just update the biomass species to point to the target species ID instead
-      // of using a name.
-      with(OBSERVATION_BIOMASS_SPECIES) {
-        dslContext
-            .update(OBSERVATION_BIOMASS_SPECIES)
-            .set(SPECIES_ID, speciesId)
-            .setNull(SCIENTIFIC_NAME)
-            .where(ID.eq(otherBiomassSpeciesId))
-            .execute()
-      }
-
-      return
-    }
-
-    // Recorded trees are a simple replacement of the biomass species ID.
-    with(RECORDED_TREES) {
-      dslContext
-          .update(RECORDED_TREES)
-          .set(BIOMASS_SPECIES_ID, targetBiomassSpeciesId)
-          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-          .execute()
-    }
-
-    // For quadrat species, we need to add the abundance percentages of the numbered species and the
-    // "Other" one if both exist in the quadrat. If only the "Other" one exists, then we can just
-    // switch its biomass species ID in place.
-    with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
-      val quadratSpeciesTable2 = OBSERVATION_BIOMASS_QUADRAT_SPECIES.`as`("quadrat2")
-
-      dslContext
-          .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
-          .set(BIOMASS_SPECIES_ID, targetBiomassSpeciesId)
-          .where(BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-          .andNotExists(
-              DSL.selectOne()
-                  .from(quadratSpeciesTable2)
-                  .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
-                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
-          )
-          .execute()
-
-      dslContext
-          .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
-          .set(
-              ABUNDANCE_PERCENT,
-              ABUNDANCE_PERCENT.plus(
-                  DSL.field(
-                      DSL.select(quadratSpeciesTable2.ABUNDANCE_PERCENT)
-                          .from(quadratSpeciesTable2)
-                          .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-                          .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
-                  )
-              ),
-          )
-          .where(BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
-          .andExists(
-              DSL.selectOne()
-                  .from(quadratSpeciesTable2)
-                  .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-                  .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
-          )
-          .execute()
-    }
-
-    // Invasive and threatened should be true if they're true on either version of the species.
-    with(OBSERVATION_BIOMASS_SPECIES) {
-      dslContext
-          .update(OBSERVATION_BIOMASS_SPECIES)
-          .set(
-              IS_INVASIVE,
-              DSL.select(DSL.boolOr(IS_INVASIVE))
-                  .from(OBSERVATION_BIOMASS_SPECIES)
-                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)),
-          )
-          .set(
-              IS_THREATENED,
-              DSL.select(DSL.boolOr(IS_THREATENED))
-                  .from(OBSERVATION_BIOMASS_SPECIES)
-                  .where(ID.`in`(otherBiomassSpeciesId, targetBiomassSpeciesId)),
-          )
-          .where(ID.eq(targetBiomassSpeciesId))
-          .execute()
-    }
-
-    // ON DELETE CASCADE will remove the data for the "Other" species from all the biomass tables.
-    dslContext
-        .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
-        .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
-        .execute()
-  }
-
-  private fun mergeOtherSpeciesForMonitoring(
-      observation: ExistingObservationModel,
-      speciesId: SpeciesId,
-      otherSpeciesName: String,
-  ) {
-    val observationId = observation.id
     val observationPlotDetails =
         dslContext
             .select(
@@ -1496,9 +1345,9 @@ class ObservationStore(
           dslContext
               .select()
               .from(PLANTING_SITES)
-              .where(PLANTING_SITES.ID.eq(observation.plantingSiteId))
+              .where(PLANTING_SITES.ID.eq(plantingSiteId))
               .fetchOneInto(PlantingSitesRow::class.java)
-              ?: throw PlantingSiteNotFoundException(observation.plantingSiteId)
+              ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
       // Subtract the plot-level live/dead/existing counts from the Other species and add them
       // to the target species. This propagates the changes up to the zone and site totals.
@@ -1515,7 +1364,7 @@ class ObservationStore(
           plotDetails[PLANTING_SUBZONES.PLANTING_ZONE_ID],
           plotDetails[MONITORING_PLOTS.PLANTING_SUBZONE_ID],
           monitoringPlotId,
-          observation.isAdHoc,
+          isAdHoc,
           plotDetails[OBSERVATION_PLOTS.IS_PERMANENT]!!,
           mapOf(
               RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to

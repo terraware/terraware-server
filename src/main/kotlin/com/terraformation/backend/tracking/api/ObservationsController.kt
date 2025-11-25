@@ -740,7 +740,7 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @RequestBody payload: MergeOtherSpeciesRequestPayload,
   ): SimpleSuccessResponsePayload {
-    observationStore.mergeOtherSpecies(observationId, payload.otherSpeciesName, payload.speciesId)
+    observationService.mergeOtherSpecies(observationId, payload.otherSpeciesName, payload.speciesId)
 
     return SimpleSuccessResponsePayload()
   }
