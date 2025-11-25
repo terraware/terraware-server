@@ -8,25 +8,43 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
+import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
+import com.terraformation.backend.tracking.model.RecordedTreeModel
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -40,6 +58,37 @@ class BiomassStore(
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
+
+  fun fetchRecordedTree(
+      observationId: ObservationId,
+      recordedTreeId: RecordedTreeId,
+  ): ExistingRecordedTreeModel {
+    requirePermissions { readObservation(observationId) }
+
+    return with(RECORDED_TREES) {
+      dslContext
+          .select(
+              ID,
+              DESCRIPTION,
+              DIAMETER_AT_BREAST_HEIGHT_CM,
+              GPS_COORDINATES,
+              HEIGHT_M,
+              IS_DEAD,
+              POINT_OF_MEASUREMENT_M,
+              SHRUB_DIAMETER_CM,
+              recordedTreesBiomassSpeciesIdFkey.SPECIES_ID,
+              recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME,
+              TREE_GROWTH_FORM_ID,
+              TREE_NUMBER,
+              TRUNK_NUMBER,
+          )
+          .from(RECORDED_TREES)
+          .where(ID.eq(recordedTreeId))
+          .and(OBSERVATION_ID.eq(observationId))
+          .fetchOne { RecordedTreeModel.of(it) }
+          ?: throw RecordedTreeNotFoundException(recordedTreeId)
+    }
+  }
 
   fun insertBiomassDetails(
       observationId: ObservationId,
@@ -403,5 +452,288 @@ class BiomassStore(
         .deleteFrom(OBSERVATION_BIOMASS_SPECIES)
         .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(otherBiomassSpeciesId))
         .execute()
+  }
+
+  fun updateBiomassDetails(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+      updateFunc: (EditableBiomassDetailsModel) -> EditableBiomassDetailsModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    observationLocker.withLockedObservation(observationId) { _ ->
+      val existing =
+          with(OBSERVATION_BIOMASS_DETAILS) {
+            dslContext
+                .select(DESCRIPTION, SOIL_ASSESSMENT)
+                .from(OBSERVATION_BIOMASS_DETAILS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(plotId))
+                .fetchOne { EditableBiomassDetailsModel.of(it) }
+                ?: throw ObservationPlotNotFoundException(observationId, plotId)
+          }
+
+      val updated = updateFunc(existing)
+
+      val changedFrom =
+          BiomassDetailsUpdatedEventValues(
+              description = existing.description.nullIfEquals(updated.description),
+              soilAssessment = existing.soilAssessment.nullIfEquals(updated.soilAssessment),
+          )
+      val changedTo =
+          BiomassDetailsUpdatedEventValues(
+              description = updated.description.nullIfEquals(existing.description),
+              soilAssessment = updated.soilAssessment.nullIfEquals(existing.soilAssessment),
+          )
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_DETAILS) {
+          dslContext
+              .update(OBSERVATION_BIOMASS_DETAILS)
+              .set(DESCRIPTION, updated.description)
+              .set(SOIL_ASSESSMENT, updated.soilAssessment)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(plotId))
+              .execute()
+
+          val (plantingSiteId, organizationId) =
+              dslContext
+                  .select(
+                      monitoringPlots.plantingSites.ID.asNonNullable(),
+                      monitoringPlots.plantingSites.ORGANIZATION_ID.asNonNullable(),
+                  )
+                  .from(OBSERVATION_BIOMASS_DETAILS)
+                  .where(OBSERVATION_ID.eq(observationId))
+                  .and(MONITORING_PLOT_ID.eq(plotId))
+                  .fetchSingle()
+
+          eventPublisher.publishEvent(
+              BiomassDetailsUpdatedEvent(
+                  changedFrom = changedFrom,
+                  changedTo = changedTo,
+                  monitoringPlotId = plotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+              )
+          )
+        }
+      }
+    }
+  }
+
+  fun updateBiomassSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      speciesId: SpeciesId? = null,
+      scientificName: String? = null,
+      updateFunc: (EditableBiomassSpeciesModel) -> EditableBiomassSpeciesModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    if (
+        speciesId == null && scientificName == null || speciesId != null && scientificName != null
+    ) {
+      throw IllegalArgumentException("One of species ID or scientific name must be specified")
+    }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    observationLocker.withLockedObservation(observationId) { _ ->
+      val biomassSpeciesRecord =
+          with(OBSERVATION_BIOMASS_SPECIES) {
+            val idOrNameCondition =
+                speciesId?.let { SPECIES_ID.eq(it) } ?: SCIENTIFIC_NAME.eq(scientificName)
+            dslContext
+                .select(ID, IS_INVASIVE, IS_THREATENED)
+                .from(OBSERVATION_BIOMASS_SPECIES)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(idOrNameCondition)
+                .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
+          }
+
+      val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
+
+      val existing = EditableBiomassSpeciesModel.of(biomassSpeciesRecord)
+      val updated = updateFunc(existing)
+
+      fun eventValues(ours: EditableBiomassSpeciesModel, theirs: EditableBiomassSpeciesModel) =
+          BiomassSpeciesUpdatedEventValues(
+              isInvasive = ours.isInvasive.nullIfEquals(theirs.isInvasive),
+              isThreatened = ours.isThreatened.nullIfEquals(theirs.isThreatened),
+          )
+
+      val changedFrom = eventValues(existing, updated)
+      val changedTo = eventValues(updated, existing)
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_SPECIES) {
+          dslContext
+              .update(OBSERVATION_BIOMASS_SPECIES)
+              .set(IS_INVASIVE, updated.isInvasive)
+              .set(IS_THREATENED, updated.isThreatened)
+              .where(ID.eq(biomassSpeciesId))
+              .execute()
+        }
+
+        eventPublisher.publishEvent(
+            BiomassSpeciesUpdatedEvent(
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                biomassSpeciesId = biomassSpeciesId,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = plantingSiteId,
+            )
+        )
+      }
+    }
+  }
+
+  fun updateBiomassQuadratDetails(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      position: ObservationPlotPosition,
+      updateFunc: (EditableBiomassQuadratDetailsModel) -> EditableBiomassQuadratDetailsModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    observationLocker.withLockedObservation(observationId) { _ ->
+      val existing =
+          with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
+            dslContext
+                .select(DESCRIPTION)
+                .from(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(POSITION_ID.eq(position))
+                .fetchOne { EditableBiomassQuadratDetailsModel.of(it) }
+          }
+
+      val editable = existing ?: EditableBiomassQuadratDetailsModel()
+      val updated = updateFunc(editable)
+
+      val changedFrom =
+          BiomassQuadratDetailsUpdatedEventValues(
+              description = editable.description.nullIfEquals(updated.description),
+          )
+      val changedTo =
+          BiomassQuadratDetailsUpdatedEventValues(
+              description = updated.description.nullIfEquals(editable.description),
+          )
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
+          if (existing == null) {
+            dslContext
+                .insertInto(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .set(DESCRIPTION, updated.description)
+                .set(MONITORING_PLOT_ID, monitoringPlotId)
+                .set(OBSERVATION_ID, observationId)
+                .set(POSITION_ID, position)
+                .execute()
+
+            eventPublisher.publishEvent(
+                BiomassQuadratCreatedEvent(
+                    updated.description,
+                    monitoringPlotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                    position,
+                )
+            )
+          } else {
+            dslContext
+                .update(OBSERVATION_BIOMASS_QUADRAT_DETAILS)
+                .set(DESCRIPTION, updated.description)
+                .where(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(OBSERVATION_ID.eq(observationId))
+                .and(POSITION_ID.eq(position))
+                .execute()
+
+            eventPublisher.publishEvent(
+                BiomassQuadratDetailsUpdatedEvent(
+                    changedFrom,
+                    changedTo,
+                    monitoringPlotId,
+                    observationId,
+                    organizationId,
+                    plantingSiteId,
+                    position,
+                )
+            )
+          }
+        }
+      }
+    }
+  }
+
+  fun updateRecordedTree(
+      observationId: ObservationId,
+      recordedTreeId: RecordedTreeId,
+      updateFunc: (ExistingRecordedTreeModel) -> ExistingRecordedTreeModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    observationLocker.withLockedObservation(observationId) { observation ->
+      val existing = fetchRecordedTree(observationId, recordedTreeId)
+      val updated = updateFunc(existing)
+
+      val changedFrom =
+          RecordedTreeUpdatedEventValues(
+              description = existing.description.nullIfEquals(updated.description),
+          )
+      val changedTo =
+          RecordedTreeUpdatedEventValues(
+              description = updated.description.nullIfEquals(existing.description),
+          )
+
+      if (changedFrom != changedTo) {
+        with(RECORDED_TREES) {
+          dslContext
+              .update(RECORDED_TREES)
+              .set(DESCRIPTION, updated.description)
+              .where(ID.eq(recordedTreeId))
+              .execute()
+
+          val (monitoringPlotId, organizationId) =
+              dslContext
+                  .select(
+                      MONITORING_PLOT_ID.asNonNullable(),
+                      monitoringPlots.plantingSites.ORGANIZATION_ID.asNonNullable(),
+                  )
+                  .from(RECORDED_TREES)
+                  .where(ID.eq(recordedTreeId))
+                  .fetchSingle()
+
+          eventPublisher.publishEvent(
+              RecordedTreeUpdatedEvent(
+                  changedFrom = changedFrom,
+                  changedTo = changedTo,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = observation.plantingSiteId,
+                  recordedTreeId = recordedTreeId,
+              )
+          )
+        }
+      }
+    }
   }
 }

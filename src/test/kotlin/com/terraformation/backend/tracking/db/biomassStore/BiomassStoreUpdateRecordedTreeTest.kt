@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db.observationStore
+package com.terraformation.backend.tracking.db.biomassStore
 
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationStoreUpdateRecordedTreeTest : BaseObservationStoreTest() {
+class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
   @BeforeEach
   fun setUpRecordedTree() {
     insertPlantingZone()
