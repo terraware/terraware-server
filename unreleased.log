@@ -1,3 +1,4 @@
+bc698e50c7f SW-7695 Support editing biomass species (#3664)
 7b3c1215322 SW-7697 Add BiomassSpeciesCreatedEvent (#3663)
 2e1e3666d72 Let fields-updated events localize their values (#3662)
 758ef06676a SW-7695 Support editing biomass quadrat details (#3649)

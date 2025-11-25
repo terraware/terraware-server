@@ -497,12 +497,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>gbif_taxa_genus_check</td>
+                                    <td>(genus !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>gbif_taxa_class_check</td>
                                     <td>(class !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_genus_check</td>
-                                    <td>(genus !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_phylum_check</td>
+                                    <td>(phylum !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>gbif_taxa_nomenclatural_status_check</td>
@@ -513,12 +517,20 @@
                                     <td>(infraspecific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
+                                    <td>gbif_taxa_dataset_id_check</td>
+                                    <td>(dataset_id !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>gbif_taxa_family_check</td>
+                                    <td>(family !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>gbif_taxa_order_check</td>
                                     <td>(&quot;order&quot; !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>gbif_taxa_phylum_check</td>
-                                    <td>(phylum !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>gbif_taxa_specific_epithet_check</td>
+                                    <td>(specific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>gbif_taxa_canonical_name_check</td>
@@ -527,18 +539,6 @@
                                 <tr>
                                     <td>gbif_taxa_generic_name_check</td>
                                     <td>(generic_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>gbif_taxa_dataset_id_check</td>
-                                    <td>(dataset_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>gbif_taxa_specific_epithet_check</td>
-                                    <td>(specific_epithet !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>gbif_taxa_family_check</td>
-                                    <td>(family !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
