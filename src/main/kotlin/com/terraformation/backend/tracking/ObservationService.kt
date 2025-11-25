@@ -30,6 +30,7 @@ import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
@@ -83,6 +84,7 @@ const val CLOCK_TOLERANCE_SECONDS: Long = 3600
 
 @Named
 class ObservationService(
+    private val biomassStore: BiomassStore,
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
@@ -653,7 +655,7 @@ class ObservationService(
 
       observationStore.claimPlot(observationId, plotId)
 
-      biomassDetails?.let { observationStore.insertBiomassDetails(observationId, plotId, it) }
+      biomassDetails?.let { biomassStore.insertBiomassDetails(observationId, plotId, it) }
 
       observationStore.completePlot(
           observationId,
