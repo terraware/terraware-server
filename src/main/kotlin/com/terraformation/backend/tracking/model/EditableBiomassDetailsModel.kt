@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import org.jooq.Record
 
 data class EditableBiomassDetailsModel(
@@ -28,6 +29,22 @@ data class EditableBiomassQuadratDetailsModel(
       return with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
         EditableBiomassQuadratDetailsModel(
             description = record[DESCRIPTION],
+        )
+      }
+    }
+  }
+}
+
+data class EditableBiomassSpeciesModel(
+    val isInvasive: Boolean,
+    val isThreatened: Boolean,
+) {
+  companion object {
+    fun of(record: Record): EditableBiomassSpeciesModel {
+      return with(OBSERVATION_BIOMASS_SPECIES) {
+        EditableBiomassSpeciesModel(
+            isInvasive = record[IS_INVASIVE]!!,
+            isThreatened = record[IS_THREATENED]!!,
         )
       }
     }

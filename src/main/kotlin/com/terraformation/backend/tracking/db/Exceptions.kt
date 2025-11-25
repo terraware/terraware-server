@@ -19,6 +19,9 @@ import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import java.time.LocalDate
 
+class BiomassSpeciesNotFoundException(val speciesId: SpeciesId?, val speciesName: String?) :
+    EntityNotFoundException("Species ${speciesId ?: speciesName} not found in observation")
+
 class CrossDeliveryReassignmentNotAllowedException(
     val plantingId: PlantingId,
     val plantingDeliveryId: DeliveryId,
