@@ -368,7 +368,19 @@ VALUES (1, 'AnimalDamage'),
        (4, 'Fungus'),
        (5, 'Pests'),
        (6, 'SeedProduction'),
-       (7, 'UnfavorableWeather')
+       (7, 'UnfavorableWeather'),
+       (8, 'NaturalRegenerationWoody'),
+       (9, 'Logging'),
+       (10, 'Fire'),
+       (11, 'Mining'),
+       (12, 'Grazing'),
+       (13, 'Infrastructure'),
+       (14, 'ElectricalLines'),
+       (15, 'SoilErosion'),
+       (16, 'DifficultAccessibility'),
+       (17, 'Contamination'),
+       (18, 'SteepSlope'),
+       (19, 'WaterBodies')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.observation_media_types (id, name)
