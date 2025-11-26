@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.api
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
@@ -61,10 +62,12 @@ data class BiomassUpdateOperationPayload(
 
 @JsonTypeName("ObservationPlot")
 data class ObservationPlotUpdateOperationPayload(
+    val conditions: Set<ObservableCondition>?,
     val notes: Optional<String>?,
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: EditableObservationPlotDetailsModel): EditableObservationPlotDetailsModel {
     return model.copy(
+        conditions = conditions ?: model.conditions,
         notes = notes.patchNullable(model.notes),
     )
   }

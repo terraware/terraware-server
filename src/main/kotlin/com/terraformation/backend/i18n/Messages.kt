@@ -564,6 +564,11 @@ class Messages {
         SupportRequestType.FeatureRequest -> getMessage("support.requestType.featureRequest")
       }
 
+  fun <T : LocalizableEnum<*>> sortedEnumList(values: Collection<T>): String {
+    val locale = currentLocale()
+    return values.map { it.getDisplayName(locale) }.sorted().joinToString(listDelimiter())
+  }
+
   /**
    * Returns the string that should be used to separate items in a list. This is hardwired in the
    * code rather than in a message bundle because Phrase seems to not send strings to translators if
