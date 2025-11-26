@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MangroveTide
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
@@ -302,6 +303,25 @@ data class ObservationMediaFileUploadedEventV1(
 ) : EntityCreatedPersistentEvent, ObservationMediaFilePersistentEvent
 
 typealias ObservationMediaFileUploadedEvent = ObservationMediaFileUploadedEventV1
+
+sealed interface ObservationPlotPersistentEvent : PersistentEvent {
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+}
+
+data class ObservationPlotCreatedEventV1(
+    val isPermanent: Boolean,
+    val monitoringPlotHistoryId: MonitoringPlotHistoryId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    val plotNumber: Long,
+) : EntityCreatedPersistentEvent, ObservationPlotPersistentEvent
+
+typealias ObservationPlotCreatedEvent = ObservationPlotCreatedEventV1
 
 sealed interface BiomassDetailsPersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId

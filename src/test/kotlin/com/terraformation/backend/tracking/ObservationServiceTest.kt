@@ -156,6 +156,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubzonesDao,
+        parentStore,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -287,8 +288,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           "Observation state",
       )
 
-      eventPublisher.assertExactEventsPublished(
-          setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId)))
+      eventPublisher.assertEventPublished(
+          ObservationStartedEvent(observationStore.fetchObservationById(observationId))
       )
     }
 
@@ -434,8 +435,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             "Observation state",
         )
 
-        eventPublisher.assertExactEventsPublished(
-            setOf(ObservationStartedEvent(observationStore.fetchObservationById(observationId)))
+        eventPublisher.assertEventPublished(
+            ObservationStartedEvent(observationStore.fetchObservationById(observationId))
         )
 
         when (numPermanentPlotsInSubzone1) {

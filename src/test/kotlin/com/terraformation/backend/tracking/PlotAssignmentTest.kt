@@ -44,6 +44,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubzonesDao,
+        parentStore,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {

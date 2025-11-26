@@ -29,6 +29,8 @@ import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
+import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
@@ -147,6 +149,35 @@ data class BiomassSpeciesSubjectPayload(
           shortText = context.subjectShortText<BiomassSpeciesSubjectPayload>(),
           speciesId = createEvent.speciesId,
           scientificName = createEvent.scientificName,
+      )
+    }
+  }
+}
+
+@JsonTypeName("ObservationPlot")
+data class ObservationPlotSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: ObservationPlotPersistentEvent,
+        context: EventLogPayloadContext,
+    ): ObservationPlotSubjectPayload {
+      val createEvent =
+          context.first<ObservationPlotCreatedEvent> {
+            it.observationId == event.observationId && it.monitoringPlotId == event.monitoringPlotId
+          }
+
+      return ObservationPlotSubjectPayload(
+          context.subjectFullText<ObservationPlotSubjectPayload>(createEvent.plotNumber),
+          event.monitoringPlotId,
+          event.observationId,
+          event.plantingSiteId,
+          context.subjectShortText<ObservationPlotSubjectPayload>(),
       )
     }
   }
@@ -317,6 +348,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   BiomassDetails(BiomassDetailsPersistentEvent::class),
   BiomassQuadrat(BiomassQuadratPersistentEvent::class),
   BiomassSpecies(BiomassSpeciesPersistentEvent::class),
+  ObservationPlot(ObservationPlotPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
   Project(ProjectPersistentEvent::class),

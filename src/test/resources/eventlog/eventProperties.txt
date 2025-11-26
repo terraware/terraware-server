@@ -105,6 +105,14 @@ com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/ob
 com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/organizationId: OrganizationId
 com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/plantingSiteId: PlantingSiteId
 com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEventV1/type: ObservationMediaType
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/isPermanent: Boolean
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/monitoringPlotHistoryId: MonitoringPlotHistoryId
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/monitoringPlotId: MonitoringPlotId
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/observationId: ObservationId
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/observedTime: Instant
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/organizationId: OrganizationId
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/plantingSiteId: PlantingSiteId
+com.terraformation.backend.tracking.event.ObservationPlotCreatedEventV1/plotNumber: Long
 
 #
 # Please add new entries in alphabetical (case-sensitive ASCII) order.
