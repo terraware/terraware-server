@@ -374,7 +374,7 @@ class ObservationsController(
   ): SimpleSuccessResponsePayload {
     val coordinateModels = payload.coordinates.map { it.toModel() }
 
-    observationStore.updatePlotObservation(observationId, plotId, coordinateModels)
+    observationStore.updateObservedPlotCoordinates(observationId, plotId, coordinateModels)
 
     return SimpleSuccessResponsePayload()
   }

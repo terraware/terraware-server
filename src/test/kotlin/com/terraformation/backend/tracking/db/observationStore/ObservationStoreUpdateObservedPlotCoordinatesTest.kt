@@ -6,7 +6,7 @@ import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class ObservationStoreUpdatePlotObservationTest : BaseObservationStoreTest() {
+class ObservationStoreUpdateObservedPlotCoordinatesTest : BaseObservationStoreTest() {
   @Test
   fun `can add and remove observed coordinates`() {
     insertPlantingZone()
@@ -19,7 +19,7 @@ class ObservationStoreUpdatePlotObservationTest : BaseObservationStoreTest() {
         position = ObservationPlotPosition.NorthwestCorner,
     )
 
-    store.updatePlotObservation(
+    store.updateObservedPlotCoordinates(
         inserted.observationId,
         inserted.monitoringPlotId,
         listOf(
