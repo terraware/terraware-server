@@ -103,9 +103,9 @@
 <ellipse fill="none" stroke="black" cx="1277.3" cy="-1992.03" rx="3.2" ry="3.2"/>
 </g>
 <!-- observations -->
-<g id="node29" class="node">
+<g id="node28" class="node">
 <title>observations</title>
-<g id="a_node29"><a xlink:href="../../tables/observations.html" xlink:title="observations" target="_top">
+<g id="a_node28"><a xlink:href="../../tables/observations.html" xlink:title="observations" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1011.5,-1308.35 1011.5,-1590.35 1229.5,-1590.35 1229.5,-1308.35 1011.5,-1308.35"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1011.5,-1568.35 1011.5,-1590.35 1229.5,-1590.35 1229.5,-1568.35 1011.5,-1568.35"/>
 <polygon fill="none" stroke="black" points="1011.5,-1568.35 1011.5,-1590.35 1229.5,-1590.35 1229.5,-1568.35 1011.5,-1568.35"/>
@@ -2505,79 +2505,6 @@
 <polygon fill="black" stroke="black" points="1861.5,-1505.22 1869.44,-1508.95 1865.5,-1505.28 1869.5,-1505.35 1869.5,-1505.35 1869.5,-1505.35 1865.5,-1505.28 1869.56,-1501.75 1861.5,-1505.22 1861.5,-1505.22"/>
 <ellipse fill="none" stroke="black" cx="1858.3" cy="-1505.16" rx="3.2" ry="3.2"/>
 </g>
-<!-- observed_plot_coordinates -->
-<g id="node28" class="node">
-<title>observed_plot_coordinates</title>
-<g id="a_node28"><a xlink:href="../../tables/observed_plot_coordinates.html" xlink:title="observed_plot_coordinates" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1839,-2371.35 1839,-2521.35 2042,-2521.35 2042,-2371.35 1839,-2371.35"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1839.5,-2499.35 1839.5,-2521.35 2042.5,-2521.35 2042.5,-2499.35 1839.5,-2499.35"/>
-<polygon fill="none" stroke="black" points="1839.5,-2499.35 1839.5,-2521.35 2042.5,-2521.35 2042.5,-2499.35 1839.5,-2499.35"/>
-<text text-anchor="start" x="1844.5" y="-2508.55" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_plot_coordinates</text>
-<text text-anchor="start" x="2003.5" y="-2507.55" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1839.5,-2477.35 1839.5,-2499.35 2042.5,-2499.35 2042.5,-2477.35 1839.5,-2477.35"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2494.35"/>
-<text text-anchor="start" x="1871.5" y="-2485.55" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2455.35 1839.5,-2477.35 2042.5,-2477.35 2042.5,-2455.35 1839.5,-2455.35"/>
-<polygon fill="none" stroke="black" points="1839.5,-2455.35 1839.5,-2477.35 2042.5,-2477.35 2042.5,-2455.35 1839.5,-2455.35"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2472.35"/>
-<text text-anchor="start" x="1871.5" y="-2463.55" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2433.35 1839.5,-2455.35 2042.5,-2455.35 2042.5,-2433.35 1839.5,-2433.35"/>
-<polygon fill="none" stroke="black" points="1839.5,-2433.35 1839.5,-2455.35 2042.5,-2455.35 2042.5,-2433.35 1839.5,-2433.35"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2450.35"/>
-<text text-anchor="start" x="1871.5" y="-2441.55" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2411.35 1839.5,-2433.35 2042.5,-2433.35 2042.5,-2411.35 1839.5,-2411.35"/>
-<polygon fill="none" stroke="black" points="1839.5,-2411.35 1839.5,-2433.35 2042.5,-2433.35 2042.5,-2411.35 1839.5,-2411.35"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2428.35"/>
-<text text-anchor="start" x="1871.5" y="-2419.55" font-family="Helvetica,sans-Serif" font-size="11.00">position_id</text>
-<polygon fill="none" stroke="black" points="1839.5,-2389.35 1839.5,-2411.35 2042.5,-2411.35 2042.5,-2389.35 1839.5,-2389.35"/>
-<text text-anchor="start" x="1871.5" y="-2397.55" font-family="Helvetica,sans-Serif" font-size="11.00">gps_coordinates</text>
-<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2371.35 1839.5,-2389.35 1938.5,-2389.35 1938.5,-2371.35 1839.5,-2371.35"/>
-<polygon fill="none" stroke="black" points="1839.5,-2371.35 1839.5,-2389.35 1938.5,-2389.35 1938.5,-2371.35 1839.5,-2371.35"/>
-<text text-anchor="start" x="1842.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="transparent" points="1938.5,-2371.35 1938.5,-2389.35 1990.5,-2389.35 1990.5,-2371.35 1938.5,-2371.35"/>
-<polygon fill="none" stroke="black" points="1938.5,-2371.35 1938.5,-2389.35 1990.5,-2389.35 1990.5,-2371.35 1938.5,-2371.35"/>
-<text text-anchor="start" x="1980.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1990.5,-2371.35 1990.5,-2389.35 2042.5,-2389.35 2042.5,-2371.35 1990.5,-2371.35"/>
-<polygon fill="none" stroke="black" points="1990.5,-2371.35 1990.5,-2389.35 2042.5,-2389.35 2042.5,-2371.35 1990.5,-2371.35"/>
-<text text-anchor="start" x="2032.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- observed_plot_coordinates&#45;&gt;observation_plots -->
-<g id="edge75" class="edge">
-<title>observed_plot_coordinates:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M1824.09,-2443.7C1805.83,-2441.97 1796.79,-2437.35 1773,-2437.35"/>
-<polygon fill="black" stroke="black" points="1830.51,-2443.99 1838.34,-2447.95 1834.5,-2444.17 1838.5,-2444.35 1838.5,-2444.35 1838.5,-2444.35 1834.5,-2444.17 1838.66,-2440.75 1830.51,-2443.99 1830.51,-2443.99"/>
-<ellipse fill="none" stroke="black" cx="1827.31" cy="-2443.85" rx="3.2" ry="3.2"/>
-</g>
-<!-- observed_plot_coordinates&#45;&gt;observation_plots -->
-<g id="edge76" class="edge">
-<title>observed_plot_coordinates:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M1824.09,-2465.7C1805.83,-2463.97 1796.79,-2459.35 1773,-2459.35"/>
-<polygon fill="black" stroke="black" points="1830.51,-2465.99 1838.34,-2469.95 1834.5,-2466.17 1838.5,-2466.35 1838.5,-2466.35 1838.5,-2466.35 1834.5,-2466.17 1838.66,-2462.75 1830.51,-2465.99 1830.51,-2465.99"/>
-<ellipse fill="none" stroke="black" cx="1827.31" cy="-2465.85" rx="3.2" ry="3.2"/>
-</g>
-<!-- observed_plot_coordinates&#45;&gt;monitoring_plots -->
-<g id="edge74" class="edge">
-<title>observed_plot_coordinates:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M1824.19,-2447.13C1795.51,-2461.16 1828.88,-2524.7 1792,-2553.35 1713.87,-2614.05 1645.34,-2520.94 1572,-2587.35 1528.45,-2626.79 1582.98,-2676.4 1539,-2715.35 1452.41,-2792.03 1372.45,-2678.54 1281,-2749.35 1199.88,-2812.15 1297.09,-2963.35 1194.5,-2963.35"/>
-<polygon fill="black" stroke="black" points="1830.65,-2445.87 1839.19,-2447.88 1834.57,-2445.11 1838.5,-2444.35 1838.5,-2444.35 1838.5,-2444.35 1834.57,-2445.11 1837.81,-2440.82 1830.65,-2445.87 1830.65,-2445.87"/>
-<ellipse fill="none" stroke="black" cx="1827.51" cy="-2446.48" rx="3.2" ry="3.2"/>
-</g>
-<!-- observed_plot_coordinates&#45;&gt;observation_plot_positions -->
-<g id="edge78" class="edge">
-<title>observed_plot_coordinates:w&#45;&gt;observation_plot_positions:e</title>
-<path fill="none" stroke="black" d="M1825.41,-2428.53C1791.93,-2467.03 1836.49,-2672.35 1785,-2672.35"/>
-<polygon fill="black" stroke="black" points="1831.27,-2425.77 1840.04,-2425.61 1834.88,-2424.06 1838.5,-2422.35 1838.5,-2422.35 1838.5,-2422.35 1834.88,-2424.06 1836.96,-2419.09 1831.27,-2425.77 1831.27,-2425.77"/>
-<ellipse fill="none" stroke="black" cx="1828.37" cy="-2427.13" rx="3.2" ry="3.2"/>
-</g>
-<!-- observed_plot_coordinates&#45;&gt;observations -->
-<g id="edge77" class="edge">
-<title>observed_plot_coordinates:w&#45;&gt;observations:e</title>
-<path fill="none" stroke="black" d="M1824.45,-2462.33C1770.48,-2426.63 1844.51,-2163.67 1792,-2111.35 1722.18,-2041.78 1643.45,-2151.25 1572,-2083.35 1511.78,-2026.12 1599.64,-1956.14 1539,-1899.35 1454.78,-1820.47 1362.97,-1951.56 1281,-1870.35 1230.95,-1820.76 1300.96,-1557.35 1230.5,-1557.35"/>
-<polygon fill="black" stroke="black" points="1830.81,-2464.15 1837.51,-2469.81 1834.65,-2465.25 1838.5,-2466.35 1838.5,-2466.35 1838.5,-2466.35 1834.65,-2465.25 1839.49,-2462.89 1830.81,-2464.15 1830.81,-2464.15"/>
-<ellipse fill="none" stroke="black" cx="1827.73" cy="-2463.27" rx="3.2" ry="3.2"/>
-</g>
 <!-- observations&#45;&gt;planting_site_histories -->
 <g id="edge71" class="edge">
 <title>observations:w&#45;&gt;planting_site_histories:e</title>
@@ -2659,6 +2586,79 @@
 <path fill="none" stroke="black" d="M996.21,-1422.29C972.05,-1410.45 974.63,-1368.35 940,-1368.35"/>
 <polygon fill="black" stroke="black" points="1002.68,-1423.67 1009.75,-1428.87 1006.59,-1424.51 1010.5,-1425.35 1010.5,-1425.35 1010.5,-1425.35 1006.59,-1424.51 1011.25,-1421.83 1002.68,-1423.67 1002.68,-1423.67"/>
 <ellipse fill="none" stroke="black" cx="999.55" cy="-1423" rx="3.2" ry="3.2"/>
+</g>
+<!-- observed_plot_coordinates -->
+<g id="node29" class="node">
+<title>observed_plot_coordinates</title>
+<g id="a_node29"><a xlink:href="../../tables/observed_plot_coordinates.html" xlink:title="observed_plot_coordinates" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1839,-2371.35 1839,-2521.35 2042,-2521.35 2042,-2371.35 1839,-2371.35"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1839.5,-2499.35 1839.5,-2521.35 2042.5,-2521.35 2042.5,-2499.35 1839.5,-2499.35"/>
+<polygon fill="none" stroke="black" points="1839.5,-2499.35 1839.5,-2521.35 2042.5,-2521.35 2042.5,-2499.35 1839.5,-2499.35"/>
+<text text-anchor="start" x="1844.5" y="-2508.55" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_plot_coordinates</text>
+<text text-anchor="start" x="2003.5" y="-2507.55" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1839.5,-2477.35 1839.5,-2499.35 2042.5,-2499.35 2042.5,-2477.35 1839.5,-2477.35"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2494.35"/>
+<text text-anchor="start" x="1871.5" y="-2485.55" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2455.35 1839.5,-2477.35 2042.5,-2477.35 2042.5,-2455.35 1839.5,-2455.35"/>
+<polygon fill="none" stroke="black" points="1839.5,-2455.35 1839.5,-2477.35 2042.5,-2477.35 2042.5,-2455.35 1839.5,-2455.35"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2472.35"/>
+<text text-anchor="start" x="1871.5" y="-2463.55" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2433.35 1839.5,-2455.35 2042.5,-2455.35 2042.5,-2433.35 1839.5,-2433.35"/>
+<polygon fill="none" stroke="black" points="1839.5,-2433.35 1839.5,-2455.35 2042.5,-2455.35 2042.5,-2433.35 1839.5,-2433.35"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2450.35"/>
+<text text-anchor="start" x="1871.5" y="-2441.55" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2411.35 1839.5,-2433.35 2042.5,-2433.35 2042.5,-2411.35 1839.5,-2411.35"/>
+<polygon fill="none" stroke="black" points="1839.5,-2411.35 1839.5,-2433.35 2042.5,-2433.35 2042.5,-2411.35 1839.5,-2411.35"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1844.5" y="-2428.35"/>
+<text text-anchor="start" x="1871.5" y="-2419.55" font-family="Helvetica,sans-Serif" font-size="11.00">position_id</text>
+<polygon fill="none" stroke="black" points="1839.5,-2389.35 1839.5,-2411.35 2042.5,-2411.35 2042.5,-2389.35 1839.5,-2389.35"/>
+<text text-anchor="start" x="1871.5" y="-2397.55" font-family="Helvetica,sans-Serif" font-size="11.00">gps_coordinates</text>
+<polygon fill="#ffffff" stroke="transparent" points="1839.5,-2371.35 1839.5,-2389.35 1938.5,-2389.35 1938.5,-2371.35 1839.5,-2371.35"/>
+<polygon fill="none" stroke="black" points="1839.5,-2371.35 1839.5,-2389.35 1938.5,-2389.35 1938.5,-2371.35 1839.5,-2371.35"/>
+<text text-anchor="start" x="1842.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="1938.5,-2371.35 1938.5,-2389.35 1990.5,-2389.35 1990.5,-2371.35 1938.5,-2371.35"/>
+<polygon fill="none" stroke="black" points="1938.5,-2371.35 1938.5,-2389.35 1990.5,-2389.35 1990.5,-2371.35 1938.5,-2371.35"/>
+<text text-anchor="start" x="1980.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1990.5,-2371.35 1990.5,-2389.35 2042.5,-2389.35 2042.5,-2371.35 1990.5,-2371.35"/>
+<polygon fill="none" stroke="black" points="1990.5,-2371.35 1990.5,-2389.35 2042.5,-2389.35 2042.5,-2371.35 1990.5,-2371.35"/>
+<text text-anchor="start" x="2032.5" y="-2377.55" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- observed_plot_coordinates&#45;&gt;observation_plots -->
+<g id="edge75" class="edge">
+<title>observed_plot_coordinates:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M1824.09,-2443.7C1805.83,-2441.97 1796.79,-2437.35 1773,-2437.35"/>
+<polygon fill="black" stroke="black" points="1830.51,-2443.99 1838.34,-2447.95 1834.5,-2444.17 1838.5,-2444.35 1838.5,-2444.35 1838.5,-2444.35 1834.5,-2444.17 1838.66,-2440.75 1830.51,-2443.99 1830.51,-2443.99"/>
+<ellipse fill="none" stroke="black" cx="1827.31" cy="-2443.85" rx="3.2" ry="3.2"/>
+</g>
+<!-- observed_plot_coordinates&#45;&gt;observation_plots -->
+<g id="edge76" class="edge">
+<title>observed_plot_coordinates:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M1824.09,-2465.7C1805.83,-2463.97 1796.79,-2459.35 1773,-2459.35"/>
+<polygon fill="black" stroke="black" points="1830.51,-2465.99 1838.34,-2469.95 1834.5,-2466.17 1838.5,-2466.35 1838.5,-2466.35 1838.5,-2466.35 1834.5,-2466.17 1838.66,-2462.75 1830.51,-2465.99 1830.51,-2465.99"/>
+<ellipse fill="none" stroke="black" cx="1827.31" cy="-2465.85" rx="3.2" ry="3.2"/>
+</g>
+<!-- observed_plot_coordinates&#45;&gt;monitoring_plots -->
+<g id="edge74" class="edge">
+<title>observed_plot_coordinates:w&#45;&gt;monitoring_plots:e</title>
+<path fill="none" stroke="black" d="M1824.19,-2447.13C1795.51,-2461.16 1828.88,-2524.7 1792,-2553.35 1713.87,-2614.05 1645.34,-2520.94 1572,-2587.35 1528.45,-2626.79 1582.98,-2676.4 1539,-2715.35 1452.41,-2792.03 1372.45,-2678.54 1281,-2749.35 1199.88,-2812.15 1297.09,-2963.35 1194.5,-2963.35"/>
+<polygon fill="black" stroke="black" points="1830.65,-2445.87 1839.19,-2447.88 1834.57,-2445.11 1838.5,-2444.35 1838.5,-2444.35 1838.5,-2444.35 1834.57,-2445.11 1837.81,-2440.82 1830.65,-2445.87 1830.65,-2445.87"/>
+<ellipse fill="none" stroke="black" cx="1827.51" cy="-2446.48" rx="3.2" ry="3.2"/>
+</g>
+<!-- observed_plot_coordinates&#45;&gt;observation_plot_positions -->
+<g id="edge78" class="edge">
+<title>observed_plot_coordinates:w&#45;&gt;observation_plot_positions:e</title>
+<path fill="none" stroke="black" d="M1825.41,-2428.53C1791.93,-2467.03 1836.49,-2672.35 1785,-2672.35"/>
+<polygon fill="black" stroke="black" points="1831.27,-2425.77 1840.04,-2425.61 1834.88,-2424.06 1838.5,-2422.35 1838.5,-2422.35 1838.5,-2422.35 1834.88,-2424.06 1836.96,-2419.09 1831.27,-2425.77 1831.27,-2425.77"/>
+<ellipse fill="none" stroke="black" cx="1828.37" cy="-2427.13" rx="3.2" ry="3.2"/>
+</g>
+<!-- observed_plot_coordinates&#45;&gt;observations -->
+<g id="edge77" class="edge">
+<title>observed_plot_coordinates:w&#45;&gt;observations:e</title>
+<path fill="none" stroke="black" d="M1824.45,-2462.33C1770.48,-2426.63 1844.51,-2163.67 1792,-2111.35 1722.18,-2041.78 1643.45,-2151.25 1572,-2083.35 1511.78,-2026.12 1599.64,-1956.14 1539,-1899.35 1454.78,-1820.47 1362.97,-1951.56 1281,-1870.35 1230.95,-1820.76 1300.96,-1557.35 1230.5,-1557.35"/>
+<polygon fill="black" stroke="black" points="1830.81,-2464.15 1837.51,-2469.81 1834.65,-2465.25 1838.5,-2466.35 1838.5,-2466.35 1838.5,-2466.35 1834.65,-2465.25 1839.49,-2462.89 1830.81,-2464.15 1830.81,-2464.15"/>
+<ellipse fill="none" stroke="black" cx="1827.73" cy="-2463.27" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_site_species_totals -->
 <g id="node32" class="node">
