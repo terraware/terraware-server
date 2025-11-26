@@ -1,3 +1,4 @@
+17c7bd4d5f3 Name plot coordinate update method more precisely (#3671)
 7957655dbe6 SW-7697 Add ObservationPlotCreatedEvent (#3670)
 63d2f71b879 Include default field search type in OpenAPI schema (#3674)
 55942f73296 SW-6718 Add new observable plot conditions (#3665)
