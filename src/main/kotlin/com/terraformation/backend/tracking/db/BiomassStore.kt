@@ -29,6 +29,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
@@ -36,11 +37,13 @@ import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.RecordedTreeModel
 import jakarta.inject.Named
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
@@ -533,17 +536,7 @@ class BiomassStore(
 
     observationLocker.withLockedObservation(observationId) { _ ->
       val biomassSpeciesRecord =
-          with(OBSERVATION_BIOMASS_SPECIES) {
-            val idOrNameCondition =
-                speciesId?.let { SPECIES_ID.eq(it) } ?: SCIENTIFIC_NAME.eq(scientificName)
-            dslContext
-                .select(ID, IS_INVASIVE, IS_THREATENED)
-                .from(OBSERVATION_BIOMASS_SPECIES)
-                .where(OBSERVATION_ID.eq(observationId))
-                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
-                .and(idOrNameCondition)
-                .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
-          }
+          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
 
       val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
 
@@ -658,6 +651,78 @@ class BiomassStore(
     }
   }
 
+  fun updateBiomassQuadratSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      position: ObservationPlotPosition,
+      speciesId: SpeciesId?,
+      scientificName: String?,
+      updateFunc: (EditableBiomassQuadratSpeciesModel) -> EditableBiomassQuadratSpeciesModel,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    if (
+        speciesId == null && scientificName == null || speciesId != null && scientificName != null
+    ) {
+      throw IllegalArgumentException("One of species ID or scientific name must be specified")
+    }
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    observationLocker.withLockedObservation(observationId) { observation ->
+      val biomassSpeciesRecord =
+          fetchBiomassSpecies(speciesId, scientificName, observationId, monitoringPlotId)
+
+      val biomassSpeciesId = biomassSpeciesRecord[OBSERVATION_BIOMASS_SPECIES.ID]!!
+
+      val existing =
+          with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
+            dslContext
+                .select(ABUNDANCE_PERCENT)
+                .from(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(POSITION_ID.eq(position))
+                .and(BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+                .fetchOne { EditableBiomassQuadratSpeciesModel.of(it) }
+                ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
+          }
+
+      val updated = updateFunc(existing)
+
+      val changedFrom = existing.toEventValues(updated)
+      val changedTo = updated.toEventValues(existing)
+
+      if (changedFrom != changedTo) {
+        with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
+          dslContext
+              .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
+              .set(ABUNDANCE_PERCENT, updated.abundance)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .and(POSITION_ID.eq(position))
+              .and(BIOMASS_SPECIES_ID.eq(biomassSpeciesId))
+              .execute()
+        }
+
+        eventPublisher.publishEvent(
+            BiomassQuadratSpeciesUpdatedEvent(
+                biomassSpeciesId = biomassSpeciesId,
+                changedFrom = changedFrom,
+                changedTo = changedTo,
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = organizationId,
+                plantingSiteId = observation.plantingSiteId,
+                position = position,
+            )
+        )
+      }
+    }
+  }
+
   fun updateRecordedTree(
       observationId: ObservationId,
       recordedTreeId: RecordedTreeId,
@@ -709,6 +774,26 @@ class BiomassStore(
           )
         }
       }
+    }
+  }
+
+  private fun fetchBiomassSpecies(
+      speciesId: SpeciesId?,
+      scientificName: String?,
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ): ObservationBiomassSpeciesRecord {
+    return with(OBSERVATION_BIOMASS_SPECIES) {
+      val idOrNameCondition =
+          speciesId?.let<SpeciesId, Condition> { SPECIES_ID.eq(it) }
+              ?: SCIENTIFIC_NAME.eq(scientificName)
+
+      dslContext
+          .selectFrom(OBSERVATION_BIOMASS_SPECIES)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .and(idOrNameCondition)
+          .fetchOne() ?: throw BiomassSpeciesNotFoundException(speciesId, scientificName)
     }
   }
 

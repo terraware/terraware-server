@@ -449,6 +449,43 @@ typealias BiomassQuadratDetailsUpdatedEvent = BiomassQuadratDetailsUpdatedEventV
 
 typealias BiomassQuadratDetailsUpdatedEventValues = BiomassQuadratDetailsUpdatedEventV1.Values
 
+sealed interface BiomassQuadratSpeciesPersistentEvent : PersistentEvent {
+  val biomassSpeciesId: BiomassSpeciesId
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+  val position: ObservationPlotPosition
+}
+
+data class BiomassQuadratSpeciesUpdatedEventV1(
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val biomassSpeciesId: BiomassSpeciesId,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val position: ObservationPlotPosition,
+) : BiomassQuadratSpeciesPersistentEvent, FieldsUpdatedPersistentEvent {
+  data class Values(
+      val abundance: Int?,
+  )
+
+  override fun listUpdatedFields(messages: Messages) =
+      listOfNotNull(
+          createUpdatedField(
+              "abundance",
+              messages.numericValueOrNull(changedFrom.abundance),
+              messages.numericValueOrNull(changedTo.abundance),
+          ),
+      )
+}
+
+typealias BiomassQuadratSpeciesUpdatedEvent = BiomassQuadratSpeciesUpdatedEventV1
+
+typealias BiomassQuadratSpeciesUpdatedEventValues = BiomassQuadratSpeciesUpdatedEventV1.Values
+
 sealed interface BiomassSpeciesPersistentEvent : PersistentEvent {
   val biomassSpeciesId: BiomassSpeciesId
   val monitoringPlotId: MonitoringPlotId

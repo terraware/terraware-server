@@ -3056,7 +3056,7 @@ abstract class DatabaseBackedTest {
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
       abundancePercent: Int = row.abundancePercent ?: 0,
   ) {
     with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {

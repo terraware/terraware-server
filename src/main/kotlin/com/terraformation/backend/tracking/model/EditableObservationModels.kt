@@ -3,10 +3,12 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
+import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEventValues
 import com.terraformation.backend.util.nullIfEquals
@@ -48,6 +50,25 @@ data class EditableBiomassQuadratDetailsModel(
       return with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
         EditableBiomassQuadratDetailsModel(
             description = record[DESCRIPTION],
+        )
+      }
+    }
+  }
+}
+
+data class EditableBiomassQuadratSpeciesModel(
+    val abundance: Int,
+) {
+  fun toEventValues(other: EditableBiomassQuadratSpeciesModel) =
+      BiomassQuadratSpeciesUpdatedEventValues(
+          abundance = abundance.nullIfEquals(other.abundance),
+      )
+
+  companion object {
+    fun of(record: Record): EditableBiomassQuadratSpeciesModel {
+      return with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
+        EditableBiomassQuadratSpeciesModel(
+            abundance = record[ABUNDANCE_PERCENT]!!,
         )
       }
     }
