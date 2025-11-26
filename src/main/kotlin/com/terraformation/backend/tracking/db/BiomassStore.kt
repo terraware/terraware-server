@@ -27,16 +27,12 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.event.BiomassDetailsCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
-import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEvent
-import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEvent
-import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEvent
-import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
 import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
@@ -44,7 +40,6 @@ import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.RecordedTreeModel
-import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -475,16 +470,8 @@ class BiomassStore(
 
       val updated = updateFunc(existing)
 
-      val changedFrom =
-          BiomassDetailsUpdatedEventValues(
-              description = existing.description.nullIfEquals(updated.description),
-              soilAssessment = existing.soilAssessment.nullIfEquals(updated.soilAssessment),
-          )
-      val changedTo =
-          BiomassDetailsUpdatedEventValues(
-              description = updated.description.nullIfEquals(existing.description),
-              soilAssessment = updated.soilAssessment.nullIfEquals(existing.soilAssessment),
-          )
+      val changedFrom = existing.toEventValues(updated)
+      val changedTo = updated.toEventValues(existing)
 
       if (changedFrom != changedTo) {
         with(OBSERVATION_BIOMASS_DETAILS) {
@@ -563,14 +550,8 @@ class BiomassStore(
       val existing = EditableBiomassSpeciesModel.of(biomassSpeciesRecord)
       val updated = updateFunc(existing)
 
-      fun eventValues(ours: EditableBiomassSpeciesModel, theirs: EditableBiomassSpeciesModel) =
-          BiomassSpeciesUpdatedEventValues(
-              isInvasive = ours.isInvasive.nullIfEquals(theirs.isInvasive),
-              isThreatened = ours.isThreatened.nullIfEquals(theirs.isThreatened),
-          )
-
-      val changedFrom = eventValues(existing, updated)
-      val changedTo = eventValues(updated, existing)
+      val changedFrom = existing.toEventValues(updated)
+      val changedTo = updated.toEventValues(existing)
 
       if (changedFrom != changedTo) {
         with(OBSERVATION_BIOMASS_SPECIES) {
@@ -627,14 +608,8 @@ class BiomassStore(
       val editable = existing ?: EditableBiomassQuadratDetailsModel()
       val updated = updateFunc(editable)
 
-      val changedFrom =
-          BiomassQuadratDetailsUpdatedEventValues(
-              description = editable.description.nullIfEquals(updated.description),
-          )
-      val changedTo =
-          BiomassQuadratDetailsUpdatedEventValues(
-              description = updated.description.nullIfEquals(editable.description),
-          )
+      val changedFrom = editable.toEventValues(updated)
+      val changedTo = updated.toEventValues(editable)
 
       if (changedFrom != changedTo) {
         with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
@@ -694,14 +669,8 @@ class BiomassStore(
       val existing = fetchRecordedTree(observationId, recordedTreeId)
       val updated = updateFunc(existing)
 
-      val changedFrom =
-          RecordedTreeUpdatedEventValues(
-              description = existing.description.nullIfEquals(updated.description),
-          )
-      val changedTo =
-          RecordedTreeUpdatedEventValues(
-              description = updated.description.nullIfEquals(existing.description),
-          )
+      val changedFrom = existing.toEventValues(updated)
+      val changedTo = updated.toEventValues(existing)
 
       if (changedFrom != changedTo) {
         with(RECORDED_TREES) {
