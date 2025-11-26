@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.Optional
@@ -65,5 +67,15 @@ data class ObservationPlotUpdateOperationPayload(
     return model.copy(
         notes = notes.patchNullable(model.notes),
     )
+  }
+}
+
+@JsonTypeName("RecordedTree")
+data class RecordedTreeUpdateOperationPayload(
+    val description: Optional<String>?,
+    @Schema(description = "ID of tree to update.") val recordedTreeId: RecordedTreeId,
+) : ObservationUpdateOperationPayload {
+  fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
+    return model.copy(description = description.patchNullable(model.description))
   }
 }
