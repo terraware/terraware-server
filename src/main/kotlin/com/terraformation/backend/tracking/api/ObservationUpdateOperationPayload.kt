@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
+import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.Optional
@@ -52,6 +53,17 @@ data class BiomassUpdateOperationPayload(
     return model.copy(
         description = description.patchNullable(model.description),
         soilAssessment = soilAssessment ?: model.soilAssessment,
+    )
+  }
+}
+
+@JsonTypeName("ObservationPlot")
+data class ObservationPlotUpdateOperationPayload(
+    val notes: Optional<String>?,
+) : ObservationUpdateOperationPayload {
+  fun applyTo(model: EditableObservationPlotDetailsModel): EditableObservationPlotDetailsModel {
+    return model.copy(
+        notes = notes.patchNullable(model.notes),
     )
   }
 }
