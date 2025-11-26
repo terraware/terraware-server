@@ -546,12 +546,42 @@ data class RecordedTreeUpdatedEventV1(
     override val recordedTreeId: RecordedTreeId,
 ) : FieldsUpdatedPersistentEvent, RecordedTreePersistentEvent {
   data class Values(
-      val description: String?,
+      val description: String? = null,
+      val diameterAtBreastHeightCm: BigDecimal? = null,
+      val heightM: BigDecimal? = null,
+      val isDead: Boolean? = null,
+      val pointOfMeasurementM: BigDecimal? = null,
+      val shrubDiameterCm: Int? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
-          createUpdatedField("description", changedFrom.description, changedTo.description)
+          createUpdatedField("description", changedFrom.description, changedTo.description),
+          createUpdatedField(
+              "diameterAtBreastHeightCm",
+              messages.numericValueOrNull(changedFrom.diameterAtBreastHeightCm),
+              messages.numericValueOrNull(changedTo.diameterAtBreastHeightCm),
+          ),
+          createUpdatedField(
+              "heightM",
+              messages.numericValueOrNull(changedFrom.heightM),
+              messages.numericValueOrNull(changedTo.heightM),
+          ),
+          createUpdatedField(
+              "isDead",
+              messages.booleanOrNull(changedFrom.isDead),
+              messages.booleanOrNull(changedTo.isDead),
+          ),
+          createUpdatedField(
+              "pointOfMeasurementM",
+              messages.numericValueOrNull(changedFrom.pointOfMeasurementM),
+              messages.numericValueOrNull(changedTo.pointOfMeasurementM),
+          ),
+          createUpdatedField(
+              "shrubDiameterCm",
+              messages.numericValueOrNull(changedFrom.shrubDiameterCm),
+              messages.numericValueOrNull(changedTo.shrubDiameterCm),
+          ),
       )
 }
 
