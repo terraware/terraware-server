@@ -31,12 +31,14 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedS
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
@@ -1094,6 +1096,17 @@ class ObservationStore(
         .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
   }
 
+  private val observationPlotConditionsMultiset =
+      with(OBSERVATION_PLOT_CONDITIONS) {
+        DSL.multiset(
+                DSL.select(CONDITION_ID)
+                    .from(OBSERVATION_PLOT_CONDITIONS)
+                    .where(OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+            )
+            .convertFrom { result -> result.map { record -> record[CONDITION_ID]!! }.toSet() }
+      }
+
   fun updateObservationPlotDetails(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
@@ -1110,7 +1123,7 @@ class ObservationStore(
           with(OBSERVATION_PLOTS) {
             val record =
                 dslContext
-                    .select(NOTES, STATUS_ID)
+                    .select(NOTES, STATUS_ID, observationPlotConditionsMultiset)
                     .from(OBSERVATION_PLOTS)
                     .where(OBSERVATION_ID.eq(observationId))
                     .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
@@ -1121,7 +1134,7 @@ class ObservationStore(
               throw PlotNotCompletedException(monitoringPlotId)
             }
 
-            EditableObservationPlotDetailsModel.of(record)
+            EditableObservationPlotDetailsModel.of(record, observationPlotConditionsMultiset)
           }
 
       val updated = updateFunc(existing)
@@ -1130,12 +1143,38 @@ class ObservationStore(
       val changedTo = updated.toEventValues(existing)
 
       if (changedFrom != changedTo) {
-        with(OBSERVATION_PLOTS) {
+        if (changedFrom.notes != changedTo.notes) {
+          with(OBSERVATION_PLOTS) {
+            dslContext
+                .update(OBSERVATION_PLOTS)
+                .set(NOTES, updated.notes)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .execute()
+          }
+        }
+
+        val conditionsToDelete = existing.conditions - updated.conditions
+        val conditionsToInsert = updated.conditions - existing.conditions
+
+        if (conditionsToDelete.isNotEmpty()) {
+          with(OBSERVATION_PLOT_CONDITIONS) {
+            dslContext
+                .deleteFrom(OBSERVATION_PLOT_CONDITIONS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(CONDITION_ID.`in`(conditionsToDelete))
+                .execute()
+          }
+        }
+
+        if (conditionsToInsert.isNotEmpty()) {
           dslContext
-              .update(OBSERVATION_PLOTS)
-              .set(NOTES, updated.notes)
-              .where(OBSERVATION_ID.eq(observationId))
-              .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .batchInsert(
+                  conditionsToInsert.map {
+                    ObservationPlotConditionsRecord(observationId, monitoringPlotId, it)
+                  }
+              )
               .execute()
         }
 

@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -332,11 +333,17 @@ data class ObservationPlotEditedEventV1(
     override val plantingSiteId: PlantingSiteId,
 ) : FieldsUpdatedPersistentEvent, ObservationPlotPersistentEvent {
   data class Values(
+      val conditions: Set<ObservableCondition>?,
       val notes: String?,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
+          createUpdatedField(
+              "conditions",
+              changedFrom.conditions?.let { messages.sortedEnumList(it) },
+              changedTo.conditions?.let { messages.sortedEnumList(it) },
+          ),
           createUpdatedField("notes", changedFrom.notes, changedTo.notes),
       )
 }
