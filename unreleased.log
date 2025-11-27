@@ -1,3 +1,4 @@
+01f9080d070 SW-7782 Support updating numeric recorded tree values (#3677)
 68ad1a0add3 Move updated event values calculations to edit models (#3676)
 afd7c47ad54 SW-7695 Support editing observed plot conditions (#3675)
 54284d8c4fa SW-7695 Move recorded tree update to PATCH endpoint (#3673)
