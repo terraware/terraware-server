@@ -1,3 +1,4 @@
+afd7c47ad54 SW-7695 Support editing observed plot conditions (#3675)
 54284d8c4fa SW-7695 Move recorded tree update to PATCH endpoint (#3673)
 25e7b9bd9c1 SW-7695 Support editing plot field notes (#3672)
 17c7bd4d5f3 Name plot coordinate update method more precisely (#3671)
