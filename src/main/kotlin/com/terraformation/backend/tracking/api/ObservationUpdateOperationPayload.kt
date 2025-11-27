@@ -13,6 +13,7 @@ import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsM
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.util.Optional
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -76,9 +77,26 @@ data class ObservationPlotUpdateOperationPayload(
 @JsonTypeName("RecordedTree")
 data class RecordedTreeUpdateOperationPayload(
     val description: Optional<String>?,
-    @Schema(description = "ID of tree to update.") val recordedTreeId: RecordedTreeId,
+    @Schema(description = "Only valid for Tree and Trunk growth forms.") //
+    val diameterAtBreastHeight: BigDecimal?,
+    @Schema(description = "Only valid for Tree and Trunk growth forms.") //
+    val height: BigDecimal?,
+    val isDead: Boolean?,
+    @Schema(description = "ID of tree to update.") //
+    val recordedTreeId: RecordedTreeId,
+    @Schema(description = "Only valid for Tree and Trunk growth forms.") //
+    val pointOfMeasurement: BigDecimal?,
+    @Schema(description = "Only valid for Shrub growth form.") //
+    val shrubDiameter: Int?,
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
-    return model.copy(description = description.patchNullable(model.description))
+    return model.copy(
+        description = description.patchNullable(model.description),
+        diameterAtBreastHeightCm = diameterAtBreastHeight ?: model.diameterAtBreastHeightCm,
+        heightM = height ?: model.heightM,
+        isDead = isDead ?: model.isDead,
+        pointOfMeasurementM = pointOfMeasurement ?: model.pointOfMeasurementM,
+        shrubDiameterCm = shrubDiameter ?: model.shrubDiameterCm,
+    )
   }
 }

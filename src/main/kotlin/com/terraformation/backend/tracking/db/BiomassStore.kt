@@ -668,6 +668,7 @@ class BiomassStore(
     observationLocker.withLockedObservation(observationId) { observation ->
       val existing = fetchRecordedTree(observationId, recordedTreeId)
       val updated = updateFunc(existing)
+      validateRecordedTreeUpdate(existing, updated)
 
       val changedFrom = existing.toEventValues(updated)
       val changedTo = updated.toEventValues(existing)
@@ -677,6 +678,11 @@ class BiomassStore(
           dslContext
               .update(RECORDED_TREES)
               .set(DESCRIPTION, updated.description)
+              .set(DIAMETER_AT_BREAST_HEIGHT_CM, updated.diameterAtBreastHeightCm)
+              .set(HEIGHT_M, updated.heightM)
+              .set(IS_DEAD, updated.isDead)
+              .set(POINT_OF_MEASUREMENT_M, updated.pointOfMeasurementM)
+              .set(SHRUB_DIAMETER_CM, updated.shrubDiameterCm)
               .where(ID.eq(recordedTreeId))
               .execute()
 
@@ -703,6 +709,27 @@ class BiomassStore(
           )
         }
       }
+    }
+  }
+
+  private fun validateRecordedTreeUpdate(
+      existing: ExistingRecordedTreeModel,
+      updated: ExistingRecordedTreeModel,
+  ) {
+    when (existing.treeGrowthForm) {
+      TreeGrowthForm.Shrub ->
+          require(
+              updated.diameterAtBreastHeightCm == null &&
+                  updated.heightM == null &&
+                  updated.pointOfMeasurementM == null
+          ) {
+            "Tree measurements may not be edited on shrubs"
+          }
+      TreeGrowthForm.Tree,
+      TreeGrowthForm.Trunk ->
+          require(existing.shrubDiameterCm == updated.shrubDiameterCm) {
+            "Shrub measurements may not be edited on trees"
+          }
     }
   }
 }

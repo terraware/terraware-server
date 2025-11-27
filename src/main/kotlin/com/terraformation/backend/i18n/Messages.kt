@@ -22,6 +22,7 @@ import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -264,6 +265,12 @@ class Messages {
   fun monitoringPlotTypePermanent() = getMessage("monitoringPlotTypePermanent")
 
   fun monitoringPlotTypeTemporary() = getMessage("monitoringPlotTypeTemporary")
+
+  fun numericValueOrNull(value: BigDecimal?) = value?.let { decimalFormat().format(it) }
+
+  fun numericValueOrNull(value: Int?) = value?.let { decimalFormat().format(it) }
+
+  fun numericValueOrNull(value: Long?) = value?.let { decimalFormat().format(it) }
 
   fun speciesCsvColumnName(position: Int) = getMessage("speciesCsvColumnName.$position")
 
@@ -670,6 +677,9 @@ class Messages {
 
   private fun eventSubjectPrefix(kClass: KClass<*>) =
       "eventSubject.${kClass.findAnnotation<JsonTypeName>()!!.value}"
+
+  private fun decimalFormat(): DecimalFormat =
+      NumberFormat.getNumberInstance(currentLocale()) as DecimalFormat
 
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })

@@ -60,6 +60,12 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
   fun toEventValues(other: RecordedTreeModel<*>) =
       RecordedTreeUpdatedEventValues(
           description = description.nullIfEquals(other.description),
+          diameterAtBreastHeightCm =
+              diameterAtBreastHeightCm.nullIfEquals(other.diameterAtBreastHeightCm),
+          heightM = heightM.nullIfEquals(other.heightM),
+          isDead = isDead.nullIfEquals(other.isDead),
+          pointOfMeasurementM = pointOfMeasurementM.nullIfEquals(other.pointOfMeasurementM),
+          shrubDiameterCm = shrubDiameterCm.nullIfEquals(other.shrubDiameterCm),
       )
 
   fun validate() {
