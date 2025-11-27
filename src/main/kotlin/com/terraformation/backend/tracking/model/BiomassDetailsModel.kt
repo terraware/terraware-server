@@ -9,6 +9,8 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
+import com.terraformation.backend.util.nullIfEquals
 import java.math.BigDecimal
 import java.time.Instant
 import org.jooq.Field
@@ -55,6 +57,11 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     val treeNumber: Int,
     val trunkNumber: Int,
 ) {
+  fun toEventValues(other: RecordedTreeModel<*>) =
+      RecordedTreeUpdatedEventValues(
+          description = description.nullIfEquals(other.description),
+      )
+
   fun validate() {
     if (speciesId == null && speciesName == null) {
       throw IllegalStateException("Tree $treeNumber: speciesId or speciesName missing")
