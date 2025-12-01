@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.api
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
@@ -15,6 +17,7 @@ import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.time.Instant
 import java.util.Optional
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -67,13 +70,30 @@ data class BiomassSpeciesUpdateOperationPayload(
 
 @JsonTypeName("Biomass")
 data class BiomassUpdateOperationPayload(
-    val description: Optional<String?>?,
+    val description: Optional<String>?,
+    val forestType: BiomassForestType?,
+    val ph: Optional<BigDecimal>?,
+    val salinity: Optional<BigDecimal>?,
+    val smallTreeCountLow: Int?,
+    val smallTreeCountHigh: Int?,
     val soilAssessment: String?,
+    val tide: Optional<MangroveTide>?,
+    val tideTime: Optional<Instant>?,
+    val waterDepth: Optional<Int>?,
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: EditableBiomassDetailsModel): EditableBiomassDetailsModel {
     return model.copy(
+        forestType = forestType ?: model.forestType,
         description = description.patchNullable(model.description),
+        ph = ph.patchNullable(model.ph),
+        salinityPpt = salinity.patchNullable(model.salinityPpt),
         soilAssessment = soilAssessment ?: model.soilAssessment,
+        smallTreeCountRange =
+            (smallTreeCountLow ?: model.smallTreeCountRange.first) to
+                (smallTreeCountHigh ?: model.smallTreeCountRange.second),
+        tide = tide.patchNullable(model.tide),
+        tideTime = tideTime.patchNullable(model.tideTime),
+        waterDepthCm = waterDepth.patchNullable(model.waterDepthCm),
     )
   }
 }

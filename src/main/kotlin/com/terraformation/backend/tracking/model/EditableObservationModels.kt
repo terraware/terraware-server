@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
@@ -12,25 +14,67 @@ import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEve
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEventValues
 import com.terraformation.backend.util.nullIfEquals
+import java.math.BigDecimal
+import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
 data class EditableBiomassDetailsModel(
     val description: String?,
+    val forestType: BiomassForestType,
+    val herbaceousCoverPercent: Int,
+    val ph: BigDecimal?,
+    val salinityPpt: BigDecimal?,
+    val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
+    val tide: MangroveTide?,
+    val tideTime: Instant?,
+    val waterDepthCm: Int?,
 ) {
   fun toEventValues(other: EditableBiomassDetailsModel) =
       BiomassDetailsUpdatedEventValues(
           description = description.nullIfEquals(other.description),
+          forestType = forestType.nullIfEquals(other.forestType),
+          herbaceousCoverPercent =
+              herbaceousCoverPercent.nullIfEquals(other.herbaceousCoverPercent),
+          ph = ph.nullIfEquals(other.ph),
+          salinity = salinityPpt.nullIfEquals(other.salinityPpt),
+          smallTreeCountRange = smallTreeCountRange.nullIfEquals(other.smallTreeCountRange),
           soilAssessment = soilAssessment.nullIfEquals(other.soilAssessment),
+          tide = tide.nullIfEquals(other.tide),
+          tideTime = tideTime.nullIfEquals(other.tideTime),
+          waterDepth = waterDepthCm.nullIfEquals(other.waterDepthCm),
       )
+
+  /** Forces mangrove-only properties to null if this is a terrestrial observation. */
+  fun sanitizeForForestType(): EditableBiomassDetailsModel =
+      when (forestType) {
+        BiomassForestType.Mangrove -> this
+        BiomassForestType.Terrestrial ->
+            copy(
+                ph = null,
+                salinityPpt = null,
+                tide = null,
+                tideTime = null,
+                waterDepthCm = null,
+            )
+      }
 
   companion object {
     fun of(record: Record): EditableBiomassDetailsModel {
       return with(OBSERVATION_BIOMASS_DETAILS) {
         EditableBiomassDetailsModel(
             description = record[DESCRIPTION],
+            forestType = record[FOREST_TYPE_ID]!!,
+            herbaceousCoverPercent = record[HERBACEOUS_COVER_PERCENT]!!,
+            ph = record[PH],
+            salinityPpt = record[SALINITY_PPT],
+            smallTreeCountRange =
+                record[SMALL_TREES_COUNT_LOW]!! to record[SMALL_TREES_COUNT_HIGH]!!,
             soilAssessment = record[SOIL_ASSESSMENT]!!,
+            tide = record[TIDE_ID],
+            tideTime = record[TIDE_TIME],
+            waterDepthCm = record[WATER_DEPTH_CM],
         )
       }
     }

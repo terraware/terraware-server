@@ -24,7 +24,11 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlin.reflect.KClass
@@ -302,6 +306,14 @@ class Messages {
 
   fun searchFieldDisplayName(tableName: String, fieldName: String) =
       getMessage("search.$tableName.$fieldName")
+
+  fun timestampOrNull(value: ZonedDateTime?) =
+      value?.let {
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(currentLocale()).format(it)
+      }
+
+  fun timestampOrNull(value: Instant?, timeZone: ZoneId?) =
+      value?.let { timestampOrNull(it.atZone(timeZone ?: ZoneOffset.UTC)) }
 
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(

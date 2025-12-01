@@ -463,15 +463,14 @@ class BiomassStore(
       val existing =
           with(OBSERVATION_BIOMASS_DETAILS) {
             dslContext
-                .select(DESCRIPTION, SOIL_ASSESSMENT)
-                .from(OBSERVATION_BIOMASS_DETAILS)
+                .selectFrom(OBSERVATION_BIOMASS_DETAILS)
                 .where(OBSERVATION_ID.eq(observationId))
                 .and(MONITORING_PLOT_ID.eq(plotId))
                 .fetchOne { EditableBiomassDetailsModel.of(it) }
                 ?: throw ObservationPlotNotFoundException(observationId, plotId)
           }
 
-      val updated = updateFunc(existing)
+      val updated = updateFunc(existing).sanitizeForForestType()
 
       val changedFrom = existing.toEventValues(updated)
       val changedTo = updated.toEventValues(existing)
@@ -481,7 +480,16 @@ class BiomassStore(
           dslContext
               .update(OBSERVATION_BIOMASS_DETAILS)
               .set(DESCRIPTION, updated.description)
+              .set(FOREST_TYPE_ID, updated.forestType)
+              .set(HERBACEOUS_COVER_PERCENT, updated.herbaceousCoverPercent)
+              .set(PH, updated.ph)
+              .set(SALINITY_PPT, updated.salinityPpt)
+              .set(SMALL_TREES_COUNT_LOW, updated.smallTreeCountRange.first)
+              .set(SMALL_TREES_COUNT_HIGH, updated.smallTreeCountRange.second)
               .set(SOIL_ASSESSMENT, updated.soilAssessment)
+              .set(TIDE_ID, updated.tide)
+              .set(TIDE_TIME, updated.tideTime)
+              .set(WATER_DEPTH_CM, updated.waterDepthCm)
               .where(OBSERVATION_ID.eq(observationId))
               .and(MONITORING_PLOT_ID.eq(plotId))
               .execute()
