@@ -1,3 +1,8 @@
+55a903178d4 Update ktor monorepo to v3.3.3 (#3684)
+9778d866dd5 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.7 (#3683)
+ccaf209d505 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.41 (#3682)
+d9ad5c462e9 Update geoToolsVersion to v34.1 (#3680)
+f64e2a0a493 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.3.0 (#3678)
 01f9080d070 SW-7782 Support updating numeric recorded tree values (#3677)
 68ad1a0add3 Move updated event values calculations to edit models (#3676)
 afd7c47ad54 SW-7695 Support editing observed plot conditions (#3675)
