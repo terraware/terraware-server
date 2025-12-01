@@ -16,7 +16,8 @@ data class AssignedPlotDetails(
     val completedByName: String?,
     val elevationMeters: BigDecimal?,
     val isFirstObservation: Boolean,
-    val plantingSubzoneId: PlantingSubzoneId,
+    /** Null if the monitoring plot no longer falls within a subzone (due to a map edit). */
+    val plantingSubzoneId: PlantingSubzoneId?,
     val plantingSubzoneName: String,
     val plantingZoneName: String,
     val plotNumber: Long,
