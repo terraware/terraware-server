@@ -222,9 +222,10 @@ class ObservationStore(
             OBSERVATION_PLOTS.OBSERVATION_ID,
             OBSERVATION_PLOTS.monitoringPlots.BOUNDARY,
             OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS,
-            OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.FULL_NAME,
-            OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID,
-            OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.plotsPlantingZoneIdFkey.NAME,
+            OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories.FULL_NAME,
+            OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID,
+            OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories.plantingZoneHistories
+                .NAME,
             OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER,
             OBSERVATION_PLOTS.monitoringPlots.SIZE_METERS,
             claimedByNameField,
@@ -242,12 +243,18 @@ class ObservationStore(
               completedByName = record[completedByNameField],
               elevationMeters = record[OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS],
               isFirstObservation = record[isFirstObservationField]!!,
-              plantingSubzoneId = record[OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.ID]!!,
+              plantingSubzoneId =
+                  record[
+                      OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                          .PLANTING_SUBZONE_ID],
               plantingSubzoneName =
-                  record[OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.FULL_NAME]!!,
+                  record[
+                      OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                          .FULL_NAME]!!,
               plantingZoneName =
                   record[
-                      OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.plotsPlantingZoneIdFkey
+                      OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                          .plantingZoneHistories
                           .NAME]!!,
               plotNumber = record[OBSERVATION_PLOTS.monitoringPlots.PLOT_NUMBER]!!,
               sizeMeters = record[OBSERVATION_PLOTS.monitoringPlots.SIZE_METERS]!!,

@@ -829,7 +829,7 @@ data class AssignedPlotPayload(
     val isFirstObservation: Boolean,
     val isPermanent: Boolean,
     val observationId: ObservationId,
-    val plantingSubzoneId: PlantingSubzoneId,
+    val plantingSubzoneId: PlantingSubzoneId?,
     val plantingSubzoneName: String,
     val plantingZoneName: String,
     val plotId: MonitoringPlotId,

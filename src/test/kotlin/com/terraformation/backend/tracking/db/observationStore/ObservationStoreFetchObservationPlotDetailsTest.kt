@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -124,6 +125,48 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 plotNumber = 3,
                 sizeMeters = 30,
             ),
+        )
+
+    val actual = store.fetchObservationPlotDetails(observationId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `returns subzone and zone details as they existed at the time of the observation`() {
+    insertPlantingZone(name = "Z1")
+    insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+    val monitoringPlotId = insertMonitoringPlot(boundary = polygon(1))
+    val observationId = insertObservation(completedTime = Instant.EPOCH)
+    insertObservationPlot(completedBy = user.userId)
+
+    // Now a map edit removes the subzone the plot used to be in
+    dslContext.deleteFrom(PLANTING_SUBZONES).execute()
+
+    val expected =
+        listOf(
+            AssignedPlotDetails(
+                model =
+                    ObservationPlotModel(
+                        claimedBy = user.userId,
+                        claimedTime = Instant.EPOCH,
+                        completedBy = user.userId,
+                        completedTime = Instant.EPOCH,
+                        isPermanent = false,
+                        monitoringPlotId = monitoringPlotId,
+                        observationId = observationId,
+                    ),
+                boundary = polygon(1),
+                claimedByName = "First Last",
+                completedByName = "First Last",
+                elevationMeters = null,
+                isFirstObservation = true,
+                plantingSubzoneId = null,
+                plantingSubzoneName = "Z1-S1",
+                plantingZoneName = "Z1",
+                plotNumber = 1,
+                sizeMeters = 30,
+            )
         )
 
     val actual = store.fetchObservationPlotDetails(observationId)
