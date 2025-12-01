@@ -1,3 +1,6 @@
+eec4f2abdb7 Update dependency mypy to v1.19.0 (#3685)
+dd9d58485a9 Update dependency org.bouncycastle:bcpkix-jdk18on to v1.83 (#3686)
+0238e988ad5 Update database dependencies (#3681)
 55a903178d4 Update ktor monorepo to v3.3.3 (#3684)
 9778d866dd5 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.7 (#3683)
 ccaf209d505 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.41 (#3682)
