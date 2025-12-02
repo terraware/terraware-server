@@ -1,3 +1,4 @@
+bd6c08cf0a8 SW-7782 Support editing numeric plot-level biomass data (#3691)
 e443e21fb71 SW-7782 Support editing quadrat species abundance (#3690)
 a6f90b64484 Update dependency software.amazon.awssdk:bom to v2.39.5 (#3688)
 fe0d7e15fec Pretty-print localizable field names in test (#3689)
