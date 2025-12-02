@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.event
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -23,6 +24,7 @@ import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -388,19 +390,81 @@ data class BiomassDetailsUpdatedEventV1(
     override val plantingSiteId: PlantingSiteId,
 ) : FieldsUpdatedPersistentEvent, BiomassDetailsPersistentEvent {
   data class Values(
-      val description: String?,
-      val soilAssessment: String?,
+      val description: String? = null,
+      val forestType: BiomassForestType? = null,
+      val herbaceousCoverPercent: Int? = null,
+      val ph: BigDecimal? = null,
+      val salinity: BigDecimal? = null,
+      val smallTreeCountRange: Pair<Int, Int>? = null,
+      val soilAssessment: String? = null,
+      val tide: MangroveTide? = null,
+      val tideTime: Instant? = null,
+      val waterDepth: Int? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("description", changedFrom.description, changedTo.description),
           createUpdatedField(
+              "forestType",
+              changedFrom.forestType?.getDisplayName(currentLocale()),
+              changedTo.forestType?.getDisplayName(currentLocale()),
+          ),
+          createUpdatedField(
+              "herbaceousCoverPercent",
+              messages.numericValueOrNull(changedFrom.herbaceousCoverPercent),
+              messages.numericValueOrNull(changedTo.herbaceousCoverPercent),
+          ),
+          createUpdatedField(
+              "ph",
+              messages.numericValueOrNull(changedFrom.ph),
+              messages.numericValueOrNull(changedTo.ph),
+          ),
+          createUpdatedField(
+              "salinity",
+              messages.numericValueOrNull(changedFrom.salinity),
+              messages.numericValueOrNull(changedTo.salinity),
+          ),
+          createUpdatedField(
+              "smallTreeCount",
+              renderSmallTreeCountRange(changedFrom, messages),
+              renderSmallTreeCountRange(changedTo, messages),
+          ),
+          createUpdatedField(
               "soilAssessment",
               changedFrom.soilAssessment,
               changedTo.soilAssessment,
           ),
+          createUpdatedField(
+              "tide",
+              changedFrom.tide?.getDisplayName(currentLocale()),
+              changedTo.tide?.getDisplayName(currentLocale()),
+          ),
+          // The tide timestamp is shown in the browser's time zone in the web app; we don't have
+          // access to that here but we can use the user's selected time zone as a substitute.
+          createUpdatedField(
+              "tideTime",
+              messages.timestampOrNull(changedFrom.tideTime, currentUser().timeZone),
+              messages.timestampOrNull(changedTo.tideTime, currentUser().timeZone),
+          ),
+          createUpdatedField(
+              "waterDepth",
+              messages.numericValueOrNull(changedFrom.waterDepth),
+              messages.numericValueOrNull(changedTo.waterDepth),
+          ),
       )
+
+  private fun renderSmallTreeCountRange(values: Values, messages: Messages): String? {
+    val (low, high) = values.smallTreeCountRange ?: return null
+    val lowString = messages.numericValueOrNull(low)
+    val highString = messages.numericValueOrNull(high)
+
+    return if (high > 0) {
+      "$lowString-$highString"
+    } else {
+      "+$lowString"
+    }
+  }
 }
 
 typealias BiomassDetailsUpdatedEvent = BiomassDetailsUpdatedEventV1
