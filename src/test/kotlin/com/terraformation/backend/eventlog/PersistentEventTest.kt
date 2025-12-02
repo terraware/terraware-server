@@ -1,7 +1,6 @@
 package com.terraformation.backend.eventlog
 
 import com.fasterxml.jackson.annotation.JsonValue
-import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.eventlog.api.EventSubjectName
 import com.terraformation.backend.eventlog.db.EventUpgradeUtils
@@ -123,10 +122,19 @@ class PersistentEventTest {
     assumeNotNull(valuesClass)
 
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
-    val expected = valuesClass!!.memberProperties.map { "$stringKeyPrefix.${it.name}" }.toSet()
-    val actual = eventSubjectFieldNames.filter { it.startsWith(stringKeyPrefix) }.toSet()
+    val expected =
+        valuesClass!!
+            .memberProperties
+            .map { "$stringKeyPrefix.${it.name}" }
+            .sorted()
+            .joinToString("\n") { "$it=" }
+    val actual =
+        eventSubjectFieldNames
+            .filter { it.startsWith(stringKeyPrefix) }
+            .sorted()
+            .joinToString("\n") { "$it=" }
 
-    assertSetEquals(expected, actual)
+    assertEquals("\n\n$expected\n\n", "\n\n$actual\n\n")
   }
 
   private fun getRequiredProperties(
