@@ -72,6 +72,7 @@ data class BiomassSpeciesUpdateOperationPayload(
 data class BiomassUpdateOperationPayload(
     val description: Optional<String>?,
     val forestType: BiomassForestType?,
+    val herbaceousCoverPercent: Int?,
     val ph: Optional<BigDecimal>?,
     val salinity: Optional<BigDecimal>?,
     val smallTreeCountLow: Int?,
@@ -83,14 +84,15 @@ data class BiomassUpdateOperationPayload(
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: EditableBiomassDetailsModel): EditableBiomassDetailsModel {
     return model.copy(
-        forestType = forestType ?: model.forestType,
         description = description.patchNullable(model.description),
+        forestType = forestType ?: model.forestType,
+        herbaceousCoverPercent = herbaceousCoverPercent ?: model.herbaceousCoverPercent,
         ph = ph.patchNullable(model.ph),
         salinityPpt = salinity.patchNullable(model.salinityPpt),
-        soilAssessment = soilAssessment ?: model.soilAssessment,
         smallTreeCountRange =
             (smallTreeCountLow ?: model.smallTreeCountRange.first) to
                 (smallTreeCountHigh ?: model.smallTreeCountRange.second),
+        soilAssessment = soilAssessment ?: model.soilAssessment,
         tide = tide.patchNullable(model.tide),
         tideTime = tideTime.patchNullable(model.tideTime),
         waterDepthCm = waterDepth.patchNullable(model.waterDepthCm),
