@@ -1,3 +1,4 @@
+e443e21fb71 SW-7782 Support editing quadrat species abundance (#3690)
 a6f90b64484 Update dependency software.amazon.awssdk:bom to v2.39.5 (#3688)
 fe0d7e15fec Pretty-print localizable field names in test (#3689)
 dd0867bffea SW-7788 Fix NPE when fetching old plot details (#3687)
