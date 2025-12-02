@@ -25,7 +25,6 @@ import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
-import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
@@ -136,27 +135,22 @@ data class BiomassQuadratSpeciesSubjectPayload(
         event: BiomassQuadratSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassQuadratSpeciesSubjectPayload {
-      val createEvent =
-          context.first<BiomassSpeciesCreatedEvent> {
-            it.biomassSpeciesId == event.biomassSpeciesId
-          }
-      // TODO: Fetch scientific name for species ID
-      val speciesText = createEvent.scientificName ?: "${createEvent.speciesId}"
+      val biomassSpecies = context.getBiomassSpecies(event.biomassSpeciesId)
       val localizedPosition = event.position.getDisplayName(currentUser().locale)
 
       return BiomassQuadratSpeciesSubjectPayload(
           fullText =
               context.subjectFullText<BiomassQuadratSpeciesSubjectPayload>(
                   localizedPosition,
-                  speciesText,
+                  biomassSpecies.displayName,
               ),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
           plantingSiteId = event.plantingSiteId,
           position = event.position,
           shortText = context.subjectShortText<BiomassQuadratSpeciesSubjectPayload>(),
-          scientificName = createEvent.scientificName,
-          speciesId = createEvent.speciesId,
+          scientificName = biomassSpecies.scientificName,
+          speciesId = biomassSpecies.speciesId,
       )
     }
   }
@@ -177,21 +171,17 @@ data class BiomassSpeciesSubjectPayload(
         event: BiomassSpeciesPersistentEvent,
         context: EventLogPayloadContext,
     ): BiomassSpeciesSubjectPayload {
-      val createEvent =
-          context.first<BiomassSpeciesCreatedEvent> {
-            it.biomassSpeciesId == event.biomassSpeciesId
-          }
-      // TODO: Fetch scientific name for species ID
-      val speciesText = createEvent.scientificName ?: "${createEvent.speciesId}"
+      val biomassSpecies = context.getBiomassSpecies(event.biomassSpeciesId)
 
       return BiomassSpeciesSubjectPayload(
-          fullText = context.subjectFullText<BiomassSpeciesSubjectPayload>(speciesText),
+          fullText =
+              context.subjectFullText<BiomassSpeciesSubjectPayload>(biomassSpecies.displayName),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
           plantingSiteId = event.plantingSiteId,
           shortText = context.subjectShortText<BiomassSpeciesSubjectPayload>(),
-          speciesId = createEvent.speciesId,
-          scientificName = createEvent.scientificName,
+          speciesId = biomassSpecies.speciesId,
+          scientificName = biomassSpecies.scientificName,
       )
     }
   }

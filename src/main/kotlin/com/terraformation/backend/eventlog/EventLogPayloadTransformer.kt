@@ -31,9 +31,11 @@ import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentE
 import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import jakarta.inject.Named
+import org.jooq.DSLContext
 
 @Named
 class EventLogPayloadTransformer(
+    private val dslContext: DSLContext,
     private val messages: Messages,
     private val simpleUserStore: SimpleUserStore,
 ) {
@@ -54,7 +56,7 @@ class EventLogPayloadTransformer(
    * chronological results, so this usually doesn't require any additional work.
    */
   fun eventsToPayloads(entries: List<EventLogEntry<PersistentEvent>>): List<EventLogEntryPayload> {
-    val context = EventLogPayloadContext(entries, messages)
+    val context = EventLogPayloadContext(dslContext, entries, messages)
     val users = simpleUserStore.fetchSimpleUsersById(entries.map { it.createdBy }.distinct())
 
     return entries.flatMap { entry ->

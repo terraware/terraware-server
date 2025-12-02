@@ -1,9 +1,16 @@
 package com.terraformation.backend.eventlog
 
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.api.EventSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import kotlin.reflect.KClass
+import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 /**
  * Context used when transforming event log entries into payload objects. This is typically passed
@@ -13,10 +20,47 @@ import kotlin.reflect.KClass
  * @param entries List of event log entries in chronological order.
  */
 class EventLogPayloadContext(
+    private val dslContext: DSLContext,
     private val entries: List<EventLogEntry<PersistentEvent>>,
     private val messages: Messages,
 ) {
   private val eventsByClass = entries.map { it.event }.groupBy { it::class }
+
+  private val biomassSpeciesNames = mutableMapOf<BiomassSpeciesId, BiomassSpecies>()
+
+  /**
+   * Returns the name of a biomass species, possibly looking it up from the database the first time
+   * it's requested.
+   */
+  fun getBiomassSpecies(biomassSpeciesId: BiomassSpeciesId): BiomassSpecies {
+    return biomassSpeciesNames.getOrPut(biomassSpeciesId) {
+      // If this is an "Other" species with no species ID, and we have its creation event at hand,
+      // we can avoid having to hit the database.
+      val createEvent =
+          firstOrNull<BiomassSpeciesCreatedEvent> { it.biomassSpeciesId == biomassSpeciesId }
+      if (createEvent != null && createEvent.scientificName != null) {
+        BiomassSpecies(
+            createEvent.scientificName,
+            createEvent.scientificName,
+            null,
+        )
+      } else {
+        dslContext
+            .select(
+                DSL.coalesce(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME, SPECIES.SCIENTIFIC_NAME),
+                OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
+                OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
+            )
+            .from(OBSERVATION_BIOMASS_SPECIES)
+            .leftJoin(SPECIES)
+            .on(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID))
+            .where(OBSERVATION_BIOMASS_SPECIES.ID.eq(biomassSpeciesId))
+            .fetchOne()
+            ?.let { BiomassSpecies(it.value1() ?: "$biomassSpeciesId", it.value2(), it.value3()) }
+            ?: BiomassSpecies("$biomassSpeciesId", null, null)
+      }
+    }
+  }
 
   /** Returns the localized short text for a subject. */
   fun subjectShortText(kClass: KClass<out EventSubjectPayload>, args: Array<out Any>) =
@@ -89,4 +133,10 @@ class EventLogPayloadContext(
   ): T? {
     return lastEventBefore(event, T::class, predicate)
   }
+
+  data class BiomassSpecies(
+      val displayName: String,
+      val scientificName: String?,
+      val speciesId: SpeciesId?,
+  )
 }
