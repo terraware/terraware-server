@@ -26,7 +26,7 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
               // Prefer results from the same observation as the `observationId` if it exists.
               // True is considered greater than false, so sorting by an "=" expression in
               // descending order means the matches come first.
-              OBSERVATION_ID.eq(observationIdField).desc(),
+              OBSERVATIONS.ID.eq(observationIdField).desc(),
               // Otherwise take the results from the next latest observation for that area.
               OBSERVATIONS.COMPLETED_TIME.desc(),
           )

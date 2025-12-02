@@ -45,6 +45,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     subzoneId = insertPlantingSubzone()
     plotId = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
   }
 

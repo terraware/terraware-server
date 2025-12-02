@@ -16,7 +16,6 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingSubzoneIdConverter
 import com.terraformation.backend.db.tracking.PlantingZoneIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -111,6 +110,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     listOf(
+            OBSERVATIONS,
             PLOT_T0_DENSITIES,
             PLANTING_ZONE_T0_TEMP_DENSITIES,
             OBSERVATION_PLOTS,
@@ -483,26 +483,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .asTable("most_recent")
               )
               .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
-              .and(
-                  DSL.notExists(
-                      DSL.selectOne()
-                          .from(OBSERVATION_REQUESTED_SUBZONES)
-                          .where(
-                              OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID.eq(
-                                  DSL.field(
-                                      "most_recent.PLANTING_SUBZONE_ID",
-                                      PlantingSubzoneId::class.java,
-                                  )
-                              )
-                          )
-                          .and(
-                              OBSERVATION_REQUESTED_SUBZONES.observations.COMPLETED_TIME.ge(
-                                  OBSERVATIONS.COMPLETED_TIME
-                              )
-                          )
-                          .and(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.ne(OBSERVATIONS.ID))
-                  )
-              )
       )
 
   /**

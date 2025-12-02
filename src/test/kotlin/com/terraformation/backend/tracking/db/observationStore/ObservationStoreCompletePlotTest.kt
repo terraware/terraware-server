@@ -52,6 +52,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertPlantingSubzone()
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
+    insertObservationRequestedSubzone()
   }
 
   @Test
@@ -61,6 +62,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
     insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
@@ -179,6 +181,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     val zoneId2 = insertPlantingZone()
     val zone2SubzoneId1 = insertPlantingSubzone()
+    insertObservationRequestedSubzone()
     val zone2PlotId1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
@@ -1051,6 +1054,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     val observationId2 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     store.populateCumulativeDead(observationId2)
 
@@ -1124,6 +1128,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     val observationId2 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
     // We do not call populateCumulativeDead here, so there is no observed subzone species
