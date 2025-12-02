@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
+import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
@@ -18,6 +19,22 @@ import java.util.Optional
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 sealed interface ObservationUpdateOperationPayload
+
+@JsonTypeName("QuadratSpecies")
+data class QuadratSpeciesUpdateOperationPayload(
+    val abundance: Int?,
+    val position: ObservationPlotPosition,
+    @Schema(description = "ID of species to update. Either this or scientificName must be present.")
+    val speciesId: SpeciesId?,
+    @Schema(description = "Name of species to update. Either this or speciesId must be present.")
+    val scientificName: String?,
+) : ObservationUpdateOperationPayload {
+  fun applyTo(model: EditableBiomassQuadratSpeciesModel): EditableBiomassQuadratSpeciesModel {
+    return model.copy(
+        abundance = abundance ?: model.abundance,
+    )
+  }
+}
 
 @JsonTypeName("Quadrat")
 data class QuadratUpdateOperationPayload(
