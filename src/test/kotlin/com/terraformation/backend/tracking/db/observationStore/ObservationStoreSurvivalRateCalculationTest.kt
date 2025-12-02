@@ -569,7 +569,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     fun updatePlantingSite() {
       // moves plot 112 to subzone2 (from subzone1), adds plot 312 to site, changes plot 212 from
-      // permanent to temporary
+      // permanent to temporary, removes plot 213 from subzone
       // adds all history objects that would occur with this edit
       insertPlantingSiteHistory()
       val zone1 = zoneIds["Zone1"]!!
@@ -632,6 +632,21 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           )
       permanentPlotNumbers.remove("212")
       permanentPlotIds.remove(plot212)
+      val plot213 = plotIds["213"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
+          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+          .where(MONITORING_PLOTS.ID.eq(plot213))
+          .execute()
+      plotHistoryIds[plot213] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot213,
+              plantingSubzoneId = null,
+              plantingSubzoneHistoryId = null,
+          )
+      permanentPlotNumbers.remove("213")
+      permanentPlotIds.remove(plot213)
       plotHistoryIds[plotIds["311"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["311"]!!,
