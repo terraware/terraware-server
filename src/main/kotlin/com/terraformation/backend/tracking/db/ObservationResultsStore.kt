@@ -110,18 +110,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    listOf(
-            OBSERVATIONS,
-            PLOT_T0_DENSITIES,
-            PLANTING_ZONE_T0_TEMP_DENSITIES,
-            OBSERVATION_PLOTS,
-            OBSERVATION_REQUESTED_SUBZONES,
-            MONITORING_PLOTS,
-            MONITORING_PLOT_HISTORIES,
-            OBSERVED_SUBZONE_SPECIES_TOTALS,
-        )
-        .forEach { println("${it.name}:\n${dslContext.fetch(it)}") }
-
     return fetchByCondition(
         DSL.and(
             OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
