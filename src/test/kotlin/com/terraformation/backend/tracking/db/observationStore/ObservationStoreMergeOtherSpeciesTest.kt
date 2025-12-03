@@ -44,11 +44,13 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     val speciesId = insertSpecies()
 
     val observationId1 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot()
     insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
     insertRecordedPlant(speciesName = "Other species", gpsCoordinates = gpsCoordinates)
 
     val observationId2 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot()
     insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
 
@@ -97,6 +99,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
 
     val observationId1 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
     store.completePlot(
@@ -130,6 +133,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     clock.instant = Instant.ofEpochSecond(1)
 
     val observationId2 = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     store.populateCumulativeDead(observationId2)
 
@@ -260,6 +264,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
 
     monitoringPlotId = insertMonitoringPlot(plantingSubzoneId = null, isAdHoc = true)
     val observationId1 = insertObservation(isAdHoc = true)
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
 
     store.completePlot(

@@ -828,6 +828,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .join(MONITORING_PLOT_HISTORIES)
               .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, true))
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
@@ -850,9 +851,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, false))
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(PLANTING_SUBZONE_ID, PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID)
               .asTable()
@@ -1099,7 +1099,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               )
               .join(zoneHistoryAlias)
               .on(zoneHistoryAlias.ID.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID))
-              .where(plotHasCompletedObservations(PLOT_T0_DENSITIES.MONITORING_PLOT_ID, true))
+              .where(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, true))
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
@@ -1116,11 +1117,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               )
               .from(this)
               .join(PLANTING_SUBZONE_HISTORIES)
-              .on(
-                  PLANTING_SUBZONE_HISTORIES.ID.eq(
-                      MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-                  )
-              )
+              .on(PLANTING_SUBZONE_HISTORIES.ID.eq(PLANTING_SUBZONE_HISTORY_ID))
               .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
               .on(
                   PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
@@ -1128,9 +1125,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, false))
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
                   plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID,
@@ -1420,7 +1416,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .from(this)
               .join(MONITORING_PLOT_HISTORIES)
               .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
-              .where(plotHasCompletedObservations(PLOT_T0_DENSITIES.MONITORING_PLOT_ID, true))
+              .where(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, true))
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
@@ -1443,9 +1440,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
-              )
+              .and(plotIsInObservationResult(MONITORING_PLOT_ID, OBSERVATIONS.ID, false))
+              .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
                   plantingSiteHistories.plantingSites.ID,

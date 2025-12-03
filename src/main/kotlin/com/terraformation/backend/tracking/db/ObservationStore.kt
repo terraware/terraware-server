@@ -1406,11 +1406,13 @@ class ObservationStore(
               getSurvivalRateDenominator(
                   updateScope,
                   PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                  DSL.value(observationId),
               )
           val survivalRateTempDenominator =
               getSurvivalRateTempDenominator(
                   updateScope,
                   PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                  DSL.value(observationId),
               )
           val survivalRateDenominator =
               DSL.coalesce(
@@ -1472,11 +1474,13 @@ class ObservationStore(
             getSurvivalRateDenominator(
                 updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                DSL.value(observationId),
             )
         val survivalRateTempDenominator =
             getSurvivalRateTempDenominator(
                 updateScope,
                 PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                DSL.value(observationId),
             )
         val survivalRateDenominator =
             DSL.coalesce(
@@ -1556,15 +1560,18 @@ class ObservationStore(
     val table = updateScope.observedTotalsTable
     val speciesIdField =
         table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
     val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
             updateScope,
             PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesIdField),
+            observationIdField,
         )
     val survivalRateTempDenominator =
         getSurvivalRateTempDenominator(
             updateScope,
             PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesIdField),
+            observationIdField,
         )
     val survivalRateDenominator =
         DSL.coalesce(
@@ -2087,11 +2094,13 @@ class ObservationStore(
             getSurvivalRateDenominator(
                 updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                DSL.value(observationId),
             )
         val survivalRateTempDenominator =
             getSurvivalRateTempDenominator(
                 updateScope,
                 PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
+                DSL.value(observationId),
             )
         val survivalRateDenominator =
             DSL.coalesce(
@@ -2253,6 +2262,7 @@ class ObservationStore(
   private fun <ID : Any> getSurvivalRateDenominator(
       updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
+      observationIdField: Field<ObservationId?>,
   ): Field<BigDecimal> =
       DSL.field(
           DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
@@ -2266,11 +2276,19 @@ class ObservationStore(
                       updateScope.alternateCompletedCondition,
                   )
               )
+              .and(
+                  plotIsInObservationResult(
+                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                      observationIdField,
+                      true,
+                  )
+              )
       )
 
   private fun <ID : Any> getSurvivalRateTempDenominator(
       updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
+      observationIdField: Field<ObservationId?>,
   ): Field<BigDecimal> =
       with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
         DSL.field(
@@ -2292,6 +2310,7 @@ class ObservationStore(
                         updateScope.alternateCompletedCondition,
                     )
                 )
+                .and(plotIsInObservationResult(MONITORING_PLOTS.ID, observationIdField, false))
         )
       }
 

@@ -23,6 +23,8 @@ import java.time.Instant
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.math.roundToInt
+import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,8 +43,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   fun setUp() {
     zoneId = insertPlantingZone()
     subzoneId = insertPlantingSubzone()
-    plotId = insertMonitoringPlot()
+    plotId = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
+    insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
   }
 
@@ -93,7 +96,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   fun `survival rate is 0 if plot density is 0`() {
     val speciesId = insertSpecies()
     insertPlotT0Density(plotDensity = BigDecimal.ZERO)
-    val plotId2 = insertMonitoringPlot()
+    val plotId2 = insertMonitoringPlot(permanentIndex = 2)
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     insertPlotT0Density(plotDensity = BigDecimal.ZERO)
     val recordedPlants =
@@ -265,7 +268,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     )
 
     // plot with no density for species 3
-    val plot2 = insertMonitoringPlot()
+    val plot2 = insertMonitoringPlot(permanentIndex = 3)
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
@@ -565,7 +568,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
     fun updatePlantingSite() {
-      // moves plot 112 to subzone2 (from subzone1) and adds plot 312 to site
+      // moves plot 112 to subzone2 (from subzone1), adds plot 312 to site, changes plot 212 from
+      // permanent to temporary, removes plot 213 from subzone
       // adds all history objects that would occur with this edit
       insertPlantingSiteHistory()
       val zone1 = zoneIds["Zone1"]!!
@@ -596,15 +600,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               plantingSubzoneId = subzone1,
               plantingSubzoneHistoryId = newSubzone1History,
           )
-      val plot2 = plotIds["112"]!!
+      val plot112 = plotIds["112"]!!
       dslContext
           .update(MONITORING_PLOTS)
           .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
-          .where(MONITORING_PLOTS.ID.eq(plot2))
+          .where(MONITORING_PLOTS.ID.eq(plot112))
           .execute()
-      plotHistoryIds[plot2] =
+      plotHistoryIds[plot112] =
           insertMonitoringPlotHistory(
-              monitoringPlotId = plot2,
+              monitoringPlotId = plot112,
               plantingSubzoneId = subzone2,
               plantingSubzoneHistoryId = newSubzone2History,
           )
@@ -614,6 +618,35 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               plantingSubzoneId = subzone2,
               plantingSubzoneHistoryId = newSubzone2History,
           )
+      val plot212 = plotIds["212"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
+          .where(MONITORING_PLOTS.ID.eq(plot212))
+          .execute()
+      plotHistoryIds[plot212] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot212,
+              plantingSubzoneId = subzone2,
+              plantingSubzoneHistoryId = newSubzone2History,
+          )
+      permanentPlotNumbers.remove("212")
+      permanentPlotIds.remove(plot212)
+      val plot213 = plotIds["213"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
+          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+          .where(MONITORING_PLOTS.ID.eq(plot213))
+          .execute()
+      plotHistoryIds[plot213] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot213,
+              plantingSubzoneId = null,
+              plantingSubzoneHistoryId = null,
+          )
+      permanentPlotNumbers.remove("213")
+      permanentPlotIds.remove(plot213)
       plotHistoryIds[plotIds["311"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["311"]!!,

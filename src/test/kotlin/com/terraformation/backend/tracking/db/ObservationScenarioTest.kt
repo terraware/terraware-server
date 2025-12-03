@@ -925,6 +925,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   isPermanent = plotName in permanentPlotNumbers,
                   observationId = observationId,
                   monitoringPlotId = plotId,
+                  monitoringPlotHistoryId = plotHistoryIds[plotId]!!,
               )
 
               observedPlotNames.add(plotName)
@@ -1000,7 +1001,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   ): ObservationId {
     clock.instant = observationTime
 
-    val observationId = insertObservation()
+    val observationId = insertObservation(completedTime = observationTime)
     val observedPlotNames = mutableSetOf<String>()
 
     val speciesIds =
@@ -1195,7 +1196,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               plotId,
               emptySet(),
               "Notes",
-              Instant.EPOCH,
+              observationTime,
               plants,
           )
         }
