@@ -38,7 +38,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   private val messages = Messages()
   private val simpleUserStore: SimpleUserStore by lazy { SimpleUserStore(dslContext, messages) }
   private val transformer: EventLogPayloadTransformer by lazy {
-    EventLogPayloadTransformer(messages, simpleUserStore)
+    EventLogPayloadTransformer(dslContext, messages, simpleUserStore)
   }
 
   private val fileId = FileId(1)
