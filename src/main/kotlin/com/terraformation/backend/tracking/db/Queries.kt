@@ -14,6 +14,12 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
 
+/**
+ * Retrieves the most recent observationId for a subzone, with a completed time less than or equal
+ * to the given observationId's completed time.
+ *
+ * The subzone in question is assumed to be OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.
+ */
 fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) =
     with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
       DSL.select(OBSERVATIONS.ID)
@@ -40,6 +46,15 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
           .limit(1)
     }
 
+/**
+ * Returns a condition that is true if the given monitoring plot is used in the observation from
+ * observationIdField.
+ *
+ * A monitoring plot is considered used in an observation if it is:
+ * 1. In a requested subzone in the observation, or
+ * 2. If the plot's subzone was not requested in the current observation, but was requested in that
+ *    subzone's most recent observation.
+ */
 fun plotIsInObservationResult(
     monitoringPlotIdField: Field<MonitoringPlotId?>,
     observationIdField: Field<ObservationId?>,
