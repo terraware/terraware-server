@@ -16,7 +16,6 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingSubzoneIdConverter
 import com.terraformation.backend.db.tracking.PlantingZoneIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -31,7 +30,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -467,95 +465,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               )
               .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
       )
-
-  private fun plotIsInObservationResult(
-      monitoringPlotIdField: Field<MonitoringPlotId?>,
-      observationIdField: Field<ObservationId?>,
-      isPermanent: Boolean,
-  ): Condition {
-    // at the time of the observation:
-    val subzoneObservations = OBSERVATIONS.`as`("subzone_observations")
-    val subzonesInSite =
-        DSL.selectDistinct(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID)
-            .from(subzoneObservations)
-            .join(PLANTING_ZONE_HISTORIES)
-            .on(
-                PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                    subzoneObservations.PLANTING_SITE_HISTORY_ID
-                )
-            )
-            .join(PLANTING_SUBZONE_HISTORIES)
-            .on(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(PLANTING_ZONE_HISTORIES.ID))
-            .where(subzoneObservations.ID.eq(observationIdField))
-
-    val subzonesInCurrentObservation =
-        DSL.select(OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID)
-            .from(OBSERVATION_REQUESTED_SUBZONES)
-            .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(observationIdField))
-
-    val maxTimeObservations = OBSERVATIONS.`as`("max")
-    val observationCompletedTime =
-        DSL.select(maxTimeObservations.COMPLETED_TIME)
-            .from(maxTimeObservations)
-            .where(maxTimeObservations.ID.eq(observationIdField))
-
-    val observationIdsForRemainingSubzones =
-        with(OBSERVATION_REQUESTED_SUBZONES) {
-          DSL.select(
-                  DSL.field("planting_subzone_id", PlantingSubzoneId::class.java),
-                  DSL.field("observation_id", ObservationId::class.java),
-              )
-              .from(
-                  DSL.select(
-                          PLANTING_SUBZONE_ID,
-                          OBSERVATION_ID,
-                          DSL.rowNumber()
-                              .over()
-                              .partitionBy(PLANTING_SUBZONE_ID)
-                              .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
-                              .`as`("rn"),
-                      )
-                      .from(this)
-                      .join(OBSERVATIONS)
-                      .on(OBSERVATIONS.ID.eq(OBSERVATION_ID))
-                      .where(OBSERVATION_ID.ne(observationIdField))
-                      .and(PLANTING_SUBZONE_ID.`in`(subzonesInSite))
-                      .and(PLANTING_SUBZONE_ID.notIn(subzonesInCurrentObservation))
-                      .and(OBSERVATIONS.COMPLETED_TIME.le(observationCompletedTime))
-              )
-              .where(DSL.field(DSL.name("rn")).eq(1))
-        }
-
-    return DSL.exists(
-        DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
-            .from(OBSERVATION_PLOTS)
-            .join(MONITORING_PLOT_HISTORIES)
-            .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
-            .join(PLANTING_SUBZONE_HISTORIES)
-            .on(
-                PLANTING_SUBZONE_HISTORIES.ID.eq(
-                    MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-                )
-            )
-            .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
-            .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
-            .and(
-                DSL.and(
-                        OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField),
-                        PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.`in`(
-                            subzonesInCurrentObservation
-                        ),
-                    )
-                    .or(
-                        DSL.row(
-                                PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
-                                OBSERVATION_PLOTS.OBSERVATION_ID,
-                            )
-                            .`in`(observationIdsForRemainingSubzones)
-                    )
-            )
-    )
-  }
 
   /**
    * Returns a field that converts query results with per-species totals to

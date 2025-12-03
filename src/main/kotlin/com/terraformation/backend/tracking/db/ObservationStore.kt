@@ -49,10 +49,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
@@ -2260,93 +2258,6 @@ class ObservationStore(
               )
               .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
       )
-
-  private fun plotIsInObservationResult(
-      monitoringPlotIdField: Field<MonitoringPlotId?>,
-      observationIdField: Field<ObservationId?>,
-      isPermanent: Boolean,
-  ): Condition {
-    // at the time of the observation:
-    val subzonesInSite =
-        DSL.select(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID)
-            .from(OBSERVATIONS)
-            .join(PLANTING_ZONE_HISTORIES)
-            .on(
-                PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                    OBSERVATIONS.PLANTING_SITE_HISTORY_ID
-                )
-            )
-            .join(PLANTING_SUBZONE_HISTORIES)
-            .on(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(PLANTING_ZONE_HISTORIES.ID))
-            .where(OBSERVATIONS.ID.eq(observationIdField))
-
-    val subzonesInCurrentObservation =
-        DSL.select(OBSERVATION_REQUESTED_SUBZONES.PLANTING_SUBZONE_ID)
-            .from(OBSERVATION_REQUESTED_SUBZONES)
-            .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(observationIdField))
-
-    val observationCompletedTime =
-        DSL.select(OBSERVATIONS.COMPLETED_TIME)
-            .from(OBSERVATIONS)
-            .where(OBSERVATIONS.ID.eq(observationIdField))
-
-    val observationIdsForRemainingSubzones =
-        with(OBSERVATION_REQUESTED_SUBZONES) {
-          DSL.select(
-                  DSL.field("planting_subzone_id", PlantingSubzoneId::class.java),
-                  DSL.field("observation_id", ObservationId::class.java),
-              )
-              .from(
-                  DSL.select(
-                          PLANTING_SUBZONE_ID,
-                          OBSERVATION_ID,
-                          DSL.rowNumber()
-                              .over()
-                              .partitionBy(PLANTING_SUBZONE_ID)
-                              .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
-                              .`as`("rn"),
-                      )
-                      .from(this)
-                      .join(OBSERVATIONS)
-                      .on(OBSERVATIONS.ID.eq(OBSERVATION_ID))
-                      .where(OBSERVATION_ID.ne(observationIdField))
-                      .and(PLANTING_SUBZONE_ID.`in`(subzonesInSite))
-                      .and(PLANTING_SUBZONE_ID.notIn(subzonesInCurrentObservation))
-                      .and(OBSERVATIONS.COMPLETED_TIME.le(observationCompletedTime))
-              )
-              .where(DSL.field(DSL.name("rn")).eq(1))
-        }
-
-    return DSL.exists(
-        DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
-            .from(OBSERVATION_PLOTS)
-            .join(MONITORING_PLOT_HISTORIES)
-            .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
-            .join(PLANTING_SUBZONE_HISTORIES)
-            .on(
-                PLANTING_SUBZONE_HISTORIES.ID.eq(
-                    MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-                )
-            )
-            .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
-            .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
-            .and(
-                DSL.and(
-                        OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField),
-                        PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.`in`(
-                            subzonesInCurrentObservation
-                        ),
-                    )
-                    .or(
-                        DSL.row(
-                                PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
-                                OBSERVATION_PLOTS.OBSERVATION_ID,
-                            )
-                            .`in`(observationIdsForRemainingSubzones)
-                    )
-            )
-    )
-  }
 
   private fun <ID : Any> getSurvivalRateDenominator(
       updateScope: ObservationSpeciesScope<ID>,
