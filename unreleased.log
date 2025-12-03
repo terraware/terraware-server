@@ -1,3 +1,4 @@
+6bd620ee2ff SW-7697 Look up biomass species names for events (#3693)
 34af591056e Make EventLogPayloadTransformerTest database-backed (#3692)
 542f2d52cd1 SW-7782 Add missing field to biomass update payload (#3694)
 bd6c08cf0a8 SW-7782 Support editing numeric plot-level biomass data (#3691)
