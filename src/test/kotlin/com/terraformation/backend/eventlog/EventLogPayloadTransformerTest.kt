@@ -1,9 +1,9 @@
 package com.terraformation.backend.eventlog
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.db.SimpleUserStore
-import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -23,37 +23,40 @@ import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.use
-import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
-import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class EventLogPayloadTransformerTest : RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val messages = Messages()
-  private val simpleUserStore: SimpleUserStore = mockk()
-  private val transformer = EventLogPayloadTransformer(messages, simpleUserStore)
+  private val simpleUserStore: SimpleUserStore by lazy { SimpleUserStore(dslContext, messages) }
+  private val transformer: EventLogPayloadTransformer by lazy {
+    EventLogPayloadTransformer(messages, simpleUserStore)
+  }
 
   private val fileId = FileId(1)
   private val monitoringPlotId = MonitoringPlotId(2)
   private val observationId = ObservationId(3)
   private val organizationId = OrganizationId(4)
   private val plantingSiteId = PlantingSiteId(5)
-  private val knownUserId = UserId(6)
-  private val unknownUserId = UserId(7)
+  private lateinit var deletedUserId: UserId
+  private lateinit var knownUserId: UserId
 
   @BeforeEach
   fun setUp() {
-    every { simpleUserStore.fetchSimpleUsersById(any()) }
-        .answers { mapOf(knownUserId to SimpleUserModel(knownUserId, "Known User")) }
+    deletedUserId = insertUser(firstName = "X", lastName = "Y", deletedTime = Instant.EPOCH)
+    knownUserId = insertUser(firstName = "Known", lastName = "User")
+
+    insertOrganization()
+    insertOrganizationUser()
+    insertOrganizationUser(userId = knownUserId)
   }
 
   @Test
@@ -61,7 +64,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val editEntry =
         eventLogEntry(
-            unknownUserId,
+            deletedUserId,
             ObservationMediaFileEditedEvent(
                 changedFrom = ObservationMediaFileEditedEventValues(caption = "before"),
                 changedTo = ObservationMediaFileEditedEventValues(caption = "after"),
@@ -103,7 +106,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
                     ),
                 subject = subject,
                 timestamp = editEntry.createdTime,
-                userId = unknownUserId,
+                userId = deletedUserId,
                 userName = "Former User",
             ),
         )
@@ -118,7 +121,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val editEntry =
         eventLogEntry(
-            unknownUserId,
+            deletedUserId,
             ObservationMediaFileEditedEvent(
                 changedFrom = ObservationMediaFileEditedEventValues(caption = "a"),
                 changedTo = ObservationMediaFileEditedEventValues(caption = "b"),
@@ -143,7 +146,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
 
   @Test
   fun `localizes special usernames of FieldUpdated actions`() {
-    val uploadEntry = eventLogEntry(unknownUserId, uploadedEvent())
+    val uploadEntry = eventLogEntry(deletedUserId, uploadedEvent())
 
     val payloads = Locales.SPANISH.use { transformer.eventsToPayloads(listOf(uploadEntry)) }
 
@@ -155,7 +158,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
     val uploadEntry = eventLogEntry(knownUserId, uploadedEvent())
     val deleteEntry =
         eventLogEntry(
-            unknownUserId,
+            deletedUserId,
             ObservationMediaFileDeletedEvent(
                 fileId = fileId,
                 monitoringPlotId = monitoringPlotId,
@@ -190,7 +193,7 @@ class EventLogPayloadTransformerTest : RunsAsUser {
                 action = DeletedActionPayload(),
                 subject = subject,
                 timestamp = deleteEntry.createdTime,
-                userId = unknownUserId,
+                userId = deletedUserId,
                 userName = "Former User",
             ),
         )
