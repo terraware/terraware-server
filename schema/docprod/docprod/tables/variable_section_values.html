@@ -382,24 +382,24 @@
                                     <td>((text_value IS NULL) OR (used_variable_id IS NULL))</td>
                                 </tr>
                                 <tr>
+                                    <td>cannot_reference_other_sections</td>
+                                    <td>((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8))</td>
+                                </tr>
+                                <tr>
                                     <td>cannot_inject_sections</td>
                                     <td>(NOT ((usage_type_id &#61; 1) AND (used_variable_type_id &#61; 8)))</td>
+                                </tr>
+                                <tr>
+                                    <td>must_have_text_or_reference</td>
+                                    <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
                                 </tr>
                                 <tr>
                                     <td>injection_has_display_style</td>
                                     <td>((usage_type_id &#61; 1) &#61; (display_style_id IS NOT NULL))</td>
                                 </tr>
                                 <tr>
-                                    <td>cannot_reference_other_sections</td>
-                                    <td>((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8))</td>
-                                </tr>
-                                <tr>
                                     <td>reference_only_for_figures_and_sections</td>
                                     <td>((usage_type_id &lt;&gt; 2) OR (used_variable_type_id &#61; ANY (ARRAY[4, 6, 8])))</td>
-                                </tr>
-                                <tr>
-                                    <td>must_have_text_or_reference</td>
-                                    <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
                                 </tr>
                                 <tr>
                                     <td>usages_must_have_types</td>
