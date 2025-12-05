@@ -774,6 +774,18 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               plantingSubzoneId = subzone2,
               plantingSubzoneHistoryId = newSubzone2History,
           )
+      val plot212 = plotIds["212"]!!
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+          .where(MONITORING_PLOTS.ID.eq(plot212))
+          .execute()
+      plotHistoryIds[plot212] =
+          insertMonitoringPlotHistory(
+              monitoringPlotId = plot212,
+              plantingSubzoneId = null,
+              plantingSubzoneHistoryId = null,
+          )
       plotHistoryIds[plotIds["311"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["311"]!!,

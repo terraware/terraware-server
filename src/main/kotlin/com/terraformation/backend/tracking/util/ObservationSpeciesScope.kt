@@ -5,12 +5,12 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
@@ -40,7 +40,7 @@ class ObservationSpeciesPlot(plotId: MonitoringPlotId) : ObservationSpeciesScope
 
   override val observedTotalsScopeField = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID
 
-  override val tempZoneCondition = MONITORING_PLOTS.ID.eq(plotId)
+  override val tempZoneCondition = MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)
 
   override val t0DensityCondition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
 
@@ -65,9 +65,12 @@ class ObservationSpeciesSubzone(
   constructor(
       plotId: MonitoringPlotId
   ) : this(
-      DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-          .from(MONITORING_PLOTS)
-          .where(MONITORING_PLOTS.ID.eq(plotId)),
+      DSL.select(
+              OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID
+          )
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_SUBZONE_SPECIES_TOTALS.OBSERVATION_ID)),
       plotId,
   )
 
@@ -77,7 +80,8 @@ class ObservationSpeciesSubzone(
 
   override val observedTotalsScopeField = OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID
 
-  override val tempZoneCondition = MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
+  override val tempZoneCondition =
+      MONITORING_PLOT_HISTORIES.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(subzoneSelect)
 
   override val t0DensityCondition =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SUBZONE_ID.eq(subzoneSelect)
@@ -106,15 +110,14 @@ class ObservationSpeciesZone(
   constructor(
       plotId: MonitoringPlotId
   ) : this(
-      DSL.select(PLANTING_SUBZONES.PLANTING_ZONE_ID)
-          .from(PLANTING_SUBZONES)
-          .where(
-              PLANTING_SUBZONES.ID.eq(
-                  DSL.select(MONITORING_PLOTS.PLANTING_SUBZONE_ID)
-                      .from(MONITORING_PLOTS)
-                      .where(MONITORING_PLOTS.ID.eq(plotId))
-              )
-          ),
+      DSL.select(
+              OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                  .plantingZoneHistories
+                  .PLANTING_ZONE_ID
+          )
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID)),
       plotId,
   )
 

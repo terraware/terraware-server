@@ -634,7 +634,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 .fullOuterJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
                 .on(
                     PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                            monitoringPlots.plantingSubzones.PLANTING_ZONE_ID
+                            OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                                .plantingZoneHistories
+                                .PLANTING_ZONE_ID
                         )
                         .and(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
@@ -651,7 +653,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
                         .and(
                             PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID
+                                OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
+                                    .plantingZoneHistories
+                                    .PLANTING_ZONE_ID
                             )
                         )
                     //                        )

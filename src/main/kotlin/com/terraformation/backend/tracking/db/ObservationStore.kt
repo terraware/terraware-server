@@ -49,6 +49,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
@@ -1539,13 +1540,30 @@ class ObservationStore(
 
   fun recalculateSurvivalRates(plantingZoneId: PlantingZoneId) {
     val subzoneGroups: Map<PlantingSubzoneId, List<MonitoringPlotId>> =
-        dslContext
-            .select(PLANTING_SUBZONES.ID, MONITORING_PLOTS.ID)
-            .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONES)
-            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
-            .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
-            .fetchGroups(PLANTING_SUBZONES.ID.asNonNullable(), MONITORING_PLOTS.ID.asNonNullable())
+        //        dslContext
+        //            .select(PLANTING_SUBZONES.ID, MONITORING_PLOTS.ID)
+        //            .from(MONITORING_PLOTS)
+        //            .join(PLANTING_SUBZONES)
+        //            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+        //            .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
+        //            .fetchGroups(PLANTING_SUBZONES.ID.asNonNullable(),
+        // MONITORING_PLOTS.ID.asNonNullable())
+
+        with(PLANTING_SUBZONE_HISTORIES) {
+          dslContext
+              .select(
+                  PLANTING_SUBZONE_ID,
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+              )
+              .from(MONITORING_PLOT_HISTORIES)
+              .join(PLANTING_SUBZONE_HISTORIES)
+              .on(ID.eq(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID))
+              .where(plantingZoneHistories.PLANTING_ZONE_ID.eq(plantingZoneId))
+              .fetchGroups(
+                  PLANTING_SUBZONE_ID.asNonNullable(),
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
+              )
+        }
 
     subzoneGroups.values.flatten().forEach { recalculateSurvivalRate(ObservationSpeciesPlot(it)) }
 
@@ -2294,23 +2312,29 @@ class ObservationStore(
         DSL.field(
             DSL.select(DSL.sum(ZONE_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
                 .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                .join(MONITORING_PLOTS)
+                .join(MONITORING_PLOT_HISTORIES)
                 .on(
-                    MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
-                        PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
-                    )
+                    MONITORING_PLOT_HISTORIES.plantingSubzoneHistories.plantingZoneHistories
+                        .PLANTING_ZONE_ID
+                        .eq(PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID)
                 )
                 .where(condition)
                 .and(updateScope.tempZoneCondition)
                 .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
                 .and(
                     plotHasCompletedObservations(
-                        MONITORING_PLOTS.ID,
+                        MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
                         false,
                         updateScope.alternateCompletedCondition,
                     )
                 )
-                .and(plotIsInObservationResult(MONITORING_PLOTS.ID, observationIdField, false))
+                .and(
+                    plotIsInObservationResult(
+                        MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+                        observationIdField,
+                        false,
+                    )
+                )
         )
       }
 
