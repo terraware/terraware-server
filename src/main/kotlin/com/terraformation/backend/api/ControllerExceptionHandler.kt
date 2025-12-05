@@ -327,7 +327,11 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
 
   private fun logError(ex: Exception, request: WebRequest) {
     val description = request.getDescription(false)
-    controllerLogger(ex).error("Exception thrown while handling request $description", ex)
+    controllerLogger(ex)
+        .error(
+            "${ex.javaClass.simpleName} thrown while handling request $description: ${ex.message}",
+            ex,
+        )
   }
 
   /**
