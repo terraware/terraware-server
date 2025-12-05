@@ -2290,7 +2290,7 @@ class ObservationStore(
             )
             .and(
                 opPerm.OBSERVATION_ID.eq(
-                    plotIsInObservationResult(
+                    observationIdForPlot(
                         PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
                         observationIdField,
                         true,
@@ -2328,7 +2328,7 @@ class ObservationStore(
               )
               .and(
                   opTemp.OBSERVATION_ID.eq(
-                      plotIsInObservationResult(
+                      observationIdForPlot(
                           opTemp.MONITORING_PLOT_ID,
                           observationIdField,
                           false,

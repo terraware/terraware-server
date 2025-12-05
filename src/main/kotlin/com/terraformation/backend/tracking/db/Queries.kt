@@ -46,7 +46,7 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
     }
 
 /**
- * Returns a condition that is true if the given monitoring plot is used in the observation from
+ * Returns an observationId if the given monitoring plot is used in the observation results from
  * observationIdField.
  *
  * A monitoring plot is considered used in an observation if it is:
@@ -54,7 +54,7 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
  * 2. If the plot's subzone was not requested in the current observation, but was requested in that
  *    subzone's most recent observation.
  */
-fun plotIsInObservationResult(
+fun observationIdForPlot(
     monitoringPlotIdField: Field<MonitoringPlotId?>,
     observationIdField: Field<ObservationId?>,
     isPermanent: Boolean,
