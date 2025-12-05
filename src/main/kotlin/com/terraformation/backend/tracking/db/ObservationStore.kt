@@ -2272,28 +2272,33 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
       observationIdField: Field<ObservationId?>,
-  ): Field<BigDecimal> =
-      DSL.field(
-          DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
-              .from(PLOT_T0_DENSITIES)
-              .where(updateScope.t0DensityCondition)
-              .and(condition)
-              .and(
-                  plotHasCompletedObservations(
-                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                      true,
-                      updateScope.alternateCompletedCondition(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
-                  )
-              )
-              .and(
-                  plotIsInObservationResult(
-                          PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                          observationIdField,
-                          true,
-                      )
-                      .isNotNull
-              )
-      )
+  ): Field<BigDecimal> {
+    val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
+    return DSL.field(
+        DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
+            .from(PLOT_T0_DENSITIES)
+            .join(opPerm)
+            .on(opPerm.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
+            .where(updateScope.t0DensityCondition(opPerm))
+            .and(condition)
+            .and(
+                plotHasCompletedObservations(
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                    true,
+                    updateScope.alternateCompletedCondition(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
+                )
+            )
+            .and(
+                opPerm.OBSERVATION_ID.eq(
+                    plotIsInObservationResult(
+                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                        observationIdField,
+                        true,
+                    )
+                )
+            )
+    )
+  }
 
   private fun <ID : Any> getSurvivalRateTempDenominator(
       updateScope: ObservationSpeciesScope<ID>,

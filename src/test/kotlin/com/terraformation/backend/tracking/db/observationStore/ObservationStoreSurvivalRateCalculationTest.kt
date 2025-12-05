@@ -10,17 +10,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.mockUser
@@ -49,27 +39,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private lateinit var subzoneId: PlantingSubzoneId
   private lateinit var zoneId: PlantingZoneId
   private val observedTime = Instant.ofEpochSecond(1)
-
-  private fun printTables(message: String) {
-    println("\n\n$message:\n")
-    listOf(
-            PLOT_T0_DENSITIES,
-            PLANTING_ZONE_T0_TEMP_DENSITIES,
-            MONITORING_PLOTS,
-            OBSERVATION_PLOTS,
-            OBSERVATIONS,
-            MONITORING_PLOT_HISTORIES,
-            PLANTING_SUBZONE_HISTORIES,
-            PLANTING_ZONE_HISTORIES,
-            PLANTING_SITE_HISTORIES,
-            OBSERVED_PLOT_SPECIES_TOTALS,
-            OBSERVED_SUBZONE_SPECIES_TOTALS,
-            OBSERVED_ZONE_SPECIES_TOTALS,
-            OBSERVED_SITE_SPECIES_TOTALS,
-        )
-        .forEach { println("${it.name}:\n${dslContext.fetch(it)}") }
-    println("END $message\n\n")
-  }
 
   @BeforeEach
   fun setUp() {
@@ -580,7 +549,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val permPlot2Rates = mapOf(speciesId to 100.0 * 1 / 5, null to 100.0 * 1 / 5)
     val tempPlotRates = mapOf(speciesId to 100.0 * 1 / 20, null to 100.0 * 1 / 20)
     val allPlotRates = mapOf(speciesId to 100.0 * 4 / 55, null to 100.0 * 4 / 55)
-    printTables("Before geometry change, after Observation 1")
     assertSurvivalRates(
         SurvivalRates(
             mapOf(
@@ -632,7 +600,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         monitoringPlotHistoryId = newTempPlotHistory,
     )
 
-    printTables("After geometry change, before Observation 2")
     obs2Plots.forEach {
       observationStore.completePlot(
           observationId2,
@@ -643,7 +610,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           plantsList,
       )
     }
-    printTables("After geometry change, after Observation 2")
 
     val obs2AllPlotsRates = mapOf(speciesId to 100.0 * 2 / 30, null to 100.0 * 2 / 30)
     assertSurvivalRates(
@@ -665,27 +631,26 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           .execute()
     }
     observationStore.recalculateSurvivalRates(zoneId)
-    printTables("after recalculate")
 
     val actualResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
-    //    val obs1UpdatedResults = ratesObjectFromResults(actualResults[1], plantingSiteId)
+    val obs1UpdatedResults = ratesObjectFromResults(actualResults[1], plantingSiteId)
     val obs2UpdatedResults = ratesObjectFromResults(actualResults[0], plantingSiteId)
 
     val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
     val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
-    //    val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
-    //    val obs1Expected =
-    //        SurvivalRates(
-    //            mapOf(
-    //                plotId to permPlot1Rates,
-    //                permanentPlotRemoved to permPlot2Rates,
-    //                tempPlot to tempPlotRatesUpdated,
-    //                tempPlotRemoved to tempPlotRatesUpdated,
-    //            ),
-    //            mapOf(subzoneId to allPlotRatesUpdated),
-    //            mapOf(zoneId to allPlotRatesUpdated),
-    //            mapOf(plantingSiteId to allPlotRatesUpdated),
-    //        )
+    val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
+    val obs1Expected =
+        SurvivalRates(
+            mapOf(
+                plotId to permPlot1Rates,
+                permanentPlotRemoved to permPlot2Rates,
+                tempPlot to tempPlotRatesUpdated,
+                tempPlotRemoved to tempPlotRatesUpdated,
+            ),
+            mapOf(subzoneId to allPlotRatesUpdated),
+            mapOf(zoneId to allPlotRatesUpdated),
+            mapOf(plantingSiteId to allPlotRatesUpdated),
+        )
     val obs2Expected =
         SurvivalRates(
             mapOf(plotId to permPlot1Rates, tempPlot to tempPlotRatesUpdated),
@@ -693,8 +658,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(zoneId to obs2AllPlotsRatesUpdated),
             mapOf(plantingSiteId to obs2AllPlotsRatesUpdated),
         )
-    //    assertSurvivalRates(obs1Expected, obs1UpdatedResults, "Observation 1 is updated
-    // correctly")
+    assertSurvivalRates(obs1Expected, obs1UpdatedResults, "Observation 1 is updated correctly")
     assertSurvivalRates(obs2Expected, obs2UpdatedResults, "Observation 2 is updated correctly")
   }
 

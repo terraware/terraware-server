@@ -24,39 +24,40 @@ import org.jooq.impl.DSL
 
 interface ObservationSpeciesScope<ID : Any> {
   val scopeId: Select<Record1<ID?>>
-  val observedTotalsTable: Table<out Record>
-  val observedTotalsScopeField: TableField<*, ID?>
-
-  fun tempZoneCondition(tempZoneTable: ObservationPlots): Condition
-
-  val t0DensityCondition: Condition
   val observedTotalsCondition: Condition
   val observedTotalsPlantingSiteTempCondition: Condition
+  val observedTotalsScopeField: TableField<*, ID?>
+  val observedTotalsTable: Table<out Record>
 
   fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>): Condition
+
+  fun t0DensityCondition(permPlotsTable: ObservationPlots): Condition
+
+  fun tempZoneCondition(tempZoneTable: ObservationPlots): Condition
 }
 
 class ObservationSpeciesPlot(val plotId: MonitoringPlotId) :
     ObservationSpeciesScope<MonitoringPlotId> {
   override val scopeId = DSL.select(DSL.inline(plotId))
 
-  override val observedTotalsTable = OBSERVED_PLOT_SPECIES_TOTALS
-
-  override val observedTotalsScopeField = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID
-
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      tempZoneTable.MONITORING_PLOT_ID.eq(plotId)
-
-  override val t0DensityCondition = PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
-
-  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      plotField.eq(plotId)
-
   override val observedTotalsCondition = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(plotId)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVED_PLOT_SPECIES_TOTALS.monitoringPlots.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
           .eq(true)
+
+  override val observedTotalsScopeField = OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID
+
+  override val observedTotalsTable = OBSERVED_PLOT_SPECIES_TOTALS
+
+  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
+      tempZoneTable.MONITORING_PLOT_ID.eq(plotId)
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      plotField.eq(plotId)
 }
 
 class ObservationSpeciesSubzone(
@@ -82,22 +83,6 @@ class ObservationSpeciesSubzone(
 
   override val scopeId = subzoneSelect
 
-  override val observedTotalsTable = OBSERVED_SUBZONE_SPECIES_TOTALS
-
-  override val observedTotalsScopeField = OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID
-
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      tempZoneTable.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(
-          subzoneSelect
-      )
-
-  // todo have to fix this
-  override val t0DensityCondition =
-      PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SUBZONE_ID.eq(subzoneSelect)
-
-  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
-
   override val observedTotalsCondition =
       OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
 
@@ -105,6 +90,23 @@ class ObservationSpeciesSubzone(
       OBSERVED_SUBZONE_SPECIES_TOTALS.plantingSubzones.plantingSites
           .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
           .eq(true)
+
+  override val observedTotalsScopeField = OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID
+
+  override val observedTotalsTable = OBSERVED_SUBZONE_SPECIES_TOTALS
+
+  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
+      tempZoneTable.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(
+          subzoneSelect
+      )
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      permPlotsTable.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(
+          subzoneSelect
+      )
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 }
 
 class ObservationSpeciesZone(
@@ -132,20 +134,6 @@ class ObservationSpeciesZone(
 
   override val scopeId = zoneSelect
 
-  override val observedTotalsTable = OBSERVED_ZONE_SPECIES_TOTALS
-
-  override val observedTotalsScopeField = OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID
-
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
-
-  // todo have to fix this
-  override val t0DensityCondition =
-      PLOT_T0_DENSITIES.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.eq(zoneSelect)
-
-  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
-
   override val observedTotalsCondition =
       OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(zoneSelect)
 
@@ -153,6 +141,21 @@ class ObservationSpeciesZone(
       OBSERVED_ZONE_SPECIES_TOTALS.plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
           true
       )
+
+  override val observedTotalsScopeField = OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID
+
+  override val observedTotalsTable = OBSERVED_ZONE_SPECIES_TOTALS
+
+  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
+      PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      permPlotsTable.monitoringPlotHistories.plantingSubzoneHistories.plantingZoneHistories
+          .PLANTING_ZONE_ID
+          .eq(zoneSelect)
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 }
 
 class ObservationSpeciesSite(
@@ -183,22 +186,22 @@ class ObservationSpeciesSite(
 
   override val scopeId = siteSelect
 
-  override val observedTotalsTable = OBSERVED_SITE_SPECIES_TOTALS
-
-  override val observedTotalsScopeField = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
-
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      PLANTING_ZONE_T0_TEMP_DENSITIES.plantingZones.PLANTING_SITE_ID.eq(siteSelect)
-
-  override val t0DensityCondition =
-      PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
-
-  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
-
   override val observedTotalsCondition =
       OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVED_SITE_SPECIES_TOTALS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true)
+
+  override val observedTotalsScopeField = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+
+  override val observedTotalsTable = OBSERVED_SITE_SPECIES_TOTALS
+
+  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
+      PLANTING_ZONE_T0_TEMP_DENSITIES.plantingZones.PLANTING_SITE_ID.eq(siteSelect)
+
+  override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
+      PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
+
+  override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 }
