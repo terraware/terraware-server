@@ -10,6 +10,17 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.mockUser
@@ -38,6 +49,27 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private lateinit var subzoneId: PlantingSubzoneId
   private lateinit var zoneId: PlantingZoneId
   private val observedTime = Instant.ofEpochSecond(1)
+
+  private fun printTables(message: String) {
+    println("\n\n$message:\n")
+    listOf(
+            PLOT_T0_DENSITIES,
+            PLANTING_ZONE_T0_TEMP_DENSITIES,
+            MONITORING_PLOTS,
+            OBSERVATION_PLOTS,
+            OBSERVATIONS,
+            MONITORING_PLOT_HISTORIES,
+            PLANTING_SUBZONE_HISTORIES,
+            PLANTING_ZONE_HISTORIES,
+            PLANTING_SITE_HISTORIES,
+            OBSERVED_PLOT_SPECIES_TOTALS,
+            OBSERVED_SUBZONE_SPECIES_TOTALS,
+            OBSERVED_ZONE_SPECIES_TOTALS,
+            OBSERVED_SITE_SPECIES_TOTALS,
+        )
+        .forEach { println("${it.name}:\n${dslContext.fetch(it)}") }
+    println("END $message\n\n")
+  }
 
   @BeforeEach
   fun setUp() {
@@ -487,6 +519,186 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate is recalculated for all plots in a zone correctly after geometry and t0 changes`() {
+    // includes plots that are no longer part of their subzones
+    with(PLANTING_SITES) {
+      dslContext
+          .update(this)
+          .set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true)
+          .where(ID.eq(plantingSiteId))
+          .execute()
+    }
+    val speciesId = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
+
+    val permanentPlotRemoved = insertMonitoringPlot(permanentIndex = 2)
+    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(5).toPlantsPerHectare())
+    val tempPlot = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    val tempPlotRemoved = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = false)
+    insertPlantingZoneT0TempDensity(zoneDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
+
+    val obs1Plots = listOf(plotId, permanentPlotRemoved, tempPlot, tempPlotRemoved)
+    val obs2Plots = listOf(plotId, tempPlot)
+    val removedPlots = listOf(permanentPlotRemoved, tempPlotRemoved)
+
+    val plantsList =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Unknown,
+                gpsCoordinates = point(2),
+                statusId = RecordedPlantStatus.Dead,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Other,
+                gpsCoordinates = point(3),
+                speciesName = "Who knows",
+                statusId = RecordedPlantStatus.Existing,
+            ),
+        )
+
+    obs1Plots.forEach {
+      observationStore.completePlot(
+          observationId,
+          it,
+          emptySet(),
+          "Notes1",
+          observedTime,
+          plantsList,
+      )
+    }
+
+    val permPlot1Rates = mapOf(speciesId to 100.0 * 1 / 10, null to 100.0 * 1 / 10)
+    val permPlot2Rates = mapOf(speciesId to 100.0 * 1 / 5, null to 100.0 * 1 / 5)
+    val tempPlotRates = mapOf(speciesId to 100.0 * 1 / 20, null to 100.0 * 1 / 20)
+    val allPlotRates = mapOf(speciesId to 100.0 * 4 / 55, null to 100.0 * 4 / 55)
+    printTables("Before geometry change, after Observation 1")
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(
+                plotId to permPlot1Rates,
+                permanentPlotRemoved to permPlot2Rates,
+                tempPlot to tempPlotRates,
+                tempPlotRemoved to tempPlotRates,
+            ),
+            mapOf(subzoneId to allPlotRates),
+            mapOf(zoneId to allPlotRates),
+            mapOf(plantingSiteId to allPlotRates),
+        ),
+        "Before geometry change, Observation 1",
+    )
+
+    // update planting site
+    insertPlantingSiteHistory()
+    insertPlantingZoneHistory()
+    insertPlantingSubzoneHistory()
+    dslContext
+        .update(MONITORING_PLOTS)
+        .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
+        .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+        .where(MONITORING_PLOTS.ID.`in`(removedPlots))
+        .execute()
+    val newPlotHistory = insertMonitoringPlotHistory(monitoringPlotId = plotId)
+    val newTempPlotHistory = insertMonitoringPlotHistory(monitoringPlotId = tempPlot)
+    removedPlots.forEach {
+      insertMonitoringPlotHistory(
+          monitoringPlotId = it,
+          plantingSubzoneId = null,
+          plantingSubzoneHistoryId = null,
+      )
+    }
+    // end planting site update
+
+    val observationId2 = insertObservation()
+    insertObservationRequestedSubzone()
+    insertObservationPlot(
+        claimedBy = user.userId,
+        monitoringPlotId = plotId,
+        isPermanent = true,
+        monitoringPlotHistoryId = newPlotHistory,
+    )
+    insertObservationPlot(
+        claimedBy = user.userId,
+        monitoringPlotId = tempPlot,
+        isPermanent = false,
+        monitoringPlotHistoryId = newTempPlotHistory,
+    )
+
+    printTables("After geometry change, before Observation 2")
+    obs2Plots.forEach {
+      observationStore.completePlot(
+          observationId2,
+          it,
+          emptySet(),
+          "Notes2",
+          observedTime.plusSeconds(10),
+          plantsList,
+      )
+    }
+    printTables("After geometry change, after Observation 2")
+
+    val obs2AllPlotsRates = mapOf(speciesId to 100.0 * 2 / 30, null to 100.0 * 2 / 30)
+    assertSurvivalRates(
+        SurvivalRates(
+            mapOf(plotId to permPlot1Rates, tempPlot to tempPlotRates),
+            mapOf(subzoneId to obs2AllPlotsRates),
+            mapOf(zoneId to obs2AllPlotsRates),
+            mapOf(plantingSiteId to obs2AllPlotsRates),
+        ),
+        "After geometry change, Observation 2",
+    )
+
+    with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      dslContext
+          .update(this)
+          .set(ZONE_DENSITY, BigDecimal.valueOf(30).toPlantsPerHectare())
+          .where(PLANTING_ZONE_ID.eq(zoneId))
+          .and(SPECIES_ID.eq(speciesId))
+          .execute()
+    }
+    observationStore.recalculateSurvivalRates(zoneId)
+    printTables("after recalculate")
+
+    val actualResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
+    //    val obs1UpdatedResults = ratesObjectFromResults(actualResults[1], plantingSiteId)
+    val obs2UpdatedResults = ratesObjectFromResults(actualResults[0], plantingSiteId)
+
+    val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
+    val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
+    //    val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
+    //    val obs1Expected =
+    //        SurvivalRates(
+    //            mapOf(
+    //                plotId to permPlot1Rates,
+    //                permanentPlotRemoved to permPlot2Rates,
+    //                tempPlot to tempPlotRatesUpdated,
+    //                tempPlotRemoved to tempPlotRatesUpdated,
+    //            ),
+    //            mapOf(subzoneId to allPlotRatesUpdated),
+    //            mapOf(zoneId to allPlotRatesUpdated),
+    //            mapOf(plantingSiteId to allPlotRatesUpdated),
+    //        )
+    val obs2Expected =
+        SurvivalRates(
+            mapOf(plotId to permPlot1Rates, tempPlot to tempPlotRatesUpdated),
+            mapOf(subzoneId to obs2AllPlotsRatesUpdated),
+            mapOf(zoneId to obs2AllPlotsRatesUpdated),
+            mapOf(plantingSiteId to obs2AllPlotsRatesUpdated),
+        )
+    //    assertSurvivalRates(obs1Expected, obs1UpdatedResults, "Observation 1 is updated
+    // correctly")
+    assertSurvivalRates(obs2Expected, obs2UpdatedResults, "Observation 2 is updated correctly")
+  }
+
+  @Test
   fun `survival rate is calculated for a site using all data`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteData", numSpecies = 3)
   }
@@ -520,10 +732,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       with(PLOT_T0_DENSITIES) {
         dslContext
             .update(this)
-            .set(
-                PLOT_DENSITY,
-                BigDecimal.valueOf(20).toPlantsPerHectare(),
-            )
+            .set(PLOT_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
             .where(MONITORING_PLOT_ID.eq(plot1))
             .and(SPECIES_ID.eq(species1))
             .execute()
@@ -549,10 +758,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
         dslContext
             .update(this)
-            .set(
-                ZONE_DENSITY,
-                BigDecimal.valueOf(20).toPlantsPerHectare(),
-            )
+            .set(ZONE_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
             .where(PLANTING_ZONE_ID.eq(zone1))
             .and(SPECIES_ID.eq(species1))
             .execute()

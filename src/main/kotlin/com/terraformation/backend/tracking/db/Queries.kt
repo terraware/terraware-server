@@ -10,7 +10,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQU
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
-import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
 
@@ -59,7 +58,7 @@ fun plotIsInObservationResult(
     monitoringPlotIdField: Field<MonitoringPlotId?>,
     observationIdField: Field<ObservationId?>,
     isPermanent: Boolean,
-): Condition {
+): Field<ObservationId?> {
   // at the time of the observation:
   val subzoneObservations = OBSERVATIONS.`as`("subzone_observations")
   val pzh = PLANTING_ZONE_HISTORIES.`as`("pzh")
@@ -115,8 +114,8 @@ fun plotIsInObservationResult(
   val op = OBSERVATION_PLOTS.`as`("op")
   val mph = MONITORING_PLOT_HISTORIES.`as`("mph")
   val psh2 = PLANTING_SUBZONE_HISTORIES.`as`("psh2")
-  return DSL.exists(
-      DSL.select(op.MONITORING_PLOT_ID)
+  return DSL.field(
+      DSL.select(op.OBSERVATION_ID)
           .from(op)
           .join(mph)
           .on(mph.ID.eq(op.MONITORING_PLOT_HISTORY_ID))
