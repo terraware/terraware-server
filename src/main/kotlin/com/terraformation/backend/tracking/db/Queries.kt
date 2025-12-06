@@ -10,7 +10,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQU
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
-import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
 
@@ -47,7 +46,7 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
     }
 
 /**
- * Returns a condition that is true if the given monitoring plot is used in the observation from
+ * Returns an observationId if the given monitoring plot is used in the observation results from
  * observationIdField.
  *
  * A monitoring plot is considered used in an observation if it is:
@@ -55,24 +54,22 @@ fun latestObservationForSubzoneField(observationIdField: Field<ObservationId?>) 
  * 2. If the plot's subzone was not requested in the current observation, but was requested in that
  *    subzone's most recent observation.
  */
-fun plotIsInObservationResult(
+fun observationIdForPlot(
     monitoringPlotIdField: Field<MonitoringPlotId?>,
     observationIdField: Field<ObservationId?>,
     isPermanent: Boolean,
-): Condition {
+): Field<ObservationId?> {
   // at the time of the observation:
   val subzoneObservations = OBSERVATIONS.`as`("subzone_observations")
+  val pzh = PLANTING_ZONE_HISTORIES.`as`("pzh")
+  val psh = PLANTING_SUBZONE_HISTORIES.`as`("psh")
   val subzonesInSite =
-      DSL.selectDistinct(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID)
+      DSL.selectDistinct(psh.PLANTING_SUBZONE_ID)
           .from(subzoneObservations)
-          .join(PLANTING_ZONE_HISTORIES)
-          .on(
-              PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                  subzoneObservations.PLANTING_SITE_HISTORY_ID
-              )
-          )
-          .join(PLANTING_SUBZONE_HISTORIES)
-          .on(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(PLANTING_ZONE_HISTORIES.ID))
+          .join(pzh)
+          .on(pzh.PLANTING_SITE_HISTORY_ID.eq(subzoneObservations.PLANTING_SITE_HISTORY_ID))
+          .join(psh)
+          .on(psh.PLANTING_ZONE_HISTORY_ID.eq(pzh.ID))
           .where(subzoneObservations.ID.eq(observationIdField))
 
   val subzonesInCurrentObservation =
@@ -86,6 +83,7 @@ fun plotIsInObservationResult(
           .from(maxTimeObservations)
           .where(maxTimeObservations.ID.eq(observationIdField))
 
+  val remainingObservations = OBSERVATIONS.`as`("remaining")
   val observationIdsForRemainingSubzones =
       with(OBSERVATION_REQUESTED_SUBZONES) {
         DSL.select(
@@ -99,47 +97,46 @@ fun plotIsInObservationResult(
                         DSL.rowNumber()
                             .over()
                             .partitionBy(PLANTING_SUBZONE_ID)
-                            .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
+                            .orderBy(remainingObservations.COMPLETED_TIME.desc())
                             .`as`("rn"),
                     )
                     .from(this)
-                    .join(OBSERVATIONS)
-                    .on(OBSERVATIONS.ID.eq(OBSERVATION_ID))
+                    .join(remainingObservations)
+                    .on(remainingObservations.ID.eq(OBSERVATION_ID))
                     .where(OBSERVATION_ID.ne(observationIdField))
                     .and(PLANTING_SUBZONE_ID.`in`(subzonesInSite))
                     .and(PLANTING_SUBZONE_ID.notIn(subzonesInCurrentObservation))
-                    .and(OBSERVATIONS.COMPLETED_TIME.le(observationCompletedTime))
+                    .and(remainingObservations.COMPLETED_TIME.le(observationCompletedTime))
             )
             .where(DSL.field(DSL.name("rn")).eq(1))
       }
 
-  return DSL.exists(
-      DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
-          .from(OBSERVATION_PLOTS)
-          .join(MONITORING_PLOT_HISTORIES)
-          .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
-          .join(PLANTING_SUBZONE_HISTORIES)
-          .on(
-              PLANTING_SUBZONE_HISTORIES.ID.eq(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-              )
-          )
-          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
-          .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
+  val op = OBSERVATION_PLOTS.`as`("op")
+  val mph = MONITORING_PLOT_HISTORIES.`as`("mph")
+  val psh2 = PLANTING_SUBZONE_HISTORIES.`as`("psh2")
+  return DSL.field(
+      DSL.select(op.OBSERVATION_ID)
+          .from(op)
+          .join(mph)
+          .on(mph.ID.eq(op.MONITORING_PLOT_HISTORY_ID))
+          .join(psh2)
+          .on(psh2.ID.eq(mph.PLANTING_SUBZONE_HISTORY_ID))
+          .where(op.MONITORING_PLOT_ID.eq(monitoringPlotIdField))
+          .and(op.IS_PERMANENT.eq(isPermanent))
           .and(
               DSL.and(
-                      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField),
-                      PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.`in`(
-                          subzonesInCurrentObservation
-                      ),
+                      op.OBSERVATION_ID.eq(observationIdField),
+                      psh2.PLANTING_SUBZONE_ID.`in`(subzonesInCurrentObservation),
                   )
                   .or(
                       DSL.row(
-                              PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
-                              OBSERVATION_PLOTS.OBSERVATION_ID,
+                              psh2.PLANTING_SUBZONE_ID,
+                              op.OBSERVATION_ID,
                           )
                           .`in`(observationIdsForRemainingSubzones)
                   )
           )
+          .orderBy(op.observations.COMPLETED_TIME.desc())
+          .limit(1)
   )
 }

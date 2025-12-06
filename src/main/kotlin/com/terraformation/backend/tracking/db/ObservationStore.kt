@@ -49,6 +49,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
@@ -1539,13 +1540,21 @@ class ObservationStore(
 
   fun recalculateSurvivalRates(plantingZoneId: PlantingZoneId) {
     val subzoneGroups: Map<PlantingSubzoneId, List<MonitoringPlotId>> =
-        dslContext
-            .select(PLANTING_SUBZONES.ID, MONITORING_PLOTS.ID)
-            .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONES)
-            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
-            .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))
-            .fetchGroups(PLANTING_SUBZONES.ID.asNonNullable(), MONITORING_PLOTS.ID.asNonNullable())
+        with(PLANTING_SUBZONE_HISTORIES) {
+          dslContext
+              .selectDistinct(
+                  PLANTING_SUBZONE_ID,
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+              )
+              .from(MONITORING_PLOT_HISTORIES)
+              .join(PLANTING_SUBZONE_HISTORIES)
+              .on(ID.eq(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID))
+              .where(plantingZoneHistories.PLANTING_ZONE_ID.eq(plantingZoneId))
+              .fetchGroups(
+                  PLANTING_SUBZONE_ID.asNonNullable(),
+                  MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
+              )
+        }
 
     subzoneGroups.values.flatten().forEach { recalculateSurvivalRate(ObservationSpeciesPlot(it)) }
 
@@ -2263,56 +2272,72 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
       observationIdField: Field<ObservationId?>,
-  ): Field<BigDecimal> =
-      DSL.field(
-          DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
-              .from(PLOT_T0_DENSITIES)
-              .where(updateScope.t0DensityCondition)
-              .and(condition)
-              .and(
-                  plotHasCompletedObservations(
-                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                      true,
-                      updateScope.alternateCompletedCondition,
-                  )
-              )
-              .and(
-                  plotIsInObservationResult(
-                      PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                      observationIdField,
-                      true,
-                  )
-              )
-      )
+  ): Field<BigDecimal> {
+    val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
+    return DSL.field(
+        DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
+            .from(PLOT_T0_DENSITIES)
+            .join(opPerm)
+            .on(opPerm.MONITORING_PLOT_ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
+            .where(updateScope.t0DensityCondition(opPerm))
+            .and(condition)
+            .and(
+                plotHasCompletedObservations(
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                    true,
+                    updateScope.alternateCompletedCondition(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
+                )
+            )
+            .and(
+                opPerm.OBSERVATION_ID.eq(
+                    observationIdForPlot(
+                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
+                        observationIdField,
+                        true,
+                    )
+                )
+            )
+    )
+  }
 
   private fun <ID : Any> getSurvivalRateTempDenominator(
       updateScope: ObservationSpeciesScope<ID>,
       condition: Condition,
       observationIdField: Field<ObservationId?>,
-  ): Field<BigDecimal> =
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
-        DSL.field(
-            DSL.select(DSL.sum(ZONE_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
-                .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                .join(MONITORING_PLOTS)
-                .on(
-                    MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
-                        PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
-                    )
-                )
-                .where(condition)
-                .and(updateScope.tempZoneCondition)
-                .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-                .and(
-                    plotHasCompletedObservations(
-                        MONITORING_PLOTS.ID,
-                        false,
-                        updateScope.alternateCompletedCondition,
-                    )
-                )
-                .and(plotIsInObservationResult(MONITORING_PLOTS.ID, observationIdField, false))
-        )
-      }
+  ): Field<BigDecimal> {
+    val opTemp = OBSERVATION_PLOTS.`as`("opTemp")
+    return with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      DSL.field(
+          DSL.select(DSL.sum(ZONE_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
+              .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .join(opTemp)
+              .on(
+                  opTemp.monitoringPlotHistories.plantingSubzoneHistories.plantingZoneHistories
+                      .PLANTING_ZONE_ID
+                      .eq(PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID)
+              )
+              .where(condition)
+              .and(updateScope.tempZoneCondition(opTemp))
+              .and(plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+              .and(
+                  plotHasCompletedObservations(
+                      opTemp.MONITORING_PLOT_ID,
+                      false,
+                      updateScope.alternateCompletedCondition(opTemp.MONITORING_PLOT_ID),
+                  )
+              )
+              .and(
+                  opTemp.OBSERVATION_ID.eq(
+                      observationIdForPlot(
+                          opTemp.MONITORING_PLOT_ID,
+                          observationIdField,
+                          false,
+                      )
+                  )
+              )
+      )
+    }
+  }
 
   private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal>) =
       DSL.if_(
