@@ -333,6 +333,34 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `plots require subzones to be included in all set`() {
+      includeTempPlotsInSurvivalRates(plantingSiteId)
+      insertPlotT0Density(speciesId = speciesId1)
+      insertPlotT0Density(speciesId = speciesId2)
+      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertMonitoringPlot(plotNumber = 100, permanentIndex = 100, plantingSubzoneId = null)
+      insertObservationPlot(
+          claimedTime = clock.instant(),
+          claimedBy = user.userId,
+          completedTime = clock.instant(),
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+      insertMonitoringPlot(plotNumber = 101, permanentIndex = null, plantingSubzoneId = null)
+      insertObservationPlot(
+          claimedTime = clock.instant(),
+          claimedBy = user.userId,
+          completedTime = clock.instant(),
+          completedBy = user.userId,
+      )
+
+      assertTrue(
+          store.fetchAllT0SiteDataSet(plantingSiteId),
+          "Plots without subzones are excluded",
+      )
+    }
+
+    @Test
     fun `correctly checks all data`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       // ad-hoc plots are excluded
