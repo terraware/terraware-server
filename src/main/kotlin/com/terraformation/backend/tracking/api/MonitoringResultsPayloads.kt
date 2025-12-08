@@ -38,20 +38,6 @@ data class ObservationSpeciesResultsPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(
         description =
-            "Number of dead plants observed in permanent monitoring plots in all observations " +
-                "including this one. 0 if this is a plot-level result for a temporary monitoring " +
-                "plot."
-    )
-    val cumulativeDead: Int,
-    @Schema(
-        description =
-            "Percentage of plants in permanent monitoring plots that are dead. If there are no " +
-                "permanent monitoring plots (or if this is a plot-level result for a temporary " +
-                "monitoring plot) this will be null."
-    )
-    val mortalityRate: Int?,
-    @Schema(
-        description =
             "Number of live plants observed in permanent plots in this observation, not " +
                 "including existing plants. 0 if ths is a plot-level result for a temporary " +
                 "monitoring plot."
@@ -91,8 +77,6 @@ data class ObservationSpeciesResultsPayload(
       model: ObservationSpeciesResultsModel
   ) : this(
       certainty = model.certainty,
-      cumulativeDead = model.cumulativeDead,
-      mortalityRate = model.mortalityRate,
       permanentLive = model.permanentLive,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
@@ -157,12 +141,6 @@ data class ObservationMonitoringPlotResultsPayload(
     val monitoringPlotName: String,
     @Schema(description = "Organization-unique number of this monitoring plot.")
     val monitoringPlotNumber: Long,
-    @Schema(
-        description =
-            "If this is a permanent monitoring plot in this observation, percentage of plants of " +
-                "all species that were dead."
-    )
-    val mortalityRate: Int?,
     val notes: String?,
     @Schema(description = "IDs of any newer monitoring plots that overlap with this one.")
     val overlappedByPlotIds: Set<MonitoringPlotId>,
@@ -213,7 +191,6 @@ data class ObservationMonitoringPlotResultsPayload(
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = "${model.monitoringPlotNumber}",
       monitoringPlotNumber = model.monitoringPlotNumber,
-      mortalityRate = model.mortalityRate,
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,
       overlapsWithPlotIds = model.overlapsWithPlotIds,
@@ -255,8 +232,6 @@ data class ObservationPlantingSubzoneResultsPayload(
                 "monitoring plots."
     )
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
-    val mortalityRate: Int?,
-    val mortalityRateStdDev: Int?,
     val name: String,
     @Schema(
         description =
@@ -293,8 +268,6 @@ data class ObservationPlantingSubzoneResultsPayload(
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
-      mortalityRate = model.mortalityRate,
-      mortalityRateStdDev = model.mortalityRateStdDev,
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
@@ -321,13 +294,6 @@ data class ObservationPlantingZoneResultsPayload(
                 "marked as having completed planting."
     )
     val estimatedPlants: Int?,
-    @Schema(
-        description =
-            "Percentage of plants of all species that were dead in this zone's permanent " +
-                "monitoring plots."
-    )
-    val mortalityRate: Int?,
-    val mortalityRateStdDev: Int?,
     val name: String,
     @Schema(
         description =
@@ -367,8 +333,6 @@ data class ObservationPlantingZoneResultsPayload(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
-      mortalityRate = model.mortalityRate,
-      mortalityRateStdDev = model.mortalityRateStdDev,
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
@@ -404,8 +368,6 @@ data class ObservationResultsPayload(
                 "monitoring plots."
     )
     val isAdHoc: Boolean,
-    val mortalityRate: Int?,
-    val mortalityRateStdDev: Int?,
     val observationId: ObservationId,
     @Schema(
         description =
@@ -435,8 +397,6 @@ data class ObservationResultsPayload(
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,
-      mortalityRate = model.mortalityRate,
-      mortalityRateStdDev = model.mortalityRateStdDev,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
@@ -471,13 +431,6 @@ data class PlantingZoneObservationSummaryPayload(
     val estimatedPlants: Int?,
     @Schema(description = "The latest time of the observations used in this summary.")
     val latestObservationTime: Instant,
-    @Schema(
-        description =
-            "Percentage of plants of all species that were dead in this zone's permanent " +
-                "monitoring plots."
-    )
-    val mortalityRate: Int?,
-    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
@@ -520,8 +473,6 @@ data class PlantingZoneObservationSummaryPayload(
       earliestObservationTime = model.earliestCompletedTime,
       estimatedPlants = model.estimatedPlants,
       latestObservationTime = model.latestCompletedTime,
-      mortalityRate = model.mortalityRate,
-      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzones =
@@ -550,13 +501,6 @@ data class PlantingSiteObservationSummaryPayload(
     val estimatedPlants: Int?,
     @Schema(description = "The latest time of the observations used in this summary.")
     val latestObservationTime: Instant,
-    @Schema(
-        description =
-            "Percentage of plants of all species that were dead in this site's permanent " +
-                "monitoring plots."
-    )
-    val mortalityRate: Int?,
-    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the site, based on the observed planting densities " +
@@ -596,8 +540,6 @@ data class PlantingSiteObservationSummaryPayload(
       earliestObservationTime = model.earliestCompletedTime,
       estimatedPlants = model.estimatedPlants,
       latestObservationTime = model.latestCompletedTime,
-      mortalityRate = model.mortalityRate,
-      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) },
