@@ -77,7 +77,7 @@ class AdminController(
     )
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute(
-        "canRecalculateMortalityRates",
+        "canRecalculateSurvivalRates",
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute(
