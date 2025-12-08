@@ -663,6 +663,73 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   }
 
   @Test
+  fun `survival rate includes species with densities that weren't recorded in later observations`() {
+    // but were recorded in earlier observations (this is an important distinction)
+    val species1 = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
+    val species2 = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = species1,
+                statusId = RecordedPlantStatus.Dead,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = species2,
+                statusId = RecordedPlantStatus.Dead,
+            ),
+        ),
+    )
+    val rates1 = mapOf(species1 to 0, species2 to 0, null to 0)
+    val expected1 =
+        SurvivalRates(
+            mapOf(plotId to rates1),
+            mapOf(subzoneId to rates1),
+            mapOf(zoneId to rates1),
+            mapOf(plantingSiteId to rates1),
+        )
+    assertSurvivalRates(expected1, "Survival rates for all species - observation 1")
+
+    val observation2 = insertObservation()
+    insertObservationRequestedSubzone()
+    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = species1,
+                statusId = RecordedPlantStatus.Live,
+            )
+        ),
+    )
+    val rates2 = mapOf(species1 to 100.0 * 1 / 10, species2 to 0, null to 100.0 * 1 / 30)
+    val expected2 =
+        SurvivalRates(
+            mapOf(plotId to rates2),
+            mapOf(subzoneId to rates2),
+            mapOf(zoneId to rates2),
+            mapOf(plantingSiteId to rates2),
+        )
+    assertSurvivalRates(expected2, "Survival rates includes species not in observation 2")
+  }
+
+  @Test
   fun `survival rate is calculated for a site using all data`() {
     runSurvivalRateScenario("/tracking/observation/SurvivalRateSiteData", numSpecies = 3)
   }

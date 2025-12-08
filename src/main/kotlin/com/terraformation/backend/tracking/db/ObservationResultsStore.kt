@@ -630,6 +630,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID)
                         .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
+                        .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 )
                 .fullOuterJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
                 .on(
@@ -640,6 +641,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         )
                         .and(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                        .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 )
                 .where(
                     MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
@@ -914,9 +916,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               // full outer join because we want survival rate to be 0 if a species wasn't observed
               // but has t0 density data set
               .fullOuterJoin(permanentSubzoneT0)
-              .on(permSubzoneCol.eq(PLANTING_SUBZONE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  permSubzoneCol
+                      .eq(PLANTING_SUBZONE_ID)
+                      .and(permSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .fullOuterJoin(tempSubzoneT0)
-              .on(tempSubzoneCol.eq(PLANTING_SUBZONE_ID).and(tempSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  tempSubzoneCol
+                      .eq(PLANTING_SUBZONE_ID)
+                      .and(tempSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .where(
                   PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID)
                       .or(permSubzoneCol.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID))
@@ -1217,9 +1229,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               // full outer join because we want survival rate to be 0 if a species wasn't observed
               // but has t0 density data set
               .fullOuterJoin(permZoneT0)
-              .on(permZoneCol.eq(PLANTING_ZONE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  permZoneCol
+                      .eq(PLANTING_ZONE_ID)
+                      .and(permSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .fullOuterJoin(tempZoneT0)
-              .on(tempZoneCol.eq(PLANTING_ZONE_ID).and(tempSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  tempZoneCol
+                      .eq(PLANTING_ZONE_ID)
+                      .and(tempSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .where(
                   PLANTING_ZONE_ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID)
                       .or(permZoneCol.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID))
@@ -1532,9 +1554,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               // full outer join because we want survival rate to be 0 if a species wasn't observed
               // but has t0 density data set
               .fullOuterJoin(permSiteT0)
-              .on(permSiteCol.eq(PLANTING_SITE_ID).and(permSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  permSiteCol
+                      .eq(PLANTING_SITE_ID)
+                      .and(permSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .fullOuterJoin(tempSiteT0)
-              .on(tempSiteCol.eq(PLANTING_SITE_ID).and(tempSpeciesCol.eq(SPECIES_ID)))
+              .on(
+                  tempSiteCol
+                      .eq(PLANTING_SITE_ID)
+                      .and(tempSpeciesCol.eq(SPECIES_ID))
+                      .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+              )
               .where(
                   PLANTING_SITE_ID.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID)
                       .or(permSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
