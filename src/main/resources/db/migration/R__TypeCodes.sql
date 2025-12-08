@@ -536,21 +536,22 @@ VALUES (1, 'Carbon'),
        (12, 'Values Alignment')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.system_metrics (id, name, description, type_id, component_id, reference, is_publishable)
-VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false),
-       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true),
-       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true),
-       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true),
-       (5, 'Mortality Rate', 'Mortality rate of plantings.', 3, 2, '2', true),
-       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true),
-       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', false)
+INSERT INTO accelerator.system_metrics (id, name, description, type_id, component_id, reference, is_publishable, is_deprecated)
+VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false, false),
+       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true, false),
+       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true, false),
+       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true, false),
+       (5, 'Mortality Rate', 'Mortality rate of plantings (no longer calculated).', 3, 2, '2', false, true),
+       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true, false),
+       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', false, false)
 ON CONFLICT (id) DO UPDATE
 SET name = excluded.name,
     description = excluded.description,
     type_id = excluded.type_id,
     component_id = excluded.component_id,
     reference = excluded.reference,
-    is_publishable = excluded.is_publishable;
+    is_publishable = excluded.is_publishable,
+    is_deprecated = excluded.is_deprecated;
 
 INSERT INTO seed_fund_report_statuses (id, name)
 VALUES (1, 'New'),

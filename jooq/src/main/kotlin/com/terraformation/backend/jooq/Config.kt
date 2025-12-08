@@ -89,6 +89,10 @@ val ENUM_TABLES =
                                 "is_publishable",
                                 "Boolean",
                             ),
+                            EnumTableColumnInfo(
+                                "is_deprecated",
+                                "Boolean",
+                            ),
                         ),
                     isLocalizable = false,
                 ),

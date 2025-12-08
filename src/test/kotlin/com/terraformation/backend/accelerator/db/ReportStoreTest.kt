@@ -77,7 +77,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.math.roundToInt
 import kotlin.random.Random
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -489,13 +489,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.MortalityRate,
-                  entry =
-                      ReportSystemMetricEntryModel(
-                          systemValue = 0,
-                      ),
-              ),
-              ReportSystemMetricModel(
                   metric = SystemMetric.SurvivalRate,
                   entry = ReportSystemMetricEntryModel(systemValue = 0),
               ),
@@ -577,13 +570,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 1,
-                      ),
-              ),
-              ReportSystemMetricModel(
-                  metric = SystemMetric.MortalityRate,
-                  entry =
-                      ReportSystemMetricEntryModel(
-                          systemValue = 40,
                       ),
               ),
               ReportSystemMetricModel(
@@ -1164,13 +1150,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
-                  entry =
-                      ReportSystemMetricEntryModel(
-                          systemValue = 0,
-                      ),
-              ),
-              ReportSystemMetricModel(
-                  metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
@@ -3082,15 +3061,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   target = 0,
-                  systemMetricId = SystemMetric.MortalityRate,
-                  systemValue = 40,
-                  systemTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              ),
-              ReportSystemMetricsRecord(
-                  reportId = reportId,
-                  target = 0,
                   systemMetricId = SystemMetric.SurvivalRate,
                   systemValue =
                       (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
@@ -4559,13 +4529,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.MortalityRate,
-                  statusId = ReportMetricStatus.Unlikely,
-                  target = 0,
-                  value = 50,
-              ),
-              PublishedReportSystemMetricsRecord(
-                  reportId = reportId,
                   systemMetricId = SystemMetric.HectaresPlanted,
                   statusId = null,
                   target = null,
@@ -5080,7 +5043,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         numPlants = 9,
     )
 
-    // Not the latest observation, so the number does not count towards mortality/survival rates
+    // Not the latest observation, so the number does not count towards survival rates
     val observationDate = getRandomDate(reportStartDate, reportEndDate.minusDays(1))
     val observationTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC)
     val site1OldObservationId =
@@ -5104,7 +5067,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5113,7 +5075,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5122,7 +5083,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
 
     val site1NewObservationId =
@@ -5146,7 +5106,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 1,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
@@ -5155,7 +5114,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 11,
         totalLive = 11,
-        cumulativeDead = 3,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
@@ -5164,19 +5122,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 7,
     )
-    // Unknown plants are not counted towards mortality/survival rates
+    // Unknown plants are not counted towards survival rates
     insertObservedSiteSpeciesTotals(
         observationId = site1NewObservationId,
         plantingSiteId = plantingSiteId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
 
-    // future observations are not counted towards mortality/survival rates
+    // future observations are not counted towards survival rates
     val futureObservationDate = reportEndDate.plusDays(1)
     val site1FutureObservationId =
         insertObservation(
@@ -5199,7 +5155,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 2,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5208,7 +5163,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 12,
         totalLive = 12,
-        cumulativeDead = 4,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5217,19 +5171,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 8,
     )
-    // Unknown plants are not counted towards mortality/survival rate
+    // Unknown plants are not counted towards survival rate
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
         plantingSiteId = plantingSiteId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 1,
         totalLive = 1,
-        cumulativeDead = 100,
     )
 
-    // Latest observation before the reporting period counts towards mortality/survival rate
+    // Latest observation before the reporting period counts towards survival rate
     val site2ObservationId =
         insertObservation(
             plantingSiteId = plantingSiteId2,
@@ -5251,7 +5203,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 9,
     )
 
     // Planting sites not part of the project is never counted
@@ -5279,19 +5230,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     // Total plants: 50
     // Dead plants: 20
   }
 
   private fun insertSystemMetricTargetsForReport(reportId: ReportId) {
-    SystemMetric.entries.forEach { metric ->
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = metric,
-          target = 0,
-      )
-    }
+    SystemMetric.entries
+        .filterNot { it.isDeprecated }
+        .forEach { metric ->
+          insertReportSystemMetric(
+              reportId = reportId,
+              metric = metric,
+              target = 0,
+          )
+        }
   }
 }
