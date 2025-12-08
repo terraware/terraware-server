@@ -1,5 +1,5 @@
-Observation ->,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3
-Plot,# Plants,# Species,Mortality Rate,Survival Rate,Live Plants,Existing Plants,Planting Density,# Plants,# Species,Mortality Rate,Survival Rate,Live Plants,Existing Plants,Planting Density,# Plants,# Species,Mortality Rate,Survival Rate,Live Plants,Existing Plants,Planting Density
-111,2,1,50%,50%,1,0,16,1,1,50%,50%,1,0,16,1,1,50%,50%,1,0,16
-112,2,0,100%,0%,0,0,0,1,1,67%,50%,1,0,16,1,1,67%,50%,1,0,16
-113,,,,,,,,2,1,50%,,1,0,16,,,,,,,
+Observation ->,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3
+Plot,# Plants,# Species,Survival Rate,Live Plants,Existing Plants,Planting Density,# Plants,# Species,Survival Rate,Live Plants,Existing Plants,Planting Density,# Plants,# Species,Survival Rate,Live Plants,Existing Plants,Planting Density
+111,2,1,50%,1,0,16,1,1,50%,1,0,16,1,1,50%,1,0,16
+112,2,0,0%,0,0,0,1,1,50%,1,0,16,1,1,50%,1,0,16
+113,,,,,,,2,1,,1,0,16,,,,,,
