@@ -1,4 +1,4 @@
-Observation ->1,1,1,1,1,1,1,1,1
-Species ->0,0,0,1,1,1,Other,Other,Other
-Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate
-125,0%,96%,153,0%,96%,,,
+Observation ->1,1,1,1,1,1
+Species ->0,0,1,1,Other,Other
+Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate
+125,96%,153,96%,,

@@ -207,7 +207,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   results.plantingDensity.toStringOrBlank(),
                   results.estimatedPlants.toStringOrBlank(),
                   results.totalSpecies.toStringOrBlank(),
-                  results.mortalityRate.toStringOrBlank("%"),
                   results.survivalRate.toStringOrBlank("%"),
               )
             },
@@ -229,7 +228,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   zone.totalPlants.toStringOrBlank(),
                   zone.plantingDensity.toStringOrBlank(),
                   zone.totalSpecies.toStringOrBlank(),
-                  zone.mortalityRate.toStringOrBlank("%"),
                   zone.survivalRate.toStringOrBlank("%"),
                   zone.estimatedPlants.toStringOrBlank(),
               )
@@ -255,7 +253,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   subzone?.totalPlants.toStringOrBlank(),
                   subzone?.plantingDensity.toStringOrBlank(),
                   subzone?.totalSpecies.toStringOrBlank(),
-                  subzone?.mortalityRate.toStringOrBlank("%"),
                   subzone?.survivalRate.toStringOrBlank("%"),
                   subzone?.estimatedPlants.toStringOrBlank(),
               )
@@ -329,7 +326,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               listOf(
                   plot?.totalPlants.toStringOrBlank(),
                   plot?.totalSpecies.toStringOrBlank(),
-                  plot?.mortalityRate.toStringOrBlank("%"),
                   plot?.survivalRate.toStringOrBlank("%"),
                   // Live and existing plants columns are in spreadsheet but not included in
                   // calculated results; it will be removed by the filter
@@ -341,8 +337,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
     assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
       row.filterIndexed { index, _ ->
-        val positionInColumnGroup = (index - 1) % 7
-        positionInColumnGroup !in 4..5
+        val positionInColumnGroup = (index - 1) % 6
+        positionInColumnGroup !in 3..4
       }
     }
   }
@@ -358,8 +354,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   results.plantingDensityStdDev.toStringOrBlank(),
                   results.estimatedPlants.toStringOrBlank(),
                   results.totalSpecies.toStringOrBlank(),
-                  results.mortalityRate.toStringOrBlank("%"),
-                  results.mortalityRateStdDev.toStringOrBlank("%"),
                   results.survivalRate.toStringOrBlank("%"),
                   results.survivalRateStdDev.toStringOrBlank("%"),
               )
@@ -384,8 +378,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   zone?.plantingDensity.toStringOrBlank(),
                   zone?.plantingDensityStdDev.toStringOrBlank(),
                   zone?.totalSpecies.toStringOrBlank(),
-                  zone?.mortalityRate.toStringOrBlank("%"),
-                  zone?.mortalityRateStdDev.toStringOrBlank("%"),
                   zone?.survivalRate.toStringOrBlank("%"),
                   zone?.survivalRateStdDev.toStringOrBlank("%"),
                   zone?.estimatedPlants.toStringOrBlank(),
@@ -416,8 +408,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   subzone?.plantingDensity.toStringOrBlank(),
                   subzone?.plantingDensityStdDev.toStringOrBlank(),
                   subzone?.totalSpecies.toStringOrBlank(),
-                  subzone?.mortalityRate.toStringOrBlank("%"),
-                  subzone?.mortalityRateStdDev.toStringOrBlank("%"),
                   subzone?.survivalRate.toStringOrBlank("%"),
                   subzone?.survivalRateStdDev.toStringOrBlank("%"),
                   subzone?.estimatedPlants.toStringOrBlank(),
@@ -444,21 +434,23 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     listOf(
                         plot.totalPlants.toStringOrBlank(),
                         plot.totalSpecies.toStringOrBlank(),
-                        plot.mortalityRate.toStringOrBlank("%"),
                         plot.survivalRate.toStringOrBlank("%"),
-                        // Live and existing plants columns are in spreadsheet but not included in
-                        // calculated
-                        // results; it will be removed by the filter function below.
+                        // Columns in original sheet that we ignore in this test (they are filtered
+                        // out of the arrays below):
+                        // 3: live plants
+                        // 4: t0 density
+                        // 5: t0 density/ha
+                        // 6: existing plants
                         plot.plantingDensity.toStringOrBlank(),
                     )
-                  } ?: listOf("", "", "", "", "")
+                  } ?: listOf("", "", "", "")
             },
         )
 
     assertResultsMatchCsv("$prefix/PlotStatsSummary.csv", actual) { row ->
       row.filterIndexed { index, _ ->
-        val positionInColumnGroup = (index - 1) % 11
-        positionInColumnGroup !in 4..9
+        val positionInColumnGroup = (index - 1) % 8
+        positionInColumnGroup !in 3..6
       }
     }
   }
@@ -480,10 +472,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   ?.let { species ->
                     listOf(
                         species.totalPlants.toStringOrBlank(),
-                        species.mortalityRate.toStringOrBlank("%"),
                         species.survivalRate.toStringOrBlank("%"),
                     )
-                  } ?: listOf("", "", "")
+                  } ?: listOf("", "")
             },
         )
 
@@ -513,10 +504,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   ?.let { species ->
                     listOf(
                         species.totalPlants.toStringOrBlank(),
-                        species.mortalityRate.toStringOrBlank("%"),
                         species.survivalRate.toStringOrBlank("%"),
                     )
-                  } ?: listOf("", "", "")
+                  } ?: listOf("", "")
             },
         )
 
@@ -545,10 +535,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   ?.let { species ->
                     listOf(
                         species.totalPlants.toStringOrBlank(),
-                        species.mortalityRate.toStringOrBlank("%"),
                         species.survivalRate.toStringOrBlank("%"),
                     )
-                  } ?: listOf("", "", "")
+                  } ?: listOf("", "")
             },
         )
 
@@ -579,10 +568,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   ?.let {
                     listOf(
                         it.totalPlants.toStringOrBlank(),
-                        it.mortalityRate.toStringOrBlank("%"),
                         it.survivalRate.toStringOrBlank("%"),
                     )
-                  } ?: listOf("", "", "")
+                  } ?: listOf("", "")
             },
         )
 
@@ -619,7 +607,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               results.plantingZones
                   .firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 3 + 3) { "" }
+                  ?: List(numSpecies * 2 + 2) { "" }
             },
         )
 
@@ -642,7 +630,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   .flatMap { zone -> zone.plantingSubzones }
                   .firstOrNull { subzone -> subzone.plantingSubzoneId == subzoneIds[subzoneName] }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 3 + 3) { "" }
+                  ?: List(numSpecies * 2 + 2) { "" }
             },
         )
 
@@ -666,7 +654,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   .flatMap { subzone -> subzone.monitoringPlots }
                   .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 3 + 3) { "" }
+                  ?: List(numSpecies * 2 + 2) { "" }
             },
         )
 
@@ -688,12 +676,11 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                     ?.let {
                       listOf(
                           it.totalPlants.toStringOrBlank(),
-                          it.mortalityRate.toStringOrBlank("%"),
                           it.survivalRate.toStringOrBlank("%"),
                       )
-                    } ?: listOf("", "", "")
+                    } ?: listOf("", "")
               } else {
-                listOf("", "", "")
+                listOf("", "")
               }
             }
             .flatten()
@@ -704,10 +691,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             ?.let {
               listOf(
                   it.totalPlants.toStringOrBlank(),
-                  it.mortalityRate.toStringOrBlank("%"),
                   it.survivalRate.toStringOrBlank("%"),
               )
-            } ?: listOf("", "", "")
+            } ?: listOf("", "")
 
     return knownSpecies + otherSpecies
   }
