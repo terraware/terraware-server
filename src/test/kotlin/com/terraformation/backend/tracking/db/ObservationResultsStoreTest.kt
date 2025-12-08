@@ -943,7 +943,6 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           monitoringPlotId = plotId2,
           claimedBy = user.userId,
       )
-      observationStore.populateCumulativeDead(observationId1)
 
       observationStore.completePlot(
           observationId1,
@@ -1006,7 +1005,6 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       // Add a second plot to subzone 3, to test for if subzone has no completed time yet.
       insertObservationPlot(observationId = observationId2, monitoringPlotId = neverObservedPlotId)
 
-      observationStore.populateCumulativeDead(observationId2)
       observationStore.completePlot(
           observationId2,
           plotId3,

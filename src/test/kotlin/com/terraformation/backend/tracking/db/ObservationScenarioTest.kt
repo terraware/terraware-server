@@ -939,10 +939,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             .execute()
       }
 
-      // This would normally happen in ObservationService.startObservation after plot selection;
-      // do it explicitly since we're specifying our own plots in the test data.
-      observationStore.populateCumulativeDead(observationId)
-
       plantsRows
           .groupBy { it.monitoringPlotId!! }
           .forEach { (plotId, plants) ->
@@ -1150,10 +1146,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
           )
           .execute()
     }
-
-    // This would normally happen in ObservationService.startObservation after plot selection;
-    // do it explicitly since we're specifying our own plots in the test data.
-    observationStore.populateCumulativeDead(observationId)
 
     plantsRows
         .groupBy { it.monitoringPlotId!! }

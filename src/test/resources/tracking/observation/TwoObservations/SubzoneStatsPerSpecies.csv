@@ -8,10 +8,10 @@ Alpha-2,Known 3,1,100%,1,100%
 Alpha-2,Known 4,1,,2,
 Alpha-2,Other A,2,,1,
 Alpha-2,Other B,1,,1,
-Alpha-2,Other C,1,,0,
+Alpha-2,Other C,1,,,
 Alpha-2,Other D,1,,1,
 Beta-1,Known 3,4,100%,3,100%
 Beta-1,Known 5,6,80%,5,40%
 Beta-1,Other B,,,1,
-Beta-1,Other C,1,,0,
+Beta-1,Other C,1,,,
 Beta-2,Known 5,1,,,

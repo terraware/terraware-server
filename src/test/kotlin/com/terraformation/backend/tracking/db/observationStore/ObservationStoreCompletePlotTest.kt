@@ -295,13 +295,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            speciesName = null,
             certaintyId = RecordedSpeciesCertainty.Known,
             totalLive = 2,
             totalDead = 1,
             totalExisting = 1,
-            mortalityRate = 33,
-            cumulativeDead = 1,
             permanentLive = 2,
             survivalRate = 2 * 100 / 1,
         )
@@ -316,8 +313,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             0,
-            100,
-            1,
             0,
             0,
         )
@@ -333,8 +328,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
         )
     val zone1Plot1Other1Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -346,8 +339,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
             0,
-            50,
-            1,
             1,
         )
     val zone1Plot1Other2Totals =
@@ -358,8 +349,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             "Other 2",
             RecordedSpeciesCertainty.Other,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -374,8 +363,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
             1,
         )
     var siteSpecies1Totals =
@@ -387,8 +374,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             RecordedSpeciesCertainty.Known,
             2,
             1,
-            1,
-            33,
             1,
             2,
             2 * 100 / 1,
@@ -403,8 +388,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             0,
-            100,
-            1,
             0,
             0,
         )
@@ -420,8 +403,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
         )
     var siteOther1Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -433,8 +414,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
             0,
-            50,
-            1,
             1,
         )
     val siteOther2Totals =
@@ -445,8 +424,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             "Other 2",
             RecordedSpeciesCertainty.Other,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -461,8 +438,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
             1,
         )
     var zone1Species1Totals =
@@ -474,8 +449,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             RecordedSpeciesCertainty.Known,
             2,
             1,
-            1,
-            33,
             1,
             2,
             2 * 100 / 1,
@@ -490,8 +463,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             0,
-            100,
-            1,
             0,
             0,
         )
@@ -507,8 +478,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
         )
     val zone1Other1Totals =
         ObservedZoneSpeciesTotalsRow(
@@ -520,8 +489,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
             0,
-            50,
-            1,
             1,
         )
     val zone1Other2Totals =
@@ -532,8 +499,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             "Other 2",
             RecordedSpeciesCertainty.Other,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -548,8 +513,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
             1,
         )
     var zone1Subzone1Species1Totals =
@@ -561,8 +524,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             RecordedSpeciesCertainty.Known,
             2,
             1,
-            1,
-            33,
             1,
             2,
             2 * 100 / 1,
@@ -577,8 +538,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             0,
-            100,
-            1,
             0,
             0,
         )
@@ -594,8 +553,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
         )
     val zone1Subzone1Other1Totals =
         ObservedSubzoneSpeciesTotalsRow(
@@ -607,8 +564,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
             0,
-            50,
-            1,
             1,
         )
     val zone1Subzone1Other2Totals =
@@ -621,8 +576,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
             1,
         )
     var zone1Subzone1UnknownTotals =
@@ -633,8 +586,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             null,
             RecordedSpeciesCertainty.Unknown,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -708,8 +659,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            null,
-            0,
             0,
         )
     val zone1Plot2Species3Totals =
@@ -722,8 +671,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
-            null,
-            0,
             0,
         )
     val zone1Plot2UnknownTotals =
@@ -735,8 +682,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             RecordedSpeciesCertainty.Unknown,
             1,
             0,
-            0,
-            null,
             0,
             0,
         )
@@ -821,8 +766,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             1,
-            100,
-            1,
             0,
             0,
         )
@@ -834,8 +777,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             "Other 1",
             RecordedSpeciesCertainty.Other,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -850,8 +791,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             1,
-            100,
-            1,
             0,
             0,
         )
@@ -863,8 +802,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             "Other 1",
             RecordedSpeciesCertainty.Other,
             1,
-            0,
-            0,
             0,
             0,
             1,
@@ -879,8 +816,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             1,
-            100,
-            1,
             0,
             0,
         )
@@ -894,8 +829,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
-            0,
-            0,
             1,
         )
     siteSpecies1Totals =
@@ -903,11 +836,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalLive = 3,
             totalDead = 2,
             totalExisting = 2,
-            mortalityRate = 50,
-            cumulativeDead = 2,
             survivalRate = (2 * 100.0 / (1 + 7)).roundToInt(),
         )
-    siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33, permanentLive = 2)
+    siteOther1Totals = siteOther1Totals.copy(totalLive = 2, permanentLive = 2)
 
     helper.assertTotals(
         setOf(
@@ -1029,163 +960,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         PlantingSubzonePopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
         "Planting subzone total plants should be unchanged",
-    )
-  }
-
-  @Test
-  fun `updates cumulative dead from initial values inserted by populateCumulativeDead`() {
-    val speciesId = insertSpecies()
-    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-
-    val deadPlantsRow =
-        RecordedPlantsRow(
-            certaintyId = RecordedSpeciesCertainty.Known,
-            gpsCoordinates = point(1),
-            speciesId = speciesId,
-            statusId = RecordedPlantStatus.Dead,
-        )
-    store.completePlot(
-        observationId,
-        plotId,
-        emptySet(),
-        null,
-        Instant.EPOCH,
-        listOf(deadPlantsRow),
-    )
-
-    val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
-    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-    store.populateCumulativeDead(observationId2)
-
-    store.completePlot(
-        observationId2,
-        plotId,
-        emptySet(),
-        null,
-        Instant.EPOCH,
-        listOf(deadPlantsRow),
-    )
-
-    assertEquals(
-        2,
-        with(OBSERVED_PLOT_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Plot cumulative dead for second observation",
-    )
-    assertEquals(
-        2,
-        with(OBSERVED_ZONE_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Zone cumulative dead for second observation",
-    )
-    assertEquals(
-        2,
-        with(OBSERVED_SITE_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Site cumulative dead for second observation",
-    )
-  }
-
-  // SW-6717: This can happen if all of a subzone's monitoring plots move to a new subzone
-  //          thanks to a map edit; the original subzone will have subzone-level species totals
-  //          but we don't want to use them as a starting point for a new observation since
-  //          there are no monitoring plots in common.
-  @Test
-  fun `does not use cumulative dead from past observations if current observation has no total for a species`() {
-    val speciesId = insertSpecies()
-    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-
-    val deadPlantsRow =
-        RecordedPlantsRow(
-            certaintyId = RecordedSpeciesCertainty.Known,
-            gpsCoordinates = point(1),
-            speciesId = speciesId,
-            statusId = RecordedPlantStatus.Dead,
-        )
-    store.completePlot(
-        observationId,
-        plotId,
-        emptySet(),
-        null,
-        Instant.EPOCH,
-        listOf(deadPlantsRow),
-    )
-
-    val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
-    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-
-    // We do not call populateCumulativeDead here, so there is no observed subzone species
-    // total for this observation even though there's one for the previous observation.
-
-    store.completePlot(
-        observationId2,
-        plotId,
-        emptySet(),
-        null,
-        Instant.EPOCH,
-        listOf(deadPlantsRow),
-    )
-
-    assertEquals(
-        2,
-        with(OBSERVED_PLOT_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Plot cumulative dead for second observation",
-    )
-    assertEquals(
-        1,
-        with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Subzone cumulative dead for second observation",
-    )
-    assertEquals(
-        1,
-        with(OBSERVED_ZONE_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Zone cumulative dead for second observation",
-    )
-    assertEquals(
-        1,
-        with(OBSERVED_SITE_SPECIES_TOTALS) {
-          dslContext
-              .select(CUMULATIVE_DEAD)
-              .from(this)
-              .where(OBSERVATION_ID.eq(observationId2))
-              .fetchOne(CUMULATIVE_DEAD)
-        },
-        "Site cumulative dead for second observation",
     )
   }
 
