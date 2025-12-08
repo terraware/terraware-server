@@ -1,3 +1,4 @@
+1f15d23fdca SW-7810 Fix survival rates when unrecorded species in later observations (#3704)
 755b21880e5 Update dependency mjml to v4.17.2 (#3698)
 c45dde1bf4f Update dependency org.springframework.ai:spring-ai-bom to v1.1.1 (#3699)
 107cb94d318 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v2.6.8 (#3700)
