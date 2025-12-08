@@ -60,7 +60,6 @@ import com.terraformation.backend.tracking.model.ObservationSubstratumResultsMod
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import com.terraformation.backend.tracking.model.RecordedTreeModel
-import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
@@ -75,7 +74,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.Record12
+import org.jooq.Record10
 import org.jooq.Select
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -480,28 +479,24 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
    *
    * @param query A query with the following fields in the following order:
    *     1. Certainty (non-nullable)
-   *     2. Mortality rate (nullable)
-   *     3. Species ID (nullable)
-   *     4. Species name (nullable)
-   *     5. Total live (non-nullable)
-   *     6. Total dead (non-nullable)
-   *     7. Total existing (non-nullable)
-   *     8. Cumulative dead in permanent plots (non-nullable)
-   *     9. Total live in permanent plots (non-nullable)
-   *     10. Survival Rate (nullable)
-   *     11. T0 Density (nullable)
-   *     12. Latest Live from latest observation (or across multiple observations if not all
+   *     2. Species ID (nullable)
+   *     3. Species name (nullable)
+   *     4. Total live (non-nullable)
+   *     5. Total dead (non-nullable)
+   *     6. Total existing (non-nullable)
+   *     7. Total live in permanent plots (non-nullable)
+   *     8. Survival Rate (nullable)
+   *     9. T0 Density (nullable)
+   *     10. Latest Live from latest observation (or across multiple observations if not all
    *         substrata are in the latest observation) (non-nullable)
    */
   private fun speciesMultiset(
       query:
           Select<
-              Record12<
+              Record10<
                   RecordedSpeciesCertainty?,
-                  Int?,
                   SpeciesId?,
                   String?,
-                  Int?,
                   Int?,
                   Int?,
                   Int?,
@@ -515,23 +510,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return DSL.multiset(query).convertFrom { results ->
       results.map { record ->
         val certainty = record.value1()!!
-        val mortalityRate = record.value2()
-        val speciesId = record.value3()
-        val speciesName = record.value4()
-        val totalLive = record.value5()!!
-        val totalDead = record.value6()!!
-        val totalExisting = record.value7()!!
-        val cumulativeDead = record.value8()!!
-        val permanentLive = record.value9()!!
-        val survivalRate = record.value10()
-        val t0Density = record.value11()
-        val latestLive = record.value12()!!
+        val speciesId = record.value2()
+        val speciesName = record.value3()
+        val totalLive = record.value4()!!
+        val totalDead = record.value5()!!
+        val totalExisting = record.value6()!!
+        val permanentLive = record.value7()!!
+        val survivalRate = record.value8()
+        val t0Density = record.value9()
+        val latestLive = record.value10()!!
 
         ObservationSpeciesResultsModel(
             certainty = certainty,
-            cumulativeDead = cumulativeDead,
             latestLive = latestLive,
-            mortalityRate = mortalityRate,
             permanentLive = permanentLive,
             speciesId = speciesId,
             speciesName = speciesName,
@@ -592,9 +583,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         speciesMultiset(
             DSL.select(
                     DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
-                    DSL.case_()
-                        .`when`(OBSERVATION_PLOTS.IS_PERMANENT, MORTALITY_RATE)
-                        .else_(null as Int?),
                     DSL.coalesce(
                         SPECIES_ID,
                         PLOT_T0_DENSITIES.SPECIES_ID,
@@ -604,7 +592,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     DSL.coalesce(TOTAL_LIVE, 0),
                     DSL.coalesce(TOTAL_DEAD, 0),
                     DSL.coalesce(TOTAL_EXISTING, 0),
-                    DSL.coalesce(CUMULATIVE_DEAD, 0),
                     DSL.coalesce(PERMANENT_LIVE, 0),
                     DSL.coalesce(
                         SURVIVAL_RATE,
@@ -781,7 +768,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       (it.totalLive + it.totalExisting) > 0
                 }
 
-            val mortalityRate = if (isPermanent) species.calculateMortalityRate() else null
             val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
 
             val areaSquareMeters = sizeMeters * sizeMeters
@@ -803,7 +789,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 isPermanent = isPermanent,
                 monitoringPlotId = record[MONITORING_PLOTS.ID]!!,
                 monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
-                mortalityRate = mortalityRate,
                 notes = record[OBSERVATION_PLOTS.NOTES],
                 overlappedByPlotIds = record[monitoringPlotOverlappedByMultiset],
                 overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
@@ -900,13 +885,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
-                  MORTALITY_RATE,
                   DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
                   SPECIES_NAME,
                   DSL.coalesce(TOTAL_LIVE, 0),
                   DSL.coalesce(TOTAL_DEAD, 0),
                   DSL.coalesce(TOTAL_EXISTING, 0),
-                  DSL.coalesce(CUMULATIVE_DEAD, 0),
                   DSL.coalesce(PERMANENT_LIVE, 0),
                   DSL.coalesce(
                       SURVIVAL_RATE,
@@ -1015,19 +998,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   null
                 }
 
-            val mortalityRate = species.calculateMortalityRate()
-            val mortalityRateStdDev =
-                monitoringPlots
-                    .mapNotNull { plot ->
-                      plot.mortalityRate?.let { mortalityRate ->
-                        val permanentPlants =
-                            plot.species.sumOf { species ->
-                              species.permanentLive + species.cumulativeDead
-                            }
-                        mortalityRate to permanentPlants.toDouble()
-                      }
-                    }
-                    .calculateWeightedStandardDeviation()
             val survivalRatePlots =
                 monitoringPlots.filter { survivalRateIncludesTempPlots || it.isPermanent }
             val survivalRate =
@@ -1078,8 +1048,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants?.roundToInt(),
                 monitoringPlots = monitoringPlots,
-                mortalityRate = mortalityRate,
-                mortalityRateStdDev = mortalityRateStdDev,
                 name = record[SUBSTRATUM_HISTORIES.NAME.asNonNullable()],
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity.roundToInt(),
@@ -1200,13 +1168,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
-                  MORTALITY_RATE,
                   DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
                   SPECIES_NAME,
                   DSL.coalesce(TOTAL_LIVE, 0),
                   DSL.coalesce(TOTAL_DEAD, 0),
                   DSL.coalesce(TOTAL_EXISTING, 0),
-                  DSL.coalesce(CUMULATIVE_DEAD, 0),
                   DSL.coalesce(PERMANENT_LIVE, 0),
                   DSL.coalesce(
                       SURVIVAL_RATE,
@@ -1342,19 +1308,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
             val monitoringPlots = substrata.flatMap { it.monitoringPlots }
 
-            val mortalityRate = species.calculateMortalityRate()
-            val mortalityRateStdDev =
-                monitoringPlots
-                    .mapNotNull { plot ->
-                      plot.mortalityRate?.let { mortalityRate ->
-                        val permanentPlants =
-                            plot.species.sumOf { species ->
-                              species.permanentLive + species.cumulativeDead
-                            }
-                        mortalityRate to permanentPlants.toDouble()
-                      }
-                    }
-                    .calculateWeightedStandardDeviation()
             val survivalRateSubstrata =
                 substrata.filter { substratum ->
                   substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
@@ -1406,8 +1359,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 areaHa = areaHa,
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants?.roundToInt(),
-                mortalityRate = mortalityRate,
-                mortalityRateStdDev = mortalityRateStdDev,
                 name = record[STRATUM_HISTORIES.NAME.asNonNullable()],
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity.roundToInt(),
@@ -1530,13 +1481,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
-                  MORTALITY_RATE,
                   DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
                   SPECIES_NAME,
                   DSL.coalesce(TOTAL_LIVE, 0),
                   DSL.coalesce(TOTAL_DEAD, 0),
                   DSL.coalesce(TOTAL_EXISTING, 0),
-                  DSL.coalesce(CUMULATIVE_DEAD, 0),
                   DSL.coalesce(PERMANENT_LIVE, 0),
                   DSL.coalesce(
                       SURVIVAL_RATE,
@@ -1647,19 +1596,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val totalSpecies = liveSpecies.size
           val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
-          val mortalityRate = species.calculateMortalityRate()
-          val mortalityRateStdDev =
-              monitoringPlots
-                  .mapNotNull { plot ->
-                    plot.mortalityRate?.let { mortalityRate ->
-                      val permanentPlants =
-                          plot.species.sumOf { species ->
-                            species.permanentLive + species.cumulativeDead
-                          }
-                      mortalityRate to permanentPlants.toDouble()
-                    }
-                  }
-                  .calculateWeightedStandardDeviation()
           val survivalRate =
               if (strata.isNotEmpty() && strata.all { it.survivalRate != null }) {
                 species.calculateSurvivalRate(survivalRateIncludesTempPlots)
@@ -1687,8 +1623,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               estimatedPlants = estimatedPlants,
               isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
-              mortalityRate = mortalityRate,
-              mortalityRateStdDev = mortalityRateStdDev,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
               plantingCompleted = plantingCompleted,
