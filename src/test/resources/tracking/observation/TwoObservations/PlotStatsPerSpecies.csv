@@ -9,14 +9,14 @@ Plot,Species,# Total Plants,Survival Rate,# Total Plants,Survival Rate
 122,Known 1,1,,1,
 122,Known 3,1,100%,1,100%
 123,Known 4,1,,1,
-124,Other C,1,,0,
+124,Other C,1,,,
 124,Other D,1,,1,
 12160,Known 2,2,,,
 1215,Known 1,,,1,
 1215,Known 4,,,1,
 211,Known 5,3,67%,2,67%
 212,Known 3,1,100%,1,100%
-212,Other C,1,,0,
+212,Other C,1,,,
 213,Known 3,1,100%,1,100%
 213,Known 5,1,100%,1,0%
 214,Known 3,1,100%,1,100%
