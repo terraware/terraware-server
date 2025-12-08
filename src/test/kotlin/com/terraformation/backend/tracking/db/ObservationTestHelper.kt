@@ -7,14 +7,11 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.RecordedPlantStatus
-import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
@@ -65,58 +62,6 @@ class ObservationTestHelper(
                 .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
                 .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
         .toSet()
-  }
-
-  /**
-   * Adds a series of plots to the current observation, each one with some number of recorded plants
-   * for some set of species. The goal is to make the scenarios easy to read in the test code.
-   */
-  fun insertObservationScenario(vararg strata: ObservationStratum) {
-    strata.forEach { stratum ->
-      stratum.plots.forEach { plot ->
-        test.insertObservationPlot(
-            claimedBy = effectiveUserId,
-            isPermanent = plot.isPermanent,
-            monitoringPlotId = plot.plotId,
-        )
-      }
-    }
-
-    observationStore.populateCumulativeDead(test.inserted.observationId)
-
-    strata.forEach { stratum ->
-      stratum.plots.forEach { plot ->
-        val recordedPlantsRows =
-            plot.plants.flatMap { plant ->
-              (List(plant.live) { RecordedPlantStatus.Live } +
-                      List(plant.dead) { RecordedPlantStatus.Dead } +
-                      List(plant.existing) { RecordedPlantStatus.Existing })
-                  .map { status ->
-                    RecordedPlantsRow(
-                        certaintyId =
-                            when {
-                              plant.speciesId != null -> RecordedSpeciesCertainty.Known
-                              plant.speciesName != null -> RecordedSpeciesCertainty.Other
-                              else -> RecordedSpeciesCertainty.Unknown
-                            },
-                        gpsCoordinates = point(1),
-                        speciesId = plant.speciesId,
-                        speciesName = plant.speciesName,
-                        statusId = status,
-                    )
-                  }
-            }
-
-        observationStore.completePlot(
-            conditions = emptySet(),
-            monitoringPlotId = plot.plotId,
-            notes = null,
-            observationId = test.inserted.observationId,
-            observedTime = Instant.EPOCH,
-            plants = recordedPlantsRows,
-        )
-      }
-    }
   }
 
   /** Inserts the necessary data to represent a planting site with reported plants. */
