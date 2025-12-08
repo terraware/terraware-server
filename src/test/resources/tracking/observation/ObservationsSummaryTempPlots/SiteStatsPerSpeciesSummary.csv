@@ -1,4 +1,4 @@
-Observation ->1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3
-Species ->A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other,A,A,A,B,B,B,C,C,C,Other,Other,Other
-Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate,Total Plants,Mortality Rate,Survival Rate
-315,11%,44%,257,10%,46%,258,15%,72%,138,43%,,928,10%,122%,690,17%,76%,744,13%,186%,213,45%,,1431,15%,201%,1045,18%,116%,1194,13%,326%,191,57%,
+Observation ->1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3
+Species ->A,A,B,B,C,C,Other,Other,A,A,B,B,C,C,Other,Other,A,A,B,B,C,C,Other,Other
+Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate,Total Plants,Survival Rate
+315,44%,257,46%,258,72%,138,,928,122%,690,76%,744,186%,213,,1431,201%,1045,116%,1194,326%,191,

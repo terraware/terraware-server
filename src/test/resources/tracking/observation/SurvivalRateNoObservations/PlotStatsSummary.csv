@@ -1,5 +1,5 @@
-Observation ->,1,1,1,1,1,1,1,1,1,1,1
-Plot,# Plants,# Species,Mortality Rate,Survival Rate,Cumulative Dead Plants,Live Plants,# Live + Dead,t0 Density,t0 Density per Hectare,Existing Plants,Planting Density
-111,29,2,0%,97%,0,29,29,30,333.3333333,0,322
-211,110,2,0%,100%,0,110,110,110,1222.222222,0,1222
-311,139,2,0%,93%,0,139,139,150,1666.666667,0,1544
+Observation ->,1,1,1,1,1,1,1,1
+Plot,# Plants,# Species,Survival Rate,Live Plants,t0 Density,t0 Density per Hectare,Existing Plants,Planting Density
+111,29,2,97%,29,30,333.3333333,0,322
+211,110,2,100%,110,110,1222.222222,0,1222
+311,139,2,93%,139,150,1666.666667,0,1544
