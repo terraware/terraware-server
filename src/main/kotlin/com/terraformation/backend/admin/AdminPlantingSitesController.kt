@@ -719,7 +719,7 @@ class AdminPlantingSitesController(
     return redirectToPlantingSite(plantingSiteId)
   }
 
-  @PostMapping("/recalculateMortalityRates")
+  @PostMapping("/recalculateSurvivalRates")
   fun recalculateMortalityRates(
       @RequestParam observationId: ObservationId,
       @RequestParam plantingSiteId: PlantingSiteId,
@@ -728,12 +728,12 @@ class AdminPlantingSitesController(
     requirePermissions { manageObservation(observationId) }
 
     try {
-      observationStore.recalculateSurvivalMortalityRates(observationId, plantingSiteId)
+      observationStore.recalculateSurvivalRates(observationId, plantingSiteId)
       redirectAttributes.successMessage =
-          "Recalculated mortality rates for observation $observationId."
+          "Recalculated survival rates for observation $observationId."
     } catch (e: Exception) {
-      log.warn("Mortality rate recalculation failed", e)
-      redirectAttributes.failureMessage = "Failed to recalculate mortality rates: ${e.message}"
+      log.warn("Survival rate recalculation failed", e)
+      redirectAttributes.failureMessage = "Failed to recalculate survival rates: ${e.message}"
     }
 
     return redirectToAdminHome()
