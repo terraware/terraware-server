@@ -1275,12 +1275,12 @@ class ObservationStore(
     if (!isAdHoc) {
       // Ad-hoc observations do not reset unobserved populations
       resetPlantPopulationSinceLastObservation(plantingSiteId)
-      recalculateSurvivalMortalityRates(observationId, plantingSiteId)
+      recalculateSurvivalRates(observationId, plantingSiteId)
     }
   }
 
   /** Recalculates the stratum- and site-level survival rates for an observation. */
-  fun recalculateSurvivalMortalityRates(
+  fun recalculateSurvivalRates(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
   ) {
