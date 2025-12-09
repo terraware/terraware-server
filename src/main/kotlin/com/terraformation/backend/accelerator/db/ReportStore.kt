@@ -1191,6 +1191,7 @@ class ReportStore(
                   .join(REPORTS)
                   .on(REPORTS.ID.eq(reportId))
                   .where(SYSTEM_METRICS.ID.`in`(metrics))
+                  .and(SYSTEM_METRICS.IS_DEPRECATED.eq(false))
           )
           .onConflict(REPORT_ID, SYSTEM_METRIC_ID)
           .doUpdate()
@@ -1495,35 +1496,6 @@ class ReportStore(
               OBSERVATIONS.COMPLETED_TIME.desc(),
           )
 
-  private val mortalityRateDenominatorField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
-
-  private val mortalityRateNumeratorField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) }
-
-  // Fetch the latest observations per planting site from the reporting period, and calculate the
-  // mortality rate
-  private val mortalityRateField =
-      DSL.field(
-              DSL.select(
-                      DSL.if_(
-                          mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
-                          (mortalityRateNumeratorField * 100.0) / mortalityRateDenominatorField,
-                          BigDecimal.ZERO,
-                      )
-                  )
-                  .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
-                  )
-                  .and(
-                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
-                          RecordedSpeciesCertainty.Unknown
-                      )
-                  )
-          )
-          .convertFrom { it.toInt() }
-
   private fun plotHasCompletedObservations(
       monitoringPlotIdField: Field<MonitoringPlotId?>,
       isPermanent: Boolean,
@@ -1736,7 +1708,6 @@ class ReportStore(
   private val systemTerrawareValueField =
       DSL.coalesce(
           DSL.case_()
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
@@ -1761,6 +1732,7 @@ class ReportStore(
                   .leftJoin(REPORT_SYSTEM_METRICS)
                   .on(SYSTEM_METRICS.ID.eq(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
+                  .where(SYSTEM_METRICS.IS_DEPRECATED.eq(false))
                   .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID)
           )
           .convertFrom { results ->
