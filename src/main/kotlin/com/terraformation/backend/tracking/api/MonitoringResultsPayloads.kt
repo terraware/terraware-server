@@ -564,6 +564,7 @@ data class PlantingSiteObservationSummaryPayload(
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
+    val plantingSiteId: PlantingSiteId,
     val plantingZones: List<PlantingZoneObservationSummaryPayload>,
     @Schema(
         description =
@@ -600,6 +601,7 @@ data class PlantingSiteObservationSummaryPayload(
       mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
+      plantingSiteId = model.plantingSiteId,
       plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) },
       species =
           model.species
