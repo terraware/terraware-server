@@ -1,3 +1,4 @@
+0695a72563a SW-7817 Add plantingSiteId to observation summaries endpoint (#3714)
 acc91d37dce Remove unused column from observation CSVs (#3712)
 1f15d23fdca SW-7810 Fix survival rates when unrecorded species in later observations (#3704)
 755b21880e5 Update dependency mjml to v4.17.2 (#3698)
