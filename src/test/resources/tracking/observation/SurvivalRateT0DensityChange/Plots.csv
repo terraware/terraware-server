@@ -1,5 +1,5 @@
-Subzone,Name,Type,Area (ha)
-Subzone1,111,Permanent,0.0625
-Subzone1,112,Permanent,0.0625
-Subzone2,211,Permanent,0.0625
-Subzone3,311,Permanent,0.0625
+Subzone,Name,Type
+Subzone1,111,Permanent
+Subzone1,112,Permanent
+Subzone2,211,Permanent
+Subzone3,311,Permanent
